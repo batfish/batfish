@@ -22,6 +22,7 @@ import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidt
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -902,8 +903,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertRouteMaps() {
-    _routeMaps.forEach(
-        (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
+    _routeMaps.values().forEach(this::convertRouteMap);
 
     // Find which route maps are used for PBR
     _c.getAllInterfaces().values().stream()
@@ -2131,17 +2131,63 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return new AsPathAccessListLine(line.getAction(), toJavaRegex(line.getRegex()));
   }
 
-  private @Nonnull RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
-    // TODO: support continue entries
-    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
-    routeMap.getEntries().values().stream().map(this::toStatement).forEach(statements::add);
-    statements.add(ROUTE_MAP_DENY_STATEMENT);
-    // TODO: clean up setting of owner
-    return RoutingPolicy.builder()
-        .setName(routeMap.getName())
+  private void convertRouteMap(RouteMap routeMap) {
+    String routeMapName = routeMap.getName();
+
+    // sequence -> next sequence if no match, or null if last sequence
+    ImmutableMap.Builder<Integer, Integer> noMatchNextBySeqBuilder = ImmutableMap.builder();
+    RouteMapEntry lastEntry = null;
+    for (RouteMapEntry currentEntry : routeMap.getEntries().values()) {
+      if (lastEntry == null) {
+        continue;
+      }
+      int lastSequence = lastEntry.getSequence();
+      noMatchNextBySeqBuilder.put(lastSequence, currentEntry.getSequence());
+      lastEntry = currentEntry;
+    }
+
+    // sequences that are valid targets of a continue statement
+    Set<Integer> continueTargets =
+        routeMap.getEntries().values().stream()
+            .map(RouteMapEntry::getContinue)
+            .filter(Objects::nonNull)
+            .filter(routeMap.getEntries().keySet()::contains)
+            .collect(ImmutableSet.toImmutableSet());
+
+    // sequence -> next sequence if no match, or null if last sequence
+    Map<Integer, Integer> noMatchNextBySeq = noMatchNextBySeqBuilder.build();
+
+    String currentRoutingPolicyName = routeMap.getName();
+    ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
+    for (RouteMapEntry currentEntry : routeMap.getEntries().values()) {
+      int currentSequence = currentEntry.getSequence();
+      if (continueTargets.contains(currentSequence)) {
+        // finalize the routing policy consisting of queued statements up to this point
+        RoutingPolicy.builder()
+            .setName(currentRoutingPolicyName)
+            .setOwner(_c)
+            .setStatements(currentRoutingPolicyStatements.build())
+            .build();
+        // reset statement queue
+        currentRoutingPolicyStatements = ImmutableList.builder();
+        // generate name for policy that will contain subsequent statements
+        currentRoutingPolicyName = generateRoutingPolicyName(routeMapName, currentSequence);
+      }
+      currentRoutingPolicyStatements.add(
+          toStatement(routeMapName, currentEntry, noMatchNextBySeq, continueTargets));
+    }
+    // finalize last routing policy
+    currentRoutingPolicyStatements.add(ROUTE_MAP_DENY_STATEMENT);
+    RoutingPolicy.builder()
+        .setName(currentRoutingPolicyName)
         .setOwner(_c)
-        .setStatements(statements.build())
+        .setStatements(currentRoutingPolicyStatements.build())
         .build();
+  }
+
+  @VisibleForTesting
+  public static @Nonnull String generateRoutingPolicyName(String routeMapName, int sequence) {
+    return String.format("~%s~SEQ:%d~", routeMapName, sequence);
   }
 
   @Nonnull
@@ -2155,7 +2201,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         new Return(new FibLookup(IngressInterfaceVrf.instance())));
   }
 
-  private @Nonnull Statement toStatement(RouteMapEntry entry) {
+  private @Nonnull Statement toStatement(
+      String routeMapName,
+      RouteMapEntry entry,
+      Map<Integer, Integer> noMatchNextBySeq,
+      Set<Integer> continueTargets) {
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     ImmutableList.Builder<BooleanExpr> conjuncts = ImmutableList.builder();
 
@@ -2165,15 +2215,37 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // sets
     entry.getSets().flatMap(this::toStatements).forEach(trueStatements::add);
 
-    // final action if matched
+    Integer continueTarget = entry.getContinue();
     LineAction action = entry.getAction();
-    if (action == LineAction.PERMIT) {
-      trueStatements.add(ROUTE_MAP_PERMIT_STATEMENT);
+    Statement finalTrueStatement;
+
+    // final action if matched
+    if (continueTarget != null) {
+      if (continueTargets.contains(continueTarget)) {
+        finalTrueStatement =
+            new CallStatement(generateRoutingPolicyName(routeMapName, continueTarget));
+      } else {
+        // invalid continue target, so just deny
+        // TODO: verify actual behavior
+        finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
+      }
+    } else if (action == LineAction.PERMIT) {
+      finalTrueStatement = ROUTE_MAP_PERMIT_STATEMENT;
     } else {
       assert action == LineAction.DENY;
-      trueStatements.add(ROUTE_MAP_DENY_STATEMENT);
+      finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
     }
-    return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
+    trueStatements.add(finalTrueStatement);
+
+    // final action if not matched
+    Integer noMatchNext = noMatchNextBySeq.get(entry.getSequence());
+    List<Statement> noMatchStatements;
+    noMatchStatements =
+        noMatchNext != null && continueTargets.contains(noMatchNext)
+            ? ImmutableList.of(
+                new CallStatement(generateRoutingPolicyName(routeMapName, noMatchNext)))
+            : ImmutableList.of();
+    return new If(new Conjunction(conjuncts.build()), trueStatements.build(), noMatchStatements);
   }
 
   @Nonnull

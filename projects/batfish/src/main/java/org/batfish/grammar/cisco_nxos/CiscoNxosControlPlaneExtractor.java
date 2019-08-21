@@ -382,6 +382,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_no_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_autonomous_systemContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rm_continueContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
@@ -4449,6 +4450,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitPl6_description(Pl6_descriptionContext ctx) {
     toString(ctx, ctx.text)
         .ifPresent(description -> _currentIpv6PrefixList.setDescription(description));
+  }
+
+  @Override
+  public void exitRm_continue(Rm_continueContext ctx) {
+    toInteger(ctx, ctx.next).ifPresent(_currentRouteMapEntry::setContinue);
   }
 
   @Override
