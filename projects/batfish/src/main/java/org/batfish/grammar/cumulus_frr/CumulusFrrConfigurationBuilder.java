@@ -52,7 +52,9 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressC
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
@@ -294,10 +296,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafin_activate(Sbafin_activateContext ctx) {
-    if (_bgpNeighborIpv4UnicastAddressFamily == null) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
-    _bgpNeighborIpv4UnicastAddressFamily.setActivated(true);
+    _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(true);
   }
 
   @Override
@@ -310,10 +312,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafin_route_reflector_client(Sbafin_route_reflector_clientContext ctx) {
-    if (_bgpNeighborIpv4UnicastAddressFamily == null) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
-    _bgpNeighborIpv4UnicastAddressFamily.setRouteReflectorClient(true);
+    _currentBgpNeighborIpv4UnicastAddressFamily.setRouteReflectorClient(true);
   }
 
   @Override
