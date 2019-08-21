@@ -446,10 +446,9 @@ public final class CiscoNxosGrammarTest {
 
   private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
     Bgpv4Route.Builder builder = route.toBuilder();
-    boolean permitted =
+    assertTrue(
         routingPolicy.process(
-            route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.IN);
-    assertTrue(permitted);
+            route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.IN));
     return builder.build();
   }
 
@@ -462,7 +461,9 @@ public final class CiscoNxosGrammarTest {
             .setArea(456L)
             .setCostToAdvertiser(789L)
             .setAdvertiser("n1");
-    routingPolicy.process(route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.OUT);
+    assertTrue(
+        routingPolicy.process(
+            route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.OUT));
     return builder.build();
   }
 
