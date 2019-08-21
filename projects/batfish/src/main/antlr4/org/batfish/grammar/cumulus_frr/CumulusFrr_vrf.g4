@@ -11,8 +11,7 @@ s_vrf
   VRF name = word NEWLINE
   (
     sv_vni
-    | sv_route
-    | null_rest_of_line
+  | sv_route
   )*
   EXIT_VRF
 ;
