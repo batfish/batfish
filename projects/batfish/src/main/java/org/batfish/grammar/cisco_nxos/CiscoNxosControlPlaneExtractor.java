@@ -4020,7 +4020,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _currentInterfaces.forEach(iface -> iface.setAddress(address));
     }
     if (ctx.tag != null) {
-      warn(ctx, "Unsupported: tag on interface ip address");
       address.setTag(toLong(ctx.tag));
     }
   }
