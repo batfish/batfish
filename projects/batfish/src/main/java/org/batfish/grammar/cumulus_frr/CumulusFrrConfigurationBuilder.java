@@ -279,6 +279,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           String.format("neighbor %s does not exist", name));
     } else {
       _bgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
+      if (_bgpNeighborIpv4UnicastAddressFamily == null) {
+        _bgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
+        bgpNeighbor.setIpv4UnicastAddressFamily(_bgpNeighborIpv4UnicastAddressFamily);
+      }
     }
   }
 
