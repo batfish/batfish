@@ -82,10 +82,9 @@ public class CumulusConcatenatedGrammarTest {
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(tree);
-    CumulusNcluConfiguration CumulusNcluConfiguration =
-        (CumulusNcluConfiguration) extractor.getVendorConfiguration();
-    CumulusNcluConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
-    return CumulusNcluConfiguration;
+    CumulusNcluConfiguration config = (CumulusNcluConfiguration) extractor.getVendorConfiguration();
+    config.setFilename(TESTCONFIGS_PREFIX + filename);
+    return config;
   }
 
   private SortedMap<String, Configuration> parseTextConfigs(String... configurationNames)
