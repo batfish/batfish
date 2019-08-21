@@ -148,6 +148,11 @@ EXTERNAL
   'external'
 ;
 
+EBGP_MULTIHOP
+:
+  'ebgp-multihop'
+;
+
 FRR
 :
   'frr'

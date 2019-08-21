@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco_nxos;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRouteMapEntryName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
@@ -85,10 +86,18 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_R
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
+import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.DIRECT;
+import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.EIGRP;
+import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.ISIS;
+import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.LISP;
+import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.OSPF;
+import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.RIP;
+import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.STATIC;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 import static org.batfish.representation.cisco_nxos.Vrf.MANAGEMENT_VRF_ID;
@@ -134,7 +143,6 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -382,6 +390,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_no_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_autonomous_systemContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rm_continueContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
@@ -2400,7 +2409,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
     _configuration.referenceStructure(
         ROUTER_OSPF, ospfProcess, BGP_REDISTRIBUTE_OSPF_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, ospfProcess);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(OSPF, name, ospfProcess);
   }
 
   @Override
@@ -2477,7 +2486,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP, ctx.getStart().getLine());
     _configuration.referenceStructure(
         ROUTER_OSPFV3, sourceTag, BGP_REDISTRIBUTE_OSPFV3_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(OSPF, name, sourceTag);
   }
 
   @Override
@@ -2617,7 +2626,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.CONNECTED, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(DIRECT, name, null);
   }
 
   @Override
@@ -2633,8 +2642,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         ROUTE_MAP, mapName, BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP, ctx.getStart().getLine());
     _configuration.referenceStructure(
         ROUTER_EIGRP, sourceTag, BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(
-        RoutingProtocol.EIGRP, mapName, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(EIGRP, mapName, sourceTag);
   }
 
   @Override
@@ -2650,8 +2658,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         ROUTE_MAP, name, BGP_REDISTRIBUTE_ISIS_ROUTE_MAP, ctx.getStart().getLine());
     _configuration.referenceStructure(
         ROUTER_ISIS, sourceTag, BGP_REDISTRIBUTE_ISIS_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(
-        RoutingProtocol.ISIS_ANY, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(ISIS, name, sourceTag);
   }
 
   @Override
@@ -2663,7 +2670,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_LISP_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.LISP, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(LISP, name, null);
   }
 
   @Override
@@ -2679,7 +2686,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         ROUTE_MAP, name, BGP_REDISTRIBUTE_RIP_ROUTE_MAP, ctx.getStart().getLine());
     _configuration.referenceStructure(
         ROUTER_RIP, sourceTag, BGP_REDISTRIBUTE_RIP_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.RIP, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RIP, name, sourceTag);
   }
 
   @Override
@@ -2691,7 +2698,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_STATIC_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.STATIC, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(STATIC, name, null);
   }
 
   @Override
@@ -4016,7 +4023,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _currentInterfaces.forEach(iface -> iface.setAddress(address));
     }
     if (ctx.tag != null) {
-      warn(ctx, "Unsupported: tag on interface ip address");
       address.setTag(toLong(ctx.tag));
     }
   }
@@ -4449,6 +4455,28 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitPl6_description(Pl6_descriptionContext ctx) {
     toString(ctx, ctx.text)
         .ifPresent(description -> _currentIpv6PrefixList.setDescription(description));
+  }
+
+  @Override
+  public void exitRm_continue(Rm_continueContext ctx) {
+    Optional<Integer> continueTargetOrErr = toInteger(ctx, ctx.next);
+    if (!continueTargetOrErr.isPresent()) {
+      return;
+    }
+    int continueTarget = continueTargetOrErr.get();
+    if (continueTarget <= _currentRouteMapEntry.getSequence()) {
+      // CLI rejects continue to lower sequence
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot continue to earlier sequence");
+      return;
+    }
+    _currentRouteMapName.ifPresent(
+        routeMapName ->
+            _configuration.referenceStructure(
+                ROUTE_MAP_ENTRY,
+                computeRouteMapEntryName(routeMapName, continueTarget),
+                ROUTE_MAP_CONTINUE,
+                ctx.getStart().getLine()));
+    _currentRouteMapEntry.setContinue(continueTarget);
   }
 
   @Override

@@ -139,7 +139,7 @@ route-map match_undefined_prefix_list permit 10
 !!! Continues
 route-map continue_skip_deny permit 10
   continue 30
-route-map continue_skip_deny deny 30
+route-map continue_skip_deny deny 20
 route-map continue_skip_deny permit 30
 
 route-map continue_from_deny_to_permit deny 10
@@ -149,6 +149,7 @@ route-map continue_from_deny_to_permit permit 20
 route-map continue_from_permit_to_fall_off permit 10
   continue 20
 route-map continue_from_permit_to_fall_off permit 20
+  ! use untagged route to test fall-off
   match tag 10
 
 route-map continue_from_permit_and_set_to_fall_off permit 10
@@ -157,15 +158,16 @@ route-map continue_from_permit_and_set_to_fall_off permit 10
 route-map continue_from_permit_and_set_to_fall_off permit 20
   match tag 10
 
-route-map continue_with_set_and_fall_off permit 10
-  set metric 10
-  continue 20
-route-map continue_with_set_and_fall_off permit 20
-  match tag 10
-
 route-map continue_from_set_to_match_on_set_field permit 10
   set metric 10
   continue 20
 route-map continue_from_set_to_match_on_set_field permit 20
   match metric 10
 route-map continue_from_set_to_match_on_set_field deny 30
+
+route-map reach_continue_target_without_match permit 10
+  match tag 10
+  continue 30
+route-map reach_continue_target_without_match permit 20
+  match tag 10
+route-map reach_continue_target_without_match permit 30

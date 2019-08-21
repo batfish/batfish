@@ -641,10 +641,27 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpNeighborEbgpMultihopPeerGroup() {
+    parseLines("router bgp 10000", "neighbor N peer-group", "neighbor N ebgp-multihop 3");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("N").getEbgpMultihop(),
+        equalTo(3L));
+  }
+
+  @Test
+  public void testBgpNeighborEbgpMultihopPeer() {
+    parseLines("router bgp 10000", "neighbor 10.0.0.1 ebgp-multihop 3");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.1").getEbgpMultihop(),
+        equalTo(3L));
+  }
+
+  @Test
   public void testIp4vUnicastRoutemap() {
     {
       parseLines(
           "router bgp 10000",
+          "neighbor N peer-group",
           "address-family ipv4 unicast",
           "neighbor N route-map R in",
           "exit-address-family");
@@ -661,15 +678,16 @@ public class CumulusFrrGrammarTest {
     {
       parseLines(
           "router bgp 10000",
+          "neighbor N2 peer-group",
           "address-family ipv4 unicast",
-          "neighbor N route-map R out",
+          "neighbor N2 route-map R out",
           "exit-address-family");
       assertThat(
           CONFIG
               .getBgpProcess()
               .getDefaultVrf()
               .getNeighbors()
-              .get("N")
+              .get("N2")
               .getIpv4UnicastAddressFamily()
               .getRouteMapOut(),
           equalTo("R"));

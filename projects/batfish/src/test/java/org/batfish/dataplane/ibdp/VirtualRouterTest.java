@@ -6,6 +6,8 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.eigrp.EigrpTopologyUtils.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
+import static org.batfish.dataplane.ibdp.VirtualRouter.generateConnectedRoute;
+import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalRoute;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -37,6 +39,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.GeneratedRoute;
@@ -783,5 +786,57 @@ public class VirtualRouterTest {
     emptyVr.queueCrossVrfImports();
     emptyVr.processCrossVrfRoutes();
     assertThat(emptyVr.getMainRib().getTypedRoutes(), equalTo(annotatedRoutes));
+  }
+
+  @Test
+  public void testGenerateConnectedRoute() {
+    String nextHopInterface = "Eth0";
+    ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
+    Prefix prefix = address.getPrefix();
+
+    assertThat(
+        generateConnectedRoute(address, nextHopInterface, null),
+        equalTo(
+            ConnectedRoute.builder()
+                .setNetwork(prefix)
+                .setNextHopInterface(nextHopInterface)
+                .build()));
+
+    assertThat(
+        generateConnectedRoute(
+            address, nextHopInterface, ConnectedRouteMetadata.builder().setTag(7).build()),
+        equalTo(
+            ConnectedRoute.builder()
+                .setNetwork(prefix)
+                .setNextHopInterface(nextHopInterface)
+                .setTag(7L)
+                .build()));
+  }
+
+  @Test
+  public void testGenerateLocalRoute() {
+    String nextHopInterface = "Eth0";
+    ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
+    Prefix prefix = Prefix.create(address.getIp(), Prefix.MAX_PREFIX_LENGTH);
+
+    assertThat(
+        generateLocalRoute(address, nextHopInterface, null),
+        equalTo(
+            LocalRoute.builder()
+                .setNetwork(prefix)
+                .setSourcePrefixLength(address.getNetworkBits())
+                .setNextHopInterface(nextHopInterface)
+                .build()));
+
+    assertThat(
+        generateLocalRoute(
+            address, nextHopInterface, ConnectedRouteMetadata.builder().setTag(7).build()),
+        equalTo(
+            LocalRoute.builder()
+                .setNetwork(prefix)
+                .setSourcePrefixLength(address.getNetworkBits())
+                .setNextHopInterface(nextHopInterface)
+                .setTag(7L)
+                .build()));
   }
 }

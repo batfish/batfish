@@ -196,6 +196,18 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
     @Nullable
     RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, _c);
+    generateBgpUnnumberedPeerConfig(
+        neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, importRoutingPolicy);
+  }
+
+  @VisibleForTesting
+  void generateBgpUnnumberedPeerConfig(
+      BgpInterfaceNeighbor neighbor,
+      @Nullable Long localAs,
+      BgpVrf bgpVrf,
+      org.batfish.datamodel.BgpProcess newProc,
+      RoutingPolicy exportRoutingPolicy,
+      @Nullable RoutingPolicy importRoutingPolicy) {
     BgpUnnumberedPeerConfig.builder()
         .setBgpProcess(newProc)
         .setDescription(neighbor.getDescription())
@@ -204,6 +216,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setLocalIp(BGP_UNNUMBERED_IP)
         .setPeerInterface(neighbor.getName())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
+        .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
@@ -237,14 +250,28 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
     @Nullable
     RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, _c);
+    generateBgpActivePeerConfig(
+        neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, importRoutingPolicy, _c);
+  }
+
+  @VisibleForTesting
+  void generateBgpActivePeerConfig(
+      BgpIpNeighbor neighbor,
+      @Nullable Long localAs,
+      BgpVrf bgpVrf,
+      org.batfish.datamodel.BgpProcess newProc,
+      RoutingPolicy exportRoutingPolicy,
+      RoutingPolicy importRoutingPolicy,
+      Configuration c) {
     BgpActivePeerConfig.builder()
         .setBgpProcess(newProc)
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
-        .setLocalIp(computeLocalIpForBgpNeighbor(neighbor.getPeerIp()))
+        .setLocalIp(computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c))
         .setPeerAddress(neighbor.getPeerIp())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
+        .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
@@ -362,9 +389,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   /** Scan all interfaces, find first that contains given remote IP */
   @Nullable
-  private Ip computeLocalIpForBgpNeighbor(Ip remoteIp) {
+  private static Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c) {
     // TODO: figure out if the interfaces we look at should be limited to a VRF
-    return _c.getAllInterfaces().values().stream()
+    return c.getAllInterfaces().values().stream()
         .flatMap(
             i ->
                 i.getAllConcreteAddresses().stream()
