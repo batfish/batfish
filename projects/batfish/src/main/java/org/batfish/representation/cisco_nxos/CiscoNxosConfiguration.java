@@ -615,7 +615,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             ? ImmutableList.of()
             : ipv4af.getRedistributionPolicies(NxosRoutingProtocol.OSPF);
     for (RedistributionPolicy ospfPolicy : ospfPolicies) {
-      /* TODO: how do we match on source tag (aka RIP process id)? */
+      /* TODO: how do we match on source tag (aka OSPF process tag)? */
       String routeMap = ospfPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
       List<BooleanExpr> conditions =
