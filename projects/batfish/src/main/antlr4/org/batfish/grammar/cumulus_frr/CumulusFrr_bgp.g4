@@ -163,11 +163,17 @@ sbafi_neighbor
 :
   NEIGHBOR (ip = IP_ADDRESS | name = word)
   (
-    sbafin_next_hop_self
+    sbafin_activate
+  | sbafin_next_hop_self
   | sbafin_route_reflector_client
   | sbafin_soft_reconfiguration
   )
   NEWLINE
+;
+
+sbafin_activate
+:
+  ACTIVATE
 ;
 
 sbafin_next_hop_self

@@ -284,6 +284,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSbafin_activate(Sbafin_activateContext ctx) {
+    if (_bgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    _bgpNeighborIpv4UnicastAddressFamily.setActivated(true);
+  }
+
+  @Override
   public void exitSbafin_next_hop_self(Sbafin_next_hop_selfContext ctx) {
     _currentNeighborAddressFamilyConfiguration.setNextHopSelf(true);
   }
