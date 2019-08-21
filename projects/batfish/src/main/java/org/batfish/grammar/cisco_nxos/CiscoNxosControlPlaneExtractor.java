@@ -4454,7 +4454,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRm_continue(Rm_continueContext ctx) {
-    toInteger(ctx, ctx.next).ifPresent(_currentRouteMapEntry::setContinue);
+    Optional<Integer> continueTargetOrErr = toInteger(ctx, ctx.next);
+    if (!continueTargetOrErr.isPresent()) {
+      return;
+    }
+    int continueTarget = continueTargetOrErr.get();
+    if (continueTarget <= _currentRouteMapEntry.getSequence()) {
+      // CLI rejects continue to lower sequence
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot continue to earlier sequence");
+      return;
+    }
+    _currentRouteMapEntry.setContinue(continueTarget);
   }
 
   @Override
