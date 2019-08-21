@@ -378,7 +378,8 @@ public class CumulusNcluConfigurationTest {
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
-    // check route is correctly blocked/permitted
+    // checking the import policy is correct (i.e. it successfully calls the route map to
+    // permite/block route).
     RoutingPolicy routemapPolicy =
         RoutingPolicy.builder()
             .setOwner(config)
