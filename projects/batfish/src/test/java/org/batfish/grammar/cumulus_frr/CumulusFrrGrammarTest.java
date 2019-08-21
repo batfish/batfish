@@ -8,7 +8,9 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -39,6 +41,7 @@ import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
+import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -217,6 +220,20 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyIpv4UnicastAggregateAddress() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "aggregate-address 1.2.3.0/24",
+        "exit-address-family");
+    Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks =
+        CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast().getAggregateNetworks();
+    Prefix prefix = Prefix.parse("1.2.3.0/24");
+    assertThat(aggregateNetworks, hasKey(prefix));
+    assertFalse(aggregateNetworks.get(prefix).isSummaryOnly());
+  }
+
+  @Test
   public void testBgpAddressFamily_l2vpn_evpn() {
     parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
@@ -385,8 +402,9 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrf() {
-    parse("vrf NAME\n exit-vrf");
-    assertThat(CONFIG.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
+    // vrfs are created in interfaces file, but frr also contains definition
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n exit-vrf\n");
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines(),
         contains(1));
@@ -394,14 +412,16 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrfVni() {
-    parse("vrf NAME\n vni 170000\n exit-vrf");
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n vni 170000\n exit-vrf\n");
     Vrf vrf = CONFIG.getVrfs().get("NAME");
     assertThat(vrf.getVni(), equalTo(170000));
   }
 
   @Test
   public void testCumulusFrrVrfIpRoutes() {
-    parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf");
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf\n");
     assertThat(
         CONFIG.getVrfs().get("NAME").getStaticRoutes(),
         equalTo(
@@ -604,6 +624,7 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVersion() {
+    parse("frr version\n");
     parse("frr version sV4@%)!@#$%^&**()_+|\n");
   }
 

@@ -43,7 +43,8 @@ sbaf_ipv4_unicast
 :
   IPV4 UNICAST NEWLINE
   (
-    sbafi_network
+    sbafi_aggregate_address
+  | sbafi_network
   | sbafi_neighbor
   | sbafi_redistribute
   )*
@@ -60,6 +61,11 @@ sbafl_statement
   sbafls_advertise_all_vni
 | sbafls_advertise_ipv4_unicast
 | sbafls_neighbor_activate
+;
+
+sbafi_aggregate_address
+:
+  AGGREGATE_ADDRESS IP_PREFIX SUMMARY_ONLY? NEWLINE
 ;
 
 sbafi_network

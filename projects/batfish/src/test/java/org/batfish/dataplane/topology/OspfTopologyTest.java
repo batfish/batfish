@@ -24,8 +24,10 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
@@ -234,10 +236,26 @@ public class OspfTopologyTest {
         .setOwner(configuration)
         .setVrf(vrf)
         .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 31))
+        .setOspfSettings(
+            OspfInterfaceSettings.builder()
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .setCost(1)
+                .setEnabled(true)
+                .build())
         .build();
 
     // should not be added as OSPF neighbor config
-    nf.interfaceBuilder().setName("iface2").setOwner(configuration).setVrf(vrf).build();
+    nf.interfaceBuilder()
+        .setName("iface2")
+        .setOwner(configuration)
+        .setVrf(vrf)
+        .setOspfSettings(
+            OspfInterfaceSettings.builder()
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .setCost(1)
+                .setEnabled(true)
+                .build())
+        .build();
 
     nf.ospfProcessBuilder()
         .setVrf(vrf)

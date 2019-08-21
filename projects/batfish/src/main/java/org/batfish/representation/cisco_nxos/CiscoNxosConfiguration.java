@@ -17,6 +17,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGene
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
@@ -29,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -67,6 +69,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -103,6 +106,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.packet_policy.BoolExpr;
@@ -985,7 +989,45 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .setVni(nveVni.getVni())
             .setVlan(vlan)
             .build();
-    _c.getDefaultVrf().getVniSettings().put(vniSettings.getVni(), vniSettings);
+    if (nveVni.isAssociateVrf()) {
+      Vrf vsTenantVrfForL3Vni = getVrfForL3Vni(_vrfs, nveVni.getVni());
+      if (vsTenantVrfForL3Vni == null || _c.getVrfs().get(vsTenantVrfForL3Vni.getName()) == null) {
+        return;
+      }
+      _c.getVrfs()
+          .get(vsTenantVrfForL3Vni.getName())
+          .getVniSettings()
+          .put(vniSettings.getVni(), vniSettings);
+      return;
+    }
+    org.batfish.datamodel.Vrf viTenantVrfForL2Vni = getMemberVrfForVlan(vlan);
+    if (viTenantVrfForL2Vni == null) {
+      return;
+    }
+    viTenantVrfForL2Vni.getVniSettings().put(vniSettings.getVni(), vniSettings);
+  }
+
+  /**
+   * Gets the {@link org.batfish.datamodel.Vrf} which contains VLAN interface for {@code vlanNumber}
+   * as its member
+   *
+   * @param vlanNumber VLAN number
+   * @return {@link org.batfish.datamodel.Vrf} containing VLAN interface of {@code vlanNumber}
+   */
+  @Nullable
+  private org.batfish.datamodel.Vrf getMemberVrfForVlan(int vlanNumber) {
+    String vrfMemberForVlanIface =
+        Optional.ofNullable(_interfaces.get(String.format("Vlan%d", vlanNumber)))
+            .map(org.batfish.representation.cisco_nxos.Interface::getVrfMember)
+            .orElse(null);
+
+    // interface for this VLAN is not a member of any VRF
+    if (vrfMemberForVlanIface == null) {
+      return _c.getDefaultVrf();
+    }
+
+    // null if VRF member specified but is not valid
+    return _c.getVrfs().get(vrfMemberForVlanIface);
   }
 
   @Nonnull
@@ -1401,13 +1443,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setActive(!iface.getShutdownEffective(_systemDefaultSwitchportShutdown));
 
     if (!iface.getIpAddressDhcp()) {
-      if (iface.getAddress() != null) {
-        newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+      Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata =
+          ImmutableSortedMap.naturalOrder();
+      InterfaceAddressWithAttributes addrWithAttr = iface.getAddress();
+      if (addrWithAttr != null) {
+        newIfaceBuilder.setAddress(addrWithAttr.getAddress());
+        if (addrWithAttr.getAddress() instanceof ConcreteInterfaceAddress) {
+          // convert any connected route metadata
+          addressMetadata.put(
+              (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
+              ConnectedRouteMetadata.builder().setTag(addrWithAttr.getTag()).build());
+        }
       }
       newIfaceBuilder.setSecondaryAddresses(
           iface.getSecondaryAddresses().stream()
               .map(InterfaceAddressWithAttributes::getAddress)
               .collect(ImmutableSet.toImmutableSet()));
+      iface.getSecondaryAddresses().stream()
+          .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
+          .forEach(
+              addr ->
+                  addressMetadata.put(
+                      (ConcreteInterfaceAddress) addr.getAddress(),
+                      ConnectedRouteMetadata.builder().setTag(addr.getTag()).build()));
+      newIfaceBuilder.setAddressMetadata(addressMetadata.build());
     }
     // TODO: handle DHCP
 
@@ -2073,16 +2132,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       boolean passiveInterfaceDefault,
       OspfInterface ospf) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
-    newIface.setOspfCost(ospf.getCost());
-    newIface.setOspfEnabled(true);
-    newIface.setOspfAreaName(areaId);
-    newIface.setOspfProcess(processName);
-    newIface.setOspfPassive(
+    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
+    ospfSettings.setCost(ospf.getCost());
+    ospfSettings.setEnabled(true);
+    ospfSettings.setAreaName(areaId);
+    ospfSettings.setProcess(processName);
+    ospfSettings.setPassive(
         ospf.getPassive() != null
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
-    newIface.setOspfNetworkType(toOspfNetworkType(ospf.getNetwork()));
+    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
     // TODO: update data model to support explicit hello and dead intervals
+
+    newIface.setOspfSettings(ospfSettings.build());
   }
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {

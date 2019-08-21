@@ -32,6 +32,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
@@ -147,6 +148,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
@@ -753,22 +755,30 @@ public final class CiscoNxosGrammarTest {
   public void testEvpnL2L3Vni() throws IOException {
     Configuration c = parseConfig("nxos_l2_l3_vnis");
 
+    String tenantVrfName = "tenant1";
     Ip routerId = Ip.parse("10.1.1.1");
     // All defined VXLAN Vnis
     ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
         ImmutableSortedSet.of(
             Layer2VniConfig.builder()
                 .setVni(1111)
-                .setVrf(DEFAULT_VRF_NAME)
+                .setVrf(tenantVrfName)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
+                .build(),
+            Layer2VniConfig.builder()
+                .setVni(2222)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
+                .setRouteTarget(ExtendedCommunity.target(1, 2222))
+                .setImportRouteTarget(ExtendedCommunity.target(1, 2222).matchString())
                 .build());
     ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
         ImmutableSortedSet.of(
             Layer3VniConfig.builder()
                 .setVni(3333)
-                .setVrf(DEFAULT_VRF_NAME)
+                .setVrf(tenantVrfName)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
@@ -988,6 +998,11 @@ public final class CiscoNxosGrammarTest {
                       ConcreteInterfaceAddress.parse("10.0.0.1/24"),
                       ConcreteInterfaceAddress.parse("10.0.0.2/24"),
                       ConcreteInterfaceAddress.parse("10.0.0.3/24")))));
+      assertThat(
+          iface.getAddressMetadata(),
+          hasEntry(
+              ConcreteInterfaceAddress.parse("10.0.0.3/24"),
+              ConnectedRouteMetadata.builder().setTag(3).build()));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
@@ -3617,9 +3632,10 @@ public final class CiscoNxosGrammarTest {
             VniSettingsMatchers.hasVlan(equalTo(2)),
             hasVni(10001)));
 
-    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(20001))));
+    String tenant1 = "tenant1"; // 20001 is an L3 VNI so it should be mapped to a VRF
+    assertThat(c, hasVrf(tenant1, hasVniSettings(hasKey(20001))));
     assertThat(
-        c.getDefaultVrf().getVniSettings().get(20001),
+        c.getVrfs().get(tenant1).getVniSettings().get(20001),
         allOf(
             // L3 mcast IP
             hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("234.0.0.0")))),

@@ -19,6 +19,11 @@ AGENTX
   'agentx'
 ;
 
+AGGREGATE_ADDRESS
+:
+  'aggregate-address'
+;
+
 BFD
 :
   'bfd' -> pushMode(M_Words)
@@ -332,6 +337,11 @@ STATIC
   'static'
 ;
 
+SUMMARY_ONLY
+:
+  'summary-only'
+;
+
 SUBNET_MASK
 :
   F_SubnetMask
@@ -633,7 +643,12 @@ mode M_Remark;
 
 M_Remark_REMARK_TEXT
 :
-  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT ) , popMode
+  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT )
+;
+
+M_Remark_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ), popMode
 ;
 
 M_Remark_WS
