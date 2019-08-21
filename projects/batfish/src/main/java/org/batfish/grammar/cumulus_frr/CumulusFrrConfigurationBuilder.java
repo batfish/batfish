@@ -72,7 +72,6 @@ import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
-import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
