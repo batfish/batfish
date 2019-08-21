@@ -17,7 +17,7 @@ cumulus_frr_configuration
 // other rules
 statement
 :
-  FRR VERSION REMARK_TEXT NEWLINE
+  FRR VERSION REMARK_TEXT? NEWLINE
   | FRR DEFAULTS DATACENTER NEWLINE
   | USERNAME word word NEWLINE
   | HOSTNAME word NEWLINE
