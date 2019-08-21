@@ -98,7 +98,6 @@ public final class Configuration implements Serializable {
 
   public static final String DEFAULT_VRF_NAME = "default";
 
-  public static final String NODE_NONE_NAME = "(none)";
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
   private static final String PROP_AUTHENTICATION_KEY_CHAINS = "authenticationKeyChains";
   private static final String PROP_COMMUNITY_LISTS = "communityLists";

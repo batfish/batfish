@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.BumTransportMethod.MULTICAST_GROUP;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -38,6 +37,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -76,6 +76,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
@@ -200,6 +201,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 .collect(Collectors.joining("|")));
   }
 
+  /** On NX-OS, there is a default VRF named "default". */
+  public static final String DEFAULT_VRF_NAME = "default";
+
   /** Returns canonical prefix of interface name if valid, else {@code null}. */
   public static @Nullable String getCanonicalInterfaceNamePrefix(String prefix) {
     for (Entry<String, String> e : CISCO_NXOS_INTERFACE_PREFIXES.entrySet()) {
@@ -279,6 +283,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ipPrefixListLine.getLengthRange());
   }
 
+  private static @Nonnull Route6FilterLine toRoute6FilterLine(
+      Ipv6PrefixListLine ipv6PrefixListLine) {
+    return new Route6FilterLine(
+        ipv6PrefixListLine.getAction(),
+        ipv6PrefixListLine.getPrefix6(),
+        ipv6PrefixListLine.getLengthRange());
+  }
+
   private static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
     String name = ipPrefixList.getName();
     RouteFilterList rfl = new RouteFilterList(name);
@@ -289,6 +301,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return rfl;
   }
 
+  private static @Nonnull Route6FilterList toRoute6FilterList(Ipv6PrefixList ipv6PrefixList) {
+    String name = ipv6PrefixList.getName();
+    Route6FilterList r6fl = new Route6FilterList(name);
+    r6fl.setLines(
+        ipv6PrefixList.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toRoute6FilterLine)
+            .collect(ImmutableList.toImmutableList()));
+    return r6fl;
+  }
+
   private transient Configuration _c;
   private transient Multimap<Entry<String, String>, Long> _implicitOspfAreas;
 
@@ -296,6 +318,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _bannerMotd;
   private final @Nonnull BgpGlobalConfiguration _bgpGlobalConfiguration;
   private final @Nonnull Vrf _defaultVrf;
+  private final @Nonnull Map<String, EigrpProcessConfiguration> _eigrpProcesses;
   private @Nullable Evpn _evpn;
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
@@ -305,7 +328,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _ipDomainName;
   private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
+  private final @Nonnull Map<String, Ipv6AccessList> _ipv6AccessLists;
+  private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
   private final @Nonnull Map<String, LoggingServer> _loggingServers;
+  private @Nullable String _loggingSourceInterface;
+  private final @Nonnull Map<String, NtpServer> _ntpServers;
+  private @Nullable String _ntpSourceInterface;
   private final @Nonnull Map<Integer, Nve> _nves;
   private final @Nonnull Map<String, ObjectGroup> _objectGroups;
   private final @Nonnull Map<String, DefaultVrfOspfProcess> _ospfProcesses;
@@ -313,8 +341,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, SnmpServer> _snmpServers;
+  private @Nullable String _snmpSourceInterface;
   private boolean _systemDefaultSwitchportShutdown;
   private final @Nonnull Map<String, TacacsServer> _tacacsServers;
+  private @Nullable String _tacacsSourceInterface;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -322,13 +352,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   public CiscoNxosConfiguration() {
     _bgpGlobalConfiguration = new BgpGlobalConfiguration();
     _defaultVrf = new Vrf(DEFAULT_VRF_NAME);
+    _eigrpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
     _ipAccessLists = new HashMap<>();
     _ipAsPathAccessLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
     _ipNameServersByUseVrf = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
+    _ipv6AccessLists = new HashMap<>();
+    _ipv6PrefixLists = new HashMap<>();
     _loggingServers = new HashMap<>();
+    _ntpServers = new HashMap<>();
     _nves = new HashMap<>();
     _objectGroups = new HashMap<>();
     _ospfProcesses = new HashMap<>();
@@ -739,6 +773,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         (name, ipAccessList) -> _c.getIpAccessLists().put(name, toIpAccessList(ipAccessList)));
   }
 
+  private void convertIpv6AccessLists() {
+    _ipv6AccessLists.forEach(
+        (name, ipv6AccessList) ->
+            _c.getIp6AccessLists().put(name, toIp6AccessList(ipv6AccessList)));
+  }
+
   private void convertIpAsPathAccessLists() {
     _ipAsPathAccessLists.forEach(
         (name, ipAsPathAccessList) ->
@@ -812,14 +852,36 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setTacacsServers(ImmutableSortedSet.copyOf(_tacacsServers.keySet()));
   }
 
+  private void convertTacacsSourceInterface() {
+    _c.setTacacsSourceInterface(_tacacsSourceInterface);
+  }
+
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
             _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
   }
 
+  private void convertIpv6PrefixLists() {
+    _ipv6PrefixLists.forEach(
+        (name, ipv6PrefixList) ->
+            _c.getRoute6FilterLists().put(name, toRoute6FilterList(ipv6PrefixList)));
+  }
+
   private void convertLoggingServers() {
     _c.setLoggingServers(ImmutableSortedSet.copyOf(_loggingServers.keySet()));
+  }
+
+  private void convertLoggingSourceInterface() {
+    _c.setLoggingSourceInterface(_loggingSourceInterface);
+  }
+
+  private void convertNtpServers() {
+    _c.setNtpServers(ImmutableSortedSet.copyOf(_ntpServers.keySet()));
+  }
+
+  private void convertNtpSourceInterface() {
+    _c.setNtpSourceInterface(_ntpSourceInterface);
   }
 
   private void convertOspfProcesses() {
@@ -861,6 +923,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setSnmpTrapServers(ImmutableSortedSet.copyOf(_snmpServers.keySet()));
   }
 
+  private void convertSnmpSourceInterface() {
+    _c.setSnmpSourceInterface(_snmpSourceInterface);
+  }
+
   private void convertStaticRoutes() {
     Stream.concat(Stream.of(_defaultVrf), _vrfs.values().stream())
         .forEach(this::convertStaticRoutes);
@@ -888,7 +954,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(nve -> nve.getMemberVnis().values().forEach(vni -> convertNveVni(nve, vni)));
   }
 
-  private void convertNveVni(@Nonnull Nve nve, @Nonnull NveVni nveVni) {
+  private void convertNveVni(Nve nve, NveVni nveVni) {
     if (nve.isShutdown()) {
       return;
     }
@@ -962,8 +1028,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   @Nonnull
-  private static BumTransportMethod getBumTransportMethod(
-      @Nonnull NveVni nveVni, @Nonnull Nve nve) {
+  private static BumTransportMethod getBumTransportMethod(NveVni nveVni, Nve nve) {
     if (nveVni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC) {
       // since all multicast group commands are ignored in this case
       return UNICAST_FLOOD_GROUP;
@@ -976,7 +1041,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   @Nonnull
-  private static Ip getMultiCastGroupIp(@Nonnull NveVni nveVni, @Nonnull Nve nve) {
+  private static Ip getMultiCastGroupIp(NveVni nveVni, Nve nve) {
     if (nveVni.getMcastGroup() != null) {
       return nveVni.getMcastGroup();
     }
@@ -990,7 +1055,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   @Nullable
   private Ip getInterfaceIp(
-      @Nonnull Map<String, org.batfish.datamodel.Interface> interfaces, @Nonnull String ifaceName) {
+      Map<String, org.batfish.datamodel.Interface> interfaces, String ifaceName) {
     org.batfish.datamodel.Interface iface = interfaces.get(ifaceName);
     if (iface == null) {
       return null;
@@ -1003,7 +1068,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   @Nullable
-  private Integer getVlanForVni(@Nonnull Integer vni) {
+  private Integer getVlanForVni(Integer vni) {
     return _vlans.values().stream()
         .filter(vlan -> vni.equals(vlan.getVni()))
         .findFirst()
@@ -1049,6 +1114,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _defaultVrf;
   }
 
+  public @Nonnull Map<String, EigrpProcessConfiguration> getEigrpProcesses() {
+    return Collections.unmodifiableMap(_eigrpProcesses);
+  }
+
+  public @Nullable EigrpProcessConfiguration getEigrpProcess(String processTag) {
+    return _eigrpProcesses.get(processTag);
+  }
+
+  public @Nonnull EigrpProcessConfiguration getOrCreateEigrpProcess(String processTag) {
+    return _eigrpProcesses.computeIfAbsent(processTag, name -> new EigrpProcessConfiguration());
+  }
+
   public @Nullable Evpn getEvpn() {
     return _evpn;
   }
@@ -1090,8 +1167,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _ipPrefixLists;
   }
 
+  public @Nonnull Map<String, Ipv6AccessList> getIpv6AccessLists() {
+    return _ipv6AccessLists;
+  }
+
+  public @Nonnull Map<String, Ipv6PrefixList> getIpv6PrefixLists() {
+    return _ipv6PrefixLists;
+  }
+
   public @Nonnull Map<String, LoggingServer> getLoggingServers() {
     return _loggingServers;
+  }
+
+  public @Nullable String getLoggingSourceInterface() {
+    return _loggingSourceInterface;
+  }
+
+  public @Nonnull Map<String, NtpServer> getNtpServers() {
+    return _ntpServers;
+  }
+
+  public @Nullable String getNtpSourceInterface() {
+    return _ntpSourceInterface;
   }
 
   public @Nonnull Map<Integer, Nve> getNves() {
@@ -1119,12 +1216,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _snmpServers;
   }
 
+  public @Nullable String getSnmpSourceInterface() {
+    return _snmpSourceInterface;
+  }
+
   public boolean getSystemDefaultSwitchportShutdown() {
     return _systemDefaultSwitchportShutdown;
   }
 
   public @Nonnull Map<String, TacacsServer> getTacacsServers() {
     return _tacacsServers;
+  }
+
+  public @Nullable String getTacacsSourceInterface() {
+    return _tacacsSourceInterface;
   }
 
   public @Nullable String getVersion() {
@@ -1211,8 +1316,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
     markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_EIGRP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG,
+        CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
+    markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_ISIS,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_SOURCE_TAG);
+    markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPF,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG);
+    markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_OSPFV3,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_SOURCE_TAG);
+    markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_RIP, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_SOURCE_TAG);
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);
@@ -1237,6 +1354,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public void setIpDomainName(@Nullable String ipDomainName) {
     _ipDomainName = ipDomainName;
+  }
+
+  public void setLoggingSourceInterface(@Nullable String loggingSourceInterface) {
+    _loggingSourceInterface = loggingSourceInterface;
+  }
+
+  public void setNtpSourceInterface(@Nullable String ntpSourceInterface) {
+    _ntpSourceInterface = ntpSourceInterface;
+  }
+
+  public void setSnmpSourceInterface(@Nullable String snmpSourceInterface) {
+    _snmpSourceInterface = snmpSourceInterface;
+  }
+
+  public void setTacacsSourceInterface(@Nullable String tacacsSourceInterface) {
+    _tacacsSourceInterface = tacacsSourceInterface;
   }
 
   public void setSystemDefaultSwitchportShutdown(boolean systemDefaultSwitchportShutdown) {
@@ -1681,6 +1814,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setUseAck((chooseOnes & 0b010000) != 0)
         .setUseUrg((chooseOnes & 0b100000) != 0)
         .build();
+  }
+
+  private @Nonnull Ip6AccessList toIp6AccessList(Ipv6AccessList list) {
+    // TODO: handle and test top-level fragments behavior
+    // TODO: convert lines
+    return new Ip6AccessList(list.getName());
   }
 
   /**
@@ -2152,6 +2291,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             _w.redFlag("'match tag' not supported in PBR policies");
             return null;
           }
+
+          @Override
+          public BoolExpr visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan) {
+            // TODO: PBR implementation. Should match traffic coming in on any of specified VLANs.
+            return null;
+          }
         };
     List<BoolExpr> guardBoolExprs =
         entry
@@ -2374,6 +2519,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           public BooleanExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
             return new MatchTag(IntComparator.EQ, new LiteralLong(routeMapMatchTag.getTag()));
           }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan) {
+            return visitRouteMapMatchInterface(
+                new RouteMapMatchInterface(
+                    routeMapMatchVlan.getVlans().stream()
+                        .map(vlan -> String.format("Vlan%d", vlan))
+                        .collect(ImmutableSet.toImmutableSet())));
+          }
         });
   }
 
@@ -2521,16 +2675,23 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertDomainName();
     convertObjectGroups();
     convertIpAccessLists();
+    convertIpv6AccessLists();
     convertIpAsPathAccessLists();
     convertIpPrefixLists();
+    convertIpv6PrefixLists();
     convertIpCommunityLists();
     convertVrfs();
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertIpNameServers();
     convertLoggingServers();
+    convertLoggingSourceInterface();
+    convertNtpServers();
+    convertNtpSourceInterface();
     convertSnmpServers();
+    convertSnmpSourceInterface();
     convertTacacsServers();
+    convertTacacsSourceInterface();
     convertRouteMaps();
     convertStaticRoutes();
     computeImplicitOspfAreas();

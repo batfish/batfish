@@ -52,14 +52,15 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   }
 
   @JsonCreator
-  public Prefix6(String text) {
+  public static @Nonnull Prefix6 parse(String text) {
     String[] parts = text.split("/");
     if (parts.length != 2) {
       throw new BatfishException("Invalid Prefix6 string: \"" + text + "\"");
     }
-    _address = Ip6.parse(parts[0]);
+    Ip6 address6 = Ip6.parse(parts[0]);
     try {
-      _prefixLength = Integer.parseInt(parts[1]);
+      int prefixLength = Integer.parseInt(parts[1]);
+      return new Prefix6(address6, prefixLength);
     } catch (NumberFormatException e) {
       throw new BatfishException("Invalid Prefix6 length: \"" + parts[1] + "\"", e);
     }
@@ -72,7 +73,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   @Nonnull
   public static Optional<Prefix6> tryParse(@Nonnull String text) {
     try {
-      return Optional.of(new Prefix6(text));
+      return Optional.of(parse(text));
     } catch (BatfishException e) {
       return Optional.empty();
     }

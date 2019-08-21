@@ -5,6 +5,7 @@ import
   CiscoNxos_aaa,
   CiscoNxos_bgp,
   CiscoNxos_class_map,
+  CiscoNxos_eigrp,
   CiscoNxos_evpn,
   CiscoNxos_interface,
   CiscoNxos_ip_access_list,
@@ -12,7 +13,9 @@ import
   CiscoNxos_ip_community_list,
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
+  CiscoNxos_ipv6_prefix_list,
   CiscoNxos_logging,
+  CiscoNxos_ntp,
   CiscoNxos_object_group,
   CiscoNxos_ospf,
   CiscoNxos_policy_map,
@@ -47,6 +50,7 @@ statement
   | s_key
   | s_logging
   | s_no
+  | s_ntp
   | s_null
   | s_nv
   | s_object_group
@@ -109,6 +113,8 @@ s_ip
     | ip_null
     | ip_prefix_list
     | ip_route
+    | ip_tacacs
+    | ip_sla
   )
 ;
 
@@ -139,6 +145,46 @@ ip_null
   DOMAIN_LOOKUP
 ;
 
+ip_sla
+:
+  SLA
+  (
+    ip_sla_block
+    | ip_sla_null
+  )
+;
+
+ip_sla_block
+:
+  entry = uint32 NEWLINE
+  ip_sla_entry+
+;
+
+ip_sla_entry
+:
+  (
+    DNS
+    | HTTP
+    | ICMP_ECHO
+    | TCP_CONNECT
+    | UDP_ECHO
+    | UDP_JITTER
+  ) null_rest_of_line
+;
+
+ip_sla_null
+:
+  (
+    GROUP
+    | LOGGING
+    | REACTION_CONFIGURATION
+    | REACTION_TRIGGER
+    | RESET
+    | RESPONDER
+    | SCHEDULE
+  ) null_rest_of_line
+;
+
 s_ipv6
 :
   IPV6
@@ -146,12 +192,6 @@ s_ipv6
     ipv6_access_list
     | ipv6_prefix_list
   )
-;
-
-ipv6_prefix_list
-:
-// TODO: something much less lazy
-  PREFIX_LIST null_rest_of_line
 ;
 
 s_key
@@ -231,6 +271,7 @@ s_router
   ROUTER
   (
     router_bgp
+    | router_eigrp
     | router_ospf
   )
 ;

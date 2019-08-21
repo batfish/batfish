@@ -29,14 +29,6 @@ pl_action
   )? NEWLINE
 ;
 
-ip_prefix_list_line_number
-:
-// 1-4294967294
-  UINT8
-  | UINT16
-  | UINT32
-;
-
 ip_prefix_list_line_prefix_length
 :
 // 1-32
@@ -46,10 +38,4 @@ ip_prefix_list_line_prefix_length
 pl_description
 :
   DESCRIPTION text = ip_prefix_list_description NEWLINE
-;
-
-ip_prefix_list_description
-:
-// 1-90 chars
-  REMARK_TEXT
 ;

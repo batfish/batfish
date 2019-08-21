@@ -21,6 +21,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchMetric _matchMetric;
   private @Nullable RouteMapMatchSourceProtocol _matchSourceProtocol;
   private @Nullable RouteMapMatchTag _matchTag;
+  private @Nullable RouteMapMatchVlan _matchVlan;
   private final int _sequence;
   private @Nullable RouteMapSetAsPathPrepend _setAsPathPrepend;
   private @Nullable RouteMapSetCommunity _setCommunity;
@@ -58,7 +59,8 @@ public final class RouteMapEntry implements Serializable {
             _matchIpv6AddressPrefixList,
             _matchMetric,
             _matchSourceProtocol,
-            _matchTag)
+            _matchTag,
+            _matchVlan)
         .filter(Objects::nonNull);
   }
 
@@ -92,6 +94,10 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable RouteMapMatchTag getMatchTag() {
     return _matchTag;
+  }
+
+  public @Nullable RouteMapMatchVlan getMatchVlan() {
+    return _matchVlan;
   }
 
   public int getSequence() {
@@ -187,6 +193,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setMatchTag(@Nullable RouteMapMatchTag matchTag) {
     _matchTag = matchTag;
+  }
+
+  public void setMatchVlan(@Nullable RouteMapMatchVlan matchVlan) {
+    _matchVlan = matchVlan;
   }
 
   public void setSetAsPathPrepend(@Nullable RouteMapSetAsPathPrepend setAsPathPrepend) {
