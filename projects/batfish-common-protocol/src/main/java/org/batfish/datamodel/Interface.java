@@ -43,6 +43,11 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Integer _accessVlan;
     private boolean _active;
     private InterfaceAddress _address;
+
+    @Nonnull
+    private Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata =
+        ImmutableMap.of();
+
     private @Nullable IntegerSpace _allowedVlans;
     private boolean _autoState;
     @Nullable private Double _bandwidth;
@@ -131,6 +136,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
 
       iface.setAdditionalArpIps(_additionalArpIps);
+      iface.setAddressMetadata(ImmutableSortedMap.copyOf(_addressMetadata));
       if (_allowedVlans != null) {
         iface.setAllowedVlans(_allowedVlans);
       }
@@ -283,6 +289,12 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setAccessVlan(@Nullable Integer accessVlan) {
       _accessVlan = accessVlan;
+      return this;
+    }
+
+    public Builder setAddressMetadata(
+        Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata) {
+      _addressMetadata = addressMetadata;
       return this;
     }
 
@@ -615,6 +627,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_ACCESS_VLAN = "accessVlan";
   private static final String PROP_ACTIVE = "active";
   private static final String PROP_ADDITIONAL_ARP_IPS = "additionalArpIps";
+  private static final String PROP_ADDRESS_METADATA = "addressMetadata";
   private static final String PROP_ALL_PREFIXES = "allPrefixes";
   private static final String PROP_ALLOWED_VLANS = "allowedVlans";
   private static final String PROP_AUTOSTATE = "autostate";
@@ -857,6 +870,7 @@ public final class Interface extends ComparableStructure<String> {
   private @Nonnull IpSpace _additionalArpIps;
   private IntegerSpace _allowedVlans;
   @Nonnull private SortedSet<InterfaceAddress> _allAddresses;
+  @Nonnull private SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
   /** Cache of all concrete addresses */
   @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
   /** Cache of all link-local addresses */
@@ -934,6 +948,7 @@ public final class Interface extends ComparableStructure<String> {
     super(name);
     _active = true;
     _additionalArpIps = EmptyIpSpace.INSTANCE;
+    _addressMetadata = ImmutableSortedMap.of();
     _autoState = true;
     _allowedVlans = IntegerSpace.EMPTY;
     _allAddresses = ImmutableSortedSet.of();
@@ -1062,6 +1077,12 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
   public IpSpace getAdditionalArpIps() {
     return _additionalArpIps;
+  }
+
+  @JsonProperty(PROP_ADDRESS_METADATA)
+  @Nonnull
+  public SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> getAddressMetadata() {
+    return _addressMetadata;
   }
 
   /** Ranges of allowed VLANs when switchport mode is TRUNK. */
@@ -1514,6 +1535,14 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
   public void setAdditionalArpIps(IpSpace additionalArpIps) {
     _additionalArpIps = firstNonNull(additionalArpIps, EmptyIpSpace.INSTANCE);
+  }
+
+  @JsonProperty(PROP_ADDRESS_METADATA)
+  // Jackson and builder use only
+  private void setAddressMetadata(
+      @Nullable SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata) {
+    _addressMetadata =
+        ImmutableSortedMap.copyOf(firstNonNull(addressMetadata, ImmutableSortedMap.of()));
   }
 
   @JsonProperty(PROP_ALLOWED_VLANS)

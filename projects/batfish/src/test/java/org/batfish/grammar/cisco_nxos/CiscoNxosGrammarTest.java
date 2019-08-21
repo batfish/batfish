@@ -148,6 +148,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
@@ -997,6 +998,11 @@ public final class CiscoNxosGrammarTest {
                       ConcreteInterfaceAddress.parse("10.0.0.1/24"),
                       ConcreteInterfaceAddress.parse("10.0.0.2/24"),
                       ConcreteInterfaceAddress.parse("10.0.0.3/24")))));
+      assertThat(
+          iface.getAddressMetadata(),
+          hasEntry(
+              ConcreteInterfaceAddress.parse("10.0.0.3/24"),
+              ConnectedRouteMetadata.builder().setTag(3).build()));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");

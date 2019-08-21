@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -68,6 +69,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -1441,13 +1443,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setActive(!iface.getShutdownEffective(_systemDefaultSwitchportShutdown));
 
     if (!iface.getIpAddressDhcp()) {
-      if (iface.getAddress() != null) {
-        newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+      Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata =
+          ImmutableSortedMap.naturalOrder();
+      InterfaceAddressWithAttributes addrWithAttr = iface.getAddress();
+      if (addrWithAttr != null) {
+        newIfaceBuilder.setAddress(addrWithAttr.getAddress());
+        if (addrWithAttr.getAddress() instanceof ConcreteInterfaceAddress) {
+          // convert any connected route metadata
+          addressMetadata.put(
+              (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
+              ConnectedRouteMetadata.builder().setTag(addrWithAttr.getTag()).build());
+        }
       }
       newIfaceBuilder.setSecondaryAddresses(
           iface.getSecondaryAddresses().stream()
               .map(InterfaceAddressWithAttributes::getAddress)
               .collect(ImmutableSet.toImmutableSet()));
+      iface.getSecondaryAddresses().stream()
+          .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
+          .forEach(
+              addr ->
+                  addressMetadata.put(
+                      (ConcreteInterfaceAddress) addr.getAddress(),
+                      ConnectedRouteMetadata.builder().setTag(addr.getTag()).build()));
+      newIfaceBuilder.setAddressMetadata(addressMetadata.build());
     }
     // TODO: handle DHCP
 
