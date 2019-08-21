@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.SortedMap;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
@@ -22,7 +21,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -48,7 +46,6 @@ public class CumulusConcatenatedGrammarTest {
     CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
             src, new Warnings(), "", settings, null, false);
