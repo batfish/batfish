@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus;
 
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.toCommunityList;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,27 +14,37 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Test;
 
 /** Test for {@link CumulusNcluConfiguration}. */
@@ -262,16 +273,6 @@ public class CumulusNcluConfigurationTest {
     // set VI configuration
 
     Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
-    configuration
-        .getAllInterfaces()
-        .put(
-            "i1",
-            org.batfish.datamodel.Interface.builder()
-                .setName("i1")
-                .setType(InterfaceType.PHYSICAL)
-                .setOwner(configuration)
-                .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
-                .build());
 
     // set bgp neighbor
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
@@ -292,6 +293,7 @@ public class CumulusNcluConfigurationTest {
         new BgpVrf("Vrf"),
         newProc,
         new RoutingPolicy("Routing", configuration),
+        null,
         configuration);
 
     BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(Prefix.parse("10.0.0.2/32"));
@@ -304,16 +306,6 @@ public class CumulusNcluConfigurationTest {
 
     // set VI configuration
     Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
-    configuration
-        .getAllInterfaces()
-        .put(
-            "i1",
-            org.batfish.datamodel.Interface.builder()
-                .setName("i1")
-                .setType(InterfaceType.PHYSICAL)
-                .setOwner(configuration)
-                .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
-                .build());
 
     // set bgp neighbor
     BgpInterfaceNeighbor neighbor = new BgpInterfaceNeighbor("BgpNeighbor");
@@ -328,7 +320,12 @@ public class CumulusNcluConfigurationTest {
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     ncluConfiguration.generateBgpUnnumberedPeerConfig(
-        neighbor, 10000L, new BgpVrf("Vrf"), newProc, new RoutingPolicy("Routing", configuration));
+        neighbor,
+        10000L,
+        new BgpVrf("Vrf"),
+        newProc,
+        new RoutingPolicy("Routing", configuration),
+        null);
 
     BgpUnnumberedPeerConfig peerConfig = newProc.getInterfaceNeighbors().get("BgpNeighbor");
 
@@ -349,18 +346,88 @@ public class CumulusNcluConfigurationTest {
     vsConfig.setConfiguration(viConfig);
 
     // route-reflector-client is false if ipv4af is null
-    assertFalse(vsConfig.convertIpv4UnicastAddressFamily(null, policy).getRouteReflectorClient());
+    assertFalse(
+        vsConfig.convertIpv4UnicastAddressFamily(null, policy, null).getRouteReflectorClient());
 
     // route-reflector-client is true if activate and route-reflector-client are both true
     {
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setActivated(true);
       af.setRouteReflectorClient(true);
-      assertTrue(vsConfig.convertIpv4UnicastAddressFamily(af, policy).getRouteReflectorClient());
+      assertTrue(
+          vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
     }
 
     // TODO what if not explicitly activated (i.e. activated is null) but route-reflector-client is
     // true? Not testing until we're sure what correct behavior is. See comment in
     // convertIpv4UnicastAddressFamily.
+  }
+
+  @Test
+  public void testComputeBgpNeighborImportRoutingPolicy() {
+    BgpNeighbor neighbor = new BgpIpNeighbor("neighbor");
+
+    BgpNeighborIpv4UnicastAddressFamily neighborIpv4UnicastFamily =
+        new BgpNeighborIpv4UnicastAddressFamily();
+
+    neighborIpv4UnicastFamily.setRouteMapIn("peerMapIn");
+
+    neighbor.setIpv4UnicastAddressFamily(neighborIpv4UnicastFamily);
+
+    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+
+    Configuration config = new Configuration("host", ConfigurationFormat.CUMULUS_NCLU);
+
+    RoutingPolicy importPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, config);
+
+    // checking the import policy is correct (i.e. it successfully calls the route map to
+    // permite/block route).
+    RoutingPolicy routemapPolicy =
+        RoutingPolicy.builder()
+            .setOwner(config)
+            .setName("peerMapIn")
+            .addStatement(
+                new If(
+                    "match community 10000:1 routes",
+                    new MatchCommunitySet(new LiteralCommunity(StandardCommunity.parse("10000:1"))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build();
+
+    Builder builder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.parse("10.0.0.1"))
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNetwork(Prefix.parse("10.0.0.0/24"));
+    {
+      // should permit route
+      Bgpv4Route ipv4Route =
+          builder.setCommunities(ImmutableSet.of(StandardCommunity.parse("10000:1"))).build();
+
+      Environment envIpv4 =
+          Environment.builder(config)
+              .setRoutingPolicies(ImmutableMap.of("peerMapIn", routemapPolicy))
+              .setOriginalRoute(ipv4Route)
+              .setDirection(Direction.IN)
+              .build();
+      Result result = importPolicy.call(envIpv4);
+      assertTrue(result.getBooleanValue());
+    }
+
+    {
+      // should block route
+      Bgpv4Route ipv4Route =
+          builder.setCommunities(ImmutableSet.of(StandardCommunity.parse("20000:1"))).build();
+
+      Environment envIpv4 =
+          Environment.builder(config)
+              .setRoutingPolicies(ImmutableMap.of("peerMapIn", routemapPolicy))
+              .setOriginalRoute(ipv4Route)
+              .setDirection(Direction.IN)
+              .build();
+      Result result = importPolicy.call(envIpv4);
+      assertFalse(result.getBooleanValue());
+    }
   }
 }
