@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -163,26 +164,8 @@ public final class CumulusInterfacesConfigurationBuilder
                 ifaceNameCtx.getText(),
                 CumulusStructureUsage.BOND_SLAVE,
                 ifaceNameCtx.getStart().getLine()));
-
-    interfaceNameCtxs.forEach(
-        slaveCtx -> {
-          String slave = slaveCtx.getText();
-          String parent = _currentIface.getName();
-          String oldParent = _interfaces.getBondSlaveParents().put(slave, parent);
-          if (oldParent != null) {
-            _w.getParseWarnings()
-                .add(
-                    new ParseWarning(
-                        slaveCtx.getStart().getLine(),
-                        slaveCtx.getText(),
-                        ctx.getText(),
-                        String.format(
-                            "Interface %s cannot be the bond-slave of both %s and %s",
-                            slave, parent, oldParent)));
-            // keep the oldParent
-            _interfaces.getBondSlaveParents().put(slave, oldParent);
-          }
-        });
+    _currentIface.setBondSlaves(
+        interfaceNameCtxs.stream().map(RuleContext::getText).collect(Collectors.toSet()));
   }
 
   @Override

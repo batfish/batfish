@@ -45,6 +45,7 @@ public final class Interface {
   private @Nullable String _vlanRawDevice;
   private @Nullable Ip _vxlanLocalTunnelIp;
   private @Nullable Integer _vxlanId;
+  private @Nullable Set<String> _bondSlaves;
   private @Nullable Set<String> _bridgePorts;
 
   public Interface(@Nonnull String name) {
@@ -82,6 +83,11 @@ public final class Interface {
   @Nullable
   public Map<MacAddress, Set<InterfaceAddress>> getAddressVirtuals() {
     return _addressVirtuals;
+  }
+
+  @Nullable
+  public Set<String> getBondSlaves() {
+    return _bondSlaves;
   }
 
   public @Nullable Set<String> getBridgePorts() {
@@ -166,6 +172,10 @@ public final class Interface {
   @Nullable
   public Ip getVxlanLocalTunnelIp() {
     return _vxlanLocalTunnelIp;
+  }
+
+  public void setBondSlaves(Set<String> bondSlaves) {
+    _bondSlaves = ImmutableSet.copyOf(bondSlaves);
   }
 
   public void setBridgePorts(Set<String> bridgePorts) {

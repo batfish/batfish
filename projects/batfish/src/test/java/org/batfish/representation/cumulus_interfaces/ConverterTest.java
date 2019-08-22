@@ -117,9 +117,7 @@ public class ConverterTest {
 
   @Test
   public void testGetInterfaceType() {
-    Interfaces ifaces = new Interfaces();
-    ifaces.getBondSlaveParents().put("swp1", "parent");
-    Converter converter = new Converter(ifaces);
+    Converter converter = new Converter(new Interfaces(), ImmutableMap.of("swp1","parent1"));
     assertThat(converter.getInterfaceType(new Interface("swp1")), equalTo(BOND_SUBINTERFACE));
     assertThat(converter.getInterfaceType(new Interface("swp2")), equalTo(PHYSICAL));
     assertThat(converter.getInterfaceType(new Interface("swp2.1")), equalTo(PHYSICAL_SUBINTERFACE));
@@ -127,9 +125,7 @@ public class ConverterTest {
 
   @Test
   public void testGetSuperInterfaceName_bondSlave() {
-    Interfaces ifaces = new Interfaces();
-    ifaces.getBondSlaveParents().put("slave", "parent");
-    Converter converter = new Converter(ifaces);
+    Converter converter = new Converter(new Interfaces(), ImmutableMap.of("slave","parent"));
     assertThat(converter.getSuperInterfaceName(new Interface("slave")), equalTo("parent"));
   }
 

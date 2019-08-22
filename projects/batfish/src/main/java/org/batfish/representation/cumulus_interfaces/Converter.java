@@ -36,12 +36,35 @@ public final class Converter {
   private static final Pattern PHYSICAL_SUBINTERFACE_PATTERN =
       Pattern.compile("^((swp[0-9]+(s[0-9])?)|(eth[0-9]+))\\.([0-9]+)$");
   private final Interfaces _interfaces;
+  private final Map<String, String> _bondSlaveParents;
 
   private static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
   private static final int DEFAULT_BRIDGE_PVID = 1;
 
   public Converter(Interfaces interfaces) {
     _interfaces = interfaces;
+    _bondSlaveParents = computeBondSlaveParents(interfaces.getInterfaces());
+  }
+
+  @VisibleForTesting
+  Converter(Interfaces interfaces, Map<String, String> bondSlaveParents) {
+    _interfaces = interfaces;
+    _bondSlaveParents = bondSlaveParents;
+  }
+
+  private Map<String, String> computeBondSlaveParents(Map<String, Interface> interfaces) {
+    ImmutableMap.Builder<String, String> bondSlaveParents = ImmutableMap.builder();
+    for (Interface parent : interfaces.values()) {
+      Set<String> slaves = parent.getBondSlaves();
+      if (slaves == null) {
+        continue;
+      }
+      for (String slave : slaves) {
+        bondSlaveParents.put(slave, parent.getName());
+      }
+    }
+
+    return bondSlaveParents.build();
   }
 
   /** Get Cumulus VS model {@link Bridge}. */
@@ -99,7 +122,7 @@ public final class Converter {
   @VisibleForTesting
   CumulusInterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
-    if (_interfaces.getBondSlaveParents().containsKey(name)) {
+    if (_bondSlaveParents.containsKey(name)) {
       return CumulusInterfaceType.BOND_SUBINTERFACE;
     } else if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
       return CumulusInterfaceType.PHYSICAL;
@@ -114,7 +137,7 @@ public final class Converter {
   @Nullable
   String getSuperInterfaceName(Interface iface) {
     String name = iface.getName();
-    String superIfaceName = _interfaces.getBondSlaveParents().get(name);
+    String superIfaceName = _bondSlaveParents.get(name);
     if (superIfaceName != null) {
       return superIfaceName;
     }

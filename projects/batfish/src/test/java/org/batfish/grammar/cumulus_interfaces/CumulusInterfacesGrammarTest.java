@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_interfaces;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -141,12 +142,8 @@ public class CumulusInterfacesGrammarTest {
             CumulusStructureType.INTERFACE, "i4", CumulusStructureUsage.BOND_SLAVE),
         contains(2));
     assertThat(
-        interfaces.getBondSlaveParents(),
-        equalTo(
-            ImmutableMap.of(
-                "i2", "swp1", //
-                "i3", "swp1", //
-                "i4", "swp1")));
+        interfaces.getInterfaces().get("swp1").getBondSlaves(),
+        containsInAnyOrder("i2", "i3", "i4"));
   }
 
   @Test
@@ -162,11 +159,11 @@ public class CumulusInterfacesGrammarTest {
             CumulusStructureType.INTERFACE, "s2", CumulusStructureUsage.BOND_SLAVE),
         contains(4));
     assertThat(
-        interfaces.getBondSlaveParents(),
-        equalTo(
-            ImmutableMap.of(
-                "s1", "swp1", //
-                "s2", "swp2")));
+        interfaces.getInterfaces().get("swp1").getBondSlaves(),
+        contains("s1"));
+    assertThat(
+        interfaces.getInterfaces().get("swp2").getBondSlaves(),
+        contains("s2"));
   }
 
   @Test
