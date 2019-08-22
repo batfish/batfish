@@ -210,8 +210,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 .collect(Collectors.joining("|")));
   }
 
-  /** On NX-OS, there is a default VRF named "default". */
+  // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/vxlan/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x_chapter_0100.html#ariaid-title14
+  /** On NX-OS, there is a pre-populated VRF named "default". */
   public static final String DEFAULT_VRF_NAME = "default";
+  /** On NX-OS, default VRF has id 1. */
+  private static final int DEFAULT_VRF_ID = 1;
+  /** On NX-OS, there is a pre-populated VRF named "management". */
+  public static final String MANAGEMENT_VRF_NAME = "management";
+  /** On NX-OS, management VRF has id 1. */
+  private static final int MANAGEMENT_VRF_ID = 2;
+
+  private int _currentContextVrfId;
 
   /** Returns canonical prefix of interface name if valid, else {@code null}. */
   public static @Nullable String getCanonicalInterfaceNamePrefix(String prefix) {
@@ -240,7 +249,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .setFragmentOffsets(ImmutableList.of(new SubRange(1, MAX_FRAGMENT_OFFSET)))
               .build());
 
-  public static final String NULL_VRF_NAME = "~NULL_VRF~";
   private static final double OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR = 1E6D; // bps per Mbps
 
   /** Routing-related constants. */
@@ -326,7 +334,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _bannerExec;
   private @Nullable String _bannerMotd;
   private final @Nonnull BgpGlobalConfiguration _bgpGlobalConfiguration;
-  private final @Nonnull Vrf _defaultVrf;
   private final @Nonnull Map<String, EigrpProcessConfiguration> _eigrpProcesses;
   private @Nullable Evpn _evpn;
   private @Nullable String _hostname;
@@ -360,7 +367,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public CiscoNxosConfiguration() {
     _bgpGlobalConfiguration = new BgpGlobalConfiguration();
-    _defaultVrf = new Vrf(DEFAULT_VRF_NAME);
     _eigrpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
     _ipAccessLists = new HashMap<>();
@@ -381,6 +387,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _tacacsServers = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
+    // Populate the default VRFs.
+    Vrf def = getOrCreateVrf(DEFAULT_VRF_NAME);
+    assert def.getId() == DEFAULT_VRF_ID;
+    Vrf mgmt = getOrCreateVrf(MANAGEMENT_VRF_NAME);
+    assert mgmt.getId() == MANAGEMENT_VRF_ID;
   }
 
   public void defineStructure(CiscoNxosStructureType type, String name, ParserRuleContext ctx) {
@@ -959,8 +970,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertStaticRoutes() {
-    Stream.concat(Stream.of(_defaultVrf), _vrfs.values().stream())
-        .forEach(this::convertStaticRoutes);
+    _vrfs.values().forEach(this::convertStaticRoutes);
   }
 
   private void convertStaticRoutes(Vrf vrf) {
@@ -974,8 +984,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertVrfs() {
-    _c.getVrfs().put(DEFAULT_VRF_NAME, new org.batfish.datamodel.Vrf(DEFAULT_VRF_NAME));
-    _c.getVrfs().put(NULL_VRF_NAME, new org.batfish.datamodel.Vrf(NULL_VRF_NAME));
     _vrfs.forEach((name, vrf) -> _c.getVrfs().put(name, toVrf(vrf)));
   }
 
@@ -1142,7 +1150,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   public @Nonnull Vrf getDefaultVrf() {
-    return _defaultVrf;
+    return _vrfs.get(DEFAULT_VRF_NAME);
   }
 
   public @Nonnull Map<String, EigrpProcessConfiguration> getEigrpProcesses() {
@@ -1275,8 +1283,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _vlans;
   }
 
+  public @Nonnull Vrf getOrCreateVrf(String name) {
+    return _vrfs.computeIfAbsent(name, n -> new Vrf(n, ++_currentContextVrfId));
+  }
+
+  /** Returns a read-only copy of the VRFs. */
   public @Nonnull Map<String, Vrf> getVrfs() {
-    return _vrfs;
+    return Collections.unmodifiableMap(_vrfs);
   }
 
   private void markStructures() {
@@ -1596,23 +1609,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
 
-    String vrfName = iface.getVrfMember();
-
-    if (vrfName != null) {
-      org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
-      if (vrf == null) {
-        // Non-existent VRF set; disable and put in null VRF
-        newIface.setActive(false);
-        vrf = _c.getVrfs().get(NULL_VRF_NAME);
-      } else if (_vrfs.get(vrfName).getShutdown()) {
-        // VRF is shutdown; disable
-        newIface.setActive(false);
-      }
-      newIface.setVrf(vrf);
-    } else {
-      // No VRF set; put in default VRF
-      newIface.setVrf(_c.getDefaultVrf());
+    String vrfName = firstNonNull(iface.getVrfMember(), DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      // Non-existent VRF set; disable and leave in default VRF
+      newIface.setActive(false);
+      vrf = _c.getVrfs().get(DEFAULT_VRF_NAME);
+    } else if (_vrfs.get(vrfName).getShutdown()) {
+      // VRF is shutdown; disable
+      newIface.setActive(false);
     }
+    newIface.setVrf(vrf);
 
     newIface.setOwner(_c);
     return newIface;
