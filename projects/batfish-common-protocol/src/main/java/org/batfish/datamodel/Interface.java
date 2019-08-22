@@ -31,7 +31,6 @@ import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
-import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.transformation.Transformation;
@@ -60,16 +59,10 @@ public final class Interface extends ComparableStructure<String> {
     private @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
     @Nullable private EigrpInterfaceSettings _eigrp;
     @Nullable private Integer _encapsulationVlan;
-    /**
-     * Indicates individual OSPF settings have been set in this builder (as opposed to adding an
-     * {@link OspfInterfaceSettings} object)
-     */
-    private boolean _hasIndividualOspfSettings;
 
     private Map<Integer, HsrpGroup> _hsrpGroups;
     private String _hsrpVersion;
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
-    private String _ospfInboundDistributeListPolicy;
     private IpAccessList _incomingFilter;
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
@@ -78,12 +71,6 @@ public final class Interface extends ComparableStructure<String> {
     private String _name;
     private @Nullable Integer _nativeVlan;
     private OspfInterfaceSettings _ospfSettings;
-    private OspfArea _ospfArea;
-    private Integer _ospfCost;
-    private boolean _ospfEnabled;
-    @Nullable private OspfNetworkType _ospfNetworkType;
-    private boolean _ospfPassive;
-    private String _ospfProcess;
     private IpAccessList _outgoingFilter;
     private Transformation _outgoingTransformation;
     private Configuration _owner;
@@ -113,7 +100,6 @@ public final class Interface extends ComparableStructure<String> {
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _vrrpGroups = ImmutableSortedMap.of();
-      _hasIndividualOspfSettings = false;
     }
 
     @Override
@@ -166,18 +152,6 @@ public final class Interface extends ComparableStructure<String> {
       }
 
       OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
-      if (_ospfArea != null) {
-        _ospfArea.addInterface(name);
-        ospfSettings.setAreaName(_ospfArea.getAreaNumber());
-      }
-      if (_hasIndividualOspfSettings) {
-        ospfSettings.setCost(_ospfCost);
-        ospfSettings.setEnabled(_ospfEnabled);
-        ospfSettings.setInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
-        ospfSettings.setNetworkType(_ospfNetworkType);
-        ospfSettings.setPassive(_ospfPassive);
-        ospfSettings.setProcess(_ospfProcess);
-      }
 
       iface.setOutgoingFilter(_outgoingFilter);
       iface.setOutgoingTransformation(_outgoingTransformation);
@@ -205,6 +179,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
+        /*
         if (_active && _ospfProcess != null && _vrf.getOspfProcesses().containsKey(_ospfProcess)) {
           // OSPF cost is used to recompute interface cost below
           // So go ahead and apply it if one was provided
@@ -216,16 +191,11 @@ public final class Interface extends ComparableStructure<String> {
           int updatedCost = _vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface);
           ospfSettings.setCost(updatedCost);
         }
+        */
       }
       iface.setVrrpGroups(_vrrpGroups);
 
-      // OSPF settings can either be set individually for the interface (supporting legacy tests)
-      // or with an OspfInterfaceSettings object
-      if (_hasIndividualOspfSettings) {
-        iface.setOspfSettings(ospfSettings.build());
-      } else {
-        iface.setOspfSettings(_ospfSettings);
-      }
+      iface.setOspfSettings(_ospfSettings);
 
       return iface;
     }
@@ -348,17 +318,6 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    /**
-     * Name of the routing policy which is generated from the Global and Interface level inbound
-     * distribute lists for OSPF
-     */
-    public Builder setOspfInboundDistributeListPolicy(
-        @Nonnull String ospfInboundDistributeListPolicy) {
-      _hasIndividualOspfSettings = true;
-      _ospfInboundDistributeListPolicy = ospfInboundDistributeListPolicy;
-      return this;
-    }
-
     public Builder setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
       _eigrp = eigrp;
       return this;
@@ -421,47 +380,7 @@ public final class Interface extends ComparableStructure<String> {
     }
 
     public Builder setOspfSettings(OspfInterfaceSettings ospfSettings) {
-      if (_hasIndividualOspfSettings) {
-        throw new BatfishException(
-            "Cannot set individual OSPF settings (legacy) and supply an OspfInterfaceSettings object.  Instead, just supply an OspfInterfaceSettings object.");
-      }
       _ospfSettings = ospfSettings;
-      return this;
-    }
-
-    public Builder setOspfArea(OspfArea ospfArea) {
-      _hasIndividualOspfSettings = true;
-      _ospfArea = ospfArea;
-      return this;
-    }
-
-    public Builder setOspfCost(Integer ospfCost) {
-      _hasIndividualOspfSettings = true;
-      _ospfCost = ospfCost;
-      return this;
-    }
-
-    public Builder setOspfEnabled(boolean ospfEnabled) {
-      _hasIndividualOspfSettings = true;
-      _ospfEnabled = ospfEnabled;
-      return this;
-    }
-
-    public Builder setOspfNetworkType(OspfNetworkType ospfNetworkType) {
-      _hasIndividualOspfSettings = true;
-      _ospfNetworkType = ospfNetworkType;
-      return this;
-    }
-
-    public Builder setOspfPassive(boolean ospfPassive) {
-      _hasIndividualOspfSettings = true;
-      _ospfPassive = ospfPassive;
-      return this;
-    }
-
-    public Builder setOspfProcess(String process) {
-      _hasIndividualOspfSettings = true;
-      _ospfProcess = process;
       return this;
     }
 
