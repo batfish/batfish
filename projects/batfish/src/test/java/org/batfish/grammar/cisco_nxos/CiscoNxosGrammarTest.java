@@ -237,6 +237,8 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
+import org.batfish.representation.cisco_nxos.EigrpVrfIpv4AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.EigrpVrfIpv6AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
@@ -841,11 +843,30 @@ public final class CiscoNxosGrammarTest {
         EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), nullValue());
+
+        assertThat(vrf.getV4AddressFamily(), nullValue());
+        assertThat(vrf.getV6AddressFamily(), nullValue());
+        EigrpVrfIpv4AddressFamilyConfiguration vrfV4 = vrf.getVrfIpv4AddressFamily();
+        assertThat(vrfV4, notNullValue());
+        assertThat(vrfV4.getRedistributionPolicies(), hasSize(8));
       }
       {
         EigrpVrfConfiguration vrf = proc.getVrf("VRF");
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), equalTo(12345));
+
+        EigrpVrfIpv4AddressFamilyConfiguration v4 = vrf.getV4AddressFamily();
+        assertThat(v4, notNullValue());
+        assertThat(v4.getRedistributionPolicies(), hasSize(4));
+
+        EigrpVrfIpv6AddressFamilyConfiguration v6 = vrf.getV6AddressFamily();
+        assertThat(v6, notNullValue());
+        assertThat(
+            v6.getRedistributionPolicies(),
+            contains(new RedistributionPolicy(RoutingProtocolInstance.ospfv3("OSPFv3"), "RMV6")));
+
+        assertThat(vrf.getVrfIpv4AddressFamily(), notNullValue());
+        assertThat(vrf.getVrfIpv4AddressFamily().getRedistributionPolicies(), empty());
       }
     }
     {

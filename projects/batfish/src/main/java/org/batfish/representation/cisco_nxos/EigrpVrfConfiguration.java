@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -11,7 +12,9 @@ import javax.annotation.Nullable;
  */
 public final class EigrpVrfConfiguration implements Serializable {
 
-  public EigrpVrfConfiguration() {}
+  public EigrpVrfConfiguration() {
+    _vrfIpv4AddressFamilyConfiguration = new EigrpVrfIpv4AddressFamilyConfiguration();
+  }
 
   public @Nullable Integer getAsn() {
     return _asn;
@@ -21,9 +24,58 @@ public final class EigrpVrfConfiguration implements Serializable {
     _asn = asn;
   }
 
+  /**
+   * On NX-OS, you can enter many of the configurations for the IPv4 Unicast address family directly
+   * in the VRF or in the {@code address-family ipv4 unicast} subsection. The rules about which
+   * combinations are allowed is ugly, and we didn't handle it yet.
+   *
+   * <p>This is for commands entered at {@code config-router-af} or {@code * config-router-vrf-af}.
+   *
+   * @see #getVrfIpv4AddressFamily() for commands entered at {@code config-router} or {@code
+   *     config-router-vrf}.
+   */
+  public @Nullable EigrpVrfIpv4AddressFamilyConfiguration getV4AddressFamily() {
+    return _v4AddressFamily;
+  }
+
+  public @Nonnull EigrpVrfIpv4AddressFamilyConfiguration getOrCreateV4AddressFamily() {
+    if (_v4AddressFamily == null) {
+      _v4AddressFamily = new EigrpVrfIpv4AddressFamilyConfiguration();
+    }
+    return _v4AddressFamily;
+  }
+
+  public @Nullable EigrpVrfIpv6AddressFamilyConfiguration getV6AddressFamily() {
+    return _v6AddressFamily;
+  }
+
+  public @Nonnull EigrpVrfIpv6AddressFamilyConfiguration getOrCreateV6AddressFamily() {
+    if (_v6AddressFamily == null) {
+      _v6AddressFamily = new EigrpVrfIpv6AddressFamilyConfiguration();
+    }
+    return _v6AddressFamily;
+  }
+
+  /**
+   * On NX-OS, you can enter many of the configurations for the IPv4 Unicast address family directly
+   * in the VRF or in the {@code address-family ipv4 unicast} subsection. The rules about which
+   * combinations are allowed is ugly, and we didn't handle it yet.
+   *
+   * <p>This is for commands entered at {@code config-router} or {@code config-router-vrf}.
+   *
+   * @see #getV4AddressFamily() for commands entered at {@code config-router-af} or {@code
+   *     config-router-vrf-af}.
+   */
+  public @Nonnull EigrpVrfIpv4AddressFamilyConfiguration getVrfIpv4AddressFamily() {
+    return _vrfIpv4AddressFamilyConfiguration;
+  }
+
   ///////////////////////////////////
   // Private implementation details
   ///////////////////////////////////
 
   private @Nullable Integer _asn;
+  private @Nullable EigrpVrfIpv4AddressFamilyConfiguration _v4AddressFamily;
+  private @Nullable EigrpVrfIpv6AddressFamilyConfiguration _v6AddressFamily;
+  private final @Nonnull EigrpVrfIpv4AddressFamilyConfiguration _vrfIpv4AddressFamilyConfiguration;
 }
