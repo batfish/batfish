@@ -163,12 +163,8 @@ public class CumulusInterfacesGrammarTest {
         getStructureReferences(
             CumulusStructureType.INTERFACE, "s2", CumulusStructureUsage.BOND_SLAVE),
         contains(4));
-    assertThat(
-        interfaces.getInterfaces().get("swp1").getBondSlaves(),
-        contains("s1"));
-    assertThat(
-        interfaces.getInterfaces().get("swp2").getBondSlaves(),
-        contains("s2"));
+    assertThat(interfaces.getInterfaces().get("swp1").getBondSlaves(), contains("s1"));
+    assertThat(interfaces.getInterfaces().get("swp2").getBondSlaves(), contains("s2"));
   }
 
   @Test
