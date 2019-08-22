@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus_interfaces;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.representation.cumulus.CumulusStructureType.BOND;
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.VLAN;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
@@ -144,6 +145,11 @@ public final class Interface {
     if (_vrfTable != null) {
       checkState(type == null, "ambiguous interface type: %s vs %s", type, VRF);
       type = VRF;
+    }
+
+    if (_bondSlaves != null && !_bondSlaves.isEmpty()) {
+      checkState(type == null, "ambiguous interface type: %s vs %s", type, BOND);
+      type = BOND;
     }
 
     return firstNonNull(type, INTERFACE);
