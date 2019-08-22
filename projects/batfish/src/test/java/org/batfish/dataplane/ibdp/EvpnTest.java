@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -229,34 +230,36 @@ public class EvpnTest {
     String vrf1 = "vrf1";
 
     Prefix leaf1VtepPrefix = Prefix.parse("1.1.1.3/32");
-    Set<AbstractRoute> exitgwRoutes = routes.get("exitgw").get(vrf1);
-    assertThat(
-        exitgwRoutes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(leaf1VtepPrefix),
-                    hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 100333))))))));
-    assertThat(
-        exitgwRoutes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(leaf1VtepPrefix),
-                    hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
-    assertThat(
-        exitgwRoutes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(leaf1VtepPrefix),
-                    hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
-
     Prefix exitgwVtepPrefix = Prefix.parse("2.2.2.2/32");
-    Set<AbstractRoute> leaf1Routes = routes.get("leaf1").get(vrf1);
+
+    Set<AbstractRoute> exitgwRoutes = routes.get(exitGw).get(vrf1);
+    assertThat(
+        exitgwRoutes,
+        hasItem(
+            isEvpnType3RouteThat(
+                allOf(
+                    hasPrefix(leaf1VtepPrefix),
+                    hasCommunities(
+                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 100333))))))));
+    assertThat(
+        exitgwRoutes,
+        hasItem(
+            isEvpnType3RouteThat(
+                allOf(
+                    hasPrefix(leaf1VtepPrefix),
+                    hasCommunities(
+                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+    assertThat(
+        exitgwRoutes,
+        hasItem(
+            isEvpnType3RouteThat(
+                allOf(
+                    hasPrefix(leaf1VtepPrefix),
+                    hasCommunities(
+                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+    assertThat(exitgwRoutes, not(hasItem(isEvpnType3RouteThat(hasPrefix(exitgwVtepPrefix)))));
+
+    Set<AbstractRoute> leaf1Routes = routes.get(leaf1).get(vrf1);
     assertThat(
         leaf1Routes,
         hasItem(
@@ -281,5 +284,6 @@ public class EvpnTest {
                     hasPrefix(exitgwVtepPrefix),
                     hasCommunities(
                         equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+    assertThat(leaf1Routes, not(hasItem(isEvpnType3RouteThat(hasPrefix(leaf1VtepPrefix)))));
   }
 }
