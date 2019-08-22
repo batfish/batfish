@@ -346,14 +346,16 @@ public class CumulusNcluConfigurationTest {
     vsConfig.setConfiguration(viConfig);
 
     // route-reflector-client is false if ipv4af is null
-    assertFalse(vsConfig.convertIpv4UnicastAddressFamily(null, policy).getRouteReflectorClient());
+    assertFalse(
+        vsConfig.convertIpv4UnicastAddressFamily(null, policy, null).getRouteReflectorClient());
 
     // route-reflector-client is true if activate and route-reflector-client are both true
     {
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setActivated(true);
       af.setRouteReflectorClient(true);
-      assertTrue(vsConfig.convertIpv4UnicastAddressFamily(af, policy).getRouteReflectorClient());
+      assertTrue(
+          vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
     }
 
     // TODO what if not explicitly activated (i.e. activated is null) but route-reflector-client is
