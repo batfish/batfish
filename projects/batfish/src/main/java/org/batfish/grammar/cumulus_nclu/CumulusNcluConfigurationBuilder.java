@@ -720,11 +720,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
         _currentBgpNeighbor.getIpv4UnicastAddressFamily();
     assert ipv4UnicastAddressFamily != null;
-    // The neighbor must have been explicitly activated for route-reflector-client to take effect
-    // https://docs.cumulusnetworks.com/display/DOCS/Border+Gateway+Protocol+-+BGP#BorderGatewayProtocol-BGP-RouteReflectors
-    if (Boolean.TRUE.equals(ipv4UnicastAddressFamily.getActivated())) {
-      ipv4UnicastAddressFamily.setRouteReflectorClient(true);
-    }
+    ipv4UnicastAddressFamily.setRouteReflectorClient(true);
   }
 
   @Override
