@@ -189,8 +189,8 @@ INTERFACE
   {
     switch (lastTokenType()) {
       case MATCH:
-      case -1:
-      case NEWLINE:
+      case -1:  // this is the first token in the file
+      case NEWLINE: // this is the first token in the line
         pushMode(M_Word);
         break;
       case WORD:
