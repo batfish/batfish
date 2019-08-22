@@ -227,7 +227,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  @Nullable Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
+  @Nullable
+  Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
       @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily,
       RoutingPolicy exportRoutingPolicy,
       RoutingPolicy importRoutingPolicy) {
