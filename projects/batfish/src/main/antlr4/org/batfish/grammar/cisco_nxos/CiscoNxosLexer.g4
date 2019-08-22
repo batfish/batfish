@@ -2720,6 +2720,12 @@ OSPF
 OSPFV3
 :
   'ospfv3'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    if (lastTokenType() == REDISTRIBUTE || lastTokenType() == ROUTER) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 OTHER_CONFIG_FLAG

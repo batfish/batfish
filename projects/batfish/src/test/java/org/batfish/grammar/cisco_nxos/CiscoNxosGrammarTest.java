@@ -228,6 +228,7 @@ import org.batfish.representation.cisco_nxos.AddressFamily;
 import org.batfish.representation.cisco_nxos.BgpGlobalConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
@@ -537,6 +538,15 @@ public final class CiscoNxosGrammarTest {
           ipv4u.getRedistributionPolicy(RoutingProtocolInstance.ospf("OSPF_PROC2")),
           equalTo(
               new RedistributionPolicy(RoutingProtocolInstance.ospf("OSPF_PROC2"), "OSPF_MAP2")));
+
+      BgpVrfIpv6AddressFamilyConfiguration ipv6u = vrf.getIpv6UnicastAddressFamily();
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRedistributionPolicies(), hasSize(1));
+      assertThat(
+          ipv6u.getRedistributionPolicy(RoutingProtocolInstance.ospfv3("OSPFv3_PROC")),
+          equalTo(
+              new RedistributionPolicy(
+                  RoutingProtocolInstance.ospfv3("OSPFv3_PROC"), "OSPFv3_MAP")));
 
       BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
       assertThat(l2vpn, notNullValue());
