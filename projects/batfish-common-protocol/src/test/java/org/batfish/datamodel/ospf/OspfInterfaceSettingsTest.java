@@ -20,6 +20,7 @@ public class OspfInterfaceSettingsTest {
             .setPassive(false)
             .setAreaName(1L)
             .setDeadInterval(44)
+            .setHelloInterval(11)
             .setHelloMultiplier(55)
             .setNetworkType(OspfNetworkType.POINT_TO_POINT)
             .build();
@@ -38,6 +39,7 @@ public class OspfInterfaceSettingsTest {
             .setPassive(false)
             .setAreaName(1L)
             .setDeadInterval(44)
+            .setHelloInterval(11)
             .setHelloMultiplier(55)
             .setNetworkType(OspfNetworkType.POINT_TO_POINT)
             .build();
@@ -47,14 +49,21 @@ public class OspfInterfaceSettingsTest {
 
   @Test
   public void testEquals() {
-    OspfInterfaceSettings.Builder s = OspfInterfaceSettings.builder();
+    OspfInterfaceSettings.Builder s =
+        OspfInterfaceSettings.builder().setHelloInterval(0).setDeadInterval(0);
     new EqualsTester()
         .addEqualityGroup(s.build())
         .addEqualityGroup(
-            s.setAreaName(2L).build(), OspfInterfaceSettings.builder().setAreaName(2L).build())
+            s.setAreaName(2L).build(),
+            OspfInterfaceSettings.builder()
+                .setAreaName(2L)
+                .setHelloInterval(0)
+                .setDeadInterval(0)
+                .build())
         .addEqualityGroup(s.setCost(3).build())
         .addEqualityGroup(s.setDeadInterval(4).build())
         .addEqualityGroup(s.setEnabled(false).build())
+        .addEqualityGroup(s.setHelloInterval(1).build())
         .addEqualityGroup(s.setHelloMultiplier(5).build())
         .addEqualityGroup(s.setInboundDistributeListPolicy("policy").build())
         .addEqualityGroup(s.setNetworkType(OspfNetworkType.POINT_TO_POINT).build())

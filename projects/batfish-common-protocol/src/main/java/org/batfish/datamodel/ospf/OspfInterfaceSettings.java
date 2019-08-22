@@ -23,6 +23,7 @@ public final class OspfInterfaceSettings implements Serializable {
     private Integer _ospfCost;
     private Integer _ospfDeadInterval;
     private boolean _ospfEnabled;
+    private Integer _ospfHelloInterval;
     private Integer _ospfHelloMultiplier;
     private String _ospfInboundDistributeListPolicy;
     private OspfNetworkType _ospfNetworkType;
@@ -50,6 +51,11 @@ public final class OspfInterfaceSettings implements Serializable {
 
     public Builder setEnabled(boolean ospfEnabled) {
       _ospfEnabled = ospfEnabled;
+      return this;
+    }
+
+    public Builder setHelloInterval(Integer ospfHelloInterval) {
+      _ospfHelloInterval = ospfHelloInterval;
       return this;
     }
 
@@ -84,6 +90,7 @@ public final class OspfInterfaceSettings implements Serializable {
           _ospfCost,
           _ospfDeadInterval,
           _ospfEnabled,
+          _ospfHelloInterval,
           _ospfHelloMultiplier,
           _ospfInboundDistributeListPolicy,
           _ospfNetworkType,
@@ -94,8 +101,9 @@ public final class OspfInterfaceSettings implements Serializable {
 
   @Nullable private Long _ospfAreaName;
   @Nullable private Integer _ospfCost;
-  @Nullable private Integer _ospfDeadInterval;
+  private int _ospfDeadInterval;
   private boolean _ospfEnabled;
+  private int _ospfHelloInterval;
   @Nullable private Integer _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
   @Nullable private OspfNetworkType _ospfNetworkType;
@@ -107,6 +115,7 @@ public final class OspfInterfaceSettings implements Serializable {
   private static final String PROP_DEAD_INTERVAL = "deadInterval";
   private static final String PROP_ENABLED = "enabled";
   private static final String PROP_HELLO_MULTIPLIER = "helloMultiplier";
+  private static final String PROP_HELLO_INTERVAL = "helloInterval";
   private static final String PROP_INBOUND_DISTRIBUTE_LIST_POLICY = "inboundDistributeListPolicy";
   private static final String PROP_NETWORK_TYPE = "networkType";
   private static final String PROP_PASSIVE = "passive";
@@ -118,6 +127,7 @@ public final class OspfInterfaceSettings implements Serializable {
       @Nullable @JsonProperty(PROP_COST) Integer cost,
       @Nullable @JsonProperty(PROP_DEAD_INTERVAL) Integer deadInterval,
       @Nullable @JsonProperty(PROP_ENABLED) Boolean enabled,
+      @Nullable @JsonProperty(PROP_HELLO_INTERVAL) Integer helloInterval,
       @Nullable @JsonProperty(PROP_HELLO_MULTIPLIER) Integer helloMultiplier,
       @Nullable @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST_POLICY)
           String inboundDistributeListPolicy,
@@ -125,11 +135,14 @@ public final class OspfInterfaceSettings implements Serializable {
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
       @Nullable @JsonProperty(PROP_PROCESS) String process) {
     checkArgument(enabled != null, "OSPF enabled must be specified");
+    checkArgument(helloInterval != null, "OSPF hello interval must be specified");
+    checkArgument(deadInterval != null, "OSPF dead interval must be specified");
     return new OspfInterfaceSettings(
         area,
         cost,
         deadInterval,
         enabled,
+        helloInterval,
         helloMultiplier,
         inboundDistributeListPolicy,
         networkType,
@@ -140,8 +153,9 @@ public final class OspfInterfaceSettings implements Serializable {
   private OspfInterfaceSettings(
       @Nullable Long area,
       @Nullable Integer cost,
-      @Nullable Integer deadInterval,
+      int deadInterval,
       boolean enabled,
+      int helloInterval,
       @Nullable Integer helloMultiplier,
       @Nullable String inboundDistributeListPolicy,
       @Nullable OspfNetworkType networkType,
@@ -151,6 +165,7 @@ public final class OspfInterfaceSettings implements Serializable {
     _ospfCost = cost;
     _ospfDeadInterval = deadInterval;
     _ospfEnabled = enabled;
+    _ospfHelloInterval = helloInterval;
     _ospfHelloMultiplier = helloMultiplier;
     _ospfInboundDistributeListPolicy = inboundDistributeListPolicy;
     _ospfNetworkType = networkType;
@@ -165,6 +180,7 @@ public final class OspfInterfaceSettings implements Serializable {
         _ospfCost,
         _ospfDeadInterval,
         _ospfEnabled,
+        _ospfHelloInterval,
         _ospfHelloMultiplier,
         _ospfInboundDistributeListPolicy,
         _ospfNetworkType,
@@ -184,6 +200,7 @@ public final class OspfInterfaceSettings implements Serializable {
         && Objects.equals(_ospfCost, other._ospfCost)
         && Objects.equals(_ospfDeadInterval, other._ospfDeadInterval)
         && Objects.equals(_ospfEnabled, other._ospfEnabled)
+        && Objects.equals(_ospfHelloInterval, other._ospfHelloInterval)
         && Objects.equals(_ospfHelloMultiplier, other._ospfHelloMultiplier)
         && Objects.equals(_ospfInboundDistributeListPolicy, other._ospfInboundDistributeListPolicy)
         && Objects.equals(_ospfNetworkType, other._ospfNetworkType)
@@ -207,8 +224,7 @@ public final class OspfInterfaceSettings implements Serializable {
 
   /** Dead-interval in seconds for OSPF updates. */
   @JsonProperty(PROP_DEAD_INTERVAL)
-  @Nullable
-  public Integer getDeadInterval() {
+  public int getDeadInterval() {
     return _ospfDeadInterval;
   }
 
@@ -216,6 +232,12 @@ public final class OspfInterfaceSettings implements Serializable {
   @JsonProperty(PROP_ENABLED)
   public boolean getEnabled() {
     return _ospfEnabled;
+  }
+
+  /** Hello-interval in seconds for OSPF updates. */
+  @JsonProperty(PROP_HELLO_INTERVAL)
+  public int getHelloInterval() {
+    return _ospfHelloInterval;
   }
 
   /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
