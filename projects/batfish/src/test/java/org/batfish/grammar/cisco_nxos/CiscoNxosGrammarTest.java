@@ -79,8 +79,6 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAU
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
-import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
-import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.POINT_TO_POINT;
@@ -4431,8 +4429,8 @@ public final class CiscoNxosGrammarTest {
       // TODO: extract and test authentication key-chain
       assertFalse(ospf.getBfd());
       assertThat(ospf.getCost(), nullValue());
-      assertThat(ospf.getDeadIntervalS(), equalTo(DEFAULT_DEAD_INTERVAL_S));
-      assertThat(ospf.getHelloIntervalS(), equalTo(DEFAULT_HELLO_INTERVAL_S));
+      assertThat(ospf.getDeadIntervalS(), nullValue());
+      assertThat(ospf.getHelloIntervalS(), nullValue());
       assertThat(ospf.getPassive(), nullValue());
       assertThat(ospf.getProcess(), nullValue());
       assertThat(ospf.getArea(), nullValue());

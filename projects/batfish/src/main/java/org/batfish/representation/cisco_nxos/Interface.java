@@ -2,6 +2,7 @@ package org.batfish.representation.cisco_nxos;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -143,7 +144,8 @@ public final class Interface implements Serializable {
   private final @Nullable Integer _vlan;
   private @Nullable String _vrfMember;
 
-  private Interface(
+  @VisibleForTesting
+  Interface(
       String name,
       @Nullable String parentInterface,
       CiscoNxosInterfaceType type,

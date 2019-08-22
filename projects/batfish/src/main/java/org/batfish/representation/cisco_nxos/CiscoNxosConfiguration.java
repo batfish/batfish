@@ -21,8 +21,11 @@ import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
+import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -202,20 +205,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 .collect(Collectors.joining("|")));
   }
 
-  // Defaults from
-  // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
-  static int DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST = 10;
-
-  static int DEFAULT_OSPF_HELLO_INTERVAL = 30;
-
   // Default dead interval is hello interval times 4
   static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
-
-  static int DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST =
-      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
-
-  static int DEFAULT_OSPF_DEAD_INTERVAL =
-      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
 
   /** On NX-OS, there is a default VRF named "default". */
   public static final String DEFAULT_VRF_NAME = "default";
@@ -2143,7 +2134,45 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIface.setOspfSettings(ospfSettings.build());
   }
 
+  /**
+   * Helper to infer dead interval from configured OSPF settings on an interface. Check explicitly
+   * set dead interval, infer from hello interval, or use default, in that order. See
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
+   * more details.
+   */
+  @VisibleForTesting
+  static int toOspfDeadInterval(Interface iface) {
+    OspfInterface ospf = iface.getOspf();
+    if (ospf != null) {
+      Integer deadInterval = ospf.getDeadIntervalS();
+      if (deadInterval != null) {
+        return deadInterval;
+      }
+      Integer helloInterval = ospf.getHelloIntervalS();
+      if (helloInterval != null) {
+        return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
+      }
+    }
+    return DEFAULT_DEAD_INTERVAL_S;
+  }
 
+  /**
+   * Helper to infer hello interval from configured OSPF settings on an interface. Check explicitly
+   * set hello interval or use default, in that order. See
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
+   * more details.
+   */
+  @VisibleForTesting
+  static int toOspfHelloInterval(Interface iface) {
+    OspfInterface ospf = iface.getOspf();
+    if (ospf != null) {
+      Integer helloInterval = ospf.getHelloIntervalS();
+      if (helloInterval != null) {
+        return helloInterval;
+      }
+    }
+    return DEFAULT_HELLO_INTERVAL_S;
+  }
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {
     return NssaSettings.builder()

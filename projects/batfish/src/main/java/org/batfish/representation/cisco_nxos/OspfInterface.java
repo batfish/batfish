@@ -1,7 +1,5 @@
 package org.batfish.representation.cisco_nxos;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import java.io.Serializable;
 import javax.annotation.Nullable;
 
@@ -35,16 +33,16 @@ public final class OspfInterface implements Serializable {
     _cost = cost;
   }
 
-  public int getDeadIntervalS() {
-    return firstNonNull(_deadIntervalS, DEFAULT_DEAD_INTERVAL_S);
+  public @Nullable Integer getDeadIntervalS() {
+    return _deadIntervalS;
   }
 
   public void setDeadIntervalS(int deadInterval) {
     _deadIntervalS = deadInterval;
   }
 
-  public int getHelloIntervalS() {
-    return firstNonNull(_helloIntervalS, DEFAULT_HELLO_INTERVAL_S);
+  public @Nullable Integer getHelloIntervalS() {
+    return _helloIntervalS;
   }
 
   public void setHelloIntervalS(int helloIntervalS) {
