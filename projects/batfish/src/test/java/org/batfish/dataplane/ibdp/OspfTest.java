@@ -37,6 +37,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -433,16 +434,11 @@ public class OspfTest {
     String i60Name = "Ethernet6/0";
 
     NetworkFactory nf = new NetworkFactory();
+    OspfInterfaceSettings.Builder ospf = baseOspfSettings().setCost(10).setProcess("1");
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Interface.Builder ib =
-        nf.interfaceBuilder()
-            .setOspfCost(10)
-            .setOspfEnabled(true)
-            .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
-            .setOspfProcess("1")
-            .setBandwidth(100E6);
+    Interface.Builder ib = nf.interfaceBuilder().setOspfSettings(ospf.build()).setBandwidth(100E6);
     OspfProcess.Builder opb = nf.ospfProcessBuilder().setProcessId("1");
     OspfArea.Builder oab = nf.ospfAreaBuilder();
 
@@ -468,24 +464,28 @@ public class OspfTest {
     ib.setOwner(r0).setVrf(v0);
     // i01
     ib.setName(i01Name)
-        .setOspfArea(oaR0A0)
+        .setOspfSettings(ospf.setAreaName(oaR0A0.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.0.1.0/24"))
         .build();
+    oaR0A0.addInterface(i01Name);
     // i02
     ib.setName(i02Name)
-        .setOspfArea(oaR0A1)
+        .setOspfSettings(ospf.setAreaName(oaR0A1.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.0.2.0/24"))
         .build();
+    oaR0A1.addInterface(i02Name);
     // i04
     ib.setName(i04Name)
-        .setOspfArea(oaR0A2)
+        .setOspfSettings(ospf.setAreaName(oaR0A2.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.0.4.0/24"))
         .build();
+    oaR0A2.addInterface(i04Name);
     // i06
     ib.setName(i06Name)
-        .setOspfArea(oaR0A3)
+        .setOspfSettings(ospf.setAreaName(oaR0A3.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.0.6.0/24"))
         .build();
+    oaR0A3.addInterface(i06Name);
 
     // R1
     Configuration r1 = cb.setHostname(r1Name).build();
@@ -496,9 +496,10 @@ public class OspfTest {
     ib.setOwner(r1).setVrf(v1);
     // i10
     ib.setName(i10Name)
-        .setOspfArea(oaR1A0)
+        .setOspfSettings(ospf.setAreaName(oaR1A0.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
         .build();
+    oaR1A0.addInterface(i10Name);
 
     // R2
     Configuration r2 = cb.setHostname(r2Name).build();
@@ -509,14 +510,16 @@ public class OspfTest {
     ib.setOwner(r2).setVrf(v2);
     // i20
     ib.setName(i20Name)
-        .setOspfArea(oaR2A1)
+        .setOspfSettings(ospf.setAreaName(oaR2A1.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.0.2.2/24"))
         .build();
+    oaR2A1.addInterface(i20Name);
     // i23
     ib.setName(i23Name)
-        .setOspfArea(oaR2A1)
+        .setOspfSettings(ospf.setAreaName(oaR2A1.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.2.3.2/24"))
         .build();
+    oaR2A1.addInterface(i23Name);
 
     // R3
     Configuration r3 = cb.setHostname(r3Name).build();
@@ -527,9 +530,10 @@ public class OspfTest {
     ib.setOwner(r3).setVrf(v3);
     // i32
     ib.setName(i32Name)
-        .setOspfArea(oaR3A1)
+        .setOspfSettings(ospf.setAreaName(oaR3A1.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.2.3.3/24"))
         .build();
+    oaR3A1.addInterface(i32Name);
 
     // R4
     Configuration r4 = cb.setHostname(r4Name).build();
@@ -540,14 +544,16 @@ public class OspfTest {
     ib.setOwner(r4).setVrf(v4);
     // i40
     ib.setName(i40Name)
-        .setOspfArea(oaR4A2)
+        .setOspfSettings(ospf.setAreaName(oaR4A2.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.0.4.4/24"))
         .build();
+    oaR4A2.addInterface(i40Name);
     // i45
     ib.setName(i45Name)
-        .setOspfArea(oaR4A2)
+        .setOspfSettings(ospf.setAreaName(oaR4A2.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.4.5.4/24"))
         .build();
+    oaR4A2.addInterface(i45Name);
 
     // R5
     Configuration r5 = cb.setHostname(r5Name).build();
@@ -558,9 +564,10 @@ public class OspfTest {
     ib.setOwner(r5).setVrf(v5);
     // i54
     ib.setName(i54Name)
-        .setOspfArea(oaR5A2)
+        .setOspfSettings(ospf.setAreaName(oaR5A2.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.4.5.5/24"))
         .build();
+    oaR5A2.addInterface(i54Name);
 
     // R6
     Configuration r6 = cb.setHostname(r6Name).build();
@@ -595,9 +602,10 @@ public class OspfTest {
     ib.setOwner(r6).setVrf(v6);
     // i60
     ib.setName(i60Name)
-        .setOspfArea(oaR6A03)
+        .setOspfSettings(ospf.setAreaName(oaR6A03.getAreaNumber()).build())
         .setAddress(ConcreteInterfaceAddress.parse("10.0.6.6/24"))
         .build();
+    oaR6A03.addInterface(i60Name);
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.<String, Configuration>naturalOrder()
