@@ -452,6 +452,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     type3RouteBuilder.setAdmin(ebgpAdmin);
     type3RouteBuilder.setCommunities(ImmutableSet.of(routeTarget));
     type3RouteBuilder.setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE);
+    // so that this route is not installed back in the main RIB of any of the VRFs
+    type3RouteBuilder.setNonRouting(true);
     type3RouteBuilder.setOriginatorIp(routerId);
     type3RouteBuilder.setOriginType(OriginType.EGP);
     type3RouteBuilder.setProtocol(RoutingProtocol.BGP);
@@ -598,7 +600,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                           .map(
                               adv ->
                                   transformBgpRouteOnExport(
-                                          adv.getRoute(),
+                                          // clear non-routing flag if set before sending it out
+                                          adv.getRoute().toBuilder().setNonRouting(false).build(),
                                           ourConfigId,
                                           remoteConfigId,
                                           ourConfig,
