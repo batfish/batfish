@@ -59,6 +59,9 @@ public class OspfInterfaceSettingsTest {
         .addEqualityGroup(s.setHelloMultiplier(5).build())
         .addEqualityGroup(s.setInboundDistributeListPolicy("policy").build())
         .addEqualityGroup(s.setNetworkType(OspfNetworkType.POINT_TO_POINT).build())
+        .addEqualityGroup(s.setNetworkType(OspfNetworkType.BROADCAST).build())
+        .addEqualityGroup(s.setNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT).build())
+        .addEqualityGroup(s.setNetworkType(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS).build())
         .addEqualityGroup(s.setPassive(false).build())
         .addEqualityGroup(s.setProcess("proc").build())
         .testEquals();
