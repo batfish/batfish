@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_default_originate
+feature bgp
+!
+router bgp 65000
+  address-family ipv4 unicast
+  neighbor 1.2.3.0 remote-as 65001
+    address-family ipv4 unicast
+      no default-originate

@@ -344,6 +344,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_af_filter_listContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_af_inheritContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_af_next_hop_selfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_af_next_hop_third_partyContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_af_no_default_originateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_af_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_af_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_af_route_reflector_clientContext;
@@ -2943,6 +2944,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRb_n_af_next_hop_third_party(Rb_n_af_next_hop_third_partyContext ctx) {
     _currentBgpVrfNeighborAddressFamily.setNextHopThirdParty(true);
+  }
+
+  @Override
+  public void exitRb_n_af_no_default_originate(Rb_n_af_no_default_originateContext ctx) {
+    _currentBgpVrfNeighborAddressFamily.setDefaultOriginate(false);
   }
 
   @Override
