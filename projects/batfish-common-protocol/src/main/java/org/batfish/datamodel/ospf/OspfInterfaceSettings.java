@@ -18,6 +18,15 @@ public final class OspfInterfaceSettings implements Serializable {
     return new Builder();
   }
 
+  /** Returns a builder with default values for most OSPF settings, useful for tests. */
+  public static @Nonnull Builder defaultSettingsBuilder() {
+    return new Builder()
+        .setEnabled(true)
+        .setPassive(false)
+        .setDeadInterval(40)
+        .setNetworkType(OspfNetworkType.POINT_TO_POINT);
+  }
+
   public static final class Builder {
     private Long _ospfAreaName;
     private Integer _ospfCost;
