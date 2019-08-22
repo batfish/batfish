@@ -333,6 +333,24 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
+  public void testConvertIpv4UnicastAddressFamily_deactivated() {
+    // setup vi model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    RoutingPolicy policy = nf.routingPolicyBuilder().build();
+
+    // setup vs model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setConfiguration(viConfig);
+    BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
+    af.setActivated(false); // explicitly deactivated
+    af.setRouteReflectorClient(true);
+
+    assertNull(vsConfig.convertIpv4UnicastAddressFamily(af, policy, null));
+  }
+
+  @Test
   public void testConvertIpv4UnicastAddressFamily_routeReflectorClient() {
 
     // setup vi model
@@ -364,15 +382,6 @@ public class CumulusNcluConfigurationTest {
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setRouteReflectorClient(true);
       assertTrue(
-          vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
-    }
-
-    // VI route-reflector-client is false if VS activate is false and route-reflector-client is true
-    {
-      BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
-      af.setActivated(false);
-      af.setRouteReflectorClient(true);
-      assertFalse(
           vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
     }
   }

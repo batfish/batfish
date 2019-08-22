@@ -227,10 +227,19 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
+  @Nullable Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
       @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily,
       RoutingPolicy exportRoutingPolicy,
       RoutingPolicy importRoutingPolicy) {
+
+    // check if address family was explicitly deactivated (address family is activated by default)
+    boolean deactivated =
+        ipv4UnicastAddressFamily != null
+            && Boolean.FALSE.equals(ipv4UnicastAddressFamily.getActivated());
+    if (deactivated) {
+      return null;
+    }
+
     // According to the docs, the neighbor must have been explicitly activated for
     // route-reflector-client to take effect:
     // https://docs.cumulusnetworks.com/display/DOCS/Border+Gateway+Protocol+-+BGP#BorderGatewayProtocol-BGP-RouteReflectors
@@ -239,11 +248,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     // we have tested that route reflection works without it.
     boolean routeReflectorClient =
         Optional.ofNullable(ipv4UnicastAddressFamily)
-            .map(af ->
-                // neighbor is not explicitly deactivated
-                !Boolean.FALSE.equals(af.getActivated())
-                    // route-reflector-client enabled
-                    && Boolean.TRUE.equals(af.getRouteReflectorClient()))
+            .map(af -> Boolean.TRUE.equals(af.getRouteReflectorClient()))
             .orElse(false);
 
     return Ipv4UnicastAddressFamily.builder()
