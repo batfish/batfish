@@ -18,6 +18,7 @@ import static org.batfish.representation.cisco.CiscoConversions.generateGenerati
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
+import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
@@ -63,6 +64,7 @@ import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
@@ -441,6 +443,25 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(
             (vrfName, bgpVrfConfig) -> {
               convertBgpVrf(_c, _bgpGlobalConfiguration, bgpVrfConfig, vrfName);
+            });
+    /*
+     * If the VRF has a layer 3 VNI defined (but does not appear under "router bgp" in config),
+     * it will still participate in BGP route exchange.
+     * So make a dummy BgpProcess in VI land to avoid crashes and setup proper RIBs for that VRF.
+     */
+    _vrfs.values().stream()
+        .filter(vrf -> vrf.getVni() != null)
+        .forEach(
+            vrf -> {
+              org.batfish.datamodel.Vrf viVrf = _c.getVrfs().get(vrf.getName());
+              if (viVrf.getBgpProcess() == null) {
+                // If the VI vrf has no BGP process, create a dummy one
+                viVrf.setBgpProcess(
+                    BgpProcess.builder()
+                        .setRouterId(inferRouterId(viVrf, _w))
+                        .setAdminCostsToVendorDefaults(_c.getConfigurationFormat())
+                        .build());
+              }
             });
   }
 
