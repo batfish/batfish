@@ -227,7 +227,7 @@ public class OspfTopologyTest {
         .setVrf(vrf)
         .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 31))
         .setOspfSettings(
-            OspfInterfaceSettings.builder()
+            OspfInterfaceSettings.defaultSettingsBuilder()
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .setCost(1)
                 .setEnabled(true)
@@ -240,7 +240,7 @@ public class OspfTopologyTest {
         .setOwner(configuration)
         .setVrf(vrf)
         .setOspfSettings(
-            OspfInterfaceSettings.builder()
+            OspfInterfaceSettings.defaultSettingsBuilder()
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .setCost(1)
                 .setEnabled(true)

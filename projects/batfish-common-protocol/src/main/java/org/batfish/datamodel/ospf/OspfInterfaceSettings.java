@@ -134,6 +134,7 @@ public final class OspfInterfaceSettings implements Serializable {
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
       @Nullable @JsonProperty(PROP_PROCESS) String process) {
     checkArgument(enabled != null, "OSPF enabled must be specified");
+    checkArgument(passive != null, "OSPF passive must be specified");
     return new OspfInterfaceSettings(
         area,
         cost,

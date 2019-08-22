@@ -134,7 +134,7 @@ public class OspfRoutingProcessTest {
             .build();
     Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).setOwner(_c).build();
     OspfInterfaceSettings.Builder ospf =
-        OspfInterfaceSettings.builder().setProcess("1").setEnabled(true);
+        OspfInterfaceSettings.defaultSettingsBuilder().setProcess("1").setEnabled(true);
     Interface.Builder ib =
         nf.interfaceBuilder()
             .setVrf(vrf)
