@@ -36,6 +36,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings.Builder;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -172,7 +174,8 @@ public class OspfTest {
     OspfArea.Builder oabe = nf.ospfAreaBuilder().setNumber(areaE);
     OspfArea.Builder oabf = nf.ospfAreaBuilder().setNumber(areaF);
     OspfArea.Builder oabg = nf.ospfAreaBuilder().setNumber(areaG);
-    Interface.Builder ib = nf.interfaceBuilder().setOspfCost(1).setOspfEnabled(true);
+    Interface.Builder ib = nf.interfaceBuilder();
+    Builder ospf = OspfInterfaceSettings.builder().setCost(1).setEnabled(true);
 
     Configuration c1 = cb.setHostname(C1_NAME).build();
     Vrf v1 = vb.setOwner(c1).build();
@@ -186,8 +189,16 @@ public class OspfTest {
             .build();
     OspfArea oa1a = oaba.setOspfProcess(op1).build();
     OspfArea oa1b = areaA == areaB ? oa1a : oabb.setOspfProcess(op1).build();
-    ib.setOwner(c1).setVrf(v1).setOspfArea(oa1a).setOspfProcess("1");
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C1_L0_ADDRESS).build();
+    ib.setOwner(c1)
+        .setVrf(v1)
+        .setOspfSettings(
+            ospf.setAreaName(oa1a.getAreaNumber()).setProcess("1").setPassive(true).build());
+    Interface iface = ib.setName(l0Name).setAddress(C1_L0_ADDRESS).build();
+    oa1a.addInterface(iface.getName());
+
+    ib.setOspfSettings(null);
+    ib.setOspfCost(1).setOspfEnabled(true).setOspfProcess("1");
+
     ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
