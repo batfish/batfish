@@ -16,6 +16,7 @@ import java.util.Optional;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -39,12 +40,14 @@ public class OspfTopologyUtilsTest {
         0L,
         1500,
         StubType.NONE,
+        null,
         remoteIp,
         false,
         remoteIp,
         0L,
         1500,
-        StubType.NONE);
+        StubType.NONE,
+        null);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -56,12 +59,14 @@ public class OspfTopologyUtilsTest {
         0L,
         1500,
         StubType.NONE,
+        null,
         remoteIp,
         remotePassive,
         remoteIp,
         0L,
         1500,
-        StubType.NONE);
+        StubType.NONE,
+        null);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -73,12 +78,14 @@ public class OspfTopologyUtilsTest {
         0L,
         localMtu,
         StubType.NONE,
+        null,
         remoteIp,
         false,
         remoteIp,
         0L,
         remoteMtu,
-        StubType.NONE);
+        StubType.NONE,
+        null);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -90,12 +97,14 @@ public class OspfTopologyUtilsTest {
         localArea,
         1500,
         StubType.NONE,
+        null,
         remoteIp,
         false,
         remoteIp,
         remoteArea,
         1500,
-        StubType.NONE);
+        StubType.NONE,
+        null);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -107,12 +116,14 @@ public class OspfTopologyUtilsTest {
         0L,
         1500,
         localAreaType,
+        null,
         remoteIp,
         false,
         remoteIp,
         0L,
         1500,
-        remoteAreaType);
+        remoteAreaType,
+        null);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -124,12 +135,36 @@ public class OspfTopologyUtilsTest {
         0L,
         1500,
         StubType.NONE,
+        null,
         remoteIp,
         false,
         remoteRouterId,
         0L,
         1500,
-        StubType.NONE);
+        StubType.NONE,
+        null);
+  }
+
+  private static NetworkConfigurations buildNetworkConfigurations(
+      Ip localIp,
+      OspfInterfaceSettings localOspfSettings,
+      Ip remoteIp,
+      OspfInterfaceSettings remoteOspfSettings) {
+    return buildNetworkConfigurations(
+        localIp,
+        false,
+        localIp,
+        0L,
+        1500,
+        StubType.NONE,
+        localOspfSettings,
+        remoteIp,
+        false,
+        remoteIp,
+        0L,
+        1500,
+        StubType.NONE,
+        remoteOspfSettings);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -139,12 +174,14 @@ public class OspfTopologyUtilsTest {
       long localArea,
       int localMtu,
       StubType localAreaType,
+      OspfInterfaceSettings localOspfSettings,
       Ip remoteIp,
       boolean remotePassive,
       Ip remoteRouterId,
       long remoteArea,
       int remoteMtu,
-      StubType remoteAreaType) {
+      StubType remoteAreaType,
+      OspfInterfaceSettings remoteOspfSettings) {
     return NetworkConfigurations.of(
         ImmutableMap.of(
             LOCAL_CONFIG_ID.getHostname(),
@@ -155,7 +192,8 @@ public class OspfTopologyUtilsTest {
                 localRouterId,
                 localArea,
                 localMtu,
-                localAreaType),
+                localAreaType,
+                localOspfSettings),
             REMOTE_CONFIG_ID.getHostname(),
             buildConfiguration(
                 REMOTE_CONFIG_ID,
@@ -164,7 +202,8 @@ public class OspfTopologyUtilsTest {
                 remoteRouterId,
                 remoteArea,
                 remoteMtu,
-                remoteAreaType)));
+                remoteAreaType,
+                remoteOspfSettings)));
   }
 
   private static Configuration buildConfiguration(
@@ -174,7 +213,8 @@ public class OspfTopologyUtilsTest {
       Ip routerId,
       long area,
       int mtu,
-      StubType areaType) {
+      StubType areaType,
+      OspfInterfaceSettings ospfSettings) {
     String hostname = configId.getHostname();
     String vrfName = configId.getVrfName();
     String procName = configId.getProcName();
@@ -208,7 +248,11 @@ public class OspfTopologyUtilsTest {
                             .build()))
                 .setRouterId(routerId)
                 .build()));
-    c.getAllInterfaces().put(ifaceName, Interface.builder().setName(ifaceName).setMtu(mtu).build());
+    Builder iface = Interface.builder().setName(ifaceName).setMtu(mtu);
+    if (ospfSettings != null) {
+      iface.setOspfSettings(ospfSettings);
+    }
+    c.getAllInterfaces().put(ifaceName, iface.build());
     c.getVrfs().put(vrfName, vrf);
     return c;
   }
@@ -296,6 +340,21 @@ public class OspfTopologyUtilsTest {
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), 1234, Ip.parse("1.1.1.2"), 1500);
 
     // Confirm we correctly mark a session as incompatible when interfaces has mismatched MTU
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testGetSessionIfCompatibleNetworkTypeMismatch() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            Ip.parse("1.1.1.1"),
+            OspfInterfaceSettings.builder().setNetworkType(OspfNetworkType.POINT_TO_POINT).build(),
+            Ip.parse("1.1.1.2"),
+            OspfInterfaceSettings.builder().setNetworkType(OspfNetworkType.BROADCAST).build());
+
+    // Confirm we correctly mark a session as incompatible when OSPF network types are mismatched
     Optional<OspfSessionProperties> val =
         getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(Optional.empty()));

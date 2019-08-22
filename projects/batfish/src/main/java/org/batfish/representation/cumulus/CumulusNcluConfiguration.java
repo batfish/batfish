@@ -219,21 +219,44 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
-            Ipv4UnicastAddressFamily.builder()
-                .setAddressFamilyCapabilities(
-                    AddressFamilyCapabilities.builder()
-                        .setSendCommunity(true)
-                        .setSendExtendedCommunity(true)
-                        .build())
-                .setExportPolicy(exportRoutingPolicy.getName())
-                .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
-                .setRouteReflectorClient(
-                    Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
-                        .map(BgpNeighborIpv4UnicastAddressFamily::getRouteReflectorClient)
-                        .orElse(false))
-                .build())
+            convertIpv4UnicastAddressFamily(
+                neighbor.getIpv4UnicastAddressFamily(), exportRoutingPolicy, importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
+        .build();
+  }
+
+  @VisibleForTesting
+  Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
+      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily,
+      RoutingPolicy exportRoutingPolicy,
+      RoutingPolicy importRoutingPolicy) {
+    // TODO validate routeReflectorClient definition
+    // According to the docs, the neighbor must have been explicitly activated for
+    // route-reflector-client to take effect:
+    // https://docs.cumulusnetworks.com/display/DOCS/Border+Gateway+Protocol+-+BGP#BorderGatewayProtocol-BGP-RouteReflectors
+    //
+    // But this is not enforced by either NCLU or FRR, and we have example configs where
+    // route-reflector-client is enabled for not-explicitlly-activated interfaces. Ipv4 unicast
+    // is enabled by default for some interfaces; do those need to explicitly activate for
+    // route-reflector-client?
+    boolean routeReflectorClient =
+        Optional.ofNullable(ipv4UnicastAddressFamily)
+            .map(
+                af ->
+                    firstNonNull(af.getActivated(), false)
+                        && firstNonNull(af.getRouteReflectorClient(), false))
+            .orElse(false);
+
+    return Ipv4UnicastAddressFamily.builder()
+        .setAddressFamilyCapabilities(
+            AddressFamilyCapabilities.builder()
+                .setSendCommunity(true)
+                .setSendExtendedCommunity(true)
+                .build())
+        .setExportPolicy(exportRoutingPolicy.getName())
+        .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
+        .setRouteReflectorClient(routeReflectorClient)
         .build();
   }
 
@@ -274,19 +297,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
-            Ipv4UnicastAddressFamily.builder()
-                .setAddressFamilyCapabilities(
-                    AddressFamilyCapabilities.builder()
-                        .setSendCommunity(true)
-                        .setSendExtendedCommunity(true)
-                        .build())
-                .setExportPolicy(exportRoutingPolicy.getName())
-                .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
-                .setRouteReflectorClient(
-                    Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
-                        .map(BgpNeighborIpv4UnicastAddressFamily::getRouteReflectorClient)
-                        .orElse(false))
-                .build())
+            convertIpv4UnicastAddressFamily(
+                neighbor.getIpv4UnicastAddressFamily(), exportRoutingPolicy, importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
         .build();

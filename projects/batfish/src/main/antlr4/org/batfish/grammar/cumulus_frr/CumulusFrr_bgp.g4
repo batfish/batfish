@@ -111,8 +111,7 @@ sbn_name
       sbn_interface       // set an interface neighbor property
     | sbn_peer_group_decl // declare a new peer group
     | sbn_property        // set a peer-group property
-    | sbn_bfd
-    | sbn_password
+    // Nothing else should go in here. New properties should go in sbn_property
     )
 ;
 
@@ -130,8 +129,15 @@ sbn_property
 :
   sbnp_description
 | sbnp_ebgp_multihop
-| sbnp_remote_as
 | sbnp_peer_group
+| sbnp_bfd
+| sbnp_password
+| sbnp_remote_as
+;
+
+sbnp_bfd
+:
+  BFD word*
 ;
 
 sbnp_description
@@ -144,9 +150,9 @@ sbnp_ebgp_multihop
   EBGP_MULTIHOP num = uint32
 ;
 
-sbnp_remote_as
+sbnp_password
 :
-  REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL)
+  PASSWORD REMARK_TEXT
 ;
 
 sbnp_peer_group
@@ -154,20 +160,37 @@ sbnp_peer_group
   PEER_GROUP name = word
 ;
 
+sbnp_remote_as
+:
+  REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL)
+;
+
 sbafi_neighbor
 :
   NEIGHBOR (ip = IP_ADDRESS | name = word)
   (
-    sbafin_next_hop_self
-    | sbafin_soft_reconfiguration
-    | sbafin_route_map
+    sbafin_activate
+  | sbafin_next_hop_self
+  | sbafin_route_reflector_client
+  | sbafin_soft_reconfiguration
+  | sbafin_route_map
   )
   NEWLINE
+;
+
+sbafin_activate
+:
+  ACTIVATE
 ;
 
 sbafin_next_hop_self
 :
   NEXT_HOP_SELF
+;
+
+sbafin_route_reflector_client
+:
+  ROUTE_REFLECTOR_CLIENT
 ;
 
 sbafin_soft_reconfiguration

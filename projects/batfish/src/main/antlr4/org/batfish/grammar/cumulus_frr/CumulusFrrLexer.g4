@@ -377,6 +377,11 @@ NEXT_HOP
   'next-hop'
 ;
 
+ROUTE_REFLECTOR_CLIENT
+:
+  'route-reflector-client'
+;
+
 UINT8
 :
   F_Uint8

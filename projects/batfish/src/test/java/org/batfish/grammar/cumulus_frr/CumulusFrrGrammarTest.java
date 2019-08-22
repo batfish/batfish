@@ -275,7 +275,7 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamilyNeighborNextHopSelf() {
     parseLines(
         "router bgp 1",
-        "neighbor 10.0.0.1 description a",
+        "neighbor 10.0.0.1 description x",
         "address-family ipv4 unicast",
         "neighbor 10.0.0.1 next-hop-self",
         "exit-address-family");
@@ -292,6 +292,42 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testBgpAlwaysCompareMed() {
     parse("router bgp 1\n bgp always-compare-med\n");
+  }
+
+  @Test
+  public void testBgpAddressFamilyNeighborActivate() {
+    parseLines(
+        "router bgp 1",
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "neighbor N activate",
+        "exit-address-family");
+    assertTrue(
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getActivated());
+  }
+
+  @Test
+  public void testBgpAddressFamilyNeighborRouteReflectorClient() {
+    parseLines(
+        "router bgp 1",
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "neighbor N route-reflector-client",
+        "exit-address-family");
+    assertTrue(
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getRouteReflectorClient());
   }
 
   @Test
@@ -403,7 +439,6 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrf() {
-    // vrfs are created in interfaces file, but frr also contains definition
     CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
     parse("vrf NAME\n exit-vrf\n");
     assertThat(
@@ -413,18 +448,19 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrfVni() {
-    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    Vrf vrf = new Vrf("NAME");
+    CONFIG.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n vni 170000\n exit-vrf\n");
-    Vrf vrf = CONFIG.getVrfs().get("NAME");
     assertThat(vrf.getVni(), equalTo(170000));
   }
 
   @Test
   public void testCumulusFrrVrfIpRoutes() {
-    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    Vrf vrf = new Vrf("NAME");
+    CONFIG.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf\n");
     assertThat(
-        CONFIG.getVrfs().get("NAME").getStaticRoutes(),
+        vrf.getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 new StaticRoute(Prefix.parse("1.0.0.0/8"), Ip.parse("10.0.2.1"), null),

@@ -145,6 +145,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -165,6 +166,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public static final String ACL_NAME_SCREEN_ZONE = "~SCREEN_ZONE~";
 
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
+
+  // See
+  // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/hello-interval-edit-protocols-ospf.html
+  static final int DEFAULT_NBMA_HELLO_INTERVAL = 30;
+
+  static final int DEFAULT_HELLO_INTERVAL = 10;
+
+  // Default dead interval is hello interval times 4
+  static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
+
+  // See
+  // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/dead-interval-edit-protocols-ospf.html
+  static final int DEFAULT_NBMA_DEAD_INTERVAL =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_NBMA_HELLO_INTERVAL;
+
+  static final int DEFAULT_DEAD_INTERVAL =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_HELLO_INTERVAL;
 
   private static final IpAccessList ACL_EXISTING_CONNECTION =
       IpAccessList.builder()
@@ -891,6 +909,47 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceType()));
 
     iface.setOspfSettings(ospfSettings.build());
+  }
+
+  /**
+   * Helper to infer dead interval from configured OSPF settings on an interface. Check explicitly
+   * set dead interval, infer from hello interval, or infer from OSPF interface type, in that order.
+   * See
+   * https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/dead-interval-edit-protocols-ospf.html
+   * for more details.
+   */
+  @VisibleForTesting
+  static int toOspfDeadInterval(Interface iface) {
+    Integer deadInterval = iface.getOspfDeadInterval();
+    if (deadInterval != null) {
+      return deadInterval;
+    }
+    Integer helloInterval = iface.getOspfHelloInterval();
+    if (helloInterval != null) {
+      return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
+    }
+    if (iface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+      return DEFAULT_NBMA_DEAD_INTERVAL;
+    }
+    return DEFAULT_DEAD_INTERVAL;
+  }
+
+  /**
+   * Helper to infer hello interval from configured OSPF settings on an interface. Check explicitly
+   * set hello interval or infer from OSPF interface type, in that order. See
+   * https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/hello-interval-edit-protocols-ospf.html
+   * for more details.
+   */
+  @VisibleForTesting
+  static int toOspfHelloInterval(Interface iface) {
+    Integer helloInterval = iface.getOspfHelloInterval();
+    if (helloInterval != null) {
+      return helloInterval;
+    }
+    if (iface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+      return DEFAULT_NBMA_HELLO_INTERVAL;
+    }
+    return DEFAULT_HELLO_INTERVAL;
   }
 
   private org.batfish.datamodel.ospf.OspfArea.Builder toOspfAreaBuilder(
