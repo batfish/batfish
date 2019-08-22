@@ -1334,6 +1334,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_SUPPRESS_MAP,
         CiscoNxosStructureUsage.BGP_TABLE_MAP,
         CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
     markConcreteStructure(
@@ -1341,15 +1342,24 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_EIGRP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_ISIS, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureType.ROUTER_ISIS,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_OSPF, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureType.ROUTER_OSPF,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_OSPFV3, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureType.ROUTER_OSPFV3,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_RIP, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureType.ROUTER_RIP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);
