@@ -123,6 +123,12 @@ final class Conversions {
       return vrfConfig.getRouterId();
     }
 
+    return inferRouterId(vrf, w);
+  }
+
+  /** Infers router ID on Cisco NX-OS when not configured in a routing process */
+  @Nonnull
+  static Ip inferRouterId(Vrf vrf, Warnings w) {
     String messageBase =
         String.format(
             "Router-id is not manually configured for BGP process in VRF %s", vrf.getName());

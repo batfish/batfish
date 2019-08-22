@@ -17,10 +17,13 @@ vlan 3
   vn-segment 3333
 !
 vrf context tenant1
+  !! this VRF does not appear under "router bgp"
+  !! but should still have a BGP process
   vni 3333
   rd auto
   address-family ipv4 unicast
     route-target both auto evpn
+!
 interface nve1
   no shutdown
   host-reachability protocol bgp
