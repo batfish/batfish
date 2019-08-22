@@ -578,12 +578,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             : BooleanExprs.TRUE;
 
     // Export RIP routes that should be redistributed.
-    BgpRedistributionPolicy ripPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.RIP);
-    if (ripPolicy != null) {
+    List<RedistributionPolicy> ripPolicies =
+        ipv4af == null
+            ? ImmutableList.of()
+            : ipv4af.getRedistributionPolicies(NxosRoutingProtocol.RIP);
+    for (RedistributionPolicy ripPolicy : ripPolicies) {
+      /* TODO: how do we match on source tag (aka RIP process id)? */
       String routeMap = ripPolicy.getRouteMap();
       org.batfish.representation.cisco_nxos.RouteMap map = _routeMaps.get(routeMap);
-      /* TODO: how do we match on source tag (aka RIP process id)? */
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.RIP),
@@ -596,8 +598,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Export static routes that should be redistributed.
-    BgpRedistributionPolicy staticPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.STATIC);
+    RedistributionPolicy staticPolicy =
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocolInstance.staticc());
     if (staticPolicy != null) {
       String routeMap = staticPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
@@ -613,8 +615,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Export connected routes that should be redistributed.
-    BgpRedistributionPolicy connectedPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.DIRECT);
+    RedistributionPolicy connectedPolicy =
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocolInstance.direct());
     if (connectedPolicy != null) {
       String routeMap = connectedPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
@@ -630,12 +632,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Export OSPF routes that should be redistributed.
-    BgpRedistributionPolicy ospfPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.OSPF);
-    if (ospfPolicy != null) {
+    List<RedistributionPolicy> ospfPolicies =
+        ipv4af == null
+            ? ImmutableList.of()
+            : ipv4af.getRedistributionPolicies(NxosRoutingProtocol.OSPF);
+    for (RedistributionPolicy ospfPolicy : ospfPolicies) {
+      /* TODO: how do we match on source tag (aka OSPF process tag)? */
       String routeMap = ospfPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
-      /* TODO: how do we match on source tag (aka OSPF process)? */
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.OSPF),
@@ -1326,14 +1330,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_NETWORK_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_NETWORK6_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_NEXTHOP_ROUTE_MAP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_ROUTE_MAP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_LISP_ROUTE_MAP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_ROUTE_MAP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_ROUTE_MAP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_SUPPRESS_MAP,
         CiscoNxosStructureUsage.BGP_TABLE_MAP,
         CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP,
@@ -1343,19 +1340,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureType.ROUTE_MAP_ENTRY, CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_EIGRP,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_ISIS,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_SOURCE_TAG);
+        CiscoNxosStructureType.ROUTER_ISIS, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_OSPF,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG);
+        CiscoNxosStructureType.ROUTER_OSPF, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_OSPFV3,
-        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_SOURCE_TAG);
+        CiscoNxosStructureType.ROUTER_OSPFV3, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_RIP, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_SOURCE_TAG);
+        CiscoNxosStructureType.ROUTER_RIP, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);

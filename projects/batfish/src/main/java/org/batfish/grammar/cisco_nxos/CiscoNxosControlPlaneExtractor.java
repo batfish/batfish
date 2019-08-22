@@ -56,19 +56,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NETWORK6_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NETWORK_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEXTHOP_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_SOURCE_TAG;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_LISP_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_SOURCE_TAG;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_SOURCE_TAG;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_SUPPRESS_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_TABLE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP;
@@ -91,13 +80,6 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUT
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
-import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.DIRECT;
-import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.EIGRP;
-import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.ISIS;
-import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.LISP;
-import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.OSPF;
-import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.RIP;
-import static org.batfish.representation.cisco_nxos.NxosRoutingProtocol.STATIC;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 import static org.batfish.representation.cisco_nxos.Vrf.MANAGEMENT_VRF_ID;
@@ -190,6 +172,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_execContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_distanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
@@ -197,6 +180,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ebgp_multihop_ttlContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Eigrp_asnContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Eigrp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ev_vniContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_rdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_route_targetContext;
@@ -285,6 +269,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_list_line_prefix_lengthContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Isis_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
@@ -311,6 +296,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ogipa_lineContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_default_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_range_costContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_instanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospfv3_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_descriptionContext;
@@ -318,10 +305,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_networkContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistribute_ospfContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_networkContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_redistribute_ospfv3Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_multicastContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_unicastContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv6_multicastContext;
@@ -337,12 +324,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_inject_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_nexthop_route_mapContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_directContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_eigrpContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_isisContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_lispContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_ripContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_staticContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_suppress_inactiveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_table_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afl2v_retainContext;
@@ -390,6 +371,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_no_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_autonomous_systemContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rip_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rm_continueContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
@@ -450,6 +432,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospf_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfv3_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_rip_process_idContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Routing_instance_v4Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Routing_instance_v6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_evpnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
@@ -591,6 +575,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
+import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
 import org.batfish.representation.cisco_nxos.SnmpServer;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
@@ -903,6 +888,84 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     assert ctx.route_distinguisher() != null;
     return RouteDistinguisherOrAuto.of(toRouteDistinguisher(ctx.route_distinguisher()));
+  }
+
+  private static @Nonnull Optional<RoutingProtocolInstance> toRoutingProtocolInstance(
+      Bgp_instanceContext ctx) {
+    return Optional.of(RoutingProtocolInstance.bgp(toLong(ctx.bgp_asn())));
+  }
+
+  private @Nonnull Optional<RoutingProtocolInstance> toRoutingProtocolInstance(
+      ParserRuleContext messageCtx, Eigrp_instanceContext ctx) {
+    return toString(messageCtx, ctx.router_eigrp_process_tag()).map(RoutingProtocolInstance::eigrp);
+  }
+
+  private @Nonnull Optional<RoutingProtocolInstance> toRoutingProtocolInstance(
+      ParserRuleContext messageCtx, Isis_instanceContext ctx) {
+    return toString(messageCtx, ctx.router_isis_process_tag()).map(RoutingProtocolInstance::isis);
+  }
+
+  private @Nonnull Optional<RoutingProtocolInstance> toRoutingProtocolInstance(
+      ParserRuleContext messageCtx, Ospf_instanceContext ctx) {
+    return toString(messageCtx, ctx.router_ospf_name()).map(RoutingProtocolInstance::ospf);
+  }
+
+  private @Nonnull Optional<RoutingProtocolInstance> toRoutingProtocolInstance(
+      ParserRuleContext messageCtx, Ospfv3_instanceContext ctx) {
+    return toString(messageCtx, ctx.router_ospfv3_name()).map(RoutingProtocolInstance::ospfv3);
+  }
+
+  private @Nonnull Optional<RoutingProtocolInstance> toRoutingProtocolInstance(
+      ParserRuleContext messageCtx, Rip_instanceContext ctx) {
+    return toString(messageCtx, ctx.router_rip_process_id()).map(RoutingProtocolInstance::rip);
+  }
+
+  private @Nonnull Optional<RoutingProtocolInstance> toRoutingProtocolInstance(
+      ParserRuleContext messageCtx, Routing_instance_v4Context ctx) {
+    if (ctx.bgp_instance() != null) {
+      return toRoutingProtocolInstance(ctx.bgp_instance());
+    } else if (ctx.DIRECT() != null) {
+      return Optional.of(RoutingProtocolInstance.direct());
+    } else if (ctx.eigrp_instance() != null) {
+      return toRoutingProtocolInstance(messageCtx, ctx.eigrp_instance());
+    } else if (ctx.isis_instance() != null) {
+      return toRoutingProtocolInstance(messageCtx, ctx.isis_instance());
+    } else if (ctx.LISP() != null) {
+      return Optional.of(RoutingProtocolInstance.lisp());
+    } else if (ctx.ospf_instance() != null) {
+      return toRoutingProtocolInstance(messageCtx, ctx.ospf_instance());
+    } else if (ctx.rip_instance() != null) {
+      return toRoutingProtocolInstance(messageCtx, ctx.rip_instance());
+    } else if (ctx.STATIC() != null) {
+      return Optional.of(RoutingProtocolInstance.staticc());
+    }
+    _w.addWarning(
+        messageCtx, getFullText(messageCtx), _parser, "Unknown routing protocol instance");
+    return Optional.empty();
+  }
+
+  private @Nonnull Optional<RoutingProtocolInstance> toRoutingProtocolInstance(
+      ParserRuleContext messageCtx, Routing_instance_v6Context ctx) {
+    if (ctx.bgp_instance() != null) {
+      return toRoutingProtocolInstance(ctx.bgp_instance());
+    } else if (ctx.DIRECT() != null) {
+      return Optional.of(RoutingProtocolInstance.direct());
+    } else if (ctx.eigrp_instance() != null) {
+      return toRoutingProtocolInstance(messageCtx, ctx.eigrp_instance());
+    } else if (ctx.isis_instance() != null) {
+      return toRoutingProtocolInstance(messageCtx, ctx.isis_instance());
+    } else if (ctx.LISP() != null) {
+      return Optional.of(RoutingProtocolInstance.lisp());
+    } else if (ctx.ospfv3_instance() != null) {
+      return toRoutingProtocolInstance(messageCtx, ctx.ospfv3_instance());
+    } else if (ctx.rip_instance() != null) {
+      return toRoutingProtocolInstance(messageCtx, ctx.rip_instance());
+    } else if (ctx.STATIC() != null) {
+      return Optional.of(RoutingProtocolInstance.staticc());
+    }
+    _w.addWarning(
+        messageCtx, getFullText(messageCtx), _parser, "Unknown routing protocol instance");
+    return Optional.empty();
   }
 
   private static @Nonnull ExtendedCommunity toExtendedCommunity(Route_targetContext ctx) {
@@ -2397,19 +2460,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af4_redistribute_ospf(Rb_af4_redistribute_ospfContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    Optional<String> ospfProcessOrError = toString(ctx, ctx.source_tag);
-    if (!nameOrError.isPresent() || !ospfProcessOrError.isPresent()) {
+  public void exitRb_af4_redistribute(Rb_af4_redistributeContext ctx) {
+    Optional<RoutingProtocolInstance> rpiOrError =
+        toRoutingProtocolInstance(ctx, ctx.routing_instance_v4());
+    Optional<String> mapOrError = toString(ctx, ctx.route_map_name());
+    if (!rpiOrError.isPresent() || !mapOrError.isPresent()) {
       return;
     }
-    String name = nameOrError.get();
-    String ospfProcess = ospfProcessOrError.get();
+    RoutingProtocolInstance rpi = rpiOrError.get();
+    String map = mapOrError.get();
+    Optional<CiscoNxosStructureType> type = rpi.getProtocol().getRouterStructureType();
+    if (rpi.getTag() != null && type.isPresent()) {
+      _configuration.referenceStructure(
+          type.get(), rpi.getTag(), BGP_REDISTRIBUTE_INSTANCE, ctx.getStart().getLine());
+    }
     _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
-    _configuration.referenceStructure(
-        ROUTER_OSPF, ospfProcess, BGP_REDISTRIBUTE_OSPF_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(OSPF, name, ospfProcess);
+        ROUTE_MAP, map, BGP_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(rpi, map);
   }
 
   @Override
@@ -2474,19 +2541,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af6_redistribute_ospfv3(Rb_af6_redistribute_ospfv3Context ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    Optional<String> sourceTagOrError = toString(ctx, ctx.source_tag);
-    if (!nameOrError.isPresent() || !sourceTagOrError.isPresent()) {
+  public void exitRb_af6_redistribute(Rb_af6_redistributeContext ctx) {
+    Optional<RoutingProtocolInstance> rpiOrError =
+        toRoutingProtocolInstance(ctx, ctx.routing_instance_v6());
+    Optional<String> mapOrError = toString(ctx, ctx.route_map_name());
+    if (!rpiOrError.isPresent() || !mapOrError.isPresent()) {
       return;
     }
-    String name = nameOrError.get();
-    String sourceTag = sourceTagOrError.get();
+    RoutingProtocolInstance rpi = rpiOrError.get();
+    String map = mapOrError.get();
+    Optional<CiscoNxosStructureType> type = rpi.getProtocol().getRouterStructureType();
+    if (rpi.getTag() != null && type.isPresent()) {
+      _configuration.referenceStructure(
+          type.get(), rpi.getTag(), BGP_REDISTRIBUTE_INSTANCE, ctx.getStart().getLine());
+    }
     _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP, ctx.getStart().getLine());
-    _configuration.referenceStructure(
-        ROUTER_OSPFV3, sourceTag, BGP_REDISTRIBUTE_OSPFV3_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(OSPF, name, sourceTag);
+        ROUTE_MAP, map, BGP_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(rpi, map);
   }
 
   @Override
@@ -2615,90 +2686,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             name ->
                 _configuration.referenceStructure(
                     ROUTE_MAP, name, BGP_NEXTHOP_ROUTE_MAP, ctx.getStart().getLine()));
-  }
-
-  @Override
-  public void exitRb_afip_redistribute_direct(Rb_afip_redistribute_directContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(DIRECT, name, null);
-  }
-
-  @Override
-  public void exitRb_afip_redistribute_eigrp(Rb_afip_redistribute_eigrpContext ctx) {
-    Optional<String> mapNameOrError = toString(ctx, ctx.mapname);
-    Optional<String> eigrpTagOrError = toString(ctx, ctx.source_tag);
-    if (!mapNameOrError.isPresent() || !eigrpTagOrError.isPresent()) {
-      return;
-    }
-    String mapName = mapNameOrError.get();
-    String sourceTag = eigrpTagOrError.get();
-    _configuration.referenceStructure(
-        ROUTE_MAP, mapName, BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP, ctx.getStart().getLine());
-    _configuration.referenceStructure(
-        ROUTER_EIGRP, sourceTag, BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(EIGRP, mapName, sourceTag);
-  }
-
-  @Override
-  public void exitRb_afip_redistribute_isis(Rb_afip_redistribute_isisContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    Optional<String> sourceTagOrError = toString(ctx, ctx.source_tag);
-    if (!nameOrError.isPresent() || !sourceTagOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    String sourceTag = sourceTagOrError.get();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_ISIS_ROUTE_MAP, ctx.getStart().getLine());
-    _configuration.referenceStructure(
-        ROUTER_ISIS, sourceTag, BGP_REDISTRIBUTE_ISIS_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(ISIS, name, sourceTag);
-  }
-
-  @Override
-  public void exitRb_afip_redistribute_lisp(Rb_afip_redistribute_lispContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_LISP_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(LISP, name, null);
-  }
-
-  @Override
-  public void exitRb_afip_redistribute_rip(Rb_afip_redistribute_ripContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    Optional<String> sourceTagOrError = toString(ctx, ctx.source_tag);
-    if (!nameOrError.isPresent() || !sourceTagOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    String sourceTag = sourceTagOrError.get();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_RIP_ROUTE_MAP, ctx.getStart().getLine());
-    _configuration.referenceStructure(
-        ROUTER_RIP, sourceTag, BGP_REDISTRIBUTE_RIP_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RIP, name, sourceTag);
-  }
-
-  @Override
-  public void exitRb_afip_redistribute_static(Rb_afip_redistribute_staticContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_STATIC_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(STATIC, name, null);
   }
 
   @Override
