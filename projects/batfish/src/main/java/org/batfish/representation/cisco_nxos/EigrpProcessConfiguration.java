@@ -24,6 +24,22 @@ public final class EigrpProcessConfiguration implements Serializable {
     getOrCreateVrf(DEFAULT_VRF_NAME);
   }
 
+  public @Nullable Integer getAsn() {
+    return _asn;
+  }
+
+  public void setAsn(@Nullable Integer asn) {
+    _asn = asn;
+  }
+
+  public boolean getIsolate() {
+    return _isolate;
+  }
+
+  public void setIsolate(boolean isolate) {
+    _isolate = isolate;
+  }
+
   /** A read-only map containing the per-VRF BGP configuration. */
   public Map<String, EigrpVrfConfiguration> getVrfs() {
     return Collections.unmodifiableMap(_vrfs);
@@ -37,18 +53,11 @@ public final class EigrpProcessConfiguration implements Serializable {
     return _vrfs.get(vrfName);
   }
 
-  public boolean getIsolate() {
-    return _isolate;
-  }
-
-  public void setIsolate(boolean isolate) {
-    _isolate = isolate;
-  }
-
   ///////////////////////////////////
   // Private implementation details
   ///////////////////////////////////
 
+  private @Nullable Integer _asn;
   private boolean _isolate;
   private final Map<String, EigrpVrfConfiguration> _vrfs;
 }
