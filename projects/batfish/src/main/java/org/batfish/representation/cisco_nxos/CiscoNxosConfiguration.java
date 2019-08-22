@@ -2172,9 +2172,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
     ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
-    // TODO: update data model to support explicit hello and dead intervals
-    ospfSettings.setDeadInterval(4444);
-    ospfSettings.setHelloInterval(44);
+    ospfSettings.setDeadInterval(toOspfDeadInterval(ospf));
+    ospfSettings.setHelloInterval(toOspfHelloInterval(ospf));
 
     newIface.setOspfSettings(ospfSettings.build());
   }
