@@ -1,15 +1,17 @@
 package org.batfish.representation.cisco_nxos;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import java.io.Serializable;
 import javax.annotation.Nullable;
 
 public final class OspfInterface implements Serializable {
 
+  // Default dead interval is hello interval times 4
+  static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
+
   // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/ospf/ip-ospf-dead-interval.html
-  public static final int DEFAULT_DEAD_INTERVAL_S = 40; // s
   public static final int DEFAULT_HELLO_INTERVAL_S = 10; // s
+  public static final int DEFAULT_DEAD_INTERVAL_S =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_HELLO_INTERVAL_S; // 40 s
 
   public @Nullable Long getArea() {
     return _area;
@@ -35,16 +37,16 @@ public final class OspfInterface implements Serializable {
     _cost = cost;
   }
 
-  public int getDeadIntervalS() {
-    return firstNonNull(_deadIntervalS, DEFAULT_DEAD_INTERVAL_S);
+  public @Nullable Integer getDeadIntervalS() {
+    return _deadIntervalS;
   }
 
   public void setDeadIntervalS(int deadInterval) {
     _deadIntervalS = deadInterval;
   }
 
-  public int getHelloIntervalS() {
-    return firstNonNull(_helloIntervalS, DEFAULT_HELLO_INTERVAL_S);
+  public @Nullable Integer getHelloIntervalS() {
+    return _helloIntervalS;
   }
 
   public void setHelloIntervalS(int helloIntervalS) {
