@@ -29,6 +29,7 @@ statement
   | SERVICE INTEGRATED_VTYSH_CONFIG NEWLINE
   | LINE VTY NEWLINE
   | LOG SYSLOG INFORMATIONAL NEWLINE
+  | s_interface
 ;
 
 s_agentx
@@ -43,4 +44,15 @@ s_ip
     ip_community_list
     | ip_prefix_list
   )
+;
+
+s_interface
+:
+  INTERFACE name = word VRF vrf = word NEWLINE
+  si_description
+;
+
+si_description
+:
+  DESCRIPTION description = REMARK_TEXT NEWLINE
 ;

@@ -42,6 +42,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
@@ -67,6 +68,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -87,6 +89,7 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
@@ -112,6 +115,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
+  private @Nullable Interface _currentInterface;
 
   public CumulusFrrConfigurationBuilder(
       CumulusNcluConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
@@ -293,6 +297,53 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
+  }
+
+  @Override
+  public void enterS_interface(S_interfaceContext ctx) {
+    String name = ctx.name.getText();
+    String vrf = ctx.vrf.getText();
+
+    Interface iface = _c.getInterfaces().get(name);
+    if (iface == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", name));
+      return;
+    }
+    _currentInterface = iface;
+
+    if (!vrf.equals(_currentInterface.getVrf())) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          String.format(
+              "vrf %s of interface %s does not match vrf %s defined already",
+              vrf, name, _currentInterface.getVrf()));
+    }
+  }
+
+  @Override
+  public void exitS_interface(S_interfaceContext ctx) {
+    _currentInterface = null;
+  }
+
+  @Override
+  public void exitSi_description(Si_descriptionContext ctx) {
+    if (_currentInterface == null) {
+      return;
+    }
+
+    String description = ctx.description.getText();
+    if (!description.equals(_currentInterface.getAlias())) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          String.format(
+              "description %s of interface %s does not match its alias %s",
+              description, _currentInterface.getName(), _currentInterface.getAlias()));
+    }
   }
 
   @Override

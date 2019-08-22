@@ -189,6 +189,7 @@ INTERFACE
   {
     switch (lastTokenType()) {
       case MATCH:
+      case -1:
         pushMode(M_Word);
         break;
       default:
