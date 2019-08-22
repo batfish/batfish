@@ -72,7 +72,7 @@ public final class Converter {
   /** Get Cumulus VS model {@link Bond Bonds}. */
   public Map<String, Bond> convertBonds() {
     return _interfaces.getInterfaces().values().stream()
-        .filter(iface -> iface.getBondSlaves() != null)
+        .filter(Converter::isBond)
         .map(Converter::convertBond)
         .collect(ImmutableMap.toImmutableMap(Bond::getName, Function.identity()));
   }
@@ -225,6 +225,11 @@ public final class Converter {
       vxlan.setBridgeAccessVlan(bridgeSettings.getAccess());
     }
     return vxlan;
+  }
+
+  @VisibleForTesting
+  static boolean isBond(Interface iface) {
+    return iface.getType() == BOND;
   }
 
   @VisibleForTesting
