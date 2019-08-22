@@ -1,10 +1,17 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
+import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL;
+import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
+import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_HELLO_INTERVAL;
+import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+import static org.batfish.representation.cisco.CiscoConversions.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.cisco.CiscoConversions.createAclWithSymmetricalLines;
 import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
 import static org.batfish.representation.cisco.CiscoConversions.sanityCheckDistributeList;
 import static org.batfish.representation.cisco.CiscoConversions.sanityCheckEigrpDistributeList;
+import static org.batfish.representation.cisco.CiscoConversions.toOspfDeadInterval;
+import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInterval;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -257,5 +264,68 @@ public class CiscoConversionsTest {
         oldConfig.getWarnings().getRedFlagWarnings().iterator().next().getText(),
         equalTo(
             "dist-list in OSPF process vrf:p1 uses a prefix-list which is not defined, this dist-list will allow everything"));
+  }
+
+  private static CiscoConfiguration basicCiscoConfig() {
+    CiscoConfiguration c = new CiscoConfiguration();
+    c.setHostname("cisco_conf");
+    c.setVendor(ConfigurationFormat.CISCO_IOS);
+    return c;
+  }
+
+  @Test
+  public void testToOspfDeadIntervalExplicit() {
+    CiscoConfiguration c = basicCiscoConfig();
+    Interface iface = new Interface("FastEthernet0/0", c);
+    iface.setOspfDeadInterval(7);
+    // Explicitly set dead interval should be preferred over inference
+    assertThat(toOspfDeadInterval(iface), equalTo(7));
+  }
+
+  @Test
+  public void testToOspfDeadIntervalFromHello() {
+    CiscoConfiguration c = basicCiscoConfig();
+    Interface iface = new Interface("FastEthernet0/0", c);
+
+    int helloInterval = 1;
+    iface.setOspfHelloInterval(helloInterval);
+    // Since the dead interval is not set, it should be inferred as four times the hello interval
+    assertThat(
+        toOspfDeadInterval(iface), equalTo(OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval));
+  }
+
+  @Test
+  public void testToOspfDeadIntervalFromType() {
+    CiscoConfiguration c = basicCiscoConfig();
+    Interface iface = new Interface("FastEthernet0/0", c);
+
+    // Since the dead interval and hello interval are not set, it should be inferred from the
+    // network type
+    iface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
+    assertThat(toOspfDeadInterval(iface), equalTo(DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST));
+    iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
+    assertThat(toOspfDeadInterval(iface), equalTo(DEFAULT_OSPF_DEAD_INTERVAL));
+  }
+
+  @Test
+  public void testToOspfHelloIntervalExplicit() {
+    CiscoConfiguration c = basicCiscoConfig();
+    Interface iface = new Interface("FastEthernet0/0", c);
+
+    iface.setOspfHelloInterval(7);
+    // Explicitly set hello interval should be preferred over inference
+    assertThat(toOspfHelloInterval(iface), equalTo(7));
+  }
+
+  @Test
+  public void testToOspfHelloIntervalFromType() {
+    CiscoConfiguration c = basicCiscoConfig();
+    Interface iface = new Interface("FastEthernet0/0", c);
+
+    // Since the hello interval is not set, it should be inferred from the network type
+    iface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
+    assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST));
+    iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
+    assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_OSPF_HELLO_INTERVAL));
   }
 }
