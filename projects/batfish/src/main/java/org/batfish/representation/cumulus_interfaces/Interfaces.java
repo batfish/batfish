@@ -11,7 +11,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Interfaces {
   private final Set<String> _autoIfaces = new HashSet<>();
-  private final Map<String, String> _bondSlaveParents = new HashMap<>();
   private final Map<String, Interface> _interfaces = new HashMap<>();
 
   /** Register an interface as being enabled on boot. */
@@ -33,11 +32,6 @@ public final class Interfaces {
   @Nonnull
   public Set<String> getAutoIfaces() {
     return _autoIfaces;
-  }
-
-  @Nonnull
-  public Map<String, String> getBondSlaveParents() {
-    return _bondSlaveParents;
   }
 
   @Nonnull

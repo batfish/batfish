@@ -149,7 +149,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private @Nullable BgpProcess _bgpProcess;
-  private final @Nonnull Map<String, Bond> _bonds;
+  private @Nonnull Map<String, Bond> _bonds;
   private @Nonnull Bridge _bridge;
   private transient Configuration _c;
   private @Nullable String _hostname;
@@ -1209,6 +1209,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               exportConditions.add(exportNetworkConditions);
             });
     return exportConditions;
+  }
+
+  public void setBonds(@Nonnull Map<String, Bond> bonds) {
+    _bonds = ImmutableMap.copyOf(bonds);
   }
 
   public void setBridge(@Nonnull Bridge bridge) {

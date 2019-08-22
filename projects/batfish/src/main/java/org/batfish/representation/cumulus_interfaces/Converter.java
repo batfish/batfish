@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus_interfaces;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static org.batfish.representation.cumulus.CumulusStructureType.BOND;
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.VLAN;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
@@ -19,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
@@ -36,12 +38,52 @@ public final class Converter {
   private static final Pattern PHYSICAL_SUBINTERFACE_PATTERN =
       Pattern.compile("^((swp[0-9]+(s[0-9])?)|(eth[0-9]+))\\.([0-9]+)$");
   private final Interfaces _interfaces;
+  private final Map<String, String> _bondSlaveParents;
 
   private static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
   private static final int DEFAULT_BRIDGE_PVID = 1;
 
   public Converter(Interfaces interfaces) {
     _interfaces = interfaces;
+    _bondSlaveParents = computeBondSlaveParents(interfaces.getInterfaces());
+  }
+
+  @VisibleForTesting
+  Converter(Interfaces interfaces, Map<String, String> bondSlaveParents) {
+    _interfaces = interfaces;
+    _bondSlaveParents = bondSlaveParents;
+  }
+
+  private Map<String, String> computeBondSlaveParents(Map<String, Interface> interfaces) {
+    ImmutableMap.Builder<String, String> bondSlaveParents = ImmutableMap.builder();
+    for (Interface parent : interfaces.values()) {
+      Set<String> slaves = parent.getBondSlaves();
+      if (slaves == null) {
+        continue;
+      }
+      for (String slave : slaves) {
+        bondSlaveParents.put(slave, parent.getName());
+      }
+    }
+
+    return bondSlaveParents.build();
+  }
+
+  /** Get Cumulus VS model {@link Bond Bonds}. */
+  public Map<String, Bond> convertBonds() {
+    return _interfaces.getInterfaces().values().stream()
+        .filter(Converter::isBond)
+        .map(Converter::convertBond)
+        .collect(ImmutableMap.toImmutableMap(Bond::getName, Function.identity()));
+  }
+
+  @VisibleForTesting
+  static Bond convertBond(Interface bondIface) {
+    Bond bond = new Bond(bondIface.getName());
+    bond.setClagId(bondIface.getClagId());
+    bond.setSlaves(bondIface.getBondSlaves());
+    bond.setVrf(bondIface.getVrf());
+    return bond;
   }
 
   /** Get Cumulus VS model {@link Bridge}. */
@@ -99,7 +141,7 @@ public final class Converter {
   @VisibleForTesting
   CumulusInterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
-    if (_interfaces.getBondSlaveParents().containsKey(name)) {
+    if (_bondSlaveParents.containsKey(name)) {
       return CumulusInterfaceType.BOND_SUBINTERFACE;
     } else if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
       return CumulusInterfaceType.PHYSICAL;
@@ -114,7 +156,7 @@ public final class Converter {
   @Nullable
   String getSuperInterfaceName(Interface iface) {
     String name = iface.getName();
-    String superIfaceName = _interfaces.getBondSlaveParents().get(name);
+    String superIfaceName = _bondSlaveParents.get(name);
     if (superIfaceName != null) {
       return superIfaceName;
     }
@@ -183,6 +225,11 @@ public final class Converter {
       vxlan.setBridgeAccessVlan(bridgeSettings.getAccess());
     }
     return vxlan;
+  }
+
+  @VisibleForTesting
+  static boolean isBond(Interface iface) {
+    return iface.getType() == BOND;
   }
 
   @VisibleForTesting
