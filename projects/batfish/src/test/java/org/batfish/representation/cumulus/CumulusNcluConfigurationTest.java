@@ -179,8 +179,8 @@ public class CumulusNcluConfigurationTest {
       bgpNeighbor.setRemoteAs(10000L);
       bgpVrf.setAutonomousSystem(10000L);
       bgpNeighbor.setIpv4UnicastAddressFamily(new BgpNeighborIpv4UnicastAddressFamily());
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
-      assertNull(setNextHop);
+
+      assertNull(getSetNextHop(bgpNeighbor, bgpVrf));
     }
 
     {
@@ -189,11 +189,12 @@ public class CumulusNcluConfigurationTest {
       bgpNeighbor.setRemoteAs(10000L);
       bgpVrf.setAutonomousSystem(10000L);
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      ipv4af.setNextHopSelf(true);
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
+      ipv4af.setNextHopSelf(true);
 
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
-      assertThat(setNextHop, equalTo(new SetNextHop(SelfNextHop.getInstance(), false)));
+      assertThat(
+          getSetNextHop(bgpNeighbor, bgpVrf),
+          equalTo(new SetNextHop(SelfNextHop.getInstance(), false)));
     }
   }
 
@@ -259,6 +260,7 @@ public class CumulusNcluConfigurationTest {
   public void testGenerateBgpActivePeerConfig_SetEbgpMultiHop() {
 
     // set VI configuration
+
     Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
     configuration
         .getAllInterfaces()
@@ -331,5 +333,34 @@ public class CumulusNcluConfigurationTest {
     BgpUnnumberedPeerConfig peerConfig = newProc.getInterfaceNeighbors().get("BgpNeighbor");
 
     assertTrue(peerConfig.getEbgpMultihop());
+  }
+
+  @Test
+  public void testConvertIpv4UnicastAddressFamily_routeReflectorClient() {
+
+    // setup vi model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    RoutingPolicy policy = nf.routingPolicyBuilder().build();
+
+    // setup vs model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setConfiguration(viConfig);
+
+    // route-reflector-client is false if ipv4af is null
+    assertFalse(vsConfig.convertIpv4UnicastAddressFamily(null, policy).getRouteReflectorClient());
+
+    // route-reflector-client is true if activate and route-reflector-client are both true
+    {
+      BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
+      af.setActivated(true);
+      af.setRouteReflectorClient(true);
+      assertTrue(vsConfig.convertIpv4UnicastAddressFamily(af, policy).getRouteReflectorClient());
+    }
+
+    // TODO what if not explicitly activated (i.e. activated is null) but route-reflector-client is
+    // true? Not testing until we're sure what correct behavior is. See comment in
+    // convertIpv4UnicastAddressFamily.
   }
 }
