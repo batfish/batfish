@@ -902,6 +902,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (proc != null) {
       ospfSettings.setProcess(proc.getProcessId());
     }
+    ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface));
+    ospfSettings.setHelloInterval(toOspfHelloInterval(vsIface));
     // TODO infer interface type based on physical interface: "the software
     // chooses the correct
     // interface type...you should never have to set the interface type" (see
