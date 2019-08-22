@@ -302,7 +302,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void enterS_interface(S_interfaceContext ctx) {
     String name = ctx.name.getText();
-    String vrf = ctx.vrf.getText();
 
     Interface iface = _c.getInterfaces().get(name);
     if (iface == null) {
@@ -312,14 +311,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
     _currentInterface = iface;
 
-    if (!vrf.equals(_currentInterface.getVrf())) {
-      _w.addWarning(
-          ctx,
-          ctx.getText(),
-          _parser,
-          String.format(
-              "vrf %s of interface %s does not match vrf %s defined already",
-              vrf, name, _currentInterface.getVrf()));
+    if (ctx.VRF() != null) {
+      String vrf = ctx.vrf.getText();
+      if (!vrf.equals(_currentInterface.getVrf())) {
+        _w.addWarning(
+            ctx,
+            ctx.getText(),
+            _parser,
+            String.format(
+                "vrf %s of interface %s does not match vrf %s defined already",
+                vrf, name, _currentInterface.getVrf()));
+      }
     }
   }
 

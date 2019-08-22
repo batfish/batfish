@@ -48,8 +48,8 @@ s_ip
 
 s_interface
 :
-  INTERFACE name = word VRF vrf = word NEWLINE
-  si_description
+  INTERFACE name = word (VRF vrf = word)? NEWLINE
+  si_description*
 ;
 
 si_description
