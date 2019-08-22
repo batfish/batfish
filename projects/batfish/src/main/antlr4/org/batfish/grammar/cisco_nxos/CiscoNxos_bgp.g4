@@ -604,6 +604,7 @@ rb_n_af_inner
   | rb_n_af_maximum_prefix
   | rb_n_af_next_hop_self
   | rb_n_af_next_hop_third_party
+  | rb_n_af_no_default_originate
   | rb_n_af_prefix_list
   | rb_n_af_route_map
   | rb_n_af_route_reflector_client
@@ -725,6 +726,11 @@ rb_n_af_next_hop_self
 rb_n_af_next_hop_third_party
 :
   NEXT_HOP_THIRD_PARTY NEWLINE
+;
+
+rb_n_af_no_default_originate
+:
+  NO DEFAULT_ORIGINATE NEWLINE
 ;
 
 rb_n_af_prefix_list

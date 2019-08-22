@@ -22,6 +22,9 @@ import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
+import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfInterface.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1334,6 +1337,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_SUPPRESS_MAP,
         CiscoNxosStructureUsage.BGP_TABLE_MAP,
         CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
     markConcreteStructure(
@@ -1341,15 +1345,24 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_EIGRP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_ISIS, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureType.ROUTER_ISIS,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_OSPF, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureType.ROUTER_OSPF,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_OSPFV3, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureType.ROUTER_OSPFV3,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTER_RIP, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureType.ROUTER_RIP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);
@@ -2164,6 +2177,40 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     ospfSettings.setHelloInterval(44);
 
     newIface.setOspfSettings(ospfSettings.build());
+  }
+
+  /**
+   * Helper to infer dead interval from configured OSPF settings on an interface. Check explicitly
+   * set dead interval, infer from hello interval, or use default, in that order. See
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
+   * more details.
+   */
+  @VisibleForTesting
+  static int toOspfDeadInterval(OspfInterface ospf) {
+    Integer deadInterval = ospf.getDeadIntervalS();
+    if (deadInterval != null) {
+      return deadInterval;
+    }
+    Integer helloInterval = ospf.getHelloIntervalS();
+    if (helloInterval != null) {
+      return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
+    }
+    return DEFAULT_DEAD_INTERVAL_S;
+  }
+
+  /**
+   * Helper to infer hello interval from configured OSPF settings on an interface. Check explicitly
+   * set hello interval or use default, in that order. See
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
+   * more details.
+   */
+  @VisibleForTesting
+  static int toOspfHelloInterval(OspfInterface ospf) {
+    Integer helloInterval = ospf.getHelloIntervalS();
+    if (helloInterval != null) {
+      return helloInterval;
+    }
+    return DEFAULT_HELLO_INTERVAL_S;
   }
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {

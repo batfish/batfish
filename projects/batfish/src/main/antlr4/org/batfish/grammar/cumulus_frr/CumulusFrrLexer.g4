@@ -143,6 +143,11 @@ EXPANDED
   'expanded' -> pushMode(M_Word)
 ;
 
+EXTENDED
+:
+  'extended'
+;
+
 EXTERNAL
 :
   'external'
@@ -166,6 +171,11 @@ GE
 HOSTNAME
 :
   'hostname' -> pushMode(M_Word)
+;
+
+IN
+:
+  'in'
 ;
 
 INFORMATIONAL
@@ -257,6 +267,11 @@ NEXT_HOP_SELF
   'next-hop-self'
 ;
 
+OUT
+:
+  'out'
+;
+
 PASSWORD
 :
   'password' -> pushMode(M_Remark)
@@ -305,6 +320,11 @@ ROUTER
 ROUTER_ID
 :
   'router-id'
+;
+
+SEND_COMMUNITY
+:
+  'send-community'
 ;
 
 SET

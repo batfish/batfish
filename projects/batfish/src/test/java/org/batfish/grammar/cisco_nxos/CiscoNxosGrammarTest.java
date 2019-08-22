@@ -81,8 +81,6 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
-import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
-import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.POINT_TO_POINT;
@@ -237,6 +235,8 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
+import org.batfish.representation.cisco_nxos.EigrpVrfIpv4AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.EigrpVrfIpv6AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
@@ -573,6 +573,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpDefaultOriginateExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_default_originate");
+    assertFalse(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getNeighbors()
+            .get(Ip.parse("1.2.3.0"))
+            .getIpv4UnicastAddressFamily()
+            .getDefaultOriginate());
+  }
+
+  @Test
   public void testSwitchnameConversion() throws IOException {
     String hostname = "nxos_switchname";
     Configuration c = parseConfig(hostname);
@@ -841,11 +854,30 @@ public final class CiscoNxosGrammarTest {
         EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), nullValue());
+
+        assertThat(vrf.getV4AddressFamily(), nullValue());
+        assertThat(vrf.getV6AddressFamily(), nullValue());
+        EigrpVrfIpv4AddressFamilyConfiguration vrfV4 = vrf.getVrfIpv4AddressFamily();
+        assertThat(vrfV4, notNullValue());
+        assertThat(vrfV4.getRedistributionPolicies(), hasSize(8));
       }
       {
         EigrpVrfConfiguration vrf = proc.getVrf("VRF");
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), equalTo(12345));
+
+        EigrpVrfIpv4AddressFamilyConfiguration v4 = vrf.getV4AddressFamily();
+        assertThat(v4, notNullValue());
+        assertThat(v4.getRedistributionPolicies(), hasSize(4));
+
+        EigrpVrfIpv6AddressFamilyConfiguration v6 = vrf.getV6AddressFamily();
+        assertThat(v6, notNullValue());
+        assertThat(
+            v6.getRedistributionPolicies(),
+            contains(new RedistributionPolicy(RoutingProtocolInstance.ospfv3("OSPFv3"), "RMV6")));
+
+        assertThat(vrf.getVrfIpv4AddressFamily(), notNullValue());
+        assertThat(vrf.getVrfIpv4AddressFamily().getRedistributionPolicies(), empty());
       }
     }
     {
@@ -4467,8 +4499,8 @@ public final class CiscoNxosGrammarTest {
       // TODO: extract and test authentication key-chain
       assertFalse(ospf.getBfd());
       assertThat(ospf.getCost(), nullValue());
-      assertThat(ospf.getDeadIntervalS(), equalTo(DEFAULT_DEAD_INTERVAL_S));
-      assertThat(ospf.getHelloIntervalS(), equalTo(DEFAULT_HELLO_INTERVAL_S));
+      assertThat(ospf.getDeadIntervalS(), nullValue());
+      assertThat(ospf.getHelloIntervalS(), nullValue());
       assertThat(ospf.getPassive(), nullValue());
       assertThat(ospf.getProcess(), nullValue());
       assertThat(ospf.getArea(), nullValue());
