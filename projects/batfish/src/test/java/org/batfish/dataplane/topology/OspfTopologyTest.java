@@ -25,6 +25,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings.Builder;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -72,7 +73,8 @@ public class OspfTopologyTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(10e6).setOspfCost(1);
+    Builder ospf = OspfInterfaceSettings.defaultSettingsBuilder().setCost(1);
+    Interface.Builder ib = nf.interfaceBuilder().setBandwidth(10e6);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     OspfProcess.Builder opb = nf.ospfProcessBuilder().setProcessId("1");
     OspfArea.Builder oab = nf.ospfAreaBuilder().setNumber(0).setNonStub();
@@ -85,9 +87,7 @@ public class OspfTopologyTest {
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31"))
             .setVrf(vrf1)
             .setOwner(c1)
-            .setOspfEnabled(true)
-            .setOspfPassive(true)
-            .setOspfProcess("1")
+            .setOspfSettings(ospf.setPassive(true).setProcess("1").build())
             .setName("i12")
             .build();
 
@@ -95,9 +95,7 @@ public class OspfTopologyTest {
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/31"))
             .setVrf(vrf1)
             .setOwner(c1)
-            .setOspfEnabled(true)
-            .setOspfPassive(false)
-            .setOspfProcess("1")
+            .setOspfSettings(ospf.setPassive(false).setProcess("1").build())
             .setName("i13")
             .build();
 
@@ -105,9 +103,7 @@ public class OspfTopologyTest {
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.4/31"))
             .setVrf(vrf1)
             .setOwner(c1)
-            .setOspfEnabled(true)
-            .setOspfPassive(false)
-            .setOspfProcess("1")
+            .setOspfSettings(ospf.setProcess("1").build())
             .setActive(false)
             .setName("i14")
             .build();
@@ -125,9 +121,7 @@ public class OspfTopologyTest {
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
             .setVrf(vrf2)
             .setOwner(c2)
-            .setOspfEnabled(true)
-            .setOspfPassive(false)
-            .setOspfProcess("1")
+            .setOspfSettings(ospf.setProcess("1").build())
             .setName("i21")
             .build();
     oab.setInterfaces(Collections.singleton(i21.getName())).setOspfProcess(proc2).build();
@@ -140,9 +134,7 @@ public class OspfTopologyTest {
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/31"))
             .setVrf(vrf3)
             .setOwner(c3)
-            .setOspfEnabled(true)
-            .setOspfPassive(false)
-            .setOspfProcess("1")
+            .setOspfSettings(ospf.setProcess("1").build())
             .setName("i31")
             .build();
     oab.setInterfaces(Collections.singleton(i31.getName())).setOspfProcess(proc3).build();
@@ -155,9 +147,7 @@ public class OspfTopologyTest {
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.4/31"))
             .setVrf(vrf4)
             .setOwner(c4)
-            .setOspfEnabled(true)
-            .setOspfPassive(false)
-            .setOspfProcess("1")
+            .setOspfSettings(ospf.setProcess("1").build())
             .setName("i41")
             .build();
     oab.setInterfaces(Collections.singleton(i41.getName())).setOspfProcess(proc4).build();
