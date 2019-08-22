@@ -747,17 +747,13 @@ public class CumulusFrrGrammarTest {
   public void testInterface_InterfaceInfoNotMatch() {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     i1.setVrf("VRF2");
-    i1.setAlias("rt1010svc01 swp1s2");
     CONFIG.getInterfaces().put("swp1", i1);
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
-    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(2));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
     assertThat(
         CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
         equalTo("vrf VRF of interface swp1 does not match vrf VRF2 defined already"));
-    assertThat(
-        CONFIG.getWarnings().getParseWarnings().get(1).getComment(),
-        equalTo(
-            "description rt1010svc01 swp1s1 of interface swp1 does not match its alias rt1010svc01 swp1s2"));
+    assertThat(CONFIG.getInterfaces().get("swp1").getAlias(), equalTo("rt1010svc01 swp1s1"));
   }
 
   @Test

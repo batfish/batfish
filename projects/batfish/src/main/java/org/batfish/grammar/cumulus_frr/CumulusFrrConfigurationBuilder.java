@@ -333,16 +333,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (_currentInterface == null) {
       return;
     }
-
-    String description = ctx.description.getText();
-    if (!description.equals(_currentInterface.getAlias())) {
-      _w.addWarning(
-          ctx,
-          ctx.getText(),
-          _parser,
-          String.format(
-              "description %s of interface %s does not match its alias %s",
-              description, _currentInterface.getName(), _currentInterface.getAlias()));
+    if (_currentInterface.getAlias() == null) {
+      _currentInterface.setAlias(ctx.description.getText());
     }
   }
 
