@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -144,6 +145,10 @@ public class CumulusInterfacesGrammarTest {
     assertThat(
         interfaces.getInterfaces().get("swp1").getBondSlaves(),
         containsInAnyOrder("i2", "i3", "i4"));
+
+    // swp1 is inferred to be a bond
+    assertThat(CONFIG.getInterfaces().keySet(), not(contains("swp1")));
+    assertThat(CONFIG.getBonds().keySet(), contains("swp1"));
   }
 
   @Test

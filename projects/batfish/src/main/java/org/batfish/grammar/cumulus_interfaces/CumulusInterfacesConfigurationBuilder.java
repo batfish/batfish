@@ -330,6 +330,13 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
     Converter converter = new Converter(_interfaces);
+
+    try {
+      _config.setBonds(converter.convertBonds());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting bonds to vendor-specific model");
+    }
+
     Bridge bridge = converter.convertBridge();
     _config.setBridge(bridge != null ? bridge : new Bridge());
 
