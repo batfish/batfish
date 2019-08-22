@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.rules.ExpectedException.none;
 
+import com.google.common.collect.ImmutableSet;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +13,13 @@ import org.junit.rules.ExpectedException;
 /** Test for {@link Interface}. */
 public final class InterfaceTest {
   @Rule public ExpectedException _exception = none();
+
+  @Test
+  public void testGetType_bond() {
+    Interface iface = new Interface("iface");
+    iface.setBondSlaves(ImmutableSet.of("a"));
+    assertThat(iface.getType(), equalTo(CumulusStructureType.BOND));
+  }
 
   @Test
   public void testGetType_vlan() {
