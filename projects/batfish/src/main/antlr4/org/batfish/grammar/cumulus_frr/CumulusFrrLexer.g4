@@ -190,10 +190,13 @@ INTERFACE
     switch (lastTokenType()) {
       case MATCH:
       case -1:
+      case NEWLINE:
         pushMode(M_Word);
         break;
-      default:
+      case WORD:
         break;
+      default:
+        throw new IllegalStateException("unexpected use of keyword interface");
     }
   }
 ;
