@@ -273,16 +273,6 @@ public class CumulusNcluConfigurationTest {
 
     // set VI configuration
     Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
-    configuration
-        .getAllInterfaces()
-        .put(
-            "i1",
-            org.batfish.datamodel.Interface.builder()
-                .setName("i1")
-                .setType(InterfaceType.PHYSICAL)
-                .setOwner(configuration)
-                .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
-                .build());
 
     // set bgp neighbor
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
@@ -316,16 +306,6 @@ public class CumulusNcluConfigurationTest {
 
     // set VI configuration
     Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
-    configuration
-        .getAllInterfaces()
-        .put(
-            "i1",
-            org.batfish.datamodel.Interface.builder()
-                .setName("i1")
-                .setType(InterfaceType.PHYSICAL)
-                .setOwner(configuration)
-                .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
-                .build());
 
     // set bgp neighbor
     BgpInterfaceNeighbor neighbor = new BgpInterfaceNeighbor("BgpNeighbor");
