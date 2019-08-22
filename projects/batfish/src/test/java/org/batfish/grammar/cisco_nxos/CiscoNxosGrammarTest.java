@@ -802,6 +802,7 @@ public final class CiscoNxosGrammarTest {
     assertThat(peer.getEvpnAddressFamily(), notNullValue());
     assertThat(peer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
     assertThat(peer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
+    assertThat(c.getVrfs().get(tenantVrfName).getBgpProcess(), notNullValue());
   }
 
   @Test
