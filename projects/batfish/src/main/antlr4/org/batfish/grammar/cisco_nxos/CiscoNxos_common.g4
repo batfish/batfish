@@ -251,6 +251,60 @@ router_rip_process_id
   WORD
 ;
 
+bgp_instance
+:
+  BGP bgp_asn
+;
+
+eigrp_instance
+:
+  EIGRP router_eigrp_process_tag
+;
+
+isis_instance
+:
+  ISIS router_isis_process_tag
+;
+
+ospf_instance
+:
+  OSPF router_ospf_name
+;
+
+ospfv3_instance
+:
+  OSPFV3 router_ospfv3_name
+;
+
+rip_instance
+:
+  RIP router_rip_process_id
+;
+
+routing_instance_v4
+:
+  DIRECT
+  | bgp_instance
+  | eigrp_instance
+  | isis_instance
+  | LISP
+  | ospf_instance
+  | rip_instance
+  | STATIC
+;
+
+routing_instance_v6
+:
+  DIRECT
+  | bgp_instance
+  | eigrp_instance
+  | isis_instance
+  | LISP
+  | ospfv3_instance
+  | rip_instance
+  | STATIC
+;
+
 route_target
 :
   hi0 = uint16 COLON lo0 = uint32

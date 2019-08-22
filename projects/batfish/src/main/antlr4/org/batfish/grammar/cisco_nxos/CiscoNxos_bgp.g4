@@ -214,16 +214,7 @@ rb_af4_network
 
 rb_af4_redistribute
 :
-  REDISTRIBUTE
-  (
-    rb_af4_redistribute_ospf        // v4 only
-    | rb_afip_redistribute_common
-  )
-;
-
-rb_af4_redistribute_ospf
-:
-  OSPF source_tag = router_ospf_name ROUTE_MAP mapname = route_map_name NEWLINE
+  REDISTRIBUTE routing_instance_v4 ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 // Common to ipv6 unicast and ipv6 multicast
@@ -249,16 +240,7 @@ rb_af6_network
 
 rb_af6_redistribute
 :
-  REDISTRIBUTE
-  (
-    rb_af6_redistribute_ospfv3  // v6 only
-    | rb_afip_redistribute_common
-  )
-;
-
-rb_af6_redistribute_ospfv3
-:
-  OSPFV3 source_tag = router_ospfv3_name ROUTE_MAP mapname = route_map_name NEWLINE
+  REDISTRIBUTE routing_instance_v6 ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 // Common to IPv4 or IPv6, unicast or multicast
@@ -374,36 +356,6 @@ rb_afip_nexthop_trigger_delay
   TRIGGER_DELAY CRITICAL critical = uint32 NON_CRITICAL noncritical = uint32 NEWLINE
 ;
 
-rb_afip_redistribute_direct
-:
-   DIRECT ROUTE_MAP mapname = route_map_name NEWLINE
-;
-
-rb_afip_redistribute_eigrp
-:
-  EIGRP source_tag = router_eigrp_process_tag ROUTE_MAP mapname = route_map_name NEWLINE
-;
-
-rb_afip_redistribute_isis
-:
-  ISIS source_tag = router_isis_process_tag ROUTE_MAP mapname = route_map_name NEWLINE
-;
-
-rb_afip_redistribute_lisp
-:
-  LISP ROUTE_MAP mapname = route_map_name NEWLINE
-;
-
-rb_afip_redistribute_rip
-:
-  RIP source_tag = router_rip_process_id ROUTE_MAP mapname = route_map_name NEWLINE
-;
-
-rb_afip_redistribute_static
-:
-  STATIC ROUTE_MAP mapname = route_map_name NEWLINE
-;
-
 rb_afip_suppress_inactive
 :
   SUPPRESS_INACTIVE NEWLINE
@@ -417,16 +369,6 @@ rb_afip_table_map
 rb_afip_wait_igp_convergence
 :
   WAIT_IGP_CONVERGENCE NEWLINE
-;
-
-rb_afip_redistribute_common
-:
-  rb_afip_redistribute_direct
-  | rb_afip_redistribute_eigrp
-  | rb_afip_redistribute_isis
-  | rb_afip_redistribute_lisp
-  | rb_afip_redistribute_rip
-  | rb_afip_redistribute_static
 ;
 
 rb_bestpath
