@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -348,15 +349,6 @@ public class CumulusNcluConfigurationTest {
     Configuration config = new Configuration("host", ConfigurationFormat.CUMULUS_NCLU);
 
     RoutingPolicy importPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, config);
-    assertThat(
-        importPolicy.getStatements(),
-        equalTo(
-            ImmutableList.of(
-                new If(
-                    "peer-import policy main conditional: exitAccept if true / exitReject if false",
-                    new CallExpr("peerMapIn"),
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
     // checking the import policy is correct (i.e. it successfully calls the route map to
     // permite/block route).
@@ -372,16 +364,16 @@ public class CumulusNcluConfigurationTest {
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))
             .build();
 
+    Builder builder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.parse("10.0.0.1"))
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNetwork(Prefix.parse("10.0.0.0/24"));
     {
       // should permit route
       Bgpv4Route ipv4Route =
-          Bgpv4Route.builder()
-              .setOriginatorIp(Ip.parse("10.0.0.1"))
-              .setOriginType(OriginType.EGP)
-              .setProtocol(RoutingProtocol.BGP)
-              .setNetwork(Prefix.parse("10.0.0.0/24"))
-              .setCommunities(ImmutableSet.of(StandardCommunity.parse("10000:1")))
-              .build();
+          builder.setCommunities(ImmutableSet.of(StandardCommunity.parse("10000:1"))).build();
 
       Environment envIpv4 =
           Environment.builder(config)
@@ -396,13 +388,7 @@ public class CumulusNcluConfigurationTest {
     {
       // should block route
       Bgpv4Route ipv4Route =
-          Bgpv4Route.builder()
-              .setOriginatorIp(Ip.parse("10.0.0.1"))
-              .setOriginType(OriginType.EGP)
-              .setProtocol(RoutingProtocol.BGP)
-              .setNetwork(Prefix.parse("10.0.0.0/24"))
-              .setCommunities(ImmutableSet.of(StandardCommunity.parse("20000:1")))
-              .build();
+          builder.setCommunities(ImmutableSet.of(StandardCommunity.parse("20000:1"))).build();
 
       Environment envIpv4 =
           Environment.builder(config)
