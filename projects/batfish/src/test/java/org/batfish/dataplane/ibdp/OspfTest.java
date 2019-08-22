@@ -196,17 +196,17 @@ public class OspfTest {
     Interface iface = ib.setName(l0Name).setAddress(C1_L0_ADDRESS).build();
     oa1a.addInterface(iface.getName());
 
-    ib.setOspfSettings(null);
-    ib.setOspfCost(1).setOspfEnabled(true).setOspfProcess("1");
-
-    ib.setOspfEnabled(false)
-        .setOspfPassive(false)
-        .setOspfArea(null)
+    ib.setOspfSettings(ospf.setEnabled(false).setPassive(false).setAreaName(null).build())
         .setName(l1Name)
         .setAddress(C1_L1_ADDRESS)
         .build();
-    ib.setOspfEnabled(true).setOspfArea(oa1b);
-    ib.setName(c1E1To2Name).setAddress(C1_E1_2_ADDRESS).build();
+
+    iface =
+        ib.setOspfSettings(ospf.setEnabled(true).setAreaName(oa1b.getAreaNumber()).build())
+            .setName(c1E1To2Name)
+            .setAddress(C1_E1_2_ADDRESS)
+            .build();
+    oa1b.addInterface(iface.getName());
 
     Configuration c2 = cb.setHostname(C2_NAME).build();
     Vrf v2 = vb.setOwner(c2).build();
@@ -229,14 +229,26 @@ public class OspfTest {
     OspfArea oa2c = areaB == areaC ? oa2b : oabc.setOspfProcess(op2).build();
     OspfArea oa2d =
         areaB == areaD ? oa2b : areaC == areaD ? oa2c : oabd.setOspfProcess(op2).build();
-    ib.setOwner(c2).setVrf(v2).setOspfArea(oa2c);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C2_L0_ADDRESS).build();
-    ib.setOspfEnabled(false)
-        .setOspfPassive(false)
-        .setOspfArea(null)
+    ib.setOwner(c2).setVrf(v2);
+    iface =
+        ib.setOspfSettings(ospf.setPassive(true).setAreaName(oa2c.getAreaNumber()).build())
+            .setName(l0Name)
+            .setAddress(C2_L0_ADDRESS)
+            .build();
+    oa2c.addInterface(iface.getName());
+
+    ib.setOspfSettings(ospf.setEnabled(false).setPassive(false).setAreaName(null).build())
         .setName(l1Name)
         .setAddress(C2_L1_ADDRESS)
         .build();
+
+    // CONVERSION IN PROGRESS
+    ib.setOspfSettings(null);
+    ib.setOspfCost(1).setOspfEnabled(true).setOspfProcess("1");
+    ib.setOspfEnabled(false).setOspfPassive(false).setOspfArea(null);
+    ib.setOspfEnabled(false).setOspfPassive(false);
+    // CONVERSION IN PROGRESS
+
     ib.setOspfEnabled(true).setOspfArea(oa2b);
     ib.setName(c2E2To1Name)
         .setAddress(C2_E2_1_ADDRESS)
