@@ -363,7 +363,8 @@ public class CumulusNcluConfigurationTest {
     {
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setRouteReflectorClient(true);
-      assertTrue(vsConfig.convertIpv4UnicastAddressFamily(af, policy).getRouteReflectorClient());
+      assertTrue(
+          vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
     }
 
     // VI route-reflector-client is false if VS activate is false and route-reflector-client is true
@@ -371,7 +372,8 @@ public class CumulusNcluConfigurationTest {
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setActivated(false);
       af.setRouteReflectorClient(true);
-      assertFalse(vsConfig.convertIpv4UnicastAddressFamily(af, policy).getRouteReflectorClient());
+      assertFalse(
+          vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
     }
   }
 
