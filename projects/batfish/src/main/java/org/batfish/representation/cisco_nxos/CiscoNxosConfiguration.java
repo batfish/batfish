@@ -23,6 +23,7 @@ import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidt
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfInterface.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -204,9 +205,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 .map(String::toLowerCase)
                 .collect(Collectors.joining("|")));
   }
-
-  // Default dead interval is hello interval times 4
-  static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
 
   /** On NX-OS, there is a default VRF named "default". */
   public static final String DEFAULT_VRF_NAME = "default";
@@ -2141,17 +2139,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * more details.
    */
   @VisibleForTesting
-  static int toOspfDeadInterval(Interface iface) {
-    OspfInterface ospf = iface.getOspf();
-    if (ospf != null) {
-      Integer deadInterval = ospf.getDeadIntervalS();
-      if (deadInterval != null) {
-        return deadInterval;
-      }
-      Integer helloInterval = ospf.getHelloIntervalS();
-      if (helloInterval != null) {
-        return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
-      }
+  static int toOspfDeadInterval(OspfInterface ospf) {
+    Integer deadInterval = ospf.getDeadIntervalS();
+    if (deadInterval != null) {
+      return deadInterval;
+    }
+    Integer helloInterval = ospf.getHelloIntervalS();
+    if (helloInterval != null) {
+      return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
     return DEFAULT_DEAD_INTERVAL_S;
   }
@@ -2163,13 +2158,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * more details.
    */
   @VisibleForTesting
-  static int toOspfHelloInterval(Interface iface) {
-    OspfInterface ospf = iface.getOspf();
-    if (ospf != null) {
-      Integer helloInterval = ospf.getHelloIntervalS();
-      if (helloInterval != null) {
-        return helloInterval;
-      }
+  static int toOspfHelloInterval(OspfInterface ospf) {
+    Integer helloInterval = ospf.getHelloIntervalS();
+    if (helloInterval != null) {
+      return helloInterval;
     }
     return DEFAULT_HELLO_INTERVAL_S;
   }

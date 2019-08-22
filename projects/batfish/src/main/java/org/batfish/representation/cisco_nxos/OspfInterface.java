@@ -5,9 +5,13 @@ import javax.annotation.Nullable;
 
 public final class OspfInterface implements Serializable {
 
+  // Default dead interval is hello interval times 4
+  static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
+
   // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/ospf/ip-ospf-dead-interval.html
-  public static final int DEFAULT_DEAD_INTERVAL_S = 40; // s
   public static final int DEFAULT_HELLO_INTERVAL_S = 10; // s
+  public static final int DEFAULT_DEAD_INTERVAL_S =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_HELLO_INTERVAL_S; // 40 s
 
   public @Nullable Long getArea() {
     return _area;
