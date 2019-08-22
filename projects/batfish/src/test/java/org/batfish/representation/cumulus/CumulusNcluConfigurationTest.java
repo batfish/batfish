@@ -351,7 +351,7 @@ public class CumulusNcluConfigurationTest {
     // route-reflector-client is false if ipv4af is null
     assertFalse(vsConfig.convertIpv4UnicastAddressFamily(null, policy).getRouteReflectorClient());
 
-    // route-reflector-client is true if activate and route-reflector-client are both true
+    // VI route-reflector-client is true if VS activate and route-reflector-client are both true
     {
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setActivated(true);
@@ -359,8 +359,20 @@ public class CumulusNcluConfigurationTest {
       assertTrue(vsConfig.convertIpv4UnicastAddressFamily(af, policy).getRouteReflectorClient());
     }
 
-    // TODO what if not explicitly activated (i.e. activated is null) but route-reflector-client is
-    // true? Not testing until we're sure what correct behavior is. See comment in
-    // convertIpv4UnicastAddressFamily.
+    // Despite cumulus docs, GNS3 testing confirms VI route-reflector-client should be true even if
+    // activate is null (i.e. not explicitly activated).
+    {
+      BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
+      af.setRouteReflectorClient(true);
+      assertTrue(vsConfig.convertIpv4UnicastAddressFamily(af, policy).getRouteReflectorClient());
+    }
+
+    // VI route-reflector-client is false if VS activate is false and route-reflector-client is true
+    {
+      BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
+      af.setActivated(false);
+      af.setRouteReflectorClient(true);
+      assertFalse(vsConfig.convertIpv4UnicastAddressFamily(af, policy).getRouteReflectorClient());
+    }
   }
 }
