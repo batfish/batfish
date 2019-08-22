@@ -573,6 +573,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpDefaultOriginateExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_default_originate");
+    assertFalse(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getNeighbors()
+            .get(Ip.parse("1.2.3.0"))
+            .getIpv4UnicastAddressFamily()
+            .getDefaultOriginate());
+  }
+
+  @Test
   public void testSwitchnameConversion() throws IOException {
     String hostname = "nxos_switchname";
     Configuration c = parseConfig(hostname);
