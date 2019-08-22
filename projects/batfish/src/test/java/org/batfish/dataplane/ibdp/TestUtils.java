@@ -27,8 +27,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.matchers.IsisRouteMatchers;
-import org.batfish.datamodel.ospf.OspfInterfaceSettings;
-import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.hamcrest.Matchers;
 
 public class TestUtils {
@@ -130,14 +128,6 @@ public class TestUtils {
             .build();
     nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
     return new Node(c);
-  }
-
-  public static OspfInterfaceSettings.Builder baseOspfSettings() {
-    return OspfInterfaceSettings.builder()
-        .setPassive(false)
-        .setNetworkType(OspfNetworkType.POINT_TO_POINT)
-        .setEnabled(true)
-        .setCost(1);
   }
 
   /** Annotates route with {@link Configuration#DEFAULT_VRF_NAME} */

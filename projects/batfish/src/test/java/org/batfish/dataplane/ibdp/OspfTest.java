@@ -7,7 +7,6 @@ import static org.batfish.datamodel.RoutingProtocol.OSPF_IA;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
-import static org.batfish.dataplane.ibdp.TestUtils.baseOspfSettings;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -119,6 +118,10 @@ public class OspfTest {
     exportIfMatchL2Prefix.setFalseStatements(
         ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     return ImmutableList.of(exportIfMatchL2Prefix);
+  }
+
+  private static OspfInterfaceSettings.Builder baseOspfSettings() {
+    return OspfInterfaceSettings.defaultSettingsBuilder().setCost(1);
   }
 
   /*
