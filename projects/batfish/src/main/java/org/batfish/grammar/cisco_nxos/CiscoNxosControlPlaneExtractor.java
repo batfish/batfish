@@ -1009,7 +1009,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private DefaultVrfOspfProcess _currentDefaultVrfOspfProcess;
   private EigrpProcessConfiguration _currentEigrpProcess;
   private EigrpVrfConfiguration _currentEigrpVrf;
-  private EigrpVrfIpAddressFamilyConfiguration _currentEigrpVrfIp;
+  private EigrpVrfIpAddressFamilyConfiguration _currentEigrpVrfIpAf;
   private EvpnVni _currentEvpnVni;
   private Function<Interface, HsrpGroup> _currentHsrpGroupGetter;
   private Optional<Integer> _currentHsrpGroupNumber;
@@ -2212,14 +2212,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _currentEigrpProcess = new EigrpProcessConfiguration();
     }
     _currentEigrpVrf = _currentEigrpProcess.getOrCreateVrf(DEFAULT_VRF_NAME);
-    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
+    _currentEigrpVrfIpAf = _currentEigrpVrf.getVrfIpv4AddressFamily();
   }
 
   @Override
   public void exitRouter_eigrp(Router_eigrpContext ctx) {
     _currentEigrpProcess = null;
     _currentEigrpVrf = null;
-    _currentEigrpVrfIp = null;
+    _currentEigrpVrfIpAf = null;
   }
 
   @Override
@@ -3205,13 +3205,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       // Dummy so parsing doesn't crash.
       _currentEigrpVrf = new EigrpVrfConfiguration();
     }
-    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
+    _currentEigrpVrfIpAf = _currentEigrpVrf.getVrfIpv4AddressFamily();
   }
 
   @Override
   public void exitRe_vrf(Re_vrfContext ctx) {
     _currentEigrpVrf = _currentEigrpProcess.getOrCreateVrf(DEFAULT_VRF_NAME);
-    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
+    _currentEigrpVrfIpAf = _currentEigrpVrf.getVrfIpv4AddressFamily();
   }
 
   @Override
@@ -3222,22 +3222,22 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterRecaf_ipv4(Recaf_ipv4Context ctx) {
-    _currentEigrpVrfIp = _currentEigrpVrf.getOrCreateV4AddressFamily();
+    _currentEigrpVrfIpAf = _currentEigrpVrf.getOrCreateV4AddressFamily();
   }
 
   @Override
   public void exitRecaf_ipv4(Recaf_ipv4Context ctx) {
-    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
+    _currentEigrpVrfIpAf = _currentEigrpVrf.getVrfIpv4AddressFamily();
   }
 
   @Override
   public void enterRecaf_ipv6(Recaf_ipv6Context ctx) {
-    _currentEigrpVrfIp = _currentEigrpVrf.getOrCreateV6AddressFamily();
+    _currentEigrpVrfIpAf = _currentEigrpVrf.getOrCreateV6AddressFamily();
   }
 
   @Override
   public void exitRecaf_ipv6(Recaf_ipv6Context ctx) {
-    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
+    _currentEigrpVrfIpAf = _currentEigrpVrf.getVrfIpv4AddressFamily();
   }
 
   @Override
@@ -3257,7 +3257,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _configuration.referenceStructure(
         ROUTE_MAP, map, EIGRP_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
-    _currentEigrpVrfIp.setRedistributionPolicy(rpi, map);
+    _currentEigrpVrfIpAf.setRedistributionPolicy(rpi, map);
   }
 
   @Override
@@ -3277,7 +3277,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _configuration.referenceStructure(
         ROUTE_MAP, map, EIGRP_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
-    _currentEigrpVrfIp.setRedistributionPolicy(rpi, map);
+    _currentEigrpVrfIpAf.setRedistributionPolicy(rpi, map);
   }
 
   @Override
