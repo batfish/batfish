@@ -7,6 +7,7 @@ import static org.batfish.datamodel.RoutingProtocol.OSPF_IA;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
+import static org.batfish.dataplane.ibdp.TestUtils.baseOspfSettings;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -36,8 +37,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
-import org.batfish.datamodel.ospf.OspfInterfaceSettings;
-import org.batfish.datamodel.ospf.OspfInterfaceSettings.Builder;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -175,7 +174,7 @@ public class OspfTest {
     OspfArea.Builder oabf = nf.ospfAreaBuilder().setNumber(areaF);
     OspfArea.Builder oabg = nf.ospfAreaBuilder().setNumber(areaG);
     Interface.Builder ib = nf.interfaceBuilder();
-    Builder ospf = OspfInterfaceSettings.builder().setCost(1).setEnabled(true);
+    // Builder ospf = OspfInterfaceSettings.builder().setCost(1).setEnabled(true);
 
     Configuration c1 = cb.setHostname(C1_NAME).build();
     Vrf v1 = vb.setOwner(c1).build();
@@ -192,17 +191,22 @@ public class OspfTest {
     ib.setOwner(c1)
         .setVrf(v1)
         .setOspfSettings(
-            ospf.setAreaName(oa1a.getAreaNumber()).setProcess("1").setPassive(true).build());
+            baseOspfSettings()
+                .setAreaName(oa1a.getAreaNumber())
+                .setProcess("1")
+                .setPassive(true)
+                .build());
     Interface iface = ib.setName(l0Name).setAddress(C1_L0_ADDRESS).build();
     oa1a.addInterface(iface.getName());
 
-    ib.setOspfSettings(ospf.setEnabled(false).setPassive(false).setAreaName(null).build())
+    ib.setOspfSettings(baseOspfSettings().setProcess("1").setEnabled(false).build())
         .setName(l1Name)
         .setAddress(C1_L1_ADDRESS)
         .build();
 
     iface =
-        ib.setOspfSettings(ospf.setEnabled(true).setAreaName(oa1b.getAreaNumber()).build())
+        ib.setOspfSettings(
+                baseOspfSettings().setProcess("1").setAreaName(oa1b.getAreaNumber()).build())
             .setName(c1E1To2Name)
             .setAddress(C1_E1_2_ADDRESS)
             .build();
@@ -231,31 +235,38 @@ public class OspfTest {
         areaB == areaD ? oa2b : areaC == areaD ? oa2c : oabd.setOspfProcess(op2).build();
     ib.setOwner(c2).setVrf(v2);
     iface =
-        ib.setOspfSettings(ospf.setPassive(true).setAreaName(oa2c.getAreaNumber()).build())
+        ib.setOspfSettings(
+                baseOspfSettings()
+                    .setProcess("1")
+                    .setPassive(true)
+                    .setAreaName(oa2c.getAreaNumber())
+                    .build())
             .setName(l0Name)
             .setAddress(C2_L0_ADDRESS)
             .build();
     oa2c.addInterface(iface.getName());
 
-    ib.setOspfSettings(ospf.setEnabled(false).setPassive(false).setAreaName(null).build())
+    ib.setOspfSettings(baseOspfSettings().setProcess("1").setEnabled(false).build())
         .setName(l1Name)
         .setAddress(C2_L1_ADDRESS)
         .build();
 
-    // CONVERSION IN PROGRESS
-    ib.setOspfSettings(null);
-    ib.setOspfCost(1).setOspfEnabled(true).setOspfProcess("1");
-    ib.setOspfEnabled(false).setOspfPassive(false).setOspfArea(null);
-    ib.setOspfEnabled(false).setOspfPassive(false);
-    // CONVERSION IN PROGRESS
+    ib.setOspfSettings(
+        baseOspfSettings().setProcess("1").setAreaName(oa2b.getAreaNumber()).build());
+    iface = ib.setName(c2E2To1Name).setAddress(C2_E2_1_ADDRESS).build();
+    oa2b.addInterface(iface.getName());
 
-    ib.setOspfEnabled(true).setOspfArea(oa2b);
-    ib.setName(c2E2To1Name)
-        .setAddress(C2_E2_1_ADDRESS)
-        .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
-        .build();
-    ib.setOspfNetworkType(OspfNetworkType.BROADCAST).setOspfArea(oa2d);
-    ib.setName(c2E2To3Name).setAddress(C2_E2_3_ADDRESS).build();
+    iface =
+        ib.setName(c2E2To3Name)
+            .setAddress(C2_E2_3_ADDRESS)
+            .setOspfSettings(
+                baseOspfSettings()
+                    .setProcess("1")
+                    .setAreaName(oa2d.getAreaNumber())
+                    .setNetworkType(OspfNetworkType.BROADCAST)
+                    .build())
+            .build();
+    oa2d.addInterface(iface.getName());
 
     Configuration c3 = cb.setHostname(C3_NAME).build();
     Vrf v3 = vb.setOwner(c3).build();
@@ -267,8 +278,27 @@ public class OspfTest {
     OspfArea oa3e = areaD == areaE ? oa3d : oabe.setOspfProcess(op3).build();
     OspfArea oa3f =
         areaD == areaF ? oa3d : areaE == areaF ? oa3e : oabf.setOspfProcess(op3).build();
-    ib.setOwner(c3).setVrf(v3).setOspfArea(oa3e);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C3_L0_ADDRESS).build();
+
+    iface =
+        ib.setOwner(c3)
+            .setVrf(v3)
+            .setOspfSettings(
+                baseOspfSettings()
+                    .setProcess("1")
+                    .setPassive(true)
+                    .setAreaName(oa3e.getAreaNumber())
+                    .build())
+            .setName(l0Name)
+            .setAddress(C3_L0_ADDRESS)
+            .build();
+    oa3e.addInterface(iface.getName());
+
+    // CONVERSION IN PROGRESS
+    ib.setOspfSettings(null);
+    ib.setOspfCost(1).setOspfEnabled(true).setOspfProcess("1");
+    ib.setOspfEnabled(true).setOspfPassive(true).setOspfNetworkType(OspfNetworkType.BROADCAST);
+    // CONVERSION IN PROGRESS
+
     ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
