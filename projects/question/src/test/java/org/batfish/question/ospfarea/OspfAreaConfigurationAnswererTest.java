@@ -19,6 +19,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -55,19 +56,24 @@ public class OspfAreaConfigurationAnswererTest {
         .setName("int1")
         .setOwner(configuration)
         .setBandwidth(2d)
-        .setOspfArea(ospfArea)
-        .setOspfEnabled(true)
-        .setOspfPassive(false)
+        .setOspfSettings(
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setAreaName(ospfArea.getAreaNumber())
+                .build())
         .build();
+    ospfArea.addInterface("int1");
     nf.interfaceBuilder()
         .setVrf(vrf)
         .setName("int2")
         .setOwner(configuration)
         .setBandwidth(2d)
-        .setOspfArea(ospfArea)
-        .setOspfEnabled(true)
-        .setOspfPassive(true)
+        .setOspfSettings(
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setAreaName(ospfArea.getAreaNumber())
+                .setPassive(true)
+                .build())
         .build();
+    ospfArea.addInterface("int2");
 
     TableMetadata tableMetadata = OspfAreaConfigurationAnswerer.createTableMetadata();
     Multiset<Row> rows =
