@@ -762,6 +762,11 @@ CRON
   'cron'
 ;
 
+CRYPTO
+:
+  'crypto'
+;
+
 CS1
 :
   'cs1'
@@ -1856,6 +1861,11 @@ L3
   'L3'
 ;
 
+LABEL
+:
+  'label' -> pushMode(M_Word)
+;
+
 LACP
 :
   'lacp'
@@ -2314,6 +2324,11 @@ MODULE
   'module'
 ;
 
+MODULUS
+:
+  'modulus'
+;
+
 MONITOR
 :
   'monitor'
@@ -2745,6 +2760,11 @@ PACKET_TOO_BIG
 PACKETS
 :
   'packets'
+;
+
+PARAM
+:
+  'param'
 ;
 
 PARAMETER_PROBLEM
@@ -3310,6 +3330,11 @@ ROUTINE
 RPF_FAILURE
 :
   'rpf-failure'
+;
+
+RSA
+:
+  'rsa'
 ;
 
 RST
