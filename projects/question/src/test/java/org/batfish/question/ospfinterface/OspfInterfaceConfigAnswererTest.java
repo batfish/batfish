@@ -20,7 +20,6 @@ import com.google.common.collect.Multiset;
 import java.util.List;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
@@ -48,20 +47,19 @@ public class OspfInterfaceConfigAnswererTest {
     Vrf vrf = nf.vrfBuilder().setName("test_vrf").setOwner(configuration).build();
     OspfArea ospfArea =
         nf.ospfAreaBuilder().setInterfaces(ImmutableSet.of("int1")).setNumber(1L).build();
-    Interface iface =
-        nf.interfaceBuilder()
-            .setName("int1")
-            .setOspfSettings(
-                OspfInterfaceSettings.builder()
-                    .setAreaName(ospfArea.getAreaNumber())
-                    .setPassive(true)
-                    .setCost(2)
-                    .setNetworkType(OspfNetworkType.POINT_TO_POINT)
-                    .setHelloMultiplier(2)
-                    .build())
-            .setOwner(configuration)
-            .setVrf(vrf)
-            .build();
+    nf.interfaceBuilder()
+        .setName("int1")
+        .setOspfSettings(
+            OspfInterfaceSettings.builder()
+                .setAreaName(ospfArea.getAreaNumber())
+                .setPassive(true)
+                .setCost(2)
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .setHelloMultiplier(2)
+                .build())
+        .setOwner(configuration)
+        .setVrf(vrf)
+        .build();
     ospfArea.addInterface("int1");
     nf.ospfProcessBuilder()
         .setProcessId("ospf_1")
