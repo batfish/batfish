@@ -50,7 +50,7 @@ public class OspfInterfaceSettingsTest {
   @Test
   public void testEquals() {
     OspfInterfaceSettings.Builder s =
-        OspfInterfaceSettings.builder().setHelloInterval(0).setDeadInterval(0);
+        OspfInterfaceSettings.builder().setHelloInterval(0).setDeadInterval(0).setPassive(true);
     new EqualsTester()
         .addEqualityGroup(s.build())
         .addEqualityGroup(
@@ -59,6 +59,7 @@ public class OspfInterfaceSettingsTest {
                 .setAreaName(2L)
                 .setHelloInterval(0)
                 .setDeadInterval(0)
+                .setPassive(true)
                 .build())
         .addEqualityGroup(s.setCost(3).build())
         .addEqualityGroup(s.setDeadInterval(4).build())
@@ -67,7 +68,10 @@ public class OspfInterfaceSettingsTest {
         .addEqualityGroup(s.setHelloMultiplier(5).build())
         .addEqualityGroup(s.setInboundDistributeListPolicy("policy").build())
         .addEqualityGroup(s.setNetworkType(OspfNetworkType.POINT_TO_POINT).build())
-        .addEqualityGroup(s.setPassive(true).build())
+        .addEqualityGroup(s.setNetworkType(OspfNetworkType.BROADCAST).build())
+        .addEqualityGroup(s.setNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT).build())
+        .addEqualityGroup(s.setNetworkType(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS).build())
+        .addEqualityGroup(s.setPassive(false).build())
         .addEqualityGroup(s.setProcess("proc").build())
         .testEquals();
   }

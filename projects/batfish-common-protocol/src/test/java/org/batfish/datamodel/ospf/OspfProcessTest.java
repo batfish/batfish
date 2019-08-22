@@ -57,16 +57,45 @@ public class OspfProcessTest {
     OspfArea area1 = oab.setNumber(1L).build();
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1);
-    Interface i0 = ib.setName("eth0").setBandwidth(1e3).setOspfArea(area0).build();
-    Interface i1 = ib.setName("eth1").setBandwidth(1e4).setOspfArea(area1).build();
-    Interface i2 = ib.setName("eth2").setBandwidth(1e5).setOspfArea(area1).setActive(false).build();
+    Interface i0 =
+        ib.setName("eth0")
+            .setBandwidth(1e3)
+            .setOspfSettings(
+                OspfInterfaceSettings.defaultSettingsBuilder()
+                    .setAreaName(area0.getAreaNumber())
+                    .build())
+            .build();
+    area0.addInterface("eth0");
+    Interface i1 =
+        ib.setName("eth1")
+            .setBandwidth(1e4)
+            .setOspfSettings(
+                OspfInterfaceSettings.defaultSettingsBuilder()
+                    .setAreaName(area1.getAreaNumber())
+                    .build())
+            .build();
+    area1.addInterface("eth1");
+    Interface i2 =
+        ib.setName("eth2")
+            .setBandwidth(1e5)
+            .setOspfSettings(
+                OspfInterfaceSettings.defaultSettingsBuilder()
+                    .setAreaName(area1.getAreaNumber())
+                    .build())
+            .setActive(false)
+            .build();
+    area1.addInterface("eth2");
     Interface i3 =
         ib.setName("eth3")
             .setBandwidth(1e6)
-            .setOspfArea(area1)
+            .setOspfSettings(
+                OspfInterfaceSettings.defaultSettingsBuilder()
+                    .setAreaName(area1.getAreaNumber())
+                    .setPassive(true)
+                    .build())
             .setActive(true)
-            .setOspfPassive(true)
             .build();
+    area1.addInterface("eth3");
 
     OspfProcess proc =
         opb.setReferenceBandwidth(1e8)

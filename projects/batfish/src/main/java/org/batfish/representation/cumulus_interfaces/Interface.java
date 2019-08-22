@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus_interfaces;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.representation.cumulus.CumulusStructureType.BOND;
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.VLAN;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
@@ -45,6 +46,7 @@ public final class Interface {
   private @Nullable String _vlanRawDevice;
   private @Nullable Ip _vxlanLocalTunnelIp;
   private @Nullable Integer _vxlanId;
+  private @Nullable Set<String> _bondSlaves;
   private @Nullable Set<String> _bridgePorts;
 
   public Interface(@Nonnull String name) {
@@ -82,6 +84,11 @@ public final class Interface {
   @Nullable
   public Map<MacAddress, Set<InterfaceAddress>> getAddressVirtuals() {
     return _addressVirtuals;
+  }
+
+  @Nullable
+  public Set<String> getBondSlaves() {
+    return _bondSlaves;
   }
 
   public @Nullable Set<String> getBridgePorts() {
@@ -140,6 +147,11 @@ public final class Interface {
       type = VRF;
     }
 
+    if (_bondSlaves != null && !_bondSlaves.isEmpty()) {
+      checkState(type == null, "ambiguous interface type: %s vs %s", type, BOND);
+      type = BOND;
+    }
+
     return firstNonNull(type, INTERFACE);
   }
 
@@ -166,6 +178,10 @@ public final class Interface {
   @Nullable
   public Ip getVxlanLocalTunnelIp() {
     return _vxlanLocalTunnelIp;
+  }
+
+  public void setBondSlaves(Set<String> bondSlaves) {
+    _bondSlaves = ImmutableSet.copyOf(bondSlaves);
   }
 
   public void setBridgePorts(Set<String> bridgePorts) {

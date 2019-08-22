@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -163,26 +164,8 @@ public final class CumulusInterfacesConfigurationBuilder
                 ifaceNameCtx.getText(),
                 CumulusStructureUsage.BOND_SLAVE,
                 ifaceNameCtx.getStart().getLine()));
-
-    interfaceNameCtxs.forEach(
-        slaveCtx -> {
-          String slave = slaveCtx.getText();
-          String parent = _currentIface.getName();
-          String oldParent = _interfaces.getBondSlaveParents().put(slave, parent);
-          if (oldParent != null) {
-            _w.getParseWarnings()
-                .add(
-                    new ParseWarning(
-                        slaveCtx.getStart().getLine(),
-                        slaveCtx.getText(),
-                        ctx.getText(),
-                        String.format(
-                            "Interface %s cannot be the bond-slave of both %s and %s",
-                            slave, parent, oldParent)));
-            // keep the oldParent
-            _interfaces.getBondSlaveParents().put(slave, oldParent);
-          }
-        });
+    _currentIface.setBondSlaves(
+        interfaceNameCtxs.stream().map(RuleContext::getText).collect(Collectors.toSet()));
   }
 
   @Override
@@ -347,6 +330,13 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
     Converter converter = new Converter(_interfaces);
+
+    try {
+      _config.setBonds(converter.convertBonds());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting bonds to vendor-specific model");
+    }
+
     Bridge bridge = converter.convertBridge();
     _config.setBridge(bridge != null ? bridge : new Bridge());
 

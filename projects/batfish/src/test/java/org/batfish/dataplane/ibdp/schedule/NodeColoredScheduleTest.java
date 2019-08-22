@@ -85,7 +85,7 @@ public class NodeColoredScheduleTest {
             .setVrf(vrf1)
             .setAddress(ConcreteInterfaceAddress.create(R1_IP, networkBits))
             .setOspfSettings(
-                OspfInterfaceSettings.builder()
+                OspfInterfaceSettings.defaultSettingsBuilder()
                     .setEnabled(true)
                     .setProcess("1")
                     .setAreaName(0L)
@@ -115,7 +115,7 @@ public class NodeColoredScheduleTest {
         ib.setOwner(r2)
             .setVrf(vrf2)
             .setOspfSettings(
-                OspfInterfaceSettings.builder()
+                OspfInterfaceSettings.defaultSettingsBuilder()
                     .setProcess("1")
                     .setEnabled(true)
                     .setCost(1)

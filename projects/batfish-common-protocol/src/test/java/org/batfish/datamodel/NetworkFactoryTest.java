@@ -11,6 +11,7 @@ import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.junit.Test;
 
@@ -100,8 +101,16 @@ public class NetworkFactoryTest {
     OspfArea oa1 = oab.build();
     OspfArea oa2 = oab.setOspfProcess(ospfProcess).build();
     Interface iface =
-        nf.interfaceBuilder().setOwner(c).setActive(false).setVrf(vrf).setOspfArea(oa2).build();
-
+        nf.interfaceBuilder()
+            .setOwner(c)
+            .setActive(false)
+            .setVrf(vrf)
+            .setOspfSettings(
+                OspfInterfaceSettings.defaultSettingsBuilder()
+                    .setAreaName(oa2.getAreaNumber())
+                    .build())
+            .build();
+    oa2.addInterface(iface.getName());
     assertThat(oa1.getAreaNumber(), not(equalTo(oa2.getAreaNumber())));
     assertThat(oa1, not(sameInstance(oa2)));
     assertThat(ospfProcess.getAreas().get(oa2.getAreaNumber()), sameInstance(oa2));
