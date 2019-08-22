@@ -578,12 +578,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             : BooleanExprs.TRUE;
 
     // Export RIP routes that should be redistributed.
-    BgpRedistributionPolicy ripPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.RIP);
-    if (ripPolicy != null) {
+    List<RedistributionPolicy> ripPolicies =
+        ipv4af == null
+            ? ImmutableList.of()
+            : ipv4af.getRedistributionPolicies(NxosRoutingProtocol.RIP);
+    for (RedistributionPolicy ripPolicy : ripPolicies) {
+      /* TODO: how do we match on source tag (aka RIP process id)? */
       String routeMap = ripPolicy.getRouteMap();
       org.batfish.representation.cisco_nxos.RouteMap map = _routeMaps.get(routeMap);
-      /* TODO: how do we match on source tag (aka RIP process id)? */
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.RIP),
@@ -596,8 +598,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Export static routes that should be redistributed.
-    BgpRedistributionPolicy staticPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.STATIC);
+    RedistributionPolicy staticPolicy =
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocolInstance.staticc());
     if (staticPolicy != null) {
       String routeMap = staticPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
@@ -613,8 +615,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Export connected routes that should be redistributed.
-    BgpRedistributionPolicy connectedPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.DIRECT);
+    RedistributionPolicy connectedPolicy =
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocolInstance.direct());
     if (connectedPolicy != null) {
       String routeMap = connectedPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
@@ -630,12 +632,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Export OSPF routes that should be redistributed.
-    BgpRedistributionPolicy ospfPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.OSPF);
-    if (ospfPolicy != null) {
+    List<RedistributionPolicy> ospfPolicies =
+        ipv4af == null
+            ? ImmutableList.of()
+            : ipv4af.getRedistributionPolicies(NxosRoutingProtocol.OSPF);
+    for (RedistributionPolicy ospfPolicy : ospfPolicies) {
+      /* TODO: how do we match on source tag (aka OSPF process tag)? */
       String routeMap = ospfPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
-      /* TODO: how do we match on source tag (aka OSPF process)? */
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.OSPF),
