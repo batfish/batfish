@@ -27,6 +27,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -50,14 +51,18 @@ public class OspfInterfaceConfigAnswererTest {
     Interface iface =
         nf.interfaceBuilder()
             .setName("int1")
-            .setOspfArea(ospfArea)
-            .setOspfPassive(true)
-            .setOspfCost(2)
-            .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
+            .setOspfSettings(
+                OspfInterfaceSettings.builder()
+                    .setAreaName(ospfArea.getAreaNumber())
+                    .setPassive(true)
+                    .setCost(2)
+                    .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                    .setHelloMultiplier(2)
+                    .build())
             .setOwner(configuration)
             .setVrf(vrf)
             .build();
-    iface.getOspfSettings().setHelloMultiplier(2);
+    ospfArea.addInterface("int1");
     nf.ospfProcessBuilder()
         .setProcessId("ospf_1")
         .setAreas(ImmutableSortedMap.of(1L, ospfArea))
