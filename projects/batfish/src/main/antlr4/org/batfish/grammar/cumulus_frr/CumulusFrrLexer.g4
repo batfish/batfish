@@ -143,6 +143,11 @@ EXPANDED
   'expanded' -> pushMode(M_Word)
 ;
 
+EXTENDED
+:
+  'extended'
+;
+
 EXTERNAL
 :
   'external'
@@ -315,6 +320,11 @@ ROUTER
 ROUTER_ID
 :
   'router-id'
+;
+
+SEND_COMMUNITY
+:
+  'send-community'
 ;
 
 SET
