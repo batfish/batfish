@@ -691,4 +691,42 @@ public class CumulusFrrGrammarTest {
         CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.1").getEbgpMultihop(),
         equalTo(3L));
   }
+
+  @Test
+  public void testIp4vUnicastRoutemap() {
+    {
+      parseLines(
+          "router bgp 10000",
+          "neighbor N peer-group",
+          "address-family ipv4 unicast",
+          "neighbor N route-map R in",
+          "exit-address-family");
+      assertThat(
+          CONFIG
+              .getBgpProcess()
+              .getDefaultVrf()
+              .getNeighbors()
+              .get("N")
+              .getIpv4UnicastAddressFamily()
+              .getRouteMapIn(),
+          equalTo("R"));
+    }
+    {
+      parseLines(
+          "router bgp 10000",
+          "neighbor N2 peer-group",
+          "address-family ipv4 unicast",
+          "neighbor N2 route-map R out",
+          "exit-address-family");
+      assertThat(
+          CONFIG
+              .getBgpProcess()
+              .getDefaultVrf()
+              .getNeighbors()
+              .get("N2")
+              .getIpv4UnicastAddressFamily()
+              .getRouteMapOut(),
+          equalTo("R"));
+    }
+  }
 }

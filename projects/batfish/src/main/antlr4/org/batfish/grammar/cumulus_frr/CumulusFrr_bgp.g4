@@ -173,6 +173,7 @@ sbafi_neighbor
   | sbafin_next_hop_self
   | sbafin_route_reflector_client
   | sbafin_soft_reconfiguration
+  | sbafin_route_map
   )
   NEWLINE
 ;
@@ -195,4 +196,19 @@ sbafin_route_reflector_client
 sbafin_soft_reconfiguration
 :
   SOFT_RECONFIGURATION INBOUND
+;
+
+sbafin_route_map
+:
+  ROUTE_MAP name=word (IN | OUT)
+;
+
+sbn_bfd
+:
+  BFD word*
+;
+
+sbn_password
+:
+  PASSWORD REMARK_TEXT
 ;
