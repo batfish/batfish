@@ -150,9 +150,6 @@ public final class Interface extends ComparableStructure<String> {
       if (_nativeVlan != null) {
         iface.setNativeVlan(_nativeVlan);
       }
-
-      OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
-
       iface.setOutgoingFilter(_outgoingFilter);
       iface.setOutgoingTransformation(_outgoingTransformation);
       iface.setOwner(_owner);
