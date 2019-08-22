@@ -179,19 +179,6 @@ public final class Interface extends ComparableStructure<String> {
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
-        /*
-        if (_active && _ospfProcess != null && _vrf.getOspfProcesses().containsKey(_ospfProcess)) {
-          // OSPF cost is used to recompute interface cost below
-          // So go ahead and apply it if one was provided
-          if (_ospfCost != null) {
-            iface.setOspfSettings(ospfSettings.build());
-          } else if (_ospfSettings != null && _ospfSettings.getCost() != null) {
-            iface.setOspfSettings(_ospfSettings);
-          }
-          int updatedCost = _vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface);
-          ospfSettings.setCost(updatedCost);
-        }
-        */
       }
       iface.setVrrpGroups(_vrrpGroups);
 
