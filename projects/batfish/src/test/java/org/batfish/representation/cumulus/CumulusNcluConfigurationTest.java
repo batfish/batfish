@@ -333,6 +333,24 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
+  public void testConvertIpv4UnicastAddressFamily_deactivated() {
+    // setup vi model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    RoutingPolicy policy = nf.routingPolicyBuilder().build();
+
+    // setup vs model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setConfiguration(viConfig);
+    BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
+    af.setActivated(false); // explicitly deactivated
+    af.setRouteReflectorClient(true);
+
+    assertNull(vsConfig.convertIpv4UnicastAddressFamily(af, policy, null));
+  }
+
+  @Test
   public void testConvertIpv4UnicastAddressFamily_routeReflectorClient() {
 
     // setup vi model
@@ -349,7 +367,7 @@ public class CumulusNcluConfigurationTest {
     assertFalse(
         vsConfig.convertIpv4UnicastAddressFamily(null, policy, null).getRouteReflectorClient());
 
-    // route-reflector-client is true if activate and route-reflector-client are both true
+    // VI route-reflector-client is true if VS activate and route-reflector-client are both true
     {
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setActivated(true);
@@ -358,9 +376,14 @@ public class CumulusNcluConfigurationTest {
           vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
     }
 
-    // TODO what if not explicitly activated (i.e. activated is null) but route-reflector-client is
-    // true? Not testing until we're sure what correct behavior is. See comment in
-    // convertIpv4UnicastAddressFamily.
+    // Despite cumulus docs, GNS3 testing confirms VI route-reflector-client should be true even if
+    // activate is null (i.e. not explicitly activated).
+    {
+      BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
+      af.setRouteReflectorClient(true);
+      assertTrue(
+          vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
+    }
   }
 
   @Test
