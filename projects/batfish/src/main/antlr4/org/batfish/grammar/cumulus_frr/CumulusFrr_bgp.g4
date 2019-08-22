@@ -172,6 +172,7 @@ sbafi_neighbor
     sbafin_activate
   | sbafin_next_hop_self
   | sbafin_route_reflector_client
+  | sbafin_send_community
   | sbafin_soft_reconfiguration
   | sbafin_route_map
   )
@@ -191,6 +192,11 @@ sbafin_next_hop_self
 sbafin_route_reflector_client
 :
   ROUTE_REFLECTOR_CLIENT
+;
+
+sbafin_send_community
+:
+  SEND_COMMUNITY EXTENDED?
 ;
 
 sbafin_soft_reconfiguration
