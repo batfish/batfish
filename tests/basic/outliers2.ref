@@ -91,7 +91,9 @@
           "ospfSettings" : {
             "area" : 1,
             "cost" : 1,
+            "deadInterval" : 120,
             "enabled" : true,
+            "helloInterval" : 30,
             "helloMultiplier" : 0,
             "passive" : false,
             "process" : "1"
@@ -203,7 +205,9 @@
           "ospfSettings" : {
             "area" : 1,
             "cost" : 1,
+            "deadInterval" : 120,
             "enabled" : true,
+            "helloInterval" : 30,
             "helloMultiplier" : 0,
             "passive" : true,
             "process" : "1"

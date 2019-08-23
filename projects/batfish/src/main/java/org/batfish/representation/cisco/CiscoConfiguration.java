@@ -32,6 +32,8 @@ import static org.batfish.representation.cisco.CiscoConversions.toIpSpace;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
+import static org.batfish.representation.cisco.CiscoConversions.toOspfDeadInterval;
+import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInterval;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
@@ -2739,10 +2741,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     ospfSettings.setCost(vsIface.getOspfCost());
-    Integer deadInterval = vsIface.getOspfDeadInterval();
-    if (deadInterval != null) {
-      ospfSettings.setDeadInterval(deadInterval);
-    }
+    ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface));
+    ospfSettings.setHelloInterval(toOspfHelloInterval(vsIface));
     ospfSettings.setHelloMultiplier(vsIface.getOspfHelloMultiplier());
 
     ospfSettings.setAreaName(areaNum);
