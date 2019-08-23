@@ -3,6 +3,9 @@ package org.batfish.representation.cumulus_interfaces;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static org.batfish.representation.cumulus.CumulusInterfaceType.BOND_SUBINTERFACE;
+import static org.batfish.representation.cumulus.CumulusInterfaceType.PHYSICAL;
+import static org.batfish.representation.cumulus.CumulusInterfaceType.PHYSICAL_SUBINTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.BOND;
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.VLAN;
@@ -35,38 +38,14 @@ public final class Converter {
   private static final Pattern ENCAPSULATION_VLAN_PATTERN = Pattern.compile("^.*\\.([0-9]+)$");
   private static final Pattern PHYSICAL_INTERFACE_PATTERN =
       Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
-  private static final Pattern PHYSICAL_SUBINTERFACE_PATTERN =
-      Pattern.compile("^((swp[0-9]+(s[0-9])?)|(eth[0-9]+))\\.([0-9]+)$");
+  private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
   private final Interfaces _interfaces;
-  private final Map<String, String> _bondSlaveParents;
 
   private static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
   private static final int DEFAULT_BRIDGE_PVID = 1;
 
   public Converter(Interfaces interfaces) {
     _interfaces = interfaces;
-    _bondSlaveParents = computeBondSlaveParents(interfaces.getInterfaces());
-  }
-
-  @VisibleForTesting
-  Converter(Interfaces interfaces, Map<String, String> bondSlaveParents) {
-    _interfaces = interfaces;
-    _bondSlaveParents = bondSlaveParents;
-  }
-
-  private Map<String, String> computeBondSlaveParents(Map<String, Interface> interfaces) {
-    ImmutableMap.Builder<String, String> bondSlaveParents = ImmutableMap.builder();
-    for (Interface parent : interfaces.values()) {
-      Set<String> slaves = parent.getBondSlaves();
-      if (slaves == null) {
-        continue;
-      }
-      for (String slave : slaves) {
-        bondSlaveParents.put(slave, parent.getName());
-      }
-    }
-
-    return bondSlaveParents.build();
   }
 
   /** Get Cumulus VS model {@link Bond Bonds}. */
@@ -141,26 +120,31 @@ public final class Converter {
   @VisibleForTesting
   CumulusInterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
-    if (_bondSlaveParents.containsKey(name)) {
-      return CumulusInterfaceType.BOND_SUBINTERFACE;
-    } else if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
+    if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
       return CumulusInterfaceType.PHYSICAL;
-    } else if (PHYSICAL_SUBINTERFACE_PATTERN.matcher(name).matches()) {
-      return CumulusInterfaceType.PHYSICAL_SUBINTERFACE;
-    } else {
+    }
+
+    String superInterfaceName = getSuperInterfaceName(iface);
+    if (superInterfaceName == null) {
       throw new BatfishException("cannot determine interface type for " + name);
+    }
+
+    Interface superIface = _interfaces.getInterfaces().get(superInterfaceName);
+    if (superIface == null) {
+      throw new BatfishException("missing superinterface of subinterface " + name);
+    } else if (superIface.getType() == BOND) {
+      return BOND_SUBINTERFACE;
+    } else if (superIface.getType() == INTERFACE && getInterfaceType(superIface) == PHYSICAL) {
+      return PHYSICAL_SUBINTERFACE;
+    } else {
+      throw new BatfishException("invalid superinterface of subinterface " + name);
     }
   }
 
   @VisibleForTesting
   @Nullable
-  String getSuperInterfaceName(Interface iface) {
-    String name = iface.getName();
-    String superIfaceName = _bondSlaveParents.get(name);
-    if (superIfaceName != null) {
-      return superIfaceName;
-    }
-    Matcher matcher = PHYSICAL_SUBINTERFACE_PATTERN.matcher(name);
+  static String getSuperInterfaceName(Interface iface) {
+    Matcher matcher = SUBINTERFACE_PATTERN.matcher(iface.getName());
     if (matcher.matches()) {
       return matcher.group(1);
     }
