@@ -209,6 +209,7 @@ public final class OspfTopologyUtils {
 
     OspfInterfaceSettings localOspf = localIface.getOspfSettings();
     OspfInterfaceSettings remoteOspf = remoteIface.getOspfSettings();
+    // Guaranteed by initNeighborConfigs
     assert (localOspf != null);
     assert (remoteOspf != null);
     if (localOspf.getHelloInterval() != remoteOspf.getHelloInterval()) {
