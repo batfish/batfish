@@ -885,12 +885,12 @@ jline3_compile()
 maven_repository(
     name = "json_smart",
     force = [
-        "org.ow2.asm:asm:7.0",
+        "org.ow2.asm:asm:7.1",
     ],
     transitive_deps = [
         "c592b500269bfde36096641b01238a8350f8aa31:net.minidev:accessors-smart:1.2",
         "007396407491352ce4fa30de92efb158adb76b5b:net.minidev:json-smart:2.3",
-        "d74d4ba0dee443f68fb2dcb7fcdb945a2cd89912:org.ow2.asm:asm:7.0",
+        "fa29aa438674ff19d5e1386d2c3527a0267f291e:org.ow2.asm:asm:7.1",
     ],
     deps = [
         "net.minidev:json-smart:2.3",
@@ -1062,15 +1062,15 @@ opentracing_util_compile()
 maven_repository(
     name = "parboiled",
     transitive_deps = [
-        "d74d4ba0dee443f68fb2dcb7fcdb945a2cd89912:org.ow2.asm:asm:7.0",
-        "4b310d20d6f1c6b7197a75f1b5d69f169bc8ac1f:org.ow2.asm:asm-analysis:7.0",
-        "29bc62dcb85573af6e62e5b2d735ef65966c4180:org.ow2.asm:asm-tree:7.0",
-        "18d4d07010c24405129a6dbb0e92057f8779fb9d:org.ow2.asm:asm-util:7.0",
-        "2de1123c7844679a1af247cb5a58c6c2ff0a571c:org.parboiled:parboiled-core:1.3.0",
-        "894462ef5b936cd246caab80ba97a7976e206a00:org.parboiled:parboiled-java:1.3.0",
+        "fa29aa438674ff19d5e1386d2c3527a0267f291e:org.ow2.asm:asm:7.1",
+        "379e0250f7a4a42c66c5e94e14d4c4491b3c2ed3:org.ow2.asm:asm-analysis:7.1",
+        "a3662cf1c1d592893ffe08727f78db35392fa302:org.ow2.asm:asm-tree:7.1",
+        "5b0b0f8cdb6c90582302ffcf5c20447206122f48:org.ow2.asm:asm-util:7.1",
+        "c863e0920201d53f891ad2bdd5076bf231d45b3d:org.parboiled:parboiled-core:1.3.1",
+        "fed0d73e033e872a497f49562d5496167abe60be:org.parboiled:parboiled-java:1.3.1",
     ],
     deps = [
-        "org.parboiled:parboiled-java:1.3.0",
+        "org.parboiled:parboiled-java:1.3.1",
     ],
 )
 
