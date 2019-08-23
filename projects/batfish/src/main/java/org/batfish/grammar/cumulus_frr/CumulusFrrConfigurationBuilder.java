@@ -557,7 +557,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .getEntries()
             .computeIfAbsent(
                 sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
-    _c.defineStructure(CumulusStructureType.VRF, name, ctx.getStart().getLine());
     _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
   }
 
