@@ -217,7 +217,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   public static final int DEFAULT_VRF_ID = 1;
   /** On NX-OS, there is a pre-populated VRF named "management". */
   public static final String MANAGEMENT_VRF_NAME = "management";
-  /** On NX-OS, management VRF has id 1. */
+  /** On NX-OS, management VRF has id 2. */
   public static final int MANAGEMENT_VRF_ID = 2;
 
   private int _currentContextVrfId;
