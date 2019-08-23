@@ -11,6 +11,8 @@ s_ntp
   NTP
   (
     ntp_access_group
+    | ntp_authenticate
+    | ntp_authentication_key
     | ntp_commit
     | ntp_distribute
     | ntp_peer
@@ -29,6 +31,28 @@ ntp_access_group
     | ntpag_serve
     | ntpag_serve_only
   )
+;
+
+ntp_authenticate
+:
+  AUTHENTICATE NEWLINE
+;
+
+ntp_authentication_key
+:
+  AUTHENTICATION_KEY num = ntp_authentication_key_number MD5 md5 = md5_string md5_string_type? NEWLINE
+;
+
+md5_string_type
+:
+// 0 or 7
+  uint8
+;
+
+ntp_authentication_key_number
+:
+// 1-65535
+  uint16
 ;
 
 ntpag_match_all
@@ -80,7 +104,21 @@ ntp_host
 
 ntp_server
 :
-  SERVER host = ntp_host (USE_VRF vrf = vrf_name)? NEWLINE
+  SERVER host = ntp_host
+  (
+    ntps_prefer
+    | ntps_use_vrf
+  )* NEWLINE
+;
+
+ntps_prefer
+:
+  PREFER
+;
+
+ntps_use_vrf
+:
+  USE_VRF vrf = vrf_name
 ;
 
 ntp_source_interface
