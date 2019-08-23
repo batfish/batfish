@@ -18,6 +18,8 @@ interface loopback0
   no switchport
   no shutdown
   ip address 192.0.2.1/24
+interface loopback1
+  ! no primary address for the match interface test
 interface Vlan1
   ip address 10.0.1.1/24
 interface Vlan2
@@ -46,7 +48,7 @@ route-map match_community_expanded permit 10
   match community community_list_expanded
 
 route-map match_interface permit 10
-  match interface loopback0
+  match interface loopback0 loopback1
 
 route-map match_ip_address permit 10
   match ip address access_list1
