@@ -8,7 +8,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpComm
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerEvpnExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeNxosBgpDefaultRouteExportPolicyName;
-import static org.batfish.representation.cisco_nxos.Vrf.DEFAULT_VRF_ID;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -624,6 +624,8 @@ final class Conversions {
                     exportRtOrAuto.isAuto()
                         ? toRouteTarget(localAs, vniSettings.getVni())
                         : exportRtOrAuto.getExtendedCommunity())
+                // NXOS advertises EVPN type-5 always
+                .setAdvertiseV4Unicast(true)
                 .build());
       }
     }
