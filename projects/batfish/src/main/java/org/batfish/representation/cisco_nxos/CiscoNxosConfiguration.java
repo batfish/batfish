@@ -2674,13 +2674,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     new ExplicitPrefixSet(
                         new PrefixSpace(
                             routeMapMatchInterface.getNames().stream()
-                                .filter(_interfaces::containsKey)
                                 .map(_interfaces::get)
+                                .filter(Objects::nonNull)
                                 .flatMap(
                                     iface ->
                                         Stream.concat(
                                             Stream.of(iface.getAddress()),
                                             iface.getSecondaryAddresses().stream()))
+                                .filter(Objects::nonNull)
                                 .map(InterfaceAddressWithAttributes::getAddress)
                                 .filter(ConcreteInterfaceAddress.class::isInstance)
                                 .map(ConcreteInterfaceAddress.class::cast)
