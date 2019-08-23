@@ -161,7 +161,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
@@ -281,6 +280,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
             new SetOrigin(new LiteralOrigin(originType, null))));
     return we;
+  }
+
+  private static @Nonnull Statement call(String routingPolicyName) {
+    return new If(
+        new CallExpr(routingPolicyName),
+        ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+        ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
   }
 
   public static @Nonnull String toJavaRegex(String ciscoRegex) {
@@ -2011,7 +2017,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               exportStatementsBuilder.add(
                   new If(
                       new MatchProtocol(RoutingProtocol.STATIC),
-                      ImmutableList.of(new CallStatement(routeMapName))));
+                      ImmutableList.of(call(routeMapName))));
             });
 
     // Then try orginating default route (either always or from RIB route not covered above)
@@ -2039,7 +2045,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           .ifPresent(
               defaultOriginateRouteMapName -> {
                 exportPolicySourcesBuilder.add(defaultOriginateRouteMapName);
-                defaultOriginateStatements.add(new CallStatement(defaultOriginateRouteMapName));
+                defaultOriginateStatements.add(call(defaultOriginateRouteMapName));
               });
       defaultOriginateStatements.add(Statements.ExitAccept.toStaticStatement());
       exportStatementsBuilder.add(new If(guard, defaultOriginateStatements.build()));
@@ -2053,7 +2059,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               exportStatementsBuilder.add(
                   new If(
                       new MatchProtocol(RoutingProtocol.CONNECTED),
-                      ImmutableList.of(new CallStatement(routeMapName))));
+                      ImmutableList.of(call(routeMapName))));
             });
     List<Statement> exportInnerStatements = exportStatementsBuilder.build();
     int defaultRedistributionMetric =
@@ -2353,6 +2359,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           toStatement(routeMapName, currentEntry, noMatchNextBySeq, continueTargets));
     }
     // finalize last routing policy
+    // TODO: do default action, which changes when continuing from a permit
     currentRoutingPolicyStatements.add(ROUTE_MAP_DENY_STATEMENT);
     RoutingPolicy.builder()
         .setName(currentRoutingPolicyName)
@@ -2403,8 +2410,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // final action if matched
     if (continueTarget != null) {
       if (continueTargets.contains(continueTarget)) {
-        finalTrueStatement =
-            new CallStatement(computeRoutingPolicyName(routeMapName, continueTarget));
+        // TODO: verify correct semantics: possibly, should add two statements in this case; first
+        // should set default action to permit/deny if this is a permit/deny entry, and second
+        // should call policy for next entry.
+        finalTrueStatement = call(computeRoutingPolicyName(routeMapName, continueTarget));
       } else {
         // invalid continue target, so just deny
         // TODO: verify actual behavior
@@ -2422,8 +2431,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     Integer noMatchNext = noMatchNextBySeq.get(entry.getSequence());
     List<Statement> noMatchStatements =
         noMatchNext != null && continueTargets.contains(noMatchNext)
-            ? ImmutableList.of(
-                new CallStatement(computeRoutingPolicyName(routeMapName, noMatchNext)))
+            ? ImmutableList.of(call(computeRoutingPolicyName(routeMapName, noMatchNext)))
             : ImmutableList.of();
     return new If(new Conjunction(conjuncts.build()), trueStatements.build(), noMatchStatements);
   }

@@ -10,7 +10,8 @@ ip access-list access_list1
   10 permit ip any any
 ipv6 access-list ipv6_access_list1
 ip as-path access-list as_path_access_list1 seq 1 permit "_1_"
-ip community-list standard community_list1 seq 1 permit 1:1 2:2
+ip community-list expanded community_list_expanded seq 1 permit "_64512:3[0-9][0-9][0-9][0-9]_"
+ip community-list standard community_list_standard seq 1 permit 1:1 2:2
 ip prefix-list prefix_list1 seq 10 permit 192.168.1.0/24
 ipv6 prefix-list ipv6_prefix_list1 seq 10 permit dead:beef::1/128
 interface loopback0
@@ -38,8 +39,11 @@ route-map empty_pbr_statistics pbr-statistics
 route-map match_as_path permit 10
   match as-path as_path_access_list1
 
-route-map match_community permit 10
-  match community community_list1
+route-map match_community_standard permit 10
+  match community community_list_standard
+
+route-map match_community_expanded permit 10
+  match community community_list_expanded
 
 route-map match_interface permit 10
   match interface loopback0

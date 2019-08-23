@@ -1,0 +1,89 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_route_map_multiple_chained_continue_entries
+
+feature bgp
+
+ip prefix-list DEFAULT_V4 permit 0.0.0.0/0
+ip prefix-list LOOPBACKS_V4 permit 0.0.0.0/0 eq 32
+ip prefix-list NON_LOOPBACKS_V4 permit 0.0.0.0/0 le 31
+ip prefix-list NON_RFC1918 permit 0.0.0.0/5 le 32
+ip prefix-list NON_RFC1918 permit 8.0.0.0/7 le 32
+ip prefix-list NON_RFC1918 permit 11.0.0.0/8 le 32
+ip prefix-list NON_RFC1918 permit 12.0.0.0/6 le 32
+ip prefix-list NON_RFC1918 permit 16.0.0.0/4 le 32
+ip prefix-list NON_RFC1918 permit 32.0.0.0/3 le 32
+ip prefix-list NON_RFC1918 permit 64.0.0.0/2 le 32
+ip prefix-list NON_RFC1918 permit 128.0.0.0/2 le 32
+ip prefix-list NON_RFC1918 permit 172.0.0.0/12 le 32
+ip prefix-list NON_RFC1918 permit 172.32.0.0/11 le 32
+ip prefix-list NON_RFC1918 permit 172.64.0.0/10 le 32
+ip prefix-list NON_RFC1918 permit 172.128.0.0/9 le 32
+ip prefix-list NON_RFC1918 permit 173.0.0.0/8 le 32
+ip prefix-list NON_RFC1918 permit 174.0.0.0/7 le 32
+ip prefix-list NON_RFC1918 permit 176.0.0.0/4 le 32
+ip prefix-list NON_RFC1918 permit 192.0.0.0/9 le 32
+ip prefix-list NON_RFC1918 permit 192.128.0.0/11 le 32
+ip prefix-list NON_RFC1918 permit 192.160.0.0/13 le 32
+ip prefix-list NON_RFC1918 permit 192.169.0.0/16 le 32
+ip prefix-list NON_RFC1918 permit 192.170.0.0/15 le 32
+ip prefix-list NON_RFC1918 permit 192.172.0.0/14 le 32
+ip prefix-list NON_RFC1918 permit 192.176.0.0/12 le 32
+ip prefix-list NON_RFC1918 permit 192.192.0.0/10 le 32
+ip prefix-list NON_RFC1918 permit 193.0.0.0/8 le 32
+ip prefix-list NON_RFC1918 permit 194.0.0.0/7 le 32
+ip prefix-list NON_RFC1918 permit 196.0.0.0/6 le 32
+ip prefix-list NON_RFC1918 permit 200.0.0.0/5 le 32
+ip prefix-list NON_RFC1918 permit 208.0.0.0/4 le 32
+ip prefix-list NON_RFC1918 permit 224.0.0.0/3 le 32
+ip prefix-list P2P_V4 permit 0.0.0.0/0 eq 31
+ip prefix-list RFC1918 permit 10.0.0.0/8 le 32
+ip prefix-list RFC1918 permit 172.16.0.0/12 le 32
+ip prefix-list RFC1918 permit 192.168.0.0/16 le 32
+
+ip community-list expanded regex_forbidden permit "_65510:5[0-9][0-9][0-9][0-9]_"
+ip community-list expanded regex_required permit "_65510:6[0-9][0-9][0-9][0-9]_"
+
+route-map REDISTRIBUTE_CONNECTED permit 10
+  match ip address prefix-list RFC1918
+  continue 20
+  set community 65500:65500 65510:60000 additive
+route-map REDISTRIBUTE_CONNECTED permit 20
+  match ip address prefix-list NON_RFC1918
+  continue 30
+  set community 65500:65500 64512:35000 additive
+route-map REDISTRIBUTE_CONNECTED permit 30
+  set community 65500:65500 65510:60000 additive
+
+route-map EXPORT permit 10
+  match ip address prefix-list P2P_V4
+  match source-protocol connected
+  continue 30
+  set community no-advertise additive
+route-map EXPORT permit 30
+  match community regex_required
+  continue 50
+route-map EXPORT deny 40
+route-map EXPORT deny 50
+  match community regex_forbidden
+route-map EXPORT permit 60
+
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  ip address 192.0.2.1/24
+
+interface loopback0
+  ip address 10.10.10.10/32
+  no shutdown
+
+router bgp 65500
+  router-id 192.0.2.1
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  neighbor 192.0.2.2
+    remote-as 65501
+    update-source Ethernet1/1
+   address-family ipv4 unicast
+     route-map EXPORT out
+     send-community both

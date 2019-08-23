@@ -4945,7 +4945,8 @@ public final class CiscoNxosGrammarTest {
             "empty_permit",
             "empty_pbr_statistics",
             "match_as_path",
-            "match_community",
+            "match_community_standard",
+            "match_community_expanded",
             "match_interface",
             "match_ip_address",
             "match_ip_address_prefix_list",
@@ -5021,7 +5022,7 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyPermitsRoute(rp, route);
     }
     {
-      RoutingPolicy rp = c.getRoutingPolicies().get("match_community");
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_community_standard");
       assertRoutingPolicyDeniesRoute(rp, base);
       Bgpv4Route routeOnlyOneCommunity =
           base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1))).build();
@@ -5041,6 +5042,17 @@ public final class CiscoNxosGrammarTest {
                       StandardCommunity.of(3, 3)))
               .build();
       assertRoutingPolicyPermitsRoute(rp, routeBothCommunitiesAndMore);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_community_expanded");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route routeOnlyOneCommunity =
+          base.toBuilder()
+              .setCommunities(ImmutableSet.of(StandardCommunity.of(64512, 39999)))
+              .build();
+      assertRoutingPolicyPermitsRoute(rp, routeOnlyOneCommunity);
+      // TODO: fix community matching semantics and test matching of regex involving multiple
+      // communities
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_interface");
@@ -5273,7 +5285,8 @@ public final class CiscoNxosGrammarTest {
             "empty_permit",
             "empty_pbr_statistics",
             "match_as_path",
-            "match_community",
+            "match_community_standard",
+            "match_community_expanded",
             "match_interface",
             "match_ip_address",
             "match_ip_address_prefix_list",
@@ -5341,14 +5354,24 @@ public final class CiscoNxosGrammarTest {
       assertThat(match.getNames(), contains("as_path_access_list1"));
     }
     {
-      RouteMap rm = vc.getRouteMaps().get("match_community");
+      RouteMap rm = vc.getRouteMaps().get("match_community_standard");
       assertThat(rm.getEntries().keySet(), contains(10));
       RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
       assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
       assertThat(entry.getSequence(), equalTo(10));
       RouteMapMatchCommunity match = entry.getMatchCommunity();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
-      assertThat(match.getNames(), contains("community_list1"));
+      assertThat(match.getNames(), contains("community_list_standard"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_community_expanded");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchCommunity match = entry.getMatchCommunity();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getNames(), contains("community_list_expanded"));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_interface");
@@ -5688,6 +5711,22 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(30).getContinue(), nullValue());
     }
+  }
+
+  @Test
+  public void testRouteMapMultipleChainedContinueEntriesConversion() throws IOException {
+    Configuration c = parseConfig("nxos_route_map_multiple_chained_continue_entries");
+    RoutingPolicy exportPolicy =
+        c.getRoutingPolicies()
+            .get(
+                c.getDefaultVrf()
+                    .getBgpProcess()
+                    .getActiveNeighbors()
+                    .get(Prefix.strict("192.0.2.2/32"))
+                    .getIpv4UnicastAddressFamily()
+                    .getExportPolicy());
+    assertRoutingPolicyPermitsRoute(
+        exportPolicy, new ConnectedRoute(Prefix.strict("10.10.10.10/32"), "loopback0"));
   }
 
   @Test
