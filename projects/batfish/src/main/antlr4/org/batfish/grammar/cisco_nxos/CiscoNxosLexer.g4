@@ -346,9 +346,19 @@ AUTH
   'auth'
 ;
 
+AUTHENTICATE
+:
+  'authenticate'
+;
+
 AUTHENTICATION
 :
   'authentication'
+;
+
+AUTHENTICATION_KEY
+:
+  'authentication-key'
 ;
 
 AUTHORIZATION
@@ -2209,9 +2219,9 @@ MCAST_GROUP
 MD5
 :
   'md5'
-  // if preceded by 'auth', password follows
+  // password follows if preceded by 'auth' or 'authentication-key <number>'
   {
-    if (lastTokenType() == AUTH) {
+    if (lastTokenType() == AUTH || secondToLastTokenType() == AUTHENTICATION_KEY) {
       pushMode(M_Word);
     }
   }
@@ -2981,6 +2991,11 @@ PRECEDENCE_UNREACHABLE
 PREEMPT
 :
   'preempt'
+;
+
+PREFER
+:
+  'prefer'
 ;
 
 PREFIX_LIST

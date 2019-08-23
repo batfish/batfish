@@ -167,6 +167,12 @@ mac_address_literal
   MAC_ADDRESS_LITERAL
 ;
 
+md5_string
+:
+// 1-15 characters
+  WORD
+;
+
 null_rest_of_line
 :
   ~NEWLINE* NEWLINE

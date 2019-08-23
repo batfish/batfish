@@ -282,6 +282,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_source_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntps_preferContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntps_use_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_host_reachabilityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_no_shutdownContext;
@@ -1030,6 +1032,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @SuppressWarnings("unused")
   private LoggingServer _currentLoggingServer;
 
+  private NtpServer _currentNtpServer;
   private List<Nve> _currentNves;
   private List<NveVni> _currentNveVnis;
   private ObjectGroupIpAddress _currentObjectGroupIpAddress;
@@ -1826,12 +1829,24 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitNtp_server(Ntp_serverContext ctx) {
-    NtpServer ntpServer =
+  public void enterNtp_server(Ntp_serverContext ctx) {
+    _currentNtpServer =
         _configuration.getNtpServers().computeIfAbsent(ctx.host.getText(), NtpServer::new);
-    if (ctx.vrf != null) {
-      toString(ctx, ctx.vrf).ifPresent(ntpServer::setUseVrf);
-    }
+  }
+
+  @Override
+  public void exitNtp_server(Ntp_serverContext ctx) {
+    _currentNtpServer = null;
+  }
+
+  @Override
+  public void exitNtps_prefer(Ntps_preferContext ctx) {
+    _currentNtpServer.setPrefer(true);
+  }
+
+  @Override
+  public void exitNtps_use_vrf(Ntps_use_vrfContext ctx) {
+    toString(ctx, ctx.vrf).ifPresent(_currentNtpServer::setUseVrf);
   }
 
   @Override
