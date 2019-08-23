@@ -67,7 +67,9 @@ public final class Converter {
     bond.setClagId(bondIface.getClagId());
     bond.setSlaves(bondIface.getBondSlaves());
     bond.setVrf(bondIface.getVrf());
-    bond.getBridge().setVids(bondIface.getBridgeSettings().getVids());
+    if (bondIface.getBridgeSettings() != null) {
+      bond.getBridge().setVids(bondIface.getBridgeSettings().getVids());
+    }
     return bond;
   }
 
