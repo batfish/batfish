@@ -84,7 +84,7 @@ public final class OspfInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setPassive(Boolean ospfPassive) {
+    public Builder setPassive(boolean ospfPassive) {
       _ospfPassive = ospfPassive;
       return this;
     }
@@ -117,7 +117,7 @@ public final class OspfInterfaceSettings implements Serializable {
   @Nullable private Integer _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
   @Nullable private OspfNetworkType _ospfNetworkType;
-  @Nullable private Boolean _ospfPassive;
+  private boolean _ospfPassive;
   @Nullable private String _ospfProcess;
 
   private static final String PROP_AREA = "area";
@@ -145,6 +145,7 @@ public final class OspfInterfaceSettings implements Serializable {
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
       @Nullable @JsonProperty(PROP_PROCESS) String process) {
     checkArgument(enabled != null, "OSPF enabled must be specified");
+    checkArgument(passive != null, "OSPF passive must be specified");
     checkArgument(helloInterval != null, "OSPF hello interval must be specified");
     checkArgument(deadInterval != null, "OSPF dead interval must be specified");
     return new OspfInterfaceSettings(
@@ -169,7 +170,7 @@ public final class OspfInterfaceSettings implements Serializable {
       @Nullable Integer helloMultiplier,
       @Nullable String inboundDistributeListPolicy,
       @Nullable OspfNetworkType networkType,
-      @Nullable Boolean passive,
+      boolean passive,
       @Nullable String process) {
     _ospfAreaName = area;
     _ospfCost = cost;
@@ -279,8 +280,7 @@ public final class OspfInterfaceSettings implements Serializable {
    * establish a neighbor relationship, but its subnets are still advertised.
    */
   @JsonProperty(PROP_PASSIVE)
-  @Nullable
-  public Boolean getPassive() {
+  public boolean getPassive() {
     return _ospfPassive;
   }
 
