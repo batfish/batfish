@@ -109,6 +109,8 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -765,6 +767,46 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private void convertDomainName() {
     _c.setDomainName(_ipDomainName);
+  }
+
+  private void convertEigrp() {
+    getEigrpProcesses().forEach(this::convertEigrpProcess);
+  }
+
+  private void convertEigrpProcess(String procName, EigrpProcessConfiguration processConfig) {
+    processConfig
+        .getVrfs()
+        .forEach(
+            (vrfName, vrfConfig) -> {
+              convertEigrpProcessVrf(procName, processConfig, vrfName, vrfConfig);
+            });
+  }
+
+  private void convertEigrpProcessVrf(
+      String procName,
+      EigrpProcessConfiguration processConfig,
+      String vrfName,
+      EigrpVrfConfiguration vrfConfig) {
+    Integer asn = Optional.ofNullable(vrfConfig.getAsn()).orElse(processConfig.getAsn());
+    if (asn == null) {
+      _w.redFlag(
+          String.format(
+              "Must configure the EIGRP autonomous-system number for vrf %s in process %s",
+              vrfName, procName));
+      return;
+    }
+    org.batfish.datamodel.Vrf v = _c.getVrfs().get(vrfName);
+    if (v == null) {
+      // Already warned on undefined reference
+      _w.redFlag(
+          String.format(
+              "Ignoring EIGRP configuration for non-existent vrf %s in process %s",
+              vrfName, procName));
+      return;
+    }
+    EigrpProcess.Builder proc = EigrpProcess.builder().setAsNumber(asn).setRouterId(Ip.ZERO);
+    proc.setMode(vrfConfig.getAsn() != null ? EigrpProcessMode.CLASSIC : EigrpProcessMode.NAMED);
+    v.addEigrpProcess(proc.build());
   }
 
   private void convertInterface(Interface iface) {
@@ -2894,6 +2936,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertOspfProcesses();
     convertNves();
     convertBgp();
+    convertEigrp();
 
     markStructures();
     return _c;
