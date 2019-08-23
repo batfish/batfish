@@ -16,9 +16,6 @@ interface loopback99
 vrf context VRF
   ! defined so it will be converted
 !
-vrf context VRF
-  ! defined so it will be converted
-!
 router eigrp EIGRP1234
   ! This router-id is ignored since the autonomous-system is not configured.
   router-id 5.5.5.5
