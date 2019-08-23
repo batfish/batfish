@@ -259,6 +259,11 @@ public final class CumulusInterfacesConfigurationBuilder
   public void exitI_vlan_id(I_vlan_idContext ctx) {
     String vlanId = ctx.number().getText();
     _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx);
+    _config.referenceStructure(
+        CumulusStructureType.VLAN,
+        vlanId,
+        CumulusStructureUsage.VLAN_SELF_REFERENCE,
+        ctx.getStart().getLine());
     _currentIface.setVlanId(Integer.parseInt(vlanId));
   }
 

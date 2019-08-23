@@ -1020,7 +1020,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CumulusStructureType.IP_PREFIX_LIST,
         CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
-    markConcreteStructure(CumulusStructureType.VLAN, CumulusStructureUsage.VLAN_SELF_REFERENCE);
     markConcreteStructure(
         CumulusStructureType.LOOPBACK, CumulusStructureUsage.LOOPBACK_SELF_REFERENCE);
     markConcreteStructure(
@@ -1029,6 +1028,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT,
         CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP,
         CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP);
+    markConcreteStructure(CumulusStructureType.VLAN, CumulusStructureUsage.VLAN_SELF_REFERENCE);
     markConcreteStructure(
         CumulusStructureType.VRF,
         CumulusStructureUsage.BGP_VRF,
