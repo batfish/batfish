@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -249,9 +250,9 @@ public class OspfTopologyUtilsTest {
                 .setRouterId(routerId)
                 .build()));
     Builder iface = Interface.builder().setName(ifaceName).setMtu(mtu);
-    if (ospfSettings != null) {
-      iface.setOspfSettings(ospfSettings);
-    }
+    iface.setOspfSettings(
+        MoreObjects.firstNonNull(
+            ospfSettings, OspfInterfaceSettings.defaultSettingsBuilder().build()));
     c.getAllInterfaces().put(ifaceName, iface.build());
     c.getVrfs().put(vrfName, vrf);
     return c;
