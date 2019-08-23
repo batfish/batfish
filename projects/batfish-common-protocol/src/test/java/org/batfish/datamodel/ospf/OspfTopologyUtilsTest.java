@@ -369,7 +369,7 @@ public class OspfTopologyUtilsTest {
             Ip.parse("1.1.1.2"),
             OspfInterfaceSettings.defaultSettingsBuilder().setHelloInterval(10).build());
 
-    // Confirm we correctly mark a session as incompatible when OSPF dead intervals are mismatched
+    // Confirm we correctly mark a session as incompatible when OSPF hello intervals are mismatched
     Optional<OspfSessionProperties> val =
         getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(Optional.empty()));
