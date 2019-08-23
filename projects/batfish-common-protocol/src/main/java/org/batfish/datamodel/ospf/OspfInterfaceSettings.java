@@ -215,7 +215,7 @@ public final class OspfInterfaceSettings implements Serializable {
         && Objects.equals(_ospfHelloMultiplier, other._ospfHelloMultiplier)
         && Objects.equals(_ospfInboundDistributeListPolicy, other._ospfInboundDistributeListPolicy)
         && Objects.equals(_ospfNetworkType, other._ospfNetworkType)
-        && Objects.equals(_ospfPassive, other._ospfPassive)
+        && _ospfPassive == other._ospfPassive
         && Objects.equals(_ospfProcess, other._ospfProcess);
   }
 
