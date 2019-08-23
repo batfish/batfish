@@ -64,6 +64,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
@@ -132,39 +133,41 @@ public class OspfRoutingProcessTest {
             .setHostname(HOSTNAME)
             .build();
     Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).setOwner(_c).build();
+    OspfInterfaceSettings.Builder ospf =
+        OspfInterfaceSettings.defaultSettingsBuilder().setProcess("1").setEnabled(true);
     Interface.Builder ib =
         nf.interfaceBuilder()
             .setVrf(vrf)
             .setOwner(_c)
-            .setOspfProcess("1")
-            .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
-            .setOspfEnabled(true)
+            .setOspfSettings(ospf.setNetworkType(OspfNetworkType.POINT_TO_POINT).build())
             .setType(InterfaceType.PHYSICAL)
             .setBandwidth(1e8);
     Interface inactiveIface =
         ib.setActive(false)
             .setName(INACTIVE_IFACE_NAME)
             .setAddress(INACTIVE_ADDR)
-            .setOspfCost(10)
+            .setOspfSettings(ospf.setCost(10).build())
             .build();
     ib.setActive(true);
     Interface activeIface =
         ib.setName(ACTIVE_IFACE_NAME)
             .setAddresses(ACTIVE_ADDR_1, ACTIVE_ADDR_2)
-            .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
+            .setOspfSettings(ospf.setNetworkType(OspfNetworkType.POINT_TO_POINT).build())
             .build();
     Interface passiveIface =
         ib.setName(PASSIVE_IFACE_NAME)
             .setAddress(PASSIVE_ADDR)
-            .setOspfPassive(true)
-            .setOspfNetworkType(OspfNetworkType.BROADCAST)
+            .setOspfSettings(
+                ospf.setNetworkType(OspfNetworkType.BROADCAST).setPassive(true).build())
             .build();
     Interface ospfDisabled =
         ib.setName(OSPF_DISABLED_IFACE_NAME)
             .setAddress(OSPF_DISABLED_ADDR)
-            .setOspfPassive(false)
-            .setOspfNetworkType(OspfNetworkType.BROADCAST)
-            .setOspfEnabled(false)
+            .setOspfSettings(
+                ospf.setPassive(false)
+                    .setNetworkType(OspfNetworkType.BROADCAST)
+                    .setEnabled(false)
+                    .build())
             .build();
     AREA0_CONFIG =
         OspfArea.builder(nf)
@@ -236,7 +239,10 @@ public class OspfRoutingProcessTest {
             .setOwner(c)
             .setVrf(vrf)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
-            .setOspfInboundDistributeListPolicy("policy")
+            .setOspfSettings(
+                OspfInterfaceSettings.defaultSettingsBuilder()
+                    .setInboundDistributeListPolicy("policy")
+                    .build())
             .build();
 
     RouteFilterList prefixList =

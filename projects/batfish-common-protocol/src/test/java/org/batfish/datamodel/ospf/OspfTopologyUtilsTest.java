@@ -350,9 +350,13 @@ public class OspfTopologyUtilsTest {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             Ip.parse("1.1.1.1"),
-            OspfInterfaceSettings.builder().setNetworkType(OspfNetworkType.POINT_TO_POINT).build(),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .build(),
             Ip.parse("1.1.1.2"),
-            OspfInterfaceSettings.builder().setNetworkType(OspfNetworkType.BROADCAST).build());
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setNetworkType(OspfNetworkType.BROADCAST)
+                .build());
 
     // Confirm we correctly mark a session as incompatible when OSPF network types are mismatched
     Optional<OspfSessionProperties> val =

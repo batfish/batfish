@@ -630,6 +630,8 @@ final class Conversions {
                     exportRtOrAuto.isAuto()
                         ? toRouteTarget(localAs, vniSettings.getVni())
                         : exportRtOrAuto.getExtendedCommunity())
+                // NXOS advertises EVPN type-5 always
+                .setAdvertiseV4Unicast(true)
                 .build());
       }
     }
