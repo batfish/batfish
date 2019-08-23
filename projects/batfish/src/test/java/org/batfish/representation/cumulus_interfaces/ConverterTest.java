@@ -166,12 +166,14 @@ public class ConverterTest {
     bondIface.setClagId(1);
     bondIface.setBondSlaves(ImmutableSet.of("slave"));
     bondIface.setVrf("vrf");
+    bondIface.createOrGetBridgeSettings().setVids(IntegerSpace.of(10));
 
     Bond bond = convertBond(bondIface);
 
     assertThat(bond.getClagId(), equalTo(1));
     assertThat(bond.getSlaves(), contains("slave"));
     assertThat(bond.getVrf(), equalTo("vrf"));
+    assertThat(bond.getBridge().getVids().enumerate(), contains(10));
   }
 
   @Test
