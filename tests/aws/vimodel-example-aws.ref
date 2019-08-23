@@ -1390,7 +1390,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
+              "deadInterval" : 40,
               "enabled" : true,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
               "networkType" : "POINT_TO_POINT",
               "passive" : false,
@@ -1428,7 +1430,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
+              "deadInterval" : 40,
               "enabled" : true,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
               "networkType" : "POINT_TO_POINT",
               "passive" : false,
@@ -1672,7 +1676,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : true,
               "process" : "1"

@@ -401,7 +401,7 @@ public class EdgesAnswererTest {
     Interface i1 = _host1.getAllInterfaces().get("int1");
     i1.setVrf(vrf1);
     i1.setOspfSettings(
-        OspfInterfaceSettings.builder()
+        OspfInterfaceSettings.defaultSettingsBuilder()
             .setCost(1)
             .setPassive(false)
             .setNetworkType(OspfNetworkType.POINT_TO_POINT)
@@ -410,7 +410,7 @@ public class EdgesAnswererTest {
     Interface i2 = _host2.getAllInterfaces().get("int2");
     i2.setVrf(vrf2);
     i2.setOspfSettings(
-        OspfInterfaceSettings.builder()
+        OspfInterfaceSettings.defaultSettingsBuilder()
             .setCost(1)
             .setPassive(false)
             .setNetworkType(OspfNetworkType.POINT_TO_POINT)
