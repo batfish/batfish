@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.toCommunityList;
 import static org.hamcrest.Matchers.equalTo;
@@ -22,8 +23,11 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
@@ -207,6 +211,31 @@ public class CumulusNcluConfigurationTest {
           getSetNextHop(bgpNeighbor, bgpVrf),
           equalTo(new SetNextHop(SelfNextHop.getInstance(), false)));
     }
+  }
+
+  @Test
+  public void testComputeLocalIpForBgpNeighbor() {
+    Ip remoteIp = Ip.parse("1.1.1.1");
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    org.batfish.datamodel.Interface.Builder ib = nf.interfaceBuilder();
+
+    // Should not accept interface whose subnet doesn't include the remote IP
+    InterfaceAddress addr1 = ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24);
+    ib.setType(InterfaceType.PHYSICAL).setOwner(c).setName("i1").setAddress(addr1).build();
+    assertNull(computeLocalIpForBgpNeighbor(remoteIp, c));
+
+    // Should not accept interface that owns the remote IP
+    InterfaceAddress addr2 = ConcreteInterfaceAddress.create(remoteIp, 24);
+    ib.setType(InterfaceType.PHYSICAL).setOwner(c).setName("i2").setAddress(addr2).build();
+    assertNull(computeLocalIpForBgpNeighbor(remoteIp, c));
+
+    // Should accept interface that doesn't own the remote IP but whose subnet does include it
+    Ip ifaceIp = Ip.parse("1.1.1.2");
+    InterfaceAddress addr3 = ConcreteInterfaceAddress.create(ifaceIp, 24);
+    ib.setType(InterfaceType.PHYSICAL).setOwner(c).setName("i3").setAddress(addr3).build();
+    assertThat(computeLocalIpForBgpNeighbor(remoteIp, c), equalTo(ifaceIp));
   }
 
   @Test
