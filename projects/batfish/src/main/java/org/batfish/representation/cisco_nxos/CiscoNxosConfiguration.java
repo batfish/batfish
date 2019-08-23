@@ -783,7 +783,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     EigrpProcess.Builder proc = EigrpProcess.builder().setAsNumber(asn).setRouterId(routerId);
     proc.setMode(vrfConfig.getAsn() != null ? EigrpProcessMode.CLASSIC : EigrpProcessMode.NAMED);
-    v.addEigrpProcess(proc.build());
+    if (v.getEigrpProcesses().containsKey(Long.valueOf(asn))) {
+      // TODO: figure out what this does and handle it.
+      _w.redFlag(
+          String.format(
+              "VRF %s already has an EIGRP process for autonomous-system number %s. Skipping %s",
+              vrfName, asn, procName));
+    } else {
+      v.addEigrpProcess(proc.build());
+    }
   }
 
   private void convertInterface(Interface iface) {
