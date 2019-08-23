@@ -2755,7 +2755,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
           @Override
           public BooleanExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
-            List<MatchTag> matchTags =
+            List<BooleanExpr> matchTags =
                 routeMapMatchTag.getTags().stream()
                     .map(LiteralLong::new)
                     .map(ll -> new MatchTag(IntComparator.EQ, ll))

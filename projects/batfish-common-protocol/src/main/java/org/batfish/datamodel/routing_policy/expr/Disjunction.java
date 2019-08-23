@@ -21,7 +21,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class Disjunction extends BooleanExpr {
   private static final String PROP_DISJUNCTS = "disjuncts";
 
-  private List<? extends BooleanExpr> _disjuncts;
+  private List<BooleanExpr> _disjuncts;
 
   public Disjunction() {
     this(new ArrayList<>());
@@ -31,7 +31,7 @@ public final class Disjunction extends BooleanExpr {
     this(Arrays.asList(disjuncts));
   }
 
-  public Disjunction(List<? extends BooleanExpr> disjuncts) {
+  public Disjunction(List<BooleanExpr> disjuncts) {
     _disjuncts = disjuncts;
   }
 
@@ -59,12 +59,12 @@ public final class Disjunction extends BooleanExpr {
   }
 
   @JsonProperty(PROP_DISJUNCTS)
-  public List<? extends BooleanExpr> getDisjuncts() {
+  public List<BooleanExpr> getDisjuncts() {
     return _disjuncts;
   }
 
   @JsonProperty(PROP_DISJUNCTS)
-  public void setDisjuncts(List<? extends BooleanExpr> disjuncts) {
+  public void setDisjuncts(List<BooleanExpr> disjuncts) {
     _disjuncts = disjuncts;
   }
 
