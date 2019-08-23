@@ -1,12 +1,12 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.getSessionIfCompatible;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.trimLinks;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -251,8 +251,7 @@ public class OspfTopologyUtilsTest {
                 .build()));
     Builder iface = Interface.builder().setName(ifaceName).setMtu(mtu);
     iface.setOspfSettings(
-        MoreObjects.firstNonNull(
-            ospfSettings, OspfInterfaceSettings.defaultSettingsBuilder().build()));
+        firstNonNull(ospfSettings, OspfInterfaceSettings.defaultSettingsBuilder().build()));
     c.getAllInterfaces().put(ifaceName, iface.build());
     c.getVrfs().put(vrfName, vrf);
     return c;
