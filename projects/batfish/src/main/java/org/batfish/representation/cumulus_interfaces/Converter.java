@@ -17,12 +17,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusInterfaceType;
@@ -39,13 +41,16 @@ public final class Converter {
   private static final Pattern PHYSICAL_INTERFACE_PATTERN =
       Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
-  private final Interfaces _interfaces;
 
   private static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
   private static final int DEFAULT_BRIDGE_PVID = 1;
 
-  public Converter(Interfaces interfaces) {
+  private final Interfaces _interfaces;
+  private final Warnings _w;
+
+  public Converter(Interfaces interfaces, Warnings w) {
     _interfaces = interfaces;
+    _w = w;
   }
 
   /** Get Cumulus VS model {@link Bond Bonds}. */
@@ -87,7 +92,19 @@ public final class Converter {
         .filter(Converter::isInterface)
         // interface bridge is handled by convertBridge
         .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
-        .map(this::convertInterface)
+        .map(
+            iface -> {
+              try {
+                return convertInterface(iface);
+              } catch (BatfishException e) {
+                _w.redFlag(
+                    String.format(
+                        "failed to convert interface %s to VS model: %s",
+                        iface.getName(), e.getMessage()));
+                return null;
+              }
+            })
+        .filter(Objects::nonNull)
         .collect(
             toImmutableMap(
                 org.batfish.representation.cumulus.Interface::getName, Function.identity()));

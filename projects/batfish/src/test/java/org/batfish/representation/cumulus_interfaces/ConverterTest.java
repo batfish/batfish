@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
@@ -34,6 +35,7 @@ import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.Vlan;
 import org.batfish.representation.cumulus.Vrf;
 import org.batfish.representation.cumulus.Vxlan;
+import org.junit.Before;
 import org.junit.Test;
 
 /** Test for Cumulus {@link Interfaces} {@link Converter}. */
@@ -91,6 +93,13 @@ public class ConverterTest {
     VXLAN_IFACE.createOrGetBridgeSettings().setAccess(2);
   }
 
+  private Warnings _w;
+
+  @Before
+  public void setup() {
+    _w = new Warnings();
+  }
+
   @Test
   public void testIsVlan() {
     assertTrue(isVlan(new Interface("vlan123")));
@@ -129,7 +138,7 @@ public class ConverterTest {
   public void testGetInterfaceType() {
     Interfaces interfaces = new Interfaces();
     interfaces.getInterfaces().putAll(INTERFACE_MAP);
-    Converter converter = new Converter(interfaces);
+    Converter converter = new Converter(interfaces, _w);
 
     assertThat(converter.getInterfaceType(PHYSICAL_IFACE), equalTo(PHYSICAL));
     assertThat(
@@ -170,7 +179,7 @@ public class ConverterTest {
     Interfaces interfaces = new Interfaces();
     interfaces.getInterfaces().put(BRIDGE_IFACE.getName(), BRIDGE_IFACE);
 
-    Converter converter = new Converter(interfaces);
+    Converter converter = new Converter(interfaces, _w);
     Bridge bridge = converter.convertBridge();
     assertThat(bridge.getPorts(), equalTo(BRIDGE_IFACE.getBridgePorts()));
     assertThat(bridge.getPvid(), equalTo(BRIDGE_IFACE.getBridgeSettings().getPvid()));
@@ -179,7 +188,7 @@ public class ConverterTest {
 
   @Test
   public void testConvertInterface() {
-    Converter converter = new Converter(new Interfaces());
+    Converter converter = new Converter(new Interfaces(), _w);
 
     org.batfish.representation.cumulus.Interface vsIface =
         converter.convertInterface(PHYSICAL_IFACE);
@@ -206,7 +215,7 @@ public class ConverterTest {
     Interfaces interfaces = new Interfaces();
     interfaces.getInterfaces().put(PHYSICAL_IFACE.getName(), PHYSICAL_IFACE);
 
-    Converter converter = new Converter(interfaces);
+    Converter converter = new Converter(interfaces, _w);
 
     org.batfish.representation.cumulus.Interface vsIface =
         converter.convertInterface(PHYSICAL_SUBIFACE);
@@ -228,7 +237,7 @@ public class ConverterTest {
     Interfaces ifaces = new Interfaces();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
     Map<String, org.batfish.representation.cumulus.Interface> vsIfaces =
-        new Converter(ifaces).convertInterfaces();
+        new Converter(ifaces, _w).convertInterfaces();
 
     // non-interfaces filtered out
     assertThat(
@@ -251,7 +260,7 @@ public class ConverterTest {
   public void testConvertVlans() {
     Interfaces ifaces = new Interfaces();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vlan> vlans = new Converter(ifaces).convertVlans();
+    Map<String, Vlan> vlans = new Converter(ifaces, _w).convertVlans();
 
     // non-vlans filtered out
     assertThat(vlans.keySet(), containsInAnyOrder(VLAN_IFACE.getName()));
@@ -268,7 +277,7 @@ public class ConverterTest {
   public void testConvertVrfs() {
     Interfaces ifaces = new Interfaces();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vrf> vrfs = new Converter(ifaces).convertVrfs();
+    Map<String, Vrf> vrfs = new Converter(ifaces, _w).convertVrfs();
 
     // non-vrfs filtered out
     assertThat(vrfs.keySet(), containsInAnyOrder(VRF_IFACE.getName()));
@@ -287,7 +296,7 @@ public class ConverterTest {
   public void testConvertVxlans() {
     Interfaces ifaces = new Interfaces();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vxlan> vxlans = new Converter(ifaces).convertVxlans();
+    Map<String, Vxlan> vxlans = new Converter(ifaces, _w).convertVxlans();
 
     // non-vxlans filtered out
     assertThat(vxlans.keySet(), containsInAnyOrder(VXLAN_IFACE.getName()));
