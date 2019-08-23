@@ -50,7 +50,7 @@ public class OspfInterfaceConfigAnswererTest {
     nf.interfaceBuilder()
         .setName("int1")
         .setOspfSettings(
-            OspfInterfaceSettings.builder()
+            OspfInterfaceSettings.defaultSettingsBuilder()
                 .setAreaName(ospfArea.getAreaNumber())
                 .setPassive(true)
                 .setCost(2)

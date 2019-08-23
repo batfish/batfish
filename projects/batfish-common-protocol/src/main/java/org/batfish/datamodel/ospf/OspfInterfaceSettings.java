@@ -23,6 +23,7 @@ public final class OspfInterfaceSettings implements Serializable {
     return new Builder()
         .setEnabled(true)
         .setPassive(false)
+        .setHelloInterval(10)
         .setDeadInterval(40)
         .setNetworkType(OspfNetworkType.POINT_TO_POINT);
   }
