@@ -7,8 +7,10 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -42,9 +44,11 @@ import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
+import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
@@ -743,5 +747,52 @@ public class CumulusFrrGrammarTest {
               .getRouteMapOut(),
           equalTo("R"));
     }
+  }
+
+  @Test
+  public void testInterface_NoInterface() {
+    parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("interface swp1 is not defined"));
+  }
+
+  @Test
+  public void testInterface_InterfaceVrfNotMatch() {
+    // has vrf but not match
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    i1.setVrf("VRF2");
+    CONFIG.getInterfaces().put("swp1", i1);
+    parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("vrf VRF of interface swp1 does not match vrf VRF2 defined already"));
+    assertThat(CONFIG.getInterfaces().get("swp1").getAlias(), equalTo("rt1010svc01 swp1s1"));
+  }
+
+  @Test
+  public void testInterface_InterfaceDefaultVrfNotMatch() {
+    // default vrf not match
+    Interface i2 = new Interface("swp2", CumulusInterfaceType.PHYSICAL, null, null);
+    i2.setVrf("VRF2");
+    CONFIG.getInterfaces().put("swp2", i2);
+    parseLines("interface swp2", "description rt1010svc01 swp1s1");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("default vrf of interface swp2 does not match vrf VRF2 defined already"));
+    assertThat(CONFIG.getInterfaces().get("swp2").getAlias(), equalTo("rt1010svc01 swp1s1"));
+  }
+
+  @Test
+  public void testInterface_Correct() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    i1.setVrf("VRF");
+    i1.setAlias("rt1010svc01 swp1s1");
+    CONFIG.getInterfaces().put("swp1", i1);
+    parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
   }
 }
