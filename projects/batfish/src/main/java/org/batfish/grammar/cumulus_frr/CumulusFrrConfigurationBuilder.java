@@ -4,8 +4,10 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
@@ -596,11 +598,23 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmm_community(Rmm_communityContext ctx) {
-    ImmutableList.Builder<String> names = ImmutableList.builder();
-    Optional.ofNullable(_currentRouteMapEntry.getMatchCommunity())
-        .ifPresent(old -> names.addAll(old.getNames()));
-    ctx.names.stream().map(nameCtx -> nameCtx.getText()).forEach(names::add);
-    _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
+    ctx.names.forEach(
+        name ->
+            _c.referenceStructure(
+                IP_COMMUNITY_LIST, name.getText(),
+                ROUTE_MAP_MATCH_COMMUNITY_LIST, name.getStart().getLine()));
+
+    _currentRouteMapEntry.setMatchCommunity(
+        new RouteMapMatchCommunity(
+            ImmutableList.<String>builder()
+                // add old names
+                .addAll(
+                    Optional.ofNullable(_currentRouteMapEntry.getMatchCommunity())
+                        .map(RouteMapMatchCommunity::getNames)
+                        .orElse(ImmutableList.of()))
+                // add new names
+                .addAll(ctx.names.stream().map(RuleContext::getText).iterator())
+                .build()));
   }
 
   @Override
@@ -652,7 +666,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .map(StandardCommunity::parse)
             .collect(ImmutableList.toImmutableList());
 
-    _c.defineStructure(CumulusStructureType.IP_COMMUNITY_LIST, name, ctx.getStart().getLine());
+    _c.defineStructure(IP_COMMUNITY_LIST, name, ctx.getStart().getLine());
     _c.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, action, communityList));
   }
 
