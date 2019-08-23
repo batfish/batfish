@@ -1,5 +1,6 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.getSessionIfCompatible;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.trimLinks;
 import static org.hamcrest.Matchers.equalTo;
@@ -249,9 +250,8 @@ public class OspfTopologyUtilsTest {
                 .setRouterId(routerId)
                 .build()));
     Builder iface = Interface.builder().setName(ifaceName).setMtu(mtu);
-    if (ospfSettings != null) {
-      iface.setOspfSettings(ospfSettings);
-    }
+    iface.setOspfSettings(
+        firstNonNull(ospfSettings, OspfInterfaceSettings.defaultSettingsBuilder().build()));
     c.getAllInterfaces().put(ifaceName, iface.build());
     c.getVrfs().put(vrfName, vrf);
     return c;
@@ -340,6 +340,36 @@ public class OspfTopologyUtilsTest {
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), 1234, Ip.parse("1.1.1.2"), 1500);
 
     // Confirm we correctly mark a session as incompatible when interfaces has mismatched MTU
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testGetSessionIfCompatibleDeadIntervalMismatch() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            Ip.parse("1.1.1.1"),
+            OspfInterfaceSettings.defaultSettingsBuilder().setDeadInterval(44).build(),
+            Ip.parse("1.1.1.2"),
+            OspfInterfaceSettings.defaultSettingsBuilder().setDeadInterval(40).build());
+
+    // Confirm we correctly mark a session as incompatible when OSPF dead intervals are mismatched
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testGetSessionIfCompatibleHelloIntervalMismatch() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            Ip.parse("1.1.1.1"),
+            OspfInterfaceSettings.defaultSettingsBuilder().setHelloInterval(11).build(),
+            Ip.parse("1.1.1.2"),
+            OspfInterfaceSettings.defaultSettingsBuilder().setHelloInterval(10).build());
+
+    // Confirm we correctly mark a session as incompatible when OSPF hello intervals are mismatched
     Optional<OspfSessionProperties> val =
         getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(Optional.empty()));
