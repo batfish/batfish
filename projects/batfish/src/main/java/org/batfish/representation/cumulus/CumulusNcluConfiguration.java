@@ -411,7 +411,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .flatMap(
             i ->
                 i.getAllConcreteAddresses().stream()
-                    .filter(addr -> addr.getPrefix().containsIp(remoteIp)))
+                    .filter(
+                        addr ->
+                            addr.getPrefix().containsIp(remoteIp)
+                                && !addr.getIp().equals(remoteIp)))
         .findFirst()
         .map(ConcreteInterfaceAddress::getIp)
         .orElse(null);
