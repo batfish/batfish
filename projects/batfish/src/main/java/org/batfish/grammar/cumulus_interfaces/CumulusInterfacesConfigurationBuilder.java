@@ -329,7 +329,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
-    Converter converter = new Converter(_interfaces);
+    Converter converter = new Converter(_interfaces, _w);
 
     try {
       _config.setBonds(converter.convertBonds());
