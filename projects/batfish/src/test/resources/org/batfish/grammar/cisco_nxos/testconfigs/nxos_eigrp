@@ -4,14 +4,21 @@ hostname nxos_eigrp
 !
 feature eigrp
 !
+interface loopback98
+  vrf member VRF
+  ip address 98.98.98.98/32
+!
 interface loopback99
   ip authentication mode eigrp EIGRP1234 md5
   ip authentication key-chain eigrp EIGRP1234 KEYCHAIN
+  ip address 99.99.99.99/32
 !
 vrf context VRF
   ! defined so it will be converted
 !
 router eigrp EIGRP1234
+  ! This router-id is ignored since the autonomous-system is not configured.
+  router-id 5.5.5.5
   flush-routes
   no flush-routes
   isolate
@@ -28,6 +35,9 @@ router eigrp EIGRP1234
   shutdown
   no shutdown
   vrf VRF
+    ! This router-id is unset, and will be inferred from loopback98
+    router-id 1.2.3.4
+    no router-id
     autonomous-system 12345
     passive-interface default
     no passive-interface default
@@ -45,3 +55,5 @@ router eigrp EIGRP1234
 router eigrp 123
   isolate
   no isolate
+  ! This router-id is set, so will override loopback99
+  router-id 1.2.3.5

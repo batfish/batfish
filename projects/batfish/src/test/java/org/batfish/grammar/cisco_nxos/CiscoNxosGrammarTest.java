@@ -192,6 +192,7 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
@@ -855,6 +856,7 @@ public final class CiscoNxosGrammarTest {
         EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), nullValue());
+        assertThat(vrf.getRouterId(), equalTo(Ip.parse("5.5.5.5")));
 
         assertThat(vrf.getV4AddressFamily(), nullValue());
         assertThat(vrf.getV6AddressFamily(), nullValue());
@@ -866,6 +868,7 @@ public final class CiscoNxosGrammarTest {
         EigrpVrfConfiguration vrf = proc.getVrf("VRF");
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), equalTo(12345));
+        assertThat(vrf.getRouterId(), nullValue());
 
         EigrpVrfIpv4AddressFamilyConfiguration v4 = vrf.getV4AddressFamily();
         assertThat(v4, notNullValue());
@@ -889,6 +892,7 @@ public final class CiscoNxosGrammarTest {
       EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
       assertThat(vrf, notNullValue());
       assertThat(vrf.getAsn(), nullValue()); // extraction is null, will be set in conversion.
+      assertThat(vrf.getRouterId(), equalTo(Ip.parse("1.2.3.5")));
     }
   }
 
@@ -900,6 +904,8 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.Vrf v = c.getVrfs().get(DEFAULT_VRF_NAME);
       assertThat(v.getEigrpProcesses(), hasKeys(123L));
+      EigrpProcess p123 = v.getEigrpProcesses().get(123L);
+      assertThat(p123.getRouterId(), equalTo(Ip.parse("1.2.3.5")));
     }
     {
       org.batfish.datamodel.Vrf v = c.getVrfs().get(MANAGEMENT_VRF_NAME);
@@ -908,6 +914,8 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.Vrf v = c.getVrfs().get("VRF");
       assertThat(v.getEigrpProcesses(), hasKeys(12345L));
+      EigrpProcess p12345 = v.getEigrpProcesses().get(12345L);
+      assertThat(p12345.getRouterId(), equalTo(Ip.parse("98.98.98.98")));
     }
   }
 
