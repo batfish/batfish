@@ -5395,7 +5395,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(entry.getSequence(), equalTo(10));
       RouteMapMatchInterface match = entry.getMatchInterface();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
-      assertThat(match.getNames(), contains("loopback0"));
+      assertThat(match.getNames(), contains("loopback0", "loopback1"));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_ip_address");
