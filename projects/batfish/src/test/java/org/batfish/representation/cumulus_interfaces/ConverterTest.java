@@ -94,6 +94,7 @@ public class ConverterTest {
   }
 
   private Warnings _w;
+
   @Before
   public void setup() {
     _w = new Warnings();
@@ -236,7 +237,7 @@ public class ConverterTest {
     Interfaces ifaces = new Interfaces();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
     Map<String, org.batfish.representation.cumulus.Interface> vsIfaces =
-        new Converter(ifaces,_w).convertInterfaces();
+        new Converter(ifaces, _w).convertInterfaces();
 
     // non-interfaces filtered out
     assertThat(
@@ -259,7 +260,7 @@ public class ConverterTest {
   public void testConvertVlans() {
     Interfaces ifaces = new Interfaces();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vlan> vlans = new Converter(ifaces,_w).convertVlans();
+    Map<String, Vlan> vlans = new Converter(ifaces, _w).convertVlans();
 
     // non-vlans filtered out
     assertThat(vlans.keySet(), containsInAnyOrder(VLAN_IFACE.getName()));
@@ -276,7 +277,7 @@ public class ConverterTest {
   public void testConvertVrfs() {
     Interfaces ifaces = new Interfaces();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vrf> vrfs = new Converter(ifaces,_w).convertVrfs();
+    Map<String, Vrf> vrfs = new Converter(ifaces, _w).convertVrfs();
 
     // non-vrfs filtered out
     assertThat(vrfs.keySet(), containsInAnyOrder(VRF_IFACE.getName()));
@@ -295,7 +296,7 @@ public class ConverterTest {
   public void testConvertVxlans() {
     Interfaces ifaces = new Interfaces();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vxlan> vxlans = new Converter(ifaces,_w).convertVxlans();
+    Map<String, Vxlan> vxlans = new Converter(ifaces, _w).convertVxlans();
 
     // non-vxlans filtered out
     assertThat(vxlans.keySet(), containsInAnyOrder(VXLAN_IFACE.getName()));
