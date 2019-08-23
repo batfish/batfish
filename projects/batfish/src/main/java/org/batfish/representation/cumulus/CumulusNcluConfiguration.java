@@ -405,7 +405,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   /** Scan all interfaces, find first that contains given remote IP */
   @Nullable
-  private static Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c) {
+  @VisibleForTesting
+  static Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c) {
     // TODO: figure out if the interfaces we look at should be limited to a VRF
     return c.getAllInterfaces().values().stream()
         .flatMap(
