@@ -154,7 +154,7 @@ route-map continue_from_permit_to_fall_off permit 10
   continue 20
 route-map continue_from_permit_to_fall_off permit 20
   ! use untagged route to test fall-off
-  match tag 10
+  match tag 10 11
 
 route-map continue_from_permit_and_set_to_fall_off permit 10
   set metric 10

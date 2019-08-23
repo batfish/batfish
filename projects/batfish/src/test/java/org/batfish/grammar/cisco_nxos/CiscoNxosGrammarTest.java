@@ -5461,7 +5461,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(entry.getSequence(), equalTo(10));
       RouteMapMatchTag match = entry.getMatchTag();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
-      assertThat(match.getTag(), equalTo(1L));
+      assertThat(match.getTags(), contains(1L));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_vlan");
@@ -5675,7 +5675,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
       assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
-      assertThat(rm.getEntries().get(20).getMatchTag().getTag(), equalTo(10L));
+      assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L, 11L));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("continue_from_permit_and_set_to_fall_off");
@@ -5685,7 +5685,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(10).getSetMetric().getMetric(), equalTo(10L));
       assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
-      assertThat(rm.getEntries().get(20).getMatchTag().getTag(), equalTo(10L));
+      assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("continue_from_set_to_match_on_set_field");
@@ -5704,10 +5704,10 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().keySet(), contains(10, 20, 30));
       assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(30));
-      assertThat(rm.getEntries().get(10).getMatchTag().getTag(), equalTo(10L));
+      assertThat(rm.getEntries().get(10).getMatchTag().getTags(), contains(10L));
       assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
-      assertThat(rm.getEntries().get(20).getMatchTag().getTag(), equalTo(10L));
+      assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L));
       assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(30).getContinue(), nullValue());
     }
