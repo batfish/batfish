@@ -1017,6 +1017,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CumulusStructureType.IP_COMMUNITY_LIST,
         CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST);
+    markConcreteStructure(
+        CumulusStructureType.IP_PREFIX_LIST,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
     markConcreteStructure(CumulusStructureType.VLAN, CumulusStructureUsage.VLAN_SELF_REFERENCE);
     markConcreteStructure(
         CumulusStructureType.LOOPBACK, CumulusStructureUsage.LOOPBACK_SELF_REFERENCE);
