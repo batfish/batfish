@@ -417,39 +417,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return canonicalPrefix + suffix;
   }
 
-  private static @Nonnull Ip computeDefaultRouterId(final Configuration c) {
-    // Algorithm:
-    // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/tech_note/cisco_nxos_ios_ospf_comparison.html
-    Optional<Ip> address =
-        Optional.ofNullable(c.getAllInterfaces().get("loopback0"))
-            .map(org.batfish.datamodel.Interface::getConcreteAddress)
-            .map(ConcreteInterfaceAddress::getIp);
-    if (address.isPresent()) {
-      return address.get();
-    }
-    address =
-        c.getAllInterfaces().keySet().stream()
-            .filter(name -> name.startsWith("loopback"))
-            .sorted()
-            .map(c.getAllInterfaces()::get)
-            .map(org.batfish.datamodel.Interface::getConcreteAddress)
-            .filter(Objects::nonNull)
-            .map(ConcreteInterfaceAddress::getIp)
-            .findFirst();
-    if (address.isPresent()) {
-      return address.get();
-    }
-    address =
-        c.getAllInterfaces().keySet().stream()
-            .sorted()
-            .map(c.getAllInterfaces()::get)
-            .map(org.batfish.datamodel.Interface::getConcreteAddress)
-            .filter(Objects::nonNull)
-            .map(ConcreteInterfaceAddress::getIp)
-            .findFirst();
-    return address.orElse(Ip.ZERO);
-  }
-
   private void convertBgp() {
     // Before we process any configuration, execute BGP inheritance.
     _bgpGlobalConfiguration.doInherit(_w);
@@ -474,7 +441,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 // If the VI vrf has no BGP process, create a dummy one
                 viVrf.setBgpProcess(
                     BgpProcess.builder()
-                        .setRouterId(inferRouterId(viVrf, _w))
+                        .setRouterId(inferRouterId(viVrf, _w, "BGP process"))
                         .setAdminCostsToVendorDefaults(_c.getConfigurationFormat())
                         .build());
               }
@@ -804,7 +771,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               vrfName, procName));
       return;
     }
-    EigrpProcess.Builder proc = EigrpProcess.builder().setAsNumber(asn).setRouterId(Ip.ZERO);
+    Ip routerId = vrfConfig.getRouterId();
+    if (routerId == null) {
+      routerId = inferRouterId(v, _w, "EIGRP process " + procName);
+    }
+    EigrpProcess.Builder proc = EigrpProcess.builder().setAsNumber(asn).setRouterId(routerId);
     proc.setMode(vrfConfig.getAsn() != null ? EigrpProcessMode.CLASSIC : EigrpProcessMode.NAMED);
     v.addEigrpProcess(proc.build());
   }
@@ -982,7 +953,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                         if (vrf == null) {
                           return;
                         }
-                        vrf.addOspfProcess(toOspfProcess(proc, ospfVrf));
+                        vrf.addOspfProcess(toOspfProcess(proc, ospfVrf, vrf));
                       });
             });
   }
@@ -1927,7 +1898,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    */
   private @Nonnull org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       DefaultVrfOspfProcess proc) {
-    Ip routerId = proc.getRouterId() != null ? proc.getRouterId() : computeDefaultRouterId(_c);
+    Ip routerId =
+        proc.getRouterId() != null
+            ? proc.getRouterId()
+            : inferRouterId(_c.getDefaultVrf(), _w, "OSPF process " + proc.getName());
     return toOspfProcessBuilder(proc, proc.getName(), Configuration.DEFAULT_VRF_NAME)
         .setProcessId(proc.getName())
         .setRouterId(routerId)
@@ -1939,12 +1913,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * non-default VRF using parent information from the containing VS {@link DefaultVrfOspfProcess}.
    */
   private @Nonnull org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
-      DefaultVrfOspfProcess proc, OspfVrf ospfVrf) {
+      DefaultVrfOspfProcess proc, OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
     String processName = proc.getName();
     Ip routerId =
         ospfVrf.getRouterId() != null
             ? ospfVrf.getRouterId()
-            : proc.getRouterId() != null ? proc.getRouterId() : computeDefaultRouterId(_c);
+            : proc.getRouterId() != null
+                ? proc.getRouterId()
+                : inferRouterId(vrf, _w, "OSPF process " + proc.getName());
     return toOspfProcessBuilder(ospfVrf, processName, ospfVrf.getVrf())
         .setProcessId(processName)
         .setRouterId(routerId)

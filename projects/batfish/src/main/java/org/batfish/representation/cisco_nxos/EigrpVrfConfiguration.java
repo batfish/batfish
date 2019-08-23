@@ -3,6 +3,7 @@ package org.batfish.representation.cisco_nxos;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
 
 /**
  * Represents the VRF-specific EIGRP configuration for an EIGRP process in Cisco NX-OS.
@@ -22,6 +23,14 @@ public final class EigrpVrfConfiguration implements Serializable {
 
   public void setAsn(@Nullable Integer asn) {
     _asn = asn;
+  }
+
+  public @Nullable Ip getRouterId() {
+    return _routerId;
+  }
+
+  public void setRouterId(@Nullable Ip routerId) {
+    _routerId = routerId;
   }
 
   /**
@@ -75,6 +84,7 @@ public final class EigrpVrfConfiguration implements Serializable {
   ///////////////////////////////////
 
   private @Nullable Integer _asn;
+  private @Nullable Ip _routerId;
   private @Nullable EigrpVrfIpv4AddressFamilyConfiguration _v4AddressFamily;
   private @Nullable EigrpVrfIpv6AddressFamilyConfiguration _v6AddressFamily;
   private final @Nonnull EigrpVrfIpv4AddressFamilyConfiguration _vrfIpv4AddressFamilyConfiguration;

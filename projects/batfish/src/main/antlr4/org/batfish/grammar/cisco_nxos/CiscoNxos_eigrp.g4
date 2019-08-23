@@ -32,6 +32,7 @@ re_common
   | rec_autonomous_system
   | rec_no
   | rec_passive_interface
+  | rec_router_id
   | rec_shutdown
   | recaf_ipv4_inner // address-family ipv4 unicast inner lines are valid in the VRF as well.
 ;
@@ -131,6 +132,7 @@ rec_no
   NO
   (
     rec_no_passive_interface
+    | rec_no_router_id
     | rec_no_shutdown
   )
 ;
@@ -138,6 +140,11 @@ rec_no
 rec_no_passive_interface
 :
   PASSIVE_INTERFACE DEFAULT NEWLINE
+;
+
+rec_no_router_id
+:
+  ROUTER_ID NEWLINE
 ;
 
 rec_no_shutdown
@@ -148,6 +155,11 @@ rec_no_shutdown
 rec_passive_interface
 :
   PASSIVE_INTERFACE DEFAULT NEWLINE
+;
+
+rec_router_id
+:
+  ROUTER_ID id = ip_address NEWLINE
 ;
 
 rec_shutdown

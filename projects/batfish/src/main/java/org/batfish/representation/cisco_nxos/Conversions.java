@@ -114,7 +114,13 @@ final class Conversions {
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
-  /** Computes the router ID on Cisco NX-OS. */
+  /**
+   * Computes the router ID on Cisco NX-OS.
+   *
+   * <p>See
+   * https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/tech_note/cisco_nxos_ios_ospf_comparison.html
+   * for a description of the algorithm, which is in practice applied per-VRF.
+   */
   // See CiscoNxosTest#testRouterId for a test that is verifiable using GNS3.
   @Nonnull
   static Ip getBgpRouterId(BgpVrfConfiguration vrfConfig, Vrf vrf, Warnings w) {
@@ -123,15 +129,15 @@ final class Conversions {
       return vrfConfig.getRouterId();
     }
 
-    return inferRouterId(vrf, w);
+    return inferRouterId(vrf, w, "BGP process");
   }
 
   /** Infers router ID on Cisco NX-OS when not configured in a routing process */
   @Nonnull
-  static Ip inferRouterId(Vrf vrf, Warnings w) {
+  static Ip inferRouterId(Vrf vrf, Warnings w, String processDesc) {
     String messageBase =
         String.format(
-            "Router-id is not manually configured for BGP process in VRF %s", vrf.getName());
+            "Router-id is not manually configured for %s in VRF %s", processDesc, vrf.getName());
 
     // Otherwise, Router ID is defined based on the interfaces in the VRF that have IP addresses.
     // NX-OS does use shutdown interfaces to configure router-id.
@@ -173,7 +179,7 @@ final class Conversions {
     }
 
     // Finally, NX-OS uses the first non-loopback interface defined in the vrf, assuming no loopback
-    // addresses with IP address are present in the vrf. NX-OS is non-deterministic, by we will
+    // addresses with IP address are present in the vrf. NX-OS is non-deterministic, but we will
     // enforce determinism by always choosing the smallest interface IP.
     Optional<Ip> lowestIp =
         interfaces.stream()

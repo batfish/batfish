@@ -375,6 +375,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_no_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_autonomous_systemContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_no_router_idContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf4_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf6_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv4Context;
@@ -3228,6 +3230,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitRec_autonomous_system(Rec_autonomous_systemContext ctx) {
     Optional<Integer> asn = toInteger(ctx, ctx.eigrp_asn());
     asn.ifPresent(_currentEigrpVrf::setAsn);
+  }
+
+  @Override
+  public void exitRec_no_router_id(Rec_no_router_idContext ctx) {
+    _currentEigrpVrf.setRouterId(null);
+  }
+
+  @Override
+  public void exitRec_router_id(Rec_router_idContext ctx) {
+    Ip routerId = toIp(ctx.id);
+    _currentEigrpVrf.setRouterId(routerId);
   }
 
   @Override
