@@ -69,6 +69,14 @@ public final class Converter {
     bond.setVrf(bondIface.getVrf());
     if (bondIface.getBridgeSettings() != null) {
       bond.getBridge().setVids(bondIface.getBridgeSettings().getVids());
+      Integer access = bondIface.getBridgeSettings().getAccess();
+      if (access != null) {
+        bond.getBridge().setAccess(access);
+      }
+      Integer pvid = bondIface.getBridgeSettings().getPvid();
+      if (pvid != null) {
+        bond.getBridge().setPvid(pvid);
+      }
     }
     return bond;
   }

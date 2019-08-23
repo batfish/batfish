@@ -162,18 +162,38 @@ public class ConverterTest {
 
   @Test
   public void testConvertBond() {
-    Interface bondIface = new Interface("bond");
-    bondIface.setClagId(1);
-    bondIface.setBondSlaves(ImmutableSet.of("slave"));
-    bondIface.setVrf("vrf");
-    bondIface.createOrGetBridgeSettings().setVids(IntegerSpace.of(10));
+    {
+      Interface bondIface = new Interface("bond");
+      bondIface.setClagId(1);
+      bondIface.setBondSlaves(ImmutableSet.of("slave"));
+      bondIface.setVrf("vrf");
+      bondIface.createOrGetBridgeSettings().setVids(IntegerSpace.of(10));
 
-    Bond bond = convertBond(bondIface);
+      Bond bond = convertBond(bondIface);
 
-    assertThat(bond.getClagId(), equalTo(1));
-    assertThat(bond.getSlaves(), contains("slave"));
-    assertThat(bond.getVrf(), equalTo("vrf"));
-    assertThat(bond.getBridge().getVids().enumerate(), contains(10));
+      assertThat(bond.getClagId(), equalTo(1));
+      assertThat(bond.getSlaves(), contains("slave"));
+      assertThat(bond.getVrf(), equalTo("vrf"));
+      assertThat(bond.getBridge().getVids().enumerate(), contains(10));
+    }
+    {
+      Interface bondIface = new Interface("bond");
+      bondIface.setBondSlaves(ImmutableSet.of("slave"));
+      bondIface.createOrGetBridgeSettings().setPvid(5);
+
+      Bond bond = convertBond(bondIface);
+
+      assertThat(bond.getBridge().getPvid(), equalTo(5));
+    }
+    {
+      Interface bondIface = new Interface("bond");
+      bondIface.setBondSlaves(ImmutableSet.of("slave"));
+      bondIface.createOrGetBridgeSettings().setAccess(5);
+
+      Bond bond = convertBond(bondIface);
+
+      assertThat(bond.getBridge().getAccess(), equalTo(5));
+    }
   }
 
   @Test
