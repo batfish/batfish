@@ -920,6 +920,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testEigrpDualProcess() throws Exception {
+    // Don't crash.
+    parseConfig("nxos_eigrp_double");
+    // TODO: real test
+  }
+
+  @Test
   public void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();

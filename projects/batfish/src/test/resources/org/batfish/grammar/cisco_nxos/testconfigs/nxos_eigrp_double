@@ -1,0 +1,25 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_eigrp_double
+!
+feature eigrp
+!
+key chain SOME_CHAIN
+  key 123
+    key-string 7 BA7F1540BA7F1540BA7F1540BA7F1540
+!
+interface Ethernet1/1
+  no switchport
+  speed 1000
+  duplex full
+  ip address 10.2.1.21/30
+  ip router eigrp NAMED_123
+  ip authentication mode eigrp NAMED_123 md5
+  ip authentication key-chain eigrp NAMED_123 SOME_CHAIN
+  no ip passive-interface eigrp 123
+!
+router eigrp 123
+  passive-interface default
+router eigrp NAMED_123
+  address-family ipv4 unicast
+    autonomous-system 123
