@@ -31,9 +31,9 @@ public final class OspfInterfaceSettings implements Serializable {
   public static final class Builder {
     private Long _ospfAreaName;
     private Integer _ospfCost;
-    private Integer _ospfDeadInterval;
+    private int _ospfDeadInterval;
     private boolean _ospfEnabled;
-    private Integer _ospfHelloInterval;
+    private int _ospfHelloInterval;
     private Integer _ospfHelloMultiplier;
     private String _ospfInboundDistributeListPolicy;
     private OspfNetworkType _ospfNetworkType;
@@ -54,7 +54,7 @@ public final class OspfInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setDeadInterval(Integer ospfDeadInterval) {
+    public Builder setDeadInterval(int ospfDeadInterval) {
       _ospfDeadInterval = ospfDeadInterval;
       return this;
     }
@@ -64,7 +64,7 @@ public final class OspfInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setHelloInterval(Integer ospfHelloInterval) {
+    public Builder setHelloInterval(int ospfHelloInterval) {
       _ospfHelloInterval = ospfHelloInterval;
       return this;
     }
