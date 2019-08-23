@@ -34,6 +34,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
@@ -72,7 +73,7 @@ public class OspfSessionCompatibilityAnswererTest {
         .setName("int_u")
         .setVrf(vrfU)
         .setOwner(configurationU)
-        .setOspfProcess("U")
+        .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().setProcess("U").build())
         .build();
 
     nf.interfaceBuilder()
@@ -80,7 +81,7 @@ public class OspfSessionCompatibilityAnswererTest {
         .setName("int_v")
         .setVrf(vrfV)
         .setOwner(configurationV)
-        .setOspfProcess("V")
+        .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().setProcess("V").build())
         .build();
 
     nf.ospfProcessBuilder()

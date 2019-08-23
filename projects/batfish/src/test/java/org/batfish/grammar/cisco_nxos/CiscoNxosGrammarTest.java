@@ -821,10 +821,10 @@ public final class CiscoNxosGrammarTest {
             Layer3VniConfig.builder()
                 .setVni(3333)
                 .setVrf(tenantVrfName)
+                .setAdvertiseV4Unicast(true)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
-                .setAdvertiseV4Unicast(false)
                 .build());
     BgpPeerConfig peer =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));

@@ -194,10 +194,14 @@ INTERFACE
   {
     switch (lastTokenType()) {
       case MATCH:
+      case -1:  // this is the first token in the file
+      case NEWLINE: // this is the first token in the line
         pushMode(M_Word);
         break;
-      default:
+      case WORD:
         break;
+      default:
+        throw new IllegalStateException("unexpected use of keyword interface");
     }
   }
 ;

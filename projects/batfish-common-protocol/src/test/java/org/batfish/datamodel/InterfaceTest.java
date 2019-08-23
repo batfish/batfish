@@ -13,7 +13,7 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -68,23 +68,11 @@ public class InterfaceTest {
         Interface.builder()
             .setMtu(7)
             .setName("ifaceName")
-            .setOspfNetworkType(OspfNetworkType.BROADCAST)
+            .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().build())
             .build();
 
     // test (de)serialization
     Interface iDeserial = BatfishObjectMapper.clone(i, Interface.class);
     assertThat(i, equalTo(iDeserial));
-  }
-
-  @Test
-  public void testOspfNetworkTypeEquals() {
-    Interface.Builder i = Interface.builder().setName("iface");
-    new EqualsTester()
-        .addEqualityGroup(i.build(), Interface.builder().setName("iface").build())
-        .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.BROADCAST).build())
-        .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS).build())
-        .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT).build())
-        .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT).build())
-        .testEquals();
   }
 }
