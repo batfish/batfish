@@ -76,6 +76,7 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACK
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_PORT_RANGE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
@@ -90,7 +91,6 @@ import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_L
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
-import static org.batfish.representation.cisco_nxos.Vrf.DEFAULT_VRF_ID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
