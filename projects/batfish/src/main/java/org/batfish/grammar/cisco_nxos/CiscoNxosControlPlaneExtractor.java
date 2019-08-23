@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco_nxos;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRouteMapEntryName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
@@ -84,7 +85,6 @@ import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterfac
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
-import static org.batfish.representation.cisco_nxos.Vrf.MANAGEMENT_VRF_ID;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
@@ -1006,7 +1006,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private BgpVrfConfiguration _currentBgpVrfConfiguration;
   private BgpVrfNeighborConfiguration _currentBgpVrfNeighbor;
   private BgpVrfNeighborAddressFamilyConfiguration _currentBgpVrfNeighborAddressFamily;
-  private int _currentContextVrfId = MANAGEMENT_VRF_ID + 1;
   private DefaultVrfOspfProcess _currentDefaultVrfOspfProcess;
   private EigrpProcessConfiguration _currentEigrpProcess;
   private EigrpVrfConfiguration _currentEigrpVrf;
@@ -1074,8 +1073,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _text = text;
     _parser = parser;
     _preferredNames = HashBasedTable.create();
-    getPreferredName(DEFAULT_VRF_NAME, VRF);
     _w = warnings;
+
+    // initialize preferred names
+    getPreferredName(DEFAULT_VRF_NAME, VRF);
+    getPreferredName(MANAGEMENT_VRF_NAME, VRF);
   }
 
   /**
@@ -3520,18 +3522,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterS_vrf_context(S_vrf_contextContext ctx) {
     Optional<String> nameOrErr = toString(ctx, ctx.name);
     if (!nameOrErr.isPresent()) {
-      _currentVrf = new Vrf("dummy", _currentContextVrfId);
+      _currentVrf = new Vrf("dummy", 0);
       return;
     }
-    _currentVrf =
-        _configuration
-            .getVrfs()
-            .computeIfAbsent(
-                nameOrErr.get(),
-                name -> {
-                  _configuration.defineStructure(VRF, name, ctx);
-                  return new Vrf(name, _currentContextVrfId++);
-                });
+    String name = nameOrErr.get();
+    _currentVrf = _configuration.getOrCreateVrf(name);
+    _configuration.defineStructure(VRF, name, ctx);
   }
 
   @Override

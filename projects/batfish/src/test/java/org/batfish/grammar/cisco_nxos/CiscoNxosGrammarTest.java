@@ -76,8 +76,9 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACK
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_PORT_RANGE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
@@ -90,7 +91,6 @@ import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_L
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
-import static org.batfish.representation.cisco_nxos.Vrf.DEFAULT_VRF_ID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
@@ -5691,7 +5691,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_static_route";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "vrf1"));
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "vrf1"));
     assertThat(
         c.getDefaultVrf().getStaticRoutes(),
         containsInAnyOrder(
@@ -5835,7 +5835,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_static_route";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getVrfs(), hasKeys("vrf1"));
+    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "vrf1"));
     assertThat(
         vc.getDefaultVrf().getStaticRoutes().asMap(),
         hasKeys(
@@ -6178,13 +6178,9 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "Vrf1", "vrf3"));
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "Vrf1", "vrf3"));
     {
       org.batfish.datamodel.Vrf vrf = c.getVrfs().get(DEFAULT_VRF_NAME);
-      assertThat(vrf, VrfMatchers.hasInterfaces(empty()));
-    }
-    {
-      org.batfish.datamodel.Vrf vrf = c.getVrfs().get(NULL_VRF_NAME);
       assertThat(vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/2")));
     }
     {
@@ -6232,7 +6228,7 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(vc.getDefaultVrf(), not(nullValue()));
     assertThat(vc.getDefaultVrf().getId(), equalTo(DEFAULT_VRF_ID));
-    assertThat(vc.getVrfs(), hasKeys("Vrf1", "vrf3"));
+    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "Vrf1", "vrf3"));
     {
       Vrf vrf = vc.getDefaultVrf();
       assertFalse(vrf.getShutdown());
@@ -6308,7 +6304,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf_invalid";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getVrfs(), hasKeys("vrf1"));
+    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "vrf1"));
     assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
