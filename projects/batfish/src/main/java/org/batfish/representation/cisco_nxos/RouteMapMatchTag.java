@@ -1,12 +1,15 @@
 package org.batfish.representation.cisco_nxos;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 /** A {@link RouteMapMatch} that matches routes based on the tag. */
 public final class RouteMapMatchTag implements RouteMapMatch {
 
-  private final long _tag;
+  private final Set<Long> _tags;
 
-  public RouteMapMatchTag(long tag) {
-    _tag = tag;
+  public RouteMapMatchTag(Iterable<Long> tags) {
+    _tags = ImmutableSet.copyOf(tags);
   }
 
   @Override
@@ -14,7 +17,7 @@ public final class RouteMapMatchTag implements RouteMapMatch {
     return visitor.visitRouteMapMatchTag(this);
   }
 
-  public long getTag() {
-    return _tag;
+  public Set<Long> getTags() {
+    return _tags;
   }
 }
