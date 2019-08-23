@@ -209,9 +209,9 @@ public final class OspfInterfaceSettings implements Serializable {
     OspfInterfaceSettings other = (OspfInterfaceSettings) o;
     return Objects.equals(_ospfAreaName, other._ospfAreaName)
         && Objects.equals(_ospfCost, other._ospfCost)
-        && Objects.equals(_ospfDeadInterval, other._ospfDeadInterval)
-        && Objects.equals(_ospfEnabled, other._ospfEnabled)
-        && Objects.equals(_ospfHelloInterval, other._ospfHelloInterval)
+        && _ospfDeadInterval == other._ospfDeadInterval
+        && _ospfEnabled == other._ospfEnabled
+        && _ospfHelloInterval == other._ospfHelloInterval
         && Objects.equals(_ospfHelloMultiplier, other._ospfHelloMultiplier)
         && Objects.equals(_ospfInboundDistributeListPolicy, other._ospfInboundDistributeListPolicy)
         && Objects.equals(_ospfNetworkType, other._ospfNetworkType)
