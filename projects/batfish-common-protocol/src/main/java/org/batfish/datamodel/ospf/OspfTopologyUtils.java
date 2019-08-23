@@ -207,6 +207,17 @@ public final class OspfTopologyUtils {
       return Optional.empty();
     }
 
+    OspfInterfaceSettings localOspf = localIface.getOspfSettings();
+    OspfInterfaceSettings remoteOspf = remoteIface.getOspfSettings();
+    assert (localOspf != null);
+    assert (remoteOspf != null);
+    if (localOspf.getHelloInterval() != remoteOspf.getHelloInterval()) {
+      return Optional.empty();
+    }
+    if (localOspf.getDeadInterval() != remoteOspf.getDeadInterval()) {
+      return Optional.empty();
+    }
+
     // Optimistically assume unspecified network types match and therefore are compatible
     OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
     OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();

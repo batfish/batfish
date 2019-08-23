@@ -346,6 +346,36 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
+  public void testGetSessionIfCompatibleDeadIntervalMismatch() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            Ip.parse("1.1.1.1"),
+            OspfInterfaceSettings.defaultSettingsBuilder().setDeadInterval(44).build(),
+            Ip.parse("1.1.1.2"),
+            OspfInterfaceSettings.defaultSettingsBuilder().setDeadInterval(40).build());
+
+    // Confirm we correctly mark a session as incompatible when OSPF dead intervals are mismatched
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testGetSessionIfCompatibleHelloIntervalMismatch() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            Ip.parse("1.1.1.1"),
+            OspfInterfaceSettings.defaultSettingsBuilder().setHelloInterval(11).build(),
+            Ip.parse("1.1.1.2"),
+            OspfInterfaceSettings.defaultSettingsBuilder().setHelloInterval(10).build());
+
+    // Confirm we correctly mark a session as incompatible when OSPF dead intervals are mismatched
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
+
+  @Test
   public void testGetSessionIfCompatibleNetworkTypeMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
