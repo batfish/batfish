@@ -845,11 +845,12 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_eigrp";
     CiscoNxosConfiguration c = parseVendorConfig(hostname);
     assertThat(c.getEigrpProcesses(), hasKeys("EIGRP1234", "123"));
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "VRF"));
     {
       EigrpProcessConfiguration proc = c.getOrCreateEigrpProcess("EIGRP1234");
       assertThat(proc, notNullValue());
       assertTrue(proc.getIsolate());
-      assertThat(proc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "VRF"));
+      assertThat(proc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "VRF", "NON_EXISTENT"));
       {
         EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
         assertThat(vrf, notNullValue());
@@ -888,6 +889,25 @@ public final class CiscoNxosGrammarTest {
       EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
       assertThat(vrf, notNullValue());
       assertThat(vrf.getAsn(), nullValue()); // extraction is null, will be set in conversion.
+    }
+  }
+
+  @Test
+  public void testEigrpConversion() throws Exception {
+    String hostname = "nxos_eigrp";
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "VRF"));
+    {
+      org.batfish.datamodel.Vrf v = c.getVrfs().get(DEFAULT_VRF_NAME);
+      assertThat(v.getEigrpProcesses(), hasKeys(123L));
+    }
+    {
+      org.batfish.datamodel.Vrf v = c.getVrfs().get(MANAGEMENT_VRF_NAME);
+      assertThat(v.getEigrpProcesses(), anEmptyMap());
+    }
+    {
+      org.batfish.datamodel.Vrf v = c.getVrfs().get("VRF");
+      assertThat(v.getEigrpProcesses(), hasKeys(12345L));
     }
   }
 

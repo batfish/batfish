@@ -92,6 +92,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
+import com.google.common.primitives.Ints;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -2210,6 +2211,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _configuration.defineStructure(ROUTER_EIGRP, processTag, ctx);
       _configuration.referenceStructure(
           ROUTER_EIGRP, processTag, ROUTER_EIGRP_SELF_REFERENCE, ctx.tag.getStart().getLine());
+      toMaybeAsn(processTag).ifPresent(_currentEigrpProcess::setAsn);
     } else {
       // Dummy process, with all inner config also dummy.
       _currentEigrpProcess = new EigrpProcessConfiguration();
@@ -5015,6 +5017,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Ebgp_multihop_ttlContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, BGP_EBGP_MULTIHOP_TTL_RANGE, "BGP ebgp-multihop ttl");
+  }
+
+  /** Returns the ASN iff the process tag is a valid EIGRP ASN. */
+  private @Nonnull Optional<Integer> toMaybeAsn(String processTag) {
+    return Optional.ofNullable(Ints.tryParse(processTag)).filter(EIGRP_ASN_RANGE::contains);
   }
 
   private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Eigrp_asnContext ctx) {

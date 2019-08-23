@@ -8,6 +8,9 @@ interface loopback99
   ip authentication mode eigrp EIGRP1234 md5
   ip authentication key-chain eigrp EIGRP1234 KEYCHAIN
 !
+vrf context VRF
+  ! defined so it will be converted
+!
 router eigrp EIGRP1234
   flush-routes
   no flush-routes
@@ -37,6 +40,8 @@ router eigrp EIGRP1234
       redistribute ospfv3 OSPFv3 route-map RMV6
     shutdown
     no shutdown
+  vrf NON_EXISTENT
+!
 router eigrp 123
   isolate
   no isolate
