@@ -4602,7 +4602,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRmm_tag(Rmm_tagContext ctx) {
     Set<Long> longs =
-        ctx.tag.stream()
+        ctx.tags.stream()
             .map(CiscoNxosControlPlaneExtractor::toLong)
             .collect(ImmutableSet.toImmutableSet());
     _currentRouteMapEntry.setMatchTag(new RouteMapMatchTag(longs));

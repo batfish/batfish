@@ -5644,7 +5644,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
       assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
-      assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L));
+      assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L, 11L));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("continue_from_permit_and_set_to_fall_off");

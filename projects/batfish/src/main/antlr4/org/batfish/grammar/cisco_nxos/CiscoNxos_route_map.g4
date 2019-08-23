@@ -141,7 +141,7 @@ protocol_instance_name
 
 rmm_tag
 :
-  TAG tag += uint32 NEWLINE
+  TAG tags += uint32+ NEWLINE
 ;
 
 rmm_vlan
