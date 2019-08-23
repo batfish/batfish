@@ -512,13 +512,18 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafin_route_map(Sbafin_route_mapContext ctx) {
     String name = ctx.name.getText();
+    CumulusStructureUsage usage;
     if (ctx.IN() != null) {
+      usage = CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_IN;
       _currentBgpNeighborIpv4UnicastAddressFamily.setRouteMapIn(name);
     } else if (ctx.OUT() != null) {
+      usage = CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT;
       _currentBgpNeighborIpv4UnicastAddressFamily.setRouteMapOut(name);
     } else {
       throw new IllegalStateException("only support in and out in route map");
     }
+    _c.referenceStructure(
+        CumulusStructureType.ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
   }
 
   @Override
