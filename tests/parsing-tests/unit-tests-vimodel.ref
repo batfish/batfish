@@ -2510,7 +2510,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "1"
@@ -8172,6 +8174,7 @@
               "cost" : 1,
               "deadInterval" : 40,
               "enabled" : false,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
               "passive" : false
             },
@@ -8631,7 +8634,9 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "cost" : 60,
+              "deadInterval" : 120,
               "enabled" : false,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false
             },
@@ -10762,7 +10767,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 4000,
+              "deadInterval" : 120,
               "enabled" : false,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "1"
@@ -10796,7 +10803,9 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
+              "deadInterval" : 120,
               "enabled" : false,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false
             },
@@ -11130,7 +11139,9 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
+              "deadInterval" : 120,
               "enabled" : false,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false
             },
@@ -11190,7 +11201,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "1"
@@ -11226,7 +11239,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "ignored"
@@ -11485,7 +11500,9 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
+              "deadInterval" : 120,
               "enabled" : false,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false
             },
@@ -17523,7 +17540,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "1"
@@ -17560,7 +17579,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "1"
@@ -18552,7 +18573,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
+              "deadInterval" : 40,
               "enabled" : true,
+              "helloInterval" : 10,
               "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "default"
@@ -19753,7 +19776,9 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "2"
@@ -19783,7 +19808,9 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "2"
@@ -19814,7 +19841,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : true,
               "process" : "2"
@@ -19845,7 +19874,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "2"
@@ -19876,7 +19907,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "2"
@@ -19907,7 +19940,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : true,
               "process" : "2"
@@ -19938,7 +19973,9 @@
             "ospfSettings" : {
               "area" : 60,
               "cost" : 1,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "2"
@@ -19970,7 +20007,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : true,
               "process" : "2"
@@ -20002,7 +20041,9 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : true,
               "process" : "2"
@@ -28248,7 +28289,9 @@
             "ospfSettings" : {
               "area" : 1,
               "cost" : 40,
+              "deadInterval" : 120,
               "enabled" : true,
+              "helloInterval" : 30,
               "helloMultiplier" : 0,
               "passive" : false,
               "process" : "1"

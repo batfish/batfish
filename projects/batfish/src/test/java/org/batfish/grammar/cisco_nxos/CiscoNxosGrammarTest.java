@@ -920,6 +920,25 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testEigrpConversion() throws Exception {
+    String hostname = "nxos_eigrp";
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "VRF"));
+    {
+      org.batfish.datamodel.Vrf v = c.getVrfs().get(DEFAULT_VRF_NAME);
+      assertThat(v.getEigrpProcesses(), hasKeys(123L));
+    }
+    {
+      org.batfish.datamodel.Vrf v = c.getVrfs().get(MANAGEMENT_VRF_NAME);
+      assertThat(v.getEigrpProcesses(), anEmptyMap());
+    }
+    {
+      org.batfish.datamodel.Vrf v = c.getVrfs().get("VRF");
+      assertThat(v.getEigrpProcesses(), hasKeys(12345L));
+    }
+  }
+
+  @Test
   public void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
