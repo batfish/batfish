@@ -744,7 +744,8 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testInterface_InterfaceInfoNotMatch() {
+  public void testInterface_InterfaceVrfNotMatch() {
+    // has vrf but not match
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     i1.setVrf("VRF2");
     CONFIG.getInterfaces().put("swp1", i1);
@@ -754,6 +755,20 @@ public class CumulusFrrGrammarTest {
         CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
         equalTo("vrf VRF of interface swp1 does not match vrf VRF2 defined already"));
     assertThat(CONFIG.getInterfaces().get("swp1").getAlias(), equalTo("rt1010svc01 swp1s1"));
+  }
+
+  @Test
+  public void testInterface_InterfaceDefaultVrfNotMatch() {
+    // default vrf not match
+    Interface i2 = new Interface("swp2", CumulusInterfaceType.PHYSICAL, null, null);
+    i2.setVrf("VRF2");
+    CONFIG.getInterfaces().put("swp2", i2);
+    parseLines("interface swp2", "description rt1010svc01 swp1s1");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("default vrf of interface swp2 does not match vrf VRF2 defined already"));
+    assertThat(CONFIG.getInterfaces().get("swp2").getAlias(), equalTo("rt1010svc01 swp1s1"));
   }
 
   @Test

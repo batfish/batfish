@@ -322,6 +322,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
                 "vrf %s of interface %s does not match vrf %s defined already",
                 vrf, name, _currentInterface.getVrf()));
       }
+    } else if (_currentInterface.getVrf() != null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          String.format(
+              "default vrf of interface %s does not match vrf %s defined already",
+              name, _currentInterface.getVrf()));
     }
   }
 
