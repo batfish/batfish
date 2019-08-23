@@ -14,6 +14,9 @@ ntp access-group query-only acl_query_only
 ntp access-group serve acl_serve
 ntp access-group serve-only acl_serve_only
 
+ntp authenticate
+ntp authentication-key 1 md5 012345678Abz 7
+
 ntp commit
 ntp distribute
 
@@ -22,5 +25,6 @@ ntp peer 192.168.0.2
 
 ntp server 192.0.2.1
 ntp server 192.0.2.2 use-vrf management
+ntp server 192.0.2.3 prefer
 
 ntp source-interface mgmt0

@@ -15,6 +15,14 @@ public final class NtpServer implements Serializable {
     return _host;
   }
 
+  public boolean getPrefer() {
+    return _prefer;
+  }
+
+  public void setPrefer(boolean prefer) {
+    _prefer = prefer;
+  }
+
   public String getUseVrf() {
     return _useVrf;
   }
@@ -24,5 +32,6 @@ public final class NtpServer implements Serializable {
   }
 
   private final @Nonnull String _host;
+  private boolean _prefer;
   private @Nullable String _useVrf;
 }

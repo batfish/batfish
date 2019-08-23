@@ -3616,7 +3616,7 @@ public final class CiscoNxosGrammarTest {
   public void testNtpConversion() throws IOException {
     Configuration c = parseConfig("nxos_ntp");
 
-    assertThat(c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3"));
     assertThat(c.getNtpSourceInterface(), equalTo("mgmt0"));
   }
 
@@ -3624,14 +3624,21 @@ public final class CiscoNxosGrammarTest {
   public void testNtpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp");
 
-    assertThat(vc.getNtpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getNtpServers(), hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3"));
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.1");
+      assertFalse(ntpServer.getPrefer());
       assertThat(ntpServer.getUseVrf(), nullValue());
     }
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.2");
+      assertFalse(ntpServer.getPrefer());
       assertThat(ntpServer.getUseVrf(), equalTo("management"));
+    }
+    {
+      NtpServer ntpServer = vc.getNtpServers().get("192.0.2.3");
+      assertTrue(ntpServer.getPrefer());
+      assertThat(ntpServer.getUseVrf(), nullValue());
     }
 
     assertThat(vc.getNtpSourceInterface(), equalTo("mgmt0"));
