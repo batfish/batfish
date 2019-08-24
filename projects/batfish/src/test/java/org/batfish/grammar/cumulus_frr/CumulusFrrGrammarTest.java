@@ -3,6 +3,8 @@ package org.batfish.grammar.cumulus_frr;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
@@ -526,6 +528,28 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
+
+    assertThat(
+        getStructureReferences(IP_COMMUNITY_LIST, "CN1", ROUTE_MAP_MATCH_COMMUNITY_LIST),
+        contains(2));
+    assertThat(
+        getStructureReferences(IP_COMMUNITY_LIST, "CN2", ROUTE_MAP_MATCH_COMMUNITY_LIST),
+        contains(2));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchCommunity_multiline() {
+    parseLines("route-map RM permit 10", "match community CN1", "match community CN2");
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get("RM").getEntries().get(10);
+    assertThat(entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
+
+    assertThat(
+        getStructureReferences(IP_COMMUNITY_LIST, "CN1", ROUTE_MAP_MATCH_COMMUNITY_LIST),
+        contains(2));
+    assertThat(
+        getStructureReferences(IP_COMMUNITY_LIST, "CN2", ROUTE_MAP_MATCH_COMMUNITY_LIST),
+        contains(3));
   }
 
   @Test
@@ -582,7 +606,7 @@ public class CumulusFrrGrammarTest {
                 StandardCommunity.parse("10000:10"), StandardCommunity.parse("20000:20"))));
 
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.IP_COMMUNITY_LIST, name).getDefinitionLines(),
+        getDefinedStructureInfo(IP_COMMUNITY_LIST, name).getDefinitionLines(),
         equalTo(ImmutableSet.of(1)));
   }
 
@@ -712,41 +736,53 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testIp4vUnicastRoutemap() {
-    {
-      parseLines(
-          "router bgp 10000",
-          "neighbor N peer-group",
-          "address-family ipv4 unicast",
-          "neighbor N route-map R in",
-          "exit-address-family");
-      assertThat(
-          CONFIG
-              .getBgpProcess()
-              .getDefaultVrf()
-              .getNeighbors()
-              .get("N")
-              .getIpv4UnicastAddressFamily()
-              .getRouteMapIn(),
-          equalTo("R"));
-    }
-    {
-      parseLines(
-          "router bgp 10000",
-          "neighbor N2 peer-group",
-          "address-family ipv4 unicast",
-          "neighbor N2 route-map R out",
-          "exit-address-family");
-      assertThat(
-          CONFIG
-              .getBgpProcess()
-              .getDefaultVrf()
-              .getNeighbors()
-              .get("N2")
-              .getIpv4UnicastAddressFamily()
-              .getRouteMapOut(),
-          equalTo("R"));
-    }
+  public void testIp4vUnicastRoutemap_in() {
+    parseLines(
+        "router bgp 10000",
+        "neighbor N peer-group",
+        "address-family ipv4 unicast",
+        "neighbor N route-map R in",
+        "exit-address-family");
+    assertThat(
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getRouteMapIn(),
+        equalTo("R"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP,
+            "R",
+            CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_IN),
+        contains(4));
+  }
+
+  @Test
+  public void testIp4vUnicastRoutemap_out() {
+    parseLines(
+        "router bgp 10000",
+        "neighbor N2 peer-group",
+        "address-family ipv4 unicast",
+        "neighbor N2 route-map R out",
+        "exit-address-family");
+    assertThat(
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N2")
+            .getIpv4UnicastAddressFamily()
+            .getRouteMapOut(),
+        equalTo("R"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP,
+            "R",
+            CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT),
+        contains(4));
   }
 
   @Test
