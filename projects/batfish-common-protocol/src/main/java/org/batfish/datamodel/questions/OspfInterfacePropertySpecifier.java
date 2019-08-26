@@ -29,7 +29,7 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_NETWORK_TYPE = "OSPF_Network_Type";
 
   // create an ordered list
-  private static final List<String> PROPERTIES =
+  public static final List<String> PROPERTIES =
       ImmutableList.of(OSPF_AREA_NAME, OSPF_ENABLED, OSPF_PASSIVE, OSPF_COST, OSPF_NETWORK_TYPE);
 
   /** Hold a map of property name to property descriptor for OSPF interface properties */
