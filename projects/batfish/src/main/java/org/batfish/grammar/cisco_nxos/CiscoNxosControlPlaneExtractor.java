@@ -1912,7 +1912,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitMonitor_session_destination(Monitor_session_destinationContext ctx) {
-    Optional<List<String>> interfaces = toString(ctx, ctx.range);
+    Optional<List<String>> interfaces = toStrings(ctx, ctx.range);
     if (!interfaces.isPresent()) {
       return;
     }
@@ -1929,7 +1929,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitMonitor_session_source_interface(Monitor_session_source_interfaceContext ctx) {
-    Optional<List<String>> interfaces = toString(ctx, ctx.range);
+    Optional<List<String>> interfaces = toStrings(ctx, ctx.range);
     if (!interfaces.isPresent()) {
       return;
     }
@@ -3513,7 +3513,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterS_interface_regular(S_interface_regularContext ctx) {
-    Optional<List<String>> namesOrError = toString(ctx, ctx.irange);
+    Optional<List<String>> namesOrError = toStrings(ctx, ctx.irange);
     if (!namesOrError.isPresent()) {
       _currentInterfaces = ImmutableList.of();
       return;
@@ -3555,7 +3555,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else {
       _currentInterfaces =
           names.stream()
-              .map(name -> newNonVlanInterface(name, parentInterface, type))
+              .map(
+                  name ->
+                      _configuration
+                          .getInterfaces()
+                          .computeIfAbsent(
+                              name, n -> newNonVlanInterface(name, parentInterface, type)))
               .collect(ImmutableList.toImmutableList());
     }
 
@@ -5720,7 +5725,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return Optional.of(String.format("%s%d", lead, first));
   }
 
-  public @Nonnull Optional<List<String>> toString(
+  private @Nonnull Optional<List<String>> toStrings(
       ParserRuleContext messageCtx, Interface_rangeContext ctx) {
     String declaredName = getFullText(ctx);
     String prefix = ctx.iname.prefix.getText();
