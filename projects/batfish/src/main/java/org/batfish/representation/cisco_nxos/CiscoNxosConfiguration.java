@@ -342,6 +342,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _bannerExec;
   private @Nullable String _bannerMotd;
   private final @Nonnull BgpGlobalConfiguration _bgpGlobalConfiguration;
+  private @Nullable String _bootKickstartSup1;
+  private @Nullable String _bootKickstartSup2;
+  private @Nullable String _bootNxosSup1;
+  private @Nullable String _bootNxosSup2;
+  private @Nullable String _bootSystemSup1;
+  private @Nullable String _bootSystemSup2;
   private final @Nonnull Map<String, EigrpProcessConfiguration> _eigrpProcesses;
   private @Nullable Evpn _evpn;
   private @Nullable String _hostname;
@@ -1176,6 +1182,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _bgpGlobalConfiguration;
   }
 
+  public @Nullable String getBootKickstartSup1() {
+    return _bootKickstartSup1;
+  }
+
+  public @Nullable String getBootKickstartSup2() {
+    return _bootKickstartSup2;
+  }
+
+  public @Nullable String getBootNxosSup1() {
+    return _bootNxosSup1;
+  }
+
+  public @Nullable String getBootNxosSup2() {
+    return _bootNxosSup2;
+  }
+
+  public @Nullable String getBootSystemSup1() {
+    return _bootSystemSup1;
+  }
+
+  public @Nullable String getBootSystemSup2() {
+    return _bootSystemSup2;
+  }
+
   public @Nonnull Vrf getDefaultVrf() {
     return _vrfs.get(DEFAULT_VRF_NAME);
   }
@@ -1419,6 +1449,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureType.VRF,
         CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER,
         CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF);
+  }
+
+  public void setBootKickstartSup1(@Nullable String bootKickstartSup1) {
+    _bootKickstartSup1 = bootKickstartSup1;
+  }
+
+  public void setBootKickstartSup2(@Nullable String bootKickstartSup2) {
+    _bootKickstartSup2 = bootKickstartSup2;
+  }
+
+  public void setBootNxosSup1(@Nullable String bootNxosSup1) {
+    _bootNxosSup1 = bootNxosSup1;
+  }
+
+  public void setBootNxosSup2(@Nullable String bootNxosSup2) {
+    _bootNxosSup2 = bootNxosSup2;
+  }
+
+  public void setBootSystemSup1(@Nullable String bootSystemSup1) {
+    _bootSystemSup1 = bootSystemSup1;
+  }
+
+  public void setBootSystemSup2(@Nullable String bootSystemSup2) {
+    _bootSystemSup2 = bootSystemSup2;
   }
 
   @Override

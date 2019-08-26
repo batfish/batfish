@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_boot_system_sup
+!
+
+boot system bootflash:/n7000-s2-dk9.6.2.16.bin sup-1
+boot system bootflash:/titanium-d1.7.3.0.D1.1.bin sup-2

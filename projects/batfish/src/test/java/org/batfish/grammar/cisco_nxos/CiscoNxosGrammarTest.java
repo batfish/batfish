@@ -587,6 +587,64 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBootKickstartExtraction() {
+    String hostname = "nxos_boot_kickstart";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    String expectedImage = "bootflash:/n7000-s2-kickstart.6.2.16.bin";
+    assertThat(vc.getBootKickstartSup1(), equalTo(expectedImage));
+    assertThat(vc.getBootKickstartSup2(), equalTo(expectedImage));
+  }
+
+  @Test
+  public void testBootKickstartSupExtraction() {
+    String hostname = "nxos_boot_kickstart_sup";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getBootKickstartSup1(), equalTo("bootflash:/titanium-d1-kickstart.7.3.0.D1.1.bin"));
+    assertThat(vc.getBootKickstartSup2(), equalTo("bootflash:/n7000-s2-kickstart.6.2.16.bin"));
+  }
+
+  @Test
+  public void testBootNxosExtraction() {
+    String hostname = "nxos_boot_nxos";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    String expectedImage = "bootflash:/nxos.9.2.3.bin";
+    assertThat(vc.getBootNxosSup1(), equalTo(expectedImage));
+    assertThat(vc.getBootNxosSup2(), equalTo(expectedImage));
+  }
+
+  @Test
+  public void testBootNxosSupExtraction() {
+    String hostname = "nxos_boot_nxos_sup";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getBootNxosSup1(), equalTo("bootflash:/nxos.9.2.3.bin"));
+    assertThat(vc.getBootNxosSup2(), equalTo("bootflash:/nxos.9.2.4.bin"));
+  }
+
+  @Test
+  public void testBootSystemExtraction() {
+    String hostname = "nxos_boot_system";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    String expectedImage = "bootflash:/titanium-d1.7.3.0.D1.1.bin";
+    assertThat(vc.getBootSystemSup1(), equalTo(expectedImage));
+    assertThat(vc.getBootSystemSup2(), equalTo(expectedImage));
+  }
+
+  @Test
+  public void testBootSystemSupExtraction() {
+    String hostname = "nxos_boot_system_sup";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getBootSystemSup1(), equalTo("bootflash:/n7000-s2-dk9.6.2.16.bin"));
+    assertThat(vc.getBootSystemSup2(), equalTo("bootflash:/titanium-d1.7.3.0.D1.1.bin"));
+  }
+
+  @Test
   public void testSwitchnameConversion() throws IOException {
     String hostname = "nxos_switchname";
     Configuration c = parseConfig(hostname);
