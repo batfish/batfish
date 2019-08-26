@@ -28,6 +28,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP_ENTRY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.VLAN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.VRF;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.AAA_GROUP_SERVER_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.AAA_GROUP_SERVER_USE_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_ADDITIONAL_PATHS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_ADVERTISE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_ATTRIBUTE_MAP;
@@ -140,6 +142,8 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagt_source_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagt_use_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acl_fragmentsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acl_lineContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acll_actionContext;
@@ -3678,6 +3682,30 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return new Vlan(id);
                             }))
             .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
+  public void exitAaagt_use_vrf(Aaagt_use_vrfContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        VRF, name, AAA_GROUP_SERVER_USE_VRF, ctx.name.getStart().getLine());
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAaagt_source_interface(Aaagt_source_interfaceContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        INTERFACE, name, AAA_GROUP_SERVER_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+    todo(ctx);
   }
 
   @Override
