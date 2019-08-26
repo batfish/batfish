@@ -13,9 +13,9 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Test;
 
 /** Tests for {@link NodeNoMatchMessages} */
@@ -65,8 +65,8 @@ public class NodeNoMatchMessagesTest {
                 ImmutableSortedSet.of(
                     NodeRoleDimension.builder()
                         .setName("dim1")
-                        .setRoles(
-                            ImmutableSet.of(new NodeRole("r1", ".*"), new NodeRole("r2", ".*")))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(new RoleDimensionMapping("\\(.*\\)")))
                         .build()))
             .build();
     assertThat(

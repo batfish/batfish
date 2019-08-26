@@ -7,6 +7,7 @@ import static org.batfish.coordinator.resources.NetworkNodeRolesResource.noDupli
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -19,9 +20,9 @@ import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,7 +53,8 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String container = "someContainer";
     Main.getWorkMgr().initNetwork(container, null);
 
-    NodeRoleDimensionBean dimBean = new NodeRoleDimensionBean("dimension1", null, null, null);
+    NodeRoleDimensionBean dimBean =
+        new NodeRoleDimensionBean(NodeRoleDimension.builder("dimension1").build(), null, null);
     Response response =
         getNodeRolesTarget(container).post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
 
@@ -113,7 +115,8 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
                     ImmutableSortedSet.of(
                         NodeRoleDimension.builder()
                             .setName(name)
-                            .setRoles(ImmutableSortedSet.of(new NodeRole("foo", "bar")))
+                            .setRoleDimensionMappings(
+                                ImmutableList.of(new RoleDimensionMapping("\\(.*\\)")))
                             .build(),
                         NodeRoleDimension.builder().setName(name).build()))
                 .build(),
@@ -171,7 +174,8 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
                     ImmutableSortedSet.of(
                         NodeRoleDimension.builder()
                             .setName(name)
-                            .setRoles(ImmutableSortedSet.of(new NodeRole("foo", "bar")))
+                            .setRoleDimensionMappings(
+                                ImmutableList.of(new RoleDimensionMapping("\\(.*\\)")))
                             .build(),
                         NodeRoleDimension.builder().setName(name).build()))
                 .build(),

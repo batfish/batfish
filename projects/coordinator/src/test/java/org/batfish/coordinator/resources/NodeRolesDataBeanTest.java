@@ -4,13 +4,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Test;
 
 public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
@@ -21,11 +22,11 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
     String dimension = "someDimension";
     String role = "someRole";
     Set<String> nodes = ImmutableSet.of("a", "b");
-    NodeRole nodeRole = new NodeRole(role, "a.*");
+    RoleDimensionMapping rdMapping = new RoleDimensionMapping("\\(.*\\)");
     NodeRoleDimension nodeRoleDimension =
         NodeRoleDimension.builder()
             .setName(dimension)
-            .setRoles(ImmutableSortedSet.of(nodeRole))
+            .setRoleDimensionMappings(ImmutableList.of(rdMapping))
             .build();
     NodeRolesData data =
         NodeRolesData.builder().setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension)).build();

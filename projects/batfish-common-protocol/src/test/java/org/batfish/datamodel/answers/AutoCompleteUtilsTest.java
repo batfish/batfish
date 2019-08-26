@@ -41,6 +41,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -58,9 +59,9 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,7 +73,8 @@ public class AutoCompleteUtilsTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static Set<String> getSuggestionsTextSet(List<AutocompleteSuggestion> suggestions) {
-    return suggestions.stream()
+    return suggestions
+        .stream()
         .map(AutocompleteSuggestion::getText)
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -107,7 +109,8 @@ public class AutoCompleteUtilsTest {
 
     // null or empty string should yield all options
     assertThat(
-        AutoCompleteUtils.baseAutoComplete(null, properties).stream()
+        AutoCompleteUtils.baseAutoComplete(null, properties)
+            .stream()
             .map(s -> s.getText())
             .collect(Collectors.toList()),
         equalTo(ImmutableList.builder().addAll(properties).build()));
@@ -166,7 +169,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpPeerPropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_PEER_PROPERTY_SPEC, "as", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_PEER_PROPERTY_SPEC, "as", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(LOCAL_AS, IS_PASSIVE, REMOTE_AS)));
@@ -175,7 +179,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpProcessPropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -186,7 +191,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionCompatStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_COMPAT_STATUS_SPEC, "match", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_COMPAT_STATUS_SPEC, "match", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -197,7 +203,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_STATUS_SPEC, "establish", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_STATUS_SPEC, "establish", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(ESTABLISHED.toString(), NOT_ESTABLISHED.toString())));
@@ -206,7 +213,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionTypeAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE_SPEC, "bgp", 10).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE_SPEC, "bgp", 10)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -221,7 +229,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testDispositionSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.DISPOSITION_SPEC, "s", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.DISPOSITION_SPEC, "s", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -257,7 +266,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testFlowStateAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.FLOW_STATE, "e", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.FLOW_STATE, "e", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(ESTABLISHED.toString(), RELATED.toString(), NEW.toString())));
@@ -332,7 +342,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testInterfacePropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.INTERFACE_PROPERTY_SPEC, "vlan", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.INTERFACE_PROPERTY_SPEC, "vlan", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -362,7 +373,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testIpProtocolSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.IP_PROTOCOL_SPEC, "OSP", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.IP_PROTOCOL_SPEC, "OSP", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("OSPF")));
@@ -371,7 +383,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testIpsecSessionStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.IPSEC_SESSION_STATUS_SPEC, "phase", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.IPSEC_SESSION_STATUS_SPEC, "phase", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -408,7 +421,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testNamedStructureSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.NAMED_STRUCTURE_SPEC, "ike", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.NAMED_STRUCTURE_SPEC, "ike", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(IKE_PHASE1_KEYS, IKE_PHASE1_POLICIES, IKE_PHASE1_PROPOSALS)));
@@ -417,7 +431,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testNodePropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.NODE_PROPERTY_SPEC, "dns", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.NODE_PROPERTY_SPEC, "dns", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
@@ -1109,13 +1124,19 @@ public class AutoCompleteUtilsTest {
                 ImmutableSortedSet.of(
                     NodeRoleDimension.builder()
                         .setName("someDimension")
-                        .setRoles(
-                            ImmutableSortedSet.of(
-                                new NodeRole("r1", ".*"), new NodeRole("s2", ".*")))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(
+                                new RoleDimensionMapping(
+                                    "\\(.*\\)",
+                                    null,
+                                    ImmutableMap.of("node1", "r1", "node2", "s1"))))
                         .build(),
                     NodeRoleDimension.builder()
                         .setName("someDimension")
-                        .setRoles(ImmutableSortedSet.of(new NodeRole("r2", ".*")))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(
+                                new RoleDimensionMapping(
+                                    "\\(.*\\)", null, ImmutableMap.of("node3", "r2"))))
                         .build()))
             .build();
 
@@ -1150,7 +1171,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testOspfInterfacePropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.OSPF_INTERFACE_PROPERTY_SPEC, "area", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.OSPF_INTERFACE_PROPERTY_SPEC, "area", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(OspfInterfacePropertySpecifier.OSPF_AREA_NAME)));
@@ -1159,7 +1181,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testOspfProcessPropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.OSPF_PROCESS_PROPERTY_SPEC, "area", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.OSPF_PROCESS_PROPERTY_SPEC, "area", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(AREA_BORDER_ROUTER, AREAS)));
@@ -1187,7 +1210,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testProtocolAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.PROTOCOL, "h", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.PROTOCOL, "h", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(HTTP.toString(), HTTPS.toString(), SSH.toString())));
@@ -1262,7 +1286,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testRoutingProtocolSpecAutocompletePartialName() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bg", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bg", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("bgp", "ibgp", "ebgp")));
@@ -1271,7 +1296,8 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testRoutingProtocolSpecAutocompleteFullName() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(",", "bgp", "ibgp", "ebgp")));
@@ -1436,7 +1462,8 @@ public class AutoCompleteUtilsTest {
                 .build());
 
     assertThat(
-        AutoCompleteUtils.limitSuggestionsByType(orderedSuggestions, 4, 1).stream()
+        AutoCompleteUtils.limitSuggestionsByType(orderedSuggestions, 4, 1)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of("t1s1", "t2s1", "t3s1", "t1s2")));

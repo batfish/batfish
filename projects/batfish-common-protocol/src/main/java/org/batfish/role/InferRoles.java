@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -261,7 +260,8 @@ public final class InferRoles {
       String chosenNode = Iterables.get(nodes, new Random().nextInt(nodes.size()));
       _tokens = tokenizeName(chosenNode);
       _regex =
-          _tokens.stream()
+          _tokens
+              .stream()
               .map((p) -> p.getToken().tokenToRegex(p.getString()))
               .collect(Collectors.toList());
       Pattern p = Pattern.compile(String.join("", _regex), _patternFlags);
@@ -577,30 +577,10 @@ public final class InferRoles {
 
   // converts a regex containing one or more groups indicating roles into a NodeRoleDimension
   private NodeRoleDimension regexToNodeRoleDimension(String regex, String dimName) {
-    SortedSet<NodeRole> inferredRoles = new TreeSet<>();
-
-    Set<String> roles = regexToRoleNodesMap(regex, _nodes).keySet();
-    for (String role : roles) {
-      inferredRoles.add(new NodeRole(role, specializeRegexForRole(role, regex), _caseSensitive));
-    }
-
     return NodeRoleDimension.builder()
         .setName(dimName)
-        .setRoles(inferredRoles)
         .setType(Type.AUTO)
         .setRoleRegexes(ImmutableList.of(regex))
         .build();
-  }
-
-  // regex is a regular expression that uses one or more groups to indicate the role
-  // role is a particular choice of values for those groups, delimited by -
-  // the result is a version of regex specialized to these particular values
-  private static String specializeRegexForRole(String role, String regex) {
-    String[] roleParts = role.split("-");
-    String result = regex;
-    for (String rolePart : roleParts) {
-      result = result.replaceFirst("\\([^\\)]*\\)", rolePart);
-    }
-    return result;
   }
 }

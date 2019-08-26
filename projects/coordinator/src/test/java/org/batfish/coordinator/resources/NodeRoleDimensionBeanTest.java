@@ -3,14 +3,13 @@ package org.batfish.coordinator.resources;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
-import org.batfish.role.NodeRoleDimension.Type;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,23 +30,26 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
     String dimension = "someDimension";
     String role = "someRole";
     Set<String> nodes = ImmutableSet.of("a", "b");
-    NodeRole nodeRole = new NodeRole(role, "a.*");
+    RoleDimensionMapping rdMapping = new RoleDimensionMapping("\\(.*\\)");
     NodeRoleDimension nodeRoleDimension =
         NodeRoleDimension.builder()
             .setName(dimension)
-            .setRoles(ImmutableSortedSet.of(nodeRole))
+            .setRoleDimensionMappings(ImmutableList.of(rdMapping))
             .build();
     NodeRoleDimensionBean bean = new NodeRoleDimensionBean(nodeRoleDimension, snapshot, nodes);
 
     assertThat(bean.name, equalTo(dimension));
-    assertThat(bean.roles, equalTo(ImmutableSet.of(new NodeRoleBean(nodeRole, nodes))));
+    assertThat(
+        bean.mappings, equalTo(ImmutableSet.of(new RoleDimensionMappingBean(rdMapping, nodes))));
     assertThat(bean.snapshot, equalTo(snapshot));
     assertThat(bean.type, equalTo(NodeRoleDimension.Type.CUSTOM));
   }
 
   @Test
   public void toNodeRoleDimension() {
-    NodeRoleDimensionBean dimBean = new NodeRoleDimensionBean("name", null, null, Type.CUSTOM);
+    NodeRoleDimensionBean dimBean =
+        new NodeRoleDimensionBean(
+            NodeRoleDimension.builder("name").build(), null, ImmutableSet.of());
     NodeRoleDimension dim = dimBean.toNodeRoleDimension();
 
     // we should get the expected object

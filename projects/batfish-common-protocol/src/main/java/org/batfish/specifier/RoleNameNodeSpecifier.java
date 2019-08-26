@@ -1,12 +1,13 @@
 package org.batfish.specifier;
 
-import com.google.common.collect.ImmutableSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
 
 /** A {@link NodeSpecifier} that specifies the set of nodes with a role and dimension names. */
 @ParametersAreNonnullByDefault
@@ -36,25 +37,28 @@ public final class RoleNameNodeSpecifier implements NodeSpecifier {
 
   @Override
   public Set<String> resolve(SpecifierContext ctxt) {
-    NodeRole nodeRole =
+    NodeRoleDimension nodeRoleDimension =
         ctxt.getNodeRoleDimension(_roleDimension)
             .orElseThrow(
                 () ->
-                    new NoSuchElementException("Role dimension '" + _roleDimension + "' not found"))
-            .getRoles().stream()
-            .filter(r -> r.getName().equalsIgnoreCase(_roleName))
-            .findAny()
-            .orElseThrow(
-                () ->
                     new NoSuchElementException(
-                        "Role name '"
-                            + _roleName
-                            + "' not found in dimension '"
-                            + _roleDimension
-                            + "'"));
+                        "Role dimension '" + _roleDimension + "' not found"));
+    SortedMap<String, SortedSet<String>> roleNodesMap =
+        nodeRoleDimension.createRoleNodesMap(ctxt.getConfigs().keySet());
+    roleNodesMap
+        .keySet()
+        .stream()
+        .filter(r -> r.equalsIgnoreCase(_roleName))
+        .findAny()
+        .orElseThrow(
+            () ->
+                new NoSuchElementException(
+                    "Role name '"
+                        + _roleName
+                        + "' not found in dimension '"
+                        + _roleDimension
+                        + "'"));
 
-    return ctxt.getConfigs().keySet().stream()
-        .filter(node -> nodeRole.matches(node))
-        .collect(ImmutableSet.toImmutableSet());
+    return roleNodesMap.get(_roleName);
   }
 }

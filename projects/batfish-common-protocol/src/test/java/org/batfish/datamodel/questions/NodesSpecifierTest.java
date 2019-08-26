@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashSet;
@@ -15,9 +16,9 @@ import java.util.SortedSet;
 import java.util.regex.Pattern;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.questions.NodesSpecifier.Type;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Test;
 
 public class NodesSpecifierTest {
@@ -26,20 +27,12 @@ public class NodesSpecifierTest {
     NodeRoleDimension dim1 =
         NodeRoleDimension.builder()
             .setName("dim10")
-            .setRoles(
-                new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
-                    .add(new NodeRole("role1", ".*"))
-                    .add(new NodeRole("role2", ".*"))
-                    .build())
+            .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("\\(role.\\).*")))
             .build();
     NodeRoleDimension dim2 =
         NodeRoleDimension.builder()
             .setName("dim20")
-            .setRoles(
-                new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
-                    .add(new NodeRole("role1", ".*"))
-                    .add(new NodeRole("role2", ".*"))
-                    .build())
+            .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("role.\\(.*\\)")))
             .build();
     SortedSet<NodeRoleDimension> roleDimensions =
         new ImmutableSortedSet.Builder<>(NodeRoleDimension::compareTo).add(dim1).add(dim2).build();
@@ -101,7 +94,8 @@ public class NodesSpecifierTest {
     List<AutocompleteSuggestion> suggestions =
         NodesSpecifier.autoComplete(queryAllDimensions, null, nodeRolesData);
     Set<String> suggestionsText =
-        suggestions.stream()
+        suggestions
+            .stream()
             .map(suggestion -> suggestion.getText())
             .collect(ImmutableSet.toImmutableSet());
 
@@ -130,7 +124,8 @@ public class NodesSpecifierTest {
     List<AutocompleteSuggestion> suggestions =
         NodesSpecifier.autoComplete(queryDimension, null, nodeRolesData);
     Set<String> suggestionsText =
-        suggestions.stream()
+        suggestions
+            .stream()
             .map(suggestion -> suggestion.getText())
             .collect(ImmutableSet.toImmutableSet());
 
@@ -198,18 +193,12 @@ public class NodesSpecifierTest {
             .add(nonMatchingNode1)
             .build();
 
-    NodeRole role1 = new NodeRole("match1", "lhr-border.*");
-    NodeRole role2 = new NodeRole("match2", "svr-border.*");
-    NodeRole role3 = new NodeRole("dumb0", "lhr-core.*");
-    SortedSet<NodeRole> roles =
-        new ImmutableSortedSet.Builder<>(NodeRole::compareTo)
-            .add(role1)
-            .add(role2)
-            .add(role3)
-            .build();
-
     NodeRoleDimension roleDimension =
-        NodeRoleDimension.builder().setName("dim").setRoles(roles).build();
+        NodeRoleDimension.builder()
+            .setName("dim")
+            .setRoleDimensionMappings(
+                ImmutableList.of(new RoleDimensionMapping("\\(.*-border\\).*")))
+            .build();
 
     Set<String> matchingNodes = specifier.getMatchingNodesByRole(roleDimension, nodes);
 

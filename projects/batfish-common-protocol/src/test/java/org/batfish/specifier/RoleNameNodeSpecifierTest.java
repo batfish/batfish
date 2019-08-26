@@ -3,14 +3,14 @@ package org.batfish.specifier;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.NoSuchElementException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,13 +31,21 @@ public class RoleNameNodeSpecifierTest {
               ImmutableSet.of(
                   NodeRoleDimension.builder()
                       .setName("dim1")
-                      .setRoles(
-                          ImmutableSortedSet.of(
-                              new NodeRole("role1", "node1.*"), new NodeRole("role2", "node2.*")))
+                      .setRoleDimensionMappings(
+                          ImmutableList.of(
+                              new RoleDimensionMapping(
+                                  "\\(.*\\)",
+                                  null,
+                                  ImmutableMap.of("node1", "role1", "node2", "role2"))))
                       .build(),
                   NodeRoleDimension.builder()
                       .setName("dim2")
-                      .setRoles(ImmutableSortedSet.of(new NodeRole("role1", ".*")))
+                      .setRoleDimensionMappings(
+                          ImmutableList.of(
+                              new RoleDimensionMapping(
+                                  "\\(.*\\)",
+                                  null,
+                                  ImmutableMap.of("node1", "role1", "node2", "role1"))))
                       .build()))
           .build();
 

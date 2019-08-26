@@ -45,7 +45,6 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.parboiled.Rule;
@@ -61,13 +60,15 @@ public final class ParboiledAutoComplete {
 
   static final Function<ReferenceBook, Set<String>> addressGroupGetter =
       book ->
-          book.getAddressGroups().stream()
+          book.getAddressGroups()
+              .stream()
               .map(AddressGroup::getName)
               .collect(ImmutableSet.toImmutableSet());
 
   static final Function<ReferenceBook, Set<String>> interfaceGroupGetter =
       book ->
-          book.getInterfaceGroups().stream()
+          book.getInterfaceGroups()
+              .stream()
               .map(InterfaceGroup::getName)
               .collect(ImmutableSet.toImmutableSet());
 
@@ -163,7 +164,8 @@ public final class ParboiledAutoComplete {
   Set<ParboiledAutoCompleteSuggestion> run() {
     Set<PotentialMatch> potentialMatches = getPotentialMatches(_query);
 
-    return potentialMatches.stream()
+    return potentialMatches
+        .stream()
         .map(this::autoCompletePotentialMatch)
         .flatMap(Collection::stream)
         .collect(ImmutableSet.toImmutableSet());
@@ -307,7 +309,8 @@ public final class ParboiledAutoComplete {
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
             pm.getMatchPrefix(),
-            Grammar.getEnumValues(_grammar).stream()
+            Grammar.getEnumValues(_grammar)
+                .stream()
                 .map(Object::toString)
                 .collect(ImmutableSet.toImmutableSet())),
         false,
@@ -474,7 +477,9 @@ public final class ParboiledAutoComplete {
     String interfaceNamePrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
 
     Set<String> candidateInterfaces =
-        _completionMetadata.getInterfaces().stream()
+        _completionMetadata
+            .getInterfaces()
+            .stream()
             .filter(i -> nodeNameMatches(i.getHostname(), nodeAst))
             .map(NodeInterfacePair::getInterface)
             .collect(ImmutableSet.toImmutableSet());
@@ -521,10 +526,7 @@ public final class ParboiledAutoComplete {
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
-            matchPrefix,
-            nodeRoleDimension.getRoles().stream()
-                .map(NodeRole::getName)
-                .collect(ImmutableSet.toImmutableSet())),
+            matchPrefix, nodeRoleDimension.roleNamesFor(_completionMetadata.getNodes())),
         !matchPrefix.equals(pm.getMatchPrefix()),
         pm.getAnchorType(),
         pm.getMatchStartIndex());
@@ -662,7 +664,8 @@ public final class ParboiledAutoComplete {
       boolean escape,
       Anchor.Type anchorType,
       int startIndex) {
-    return suggestions.stream()
+    return suggestions
+        .stream()
         .map(
             s ->
                 new ParboiledAutoCompleteSuggestion(

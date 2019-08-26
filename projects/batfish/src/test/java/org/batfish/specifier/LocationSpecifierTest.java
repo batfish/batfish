@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.List;
@@ -21,8 +20,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Test;
 
 /** Tests for built-in location specifiers. */
@@ -80,20 +79,27 @@ public class LocationSpecifierTest {
                 ImmutableSet.of(
                     NodeRoleDimension.builder()
                         .setName(_roleDim)
-                        .setRoles(ImmutableSortedSet.of(new NodeRole(roleName, n1.getHostname())))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(
+                                new RoleDimensionMapping(
+                                    "\\(" + n1.getHostname() + "\\)",
+                                    null,
+                                    ImmutableMap.of(n1.getHostname(), roleName))))
                         .build()))
             .build();
   }
 
   private static Set<InterfaceLocation> interfaceLocations(Collection<Interface> interfaces) {
-    return interfaces.stream()
+    return interfaces
+        .stream()
         .map(i -> new InterfaceLocation(i.getOwner().getHostname(), i.getName()))
         .collect(ImmutableSet.toImmutableSet());
   }
 
   private static Set<InterfaceLinkLocation> interfaceLinkLocations(
       Collection<Interface> interfaces) {
-    return interfaces.stream()
+    return interfaces
+        .stream()
         .map(i -> new InterfaceLinkLocation(i.getOwner().getHostname(), i.getName()))
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -113,7 +119,9 @@ public class LocationSpecifierTest {
   public void testDescriptionRegexInterfaceLocationSpecifiers() {
     // choose 1 interface from each node
     List<Interface> interfaces =
-        _testConfigs.entrySet().stream()
+        _testConfigs
+            .entrySet()
+            .stream()
             .map(entry -> entry.getValue().getAllInterfaces().values().iterator().next())
             .collect(Collectors.toList());
 
@@ -153,7 +161,9 @@ public class LocationSpecifierTest {
   public void testNameRegexInterfaceLocationSpecifiers() {
     // choose 1 interface from each node
     List<Interface> interfaces =
-        _testConfigs.entrySet().stream()
+        _testConfigs
+            .entrySet()
+            .stream()
             .map(entry -> entry.getValue().getAllInterfaces().values().iterator().next())
             .collect(Collectors.toList());
 
@@ -185,12 +195,18 @@ public class LocationSpecifierTest {
   @Test
   public void testNodeRoleRegexInterfaceLocationSpecifier() {
     Set<Location> nodeInterfaceLocations =
-        _roleNode.getAllInterfaces().values().stream()
+        _roleNode
+            .getAllInterfaces()
+            .values()
+            .stream()
             .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
             .collect(ImmutableSet.toImmutableSet());
 
     Set<Location> nodeInterfaceLinkLocations =
-        _roleNode.getAllInterfaces().values().stream()
+        _roleNode
+            .getAllInterfaces()
+            .values()
+            .stream()
             .map(
                 iface -> new InterfaceLinkLocation(iface.getOwner().getHostname(), iface.getName()))
             .collect(ImmutableSet.toImmutableSet());
@@ -276,12 +292,14 @@ public class LocationSpecifierTest {
         Pattern.compile(String.format("%s|%s", vrfs.get(0).getName(), vrfs.get(1).getName()));
 
     Set<Location> interfaceLocations =
-        interfaces.stream()
+        interfaces
+            .stream()
             .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
             .collect(ImmutableSet.toImmutableSet());
 
     Set<Location> interfaceLinkLocations =
-        interfaces.stream()
+        interfaces
+            .stream()
             .map(
                 iface -> new InterfaceLinkLocation(iface.getOwner().getHostname(), iface.getName()))
             .collect(ImmutableSet.toImmutableSet());

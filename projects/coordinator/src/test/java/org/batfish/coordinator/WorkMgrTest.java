@@ -115,9 +115,9 @@ import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.StoredObjectMetadata;
 import org.hamcrest.io.FileMatchers;
@@ -2681,7 +2681,10 @@ public final class WorkMgrTest {
                 ImmutableSortedSet.of(
                     NodeRoleDimension.builder()
                         .setName("dim1")
-                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(
+                                new RoleDimensionMapping(
+                                    "\\(" + node + "\\)", null, ImmutableMap.of(node, "role1"))))
                         .build()))
             .build();
     _manager.getStorage().storeNodeRoles(networkNodeRoles, networkNodeRolesId);
