@@ -917,6 +917,11 @@ DEST_MISS
   'dest-miss'
 ;
 
+DESTINATION
+:
+  'destination'
+;
+
 DETAIL
 :
   'detail'
@@ -3368,6 +3373,11 @@ RULE
   'rule'
 ;
 
+RX
+:
+  'rx'
+;
+
 SAMPLER
 :
   'sampler' -> pushMode(M_Word)
@@ -3446,6 +3456,11 @@ SERVICE
 SERVICE_POLICY
 :
   'service-policy'
+;
+
+SESSION
+:
+  'session'
 ;
 
 SET
@@ -4025,6 +4040,11 @@ TTL_EXCEEDED
 TTL_FAILURE
 :
   'ttl-failure'
+;
+
+TX
+:
+  'tx'
 ;
 
 TYPE

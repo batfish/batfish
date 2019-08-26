@@ -1360,6 +1360,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
         CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE,
         CiscoNxosStructureUsage.LOGGING_SOURCE_INTERFACE,
+        CiscoNxosStructureUsage.MONITOR_SESSION_DESTINATION_INTERFACE,
+        CiscoNxosStructureUsage.MONITOR_SESSION_SOURCE_INTERFACE,
         CiscoNxosStructureUsage.NTP_SOURCE_INTERFACE,
         CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE);
     markConcreteStructure(
@@ -1450,7 +1452,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER_SESSION,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER_SESSION);
-    markConcreteStructure(CiscoNxosStructureType.VLAN, CiscoNxosStructureUsage.INTERFACE_VLAN);
+    markConcreteStructure(
+        CiscoNxosStructureType.VLAN,
+        CiscoNxosStructureUsage.INTERFACE_VLAN,
+        CiscoNxosStructureUsage.MONITOR_SESSION_SOURCE_VLAN);
     markConcreteStructure(
         CiscoNxosStructureType.VRF,
         CiscoNxosStructureUsage.AAA_GROUP_SERVER_USE_VRF,
