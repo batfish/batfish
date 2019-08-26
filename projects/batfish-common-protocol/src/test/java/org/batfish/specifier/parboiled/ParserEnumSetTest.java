@@ -206,14 +206,83 @@ public class ParserEnumSetTest {
     assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
   }
 
+  /** Test the base case of not expression and tolerance to spaces with it */
   @Test
-  public void testParseNamedStructureTypeNot() {
+  public void testParseNamedStructureTypeNotSimple() {
     String value = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
     NotEnumSetAstNode expectedAst =
         new NotEnumSetAstNode(new ValueEnumSetAstNode<>(value, ALL_NAMED_STRUCTURE_TYPES));
 
     assertThat(ParserUtils.getAst(getRunner().run("!" + value)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" ! " + value)), equalTo(expectedAst));
+  }
+
+  /** Test the not expression with regex */
+  @Test
+  public void testParseNamedStructureTypeNotRegex() {
+    String regex = "ip.*list";
+    NotEnumSetAstNode expectedAst = new NotEnumSetAstNode(new RegexEnumSetAstNode(regex));
+
+    assertThat(ParserUtils.getAst(getRunner().run("!/" + regex + "/")), equalTo(expectedAst));
+
+    // deprecated version
+    assertThat(ParserUtils.getAst(getRunner().run(" ! " + regex)), equalTo(expectedAst));
+  }
+
+  /** Test expressions where '!' appears as (at least) one part within a union */
+  @Test
+  public void testParseNamedStructureTypeNotUnion() {
+    // !a, !b
+    assertThat(
+        ParserUtils.getAst(
+            getRunner()
+                .run(
+                    String.format(
+                        "! %s, ! %s",
+                        NamedStructurePropertySpecifier.IP_ACCESS_LIST,
+                        NamedStructurePropertySpecifier.IP_6_ACCESS_LIST))),
+        equalTo(
+            new UnionEnumSetAstNode(
+                new NotEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        NamedStructurePropertySpecifier.IP_ACCESS_LIST, ALL_NAMED_STRUCTURE_TYPES)),
+                new NotEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        NamedStructurePropertySpecifier.IP_6_ACCESS_LIST,
+                        ALL_NAMED_STRUCTURE_TYPES)))));
+    // a, !b
+    assertThat(
+        ParserUtils.getAst(
+            getRunner()
+                .run(
+                    String.format(
+                        "%s, ! %s",
+                        NamedStructurePropertySpecifier.IP_ACCESS_LIST,
+                        NamedStructurePropertySpecifier.IP_6_ACCESS_LIST))),
+        equalTo(
+            new UnionEnumSetAstNode(
+                new ValueEnumSetAstNode<>(
+                    NamedStructurePropertySpecifier.IP_ACCESS_LIST, ALL_NAMED_STRUCTURE_TYPES),
+                new NotEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        NamedStructurePropertySpecifier.IP_6_ACCESS_LIST,
+                        ALL_NAMED_STRUCTURE_TYPES)))));
+    // !a, b
+    assertThat(
+        ParserUtils.getAst(
+            getRunner()
+                .run(
+                    String.format(
+                        "! %s, %s",
+                        NamedStructurePropertySpecifier.IP_ACCESS_LIST,
+                        NamedStructurePropertySpecifier.IP_6_ACCESS_LIST))),
+        equalTo(
+            new UnionEnumSetAstNode(
+                new NotEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        NamedStructurePropertySpecifier.IP_ACCESS_LIST, ALL_NAMED_STRUCTURE_TYPES)),
+                new ValueEnumSetAstNode<>(
+                    NamedStructurePropertySpecifier.IP_6_ACCESS_LIST, ALL_NAMED_STRUCTURE_TYPES))));
   }
 
   @Test
