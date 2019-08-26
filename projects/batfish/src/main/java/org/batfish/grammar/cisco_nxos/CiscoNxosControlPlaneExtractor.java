@@ -3466,29 +3466,40 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentInterfaces =
         IntStream.range(first, last + 1)
             .mapToObj(
-                i -> {
-                  String ifaceName = lead + i;
-                  return _configuration
-                      .getInterfaces()
-                      .computeIfAbsent(
-                          ifaceName,
-                          n -> {
-                            _configuration.defineStructure(INTERFACE, n, ctx);
-                            _configuration.referenceStructure(
-                                INTERFACE, n, INTERFACE_SELF_REFERENCE, line);
-                            if (type == CiscoNxosInterfaceType.VLAN) {
-                              _configuration.referenceStructure(
-                                  VLAN, Integer.toString(i), INTERFACE_VLAN, line);
-                              return newVlanInterface(n, i);
-                            } else {
-                              if (type == CiscoNxosInterfaceType.PORT_CHANNEL) {
-                                _configuration.defineStructure(PORT_CHANNEL, n, ctx);
+                i ->
+                    _configuration
+                        .getInterfaces()
+                        .computeIfAbsent(
+                            lead + i,
+                            n -> {
+                              if (type == CiscoNxosInterfaceType.VLAN) {
+                                return newVlanInterface(n, i);
+                              } else {
+                                return newNonVlanInterface(n, parentInterface, type);
                               }
-                              return newNonVlanInterface(n, parentInterface, type);
-                            }
-                          });
-                })
+                            }))
             .collect(ImmutableList.toImmutableList());
+
+    // Update interface definition and self-references
+    _currentInterfaces.forEach(
+        i -> {
+          _configuration.defineStructure(INTERFACE, i.getName(), ctx);
+          _configuration.referenceStructure(INTERFACE, i.getName(), INTERFACE_SELF_REFERENCE, line);
+        });
+
+    // If applicable, reference vlan IDs.
+    if (type == CiscoNxosInterfaceType.VLAN) {
+      IntStream.range(first, last + 1)
+          .mapToObj(Integer::toString)
+          .forEach(i -> _configuration.referenceStructure(VLAN, i, INTERFACE_VLAN, line));
+    }
+    // If applicable, reference port channel names.
+    if (type == CiscoNxosInterfaceType.PORT_CHANNEL) {
+      _currentInterfaces.forEach(
+          i -> _configuration.defineStructure(PORT_CHANNEL, i.getName(), ctx));
+    }
+
+    // Track declared names.
     _currentInterfaces.forEach(i -> i.getDeclaredNames().add(declaredName));
   }
 
@@ -5477,7 +5488,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
               PORT_CHANNEL_RANGE, id, getFullText(messageCtx)));
       return null;
     }
-    return "port-channel" + id;
+    return getCanonicalInterfaceNamePrefix("port-channel") + id;
   }
 
   private @Nonnull Optional<PortSpec> toPortSpec(
