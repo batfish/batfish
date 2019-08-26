@@ -19,8 +19,8 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
@@ -82,9 +82,9 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
       columnMetadatas.add(
           new ColumnMetadata(
               property,
-              InterfacePropertySpecifier.getPropertyDescriptor(property).getSchema(),
+              OspfInterfacePropertySpecifier.getPropertyDescriptor(property).getSchema(),
               firstNonNull(
-                  InterfacePropertySpecifier.getPropertyDescriptor(property).getDescription(),
+                  OspfInterfacePropertySpecifier.getPropertyDescriptor(property).getDescription(),
                   "Property " + property),
               false,
               true));
@@ -126,7 +126,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
                       for (String iface : ifaces) {
                         Interface ifaceObject =
                             configurations.get(nodeName).getAllInterfaces().get(iface);
-                        if (ifaceObject == null) {
+                        if (ifaceObject == null || ifaceObject.getOspfSettings() == null) {
                           continue;
                         }
                         rows.add(
@@ -155,16 +155,17 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
             .put(COL_VRF, iface.getVrfName())
             .put(COL_PROCESS_ID, ospfProcessId);
 
+    OspfInterfaceSettings ospf = iface.getOspfSettings();
     for (String property : properties) {
-      PropertyDescriptor<Interface> propertyDescriptor =
-          InterfacePropertySpecifier.getPropertyDescriptor(property);
+      PropertyDescriptor<OspfInterfaceSettings> propertyDescriptor =
+          OspfInterfacePropertySpecifier.getPropertyDescriptor(property);
       try {
-        PropertySpecifier.fillProperty(propertyDescriptor, iface, property, rowBuilder);
+        PropertySpecifier.fillProperty(propertyDescriptor, ospf, property, rowBuilder);
       } catch (ClassCastException e) {
         throw new BatfishException(
             String.format(
                 "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for Interface '%s->%s-%s': %s",
-                propertyDescriptor.getGetter().apply(iface),
+                propertyDescriptor.getGetter().apply(ospf),
                 propertyDescriptor.getSchema(),
                 property,
                 nodeName,

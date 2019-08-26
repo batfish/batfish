@@ -1,10 +1,11 @@
 package org.batfish.question.ospfinterface;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_AREA_NAME;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_COST;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_NETWORK_TYPE;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_PASSIVE;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_AREA_NAME;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_COST;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_ENABLED;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_NETWORK_TYPE;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_PASSIVE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_PROCESS_ID;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_VRF;
@@ -90,6 +91,7 @@ public class OspfInterfaceConfigAnswererTest {
         rows.iterator().next(),
         allOf(
             hasColumn(OSPF_PASSIVE, equalTo(true), Schema.BOOLEAN),
+            hasColumn(OSPF_ENABLED, equalTo(true), Schema.BOOLEAN),
             hasColumn(OSPF_COST, equalTo(2), Schema.INTEGER),
             hasColumn(
                 OSPF_NETWORK_TYPE,
@@ -111,6 +113,7 @@ public class OspfInterfaceConfigAnswererTest {
                 .add(COL_VRF)
                 .add(COL_PROCESS_ID)
                 .add(OSPF_AREA_NAME)
+                .add(OSPF_ENABLED)
                 .add(OSPF_PASSIVE)
                 .add(OSPF_COST)
                 .add(OSPF_NETWORK_TYPE)

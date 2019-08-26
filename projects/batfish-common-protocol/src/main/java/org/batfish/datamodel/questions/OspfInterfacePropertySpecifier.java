@@ -3,14 +3,17 @@ package org.batfish.datamodel.questions;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.Grammar;
@@ -19,23 +22,57 @@ import org.batfish.specifier.parboiled.Grammar;
 public class OspfInterfacePropertySpecifier extends PropertySpecifier {
 
   // OSPF interface properties are a subset of interface properties
-  public static final String OSPF_AREA_NAME = InterfacePropertySpecifier.OSPF_AREA_NAME;
-  public static final String OSPF_PASSIVE = InterfacePropertySpecifier.OSPF_PASSIVE;
-  public static final String OSPF_COST = InterfacePropertySpecifier.OSPF_COST;
-  public static final String OSPF_NETWORK_TYPE = InterfacePropertySpecifier.OSPF_NETWORK_TYPE;
+  public static final String OSPF_AREA_NAME = "OSPF_Area_Name";
+  public static final String OSPF_COST = "OSPF_Cost";
+  public static final String OSPF_ENABLED = "OSPF_Enabled";
+  public static final String OSPF_PASSIVE = "OSPF_Passive";
+  public static final String OSPF_NETWORK_TYPE = "OSPF_Network_Type";
 
   // create an ordered list
   private static final List<String> PROPERTIES =
-      ImmutableList.of(OSPF_AREA_NAME, OSPF_PASSIVE, OSPF_COST, OSPF_NETWORK_TYPE);
+      ImmutableList.of(OSPF_AREA_NAME, OSPF_ENABLED, OSPF_PASSIVE, OSPF_COST, OSPF_NETWORK_TYPE);
+
+  /** Hold a map of property name to property descriptor for OSPF interface properties */
+  private static final Map<String, PropertyDescriptor<OspfInterfaceSettings>> JAVA_MAP =
+      new ImmutableMap.Builder<String, PropertyDescriptor<OspfInterfaceSettings>>()
+          .put(
+              OSPF_AREA_NAME,
+              new PropertyDescriptor<>(
+                  OspfInterfaceSettings::getAreaName,
+                  Schema.INTEGER,
+                  "OSPF area to which the interface belongs"))
+          .put(
+              OSPF_COST,
+              new PropertyDescriptor<>(
+                  OspfInterfaceSettings::getCost,
+                  Schema.INTEGER,
+                  "OSPF cost if explicitly configured"))
+          .put(
+              OSPF_ENABLED,
+              new PropertyDescriptor<>(
+                  OspfInterfaceSettings::getEnabled, Schema.BOOLEAN, "Whether OSPF is enabled"))
+          .put(
+              OSPF_PASSIVE,
+              new PropertyDescriptor<>(
+                  OspfInterfaceSettings::getPassive,
+                  Schema.BOOLEAN,
+                  "Whether interface is in OSPF passive mode"))
+          .put(
+              OSPF_NETWORK_TYPE,
+              new PropertyDescriptor<>(
+                  OspfInterfaceSettings::getNetworkType,
+                  Schema.STRING,
+                  "Type of OSPF network associated with the interface"))
+          .build();
 
   /** Holds all properties */
   public static final OspfInterfacePropertySpecifier ALL =
-      new OspfInterfacePropertySpecifier(ImmutableSet.copyOf(PROPERTIES));
+      new OspfInterfacePropertySpecifier(JAVA_MAP.keySet());
 
   /** Returns the property descriptor for {@code property} */
-  public static PropertyDescriptor<Interface> getPropertyDescriptor(String property) {
-    checkArgument(PROPERTIES.contains(property), "Property " + property + " does not exist");
-    return InterfacePropertySpecifier.getPropertyDescriptor(property);
+  public static PropertyDescriptor<OspfInterfaceSettings> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
   }
 
   @Nonnull private final List<String> _properties;
