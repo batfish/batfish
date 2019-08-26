@@ -1867,7 +1867,7 @@ public final class CiscoNxosGrammarTest {
         eth11,
         allOf(
             hasDescription(
-                "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
+                "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing whitespace"),
             hasMtu(9216)));
     assertTrue(eth11.getAutoState());
     assertThat(eth11.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
@@ -1887,7 +1887,8 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getDelayTensOfMicroseconds(), equalTo(10));
       assertThat(
           iface.getDescription(),
-          equalTo("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
+          equalTo(
+              "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing whitespace"));
       assertThat(iface.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
       assertThat(iface.getEigrp(), equalTo("100"));
       assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));

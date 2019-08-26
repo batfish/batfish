@@ -5052,7 +5052,7 @@ M_Expanded4_DOUBLE_QUOTE
 
 M_Expanded4_REMARK_TEXT
 :
-  ~["\r\n] F_NonNewline* -> type(REMARK_TEXT), popMode
+  ~["\r\n] F_NonWhitespace* (F_Whitespace+ F_NonWhitespace+)* -> type(REMARK_TEXT), popMode
 ;
 
 mode M_Hostname;
@@ -5245,7 +5245,7 @@ mode M_Remark;
 
 M_Remark_REMARK_TEXT
 :
-  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT ) , popMode
+  F_NonWhitespace+ (F_Whitespace+ F_NonWhitespace+)* -> type ( REMARK_TEXT ) , popMode
 ;
 
 M_Remark_NEWLINE
