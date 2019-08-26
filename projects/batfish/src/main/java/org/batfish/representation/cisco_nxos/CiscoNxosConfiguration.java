@@ -176,6 +176,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
+import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.vendor.VendorConfiguration;
@@ -363,6 +364,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
   private final @Nonnull Map<String, LoggingServer> _loggingServers;
   private @Nullable String _loggingSourceInterface;
+  private transient boolean _nonSwitchportDefaultShutdown;
   private final @Nonnull Map<String, NtpServer> _ntpServers;
   private @Nullable String _ntpSourceInterface;
   private final @Nonnull Map<Integer, Nve> _nves;
@@ -1571,7 +1573,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       newIfaceBuilder.setDependencies(ImmutableSet.of(new Dependency(parent, DependencyType.BIND)));
     }
 
-    newIfaceBuilder.setActive(!iface.getShutdownEffective(_systemDefaultSwitchportShutdown));
+    // warn if non-switchport Ethernet without explicit (no) shutdown on Nexus 7000
+    if (_c.getVendorFamily().getCiscoNxos().getPlatform() == NexusPlatform.NEXUS_7000
+        && iface.getType() == CiscoNxosInterfaceType.ETHERNET
+        && iface.getSwitchportMode() == SwitchportMode.NONE
+        && iface.getShutdown() == null) {
+      _w.redFlag(
+          String.format(
+              "Non-switchport interface %s missing explicit (no) shutdown, so setting administratively active arbitrarily",
+              ifaceName));
+    }
+
+    newIfaceBuilder.setActive(
+        !iface.getShutdownEffective(
+            _systemDefaultSwitchportShutdown, _nonSwitchportDefaultShutdown));
 
     if (!iface.getIpAddressDhcp()) {
       Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata =
@@ -2966,6 +2981,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, ConfigurationFormat.CISCO_NX);
     _c.getVendorFamily().setCiscoNxos(createCiscoNxosFamily());
+    _nonSwitchportDefaultShutdown =
+        Conversions.getNonSwitchportDefaultShutdown(
+            _c.getVendorFamily().getCiscoNxos().getPlatform());
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
 
