@@ -8,6 +8,7 @@ feature tacacs+
 aaa group server tacacs+ aaa_server_group1
     server 192.0.2.1
     server 192.0.2.2
+    source-interface Vlan4
     use-vrf management
 aaa group server tacacs+ aaa_server_group2
 

@@ -27,6 +27,7 @@ aaag_tacacsp
   TACACSP name = aaa_group_name NEWLINE
   (
     aaagt_server
+    | aaagt_source_interface
     | aaagt_use_vrf
   )*
 ;
@@ -60,6 +61,11 @@ aaagts_ip4
 aaagts_ip6
 :
   ip6 = ipv6_address NEWLINE
+;
+
+aaagt_source_interface
+:
+  SOURCE_INTERFACE name = interface_name NEWLINE
 ;
 
 aaagt_use_vrf

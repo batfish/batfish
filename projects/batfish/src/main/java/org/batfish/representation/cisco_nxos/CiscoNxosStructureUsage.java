@@ -4,6 +4,8 @@ import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoNxosStructureUsage implements StructureUsage {
+  AAA_GROUP_SERVER_SOURCE_INTERFACE("aaa group server tacacs+ source-interface"),
+  AAA_GROUP_SERVER_USE_VRF("aaa group server tacacs+ use-vrf"),
   BGP_ADDITIONAL_PATHS_ROUTE_MAP("bgp address-family additional-paths route-map"),
   BGP_ADVERTISE_MAP("bgp address-family advertise-map"),
   BGP_ATTRIBUTE_MAP("bgp address-family attribute-map"),
