@@ -77,6 +77,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_A
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
@@ -1913,7 +1914,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitNtp_source_interface(Ntp_source_interfaceContext ctx) {
-    toString(ctx, ctx.name).ifPresent(_configuration::setNtpSourceInterface);
+    Optional<String> inameOrError = toString(ctx, ctx.name);
+    if (!inameOrError.isPresent()) {
+      return;
+    }
+    String name = inameOrError.get();
+    _configuration.setNtpSourceInterface(name);
+    _configuration.referenceStructure(
+        INTERFACE, name, NTP_SOURCE_INTERFACE, ctx.name.getStart().getLine());
   }
 
   @Override
