@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_boot_system
+!
+
+boot system bootflash:/titanium-d1.7.3.0.D1.1.bin

@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_boot_kickstart_sup
+!
+
+boot kickstart bootflash:/titanium-d1-kickstart.7.3.0.D1.1.bin sup-1
+boot kickstart bootflash:/n7000-s2-kickstart.6.2.16.bin sup-2

@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_boot_nxos
+!
+
+boot nxos bootflash:/nxos.9.2.3.bin

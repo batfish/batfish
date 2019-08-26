@@ -178,6 +178,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_instanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_kickstartContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_nxosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_systemContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
@@ -1173,6 +1176,45 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitBanner_motd(Banner_motdContext ctx) {
     String body = ctx.body != null ? ctx.body.getText() : "";
     _configuration.setBannerMotd(body);
+  }
+
+  @Override
+  public void exitBoot_kickstart(Boot_kickstartContext ctx) {
+    String image = ctx.image.getText();
+    if (ctx.SUP_1() != null) {
+      _configuration.setBootKickstartSup1(image);
+    } else if (ctx.SUP_2() != null) {
+      _configuration.setBootKickstartSup2(image);
+    } else {
+      _configuration.setBootKickstartSup1(image);
+      _configuration.setBootKickstartSup2(image);
+    }
+  }
+
+  @Override
+  public void exitBoot_nxos(Boot_nxosContext ctx) {
+    String image = ctx.image.getText();
+    if (ctx.SUP_1() != null) {
+      _configuration.setBootNxosSup1(image);
+    } else if (ctx.SUP_2() != null) {
+      _configuration.setBootNxosSup2(image);
+    } else {
+      _configuration.setBootNxosSup1(image);
+      _configuration.setBootNxosSup2(image);
+    }
+  }
+
+  @Override
+  public void exitBoot_system(Boot_systemContext ctx) {
+    String image = ctx.image.getText();
+    if (ctx.SUP_1() != null) {
+      _configuration.setBootSystemSup1(image);
+    } else if (ctx.SUP_2() != null) {
+      _configuration.setBootSystemSup2(image);
+    } else {
+      _configuration.setBootSystemSup1(image);
+      _configuration.setBootSystemSup2(image);
+    }
   }
 
   @Override

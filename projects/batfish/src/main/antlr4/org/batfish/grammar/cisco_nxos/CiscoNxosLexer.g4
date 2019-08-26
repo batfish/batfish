@@ -1841,7 +1841,7 @@ KICKSTART
   // name of image follows if preceded by 'boot'
   {
     if (lastTokenType() == BOOT) {
-      pushMode(M_Remark);
+      pushMode(M_Word);
     }
   }
 ;
@@ -2665,7 +2665,7 @@ NXOS
   // name of image follows if preceded by 'boot'
   {
     if (lastTokenType() == BOOT) {
-      pushMode(M_Remark);
+      pushMode(M_Word);
     }
   }
 
@@ -3699,6 +3699,16 @@ SUNRPC
   'sunrpc'
 ;
 
+SUP_1
+:
+  'sup-1'
+;
+
+SUP_2
+:
+  'sup-2'
+;
+
 SUPPRESS
 :
   'suppress'
@@ -3765,7 +3775,7 @@ SYSTEM
   // name of image follows if preceded by 'boot'
   {
     if (lastTokenType() == BOOT) {
-      pushMode(M_Remark);
+      pushMode(M_Word);
     }
   }
 
