@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_nexus_3000_defaults
+!
+
+boot system bootflash:/n3000-uk9.6.0.2.U3.2.bin
+
+interface Ethernet1/1
+  no switchport
+!

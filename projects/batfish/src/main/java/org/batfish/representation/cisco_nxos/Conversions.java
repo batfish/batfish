@@ -235,6 +235,38 @@ final class Conversions {
     }
   }
 
+  public static boolean getNonSwitchportDefaultShutdown(NexusPlatform platform) {
+    switch (platform) {
+      case NEXUS_1000V:
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus1000/sw/4_2_1_s_v_1_4/command/reference/n1000v_cmd_ref/n1000v_cmds_s.html
+        return false;
+      case NEXUS_3000:
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3000/sw/command/reference/5_0_3/interfaces/3k_cmd_ref_if/3k_cmd_ref_if_cmds.html
+        return false;
+      case NEXUS_5000:
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus5000/sw/interfaces/command/cisco_nexus_5000_interfaces_command_ref/s_commands.html
+        return false;
+      case NEXUS_6000:
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus6000/sw/command/reference/interfaces/N6k_if_cmd_ref/n6k_if_cmds_s.html
+        return false;
+      case NEXUS_7000:
+        // NO DEFAULT according to
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/interfaces/command/cisco_nexus7000_interfaces_command_ref/s_commands.html#wp2891012724
+        // Since it doesn't matter, just default to false
+        return false;
+      case NEXUS_9000:
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/interfaces/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_Interfaces_Configuration_Guide/b_Cisco_Nexus_9000_Series_NX-OS_Interfaces_Configuration_Guide_chapter_010.html
+        return true;
+      case UNKNOWN:
+        // currently includes nexus 9000; nexus 3000 with NX-OS 9. In either case, shutdown by
+        // default.
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/92x/interfaces/configuration/guide/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-92x/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-92x_chapter_011.html#concept_B279E7CC6BC04683BE07B09298887229
+        return true;
+      default:
+        throw new IllegalArgumentException(String.format("Unsupported platform: %s", platform));
+    }
+  }
+
   private static boolean isActive(String name, BgpVrfNeighborConfiguration neighbor, Warnings w) {
     // Shutdown
     if (firstNonNull(neighbor.getShutdown(), Boolean.FALSE)) {

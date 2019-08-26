@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_nexus_5000_defaults
+!
+
+boot system bootflash:/n5000-uk9.5.1.3.N1.1a.bin
+
+interface Ethernet1/1
+  no switchport
+!

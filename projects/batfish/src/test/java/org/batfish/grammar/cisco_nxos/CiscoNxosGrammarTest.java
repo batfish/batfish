@@ -71,6 +71,9 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddres
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasVniSettings;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_3000;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_6000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_7000;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACKET_LENGTH_RANGE;
@@ -3702,6 +3705,82 @@ public final class CiscoNxosGrammarTest {
   public void testMonitorParsing() {
     String hostname = "nxos_monitor";
     assertThat(parseVendorConfig(hostname), notNullValue()); // todo: move beyond parsing
+  }
+
+  @Test
+  public void testNexus3000DefaultsConversion() throws IOException {
+    String hostname = "nxos_nexus_3000_defaults";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_3000));
+    assertThat(c, hasInterface("Ethernet1/1", isActive()));
+  }
+
+  @Test
+  public void testNexus3000DefaultsExtraction() {
+    String hostname = "nxos_nexus_3000_defaults";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getBootSystemSup1(), equalTo("bootflash:/n3000-uk9.6.0.2.U3.2.bin"));
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1"));
+    assertThat(vc.getInterfaces().get("Ethernet1/1").getShutdown(), nullValue());
+  }
+
+  @Test
+  public void testNexus5000DefaultsConversion() throws IOException {
+    String hostname = "nxos_nexus_5000_defaults";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_5000));
+    assertThat(c, hasInterface("Ethernet1/1", isActive()));
+  }
+
+  @Test
+  public void testNexus5000DefaultsExtraction() {
+    String hostname = "nxos_nexus_5000_defaults";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getBootSystemSup1(), equalTo("bootflash:/n5000-uk9.5.1.3.N1.1a.bin"));
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1"));
+    assertThat(vc.getInterfaces().get("Ethernet1/1").getShutdown(), nullValue());
+  }
+
+  @Test
+  public void testNexus6000DefaultsConversion() throws IOException {
+    String hostname = "nxos_nexus_6000_defaults";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_6000));
+    assertThat(c, hasInterface("Ethernet1/1", isActive()));
+  }
+
+  @Test
+  public void testNexus6000DefaultsExtraction() {
+    String hostname = "nxos_nexus_6000_defaults";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getBootSystemSup1(), equalTo("bootflash:/n6000-uk9.6.0.2.N2.3.bin"));
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1"));
+    assertThat(vc.getInterfaces().get("Ethernet1/1").getShutdown(), nullValue());
+  }
+
+  @Test
+  public void testNexusUnknownDefaultsConversion() throws IOException {
+    String hostname = "nxos_nexus_unknown_defaults";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(c, hasInterface("Ethernet1/1", isActive(false)));
+  }
+
+  @Test
+  public void testNexusUnknownDefaultsExtraction() {
+    String hostname = "nxos_nexus_unknown_defaults";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getBootSystemSup1(), nullValue());
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1"));
+    assertThat(vc.getInterfaces().get("Ethernet1/1").getShutdown(), nullValue());
   }
 
   @Test
