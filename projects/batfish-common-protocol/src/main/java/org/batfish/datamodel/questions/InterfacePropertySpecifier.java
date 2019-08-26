@@ -1,6 +1,11 @@
 package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_AREA_NAME;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_COST;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_ENABLED;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_NETWORK_TYPE;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_PASSIVE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -177,6 +182,34 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   Interface::getNativeVlan,
                   Schema.INTEGER,
                   "Native VLAN when switchport mode is trunk"))
+          // skip ospf area
+          .put(
+              OSPF_AREA_NAME,
+              new PropertyDescriptor<>(
+                  Interface::getOspfAreaName,
+                  Schema.INTEGER,
+                  "OSPF area to which the interface belongs"))
+          .put(
+              OSPF_COST,
+              new PropertyDescriptor<>(
+                  Interface::getOspfCost, Schema.INTEGER, "OSPF cost if explicitly configured"))
+          .put(
+              OSPF_ENABLED,
+              new PropertyDescriptor<>(
+                  Interface::getOspfEnabled, Schema.BOOLEAN, "Whether OSPF is enabled"))
+          // skipped ospf hello multiplier.
+          .put(
+              OSPF_PASSIVE,
+              new PropertyDescriptor<>(
+                  Interface::getOspfPassive,
+                  Schema.BOOLEAN,
+                  "Whether interface is in OSPF passive mode"))
+          .put(
+              OSPF_NETWORK_TYPE,
+              new PropertyDescriptor<>(
+                  Interface::getOspfNetworkType,
+                  Schema.STRING,
+                  "Type of OSPF network associated with the interface"))
           // skip outgoing filter
           .put(
               OUTGOING_FILTER_NAME,

@@ -212,7 +212,7 @@ filterWithoutNodeTerm :=
 
 A specification for a set of interface-level properties (e.g., those returned by the `interfaceProperties` question).
 
-An interface property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `Access_VLAN`, `Active`, `Allowed_VLANs`, `All_Prefixes`, `Auto_State_VLAN`, `Bandwidth`, `Blacklisted`, `Channel_Group`, `Channel_Group_Members`, `Declared_Names`, `Description`, `DHCP_Relay_Addresses`, `Encapsulation_VLAN`, `HSRP_Groups`, `HSRP_Version`, `Incoming_Filter_Name`, `MLAG_ID`, `MTU`, `Native_VLAN`, `Outgoing_Filter_Name`, `PBR_Policy_Name`, `Primary_Address`, `Primary_Network`, `Proxy_ARP`, `Rip_Enabled`, `Rip_Passive`, `Spanning_Tree_Portfast`, `Speed`, `Switchport`, `Switchport_Mode`, `Switchport_Trunk_Encapsulation`, `VRF`, `VRRP_Groups`, `Zone_Name`. 
+An interface property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `Access_VLAN`, `Active`, `Allowed_VLANs`, `All_Prefixes`, `Auto_State_VLAN`, `Bandwidth`, `Blacklisted`, `Channel_Group`, `Channel_Group_Members`, `Declared_Names`, `Description`, `DHCP_Relay_Addresses`, `Encapsulation_VLAN`, `HSRP_Groups`, `HSRP_Version`, `Incoming_Filter_Name`, `MLAG_ID`, `MTU`, `Native_VLAN`, `OSPF_Area_Name`, `OSPF_Cost`, `OSPF_Enabled`, `OSPF_Passive`, `OSPF_Network_Type`, `Outgoing_Filter_Name`, `PBR_Policy_Name`, `Primary_Address`, `Primary_Network`, `Proxy_ARP`, `Rip_Enabled`, `Rip_Passive`, `Spanning_Tree_Portfast`, `Speed`, `Switchport`, `Switchport_Mode`, `Switchport_Trunk_Encapsulation`, `VRF`, `VRRP_Groups`, `Zone_Name`.
 
 ## Interface Specifier
 
