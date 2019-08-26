@@ -54,6 +54,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   IP_ACCESS_LIST_SOURCE_ADDRGROUP("ip access-list source addrgroup"),
   IP_ROUTE_NEXT_HOP_INTERFACE("ip route next-hop-interface"),
   IP_ROUTE_NEXT_HOP_VRF("ip route vrf"),
+  NTP_SOURCE_INTERFACE("ntp source-interface"),
   NVE_SELF_REFERENCE("interface nve"),
   NVE_SOURCE_INTERFACE("interface nve source-interface"),
   OSPF_AREA_FILTER_LIST_IN("router ospf area filter-list in"),
