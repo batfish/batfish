@@ -29,6 +29,7 @@ interface Ethernet1/1
   ip dhcp relay address 1.2.3.4
   ip dhcp relay address 1.2.3.5
   ip flow monitor FOO input sampler BAR
+  ip router eigrp 100
   ip unreachables
   ipv6 traffic-filter FOO in
   ipv6 traffic-filter BAR out
