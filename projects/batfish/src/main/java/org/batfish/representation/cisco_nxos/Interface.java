@@ -33,23 +33,28 @@ public final class Interface implements Serializable {
    * explicitly configured, inference no longer applies for the life of the interface.
    *
    * <ul>
-   *   <li>Ethernet parent interfaces are shutdown by default, unless they are in switchport mode
-   *       and {@code systemDefaultSwitchportShutdown} is {@code false}.
+   *   <li>Ethernet parent interface default shutdown varies by platform and whether interface is in
+   *       switchport mode.
    *   <li>port-channel parent interfaces are not shutdown by default.
    *   <li>Ethernet and port-channel subinterfaces are shut down by default.
    *   <li>loopback interfaces are not shutdown by default.
    *   <li>mgmt interfaces are not shutdown by default.
    *   <li>vlan interfaces are shutdown by default.
    * </ul>
+   *
+   * @param nonSwitchportDefaultShutdown
    */
   private static boolean defaultShutdown(
       SwitchportMode switchportMode,
       CiscoNxosInterfaceType type,
       boolean subinterface,
-      boolean systemDefaultSwitchportShutdown) {
+      boolean systemDefaultSwitchportShutdown,
+      boolean nonSwitchportDefaultShutdown) {
     switch (type) {
       case ETHERNET:
-        return switchportMode == SwitchportMode.NONE || systemDefaultSwitchportShutdown;
+        return switchportMode == SwitchportMode.NONE
+            ? nonSwitchportDefaultShutdown
+            : systemDefaultSwitchportShutdown;
 
       case PORT_CHANNEL:
         return subinterface;
@@ -320,11 +325,16 @@ public final class Interface implements Serializable {
   /**
    * Returns {@code true} iff this interface is explictly or implicitly administratively shutdown.
    */
-  public boolean getShutdownEffective(boolean systemDefaultSwitchportShutdown) {
+  public boolean getShutdownEffective(
+      boolean systemDefaultSwitchportShutdown, boolean nonSwitchportDefaultShutdown) {
     return _shutdown != null
         ? _shutdown
         : defaultShutdown(
-            _switchportMode, _type, _parentInterface != null, systemDefaultSwitchportShutdown);
+            _switchportMode,
+            _type,
+            _parentInterface != null,
+            systemDefaultSwitchportShutdown,
+            nonSwitchportDefaultShutdown);
   }
 
   public @Nullable Integer getSpeedMbps() {
