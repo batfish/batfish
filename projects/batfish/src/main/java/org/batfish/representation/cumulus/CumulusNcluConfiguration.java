@@ -295,7 +295,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
-        .setLocalIp(computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c))
+        .setLocalIp(computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName()))
         .setPeerAddress(neighbor.getPeerIp())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
@@ -406,9 +406,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   /** Scan all interfaces, find first that contains given remote IP */
   @Nullable
   @VisibleForTesting
-  static Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c) {
-    // TODO: figure out if the interfaces we look at should be limited to a VRF
-    return c.getAllInterfaces().values().stream()
+  static Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c, String vrfName) {
+    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      return null;
+    }
+    return vrf.getInterfaces().values().stream()
         .flatMap(
             i ->
                 i.getAllConcreteAddresses().stream()

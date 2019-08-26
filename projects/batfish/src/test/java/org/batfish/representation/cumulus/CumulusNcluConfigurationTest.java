@@ -1,5 +1,6 @@
 package org.batfish.representation.cumulus;
 
+import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
@@ -27,7 +28,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
@@ -219,23 +219,49 @@ public class CumulusNcluConfigurationTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
-    org.batfish.datamodel.Interface.Builder ib = nf.interfaceBuilder();
+    String vrfName = "vrf";
+    Vrf vrf = nf.vrfBuilder().setName(vrfName).setOwner(c).build();
+    org.batfish.datamodel.Interface.Builder ib = nf.interfaceBuilder().setVrf(vrf);
 
     // Should not accept interface whose subnet doesn't include the remote IP
     InterfaceAddress addr1 = ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24);
-    ib.setType(InterfaceType.PHYSICAL).setOwner(c).setName("i1").setAddress(addr1).build();
-    assertNull(computeLocalIpForBgpNeighbor(remoteIp, c));
+    ib.setType(PHYSICAL).setOwner(c).setName("i1").setAddress(addr1).build();
+    assertNull(computeLocalIpForBgpNeighbor(remoteIp, c, vrfName));
 
     // Should not accept interface that owns the remote IP
     InterfaceAddress addr2 = ConcreteInterfaceAddress.create(remoteIp, 24);
-    ib.setType(InterfaceType.PHYSICAL).setOwner(c).setName("i2").setAddress(addr2).build();
-    assertNull(computeLocalIpForBgpNeighbor(remoteIp, c));
+    ib.setType(PHYSICAL).setOwner(c).setName("i2").setAddress(addr2).build();
+    assertNull(computeLocalIpForBgpNeighbor(remoteIp, c, vrfName));
 
     // Should accept interface that doesn't own the remote IP but whose subnet does include it
     Ip ifaceIp = Ip.parse("1.1.1.2");
     InterfaceAddress addr3 = ConcreteInterfaceAddress.create(ifaceIp, 24);
-    ib.setType(InterfaceType.PHYSICAL).setOwner(c).setName("i3").setAddress(addr3).build();
-    assertThat(computeLocalIpForBgpNeighbor(remoteIp, c), equalTo(ifaceIp));
+    ib.setType(PHYSICAL).setOwner(c).setName("i3").setAddress(addr3).build();
+    assertThat(computeLocalIpForBgpNeighbor(remoteIp, c, vrfName), equalTo(ifaceIp));
+  }
+
+  @Test
+  public void testComputeLocalIpForBgpNeighbor_vrf() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c).build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c).build();
+
+    org.batfish.datamodel.Interface.Builder ib =
+        nf.interfaceBuilder().setOwner(c).setType(PHYSICAL);
+    ib.setVrf(vrf1).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+    ib.setVrf(vrf2).setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24")).build();
+
+    Ip remoteIp = Ip.parse("1.1.1.3");
+
+    // vrf1 owns the compatible localIp = 1.1.1.1
+    assertThat(
+        computeLocalIpForBgpNeighbor(remoteIp, c, vrf1.getName()), equalTo(Ip.parse("1.1.1.1")));
+
+    // vrf2 does not own a compatible localIp
+    assertNull(computeLocalIpForBgpNeighbor(remoteIp, c, vrf2.getName()));
   }
 
   @Test
@@ -298,9 +324,7 @@ public class CumulusNcluConfigurationTest {
 
   @Test
   public void testGenerateBgpActivePeerConfig_SetEbgpMultiHop() {
-
     // set VI configuration
-
     Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
 
     // set bgp neighbor
@@ -326,7 +350,6 @@ public class CumulusNcluConfigurationTest {
         configuration);
 
     BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(Prefix.parse("10.0.0.2/32"));
-
     assertTrue(peerConfig.getEbgpMultihop());
   }
 
