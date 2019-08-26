@@ -76,6 +76,10 @@ Many types such as `applicationSpec` or `mlagIdSpec` are simply sets of values. 
 
 * `val1, val2` specifies a set with exactly those two values. 
 
+* `! val1` specifies all values other than that value.
+
+* `/val.*/, ! val1` specifies all values that match regex `val.*` other `val1`.
+
 The full specification of this grammar is:
 
 <pre>
@@ -84,7 +88,9 @@ enumSetSpec :=
 
 enumSetTerm :=
    &lt;<i>enum-value</i>&gt;
+   | <b>!</b>&lt;<i>enum-value</i>&gt;
    | <b>/</b>&lt;<i>regex-over-enum-values</i>&gt;<b>/</b>
+   | <b>!/</b>&lt;<i>regex-over-enum-values</i>&gt;<b>/</b>
 </pre>
 
 

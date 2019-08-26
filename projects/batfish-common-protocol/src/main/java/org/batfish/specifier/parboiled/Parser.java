@@ -2,6 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.DEPRECATED;
+import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_NOT;
 import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_VALUE;
@@ -177,6 +178,10 @@ public class Parser extends CommonParser {
   }
 
   public <T> Rule EnumSetTerm(Collection<T> values) {
+    return FirstOf(EnumSetBase(values), EnumSetNotTerm(values));
+  }
+
+  public <T> Rule EnumSetBase(Collection<T> values) {
     return FirstOf(EnumSetRegexDeprecated(), EnumSetRegex(), EnumSetValue(values));
   }
 
@@ -196,6 +201,11 @@ public class Parser extends CommonParser {
   @Anchor(DEPRECATED)
   public Rule EnumSetRegexDeprecated() {
     return Sequence(RegexDeprecated(), push(new RegexEnumSetAstNode(pop())));
+  }
+
+  @Anchor(ENUM_SET_NOT)
+  public <T> Rule EnumSetNotTerm(Collection<T> values) {
+    return Sequence("! ", EnumSetBase(values), push(new NotEnumSetAstNode(pop())));
   }
 
   /**

@@ -128,7 +128,8 @@ public class ParserEnumSetTest {
                                 new ParboiledAutoCompleteSuggestion(
                                     val, query.length(), Type.ENUM_SET_VALUE)),
                     ImmutableSet.of(
-                        new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX))
+                        new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX),
+                        new ParboiledAutoCompleteSuggestion("!", 0, Type.ENUM_SET_NOT))
                         .stream())
                 .collect(ImmutableSet.toImmutableSet())));
   }
@@ -206,6 +207,16 @@ public class ParserEnumSetTest {
   }
 
   @Test
+  public void testParseNamedStructureTypeNot() {
+    String value = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
+    NotEnumSetAstNode expectedAst =
+        new NotEnumSetAstNode(new ValueEnumSetAstNode<>(value, ALL_NAMED_STRUCTURE_TYPES));
+
+    assertThat(ParserUtils.getAst(getRunner().run("!" + value)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" ! " + value)), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseSuperStrings() {
     Collection<String> allValues = ImmutableList.of("long", "longer");
 
@@ -251,7 +262,8 @@ public class ParserEnumSetTest {
                                 new ParboiledAutoCompleteSuggestion(
                                     val.toString(), query.length(), Type.ENUM_SET_VALUE)),
                     ImmutableSet.of(
-                        new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX))
+                        new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX),
+                        new ParboiledAutoCompleteSuggestion("!", 0, Type.ENUM_SET_NOT))
                         .stream())
                 .collect(ImmutableSet.toImmutableSet())));
   }

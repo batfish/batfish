@@ -6,4 +6,6 @@ interface EnumSetAstNodeVisitor<T> {
   <T1> T visitValueEnumSetAstNode(ValueEnumSetAstNode<T1> valueEnumSetAstNode);
 
   T visitRegexEnumSetAstNode(RegexEnumSetAstNode regexEnumSetAstNode);
+
+  T visitNotEnumSetAstNode(NotEnumSetAstNode notEnumSetAstNode);
 }
