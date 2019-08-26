@@ -1,11 +1,6 @@
 package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_AREA_NAME;
-import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_COST;
-import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_ENABLED;
-import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_NETWORK_TYPE;
-import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_PASSIVE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -62,6 +57,11 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String MLAG_ID = "MLAG_ID";
   public static final String MTU = "MTU";
   public static final String NATIVE_VLAN = "Native_VLAN";
+  public static final String OSPF_AREA_NAME = "OSPF_Area_Name";
+  public static final String OSPF_COST = "OSPF_Cost";
+  public static final String OSPF_ENABLED = "OSPF_Enabled";
+  public static final String OSPF_PASSIVE = "OSPF_Passive";
+  public static final String OSPF_NETWORK_TYPE = "OSPF_Network_Type";
   public static final String OUTGOING_FILTER_NAME = "Outgoing_Filter_Name";
   public static final String PBR_POLICY_NAME = "PBR_Policy_Name";
   public static final String PRIMARY_ADDRESS = "Primary_Address";
