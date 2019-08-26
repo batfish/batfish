@@ -45,6 +45,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_IP_ACCESS_GROUP_IN("interface ip access-group in"),
   INTERFACE_IP_ACCESS_GROUP_OUT("interface ip access-group out"),
   INTERFACE_IP_POLICY("interface ip policy"),
+  INTERFACE_IP_ROUTER_EIGRP("interface ip router eigrp"),
+  INTERFACE_IP_ROUTER_OSPF("interface ip router ospf"),
   INTERFACE_SELF_REFERENCE("interface self-reference"),
   INTERFACE_VLAN("interface vlan"),
   INTERFACE_VRF_MEMBER("interface vrf member"),

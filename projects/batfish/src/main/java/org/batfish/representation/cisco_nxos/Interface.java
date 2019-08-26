@@ -119,6 +119,7 @@ public final class Interface implements Serializable {
   private @Nullable Integer _delayTensOfMicroseconds;
   private @Nullable String _description;
   private final @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
+  private @Nullable String _eigrp;
   private @Nullable Integer _encapsulationVlan;
   private @Nullable InterfaceHsrp _hsrp;
   private @Nullable String _ipAccessGroupIn;
@@ -206,6 +207,14 @@ public final class Interface implements Serializable {
 
   public @Nonnull SortedSet<Ip> getDhcpRelayAddresses() {
     return _dhcpRelayAddresses;
+  }
+
+  public @Nullable String getEigrp() {
+    return _eigrp;
+  }
+
+  public void setEigrp(@Nullable String eigrp) {
+    _eigrp = eigrp;
   }
 
   public @Nullable Integer getEncapsulationVlan() {
