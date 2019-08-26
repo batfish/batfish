@@ -10,6 +10,11 @@ monitor session 1
   destination interface Ethernet2/3 rx
   destination interface Ethernet2/4
   !
+  ! yes really
+  ! no shutdown is not a valid command, at least on nexus9000
+  ! yes, really
+  no shut
+  !
   source interface Ethernet1/1 both
   source interface Ethernet1/2 tx
   source interface Ethernet1/3 rx

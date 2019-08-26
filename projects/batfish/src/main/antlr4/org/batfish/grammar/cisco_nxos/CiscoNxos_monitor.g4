@@ -17,6 +17,7 @@ monitor_session
   (
     monitor_session_description
     | monitor_session_destination
+    | monitor_session_no
     | monitor_session_source
   )*
 ;
@@ -29,6 +30,16 @@ monitor_session_description
 monitor_session_destination
 :
   DESTINATION INTERFACE range = interface_range (BOTH | RX | TX)? NEWLINE
+;
+
+monitor_session_no
+:
+  NO monitor_session_no_shut
+;
+
+monitor_session_no_shut
+:
+  SHUT NEWLINE
 ;
 
 monitor_session_source

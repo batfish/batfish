@@ -3499,6 +3499,11 @@ SHOW
   'show'
 ;
 
+SHUT
+:
+  'shut'
+;
+
 SHUTDOWN
 :
   'shutdown'
