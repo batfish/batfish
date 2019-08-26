@@ -10,6 +10,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeer
 import static org.batfish.representation.cisco.CiscoConfiguration.computeNxosBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -24,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -76,6 +78,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 
 /**
@@ -192,6 +195,44 @@ final class Conversions {
             "%s. Making a non-deterministic choice from associated interfaces", messageBase));
     assert lowestIp.isPresent(); // This cannot happen if interfaces is non-empty.
     return lowestIp.get();
+  }
+
+  /**
+   * Infers {@code NexusPlatform} of a configuration based on names of boot image files. Returns
+   * {@link NexusPlatform#UNKNOWN} if unique inference cannot be made.
+   */
+  public static @Nonnull NexusPlatform inferPlatform(CiscoNxosConfiguration vc) {
+    return Stream.of(
+            vc.getBootNxosSup1(),
+            vc.getBootNxosSup2(),
+            vc.getBootSystemSup1(),
+            vc.getBootSystemSup2(),
+            vc.getBootKickstartSup1(),
+            vc.getBootKickstartSup2())
+        .filter(Objects::nonNull)
+        .map(Conversions::inferPlatformFromImage)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(NexusPlatform.UNKNOWN);
+  }
+
+  /**
+   * Infers {@code NexusPlatform} of a configuration based on name of boot image file. Returns
+   * {@code null} if unique inference cannot be made.
+   */
+  @VisibleForTesting
+  static @Nullable NexusPlatform inferPlatformFromImage(String image) {
+    if (image.contains("n3000")) {
+      return NexusPlatform.NEXUS_3000;
+    } else if (image.contains("n5000")) {
+      return NexusPlatform.NEXUS_5000;
+    } else if (image.contains("n6000")) {
+      return NexusPlatform.NEXUS_6000;
+    } else if (image.contains("n7000") || image.contains("n7700") || image.contains("titanium")) {
+      return NexusPlatform.NEXUS_7000;
+    } else {
+      return null;
+    }
   }
 
   private static boolean isActive(String name, BgpVrfNeighborConfiguration neighbor, Warnings w) {

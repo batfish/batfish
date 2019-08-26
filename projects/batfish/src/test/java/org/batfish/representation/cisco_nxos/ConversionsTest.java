@@ -5,16 +5,16 @@ import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_6000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_7000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.UNKNOWN;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConversions.inferPlatform;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConversions.inferPlatformFromImage;
+import static org.batfish.representation.cisco_nxos.Conversions.inferPlatform;
+import static org.batfish.representation.cisco_nxos.Conversions.inferPlatformFromImage;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-/** Test of {@link CiscoNxosConversions}. */
-public final class CiscoNxosConversionsTest {
+/** Test of {@link Conversions}. */
+public final class ConversionsTest {
 
   @Test
   public void testInferPlatformFromImage() {

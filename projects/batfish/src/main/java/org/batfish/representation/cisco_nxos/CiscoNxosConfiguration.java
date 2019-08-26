@@ -16,9 +16,9 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpComm
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConversions.inferPlatform;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
+import static org.batfish.representation.cisco_nxos.Conversions.inferPlatform;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
