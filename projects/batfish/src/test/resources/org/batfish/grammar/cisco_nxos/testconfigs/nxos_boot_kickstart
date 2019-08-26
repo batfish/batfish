@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_boot_kickstart
+!
+
+boot kickstart bootflash:/n7000-s2-kickstart.6.2.16.bin

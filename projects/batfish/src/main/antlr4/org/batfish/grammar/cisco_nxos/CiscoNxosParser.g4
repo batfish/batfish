@@ -41,6 +41,7 @@ statement
 :
   s_aaa
   | s_banner
+  | s_boot
   | s_class_map
   | s_control_plane
   | s_crypto
@@ -86,6 +87,31 @@ banner_exec
 banner_motd
 :
   MOTD BANNER_DELIMITER body=BANNER_BODY? BANNER_DELIMITER NEWLINE
+;
+
+s_boot
+:
+  BOOT
+  (
+    boot_kickstart
+    | boot_nxos
+    | boot_system
+  )
+;
+
+boot_kickstart
+:
+  KICKSTART image = WORD (SUP_1 | SUP_2)? NEWLINE
+;
+
+boot_nxos
+:
+  NXOS image = WORD (SUP_1 | SUP_2)? NEWLINE
+;
+
+boot_system
+:
+  SYSTEM image = WORD (SUP_1 | SUP_2)? NEWLINE
 ;
 
 s_control_plane
