@@ -1325,6 +1325,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
         CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
         CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE,
+        CiscoNxosStructureUsage.NTP_SOURCE_INTERFACE,
         CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE);
     markConcreteStructure(
         CiscoNxosStructureType.IP_ACCESS_LIST,
