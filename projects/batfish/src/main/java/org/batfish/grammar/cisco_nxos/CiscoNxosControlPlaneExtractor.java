@@ -68,6 +68,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_POLICY;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_EIGRP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_OSPF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER;
@@ -237,6 +239,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_passive_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_eigrpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Il_min_linksContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inherit_sequence_numberContext;
@@ -1662,19 +1665,36 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitIipr_ospf(Iipr_ospfContext ctx) {
-    Optional<String> nameOrErr = toString(ctx, ctx.name);
-    if (!nameOrErr.isPresent()) {
+  public void exitIipr_eigrp(Iipr_eigrpContext ctx) {
+    Optional<RoutingProtocolInstance> eigrp = toRoutingProtocolInstance(ctx, ctx.eigrp_instance());
+    if (!eigrp.isPresent()) {
       return;
     }
-    String name = nameOrErr.get();
+    String eigrpProc = eigrp.get().getTag();
+    _currentInterfaces.forEach(iface -> iface.setEigrp(eigrpProc));
+    _configuration.referenceStructure(
+        ROUTER_EIGRP,
+        eigrpProc,
+        INTERFACE_IP_ROUTER_EIGRP,
+        ctx.eigrp_instance().getStart().getLine());
+  }
+
+  @Override
+  public void exitIipr_ospf(Iipr_ospfContext ctx) {
+    Optional<RoutingProtocolInstance> ospf = toRoutingProtocolInstance(ctx, ctx.ospf_instance());
+    if (!ospf.isPresent()) {
+      return;
+    }
+    String ospfProc = ospf.get().getTag();
     long area = toLong(ctx.area);
     _currentInterfaces.forEach(
         iface -> {
-          OspfInterface ospf = iface.getOrCreateOspf();
-          ospf.setProcess(name);
-          ospf.setArea(area);
+          OspfInterface intOspf = iface.getOrCreateOspf();
+          intOspf.setProcess(ospfProc);
+          intOspf.setArea(area);
         });
+    _configuration.referenceStructure(
+        ROUTER_OSPF, ospfProc, INTERFACE_IP_ROUTER_OSPF, ctx.ospf_instance().getStart().getLine());
   }
 
   @Override

@@ -539,12 +539,12 @@ i_ip_router
 
 iipr_eigrp
 :
-  EIGRP name = router_eigrp_process_tag NEWLINE
+  eigrp_instance NEWLINE
 ;
 
 iipr_ospf
 :
-  OSPF name = router_ospf_name AREA area = ospf_area_id NEWLINE
+  ospf_instance AREA area = ospf_area_id NEWLINE
 ;
 
 i_ipv6

@@ -1802,6 +1802,7 @@ public final class CiscoNxosGrammarTest {
           iface.getDescription(),
           equalTo("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
       assertThat(iface.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
+      assertThat(iface.getEigrp(), equalTo("100"));
       assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));
       assertThat(iface.getIpAccessGroupOut(), equalTo("acl_out"));
       assertThat(iface.getMtu(), equalTo(9216));
@@ -1810,6 +1811,7 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
       assertTrue(iface.getAutostate());
       assertThat(iface.getDescription(), nullValue());
+      assertThat(iface.getEigrp(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
