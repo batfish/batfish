@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_nexus_6000_defaults
+!
+
+boot system bootflash:/n6000-uk9.6.0.2.N2.3.bin
+
+interface Ethernet1/1
+  no switchport
+!
