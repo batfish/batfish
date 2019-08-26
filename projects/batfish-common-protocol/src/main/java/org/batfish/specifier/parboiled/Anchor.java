@@ -30,6 +30,8 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     CHAR_LITERAL("CHAR_LITERAL", null, null, SuggestionType.UNKNOWN),
     /** For grammar rules that are deprecated and we ignore for auto completion */
     DEPRECATED("DEPRECATED", null, null, SuggestionType.UNKNOWN),
+    /** Rule for excluding a set of enum values */
+    ENUM_SET_NOT("ENUM_SET_NOT", "Exclude values", "enumSetSpec", SuggestionType.OPERATOR_NON_END),
     /**
      * Denotes a set operation for enums. The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
