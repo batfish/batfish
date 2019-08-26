@@ -18,6 +18,7 @@ import static org.batfish.representation.cisco.CiscoConversions.generateGenerati
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
+import static org.batfish.representation.cisco_nxos.Conversions.inferPlatform;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
@@ -1149,7 +1150,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull CiscoNxosFamily createCiscoNxosFamily() {
-    return CiscoNxosFamily.builder().build();
+    return CiscoNxosFamily.builder().setPlatform(inferPlatform(this)).build();
   }
 
   /** Disable Vlan interfaces without corresponding top-level vlan declaration. */

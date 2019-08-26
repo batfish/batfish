@@ -8,10 +8,20 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class CiscoNxosFamily implements Serializable {
 
   public static final class Builder {
-    private Builder() {}
 
     public @Nonnull CiscoNxosFamily build() {
-      return new CiscoNxosFamily();
+      return new CiscoNxosFamily(_platform);
+    }
+
+    public @Nonnull Builder setPlatform(NexusPlatform platform) {
+      _platform = platform;
+      return this;
+    }
+
+    private @Nonnull NexusPlatform _platform;
+
+    private Builder() {
+      _platform = NexusPlatform.UNKNOWN;
     }
   }
 
@@ -19,5 +29,13 @@ public final class CiscoNxosFamily implements Serializable {
     return new Builder();
   }
 
-  private CiscoNxosFamily() {}
+  public @Nonnull NexusPlatform getPlatform() {
+    return _platform;
+  }
+
+  private final @Nonnull NexusPlatform _platform;
+
+  private CiscoNxosFamily(NexusPlatform platform) {
+    _platform = platform;
+  }
 }

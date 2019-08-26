@@ -71,6 +71,7 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddres
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasVniSettings;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_7000;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACKET_LENGTH_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
@@ -218,6 +219,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.ParserBatfishException;
@@ -587,6 +589,14 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBootKickstartConversion() throws IOException {
+    String hostname = "nxos_boot_kickstart";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_7000));
+  }
+
+  @Test
   public void testBootKickstartExtraction() {
     String hostname = "nxos_boot_kickstart";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -607,6 +617,14 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBootNxosConversion() throws IOException {
+    String hostname = "nxos_boot_nxos";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NexusPlatform.UNKNOWN));
+  }
+
+  @Test
   public void testBootNxosExtraction() {
     String hostname = "nxos_boot_nxos";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -623,6 +641,14 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(vc.getBootNxosSup1(), equalTo("bootflash:/nxos.9.2.3.bin"));
     assertThat(vc.getBootNxosSup2(), equalTo("bootflash:/nxos.9.2.4.bin"));
+  }
+
+  @Test
+  public void testBootSystemConversion() throws IOException {
+    String hostname = "nxos_boot_system";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_7000));
   }
 
   @Test
