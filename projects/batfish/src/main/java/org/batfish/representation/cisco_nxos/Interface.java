@@ -41,8 +41,6 @@ public final class Interface implements Serializable {
    *   <li>mgmt interfaces are not shutdown by default.
    *   <li>vlan interfaces are shutdown by default.
    * </ul>
-   *
-   * @param nonSwitchportDefaultShutdown
    */
   private static boolean defaultShutdown(
       SwitchportMode switchportMode,
