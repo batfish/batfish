@@ -16,11 +16,9 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Edge;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -42,7 +40,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.BgpTopology;
-import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -133,17 +130,10 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeRemoteNodes,
       EdgeType edgeType,
       boolean initial) {
-    Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     switch (edgeType) {
       case BGP:
-        Optional<Layer2Topology> l2 =
-            (initial
-                ? topologyProvider.getInitialLayer2Topology(_batfish.getNetworkSnapshot())
-                : topologyProvider.getLayer2Topology(_batfish.getNetworkSnapshot()));
-        BgpTopology bgpTopology =
-            BgpTopologyUtils.initBgpTopology(
-                configurations, ipOwners, false, false, null, l2.orElse(null));
+        BgpTopology bgpTopology = topologyProvider.getBgpTopology(_batfish.getNetworkSnapshot());
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
         EigrpTopology eigrpTopology =
