@@ -173,6 +173,12 @@ md5_string
   WORD
 ;
 
+monitor_session_id
+:
+// 1-32
+  uint8
+;
+
 null_rest_of_line
 :
   ~NEWLINE* NEWLINE

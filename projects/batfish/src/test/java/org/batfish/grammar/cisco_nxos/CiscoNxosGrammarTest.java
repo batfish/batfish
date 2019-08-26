@@ -3699,6 +3699,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testMonitorParsing() {
+    String hostname = "nxos_monitor";
+    assertThat(parseVendorConfig(hostname), notNullValue()); // todo: move beyond parsing
+  }
+
+  @Test
   public void testNtpConversion() throws IOException {
     Configuration c = parseConfig("nxos_ntp");
 
