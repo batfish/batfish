@@ -1,4 +1,4 @@
-package org.batfish.representation.cisco_nxos;
+package org.batfish.grammar.cisco_nxos;
 
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_3000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
@@ -8,21 +8,24 @@ import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NX
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS6;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS7;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS9;
-import static org.batfish.representation.cisco_nxos.Conversions.inferMajorVersion;
-import static org.batfish.representation.cisco_nxos.Conversions.inferMajorVersionFromImage;
-import static org.batfish.representation.cisco_nxos.Conversions.inferMajorVersionFromVersion;
-import static org.batfish.representation.cisco_nxos.Conversions.inferPlatform;
-import static org.batfish.representation.cisco_nxos.Conversions.inferPlatformFromImage;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferMajorVersion;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferMajorVersionFromImage;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferMajorVersionFromVersion;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferPlatform;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferPlatformFromImage;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
+import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.junit.Test;
 
-/** Test of {@link Conversions}. */
-public final class ConversionsTest {
+/** Test of {@link CiscoNxosPreprocessor}. */
+@ParametersAreNonnullByDefault
+public final class CiscoNxosPreprocessorTest {
 
   @Test
   public void testInferMajorVersionFromImage() {

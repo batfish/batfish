@@ -1,10 +1,11 @@
 !RANCID-CONTENT-TYPE: cisco-nx
 !
-hostname nxos_interface_shutdown
+hostname nxos_no_system_default_switchport_shutdown
 !
 
 ! force predictable results
 system default switchport
+
 no system default switchport shutdown
 
 !!! switchports
@@ -34,4 +35,3 @@ interface Ethernet1/7
 interface Ethernet1/8
   no switchport
   no shutdown
-  
