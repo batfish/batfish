@@ -2,6 +2,11 @@ feature bgp
 !
 hostname nxosBgpMaximumPaths
 !
+!!! Define VRFs so they are converted !!!
+vrf context justebgp
+vrf context justibgp
+vrf context both
+!
 router bgp 1
   vrf justebgp
     address-family ipv4 unicast

@@ -174,7 +174,10 @@ name_server
 
 ip_null
 :
-  DOMAIN_LOOKUP
+  (
+    ARP
+    | DOMAIN_LOOKUP
+  ) null_rest_of_line
 ;
 
 ip_sla
@@ -260,9 +263,12 @@ s_null
     | CLOCK
     | ERRDISABLE
     | FEATURE
+    | LICENSE
     | SERVICE
+    | SSH
     | SPANNING_TREE
     | USERNAME
+    | USERPASSPHRASE
   ) null_rest_of_line
 ;
 
@@ -280,6 +286,8 @@ no_null
   (
     FEATURE
     | IP
+    | NTP
+    | SYSTEM
   ) null_rest_of_line
 ;
 
@@ -381,7 +389,18 @@ sysds_switchport
 
 sys_qos
 :
-  QOS NEWLINE sysqos_service_policy*
+  QOS NEWLINE
+  (
+    sysqos_null
+    | sysqos_service_policy
+  )*
+;
+
+sysqos_null
+:
+  (
+    FEX
+  ) null_rest_of_line
 ;
 
 sysqos_service_policy

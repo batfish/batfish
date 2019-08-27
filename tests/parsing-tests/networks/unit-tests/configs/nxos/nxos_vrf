@@ -4,8 +4,6 @@
 hostname nxos_vrf
 !
 vrf context management
-  address-family ipv4 unicast
-  address-family ipv6 unicast
   ip pim bidir-rp-limit 6
   ip pim sg-expiry-timer 180
   ip route 0.0.0.0/0 1.2.3.4
@@ -18,11 +16,11 @@ vrf context vrf1
   vni 11111
   rd 1.1.1.1:9
   rd 22222:9
-  rd 3333.3333:9
   rd auto
   address-family ipv4 unicast
     route-target both auto
     route-target both auto evpn
+  address-family ipv6 unicast
   shutdown
   no shutdown
   ip route 0.0.0.0/0 1.2.3.4

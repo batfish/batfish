@@ -264,6 +264,11 @@ ALL
   'all'
 ;
 
+ALLOW
+:
+  'allow'
+;
+
 ALLOWAS_IN
 :
   'allowas-in'
@@ -444,6 +449,11 @@ BFD
 BGP
 :
   'bgp'
+;
+
+BIDIR_RP_LIMIT
+:
+  'bidir-rp-limit'
 ;
 
 BIFF
@@ -717,6 +727,11 @@ CONTINUE
   'continue'
 ;
 
+CONTROL
+:
+  'control'
+;
+
 CONTROL_PLANE
 :
   'control-plane'
@@ -862,9 +877,19 @@ DEFAULT_COST
   'default-cost'
 ;
 
+DEFAULT_GRACETIME
+:
+  'default-gracetime'
+;
+
 DEFAULT_INFORMATION
 :
   'default-information'
+;
+
+DEFAULT_LIFETIME
+:
+  'default-lifetime'
 ;
 
 DEFAULT_METRIC
@@ -875,6 +900,11 @@ DEFAULT_METRIC
 DEFAULT_ORIGINATE
 :
   'default-originate'
+;
+
+DEFAULT_WARNTIME
+:
+  'default-warntime'
 ;
 
 DELAY
@@ -1057,6 +1087,11 @@ DSCP
   'dscp'
 ;
 
+DST_MAC
+:
+  'dst-mac'
+;
+
 DUAL_AS
 :
   'dual-as'
@@ -1143,9 +1178,19 @@ ENCAPSULATION
   'encapsulation'
 ;
 
+ENFORCE_BGP_MDT_SAFI
+:
+  'enforce-bgp-mdt-safi'
+;
+
 ENFORCE_FIRST_AS
 :
   'enforce-first-as'
+;
+
+ENTRIES
+:
+  'entries'
 ;
 
 EQ
@@ -1432,6 +1477,11 @@ GLOBAL
 GOPHER
 :
   'gopher'
+;
+
+GRACE_PERIOD
+:
+  'grace-period'
 ;
 
 GRACEFUL_RESTART
@@ -1802,6 +1852,11 @@ ISOLATE
   'isolate'
 ;
 
+JP_INTERVAL
+:
+  'jp-interval'
+;
+
 KBPS
 :
   'kbps'
@@ -1815,14 +1870,19 @@ KERNEL
 KEY
 :
   'key'
-  // if preceded by tacac-server host name, or 'tacacs-server' (for global key), follow with password
   {
     switch(lastTokenType()) {
+      case TACACS_SERVER:
+        // preceded by 'tacacs-server' (for global key), follow with password
+        pushMode(M_Password);
+        break;
       case IP_ADDRESS:
       case IPV6_ADDRESS:
-      case TACACS_SERVER:
       case WORD:
-        pushMode(M_Password);
+        // preceded by 'tacacs-server host <ip|ipv6|dns>' (server-specific key), follow with password
+        if (secondToLastTokenType() == HOST) {
+          pushMode(M_Password);
+        }
         break;
       default:
         break;
@@ -1916,6 +1976,11 @@ LEVEL
   'level'
 ;
 
+LICENSE
+:
+  'license'
+;
+
 LINE_PROTOCOL
 :
   'line-protocol'
@@ -1949,6 +2014,11 @@ LINK_STATUS
 LINK_TYPE
 :
   'link-type'
+;
+
+LINK_UP
+:
+  'link-up'
 ;
 
 LISP
@@ -2042,6 +2112,11 @@ LOG_ADJACENCY_CHANGES
   'log-adjacency-changes'
 ;
 
+LOG_BUFFER
+:
+  'log-buffer'
+;
+
 LOG_NEIGHBOR_CHANGES
 :
   'log-neighbor-changes'
@@ -2055,6 +2130,11 @@ LOGGING
 LOGIN
 :
   'login'
+;
+
+LOGIN_ATTEMPTS
+:
+  'login-attempts'
 ;
 
 LONG
@@ -2136,6 +2216,11 @@ MAIL
   'mail'
 ;
 
+MAINTENANCE
+:
+  'maintenance'
+;
+
 MANAGED_CONFIG_FLAG
 :
   'managed-config-flag'
@@ -2186,6 +2271,11 @@ MATCH_ANY
   'match-any'
 ;
 
+MAX_LENGTH
+:
+  'max-length'
+;
+
 MAX_LINKS
 :
   'max-links'
@@ -2221,6 +2311,11 @@ MAXIMUM_PREFIX
   'maximum-prefix'
 ;
 
+MAXPOLL
+:
+  'maxpoll'
+;
+
 MBPS
 :
   [Mm] [Bb] [Pp] [Ss]
@@ -2245,6 +2340,11 @@ MD5
 MDIX
 :
   'mdix'
+;
+
+MDT
+:
+  'mdt'
 ;
 
 MED
@@ -2309,6 +2409,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MIN_LENGTH
+:
+  'min-length'
+;
+
 MIN_LINKS
 :
   'min-links'
@@ -2322,6 +2427,11 @@ MIN_RX
 MINIMUM
 :
   'minimum'
+;
+
+MINPOLL
+:
+  'minpoll'
 ;
 
 MISSING_AS_WORST
@@ -3349,6 +3459,11 @@ ROUTE_MAP
   'route-map' -> pushMode ( M_Word )
 ;
 
+ROUTE_PREFERENCE
+:
+  'route-preference'
+;
+
 ROUTE_REFLECTOR_CLIENT
 :
   'route-reflector-client'
@@ -3519,6 +3634,11 @@ SFTP_SERVER
   'sftp-server'
 ;
 
+SG_EXPIRY_TIMER
+:
+  'sg-expiry-timer'
+;
+
 SG_RPF_FAILURE
 :
   'sg-rpf-failure'
@@ -3668,6 +3788,11 @@ SPINE_ANYCAST_GATEWAY
 SRC_IP
 :
   'src-ip'
+;
+
+SRC_MAC
+:
+  'src-mac'
 ;
 
 SSH
@@ -4238,6 +4363,11 @@ USERNAME
   'username' -> pushMode ( M_Remark )
 ;
 
+USERPASSPHRASE
+:
+  'userpassphrase'
+;
+
 UUCP
 :
   'uucp'
@@ -4246,6 +4376,11 @@ UUCP
 V3_REPORT_SUPPRESSION
 :
   'v3-report-suppression'
+;
+
+VALIDATE
+:
+  'validate'
 ;
 
 VERIFY

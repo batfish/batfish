@@ -10,7 +10,7 @@ interface Ethernet2/1
 interface Ethernet2/2
   no shutdown
   ip address 1.2.3.5/24
-  ip ospf 100 area 3
+  ip router ospf 100 area 3
 !
 router ospf 100
   router-id 1.2.3.1

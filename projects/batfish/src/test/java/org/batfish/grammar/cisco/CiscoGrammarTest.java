@@ -227,6 +227,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
@@ -3671,35 +3672,6 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testNxosOspfReferenceBandwidth() throws IOException {
-    Configuration manual = parseConfig("nxosOspfCost");
-    assertThat(
-        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(10e9d));
-
-    Configuration defaults = parseConfig("nxosOspfCostDefaults");
-    assertThat(
-        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
-        equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_NX)));
-  }
-
-  @Test
-  public void testNxosVrfContext() throws IOException {
-    Configuration vrfC = parseConfig("nxos-vrf-context");
-    assertThat(
-        vrfC,
-        ConfigurationMatchers.hasVrf(
-            "management",
-            hasStaticRoutes(
-                equalTo(
-                    ImmutableSet.of(
-                        StaticRoute.builder()
-                            .setNetwork(Prefix.ZERO)
-                            .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-                            .setAdministrativeCost(1)
-                            .build())))));
-  }
-
-  @Test
   public void testBgpLocalAs() throws IOException {
     String testrigName = "bgp-local-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
@@ -3849,9 +3821,8 @@ public class CiscoGrammarTest {
   public void testCommunityListConversion() throws IOException {
     String testrigName = "community-list-conversion";
     String iosName = "ios";
-    String nxosName = "nxos";
     String eosName = "eos";
-    List<String> configurationNames = ImmutableList.of(iosName, nxosName, eosName);
+    List<String> configurationNames = ImmutableList.of(iosName, eosName);
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -3866,9 +3837,6 @@ public class CiscoGrammarTest {
 
     Configuration eosCommunityListConfig = configurations.get(eosName);
     Map<String, CommunityList> eosCommunityLists = eosCommunityListConfig.getCommunityLists();
-
-    Configuration nxosCommunityListConfig = configurations.get(nxosName);
-    Map<String, CommunityList> nxosCommunityLists = nxosCommunityListConfig.getCommunityLists();
 
     Community iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
     String iosRegexImpliedExp = communityListToRegex(iosCommunityLists, "400");
@@ -3894,19 +3862,10 @@ public class CiscoGrammarTest {
     Community eosStdNoExport = communityListToCommunity(eosCommunityLists, "eos_std_no_export");
     String eosRegexExpMulti = communityListToRegex(eosCommunityLists, "eos_exp_multi");
 
-    Community nxosStd = communityListToCommunity(nxosCommunityLists, "nxos_std");
-    String nxosRegexExp = communityListToRegex(nxosCommunityLists, "nxos_exp");
-    Community nxosStdInternet = communityListToCommunity(nxosCommunityLists, "nxos_std_internet");
-    Community nxosStdLocalAs = communityListToCommunity(nxosCommunityLists, "nxos_std_local_AS");
-    Community nxosStdNoAdv = communityListToCommunity(nxosCommunityLists, "nxos_std_no_adv");
-    Community nxosStdNoExport = communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
-    String nxosRegexExpMulti = communityListToRegex(nxosCommunityLists, "nxos_exp_multi");
-
     // check literal communities
     assertThat(iosImpliedStd, equalTo(StandardCommunity.of(4294967295L)));
     assertThat(iosStdAsnn, equalTo(StandardCommunity.parse("65535:65535")));
     assertThat(eosStd, equalTo(StandardCommunity.parse("0:1")));
-    assertThat(nxosStd, equalTo(StandardCommunity.parse("65535:65535")));
 
     // check regex communities
     assertThat(iosRegexImpliedExp, equalTo("4294967295"));
@@ -3917,12 +3876,6 @@ public class CiscoGrammarTest {
      *  (Should be three regexes: '0:1', '0:2, '0:3')
      */
     assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
-    assertThat(nxosRegexExp, equalTo("65535:65535"));
-    /*
-     *  TODO: https://github.com/batfish/batfish/issues/1993
-     *  (Should be three regexes: '0:1', '0:2, '0:3')
-     */
-    assertThat(nxosRegexExpMulti, equalTo("0:10:20:3"));
 
     // Check well known community regexes are generated properly
     assertThat(iosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
@@ -3937,12 +3890,6 @@ public class CiscoGrammarTest {
     assertThat(eosStdGshut, equalTo(StandardCommunity.of(WellKnownCommunity.GRACEFUL_SHUTDOWN)));
     assertThat(
         eosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
-    // NX-OS does not support gshut
-    assertThat(nxosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
-    assertThat(nxosStdNoAdv, equalTo(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
-    assertThat(nxosStdNoExport, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
-    assertThat(
-        nxosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
 
     // make sure well known communities in expanded lists are not actually converted
     assertThat(iosRegexExpGshut, equalTo("gshut"));
@@ -3962,13 +3909,6 @@ public class CiscoGrammarTest {
     assertThat(
         ((LiteralCommunityConjunction)
                 communityListToMatchCondition(eosCommunityLists, "eos_std_multi"))
-            .getRequiredCommunities(),
-        equalTo(
-            ImmutableSet.of(
-                StandardCommunity.of(1L), StandardCommunity.of(2L), StandardCommunity.of(3L))));
-    assertThat(
-        ((LiteralCommunityConjunction)
-                communityListToMatchCondition(nxosCommunityLists, "nxos_std_multi"))
             .getRequiredCommunities(),
         equalTo(
             ImmutableSet.of(
@@ -5448,27 +5388,9 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testNxosSwitchportMode() throws IOException {
-    Configuration c = parseConfig("nxos_switchport_mode");
-
-    Interface e0 = c.getAllInterfaces().get("Ethernet0/0");
-    Interface e1 = c.getAllInterfaces().get("Ethernet0/1");
-    Interface e2 = c.getAllInterfaces().get("Ethernet0/2");
-    Interface e3 = c.getAllInterfaces().get("Ethernet0/3");
-
-    assertThat(e0, isSwitchport(false));
-    assertThat(e0, hasSwitchPortMode(SwitchportMode.NONE));
-    assertThat(e1, isSwitchport(true));
-    assertThat(e1, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e2, isSwitchport(true));
-    assertThat(e2, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e3, isSwitchport(true));
-    assertThat(e3, hasSwitchPortMode(SwitchportMode.TRUNK));
-  }
-
-  @Test
   public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxosBgpVrf");
+    assertThat(c, ConfigurationMatchers.hasVrf("bar", any(Vrf.class)));
     assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(2));
     assertThat(
         c,
