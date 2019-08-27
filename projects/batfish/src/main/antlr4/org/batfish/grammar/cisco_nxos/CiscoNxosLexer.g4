@@ -3133,6 +3133,17 @@ QUEUING
   'queuing'
 ;
 
+RADIUS
+:
+  'radius'
+   // Other instances are followed by tokens in default mode, or occur in non-default mode.
+   {
+     if (lastTokenType() == SERVER) {
+       pushMode(M_Word);
+     }
+   }
+;
+
 RANDOM_DETECT
 :
   'random-detect'
