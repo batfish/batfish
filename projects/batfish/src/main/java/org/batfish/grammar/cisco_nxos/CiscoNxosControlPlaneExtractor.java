@@ -492,6 +492,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_aclCon
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv4aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv6aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_hostContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_informsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_trapsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
@@ -3634,6 +3635,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrErr.get();
     _currentVrf = _configuration.getOrCreateVrf(name);
     _configuration.defineStructure(VRF, name, ctx);
+  }
+
+  @Override
+  public void exitSnmpssi_informs(Snmpssi_informsContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (name.isPresent()) {
+      _configuration.setSnmpSourceInterface(name.get());
+      _configuration.referenceStructure(
+          INTERFACE, name.get(), SNMP_SERVER_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+    }
   }
 
   @Override
