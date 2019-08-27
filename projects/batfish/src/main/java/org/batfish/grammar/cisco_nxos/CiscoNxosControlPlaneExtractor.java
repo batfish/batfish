@@ -635,7 +635,7 @@ import org.batfish.representation.cisco_nxos.VrfAddressFamily;
 
 /**
  * Given a parse tree, builds a {@link CiscoNxosConfiguration} that has been prepopulated with
- * metadata and defaults.
+ * metadata and defaults by {@link CiscoNxosPreprocessor}.
  */
 @ParametersAreNonnullByDefault
 public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener {

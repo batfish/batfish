@@ -366,23 +366,23 @@ public final class CiscoNxosPreprocessorTest {
     {
       CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
       // TODO: something better with multi-platform images
-      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(inferPlatform(vc), equalTo(NexusPlatform.UNKNOWN));
       vc.setBootNxosSup2("bootflash:/nxos.9.2.3.bin");
-      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(inferPlatform(vc), equalTo(NexusPlatform.UNKNOWN));
       vc.setBootNxosSup1("bootflash:/nxos.9.2.3.bin");
-      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(inferPlatform(vc), equalTo(NexusPlatform.UNKNOWN));
     }
     {
       CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
-      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(inferPlatform(vc), equalTo(NexusPlatform.UNKNOWN));
       vc.setBootKickstartSup2("bootflash:/n7000-s2-kickstart.6.2.16.bin");
-      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN), equalTo(NEXUS_7000));
+      assertThat(inferPlatform(vc), equalTo(NEXUS_7000));
       vc.setBootKickstartSup1("bootflash:/n6000-uk9-kickstart.6.0.2.N2.3.bin");
-      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN), equalTo(NEXUS_6000));
+      assertThat(inferPlatform(vc), equalTo(NEXUS_6000));
       vc.setBootSystemSup2("bootflash:/n5000-uk9.5.1.3.N1.1a.bin");
-      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN), equalTo(NEXUS_5000));
+      assertThat(inferPlatform(vc), equalTo(NEXUS_5000));
       vc.setBootSystemSup1("bootflash:/n3000-uk9.6.0.2.U3.2.bin");
-      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN), equalTo(NEXUS_3000));
+      assertThat(inferPlatform(vc), equalTo(NEXUS_3000));
     }
   }
 }

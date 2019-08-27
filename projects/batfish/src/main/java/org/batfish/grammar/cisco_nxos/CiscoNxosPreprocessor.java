@@ -22,14 +22,33 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_regularContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_versionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_switchportContext;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 
 /**
  * Collects metadata from and sets defaults for a {@link CiscoNxosConfiguration} from a
  * corresponding parse tree.
+ *
+ * <p>Walks the parse tree to determine:
+ *
+ * <ul>
+ *   <li>NX-OS major version
+ *   <li>Nexus platform
+ *   <li>default mode (L2 or L3) of Ethernet/port-channel interfaces
+ *   <li>default shutdown status of L2 interfaces
+ *   <li>default shutdown status of L3 interfaces
+ * </ul>
+ *
+ * <p>Determines the default interface mode (L2 vs L3) by counting the number of L2- or L3- only
+ * commands that appear in interfaces where switchport mode has not been explicitly configured
+ * (using switchport or no switchport).
+ *
+ * <p>These defaults are used in {@link CiscoNxosControlPlaneExtractor} to achieve reasonable
+ * behavior.
  */
 @ParametersAreNonnullByDefault
 public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
@@ -117,11 +136,8 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   /**
    * Infers {@code NexusPlatform} of a configuration based on names of boot image files. Returns
    * {@link NexusPlatform#UNKNOWN} if unique inference cannot be made.
-   *
-   * @param majorVersion TODO
    */
-  public static @Nonnull NexusPlatform inferPlatform(
-      CiscoNxosConfiguration vc, NxosMajorVersion majorVersion) {
+  public static @Nonnull NexusPlatform inferPlatform(CiscoNxosConfiguration vc) {
     return Stream.of(
             vc.getBootNxosSup1(),
             vc.getBootNxosSup2(),
@@ -155,6 +171,10 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
     }
   }
 
+  /**
+   * Returns {@code true} if Ethernet/port-channel interfaces should be in layer-2 mode by default,
+   * or {code false} if they should be in layer-3 mode by default.
+   */
   public static boolean getDefaultDefaultSwitchport(
       CiscoNxosConfiguration vc,
       NexusPlatform platform,
@@ -238,8 +258,14 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   }
 
   private final @Nonnull CiscoNxosConfiguration _configuration;
+
+  @SuppressWarnings("unused")
   private final @Nonnull CiscoNxosCombinedParser _parser;
+
+  @SuppressWarnings("unused")
   private final @Nonnull String _text;
+
+  @SuppressWarnings("unused")
   private final @Nonnull Warnings _w;
 
   private Boolean _currentInterfaceSubinterface;
@@ -247,6 +273,9 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   private CiscoNxosInterfaceType _currentInterfaceType;
   private int _defaultLayer3EvidenceCount;
   private int _defaultLayer2EvidenceCount;
+
+  // stop collecting evidence once this becomes true
+  private boolean _explicitSystemDefaultSwitchport;
 
   public CiscoNxosPreprocessor(
       String text,
@@ -263,7 +292,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   public void exitCisco_nxos_configuration(Cisco_nxos_configurationContext ctx) {
     NxosMajorVersion majorVersion = inferMajorVersion(_configuration);
     _configuration.setMajorVersion(majorVersion);
-    NexusPlatform platform = inferPlatform(_configuration, majorVersion);
+    NexusPlatform platform = inferPlatform(_configuration);
     _configuration.setPlatform(platform);
     _configuration.setNonSwitchportDefaultShutdown(getNonSwitchportDefaultShutdown(platform));
     _configuration.setSystemDefaultSwitchport(
@@ -346,26 +375,35 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   }
 
   @Override
-  public void enterI_switchport_switchport(I_switchport_switchportContext ctx) {
+  public void exitI_switchport_switchport(I_switchport_switchportContext ctx) {
     _currentInterfaceSwitchport = true;
   }
 
+  @Override
+  public void exitNo_sysds_switchport(No_sysds_switchportContext ctx) {
+    _explicitSystemDefaultSwitchport = true;
+  }
+
+  @Override
+  public void exitSysds_switchport(Sysds_switchportContext ctx) {
+    _explicitSystemDefaultSwitchport = true;
+  }
+
   private boolean providesEvidence() {
-    return !_currentInterfaceSubinterface
-            && _currentInterfaceSwitchport == null
-            && _currentInterfaceType == CiscoNxosInterfaceType.ETHERNET
-        || _currentInterfaceType == CiscoNxosInterfaceType.PORT_CHANNEL;
+    return !_explicitSystemDefaultSwitchport
+        && !_currentInterfaceSubinterface
+        && _currentInterfaceSwitchport == null
+        && (_currentInterfaceType == CiscoNxosInterfaceType.ETHERNET
+            || _currentInterfaceType == CiscoNxosInterfaceType.PORT_CHANNEL);
   }
 
   // layer-2-only commands
 
   @Override
   public void exitI_switchport(I_switchportContext ctx) {
-    if (ctx.i_switchport_switchport() != null) {
-      // This alternative is always valid, so provides no information.
-      return;
-    }
-    if (providesEvidence()) {
+    // any line but "switchport\n" (i_switchoprt_switchport) is configuring an L2 property.
+    boolean configuringL2Property = (ctx.i_switchport_switchport() == null);
+    if (configuringL2Property && providesEvidence()) {
       _defaultLayer2EvidenceCount++;
     }
   }

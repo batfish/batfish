@@ -11,7 +11,13 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
-/** Extracts a {@link CiscoNxosConfiguration} from a corresponding parse tree. */
+/**
+ * Extracts a {@link CiscoNxosConfiguration} from a corresponding parse tree.
+ *
+ * <p>First, preprocess the parse tree with {@link CiscoNxosPreprocessor} to determine platform,
+ * version, and some default values. Then, build the configuration with {@link
+ * CiscoNxosControlPlaneExtractor} taking those properties into account.
+ */
 @ParametersAreNonnullByDefault
 public final class NxosControlPlaneExtractor implements ControlPlaneExtractor {
 
