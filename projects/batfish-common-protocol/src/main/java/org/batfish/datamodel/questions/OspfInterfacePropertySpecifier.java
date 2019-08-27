@@ -23,11 +23,11 @@ import org.batfish.specifier.parboiled.Grammar;
 public class OspfInterfacePropertySpecifier extends PropertySpecifier {
 
   // OSPF interface properties are a subset of interface properties
-  public static final String OSPF_AREA_NAME = InterfacePropertySpecifier.OSPF_AREA_NAME;
-  public static final String OSPF_ENABLED = InterfacePropertySpecifier.OSPF_ENABLED;
-  public static final String OSPF_PASSIVE = InterfacePropertySpecifier.OSPF_PASSIVE;
-  public static final String OSPF_COST = InterfacePropertySpecifier.OSPF_COST;
-  public static final String OSPF_NETWORK_TYPE = InterfacePropertySpecifier.OSPF_NETWORK_TYPE;
+  public static final String OSPF_AREA_NAME = "OSPF_Area_Name";
+  public static final String OSPF_ENABLED = "OSPF_Enabled";
+  public static final String OSPF_PASSIVE = "OSPF_Passive";
+  public static final String OSPF_COST = "OSPF_Cost";
+  public static final String OSPF_NETWORK_TYPE = "OSPF_Network_Type";
   public static final String OSPF_DEAD_INTERVAL = "OSPF_Dead_Interval";
   public static final String OSPF_HELLO_INTERVAL = "OSPF_Hello_Interval";
   public static final String OSPF_INBOUND_DISTRIBUTE_LIST_POLICY =
