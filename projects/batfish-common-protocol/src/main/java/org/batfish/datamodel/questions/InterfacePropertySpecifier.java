@@ -57,11 +57,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String MLAG_ID = "MLAG_ID";
   public static final String MTU = "MTU";
   public static final String NATIVE_VLAN = "Native_VLAN";
-  public static final String OSPF_AREA_NAME = "OSPF_Area_Name";
-  public static final String OSPF_COST = "OSPF_Cost";
-  public static final String OSPF_ENABLED = "OSPF_Enabled";
-  public static final String OSPF_PASSIVE = "OSPF_Passive";
-  public static final String OSPF_NETWORK_TYPE = "OSPF_Network_Type";
   public static final String OUTGOING_FILTER_NAME = "Outgoing_Filter_Name";
   public static final String PBR_POLICY_NAME = "PBR_Policy_Name";
   public static final String PRIMARY_ADDRESS = "Primary_Address";
@@ -182,34 +177,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   Interface::getNativeVlan,
                   Schema.INTEGER,
                   "Native VLAN when switchport mode is trunk"))
-          // skip ospf area
-          .put(
-              OSPF_AREA_NAME,
-              new PropertyDescriptor<>(
-                  Interface::getOspfAreaName,
-                  Schema.INTEGER,
-                  "OSPF area to which the interface belongs"))
-          .put(
-              OSPF_COST,
-              new PropertyDescriptor<>(
-                  Interface::getOspfCost, Schema.INTEGER, "OSPF cost if explicitly configured"))
-          .put(
-              OSPF_ENABLED,
-              new PropertyDescriptor<>(
-                  Interface::getOspfEnabled, Schema.BOOLEAN, "Whether OSPF is enabled"))
-          // skipped ospf hello multiplier.
-          .put(
-              OSPF_PASSIVE,
-              new PropertyDescriptor<>(
-                  Interface::getOspfPassive,
-                  Schema.BOOLEAN,
-                  "Whether interface is in OSPF passive mode"))
-          .put(
-              OSPF_NETWORK_TYPE,
-              new PropertyDescriptor<>(
-                  Interface::getOspfNetworkType,
-                  Schema.STRING,
-                  "Type of OSPF network associated with the interface"))
           // skip outgoing filter
           .put(
               OUTGOING_FILTER_NAME,
