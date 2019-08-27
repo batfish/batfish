@@ -6,6 +6,18 @@ options {
   tokenVocab = CiscoNxosLexer;
 }
 
+aaa_group_name
+:
+// 1-127 characters
+  WORD
+;
+
+aaag_deadtime_value
+:
+// 0-1440
+  uint16
+;
+
 s_aaa
 :
   AAA
@@ -19,23 +31,100 @@ s_aaa
 
 aaa_group
 :
-  GROUP SERVER aaag_tacacsp
+  GROUP SERVER
+  (
+    aaag_radius
+    | aaag_tacacsp
+  )
+;
+
+aaag_radius
+:
+  RADIUS name = aaa_group_name NEWLINE
+  (
+    aaagr_deadtime
+    | aaagr_no
+    | aaagr_server
+    | aaagr_source_interface
+    | aaagr_use_vrf
+  )*
+;
+
+aaagr_deadtime
+:
+  DEADTIME aaag_deadtime_value NEWLINE
+;
+
+aaagr_no
+:
+  NO aaagr_no_source_interface
+;
+
+aaagr_no_source_interface
+:
+  SOURCE_INTERFACE NEWLINE
+;
+
+aaagr_server
+:
+  SERVER
+  (
+    aaagrs_dns
+    | aaagrs_ip4
+    | aaagrs_ip6
+  )
+;
+
+aaagrs_dns
+:
+  dns = WORD NEWLINE
+;
+
+aaagrs_ip4
+:
+  ip = ip_address NEWLINE
+;
+
+aaagrs_ip6
+:
+  ip6 = ipv6_address NEWLINE
+;
+
+aaagr_source_interface
+:
+  SOURCE_INTERFACE name = interface_name NEWLINE
+;
+
+aaagr_use_vrf
+:
+  USE_VRF name = vrf_name NEWLINE
 ;
 
 aaag_tacacsp
 :
   TACACSP name = aaa_group_name NEWLINE
   (
-    aaagt_server
+    aaagt_deadtime
+    | aaagt_no
+    | aaagt_server
     | aaagt_source_interface
     | aaagt_use_vrf
   )*
 ;
 
-aaa_group_name
+aaagt_deadtime
 :
-// 1-127 characters
-  WORD
+  DEADTIME aaag_deadtime_value NEWLINE
+;
+
+aaagt_no
+:
+  NO aaagt_no_source_interface
+;
+
+aaagt_no_source_interface
+:
+  SOURCE_INTERFACE NEWLINE
 ;
 
 aaagt_server
