@@ -123,7 +123,6 @@ public final class FlowTracerTest {
             ctxt,
             c,
             null,
-            c.getIpAccessLists(),
             new Node(c.getHostname()),
             traces::add,
             new NodeInterfacePair("node", "iface"),

@@ -187,7 +187,6 @@ class FlowTracer {
   private final TracerouteEngineImplContext _tracerouteContext;
   private final Configuration _currentConfig;
   private final @Nullable String _ingressInterface;
-  private final Map<String, IpAccessList> _aclDefinitions;
   private final Node _currentNode;
   private final Consumer<TraceAndReverseFlow> _flowTraces;
   private final NodeInterfacePair _lastHopNodeAndOutgoingInterface;
@@ -219,7 +218,6 @@ class FlowTracer {
         tracerouteContext,
         currentConfig,
         ingressInterface,
-        currentConfig.getIpAccessLists(),
         new Node(node),
         flowTraces,
         null,
@@ -250,7 +248,6 @@ class FlowTracer {
         _tracerouteContext,
         newConfig,
         newIngressInterface,
-        newConfig.getIpAccessLists(),
         new Node(newConfig.getHostname()),
         _flowTraces,
         lastHopNodeAndOutgoingInterface,
@@ -284,7 +281,6 @@ class FlowTracer {
       TracerouteEngineImplContext tracerouteContext,
       Configuration currentConfig,
       @Nullable String ingressInterface,
-      Map<String, IpAccessList> aclDefinitions,
       Node currentNode,
       Consumer<TraceAndReverseFlow> flowTraces,
       NodeInterfacePair lastHopNodeAndOutgoingInterface,
@@ -298,7 +294,6 @@ class FlowTracer {
     _tracerouteContext = tracerouteContext;
     _currentConfig = currentConfig;
     _ingressInterface = ingressInterface;
-    _aclDefinitions = aclDefinitions;
     _currentNode = currentNode;
     _flowTraces = flowTraces;
     _lastHopNodeAndOutgoingInterface = lastHopNodeAndOutgoingInterface;
@@ -585,7 +580,7 @@ class FlowTracer {
         transformation,
         _currentFlow,
         _ingressInterface,
-        _aclDefinitions,
+        _currentConfig.getIpAccessLists(),
         _currentConfig.getIpSpaces());
   }
 
@@ -1052,7 +1047,7 @@ class FlowTracer {
             _ingressInterface,
             filter,
             filterType,
-            _aclDefinitions,
+            _currentConfig.getIpAccessLists(),
             _currentConfig.getIpSpaces(),
             _tracerouteContext.getIgnoreFilters());
     _steps.add(filterStep);
