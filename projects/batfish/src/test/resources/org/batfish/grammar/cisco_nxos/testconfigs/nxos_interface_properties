@@ -42,6 +42,8 @@ interface Ethernet1/1
   service-policy type queuing output pm_queuing_out
   snmp trap link-status
   udld aggressive
+  vpc peer-link
+  vpc 1101
   no vtp
 !
 

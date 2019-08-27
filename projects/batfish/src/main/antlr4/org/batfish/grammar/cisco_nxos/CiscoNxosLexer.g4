@@ -2848,6 +2848,11 @@ PEER_IP
   'peer-ip'
 ;
 
+PEER_LINK
+:
+  'peer-link'
+;
+
 PEER_POLICY
 :
   'peer-policy'
@@ -4167,6 +4172,16 @@ USE_ACL
   'use-acl' -> pushMode ( M_Word )
 ;
 
+USE_IPV4ACL
+:
+  'use-ipv4acl' -> pushMode ( M_Word )
+;
+
+USE_IPV6ACL
+:
+  'use-ipv6acl' -> pushMode ( M_Word )
+;
+
 USE_VRF
 :
   'use-vrf' -> pushMode ( M_Word )
@@ -4255,6 +4270,11 @@ VN_SEGMENT_VLAN_BASED
 VNI
 :
   'vni'
+;
+
+VPC
+:
+  'vpc'
 ;
 
 VPNV4
