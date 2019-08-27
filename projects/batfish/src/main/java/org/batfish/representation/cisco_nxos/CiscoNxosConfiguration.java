@@ -19,7 +19,9 @@ import static org.batfish.representation.cisco.CiscoConversions.suppressSummariz
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL;
+import static org.batfish.representation.cisco_nxos.Conversions.getNonSwitchportDefaultShutdown;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
+import static org.batfish.representation.cisco_nxos.Conversions.inferMajorVersion;
 import static org.batfish.representation.cisco_nxos.Conversions.inferPlatform;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
@@ -179,6 +181,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
+import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.vendor.VendorConfiguration;
@@ -1154,7 +1157,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull CiscoNxosFamily createCiscoNxosFamily() {
-    return CiscoNxosFamily.builder().setPlatform(inferPlatform(this)).build();
+    NxosMajorVersion majorVersion = inferMajorVersion(this);
+    return CiscoNxosFamily.builder()
+        .setPlatform(inferPlatform(this, majorVersion))
+        .setMajorVersion(majorVersion)
+        .build();
   }
 
   /** Disable Vlan interfaces without corresponding top-level vlan declaration. */
@@ -3005,8 +3012,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c = new Configuration(_hostname, ConfigurationFormat.CISCO_NX);
     _c.getVendorFamily().setCiscoNxos(createCiscoNxosFamily());
     _nonSwitchportDefaultShutdown =
-        Conversions.getNonSwitchportDefaultShutdown(
-            _c.getVendorFamily().getCiscoNxos().getPlatform());
+        getNonSwitchportDefaultShutdown(_c.getVendorFamily().getCiscoNxos().getPlatform());
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
 

@@ -24,6 +24,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -79,6 +81,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
+import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 
 /**
@@ -87,6 +90,15 @@ import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfigu
  */
 @ParametersAreNonnullByDefault
 final class Conversions {
+
+  // NX-OS image version patterns
+  private static final Pattern NEXUS_3K5K6K7K_IMAGE_MAJOR_VERSION_PATTERN =
+      Pattern.compile(".*?[A-Za-z][0-9]\\.([0-9]).*");
+  private static final Pattern NEXUS_9000_IMAGE_MAJOR_VERSION_PATTERN =
+      Pattern.compile(".*nxos\\.([0-9]).*");
+  private static final Pattern KICKSTART_MAJOR_VERSION_PATTERN =
+      Pattern.compile(".*kickstart\\.([0-9]).*");
+
   /** Matches the IPv4 default route. */
   static final MatchPrefixSet MATCH_DEFAULT_ROUTE;
 
@@ -198,10 +210,85 @@ final class Conversions {
   }
 
   /**
+   * Infers {@code NexusPlatform} of a configuration based on explicit version string or names of
+   * boot image files. Returns {@link NxosMajorVersion#UNKNOWN} if unique inference cannot be made.
+   */
+  public static @Nonnull NxosMajorVersion inferMajorVersion(CiscoNxosConfiguration vc) {
+    String versionString = vc.getVersion();
+    if (versionString != null) {
+      NxosMajorVersion explicit = inferMajorVersionFromVersion(vc.getVersion());
+      if (explicit != null) {
+        return explicit;
+      }
+    }
+    return Stream.of(
+            vc.getBootNxosSup1(),
+            vc.getBootNxosSup2(),
+            vc.getBootSystemSup1(),
+            vc.getBootSystemSup2(),
+            vc.getBootKickstartSup1(),
+            vc.getBootKickstartSup2())
+        .filter(Objects::nonNull)
+        .map(Conversions::inferMajorVersionFromImage)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(NxosMajorVersion.UNKNOWN);
+  }
+
+  /**
+   * Infers {@code NxosMajorVersion} of a configuration based on explicit version string. Returns
+   * {@code null} if unique inference cannot be made.
+   */
+  @VisibleForTesting
+  static @Nullable NxosMajorVersion inferMajorVersionFromVersion(@Nullable String version) {
+    switch (version.charAt(0)) {
+      case '4':
+        return NxosMajorVersion.NXOS4;
+      case '5':
+        return NxosMajorVersion.NXOS5;
+      case '6':
+        return NxosMajorVersion.NXOS6;
+      case '7':
+        return NxosMajorVersion.NXOS7;
+      case '9':
+        return NxosMajorVersion.NXOS9;
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Infers {@code NxosMajorVersion} of a configuration based on name of boot image file. Returns
+   * {@code null} if unique inference cannot be made.
+   */
+  @VisibleForTesting
+  static @Nullable NxosMajorVersion inferMajorVersionFromImage(String image) {
+    // DO NOT REORDER
+    return Stream.of(
+            KICKSTART_MAJOR_VERSION_PATTERN,
+            NEXUS_9000_IMAGE_MAJOR_VERSION_PATTERN,
+            NEXUS_3K5K6K7K_IMAGE_MAJOR_VERSION_PATTERN)
+        .map(
+            p -> {
+              Matcher m = p.matcher(image);
+              if (!m.matches()) {
+                return null;
+              }
+              return inferMajorVersionFromVersion(m.group(1));
+            })
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(null);
+  }
+
+  /**
    * Infers {@code NexusPlatform} of a configuration based on names of boot image files. Returns
    * {@link NexusPlatform#UNKNOWN} if unique inference cannot be made.
+   *
+   * @param majorVersion TODO
    */
-  public static @Nonnull NexusPlatform inferPlatform(CiscoNxosConfiguration vc) {
+  public static @Nonnull NexusPlatform inferPlatform(
+      CiscoNxosConfiguration vc, NxosMajorVersion majorVersion) {
     return Stream.of(
             vc.getBootNxosSup1(),
             vc.getBootNxosSup2(),
