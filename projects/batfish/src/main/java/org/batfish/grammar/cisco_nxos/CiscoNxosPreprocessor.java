@@ -317,6 +317,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
     _configuration.setVersion(ctx.version.getText());
   }
 
+  @Override
   public void exitBoot_kickstart(Boot_kickstartContext ctx) {
     String image = ctx.image.getText();
     if (ctx.SUP_1() != null) {
