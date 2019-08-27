@@ -268,6 +268,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_eigrpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Il_min_linksContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inherit_sequence_numberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoipo_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
@@ -4434,6 +4435,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           clearLayer3Configuration(iface);
           iface.setVrfMember(name);
         });
+  }
+
+  @Override
+  public void exitInoipo_passive_interface(Inoipo_passive_interfaceContext ctx) {
+    _currentInterfaces.forEach(i -> i.getOrCreateOspf().setPassive(false));
   }
 
   @Override

@@ -4906,7 +4906,7 @@ public final class CiscoNxosGrammarTest {
       OspfInterface ospf = iface.getOspf();
       // TODO: extract and test authentication null (disabled)
       assertThat(ospf, notNullValue());
-      assertThat(ospf.getPassive(), nullValue());
+      assertThat(ospf.getPassive(), equalTo(false));
       assertThat(ospf.getNetwork(), equalTo(POINT_TO_POINT));
     }
     {
