@@ -7,6 +7,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnType3Route;
+import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.bgp.community.Community;
 import org.hamcrest.FeatureMatcher;
@@ -56,6 +57,12 @@ final class BgpRouteMatchersImpl {
   static final class IsEvpnType3RouteThat extends IsInstanceThat<AbstractRoute, EvpnType3Route> {
     IsEvpnType3RouteThat(Matcher<? super EvpnType3Route> subMatcher) {
       super(EvpnType3Route.class, subMatcher);
+    }
+  }
+
+  static final class IsEvpnType5RouteThat extends IsInstanceThat<AbstractRoute, EvpnType5Route> {
+    IsEvpnType5RouteThat(Matcher<? super EvpnType5Route> subMatcher) {
+      super(EvpnType5Route.class, subMatcher);
     }
   }
 
