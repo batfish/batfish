@@ -2181,6 +2181,11 @@ MATCH_ANY
   'match-any'
 ;
 
+MAX_LINKS
+:
+  'max-links'
+;
+
 MAX_METRIC
 :
   'max-metric'
@@ -2911,6 +2916,11 @@ PIM6
 PING
 :
   'ping'
+;
+
+PINNING
+:
+  'pinning'
 ;
 
 POAP

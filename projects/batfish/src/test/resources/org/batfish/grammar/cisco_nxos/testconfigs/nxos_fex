@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_fex
+!
+feature fex
+!
+fex 101
+  pinning max-links 1
+  description FEX 101
+!
