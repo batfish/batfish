@@ -258,7 +258,7 @@ class FlowTracer {
         _flowTraces,
         lastHopNodeAndOutgoingInterface,
         new HashSet<>(_newSessions),
-        _namedIpSpaces,
+        newConfig.getIpSpaces(),
         _originalFlow,
         newVrfName,
         new ArrayList<>(_hops),
