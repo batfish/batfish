@@ -735,7 +735,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             adv ->
                 transformBgpRouteOnExport(
                         // clear non-routing flag if set before sending it out
-                                          adv.getRoute().toBuilder().setNonRouting(false).build(),
+                        adv.getRoute().toBuilder().setNonRouting(false).build(),
                         ourConfigId,
                         remoteConfigId,
                         ourConfig,

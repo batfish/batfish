@@ -688,7 +688,8 @@ class IncrementalBdpEngine {
                 String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
             computeDependentRoutesIteration(
                 iterationNodes,
-               _numIterations, iterationlabel,
+                _numIterations,
+                iterationlabel,
                 nodes,
                 topologyContext,
                 networkConfigurations,
