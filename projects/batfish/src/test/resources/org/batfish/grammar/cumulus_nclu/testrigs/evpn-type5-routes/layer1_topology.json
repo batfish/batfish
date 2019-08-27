@@ -1,0 +1,234 @@
+{
+  "edges": [
+    {
+      "node1": {
+        "hostname": "Spine1",
+        "interfaceName": "swp1"
+      },
+      "node2": {
+        "hostname": "Leaf1",
+        "interfaceName": "swp1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine1",
+        "interfaceName": "swp2"
+      },
+      "node2": {
+        "hostname": "Leaf2",
+        "interfaceName": "swp2"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine1",
+        "interfaceName": "swp3"
+      },
+      "node2": {
+        "hostname": "Leaf3",
+        "interfaceName": "swp3"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine1",
+        "interfaceName": "swp4"
+      },
+      "node2": {
+        "hostname": "Leaf4",
+        "interfaceName": "swp4"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine1",
+        "interfaceName": "swp30"
+      },
+      "node2": {
+        "hostname": "exitgateway",
+        "interfaceName": "swp30"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine2",
+        "interfaceName": "swp11"
+      },
+      "node2": {
+        "hostname": "Leaf1",
+        "interfaceName": "swp11"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine2",
+        "interfaceName": "swp12"
+      },
+      "node2": {
+        "hostname": "Leaf2",
+        "interfaceName": "swp12"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine2",
+        "interfaceName": "swp13"
+      },
+      "node2": {
+        "hostname": "Leaf3",
+        "interfaceName": "swp13"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine2",
+        "interfaceName": "swp14"
+      },
+      "node2": {
+        "hostname": "Leaf4",
+        "interfaceName": "swp14"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Spine2",
+        "interfaceName": "swp31"
+      },
+      "node2": {
+        "hostname": "exitgateway",
+        "interfaceName": "swp31"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf1",
+        "interfaceName": "swp21"
+      },
+      "node2": {
+        "hostname": "pc10",
+        "interfaceName": "e0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf1",
+        "interfaceName": "swp25"
+      },
+      "node2": {
+        "hostname": "server20",
+        "interfaceName": "swp25"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf1",
+        "interfaceName": "swp30"
+      },
+      "node2": {
+        "hostname": "Leaf2",
+        "interfaceName": "swp30"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf1",
+        "interfaceName": "swp31"
+      },
+      "node2": {
+        "hostname": "Leaf2",
+        "interfaceName": "swp31"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf2",
+        "interfaceName": "swp25"
+      },
+      "node2": {
+        "hostname": "server20",
+        "interfaceName": "swp26"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf2",
+        "interfaceName": "swp21"
+      },
+      "node2": {
+        "hostname": "pc11",
+        "interfaceName": "e0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf3",
+        "interfaceName": "swp21"
+      },
+      "node2": {
+        "hostname": "pc20",
+        "interfaceName": "e0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf3",
+        "interfaceName": "swp25"
+      },
+      "node2": {
+        "hostname": "server10",
+        "interfaceName": "swp25"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf3",
+        "interfaceName": "swp30"
+      },
+      "node2": {
+        "hostname": "Leaf4",
+        "interfaceName": "swp30"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf3",
+        "interfaceName": "swp31"
+      },
+      "node2": {
+        "hostname": "Leaf4",
+        "interfaceName": "swp31"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf4",
+        "interfaceName": "swp25"
+      },
+      "node2": {
+        "hostname": "server10",
+        "interfaceName": "swp26"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "Leaf4",
+        "interfaceName": "swp21"
+      },
+      "node2": {
+        "hostname": "pc21",
+        "interfaceName": "e0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "exitgateway",
+        "interfaceName": "swp1"
+      },
+      "node2": {
+        "hostname": "Internet",
+        "interfaceName": "swp1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+net del all
+net add time zone Etc/UTC
+net add time ntp server 0.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 1.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 2.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 3.cumulusnetworks.pool.ntp.org iburst
+net add time ntp source eth0
+net add snmp-server listening-address localhost
+net add bgp autonomous-system 65000
+net add routing defaults datacenter
+net add routing service integrated-vtysh-config
+net add routing log syslog informational
+net add bgp router-id 1.1.1.1
+net add bgp neighbor swp1 interface remote-as 65000
+net add bgp neighbor swp2 interface remote-as 65000
+net add bgp neighbor swp3 interface remote-as 65000
+net add bgp neighbor swp4 interface remote-as 65000
+net add bgp neighbor swp30 interface remote-as 65000
+net add bgp ipv4 unicast network 1.1.1.1/32
+net add bgp ipv4 unicast neighbor swp1 route-reflector-client
+net add bgp ipv4 unicast neighbor swp2 route-reflector-client
+net add bgp ipv4 unicast neighbor swp3 route-reflector-client
+net add bgp ipv4 unicast neighbor swp4 route-reflector-client
+net add bgp ipv4 unicast neighbor swp30 route-reflector-client
+net add bgp l2vpn evpn  neighbor swp1 activate
+net add bgp l2vpn evpn  neighbor swp1 route-reflector-client
+net add bgp l2vpn evpn  neighbor swp2 activate
+net add bgp l2vpn evpn  neighbor swp2 route-reflector-client
+net add bgp l2vpn evpn  neighbor swp3 activate
+net add bgp l2vpn evpn  neighbor swp3 route-reflector-client
+net add bgp l2vpn evpn  neighbor swp4 activate
+net add bgp l2vpn evpn  neighbor swp4 route-reflector-client
+net add bgp l2vpn evpn  neighbor swp30 activate
+net add bgp l2vpn evpn  neighbor swp30 route-reflector-client
+net add dns nameserver ipv4 10.0.2.3
+net add ptp global slave-only no
+net add ptp global priority1 255
+net add ptp global priority2 255
+net add ptp global domain-number 0
+net add ptp global logging-level 5
+net add ptp global path-trace-enabled no
+net add ptp global use-syslog yes
+net add ptp global verbose no
+net add ptp global summary-interval 0
+net add ptp global time-stamping
+net add interface swp5-29,31
+net add loopback lo ip address 1.1.1.1/32
+net add hostname Spine1
+net add dot1x radius accounting-port 1813
+net add dot1x radius authentication-port 1812
+net add dot1x mab-activation-delay 30
+net add dot1x eap-reauth-period 0
+net commit
