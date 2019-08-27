@@ -19,7 +19,6 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
@@ -141,12 +140,7 @@ public final class BgpProtocolHelper {
       if (!remoteRouteOriginatedByRemoteNeighbor) {
         // we are reflecting, so we need to get the clusterid associated with the
         // remoteRoute
-        BgpPeerConfig remoteReceivedFromSession =
-            fromBgpProcess
-                .getActiveNeighbors()
-                .get(Prefix.create(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
-        assert remoteReceivedFromSession != null;
-        Long newClusterId = remoteReceivedFromSession.getClusterId();
+        Long newClusterId = fromNeighbor.getClusterId();
         if (newClusterId != null) {
           builder.addToClusterList(newClusterId);
         }
