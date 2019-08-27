@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import org.junit.Test;
 
+/** Test for {@link OspfInterfacePropertySpecifier} */
 public class OspfInterfacePropertySpecifierTest {
   @Test
   public void testOrderedProperties() {

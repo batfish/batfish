@@ -30,6 +30,8 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_NETWORK_TYPE = InterfacePropertySpecifier.OSPF_NETWORK_TYPE;
   public static final String OSPF_DEAD_INTERVAL = "OSPF_Dead_Interval";
   public static final String OSPF_HELLO_INTERVAL = "OSPF_Hello_Interval";
+  public static final String OSPF_INBOUND_DISTRIBUTE_LIST_POLICY =
+      "OSPF_Inbound_Distribute_List_Policy";
 
   // create an ordered list
   public static final List<String> PROPERTIES =
@@ -40,7 +42,8 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
           OSPF_COST,
           OSPF_NETWORK_TYPE,
           OSPF_HELLO_INTERVAL,
-          OSPF_DEAD_INTERVAL);
+          OSPF_DEAD_INTERVAL,
+          OSPF_INBOUND_DISTRIBUTE_LIST_POLICY);
 
   /** Hold a map of property name to property descriptor for OSPF interface properties */
   @VisibleForTesting
@@ -74,6 +77,12 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
                   OspfInterfaceSettings::getHelloInterval,
                   Schema.INTEGER,
                   "Interval in seconds between sending OSPF hello messages"))
+          .put(
+              OSPF_INBOUND_DISTRIBUTE_LIST_POLICY,
+              new PropertyDescriptor<>(
+                  OspfInterfaceSettings::getInboundDistributeListPolicy,
+                  Schema.STRING,
+                  "Name of the inbound distribute list policy if one is configured"))
           .put(
               OSPF_PASSIVE,
               new PropertyDescriptor<>(
