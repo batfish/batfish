@@ -75,6 +75,8 @@ import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_6000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_7000;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS5;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS6;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACKET_LENGTH_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
@@ -3719,6 +3721,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_nexus_3000_defaults";
     Configuration c = parseConfig(hostname);
 
+    assertThat(c.getVendorFamily().getCiscoNxos().getMajorVersion(), equalTo(NXOS6));
     assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_3000));
     assertThat(c, hasInterface("Ethernet1/1", isActive()));
   }
@@ -3738,6 +3741,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_nexus_5000_defaults";
     Configuration c = parseConfig(hostname);
 
+    assertThat(c.getVendorFamily().getCiscoNxos().getMajorVersion(), equalTo(NXOS5));
     assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_5000));
     assertThat(c, hasInterface("Ethernet1/1", isActive()));
   }
@@ -3757,6 +3761,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_nexus_6000_defaults";
     Configuration c = parseConfig(hostname);
 
+    assertThat(c.getVendorFamily().getCiscoNxos().getMajorVersion(), equalTo(NXOS6));
     assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_6000));
     assertThat(c, hasInterface("Ethernet1/1", isActive()));
   }
