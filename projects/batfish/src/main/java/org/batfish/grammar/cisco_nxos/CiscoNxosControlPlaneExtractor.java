@@ -64,6 +64,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_SUPPRESS_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_TABLE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BUILT_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
@@ -1235,6 +1236,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration = new CiscoNxosConfiguration();
     _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
     _currentVrf = _configuration.getDefaultVrf();
+    // define built-ins at line 0 (before first line of file).
+    _configuration.defineStructure(VRF, DEFAULT_VRF_NAME, 0);
+    _configuration.defineStructure(VRF, MANAGEMENT_VRF_NAME, 0);
+    _configuration.referenceStructure(VRF, DEFAULT_VRF_NAME, BUILT_IN, 0);
+    _configuration.referenceStructure(VRF, MANAGEMENT_VRF_NAME, BUILT_IN, 0);
   }
 
   @Override
