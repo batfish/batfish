@@ -423,12 +423,7 @@ class FlowTracer {
       }
 
       TransformationResult transformationResult =
-          TransformationEvaluator.eval(
-              incomingInterface.getIncomingTransformation(),
-              _currentFlow,
-              _ingressInterface,
-              _aclDefinitions,
-              _currentConfig.getIpSpaces());
+          eval(incomingInterface.getIncomingTransformation());
       _steps.addAll(transformationResult.getTraceSteps());
       _currentFlow = transformationResult.getOutputFlow();
 
@@ -581,6 +576,17 @@ class FlowTracer {
             new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), PERMITTED));
       }
     }.visit(result.getAction());
+  }
+
+  /** Evaluate the input {@link Transformation} against the current flow in the current context. */
+  @VisibleForTesting
+  TransformationResult eval(Transformation transformation) {
+    return TransformationEvaluator.eval(
+        transformation,
+        _currentFlow,
+        _ingressInterface,
+        _aclDefinitions,
+        _currentConfig.getIpSpaces());
   }
 
   /**
@@ -945,14 +951,7 @@ class FlowTracer {
     }
 
     // Apply outgoing transformation
-    Transformation transformation = outgoingInterface.getOutgoingTransformation();
-    TransformationResult transformationResult =
-        TransformationEvaluator.eval(
-            transformation,
-            _currentFlow,
-            _ingressInterface,
-            _aclDefinitions,
-            _currentConfig.getIpSpaces());
+    TransformationResult transformationResult = eval(outgoingInterface.getOutgoingTransformation());
     _steps.addAll(transformationResult.getTraceSteps());
     _currentFlow = transformationResult.getOutputFlow();
 
