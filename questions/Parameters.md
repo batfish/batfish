@@ -449,7 +449,7 @@ Batfish has the following device types.
 
 A specification for a set of OSPF interface properties.
 
-An OSPF interface property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `OSPF_AREA_NAME`, `OSPF_COST`, `OSPF_ENABLED`, `OSPF_PASSIVE`, `OSPF_POINT_TO_POINT`.
+An OSPF interface property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `OSPF_AREA_NAME`, `OSPF_COST`, `OSPF_ENABLED`, `OSPF_PASSIVE`, `OSPF_NETWORK_TYPE`.
 
 ## OSPF Process Property Specifier
 
