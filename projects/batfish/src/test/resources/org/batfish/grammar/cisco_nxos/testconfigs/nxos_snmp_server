@@ -7,6 +7,8 @@ snmp-server community SECRETcommunity1 group network-operator
 !
 snmp-server community SECRETcommunity2 group network-operator
 snmp-server community SECRETcommunity2 use-acl snmp_acl1
+snmp-server community SECRETcommunity2 use-ipv4acl snmp_acl4
+snmp-server community SECRETcommunity2 use-ipv6acl snmp_acl6
 
 snmp-server contact Give us a call at 867-5309
 

@@ -26,6 +26,8 @@ snmps_community
   (
     snmps_community_group
     | snmps_community_use_acl
+    | snmps_community_use_ipv4acl
+    | snmps_community_use_ipv6acl
   )
 ;
 
@@ -43,6 +45,16 @@ snmps_community_group
 snmps_community_use_acl
 :
   USE_ACL name = ip_access_list_name NEWLINE
+;
+
+snmps_community_use_ipv4acl
+:
+  USE_IPV4ACL name = ip_access_list_name NEWLINE
+;
+
+snmps_community_use_ipv6acl
+:
+  USE_IPV6ACL name = ip_access_list_name NEWLINE
 ;
 
 snmps_contact

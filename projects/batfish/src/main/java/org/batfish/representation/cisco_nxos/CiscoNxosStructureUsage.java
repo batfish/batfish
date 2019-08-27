@@ -68,10 +68,19 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   OSPF_AREA_FILTER_LIST_IN("router ospf area filter-list in"),
   OSPF_AREA_FILTER_LIST_OUT("router ospf area filter-list out"),
   ROUTE_MAP_CONTINUE("route-map continue"),
+  ROUTE_MAP_MATCH_AS_PATH("route-map match as-path"),
   ROUTE_MAP_MATCH_COMMUNITY("route-map match community"),
+  ROUTE_MAP_MATCH_INTERFACE("route-map match interface"),
   ROUTE_MAP_MATCH_IP_ADDRESS("route-map match ip address"),
   ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST("route-map match ip address prefix-list"),
-  ROUTER_EIGRP_SELF_REFERENCE("router eigrp");
+  ROUTE_MAP_MATCH_IPV6_ADDRESS("route-map match ipv6 address"),
+  ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST("route-map match ipv6 address prefix-list"),
+  ROUTER_EIGRP_SELF_REFERENCE("router eigrp"),
+  SNMP_SERVER_COMMUNITY_USE_ACL("snmp-server community use-acl"),
+  SNMP_SERVER_COMMUNITY_USE_IPV4ACL("snmp-server community use-ipv4acl"),
+  SNMP_SERVER_COMMUNITY_USE_IPV6ACL("snmp-server community use-ipv6acl"),
+  SNMP_SERVER_SOURCE_INTERFACE("snmp-server source-interface"),
+  TACACS_SOURCE_INTERFACE("ip tacacs source-interface");
 
   private final @Nonnull String _description;
 

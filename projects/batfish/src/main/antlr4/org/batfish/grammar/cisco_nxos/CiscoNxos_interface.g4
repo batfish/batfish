@@ -735,6 +735,7 @@ i_null
     | SPANNING_TREE
     | STORM_CONTROL
     | UDLD
+    | VPC
   ) null_rest_of_line
 ;
 
