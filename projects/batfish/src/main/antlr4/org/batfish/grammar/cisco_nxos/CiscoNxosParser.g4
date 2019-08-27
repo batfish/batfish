@@ -270,7 +270,8 @@ s_no
 :
   NO
   (
-    IP
+    FEATURE
+    | IP
   ) null_rest_of_line
 ;
 

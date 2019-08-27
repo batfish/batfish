@@ -1588,6 +1588,11 @@ HTTP_METHOD
   'http-method'
 ;
 
+HTTP_SERVER
+:
+  'http-server'
+;
+
 HW_HASH
 :
   'hw-hash'
@@ -2669,6 +2674,11 @@ NVE
   'nve'
 ;
 
+NXAPI
+:
+  'nxapi'
+;
+
 NXOS
 :
   'nxos'
@@ -3408,6 +3418,11 @@ SCHEDULER
   'scheduler'
 ;
 
+SCP_SERVER
+:
+  'scp-server'
+;
+
 SECONDARY
 :
   'secondary'
@@ -3486,6 +3501,11 @@ SET
 SFLOW
 :
   'sflow'
+;
+
+SFTP_SERVER
+:
+  'sftp-server'
 ;
 
 SG_RPF_FAILURE
@@ -3637,6 +3657,11 @@ SPINE_ANYCAST_GATEWAY
 SRC_IP
 :
   'src-ip'
+;
+
+SSH
+:
+  'ssh'
 ;
 
 STALEPATH_TIME
