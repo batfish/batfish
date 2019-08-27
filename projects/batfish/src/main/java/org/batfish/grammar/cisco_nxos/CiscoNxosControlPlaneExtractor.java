@@ -10,9 +10,12 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_T
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_ACCESS_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_ACCESS_LIST_ABSTRACT_REF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_ABSTRACT_REF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PREFIX_LIST;
@@ -88,7 +91,14 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV4ACL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV6ACL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
@@ -473,6 +483,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_versionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_aclContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv4aclContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv6aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_trapsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
@@ -1284,14 +1297,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             ? ctx.quoted.text != null ? ctx.quoted.text.getText() : ""
             : ctx.regex.getText();
     IpCommunityList communityList =
-        _configuration
-            .getIpCommunityLists()
-            .computeIfAbsent(
-                name,
-                n -> {
-                  _configuration.defineStructure(IP_COMMUNITY_LIST_EXPANDED, n, ctx);
-                  return new IpCommunityListExpanded(n);
-                });
+        _configuration.getIpCommunityLists().computeIfAbsent(name, IpCommunityListExpanded::new);
     if (!(communityList instanceof IpCommunityListExpanded)) {
       _w.addWarning(
           ctx,
@@ -1315,6 +1321,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     communityListExpanded
         .getLines()
         .put(seq, new IpCommunityListExpandedLine(toLineAction(ctx.action), seq, regex));
+    _configuration.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
@@ -1339,14 +1346,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     String name = nameOpt.get();
     IpCommunityList communityList =
-        _configuration
-            .getIpCommunityLists()
-            .computeIfAbsent(
-                name,
-                n -> {
-                  _configuration.defineStructure(IP_COMMUNITY_LIST_STANDARD, n, ctx);
-                  return new IpCommunityListStandard(n);
-                });
+        _configuration.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
     if (!(communityList instanceof IpCommunityListStandard)) {
       _w.addWarning(
           ctx,
@@ -1371,6 +1371,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .getLines()
         .put(
             seq, new IpCommunityListStandardLine(toLineAction(ctx.action), seq, communities.get()));
+    _configuration.defineStructure(IP_COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
   @Override
@@ -1816,19 +1817,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterIp_prefix_list(Ip_prefix_listContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      _currentIpPrefixList = new IpPrefixList("dummy");
+      return;
+    }
     _currentIpPrefixList =
-        toString(ctx, ctx.name)
-            .map(
-                name ->
-                    _configuration
-                        .getIpPrefixLists()
-                        .computeIfAbsent(
-                            name,
-                            n -> {
-                              _configuration.defineStructure(IP_PREFIX_LIST, name, ctx);
-                              return new IpPrefixList(n);
-                            }))
-            .orElse(new IpPrefixList("dummy"));
+        _configuration.getIpPrefixLists().computeIfAbsent(name.get(), IpPrefixList::new);
+    _configuration.defineStructure(IP_PREFIX_LIST, name.get(), ctx);
   }
 
   @Override
@@ -1838,24 +1834,24 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitIpt_source_interface(Ipt_source_interfaceContext ctx) {
-    toString(ctx, ctx.name).ifPresent(_configuration::setTacacsSourceInterface);
+    Optional<String> name = toString(ctx, ctx.name);
+    if (name.isPresent()) {
+      _configuration.setTacacsSourceInterface(name.get());
+      _configuration.referenceStructure(
+          INTERFACE, name.get(), TACACS_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+    }
   }
 
   @Override
   public void enterIpv6_prefix_list(Ipv6_prefix_listContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      _currentIpv6PrefixList = new Ipv6PrefixList("dummy");
+      return;
+    }
     _currentIpv6PrefixList =
-        toString(ctx, ctx.name)
-            .map(
-                name ->
-                    _configuration
-                        .getIpv6PrefixLists()
-                        .computeIfAbsent(
-                            name,
-                            n -> {
-                              _configuration.defineStructure(IPV6_PREFIX_LIST, name, ctx);
-                              return new Ipv6PrefixList(n);
-                            }))
-            .orElse(new Ipv6PrefixList("dummy"));
+        _configuration.getIpv6PrefixLists().computeIfAbsent(nameOrErr.get(), Ipv6PrefixList::new);
+    _configuration.defineStructure(IPV6_PREFIX_LIST, nameOrErr.get(), ctx);
   }
 
   @Override
@@ -1865,21 +1861,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterIpv6_access_list(Ipv6_access_listContext ctx) {
-    Optional<String> nameOrErr = toString(ctx, ctx.name);
-    if (!nameOrErr.isPresent()) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
       _currentIpv6AccessList = new Ipv6AccessList("dummy");
       return;
     }
     _currentIpv6AccessList =
-        _configuration
-            .getIpv6AccessLists()
-            .computeIfAbsent(
-                nameOrErr.get(),
-                name -> {
-                  _configuration.defineStructure(
-                      CiscoNxosStructureType.IPV6_ACCESS_LIST, name, ctx);
-                  return new Ipv6AccessList(name);
-                });
+        _configuration.getIpv6AccessLists().computeIfAbsent(name.get(), Ipv6AccessList::new);
+    _configuration.defineStructure(CiscoNxosStructureType.IPV6_ACCESS_LIST, name.get(), ctx);
   }
 
   @Override
@@ -3623,7 +3612,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
 
     _configuration.defineStructure(ROUTE_MAP, name, ctx.parent);
-    _configuration.defineStructure(ROUTE_MAP_ENTRY, Integer.toString(sequence), ctx.parent);
+    _configuration.defineStructure(
+        ROUTE_MAP_ENTRY, computeRouteMapEntryName(name, sequence), ctx.parent);
   }
 
   @Override
@@ -3672,7 +3662,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitSnmpssi_traps(Snmpssi_trapsContext ctx) {
-    toString(ctx, ctx.name).ifPresent(_configuration::setSnmpSourceInterface);
+    Optional<String> name = toString(ctx, ctx.name);
+    if (name.isPresent()) {
+      _configuration.setSnmpSourceInterface(name.get());
+      _configuration.referenceStructure(
+          INTERFACE, name.get(), SNMP_SERVER_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+    }
   }
 
   @Override
@@ -4728,6 +4723,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       if (!name.isPresent()) {
         return;
       }
+      _configuration.referenceStructure(
+          IP_COMMUNITY_LIST_ABSTRACT_REF,
+          name.get(),
+          ROUTE_MAP_MATCH_COMMUNITY,
+          nameCtx.getStart().getLine());
       names.add(name.get());
     }
     _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
@@ -4848,7 +4848,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         return;
       }
       String name = nameOrError.get();
-      // TODO: reference structure
+      _configuration.referenceStructure(
+          IPV6_PREFIX_LIST,
+          name,
+          ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST,
+          nameCtx.getStart().getLine());
       names.add(name);
     }
     _currentRouteMapEntry.setMatchIpv6AddressPrefixList(
@@ -4991,6 +4995,48 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitS_vrf_context(S_vrf_contextContext ctx) {
     _currentVrf = _configuration.getDefaultVrf();
+  }
+
+  @Override
+  public void exitSnmps_community_use_acl(Snmps_community_use_aclContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    todo(ctx);
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST_ABSTRACT_REF,
+        name.get(),
+        SNMP_SERVER_COMMUNITY_USE_ACL,
+        ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitSnmps_community_use_ipv4acl(Snmps_community_use_ipv4aclContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    todo(ctx);
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST,
+        name.get(),
+        SNMP_SERVER_COMMUNITY_USE_IPV4ACL,
+        ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitSnmps_community_use_ipv6acl(Snmps_community_use_ipv6aclContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    todo(ctx);
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST,
+        name.get(),
+        SNMP_SERVER_COMMUNITY_USE_IPV6ACL,
+        ctx.name.getStart().getLine());
   }
 
   @Override

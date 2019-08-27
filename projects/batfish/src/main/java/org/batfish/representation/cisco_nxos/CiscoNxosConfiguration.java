@@ -17,6 +17,8 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGene
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferPlatform;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
@@ -1363,28 +1365,44 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.MONITOR_SESSION_DESTINATION_INTERFACE,
         CiscoNxosStructureUsage.MONITOR_SESSION_SOURCE_INTERFACE,
         CiscoNxosStructureUsage.NTP_SOURCE_INTERFACE,
-        CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE);
+        CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE,
+        CiscoNxosStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
+        CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE);
+    markAbstractStructure(
+        CiscoNxosStructureType.IP_ACCESS_LIST_ABSTRACT_REF,
+        SNMP_SERVER_COMMUNITY_USE_ACL,
+        ImmutableList.of(
+            CiscoNxosStructureType.IP_ACCESS_LIST, CiscoNxosStructureType.IPV6_ACCESS_LIST));
     markConcreteStructure(
         CiscoNxosStructureType.IP_ACCESS_LIST,
-        CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN);
-    markConcreteStructure(
-        CiscoNxosStructureType.IP_ACCESS_LIST,
-        CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT);
+        CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN,
+        CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT,
+        CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV4ACL);
     markConcreteStructure(
         CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_FILTER_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_FILTER_LIST_OUT,
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_OUT);
+    markAbstractStructure(
+        CiscoNxosStructureType.IP_COMMUNITY_LIST_ABSTRACT_REF,
+        ROUTE_MAP_MATCH_COMMUNITY,
+        ImmutableList.of(
+            CiscoNxosStructureType.IP_COMMUNITY_LIST_EXPANDED,
+            CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD));
     markConcreteStructure(
         CiscoNxosStructureType.IP_PREFIX_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_OUT,
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
     markConcreteStructure(
+        CiscoNxosStructureType.IPV6_ACCESS_LIST,
+        CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV6ACL);
+    markConcreteStructure(
         CiscoNxosStructureType.IPV6_PREFIX_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_IN,
-        CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_OUT);
+        CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_OUT,
+        CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST);
     markConcreteStructure(CiscoNxosStructureType.NVE, CiscoNxosStructureUsage.NVE_SELF_REFERENCE);
     markConcreteStructure(
         CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS,

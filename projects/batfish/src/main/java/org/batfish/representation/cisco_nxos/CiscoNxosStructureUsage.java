@@ -69,7 +69,13 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   ROUTE_MAP_MATCH_COMMUNITY("route-map match community"),
   ROUTE_MAP_MATCH_IP_ADDRESS("route-map match ip address"),
   ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST("route-map match ip address prefix-list"),
-  ROUTER_EIGRP_SELF_REFERENCE("router eigrp");
+  ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST("route-map match ipv6 address prefix-list"),
+  ROUTER_EIGRP_SELF_REFERENCE("router eigrp"),
+  SNMP_SERVER_COMMUNITY_USE_ACL("snmp-server community use-acl"),
+  SNMP_SERVER_COMMUNITY_USE_IPV4ACL("snmp-server community use-ipv4acl"),
+  SNMP_SERVER_COMMUNITY_USE_IPV6ACL("snmp-server community use-ipv6acl"),
+  SNMP_SERVER_SOURCE_INTERFACE("snmp-server source-interface"),
+  TACACS_SOURCE_INTERFACE("ip tacacs source-interface");
 
   private final @Nonnull String _description;
 
