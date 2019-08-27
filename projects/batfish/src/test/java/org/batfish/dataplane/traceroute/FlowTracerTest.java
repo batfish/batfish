@@ -4,9 +4,12 @@ import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.dataplane.traceroute.FlowTracer.initialFlowTracer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -20,6 +23,7 @@ import static org.hamcrest.Matchers.is;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -32,6 +36,8 @@ import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.NetworkFactory;
@@ -49,6 +55,7 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.transformation.Transformation;
 import org.junit.Test;
 
 /** Tests for {@link FlowTracer}. */
@@ -78,8 +85,7 @@ public final class FlowTracerTest {
             ImmutableSet.of(),
             ImmutableMap.of(),
             false);
-    FlowTracer flowTracer =
-        FlowTracer.initialFlowTracer(ctxt, c.getHostname(), null, flow, traces::add);
+    FlowTracer flowTracer = initialFlowTracer(ctxt, c.getHostname(), null, flow, traces::add);
     flowTracer.buildDeniedTrace(DENIED_IN);
     assertThat(
         traces,
@@ -117,12 +123,10 @@ public final class FlowTracerTest {
             ctxt,
             c,
             null,
-            c.getIpAccessLists(),
             new Node(c.getHostname()),
             traces::add,
             new NodeInterfacePair("node", "iface"),
             ImmutableSet.of(sessionInfo),
-            c.getIpSpaces(),
             flow,
             vrf.getName(),
             new ArrayList<>(),
@@ -348,5 +352,77 @@ public final class FlowTracerTest {
     assertThat(
         ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextVrf(),
         equalTo(vrf1Name));
+  }
+
+  /**
+   * Test that {@link FlowTracer#eval(Transformation transformation)} evaluates the transformation
+   * using the {@link IpSpace IpSpaces} defined on the current node.
+   */
+  @Test
+  public void testTransformationEvaluatorNode() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    Ip ip3 = Ip.parse("3.3.3.3");
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration c1 = cb.build();
+    c1.setIpSpaces(ImmutableSortedMap.of("ips", ip1.toIpSpace()));
+
+    Configuration c2 = cb.build();
+    c2.setIpSpaces(ImmutableSortedMap.of("ips", ip2.toIpSpace()));
+
+    Transformation transformation =
+        when(matchDst(new IpSpaceReference("ips"))).apply(assignDestinationIp(ip3, ip3)).build();
+
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder()
+                .setConfigs(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2))
+                .build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+    Flow.Builder fb =
+        Flow.builder()
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(Configuration.DEFAULT_VRF_NAME)
+            .setTag("tag");
+
+    // 1. evaluate dstIp=ip1 on c1. Should be transformed to ip3
+    {
+      Flow flow = fb.setDstIp(ip1).build();
+      FlowTracer flowTracer = initialFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
+      assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip3));
+    }
+
+    // 2. evaluate dstIp=ip2 on c1. Should not be transformed.
+    {
+      Flow flow = fb.setDstIp(ip2).build();
+      FlowTracer flowTracer = initialFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
+      assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip2));
+    }
+
+    // 3. evaluate dstIp=ip1 after forking to c2. Should not be transformed
+    {
+      Flow flow = fb.setDstIp(ip1).build();
+      FlowTracer flowTracer = initialFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
+      flowTracer =
+          flowTracer.forkTracer(c2, null, new ArrayList<>(), null, Configuration.DEFAULT_VRF_NAME);
+      assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip1));
+    }
+
+    // 4. evaluate dstIp=ip2 after forking to c2. Should be transformed to ip3
+    {
+      Flow flow = fb.setDstIp(ip2).build();
+      FlowTracer flowTracer = initialFlowTracer(ctxt, c1.getHostname(), null, flow, tarf -> {});
+      flowTracer =
+          flowTracer.forkTracer(c2, null, new ArrayList<>(), null, Configuration.DEFAULT_VRF_NAME);
+      assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip3));
+    }
   }
 }

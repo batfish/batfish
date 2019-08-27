@@ -34,7 +34,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -188,12 +187,10 @@ class FlowTracer {
   private final TracerouteEngineImplContext _tracerouteContext;
   private final Configuration _currentConfig;
   private final @Nullable String _ingressInterface;
-  private final Map<String, IpAccessList> _aclDefinitions;
   private final Node _currentNode;
   private final Consumer<TraceAndReverseFlow> _flowTraces;
   private final NodeInterfacePair _lastHopNodeAndOutgoingInterface;
   private final Set<FirewallSessionTraceInfo> _newSessions;
-  private final NavigableMap<String, IpSpace> _namedIpSpaces;
   private final Flow _originalFlow;
   private final String _vrfName;
 
@@ -221,12 +218,10 @@ class FlowTracer {
         tracerouteContext,
         currentConfig,
         ingressInterface,
-        currentConfig.getIpAccessLists(),
         new Node(node),
         flowTraces,
         null,
         new HashSet<>(),
-        currentConfig.getIpSpaces(),
         originalFlow,
         initVrfName(ingressInterface, currentConfig, originalFlow),
         new ArrayList<>(),
@@ -253,12 +248,10 @@ class FlowTracer {
         _tracerouteContext,
         newConfig,
         newIngressInterface,
-        newConfig.getIpAccessLists(),
         new Node(newConfig.getHostname()),
         _flowTraces,
         lastHopNodeAndOutgoingInterface,
         new HashSet<>(_newSessions),
-        _namedIpSpaces,
         _originalFlow,
         newVrfName,
         new ArrayList<>(_hops),
@@ -288,12 +281,10 @@ class FlowTracer {
       TracerouteEngineImplContext tracerouteContext,
       Configuration currentConfig,
       @Nullable String ingressInterface,
-      Map<String, IpAccessList> aclDefinitions,
       Node currentNode,
       Consumer<TraceAndReverseFlow> flowTraces,
       NodeInterfacePair lastHopNodeAndOutgoingInterface,
       Set<FirewallSessionTraceInfo> newSessions,
-      NavigableMap<String, IpSpace> namedIpSpaces,
       Flow originalFlow,
       String vrfName,
       List<Hop> hops,
@@ -303,12 +294,10 @@ class FlowTracer {
     _tracerouteContext = tracerouteContext;
     _currentConfig = currentConfig;
     _ingressInterface = ingressInterface;
-    _aclDefinitions = aclDefinitions;
     _currentNode = currentNode;
     _flowTraces = flowTraces;
     _lastHopNodeAndOutgoingInterface = lastHopNodeAndOutgoingInterface;
     _newSessions = newSessions;
-    _namedIpSpaces = namedIpSpaces;
     _originalFlow = originalFlow;
     _vrfName = vrfName;
     _hops = hops;
@@ -429,12 +418,7 @@ class FlowTracer {
       }
 
       TransformationResult transformationResult =
-          TransformationEvaluator.eval(
-              incomingInterface.getIncomingTransformation(),
-              _currentFlow,
-              _ingressInterface,
-              _aclDefinitions,
-              _namedIpSpaces);
+          eval(incomingInterface.getIncomingTransformation());
       _steps.addAll(transformationResult.getTraceSteps());
       _currentFlow = transformationResult.getOutputFlow();
 
@@ -587,6 +571,17 @@ class FlowTracer {
             new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), PERMITTED));
       }
     }.visit(result.getAction());
+  }
+
+  /** Evaluate the input {@link Transformation} against the current flow in the current context. */
+  @VisibleForTesting
+  TransformationResult eval(Transformation transformation) {
+    return TransformationEvaluator.eval(
+        transformation,
+        _currentFlow,
+        _ingressInterface,
+        _currentConfig.getIpAccessLists(),
+        _currentConfig.getIpSpaces());
   }
 
   /**
@@ -951,10 +946,7 @@ class FlowTracer {
     }
 
     // Apply outgoing transformation
-    Transformation transformation = outgoingInterface.getOutgoingTransformation();
-    TransformationResult transformationResult =
-        TransformationEvaluator.eval(
-            transformation, _currentFlow, _ingressInterface, _aclDefinitions, _namedIpSpaces);
+    TransformationResult transformationResult = eval(outgoingInterface.getOutgoingTransformation());
     _steps.addAll(transformationResult.getTraceSteps());
     _currentFlow = transformationResult.getOutputFlow();
 
@@ -1055,8 +1047,8 @@ class FlowTracer {
             _ingressInterface,
             filter,
             filterType,
-            _aclDefinitions,
-            _namedIpSpaces,
+            _currentConfig.getIpAccessLists(),
+            _currentConfig.getIpSpaces(),
             _tracerouteContext.getIgnoreFilters());
     _steps.add(filterStep);
     if (filterStep.getAction() == DENIED) {
