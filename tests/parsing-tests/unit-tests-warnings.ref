@@ -2458,13 +2458,6 @@
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "configs/peer_template",
-        "Line" : 24,
-        "Text" : "allowas-in 1",
-        "Parser_Context" : "[rbnx_n_af_allowas_in rbnx_n_af_inner rbnx_n_address_family rbnx_n_inner rbnx_template_peer router_bgp_nxos_toplevel router_bgp_stanza stanza cisco_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
         "Filename" : "iptables/host1.iptables",
         "Line" : 16,
         "Text" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT",
@@ -2501,10 +2494,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 351 results",
+      "notes" : "Found 350 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 351
+      "numResults" : 350
     }
   }
 ]
