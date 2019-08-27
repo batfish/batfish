@@ -6,11 +6,13 @@ hostname nxos_aaa
 feature tacacs+
 
 aaa group server tacacs+ aaa_server_group1
+    deadtime 0
     server 192.0.2.1
     server 192.0.2.2
     source-interface Vlan4
     use-vrf management
 aaa group server tacacs+ aaa_server_group2
+    no source-interface
 
 ! aaa groups must be defined before being referenced
 aaa accounting default group aaa_server_group1 aaa_server_group2 local
@@ -22,3 +24,12 @@ aaa authentication login error-enable
 ! aaa groups must be defined before being referenced
 aaa authorization commands default group aaa_server_group1 local
 aaa authorization config-commands default group aaa_server_group1 local
+
+aaa group server radius aaa_server_radius1
+    deadtime 1440
+    server 192.0.2.1
+    server 192.0.2.2
+    source-interface Vlan4
+    use-vrf management
+aaa group server radius aaa_server_radius2
+    no source-interface

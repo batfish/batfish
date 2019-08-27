@@ -31,8 +31,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP_ENTRY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.VLAN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.VRF;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.AAA_GROUP_SERVER_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.AAA_GROUP_SERVER_USE_VRF;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.AAA_GROUP_SERVER_RADIUS_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.AAA_GROUP_SERVER_RADIUS_USE_VRF;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.AAA_GROUP_SERVER_TACACSP_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.AAA_GROUP_SERVER_TACACSP_USE_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_ADDITIONAL_PATHS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_ADVERTISE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_ATTRIBUTE_MAP;
@@ -161,6 +163,8 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_source_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_use_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagt_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagt_use_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acl_fragmentsContext;
@@ -3686,14 +3690,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitAaagt_use_vrf(Aaagt_use_vrfContext ctx) {
+  public void exitAaagr_source_interface(Aaagr_source_interfaceContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.name);
     if (!nameOrError.isPresent()) {
       return;
     }
     String name = nameOrError.get();
     _configuration.referenceStructure(
-        VRF, name, AAA_GROUP_SERVER_USE_VRF, ctx.name.getStart().getLine());
+        INTERFACE, name, AAA_GROUP_SERVER_RADIUS_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAaagr_use_vrf(Aaagr_use_vrfContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        VRF, name, AAA_GROUP_SERVER_RADIUS_USE_VRF, ctx.name.getStart().getLine());
     todo(ctx);
   }
 
@@ -3705,7 +3721,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     String name = nameOrError.get();
     _configuration.referenceStructure(
-        INTERFACE, name, AAA_GROUP_SERVER_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+        INTERFACE, name, AAA_GROUP_SERVER_TACACSP_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAaagt_use_vrf(Aaagt_use_vrfContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        VRF, name, AAA_GROUP_SERVER_TACACSP_USE_VRF, ctx.name.getStart().getLine());
     todo(ctx);
   }
 
