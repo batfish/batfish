@@ -1459,6 +1459,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoNxosStructureType.VRF,
         CiscoNxosStructureUsage.AAA_GROUP_SERVER_USE_VRF,
+        CiscoNxosStructureUsage.BUILT_IN,
         CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER,
         CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF);
   }
