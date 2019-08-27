@@ -1057,6 +1057,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testFexParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_fex"), notNullValue());
+  }
+
+  @Test
   public void testHostnameConversion() throws IOException {
     String hostname = "nxos_hostname";
     Configuration c = parseConfig(hostname);
