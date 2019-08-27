@@ -1761,14 +1761,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _currentIpAccessList =
-        _configuration
-            .getIpAccessLists()
-            .computeIfAbsent(
-                nameOpt.get(),
-                name -> {
-                  _configuration.defineStructure(IP_ACCESS_LIST, name, ctx);
-                  return new IpAccessList(name);
-                });
+        _configuration.getIpAccessLists().computeIfAbsent(nameOpt.get(), IpAccessList::new);
+    _configuration.defineStructure(IP_ACCESS_LIST, nameOpt.get(), ctx);
   }
 
   @Override
@@ -1793,14 +1787,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     String name = nameOpt.get();
     IpAsPathAccessList asPathAccessList =
-        _configuration
-            .getIpAsPathAccessLists()
-            .computeIfAbsent(
-                name,
-                n -> {
-                  _configuration.defineStructure(IP_AS_PATH_ACCESS_LIST, n, ctx);
-                  return new IpAsPathAccessList(n);
-                });
+        _configuration.getIpAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
     SortedMap<Long, IpAsPathAccessListLine> lines = asPathAccessList.getLines();
     long seq;
     if (explicitSeq != null) {
@@ -1813,6 +1800,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     asPathAccessList
         .getLines()
         .put(seq, new IpAsPathAccessListLine(toLineAction(ctx.action), seq, regexOpt.get()));
+    _configuration.defineStructure(IP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -2002,16 +1990,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterRo_area(Ro_areaContext ctx) {
     long areaId = toLong(ctx.id);
-    _currentOspfArea =
-        _currentOspfProcess
-            .getAreas()
-            .computeIfAbsent(
-                areaId,
-                id -> {
-                  _configuration.defineStructure(
-                      CiscoNxosStructureType.OSPF_AREA, Long.toString(id), ctx);
-                  return new OspfArea(id);
-                });
+    _currentOspfArea = _currentOspfProcess.getAreas().computeIfAbsent(areaId, OspfArea::new);
+    _configuration.defineStructure(CiscoNxosStructureType.OSPF_AREA, Long.toString(areaId), ctx);
   }
 
   @Override
@@ -2380,13 +2360,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentDefaultVrfOspfProcess =
         _configuration
             .getOspfProcesses()
-            .computeIfAbsent(
-                nameOrErr.get(),
-                name -> {
-                  _configuration.defineStructure(CiscoNxosStructureType.ROUTER_OSPF, name, ctx);
-                  return new DefaultVrfOspfProcess(name);
-                });
+            .computeIfAbsent(nameOrErr.get(), DefaultVrfOspfProcess::new);
     _currentOspfProcess = _currentDefaultVrfOspfProcess;
+    _configuration.defineStructure(CiscoNxosStructureType.ROUTER_OSPF, nameOrErr.get(), ctx);
   }
 
   @Override
@@ -3480,18 +3456,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentNves =
         IntStream.range(first, last + 1)
             .mapToObj(
-                i ->
-                    _configuration
-                        .getNves()
-                        .computeIfAbsent(
-                            i,
-                            n -> {
-                              String nveName = "nve" + i;
-                              _configuration.defineStructure(NVE, nveName, ctx);
-                              _configuration.referenceStructure(
-                                  NVE, nveName, NVE_SELF_REFERENCE, line);
-                              return new Nve(i);
-                            }))
+                i -> {
+                  String nveName = "nve" + i;
+                  _configuration.defineStructure(NVE, nveName, ctx);
+                  _configuration.referenceStructure(NVE, nveName, NVE_SELF_REFERENCE, line);
+                  return _configuration.getNves().computeIfAbsent(i, n -> new Nve(n));
+                })
             .collect(ImmutableList.toImmutableList());
   }
 
@@ -3628,13 +3598,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _configuration
         .getRouteMaps()
-        .computeIfAbsent(
-            _currentRouteMapName.get(),
-            name -> {
-              _configuration.defineStructure(ROUTE_MAP, name, ctx.parent);
-              return new RouteMap(name);
-            })
+        .computeIfAbsent(_currentRouteMapName.get(), RouteMap::new)
         .setPbrStatistics(true);
+    _configuration.defineStructure(ROUTE_MAP, _currentRouteMapName.get(), ctx.parent);
   }
 
   @Override
@@ -3691,17 +3657,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentVlans =
         vlans.stream()
-            .map(
-                vlanId ->
-                    _configuration
-                        .getVlans()
-                        .computeIfAbsent(
-                            vlanId,
-                            id -> {
-                              _configuration.defineStructure(VLAN, Integer.toString(id), ctx);
-                              return new Vlan(id);
-                            }))
+            .map(vlanId -> _configuration.getVlans().computeIfAbsent(vlanId, Vlan::new))
             .collect(ImmutableList.toImmutableList());
+    vlans
+        .intStream()
+        .forEach(id -> _configuration.defineStructure(VLAN, Integer.toString(id), ctx));
   }
 
   @Override
