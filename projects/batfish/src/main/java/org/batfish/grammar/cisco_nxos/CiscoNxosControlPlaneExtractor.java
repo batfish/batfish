@@ -91,8 +91,12 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IPV6_ADDRESS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV4ACL;
@@ -4660,51 +4664,69 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRmm_as_path(Rmm_as_pathContext ctx) {
+    Optional<List<String>> optNames = toIpAsPathAccessListNames(ctx, ctx.names);
+    if (!optNames.isPresent()) {
+      return;
+    }
+    List<String> newNames = optNames.get();
+    assert !newNames.isEmpty();
+
     ImmutableList.Builder<String> names = ImmutableList.builder();
     Optional.ofNullable(_currentRouteMapEntry.getMatchAsPath())
         .ifPresent(old -> names.addAll(old.getNames()));
-    for (Ip_as_path_access_list_nameContext nameCtx : ctx.names) {
-      Optional<String> name = toString(ctx, nameCtx);
-      if (!name.isPresent()) {
-        return;
-      }
-      names.add(name.get());
-    }
+
+    int line = ctx.getStart().getLine();
+    newNames.forEach(
+        name -> {
+          _configuration.referenceStructure(
+              IP_AS_PATH_ACCESS_LIST, name, ROUTE_MAP_MATCH_AS_PATH, line);
+          names.add(name);
+        });
     _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(names.build()));
   }
 
   @Override
   public void exitRmm_community(Rmm_communityContext ctx) {
+    Optional<List<String>> optNames = toIpCommunityListNames(ctx, ctx.names);
+    if (!optNames.isPresent()) {
+      return;
+    }
+    List<String> newNames = optNames.get();
+    assert !newNames.isEmpty();
+
     ImmutableList.Builder<String> names = ImmutableList.builder();
     Optional.ofNullable(_currentRouteMapEntry.getMatchCommunity())
         .ifPresent(old -> names.addAll(old.getNames()));
-    for (Ip_community_list_nameContext nameCtx : ctx.names) {
-      Optional<String> name = toString(ctx, nameCtx);
-      if (!name.isPresent()) {
-        return;
-      }
-      _configuration.referenceStructure(
-          IP_COMMUNITY_LIST_ABSTRACT_REF,
-          name.get(),
-          ROUTE_MAP_MATCH_COMMUNITY,
-          nameCtx.getStart().getLine());
-      names.add(name.get());
-    }
+
+    int line = ctx.getStart().getLine();
+    newNames.forEach(
+        name -> {
+          _configuration.referenceStructure(
+              IP_COMMUNITY_LIST_ABSTRACT_REF, name, ROUTE_MAP_MATCH_COMMUNITY, line);
+          names.add(name);
+        });
     _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
   }
 
   @Override
   public void exitRmm_interface(Rmm_interfaceContext ctx) {
+    Optional<List<String>> optNames = toInterfaceNames(ctx, ctx.interfaces);
+    if (!optNames.isPresent()) {
+      return;
+    }
+    List<String> newNames = optNames.get();
+    assert !newNames.isEmpty();
+
     ImmutableList.Builder<String> names = ImmutableList.builder();
     Optional.ofNullable(_currentRouteMapEntry.getMatchInterface())
         .ifPresent(old -> names.addAll(old.getNames()));
-    for (Interface_nameContext nameCtx : ctx.interfaces) {
-      Optional<String> name = toString(ctx, nameCtx);
-      if (!name.isPresent()) {
-        return;
-      }
-      names.add(name.get());
-    }
+
+    int line = ctx.getStart().getLine();
+    newNames.forEach(
+        name -> {
+          _configuration.referenceStructure(INTERFACE, name, ROUTE_MAP_MATCH_INTERFACE, line);
+          names.add(name);
+        });
     _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(names.build()));
   }
 
@@ -4754,26 +4776,30 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _currentRouteMapEntry.setMatchIpAddress(new RouteMapMatchIpAddress(nameOpt.get()));
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, nameOpt.get(), ROUTE_MAP_MATCH_IP_ADDRESS, ctx.name.getStart().getLine());
   }
 
   @Override
   public void exitRmmipa_prefix_list(Rmmipa_prefix_listContext ctx) {
+    Optional<List<String>> optNames = toIpPrefixListNames(ctx, ctx.names);
+    if (!optNames.isPresent()) {
+      return;
+    }
+    List<String> newNames = optNames.get();
+    assert !newNames.isEmpty();
+
     ImmutableList.Builder<String> names = ImmutableList.builder();
     Optional.ofNullable(_currentRouteMapEntry.getMatchIpAddressPrefixList())
         .ifPresent(old -> names.addAll(old.getNames()));
-    for (Ip_prefix_list_nameContext nameCtx : ctx.names) {
-      Optional<String> nameOrError = toString(ctx, nameCtx);
-      if (!nameOrError.isPresent()) {
-        return;
-      }
-      String name = nameOrError.get();
-      _configuration.referenceStructure(
-          IP_PREFIX_LIST,
-          name,
-          ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
-          nameCtx.getStart().getLine());
-      names.add(name);
-    }
+
+    int line = ctx.getStart().getLine();
+    newNames.forEach(
+        name -> {
+          _configuration.referenceStructure(
+              IP_PREFIX_LIST, name, ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST, line);
+          names.add(name);
+        });
     _currentRouteMapEntry.setMatchIpAddressPrefixList(
         new RouteMapMatchIpAddressPrefixList(names.build()));
   }
@@ -4784,7 +4810,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!nameOpt.isPresent()) {
       return;
     }
-    if (_currentRouteMapEntry.getMatchIpAddress() != null) {
+    if (_currentRouteMapEntry.getMatchIpv6Address() != null) {
       _w.addWarning(
           ctx,
           getFullText(ctx),
@@ -4793,28 +4819,34 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     String name = nameOpt.get();
-    // TODO: reference structure
     _currentRouteMapEntry.setMatchIpv6Address(new RouteMapMatchIpv6Address(name));
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST,
+        nameOpt.get(),
+        ROUTE_MAP_MATCH_IPV6_ADDRESS,
+        ctx.name.getStart().getLine());
   }
 
   @Override
   public void exitRmmip6a_prefix_list(Rmmip6a_prefix_listContext ctx) {
+    Optional<List<String>> optNames = toIpPrefixListNames(ctx, ctx.names);
+    if (!optNames.isPresent()) {
+      return;
+    }
+    List<String> newNames = optNames.get();
+    assert !newNames.isEmpty();
+
     ImmutableList.Builder<String> names = ImmutableList.builder();
     Optional.ofNullable(_currentRouteMapEntry.getMatchIpv6AddressPrefixList())
         .ifPresent(old -> names.addAll(old.getNames()));
-    for (Ip_prefix_list_nameContext nameCtx : ctx.names) {
-      Optional<String> nameOrError = toString(ctx, nameCtx);
-      if (!nameOrError.isPresent()) {
-        return;
-      }
-      String name = nameOrError.get();
-      _configuration.referenceStructure(
-          IPV6_PREFIX_LIST,
-          name,
-          ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST,
-          nameCtx.getStart().getLine());
-      names.add(name);
-    }
+
+    int line = ctx.getStart().getLine();
+    newNames.forEach(
+        name -> {
+          _configuration.referenceStructure(
+              IPV6_PREFIX_LIST, name, ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST, line);
+          names.add(name);
+        });
     _currentRouteMapEntry.setMatchIpv6AddressPrefixList(
         new RouteMapMatchIpv6AddressPrefixList(names.build()));
   }
@@ -5702,7 +5734,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         messageCtx, ctx, INTERFACE_DESCRIPTION_LENGTH_RANGE, "interface description");
   }
 
-  public @Nonnull Optional<String> toString(
+  /**
+   * Returns a list of all the valid interface names, or {@link Optional#empty()} if any is invalid.
+   */
+  private @Nonnull Optional<List<String>> toInterfaceNames(
+      ParserRuleContext messageCtx, List<Interface_nameContext> ctx) {
+    ImmutableList.Builder<String> names = ImmutableList.builder();
+    boolean valid = true;
+    for (Interface_nameContext nameCtx : ctx) {
+      Optional<String> name = toString(messageCtx, nameCtx);
+      if (name.isPresent()) {
+        names.add(name.get());
+      } else {
+        valid = false;
+      }
+    }
+    return valid ? Optional.of(names.build()) : Optional.empty();
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_nameContext ctx) {
     String declaredName = getFullText(ctx);
     String prefix = ctx.prefix.getText();
@@ -5818,10 +5868,48 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         messageCtx, ctx, IP_ACCESS_LIST_NAME_LENGTH_RANGE, "ip access-list name");
   }
 
+  /**
+   * Returns a list of all the valid IP as-path access-list names, or {@link Optional#empty()} if
+   * any is invalid.
+   */
+  private @Nonnull Optional<List<String>> toIpAsPathAccessListNames(
+      ParserRuleContext messageCtx, List<Ip_as_path_access_list_nameContext> ctx) {
+    ImmutableList.Builder<String> names = ImmutableList.builder();
+    boolean valid = true;
+    for (Ip_as_path_access_list_nameContext nameCtx : ctx) {
+      Optional<String> name = toString(messageCtx, nameCtx);
+      if (name.isPresent()) {
+        names.add(name.get());
+      } else {
+        valid = false;
+      }
+    }
+    return valid ? Optional.of(names.build()) : Optional.empty();
+  }
+
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Ip_as_path_access_list_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, IP_AS_PATH_ACCESS_LIST_NAME_LENGTH_RANGE, "ip as-path access-list name");
+  }
+
+  /**
+   * Returns a list of all the valid IP community-list names, or {@link Optional#empty()} if any is
+   * invalid.
+   */
+  private @Nonnull Optional<List<String>> toIpCommunityListNames(
+      ParserRuleContext messageCtx, List<Ip_community_list_nameContext> ctx) {
+    ImmutableList.Builder<String> names = ImmutableList.builder();
+    boolean valid = true;
+    for (Ip_community_list_nameContext nameCtx : ctx) {
+      Optional<String> name = toString(messageCtx, nameCtx);
+      if (name.isPresent()) {
+        names.add(name.get());
+      } else {
+        valid = false;
+      }
+    }
+    return valid ? Optional.of(names.build()) : Optional.empty();
   }
 
   private @Nonnull Optional<String> toString(
@@ -5834,6 +5922,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Ip_prefix_list_descriptionContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, IP_PREFIX_LIST_DESCRIPTION_LENGTH_RANGE, "ip prefix-list description");
+  }
+
+  /**
+   * Returns a list of all the valid IP prefix-list names, or {@link Optional#empty()} if any is
+   * invalid.
+   */
+  private @Nonnull Optional<List<String>> toIpPrefixListNames(
+      ParserRuleContext messageCtx, List<Ip_prefix_list_nameContext> ctx) {
+    ImmutableList.Builder<String> names = ImmutableList.builder();
+    boolean valid = true;
+    for (Ip_prefix_list_nameContext nameCtx : ctx) {
+      Optional<String> name = toString(messageCtx, nameCtx);
+      if (name.isPresent()) {
+        names.add(name.get());
+      } else {
+        valid = false;
+      }
+    }
+    return valid ? Optional.of(names.build()) : Optional.empty();
   }
 
   private @Nonnull Optional<String> toString(
