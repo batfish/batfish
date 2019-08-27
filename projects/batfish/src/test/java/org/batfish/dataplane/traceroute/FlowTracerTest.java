@@ -122,7 +122,6 @@ public final class FlowTracerTest {
             traces::add,
             new NodeInterfacePair("node", "iface"),
             ImmutableSet.of(sessionInfo),
-            c.getIpSpaces(),
             flow,
             vrf.getName(),
             new ArrayList<>(),
