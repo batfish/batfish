@@ -1235,6 +1235,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration = new CiscoNxosConfiguration();
     _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
     _currentVrf = _configuration.getDefaultVrf();
+    // define built-ins at line 0 (before first line of file).
+    _configuration.defineStructure(VRF, DEFAULT_VRF_NAME, 0);
+    _configuration.defineStructure(VRF, MANAGEMENT_VRF_NAME, 0);
   }
 
   @Override
