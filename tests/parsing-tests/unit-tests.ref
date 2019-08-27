@@ -330,12 +330,6 @@
         "cisco_ntp" : [
           "configs/cisco_ntp"
         ],
-        "cisco_nxos" : [
-          "configs/cisco_nxos"
-        ],
-        "cisco_nxos_bgp" : [
-          "configs/cisco_nxos_bgp"
-        ],
         "cisco_ospf" : [
           "configs/cisco_ospf"
         ],
@@ -398,9 +392,6 @@
         ],
         "cisco_system" : [
           "configs/cisco_system"
-        ],
-        "cisco_tacacs" : [
-          "configs/cisco_tacacs"
         ],
         "cisco_track" : [
           "configs/cisco_track"
@@ -775,9 +766,6 @@
         "neighbor_mix" : [
           "configs/neighbor_mix"
         ],
-        "neighbor_nxos" : [
-          "configs/neighbor_nxos"
-        ],
         "network6" : [
           "configs/network6"
         ],
@@ -850,9 +838,6 @@
         "paloalto_zones" : [
           "configs/palo_alto/zones"
         ],
-        "peer_template" : [
-          "configs/peer_template"
-        ],
         "pim" : [
           "configs/pim"
         ],
@@ -864,9 +849,6 @@
         ],
         "preset" : [
           "configs/ios_xr_prefix_set"
-        ],
-        "route_maps_in_two_address_families" : [
-          "configs/route_maps_in_two_address_families"
         ],
         "route_policy_as_path_set" : [
           "configs/route_policy_as_path"
@@ -1033,8 +1015,6 @@
         "configs/cisco_nomaskreply" : "PASSED",
         "configs/cisco_nosnmp" : "PASSED",
         "configs/cisco_ntp" : "PASSED",
-        "configs/cisco_nxos" : "PASSED",
-        "configs/cisco_nxos_bgp" : "PASSED",
         "configs/cisco_opsfv3" : "PASSED",
         "configs/cisco_ospf" : "PASSED",
         "configs/cisco_ospf_ipv6" : "PASSED",
@@ -1056,7 +1036,6 @@
         "configs/cisco_style_acl1" : "PASSED",
         "configs/cisco_style_acl2" : "PASSED",
         "configs/cisco_system" : "PASSED",
-        "configs/cisco_tacacs" : "PASSED",
         "configs/cisco_track" : "PASSED",
         "configs/cisco_username" : "PASSED",
         "configs/cisco_username_without_password" : "PASSED",
@@ -1190,7 +1169,6 @@
         "configs/msdp_originator_id" : "PASSED",
         "configs/named_and_numbered_lists" : "PASSED",
         "configs/neighbor_mix" : "PASSED",
-        "configs/neighbor_nxos" : "PASSED",
         "configs/network6" : "PASSED",
         "configs/nexus" : "PASSED",
         "configs/no_aaa_group_server" : "PASSED",
@@ -1211,11 +1189,9 @@
         "configs/palo_alto/policy" : "PASSED",
         "configs/palo_alto/virtual-routers" : "PASSED",
         "configs/palo_alto/zones" : "PASSED",
-        "configs/peer_template" : "PASSED",
         "configs/pim" : "PASSED",
         "configs/pim_snooping" : "PASSED",
         "configs/prefix_list_ipv4" : "PASSED",
-        "configs/route_maps_in_two_address_families" : "PASSED",
         "configs/route_policy_as_path" : "PASSED",
         "configs/route_policy_igp_cost" : "PASSED",
         "configs/route_policy_metric_type" : "PASSED",
@@ -31363,365 +31339,6 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/cisco_nxos" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'cisco_nxos'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_feature",
-            "      FEATURE:'feature'",
-            "      (variable",
-            "        BFD:'bfd')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_feature",
-            "      FEATURE:'feature'",
-            "      (variable",
-            "        BGP:'bgp')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (extended_access_list_stanza",
-            "      IP:'ip'",
-            "      ACCESS_LIST:'access-list'",
-            "      shortname = (variable",
-            "        VARIABLE:'copp-system-acl-icmp')",
-            "      NEWLINE:'\\n'",
-            "      (extended_access_list_tail",
-            "        num = DEC:'10'",
-            "        ala = (access_list_action",
-            "          PERMIT:'permit')",
-            "        prot = (protocol",
-            "          ICMP:'icmp')",
-            "        srcipr = (access_list_ip_range",
-            "          ANY:'any')",
-            "        dstipr = (access_list_ip_range",
-            "          ANY:'any')",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (s_class_map",
-            "      CLASS_MAP:'class-map'",
-            "      TYPE:'type'",
-            "      CONTROL_PLANE:'control-plane'",
-            "      MATCH_ANY:'match-any'",
-            "      name = (variable",
-            "        VARIABLE:'copp-icmp')",
-            "      NEWLINE:'\\n'",
-            "      (cm_match",
-            "        MATCH:'match'",
-            "        (cmm_access_group",
-            "          ACCESS_GROUP:'access-group'",
-            "          NAME:'name'",
-            "          name = (variable",
-            "            VARIABLE:'copp-system-acl-icmp'  <== mode:M_Name)",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_interface",
-            "      INTERFACE:'interface'",
-            "      iname = (interface_name",
-            "        name_prefix_alpha = M_Interface_PREFIX:'ethernet'  <== mode:M_Interface",
-            "        DEC:'2'  <== mode:M_Interface",
-            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
-            "        (range",
-            "          (subrange",
-            "            low = DEC:'1'  <== mode:M_Interface)))",
-            "      NEWLINE:'\\n'  <== mode:M_Interface",
-            "      (if_inner",
-            "        (if_bfd",
-            "          BFD:'bfd'",
-            "          (if_bfd_authentication",
-            "            AUTHENTICATION:'authentication'",
-            "            KEYED_SHA1:'keyed-sha1'  <== mode:M_Authentication",
-            "            KEYID:'keyid'",
-            "            id = DEC:'1'",
-            "            KEY:'key'",
-            "            ascii_key = (variable",
-            "              VARIABLE:'cisco123')",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_bfd",
-            "          BFD:'bfd'",
-            "          (if_bfd_authentication",
-            "            AUTHENTICATION:'authentication'",
-            "            KEYED_SHA1:'Keyed-SHA1'  <== mode:M_Authentication",
-            "            KEYID:'keyid'",
-            "            id = DEC:'1'",
-            "            HEX_KEY:'hex-key'",
-            "            hex_key = (variable",
-            "              VARIABLE:'0abcdefg')",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_bfd",
-            "          BFD:'bfd'",
-            "          (if_bfd_echo",
-            "            ECHO:'echo'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_bfd",
-            "          BFD:'bfd'",
-            "          (if_bfd_echo_rx_interval",
-            "            ECHO_RX_INTERVAL:'echo-rx-interval'",
-            "            ms = DEC:'40'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_bfd",
-            "          BFD:'bfd'",
-            "          (if_bfd_interval",
-            "            INTERVAL:'interval'",
-            "            DEC:'50'",
-            "            MIN_RX_VAR:'min_rx'",
-            "            tx_ms = DEC:'50'",
-            "            MULTIPLIER:'multiplier'",
-            "            mult = DEC:'3'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_bfd",
-            "          BFD:'bfd'",
-            "          (if_bfd_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            SRC_IP:'src-ip'  <== mode:M_NEIGHBOR",
-            "            src_ip = IP_ADDRESS:'1.2.3.4'",
-            "            DEST_IP:'dest-ip'",
-            "            dst_ip = IP_ADDRESS:'2.3.4.5'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_bfd",
-            "          BFD:'bfd'",
-            "          (if_bfd_optimize",
-            "            OPTIMIZE:'optimize'",
-            "            SUBINTERFACE:'subinterface'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_no_bfd",
-            "          NO:'no'",
-            "          BFD:'bfd'",
-            "          AUTHENTICATION:'authentication'",
-            "          NEWLINE:'\\n'  <== mode:M_Authentication))",
-            "      (if_inner",
-            "        (if_no_bfd",
-            "          NO:'no'",
-            "          BFD:'bfd'",
-            "          ECHO:'echo'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_no_bfd",
-            "          NO:'no'",
-            "          BFD:'bfd'",
-            "          ECHO_RX_INTERVAL:'echo-rx-interval'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_no_bfd",
-            "          NO:'no'",
-            "          BFD:'bfd'",
-            "          INTERVAL:'interval'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_no_bfd",
-            "          NO:'no'",
-            "          BFD:'bfd'",
-            "          NEIGHBOR:'neighbor'",
-            "          SRC_IP:'src-ip'  <== mode:M_NEIGHBOR",
-            "          src_ip = IP_ADDRESS:'1.2.3.4'",
-            "          DEST_IP:'dest-ip'",
-            "          dst_ip = IP_ADDRESS:'2.3.4.5'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_no_bfd",
-            "          NO:'no'",
-            "          BFD:'bfd'",
-            "          OPTIMIZE:'optimize'",
-            "          SUBINTERFACE:'subinterface'",
-            "          NEWLINE:'\\n\\n'))))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/cisco_nxos_bgp" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'cisco_nxos_bgp'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_feature",
-            "      FEATURE:'feature'",
-            "      (variable",
-            "        BGP:'bgp')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (route_map_stanza",
-            "      ROUTE_MAP:'route-map'",
-            "      name = (variable",
-            "        VARIABLE:'MATCH_ASN'  <== mode:M_RouteMap)",
-            "      rmt = (access_list_action",
-            "        PERMIT:'permit')",
-            "      num = DEC:'10'",
-            "      NEWLINE:'\\n'",
-            "      (rm_stanza",
-            "        (match_rm_stanza",
-            "          MATCH:'match'",
-            "          (match_as_number_rm_stanza",
-            "            AS_NUMBER:'as-number'",
-            "            num = DEC:'123'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'",
-            "      BGP:'bgp'",
-            "      procnum = (bgp_asn",
-            "        asn = DEC:'1')",
-            "      NEWLINE:'\\n'",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            prefix = IP_PREFIX:'123.123.123.0/24'  <== mode:M_NEIGHBOR",
-            "            REMOTE_AS:'remote-as'",
-            "            ROUTE_MAP:'route-map'",
-            "            mapname = (variable",
-            "              VARIABLE:'MATCH_ASN'  <== mode:M_RouteMap)",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_log_neighbor_changes",
-            "            LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_event_history",
-            "          EVENT_HISTORY:'event-history'",
-            "          PERIODIC:'periodic'",
-            "          NEWLINE:'\\n'))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_event_history",
-            "          EVENT_HISTORY:'event-history'",
-            "          EVENTS:'events'",
-            "          NEWLINE:'\\n'))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_event_history",
-            "          EVENT_HISTORY:'event-history'",
-            "          CLI:'cli'",
-            "          NEWLINE:'\\n'))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_reconnect_interval",
-            "            RECONNECT_INTERVAL:'reconnect-interval'",
-            "            secs = DEC:'30'",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_graceful_restart",
-            "            GRACEFUL_RESTART:'graceful-restart'",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_graceful_restart",
-            "            GRACEFUL_RESTART:'graceful-restart'",
-            "            RESTART_TIME:'restart-time'",
-            "            restart_secs = DEC:'120'",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_graceful_restart",
-            "            GRACEFUL_RESTART:'graceful-restart'",
-            "            STALEPATH_TIME:'stalepath-time'",
-            "            stalepath_secs = DEC:'300'",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_address_family",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            first = IPV4:'ipv4'",
-            "            second = UNICAST:'unicast'",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_address_family",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            first = IPV6:'ipv6'",
-            "            second = UNICAST:'unicast'",
-            "            NEWLINE:'\\n'",
-            "            (rbnx_af_inner",
-            "              (rbnx_af_aggregate_address",
-            "                AGGREGATE_ADDRESS:'aggregate-address'",
-            "                prefix6 = IPV6_PREFIX:'fe80::/10'",
-            "                (rbnx_af_aa_tail",
-            "                  ADVERTISE_MAP:'advertise-map'",
-            "                  mapname = (variable",
-            "                    VARIABLE:'AGG6_MAP'))",
-            "                NEWLINE:'\\n'))",
-            "            (rbnx_af_inner",
-            "              (rbnx_af_network",
-            "                NETWORK:'network'",
-            "                prefix6 = IPV6_PREFIX:'fe80::/120'",
-            "                NEWLINE:'\\n')))))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            ip = IP_ADDRESS:'2.2.2.2'  <== mode:M_NEIGHBOR",
-            "            REMOTE_AS:'remote-as'",
-            "            (bgp_asn",
-            "              asn = DEC:'6600')",
-            "            NEWLINE:'\\n'",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_local_as",
-            "                  LOCAL_AS:'local-as'",
-            "                  (bgp_asn",
-            "                    asn = DEC:'65500')",
-            "                  NO_PREPEND:'no-prepend'",
-            "                  REPLACE_AS:'replace-as'",
-            "                  NEWLINE:'\\n')))",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_no_shutdown",
-            "                  NO:'no'",
-            "                  SHUTDOWN:'shutdown'",
-            "                  NEWLINE:'\\n')))",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_timers",
-            "                  TIMERS:'timers'",
-            "                  keepalive_secs = DEC:'1'",
-            "                  holdtime_secs = DEC:'3'",
-            "                  NEWLINE:'\\n')))",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_address_family",
-            "                ADDRESS_FAMILY:'address-family'",
-            "                first = IPV4:'ipv4'",
-            "                second = UNICAST:'unicast'",
-            "                NEWLINE:'\\n'",
-            "                (rbnx_n_af_inner",
-            "                  (rbnx_n_af_soft_reconfiguration",
-            "                    SOFT_RECONFIGURATION:'soft-reconfiguration'",
-            "                    INBOUND:'inbound'",
-            "                    ALWAYS:'always'",
-            "                    NEWLINE:'\\n')))))))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            ip = IP_ADDRESS:'3.3.3.3'  <== mode:M_NEIGHBOR",
-            "            REMOTE_AS:'remote-as'",
-            "            (bgp_asn",
-            "              asn = DEC:'4123456789')",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            ip = IP_ADDRESS:'4.4.4.4'  <== mode:M_NEIGHBOR",
-            "            REMOTE_AS:'remote-as'",
-            "            (bgp_asn",
-            "              asn4b = FLOAT:'12.345')",
-            "            NEWLINE:'\\n')))))",
-            "  EOF:<EOF>)"
-          ]
-        },
         "configs/cisco_opsfv3" : {
           "sentences" : [
             "(cisco_configuration",
@@ -37067,389 +36684,6 @@
             "          DEC:'1025'",
             "          VARIABLE:'reserve'",
             "          NEWLINE:'\\n'))))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/cisco_tacacs" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'cisco_tacacs'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_feature",
-            "      FEATURE:'feature'",
-            "      (variable",
-            "        TACACS_PLUS:'tacacs+')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'",
-            "        IP:'ip'",
-            "        TACACS:'tacacs'",
-            "        SOURCE_INTERFACE:'source-interface'",
-            "        NEWLINE:'\\n'  <== mode:M_Interface)))",
-            "  (stanza",
-            "    (s_ip_tacacs_source_interface",
-            "      IP:'ip'",
-            "      TACACS:'tacacs'",
-            "      SOURCE_INTERFACE:'source-interface'",
-            "      iname = (interface_name",
-            "        name_prefix_alpha = M_Interface_PREFIX:'loopback'  <== mode:M_Interface",
-            "        (range",
-            "          (subrange",
-            "            low = DEC:'0'  <== mode:M_Interface)))",
-            "      NEWLINE:'\\n'  <== mode:M_Interface))",
-            "  (stanza",
-            "    (s_ip_tacacs_source_interface",
-            "      IP:'ip'",
-            "      TACACS:'tacacs'",
-            "      SOURCE_INTERFACE:'source-interface'",
-            "      iname = (interface_name",
-            "        name_prefix_alpha = M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
-            "        (range",
-            "          (subrange",
-            "            low = DEC:'0'  <== mode:M_Interface)))",
-            "      NEWLINE:'\\n'  <== mode:M_Interface))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      NO:'no'",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_common",
-            "        (ts_null",
-            "          DIRECTED_REQUEST:'directed-request'",
-            "          (null_rest_of_line",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          IP_ADDRESS:'1.2.3.4')",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'example.com')",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'EACACS')",
-            "        NEWLINE:'\\n'",
-            "        (t_server_address",
-            "          ADDRESS:'address'",
-            "          IPV4:'ipv4'",
-            "          IP_ADDRESS:'1.2.3.4'",
-            "          NEWLINE:'\\n')",
-            "        (t_server_null",
-            "          SINGLE_CONNECTION:'single-connection'",
-            "          (null_rest_of_line",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_common",
-            "        (ts_null",
-            "          DEADTIME:'deadtime'",
-            "          (null_rest_of_line",
-            "            DEC:'0'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_common",
-            "        (ts_null",
-            "          DIRECTED_REQUEST:'directed-request'",
-            "          (null_rest_of_line",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_host",
-            "        HOST:'host'",
-            "        hostname = IP_ADDRESS:'1.2.3.4'",
-            "        (null_rest_of_line",
-            "          KEY:'key'",
-            "          DEC:'7'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          HELLO:'hello'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_host",
-            "        HOST:'host'",
-            "        hostname = IP_ADDRESS:'1.2.3.4'",
-            "        (null_rest_of_line",
-            "          KEY:'key'",
-            "          DEC:'7'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          HELLO:'hello'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          PORT:'port'",
-            "          DEC:'49'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_host",
-            "        HOST:'host'",
-            "        hostname = IP_ADDRESS:'1.2.3.4'",
-            "        (null_rest_of_line",
-            "          PORT:'port'",
-            "          DEC:'49'",
-            "          NEWLINE:'\\n')",
-            "        (t_key",
-            "          KEY:'key'",
-            "          DEC:'0'",
-            "          (variable_permissive",
-            "            HELLO:'hello')",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_host",
-            "        HOST:'host'",
-            "        hostname = IP_ADDRESS:'1.2.3.4'",
-            "        (null_rest_of_line",
-            "          SINGLE_CONNECTION:'single-connection'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_host",
-            "        HOST:'host'",
-            "        hostname = IP_ADDRESS:'1.2.3.4'",
-            "        (null_rest_of_line",
-            "          TEST:'test'",
-            "          USERNAME:'username'",
-            "          TEST:'test'",
-            "          PASSWORD:'password'",
-            "          TEST:'test'",
-            "          VARIABLE:'idle-time'",
-            "          DEC:'0'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_common",
-            "        (ts_null",
-            "          KEY:'key'",
-            "          (null_rest_of_line",
-            "            DEC:'7'",
-            "            VARIABLE:'00112233445566778899AABBCCDD'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_common",
-            "        (ts_null",
-            "          RETRANSMIT:'retransmit'",
-            "          (null_rest_of_line",
-            "            DEC:'5'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_common",
-            "        (ts_null",
-            "          TEST:'test'",
-            "          (null_rest_of_line",
-            "            USERNAME:'username'",
-            "            TEST:'test'",
-            "            PASSWORD:'password'",
-            "            TEST:'test'",
-            "            VARIABLE:'idle-time'",
-            "            DEC:'0'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_common",
-            "        (ts_null",
-            "          TIMEOUT:'timeout'",
-            "          (null_rest_of_line",
-            "            DEC:'5'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_source_interface",
-            "        SOURCE_INTERFACE:'source-interface'",
-            "        iname = (interface_name",
-            "          name_prefix_alpha = M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
-            "          (range",
-            "            (subrange",
-            "              low = DEC:'0'  <== mode:M_Interface)))",
-            "        VRF:'vrf'  <== mode:M_Interface",
-            "        name = (variable",
-            "          DEFAULT:'default')",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'1.example.com')",
-            "        NEWLINE:'\\n'",
-            "        (t_key",
-            "          KEY:'key'",
-            "          DEC:'7'",
-            "          (variable_permissive",
-            "            VARIABLE:'0123456789ABCDEF012345')",
-            "          NEWLINE:'\\n')",
-            "        (t_server_address",
-            "          ADDRESS:'address'",
-            "          IPV4:'ipv4'",
-            "          IP_ADDRESS:'1.2.3.4'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'2.example.com')",
-            "        NEWLINE:'\\n'",
-            "        (t_server_address",
-            "          ADDRESS:'address'",
-            "          IPV4:'ipv4'",
-            "          IP_ADDRESS:'1.2.3.5'",
-            "          NEWLINE:'\\n')",
-            "        (t_key",
-            "          KEY:'key'",
-            "          DEC:'7'",
-            "          (variable_permissive",
-            "            VARIABLE:'0123456789ABCDEF012346')",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'3.example.com')",
-            "        NEWLINE:'\\n'",
-            "        (t_server_address",
-            "          ADDRESS:'address'",
-            "          IPV6:'ipv6'",
-            "          IPV6_ADDRESS:'dead:beef::1'",
-            "          NEWLINE:'\\n')",
-            "        (t_key",
-            "          KEY:'key'",
-            "          DEC:'7'",
-            "          (variable_permissive",
-            "            VARIABLE:'0123456789ABCDEF012347')",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'4.example.com')",
-            "        NEWLINE:'\\n'",
-            "        (t_server_address",
-            "          ADDRESS:'address'",
-            "          IPV4:'ipv4'",
-            "          IP_ADDRESS:'1.2.3.6'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'5.example.com')",
-            "        NEWLINE:'\\n'",
-            "        (t_server_address",
-            "          ADDRESS:'address'",
-            "          IPV6:'ipv6'",
-            "          IPV6_ADDRESS:'dead:beef::2'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'6.example.com')",
-            "        NEWLINE:'\\n'",
-            "        (t_key",
-            "          KEY:'key'",
-            "          DEC:'7'",
-            "          (variable_permissive",
-            "            DEC:'010203040506070809')",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'7.example.com')",
-            "        NEWLINE:'\\n'",
-            "        (t_key",
-            "          KEY:'key'",
-            "          DEC:'0'",
-            "          (variable_permissive",
-            "            VARIABLE:'abcd1234')",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_tacacs",
-            "      TACACS:'tacacs'",
-            "      (t_server",
-            "        SERVER:'server'",
-            "        hostname = (variable_hostname",
-            "          VARIABLE:'8.example.com')",
-            "        NEWLINE:'\\n'",
-            "        (t_key",
-            "          KEY:'key'",
-            "          (variable_permissive",
-            "            HELLO:'hello'",
-            "            COMMA:','",
-            "            VARIABLE:'world')",
-            "          NEWLINE:'\\n')",
-            "        (t_server_null",
-            "          TIMEOUT:'timeout'",
-            "          (null_rest_of_line",
-            "            DEC:'5'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_tacacs_server",
-            "      TACACS_SERVER:'tacacs-server'",
-            "      (ts_host",
-            "        HOST:'host'",
-            "        hostname = IP_ADDRESS:'1.2.3.4'",
-            "        (null_rest_of_line",
-            "          PORT:'port'",
-            "          DEC:'123'",
-            "          NEWLINE:'\\n')",
-            "        (t_key",
-            "          KEY:'key'",
-            "          DEC:'7'",
-            "          (variable_permissive",
-            "            VARIABLE:'0123456789ABCD')",
-            "          NEWLINE:'\\n'))",
-            "      (ts_common",
-            "        (ts_null",
-            "          TIMEOUT:'timeout'",
-            "          (null_rest_of_line",
-            "            DEC:'3'",
-            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -69933,56 +69167,6 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/neighbor_nxos" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_feature",
-            "      FEATURE:'feature'",
-            "      (variable",
-            "        BGP:'bgp')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'neighbor_nxos'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'",
-            "      BGP:'bgp'",
-            "      procnum = (bgp_asn",
-            "        asn = DEC:'2')",
-            "      NEWLINE:'\\n'",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            prefix = IP_PREFIX:'10.1.1.0/25'  <== mode:M_NEIGHBOR",
-            "            NEWLINE:'\\n'",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_inherit",
-            "                  INHERIT:'inherit'",
-            "                  PEER:'peer'",
-            "                  peer = (variable",
-            "                    VARIABLE:'KLMN')",
-            "                  NEWLINE:'\\n')))",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_description",
-            "                  DESCRIPTION:'description'",
-            "                  desc = (variable",
-            "                    RAW_TEXT:' 12345:ABCD:EFG:10.1.1.0/25:abc@def.ghi:123-456-7890 1:'  <== mode:M_Description)",
-            "                  NEWLINE:'\\n'  <== mode:M_Description))))))))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'",
-            "        NEWLINE:'\\n\\n\\n')))",
-            "  EOF:<EOF>)"
-          ]
-        },
         "configs/network6" : {
           "sentences" : [
             "(cisco_configuration",
@@ -72816,195 +72000,6 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/peer_template" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'peer_template'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_feature",
-            "      FEATURE:'feature'",
-            "      (variable",
-            "        BGP:'bgp')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'",
-            "      BGP:'bgp'",
-            "      procnum = (bgp_asn",
-            "        asn = DEC:'64601')",
-            "      NEWLINE:'\\n'",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_address_family",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            first = IPV4:'ipv4'",
-            "            second = UNICAST:'unicast'",
-            "            NEWLINE:'\\n'",
-            "            (rbnx_af_inner",
-            "              (rbnx_af_network",
-            "                NETWORK:'network'",
-            "                prefix = IP_PREFIX:'10.98.25.0/25'",
-            "                NEWLINE:'\\n'))",
-            "            (rbnx_af_inner",
-            "              (rbnx_af_network",
-            "                NETWORK:'network'",
-            "                prefix = IP_PREFIX:'100.78.0.0/29'",
-            "                NEWLINE:'\\n'))",
-            "            (rbnx_af_inner",
-            "              (rbnx_af_network",
-            "                NETWORK:'network'",
-            "                prefix = IP_PREFIX:'100.78.3.0/29'",
-            "                NEWLINE:'\\n'))",
-            "            (rbnx_af_inner",
-            "              (rbnx_af_network",
-            "                NETWORK:'network'",
-            "                prefix = IP_PREFIX:'100.93.104.127/32'",
-            "                NEWLINE:'\\n'))",
-            "            (rbnx_af_inner",
-            "              (rbnx_af_maximum_paths",
-            "                MAXIMUM_PATHS:'maximum-paths'",
-            "                numpaths = DEC:'16'",
-            "                NEWLINE:'\\n'))",
-            "            (rbnx_af_inner",
-            "              (rbnx_af_maximum_paths",
-            "                MAXIMUM_PATHS:'maximum-paths'",
-            "                IBGP:'ibgp'",
-            "                numpaths = DEC:'16'",
-            "                NEWLINE:'\\n')))))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_template_peer",
-            "          TEMPLATE:'template'",
-            "          PEER:'peer'",
-            "          peer = (variable",
-            "            VARIABLE:'RAAS')",
-            "          NEWLINE:'\\n'",
-            "          (rbnx_n_inner",
-            "            (rbnx_n_common",
-            "              (rbnx_n_remote_as",
-            "                REMOTE_AS:'remote-as'",
-            "                (bgp_asn",
-            "                  asn = DEC:'65511')",
-            "                NEWLINE:'\\n')))",
-            "          (rbnx_n_inner",
-            "            (rbnx_n_common",
-            "              (rbnx_n_update_source",
-            "                UPDATE_SOURCE:'update-source'",
-            "                (interface_name",
-            "                  name_prefix_alpha = M_Interface_PREFIX:'loopback'  <== mode:M_Interface",
-            "                  (range",
-            "                    (subrange",
-            "                      low = DEC:'1'  <== mode:M_Interface)))",
-            "                NEWLINE:'\\n'  <== mode:M_Interface)))",
-            "          (rbnx_n_inner",
-            "            (rbnx_n_common",
-            "              (rbnx_n_ebgp_multihop",
-            "                EBGP_MULTIHOP:'ebgp-multihop'",
-            "                ebgp_ttl = DEC:'2'",
-            "                NEWLINE:'\\n')))",
-            "          (rbnx_n_inner",
-            "            (rbnx_n_address_family",
-            "              ADDRESS_FAMILY:'address-family'",
-            "              first = IPV4:'ipv4'",
-            "              second = UNICAST:'unicast'",
-            "              NEWLINE:'\\n'",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_route_map",
-            "                  ROUTE_MAP:'route-map'",
-            "                  mapname = (variable",
-            "                    VARIABLE:'PROTECT-LEAF'  <== mode:M_RouteMap)",
-            "                  IN:'in'",
-            "                  NEWLINE:'\\n'))",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_maximum_prefix",
-            "                  MAXIMUM_PREFIX:'maximum-prefix'",
-            "                  limit = DEC:'8000'",
-            "                  threshold_pct = DEC:'90'",
-            "                  NEWLINE:'\\n'))))))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_template_peer",
-            "          TEMPLATE:'template'",
-            "          PEER:'peer'",
-            "          peer = (variable",
-            "            VARIABLE:'SPINE')",
-            "          NEWLINE:'\\n'",
-            "          (rbnx_n_inner",
-            "            (rbnx_n_common",
-            "              (rbnx_n_remote_as",
-            "                REMOTE_AS:'remote-as'",
-            "                (bgp_asn",
-            "                  asn = DEC:'64802')",
-            "                NEWLINE:'\\n')))",
-            "          (rbnx_n_inner",
-            "            (rbnx_n_address_family",
-            "              ADDRESS_FAMILY:'address-family'",
-            "              first = IPV4:'ipv4'",
-            "              second = UNICAST:'unicast'",
-            "              NEWLINE:'\\n'",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_allowas_in",
-            "                  ALLOWAS_IN:'allowas-in'",
-            "                  num = DEC:'1'",
-            "                  NEWLINE:'\\n'))))))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            ip = IP_ADDRESS:'100.93.100.16'  <== mode:M_NEIGHBOR",
-            "            NEWLINE:'\\n'",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_inherit",
-            "                  INHERIT:'inherit'",
-            "                  PEER:'peer'",
-            "                  peer = (variable",
-            "                    VARIABLE:'SPINE')",
-            "                  NEWLINE:'\\n')))",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_description",
-            "                  DESCRIPTION:'description'",
-            "                  desc = (variable",
-            "                    RAW_TEXT:' a simple inheritance example'  <== mode:M_Description)",
-            "                  NEWLINE:'\\n'  <== mode:M_Description))))))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            prefix = IP_PREFIX:'10.98.25.0/25'  <== mode:M_NEIGHBOR",
-            "            NEWLINE:'\\n'",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_inherit",
-            "                  INHERIT:'inherit'",
-            "                  PEER:'peer'",
-            "                  peer = (variable",
-            "                    VARIABLE:'RAAS')",
-            "                  NEWLINE:'\\n')))",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_description",
-            "                  DESCRIPTION:'description'",
-            "                  desc = (variable",
-            "                    RAW_TEXT:' inheritance in which the neighbor is a prefix'  <== mode:M_Description)",
-            "                  NEWLINE:'\\n'  <== mode:M_Description)))",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_maximum_peers",
-            "                  MAXIMUM_PEERS:'maximum-peers'",
-            "                  max = DEC:'32'",
-            "                  NEWLINE:'\\n'))))))))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'",
-            "        NEWLINE:'\\n\\n')))",
-            "  EOF:<EOF>)"
-          ]
-        },
         "configs/pim" : {
           "sentences" : [
             "(cisco_configuration",
@@ -73244,175 +72239,6 @@
             "            (variable",
             "              VARIABLE:'default'  <== mode:M_Words)",
             "            NEWLINE:'\\n'  <== mode:M_Words)))))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/route_maps_in_two_address_families" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'route_maps_in_two_address_families'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_feature",
-            "      FEATURE:'feature'",
-            "      (variable",
-            "        BGP:'bgp')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'",
-            "      BGP:'bgp'",
-            "      procnum = (bgp_asn",
-            "        asn = DEC:'1')",
-            "      NEWLINE:'\\n'",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_template_peer",
-            "          TEMPLATE:'template'",
-            "          PEER:'peer'",
-            "          peer = (variable",
-            "            VARIABLE:'ABC')",
-            "          NEWLINE:'\\n'",
-            "          (rbnx_n_inner",
-            "            (rbnx_n_address_family",
-            "              ADDRESS_FAMILY:'address-family'",
-            "              first = IPV4:'ipv4'",
-            "              second = UNICAST:'unicast'",
-            "              NEWLINE:'\\n'",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_send_community",
-            "                  SEND_COMMUNITY:'send-community'",
-            "                  NEWLINE:'\\n'))",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_route_map",
-            "                  ROUTE_MAP:'route-map'",
-            "                  mapname = (variable",
-            "                    VARIABLE:'FROM_ABC_V4'  <== mode:M_RouteMap)",
-            "                  IN:'in'",
-            "                  NEWLINE:'\\n'))",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_maximum_prefix",
-            "                  MAXIMUM_PREFIX:'maximum-prefix'",
-            "                  limit = DEC:'200'",
-            "                  threshold_pct = DEC:'90'",
-            "                  NEWLINE:'\\n'))",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_soft_reconfiguration",
-            "                  SOFT_RECONFIGURATION:'soft-reconfiguration'",
-            "                  INBOUND:'inbound'",
-            "                  NEWLINE:'\\n'))))",
-            "          (rbnx_n_inner",
-            "            (rbnx_n_address_family",
-            "              ADDRESS_FAMILY:'address-family'",
-            "              first = IPV6:'ipv6'",
-            "              second = UNICAST:'unicast'",
-            "              NEWLINE:'\\n'",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_send_community",
-            "                  SEND_COMMUNITY:'send-community'",
-            "                  NEWLINE:'\\n'))",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_route_map",
-            "                  ROUTE_MAP:'route-map'",
-            "                  mapname = (variable",
-            "                    VARIABLE:'FROM_ABC_V6'  <== mode:M_RouteMap)",
-            "                  IN:'in'",
-            "                  NEWLINE:'\\n'))",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_maximum_prefix",
-            "                  MAXIMUM_PREFIX:'maximum-prefix'",
-            "                  limit = DEC:'200'",
-            "                  threshold_pct = DEC:'90'",
-            "                  NEWLINE:'\\n'))",
-            "              (rbnx_n_af_inner",
-            "                (rbnx_n_af_soft_reconfiguration",
-            "                  SOFT_RECONFIGURATION:'soft-reconfiguration'",
-            "                  INBOUND:'inbound'",
-            "                  NEWLINE:'\\n'))))))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
-            "            REMOTE_AS:'remote-as'",
-            "            (bgp_asn",
-            "              asn = DEC:'2')",
-            "            NEWLINE:'\\n'",
-            "            (rbnx_n_inner",
-            "              (rbnx_n_common",
-            "                (rbnx_n_inherit",
-            "                  INHERIT:'inherit'",
-            "                  PEER:'peer'",
-            "                  peer = (variable",
-            "                    VARIABLE:'ABC')",
-            "                  NEWLINE:'\\n'))))))))",
-            "  (stanza",
-            "    (ip_prefix_list_stanza",
-            "      IP:'ip'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (variable",
-            "        VARIABLE:'v4_list'  <== mode:M_Name)",
-            "      (ip_prefix_list_tail",
-            "        action = (access_list_action",
-            "          PERMIT:'permit')",
-            "        prefix = IP_PREFIX:'0.0.0.0/0'",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (ipv6_prefix_list_stanza",
-            "      IPV6:'ipv6'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (variable",
-            "        VARIABLE:'v6_list'  <== mode:M_Name)",
-            "      (ipv6_prefix_list_tail",
-            "        action = (access_list_action",
-            "          PERMIT:'permit')",
-            "        prefix6 = IPV6_PREFIX:'::0/128'",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (route_map_stanza",
-            "      ROUTE_MAP:'route-map'",
-            "      name = (variable",
-            "        VARIABLE:'FROM_ABC_V4'  <== mode:M_RouteMap)",
-            "      rmt = (access_list_action",
-            "        PERMIT:'permit')",
-            "      num = DEC:'100'",
-            "      NEWLINE:'\\n'",
-            "      (rm_stanza",
-            "        (match_rm_stanza",
-            "          MATCH:'match'",
-            "          (match_ip_prefix_list_rm_stanza",
-            "            IP:'ip'",
-            "            ADDRESS:'address'",
-            "            PREFIX_LIST:'prefix-list'",
-            "            (variable",
-            "              VARIABLE:'v4_list'  <== mode:M_Words)",
-            "            NEWLINE:'\\n'  <== mode:M_Words)))))",
-            "  (stanza",
-            "    (route_map_stanza",
-            "      ROUTE_MAP:'route-map'",
-            "      name = (variable",
-            "        VARIABLE:'FROM_ABC_V6'  <== mode:M_RouteMap)",
-            "      rmt = (access_list_action",
-            "        PERMIT:'permit')",
-            "      num = DEC:'100'",
-            "      NEWLINE:'\\n'",
-            "      (rm_stanza",
-            "        (match_rm_stanza",
-            "          MATCH:'match'",
-            "          (match_ipv6_prefix_list_rm_stanza",
-            "            IPV6:'ipv6'",
-            "            ADDRESS:'address'",
-            "            PREFIX_LIST:'prefix-list'",
-            "            (variable",
-            "              VARIABLE:'v6_list'  <== mode:M_Words)",
-            "            NEWLINE:'\\n'  <== mode:M_Words)))))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'",
-            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -77727,16 +76553,6 @@
             }
           ]
         },
-        "configs/peer_template" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 24,
-              "Parser_Context" : "[rbnx_n_af_allowas_in rbnx_n_af_inner rbnx_n_address_family rbnx_n_inner rbnx_template_peer router_bgp_nxos_toplevel router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "allowas-in 1"
-            }
-          ]
-        },
         "iptables/host1.iptables" : {
           "Parse warnings" : [
             {
@@ -77885,8 +76701,6 @@
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
         "cisco_ntp" : "PASSED",
-        "cisco_nxos" : "PASSED",
-        "cisco_nxos_bgp" : "WARNINGS",
         "cisco_ospf" : "WARNINGS",
         "cisco_ospf_ipv6" : "WARNINGS",
         "cisco_ospf_multi_process" : "PASSED",
@@ -77908,7 +76722,6 @@
         "cisco_style_acl1" : "PASSED",
         "cisco_style_acl2" : "PASSED",
         "cisco_system" : "PASSED",
-        "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
         "cisco_username" : "PASSED",
         "cisco_username_without_password" : "PASSED",
@@ -78031,7 +76844,6 @@
         "msdp_originator_id" : "PASSED",
         "named_and_numbered_lists" : "PASSED",
         "neighbor_mix" : "WARNINGS",
-        "neighbor_nxos" : "WARNINGS",
         "network6" : "PASSED",
         "nexus" : "PASSED",
         "no_aaa_group_server" : "PASSED",
@@ -78056,12 +76868,10 @@
         "paloalto_interfaces" : "WARNINGS",
         "paloalto_policy" : "PASSED",
         "paloalto_zones" : "WARNINGS",
-        "peer_template" : "WARNINGS",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
         "prefix_list_ipv4" : "PASSED",
         "preset" : "PASSED",
-        "route_maps_in_two_address_families" : "WARNINGS",
         "route_policy_as_path_set" : "PASSED",
         "route_policy_igp_cost" : "PASSED",
         "route_policy_metric_type" : "PASSED",
@@ -80068,58 +78878,6 @@
         },
         "configs/cisco_nosnmp" : { },
         "configs/cisco_ntp" : { },
-        "configs/cisco_nxos" : {
-          "class-map" : {
-            "copp-icmp" : {
-              "definitionLines" : [
-                8,
-                9
-              ],
-              "numReferrers" : 0
-            }
-          },
-          "extended ipv4 access-list" : {
-            "copp-system-acl-icmp" : {
-              "definitionLines" : [
-                6,
-                7
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "interface" : {
-            "Ethernet2/1" : {
-              "definitionLines" : [
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
-        "configs/cisco_nxos_bgp" : {
-          "route-map" : {
-            "MATCH_ASN" : {
-              "definitionLines" : [
-                6,
-                7
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
         "configs/cisco_opsfv3" : {
           "interface" : {
             "Ethernet0/0" : {
@@ -80465,7 +79223,6 @@
           }
         },
         "configs/cisco_system" : { },
-        "configs/cisco_tacacs" : { },
         "configs/cisco_track" : {
           "track" : {
             "1" : {
@@ -84176,7 +82933,6 @@
           }
         },
         "configs/neighbor_mix" : { },
-        "configs/neighbor_nxos" : { },
         "configs/network6" : { },
         "configs/nexus" : { },
         "configs/no_aaa_group_server" : { },
@@ -84603,31 +83359,6 @@
             }
           }
         },
-        "configs/peer_template" : {
-          "bgp template peer" : {
-            "RAAS" : {
-              "definitionLines" : [
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20
-              ],
-              "numReferrers" : 1
-            },
-            "SPINE" : {
-              "definitionLines" : [
-                21,
-                22,
-                23,
-                24
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
         "configs/pim" : {
           "interface" : {
             "Loopback1" : {
@@ -84668,58 +83399,6 @@
                 10
               ],
               "numReferrers" : 0
-            }
-          }
-        },
-        "configs/route_maps_in_two_address_families" : {
-          "bgp template peer" : {
-            "ABC" : {
-              "definitionLines" : [
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "ipv4 prefix-list" : {
-            "v4_list" : {
-              "definitionLines" : [
-                21
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "ipv6 prefix-list" : {
-            "v6_list" : {
-              "definitionLines" : [
-                22
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "route-map" : {
-            "FROM_ABC_V4" : {
-              "definitionLines" : [
-                24,
-                25
-              ],
-              "numReferrers" : 1
-            },
-            "FROM_ABC_V6" : {
-              "definitionLines" : [
-                27,
-                28
-              ],
-              "numReferrers" : 1
             }
           }
         },
@@ -85271,12 +83950,6 @@
         "configs/cisco_ntp" : [
           "cisco_ntp"
         ],
-        "configs/cisco_nxos" : [
-          "cisco_nxos"
-        ],
-        "configs/cisco_nxos_bgp" : [
-          "cisco_nxos_bgp"
-        ],
         "configs/cisco_opsfv3" : [
           "cisco_ospfv3"
         ],
@@ -85339,9 +84012,6 @@
         ],
         "configs/cisco_system" : [
           "cisco_system"
-        ],
-        "configs/cisco_tacacs" : [
-          "cisco_tacacs"
         ],
         "configs/cisco_track" : [
           "cisco_track"
@@ -85737,9 +84407,6 @@
         "configs/neighbor_mix" : [
           "neighbor_mix"
         ],
-        "configs/neighbor_nxos" : [
-          "neighbor_nxos"
-        ],
         "configs/network6" : [
           "network6"
         ],
@@ -85800,9 +84467,6 @@
         "configs/palo_alto/zones" : [
           "paloalto_zones"
         ],
-        "configs/peer_template" : [
-          "peer_template"
-        ],
         "configs/pim" : [
           "pim"
         ],
@@ -85811,9 +84475,6 @@
         ],
         "configs/prefix_list_ipv4" : [
           "prefix_list_ipv4"
-        ],
-        "configs/route_maps_in_two_address_families" : [
-          "route_maps_in_two_address_families"
         ],
         "configs/route_policy_as_path" : [
           "route_policy_as_path_set"
@@ -87298,36 +85959,6 @@
             }
           }
         },
-        "configs/cisco_nxos" : {
-          "acl" : {
-            "copp-system-acl-icmp" : {
-              "class-map access-group" : [
-                9
-              ]
-            }
-          },
-          "interface" : {
-            "Ethernet2/1" : {
-              "interface" : [
-                11
-              ]
-            }
-          }
-        },
-        "configs/cisco_nxos_bgp" : {
-          "route-map" : {
-            "AGG6_MAP" : {
-              "bgp address-family aggregate-address advertise-map" : [
-                21
-              ]
-            },
-            "MATCH_ASN" : {
-              "bgp neighbor remote-as route-map" : [
-                10
-              ]
-            }
-          }
-        },
         "configs/cisco_opsfv3" : {
           "interface" : {
             "Ethernet0/0" : {
@@ -87756,19 +86387,6 @@
             "POLICY" : {
               "system service-policy" : [
                 21
-              ]
-            }
-          }
-        },
-        "configs/cisco_tacacs" : {
-          "interface" : {
-            "Loopback0" : {
-              "ip tacacs source-interface" : [
-                6,
-                7
-              ],
-              "tacacs source-interface" : [
-                26
               ]
             }
           }
@@ -90137,15 +88755,6 @@
             }
           }
         },
-        "configs/neighbor_nxos" : {
-          "bgp template peer" : {
-            "KLMN" : {
-              "inherited BGP peer" : [
-                8
-              ]
-            }
-          }
-        },
         "configs/nxos/nxos_bgp" : {
           "bgp template peer" : {
             "PEER_BLLF" : {
@@ -90297,34 +88906,6 @@
             }
           }
         },
-        "configs/peer_template" : {
-          "bgp template peer" : {
-            "RAAS" : {
-              "inherited BGP peer" : [
-                29
-              ]
-            },
-            "SPINE" : {
-              "inherited BGP peer" : [
-                26
-              ]
-            }
-          },
-          "interface" : {
-            "Loopback1" : {
-              "update-source interface" : [
-                16
-              ]
-            }
-          },
-          "route-map" : {
-            "PROTECT-LEAF" : {
-              "bgp inbound route-map" : [
-                19
-              ]
-            }
-          }
-        },
         "configs/pim" : {
           "interface" : {
             "Loopback1" : {
@@ -90339,41 +88920,6 @@
             "default" : {
               "route-map match ipv4 prefix-list" : [
                 10
-              ]
-            }
-          }
-        },
-        "configs/route_maps_in_two_address_families" : {
-          "bgp template peer" : {
-            "ABC" : {
-              "inherited BGP peer" : [
-                19
-              ]
-            }
-          },
-          "ipv4 prefix-list" : {
-            "v4_list" : {
-              "route-map match ipv4 prefix-list" : [
-                25
-              ]
-            }
-          },
-          "ipv6 prefix-list" : {
-            "v6_list" : {
-              "route-map match ipv6 prefix-list" : [
-                28
-              ]
-            }
-          },
-          "route-map" : {
-            "FROM_ABC_V4" : {
-              "bgp inbound route-map" : [
-                10
-              ]
-            },
-            "FROM_ABC_V6" : {
-              "bgp inbound route-map" : [
-                15
               ]
             }
           }
@@ -91315,15 +89861,6 @@
             }
           }
         },
-        "configs/cisco_nxos_bgp" : {
-          "route-map" : {
-            "AGG6_MAP" : {
-              "bgp address-family aggregate-address advertise-map" : [
-                21
-              ]
-            }
-          }
-        },
         "configs/cisco_ospf" : {
           "ipv4 prefix-list" : {
             "plin" : {
@@ -91644,19 +90181,6 @@
             "to-VTY" : {
               "snmp server community ipv6 acl" : [
                 16
-              ]
-            }
-          }
-        },
-        "configs/cisco_tacacs" : {
-          "interface" : {
-            "Loopback0" : {
-              "ip tacacs source-interface" : [
-                6,
-                7
-              ],
-              "tacacs source-interface" : [
-                26
               ]
             }
           }
@@ -92515,15 +91039,6 @@
             }
           }
         },
-        "configs/neighbor_nxos" : {
-          "bgp template peer" : {
-            "KLMN" : {
-              "inherited BGP peer" : [
-                8
-              ]
-            }
-          }
-        },
         "configs/nxos/nxos_bgp" : {
           "route-map" : {
             "BLIB" : {
@@ -92573,22 +91088,6 @@
             "dummy" : {
               "virtual-router interface" : [
                 27
-              ]
-            }
-          }
-        },
-        "configs/peer_template" : {
-          "interface" : {
-            "Loopback1" : {
-              "update-source interface" : [
-                16
-              ]
-            }
-          },
-          "route-map" : {
-            "PROTECT-LEAF" : {
-              "bgp inbound route-map" : [
-                19
               ]
             }
           }
@@ -92817,30 +91316,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Interface: 'inside' contains OSPF settings, but there is no corresponding OSPF area (or process)"
-            }
-          ]
-        },
-        "cisco_nxos_bgp" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No supported address-family configured for BGP neighbor 4.4.4.4 in vrf default"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No supported address-family configured for BGP neighbor 3.3.3.3 in vrf default"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP neighbor 2.2.2.2 in vrf default: could not determine update source"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
             }
           ]
         },
@@ -93176,18 +91651,6 @@
             }
           ]
         },
-        "neighbor_nxos" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No supported address-family configured for BGP neighbor 10.1.1.0/25 in vrf default"
-            }
-          ]
-        },
         "non_nexus_neighbor_af" : {
           "Red flags" : [
             {
@@ -93265,34 +91728,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Interface ethernet1/4 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            }
-          ]
-        },
-        "peer_template" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP neighbor 100.93.100.16 in vrf default: could not determine update source"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP neighbor 10.98.25.0/25 in vrf default: configured update-source Loopback1 does not exist or is not associated with this vrf"
-            }
-          ]
-        },
-        "route_maps_in_two_address_families" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
             }
           ]
         },
@@ -93415,8 +91850,6 @@
         "configs/cisco_nomaskreply" : "PASSED",
         "configs/cisco_nosnmp" : "PASSED",
         "configs/cisco_ntp" : "PASSED",
-        "configs/cisco_nxos" : "PASSED",
-        "configs/cisco_nxos_bgp" : "PASSED",
         "configs/cisco_opsfv3" : "PASSED",
         "configs/cisco_ospf" : "PASSED",
         "configs/cisco_ospf_ipv6" : "PASSED",
@@ -93438,7 +91871,6 @@
         "configs/cisco_style_acl1" : "PASSED",
         "configs/cisco_style_acl2" : "PASSED",
         "configs/cisco_system" : "PASSED",
-        "configs/cisco_tacacs" : "PASSED",
         "configs/cisco_track" : "PASSED",
         "configs/cisco_username" : "PASSED",
         "configs/cisco_username_without_password" : "PASSED",
@@ -93572,7 +92004,6 @@
         "configs/msdp_originator_id" : "PASSED",
         "configs/named_and_numbered_lists" : "PASSED",
         "configs/neighbor_mix" : "PASSED",
-        "configs/neighbor_nxos" : "PASSED",
         "configs/network6" : "PASSED",
         "configs/nexus" : "PASSED",
         "configs/no_aaa_group_server" : "PASSED",
@@ -93593,11 +92024,9 @@
         "configs/palo_alto/policy" : "PASSED",
         "configs/palo_alto/virtual-routers" : "PASSED",
         "configs/palo_alto/zones" : "PASSED",
-        "configs/peer_template" : "PASSED",
         "configs/pim" : "PASSED",
         "configs/pim_snooping" : "PASSED",
         "configs/prefix_list_ipv4" : "PASSED",
-        "configs/route_maps_in_two_address_families" : "PASSED",
         "configs/route_policy_as_path" : "PASSED",
         "configs/route_policy_igp_cost" : "PASSED",
         "configs/route_policy_metric_type" : "PASSED",
