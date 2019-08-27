@@ -6,7 +6,6 @@ import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSP
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_DEAD_INTERVAL;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_ENABLED;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_HELLO_INTERVAL;
-import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_INBOUND_DISTRIBUTE_LIST_POLICY;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_NETWORK_TYPE;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_PASSIVE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE;
@@ -104,8 +103,7 @@ public class OspfInterfaceConfigAnswererTest {
                 equalTo(OspfNetworkType.POINT_TO_POINT.toString()),
                 Schema.STRING),
             hasColumn(OSPF_DEAD_INTERVAL, equalTo(2), Schema.INTEGER),
-            hasColumn(OSPF_HELLO_INTERVAL, equalTo(1), Schema.INTEGER),
-            hasColumn(OSPF_INBOUND_DISTRIBUTE_LIST_POLICY, equalTo("policy_name"), Schema.STRING)));
+            hasColumn(OSPF_HELLO_INTERVAL, equalTo(1), Schema.INTEGER)));
   }
 
   @Test
@@ -128,7 +126,6 @@ public class OspfInterfaceConfigAnswererTest {
                 .add(OSPF_NETWORK_TYPE)
                 .add(OSPF_HELLO_INTERVAL)
                 .add(OSPF_DEAD_INTERVAL)
-                .add(OSPF_INBOUND_DISTRIBUTE_LIST_POLICY)
                 .build()));
   }
 }
