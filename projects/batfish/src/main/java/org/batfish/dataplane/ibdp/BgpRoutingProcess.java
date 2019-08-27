@@ -755,6 +755,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .filter(Optional::isPresent)
         .map(Optional::get);
   }
+
   /**
    * Given a {@link BgpRoute}, run it through the BGP outbound transformations and export routing
    * policy.
