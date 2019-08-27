@@ -45,6 +45,12 @@ double_quoted_string
   DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
 ;
 
+fex_id
+:
+// 101-199
+  uint8
+;
+
 group_name
 :
 // 1-32 characters
