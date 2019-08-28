@@ -646,6 +646,8 @@ i_no
     | i_no_bandwidth
     | i_no_bfd
     | i_no_description
+    | i_no_ip
+    | i_no_ipv6
     | i_no_mac_address
     | i_no_null
     | i_no_shutdown
@@ -678,6 +680,44 @@ i_no_description
   DESCRIPTION NEWLINE
 ;
 
+i_no_ip
+:
+  IP
+  (
+    inoip_null
+    | inoip_ospf
+  )
+;
+
+inoip_null
+:
+  (
+    REDIRECTS
+  ) null_rest_of_line
+;
+
+inoip_ospf
+:
+  OSPF inoipo_passive_interface
+;
+
+inoipo_passive_interface
+:
+  PASSIVE_INTERFACE NEWLINE
+;
+
+i_no_ipv6
+:
+  IPV6 inoip6_null
+;
+
+inoip6_null
+:
+  (
+    REDIRECTS
+  ) null_rest_of_line
+;
+
 i_no_mac_address
 :
   MAC_ADDRESS NEWLINE
@@ -689,8 +729,6 @@ i_no_null
     BEACON
     | CDP
     | HARDWARE
-    | IP
-    | IPV6
     | LLDP
     | LOAD_INTERVAL
     | MANAGEMENT
