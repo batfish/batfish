@@ -186,7 +186,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
   private static TableMetadata createMetadata(Question question) {
     String textDesc =
         String.format(
-            "Filter {%s} on node {%s} has matching line at index {%s}: {%s}",
+            "Filter ${%s} on node ${%s} has matching line at index ${%s}: ${%s}",
             COL_FILTER, COL_NODE, COL_LINE_INDEX, COL_LINE);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
