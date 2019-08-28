@@ -383,7 +383,7 @@ public final class CiscoNxosPreprocessorTest {
       CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
       assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN, 0, 0), equalTo(NexusPlatform.UNKNOWN));
       vc.setBootNxosSup2("bootflash:/nxos.9.2.3.bin");
-      assertThat(inferPlatform(vc, NXOS7, 0, 0), equalTo(NEXUS_9000));
+      assertThat(inferPlatform(vc, NXOS7, 0, 0), equalTo(NEXUS_3000));
       assertThat(inferPlatform(vc, NXOS7, 0, 0), equalTo(NEXUS_3000));
       assertThat(inferPlatform(vc, NXOS7, 0, 1), equalTo(NEXUS_9000));
       assertThat(inferPlatform(vc, NXOS7, 1, 0), equalTo(NEXUS_3000));
