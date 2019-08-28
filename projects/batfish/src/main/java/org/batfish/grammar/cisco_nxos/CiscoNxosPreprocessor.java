@@ -4,6 +4,7 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.toTy
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -42,6 +43,21 @@ import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
  *   <li>default shutdown status of L2 interfaces
  *   <li>default shutdown status of L3 interfaces
  * </ul>
+ *
+ * <p>Determines the NX-OS major version via structure of the version string and/or boot image
+ * name(s)
+ *
+ * <p>Determines the platform via NX-OS major version and structure of the boot image name(s). In
+ * some cases, this information only narrows down to Nexus 3000 or Nexus 9000. For NX-OS 9, there is
+ * no functional difference between defaults, so Nexus 9000 is assumed. For earlier versions of
+ * NX-OS, the functional difference is that L3 interfaces are shutdown by default on Nexus 9000, but
+ * on by default on Nexus 3000. To distinguish platform on such versions, inference is performed to
+ * determine whether default L3 status is shutdown or not. A decision is made by counting how many
+ * L3 interfaces explicitly shutdown; explicity not shutdown; and whose shutdown status is
+ * unconfigured. Based on the result, the conforming platform (Nexus 3000 or Nexus 9000) is
+ * selected.
+ *
+ * <p>Determines default L3 shutdown status based on inferred platform and NX-OS major version.
  *
  * <p>Determines the default interface mode (L2 vs L3) by counting the number of L2- or L3- only
  * commands that appear in interfaces where switchport mode has not been explicitly configured
@@ -143,7 +159,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
       int numLayer3UnconfiguredShutdown,
       int numLayer3ExplicitShutdown,
       int numLayer3ExplicitNoShutdown) {
-    NexusPlatform initialGuess =
+    Optional<NexusPlatform> initialGuessOrNoInformation =
         Stream.of(
                 vc.getBootNxosSup1(),
                 vc.getBootNxosSup2(),
@@ -152,13 +168,14 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
                 vc.getBootKickstartSup1(),
                 vc.getBootKickstartSup2())
             .filter(Objects::nonNull)
-            .map(CiscoNxosPreprocessor::inferPlatformFromImage)
             .findFirst()
-            .orElse(null);
-    if (initialGuess == null) {
+            .map(CiscoNxosPreprocessor::inferPlatformFromImage);
+
+    if (!initialGuessOrNoInformation.isPresent()) {
       // No boot information from which to infer platform
       return NexusPlatform.UNKNOWN;
     }
+    NexusPlatform initialGuess = initialGuessOrNoInformation.get();
     if (initialGuess != NexusPlatform.UNKNOWN) {
       return initialGuess;
     }
@@ -316,14 +333,26 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   private final @Nonnull Warnings _w;
 
   private Boolean _currentInterfaceLayer3;
+
+  /**
+   * {@code true} if current interfaces has explicit 'shutdown'; {@code false} if current interface
+   * has explicit 'no shutdown'; or else {@code null}.
+   */
   private Boolean _currentInterfaceShutdown;
+
   private Boolean _currentInterfaceSubinterface;
   private Boolean _currentInterfaceSwitchport;
   private CiscoNxosInterfaceType _currentInterfaceType;
   private int _defaultLayer2EvidenceCount;
   private int _defaultLayer3EvidenceCount;
+
+  /** Number of interfaces that have L3 configuration and explicit 'no shutdown' */
   private int _numLayer3ExplicitNoShutdown;
+
+  /** Number of interfaces that have L3 configuration and explicit 'shutdown' */
   private int _numLayer3ExplicitShutdown;
+
+  /** Number of interfaces that have L3 configuration but lack 'shutdown'/'no shutdown' */
   private int _numLayer3UnconfiguredShutdown;
 
   // stop collecting evidence once this becomes true
@@ -465,6 +494,10 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
     _explicitSystemDefaultSwitchport = true;
   }
 
+  /**
+   * Returns {@code true} iff the current statement interface provides evidence useful for inferring
+   * whether default mode for physical/port-channel interfaces is L2 or L3.
+   */
   private boolean providesSwitchportEvidence() {
     return !_explicitSystemDefaultSwitchport
         && !_currentInterfaceSubinterface
@@ -473,6 +506,10 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
             || _currentInterfaceType == CiscoNxosInterfaceType.PORT_CHANNEL);
   }
 
+  /**
+   * Returns {@code true} iff the current interface provides evidence useful for inferring whether
+   * L3 interfaces are (not) shutdown by default.
+   */
   private boolean providesLayer3DefaultShutdownEvidence() {
     return !_currentInterfaceSubinterface
         && Boolean.TRUE.equals(_currentInterfaceLayer3)
