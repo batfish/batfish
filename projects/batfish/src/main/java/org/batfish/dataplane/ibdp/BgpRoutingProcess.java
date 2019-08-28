@@ -165,6 +165,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   @Nonnull private final Map<String, String> _rtVrfMapping;
 
+  /** Mapping of routes to be redistributed. Maps source VRF to a set of routes to process */
   @Nonnull
   private Map<String, RibDelta<? extends AnnotatedRoute<AbstractRoute>>> _mainRibRoutesToProcess;
 
@@ -419,9 +420,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     redistribute(mainRibDelta, _vrfName);
   }
 
+  /** Redistribute routes from {@code srcVrfName} into our VRF. */
   public void redistribute(
-      RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta, String vrfName) {
-    _mainRibRoutesToProcess.put(vrfName, mainRibDelta);
+      RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta, String srcVrfName) {
+    _mainRibRoutesToProcess.put(srcVrfName, mainRibDelta);
   }
 
   @Override
@@ -954,11 +956,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    *
    * <p>Affects {@link #_type5RoutesToSendForEveryone} and {@link #_type5RoutesToSendPerNeighbor}
    *
-   * @param vrfName the name of the <em>source</em> VRF (i.e., the VRF whose main RIB routes we are
+   * @param srcVrf the name of the <em>source</em> VRF (i.e., the VRF whose main RIB routes we are
    *     processing)
    */
   private void computeType5DeltaFromMainRibRoutes(
-      String vrfName,
+      String srcVrf,
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta,
       NetworkConfigurations nc) {
     RibDelta.Builder<EvpnType5Route> ebgpAll = RibDelta.builder();
@@ -976,7 +978,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               ra -> {
                 AbstractRoute route = ra.getRoute().getRoute();
                 if (route instanceof Bgpv4Route) {
-                  bgpv4RouteToType5Route(ebgpAll, ibgpAll, ourConfig, ra, route, vrfName);
+                  // There routes came into scrVrf's main RIB from teh srcVrf's BGP RIB,
+                  // so just convert them to type 5s and send to all neighbors
+                  bgpv4RouteToType5Route(ebgpAll, ibgpAll, ourConfig, ra, route, srcVrf);
                 } else if (!(route instanceof BgpRoute)) {
                   /*
                    * This is crap.
@@ -984,6 +988,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                    * Since we don't keep locally converted routes in BGP RIB,
                    * do a pretend export from abstract route to Bgpv4route,
                    * and then convert that to a type 5 route
+                   *
+                   * Note that our export policies are per-neighbor so we keep a mapping of
                    */
                   BgpPeerConfigId remoteConfigId = edge.tail();
                   BgpSessionProperties session = getSessionProperties(_topology, edge);
@@ -991,7 +997,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       exportNonBgpRouteToBgp(
                           ra.getRoute(), ourConfigId, remoteConfigId, ourConfig, session);
                   if (bgpv4Route != null) {
-                    bgpv4RouteToType5Route(ebgp, ibgp, ourConfig, ra, bgpv4Route, vrfName);
+                    bgpv4RouteToType5Route(ebgp, ibgp, ourConfig, ra, bgpv4Route, srcVrf);
                   }
                 }
               });
@@ -1015,10 +1021,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       BgpPeerConfig ourConfig,
       RouteAdvertisement<? extends AnnotatedRoute<AbstractRoute>> ra,
       AbstractRoute route,
-      String vrfName) {
+      String srcVrfName) {
+    if (ourConfig.getEvpnAddressFamily() == null) {
+      return;
+    }
     ImmutableSet<Layer3VniConfig> allVniConfigs =
         ourConfig.getEvpnAddressFamily().getL3VNIs().stream()
-            .filter(layer3VniConfig -> layer3VniConfig.getVrf().equals(vrfName))
+            // Only advertise routes if permitted by VNI config
+            .filter(layer3VniConfig -> layer3VniConfig.getVrf().equals(srcVrfName))
             .filter(Layer3VniConfig::getAdvertiseV4Unicast)
             .collect(ImmutableSet.toImmutableSet());
     for (VniConfig config : allVniConfigs) {
