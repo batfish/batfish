@@ -287,7 +287,6 @@ no_null
     FEATURE
     | IP
     | NTP
-    | SYSTEM
   ) null_rest_of_line
 ;
 
