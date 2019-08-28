@@ -13,9 +13,18 @@ import javax.annotation.Nullable;
  * {@link ConnectedRoute connected routes}
  */
 public final class ConnectedRouteMetadata implements Serializable {
+  private static final String PROP_ADMIN = "admin";
   private static final String PROP_TAG = "tag";
 
+  @Nullable private final Integer _admin;
+
   @Nullable private final Long _tag;
+
+  @Nullable
+  @JsonProperty(PROP_ADMIN)
+  public Integer getAdmin() {
+    return _admin;
+  }
 
   @Nullable
   @JsonProperty(PROP_TAG)
@@ -32,17 +41,21 @@ public final class ConnectedRouteMetadata implements Serializable {
       return false;
     }
     ConnectedRouteMetadata that = (ConnectedRouteMetadata) o;
-    return Objects.equals(_tag, that._tag);
+    return Objects.equals(_admin, that._admin) && Objects.equals(_tag, that._tag);
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(ConnectedRouteMetadata.class).add(PROP_TAG, _tag).toString();
+    return MoreObjects.toStringHelper(ConnectedRouteMetadata.class)
+        .omitNullValues()
+        .add(PROP_ADMIN, _admin)
+        .add(PROP_TAG, _tag)
+        .toString();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_tag);
+    return Objects.hash(_admin, _tag);
   }
 
   public static Builder builder() {
@@ -53,14 +66,28 @@ public final class ConnectedRouteMetadata implements Serializable {
   // Private implementation
   /////////////////////////
 
-  private ConnectedRouteMetadata(@Nullable Long tag) {
+  private ConnectedRouteMetadata(@Nullable Integer admin, @Nullable Long tag) {
+    _admin = admin;
     _tag = tag;
   }
 
   public static final class Builder {
+    @Nullable private Integer _admin;
     @Nullable private Long _tag;
 
     private Builder() {}
+
+    @Nonnull
+    public Builder setAdmin(@Nullable Integer admin) {
+      _admin = admin;
+      return this;
+    }
+
+    @Nonnull
+    public Builder setAdmin(int admin) {
+      _admin = admin;
+      return this;
+    }
 
     @Nonnull
     public Builder setTag(@Nullable Long tag) {
@@ -76,12 +103,14 @@ public final class ConnectedRouteMetadata implements Serializable {
 
     @Nonnull
     public ConnectedRouteMetadata build() {
-      return new ConnectedRouteMetadata(_tag);
+      return new ConnectedRouteMetadata(_admin, _tag);
     }
   }
 
   @JsonCreator
-  private static ConnectedRouteMetadata jsonCreator(@Nullable @JsonProperty(PROP_TAG) Long tag) {
-    return new ConnectedRouteMetadata(tag);
+  private static ConnectedRouteMetadata jsonCreator(
+      @Nullable @JsonProperty(PROP_ADMIN) Integer admin,
+      @Nullable @JsonProperty(PROP_TAG) Long tag) {
+    return new ConnectedRouteMetadata(admin, tag);
   }
 }
