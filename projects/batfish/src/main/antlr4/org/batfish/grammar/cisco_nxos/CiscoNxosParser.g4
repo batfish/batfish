@@ -270,9 +270,46 @@ s_no
 :
   NO
   (
+    no_null
+    | no_system
+  )
+;
+
+no_null
+:
+  (
     FEATURE
     | IP
   ) null_rest_of_line
+;
+
+no_system
+:
+  SYSTEM no_sys_default
+;
+
+no_sys_default
+:
+  DEFAULT no_sysd_switchport
+;
+
+no_sysd_switchport
+:
+  SWITCHPORT
+  (
+    no_sysds_shutdown
+    | no_sysds_switchport
+  )
+;
+
+no_sysds_shutdown
+:
+  SHUTDOWN NEWLINE
+;
+
+no_sysds_switchport
+:
+  NEWLINE
 ;
 
 s_nv

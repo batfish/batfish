@@ -423,8 +423,8 @@ public final class CiscoNxosGrammarTest {
     configureBatfishTestSettings(settings);
     settings.setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
-    CiscoNxosControlPlaneExtractor extractor =
-        new CiscoNxosControlPlaneExtractor(src, ciscoNxosParser, new Warnings());
+    NxosControlPlaneExtractor extractor =
+        new NxosControlPlaneExtractor(src, ciscoNxosParser, new Warnings());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoNxosParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
@@ -794,6 +794,176 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/8");
       assertThat(iface.getShutdown(), equalTo(false));
     }
+  }
+
+  @Test
+  public void testNoSystemDefaultSwitchportShutdownConversion() throws IOException {
+    String hostname = "nxos_no_system_default_switchport_shutdown";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface, isActive(true));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertThat(iface, isActive());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/5");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/6");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/7");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/8");
+      assertThat(iface, isActive());
+    }
+  }
+
+  @Test
+  public void testNoSystemDefaultSwitchportShutdownExtraction() {
+    String hostname = "nxos_no_system_default_switchport_shutdown";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertFalse(vc.getSystemDefaultSwitchportShutdown());
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getShutdown(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertThat(iface.getShutdown(), equalTo(false));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/5");
+      assertThat(iface.getShutdown(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/6");
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/7");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/8");
+      assertThat(iface.getShutdown(), equalTo(false));
+    }
+  }
+
+  @Test
+  public void testSystemDefaultSwitchportConversion() throws IOException {
+    String hostname = "nxos_system_default_switchport";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1/1", hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.ACCESS)));
+    assertThat(
+        c,
+        hasInterface("Ethernet1/2", hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE)));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1/3", hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.ACCESS)));
+  }
+
+  @Test
+  public void testSystemDefaultSwitchportExtraction() {
+    String hostname = "nxos_system_default_switchport";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertTrue(vc.getSystemDefaultSwitchport());
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(vc.getInterfaces().get("Ethernet1/1").getSwitchportMode(), nullValue());
+    assertThat(
+        vc.getInterfaces().get("Ethernet1/2").getSwitchportMode(), equalTo(SwitchportMode.NONE));
+    assertThat(
+        vc.getInterfaces().get("Ethernet1/3").getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+  }
+
+  @Test
+  public void testNoSystemDefaultSwitchportConversion() throws IOException {
+    String hostname = "nxos_no_system_default_switchport";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(
+        c,
+        hasInterface("Ethernet1/1", hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE)));
+    assertThat(
+        c,
+        hasInterface("Ethernet1/2", hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE)));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1/3", hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.ACCESS)));
+  }
+
+  @Test
+  public void testNoSystemDefaultSwitchportExtraction() {
+    String hostname = "nxos_no_system_default_switchport";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertFalse(vc.getSystemDefaultSwitchport());
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(vc.getInterfaces().get("Ethernet1/1").getSwitchportMode(), nullValue());
+    assertThat(
+        vc.getInterfaces().get("Ethernet1/2").getSwitchportMode(), equalTo(SwitchportMode.NONE));
+    assertThat(
+        vc.getInterfaces().get("Ethernet1/3").getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
   }
 
   @Test
@@ -1687,23 +1857,23 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
       Interface iface = vc.getInterfaces().get("loopback0");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("mgmt0");
       assertFalse(iface.getShutdown());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel1");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
@@ -1714,13 +1884,13 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2.1");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getEncapsulationVlan(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2.2");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getEncapsulationVlan(), equalTo(2));
     }
     {
@@ -1731,7 +1901,7 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("port-channel2.1");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getEncapsulationVlan(), nullValue());
     }
     {
@@ -1830,25 +2000,25 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2.1");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getEncapsulationVlan(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
   }
@@ -5052,7 +5222,7 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("port-channel6");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
     }
     // TODO: something with port-channel7 having to do with its constituents' channel-group modes
@@ -6361,7 +6531,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getShutdown(), nullValue());
       assertTrue(iface.getAutostate());
       assertThat(iface.getVlan(), equalTo(1));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
     }
     {
@@ -6369,7 +6539,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getShutdown(), nullValue());
       assertTrue(iface.getAutostate());
       assertThat(iface.getVlan(), equalTo(2));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
     }
     {
@@ -6377,7 +6547,7 @@ public final class CiscoNxosGrammarTest {
       assertFalse(iface.getShutdown());
       assertFalse(iface.getAutostate());
       assertThat(iface.getVlan(), equalTo(3));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
     }
     {
@@ -6385,7 +6555,7 @@ public final class CiscoNxosGrammarTest {
       assertFalse(iface.getShutdown());
       assertTrue(iface.getAutostate());
       assertThat(iface.getVlan(), equalTo(4));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
     }
     {
@@ -6393,7 +6563,7 @@ public final class CiscoNxosGrammarTest {
       assertFalse(iface.getShutdown());
       assertFalse(iface.getAutostate());
       assertThat(iface.getVlan(), equalTo(6));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
     }
     {
@@ -6401,7 +6571,7 @@ public final class CiscoNxosGrammarTest {
       assertFalse(iface.getShutdown());
       assertTrue(iface.getAutostate());
       assertThat(iface.getVlan(), equalTo(7));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
     }
 

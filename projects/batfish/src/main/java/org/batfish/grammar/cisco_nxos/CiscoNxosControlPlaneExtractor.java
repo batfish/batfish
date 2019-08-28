@@ -133,7 +133,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
@@ -160,8 +159,6 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.grammar.BatfishParseTreeWalker;
-import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_use_vrfContext;
@@ -206,9 +203,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_instanceContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_kickstartContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_nxosContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_systemContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
@@ -318,6 +312,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_destinationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_source_vlanContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_shutdownContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntps_preferContext;
@@ -490,7 +486,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_regularContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_versionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv4aclContext;
@@ -503,6 +498,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Subnet_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_shutdownContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
@@ -640,11 +636,13 @@ import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
 import org.batfish.representation.cisco_nxos.VrfAddressFamily;
-import org.batfish.vendor.VendorConfiguration;
 
+/**
+ * Given a parse tree, builds a {@link CiscoNxosConfiguration} that has been prepopulated with
+ * metadata and defaults by {@link CiscoNxosPreprocessor}.
+ */
 @ParametersAreNonnullByDefault
-public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener
-    implements ControlPlaneExtractor {
+public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener {
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
   private static final IntegerSpace BGP_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
@@ -1043,7 +1041,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return ExtendedCommunityOrAuto.of(toExtendedCommunity(ctx.route_target()));
   }
 
-  private CiscoNxosConfiguration _configuration;
   private ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
   private Boolean _currentActionIpAccessListLineUnusable;
   private BgpVrfIpAddressFamilyConfiguration _currentBgpVrfIpAddressFamily;
@@ -1112,16 +1109,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .computeIfAbsent(configName.toLowerCase(), lcName -> configName);
   }
 
-  private @Nonnull final CiscoNxosCombinedParser _parser;
-  private @Nonnull final String _text;
-  private @Nonnull final Warnings _w;
+  private final @Nonnull CiscoNxosConfiguration _configuration;
+  private final @Nonnull CiscoNxosCombinedParser _parser;
+  private final @Nonnull String _text;
+  private final @Nonnull Warnings _w;
 
   public CiscoNxosControlPlaneExtractor(
-      String text, CiscoNxosCombinedParser parser, Warnings warnings) {
+      String text,
+      CiscoNxosCombinedParser parser,
+      Warnings warnings,
+      CiscoNxosConfiguration configuration) {
     _text = text;
     _parser = parser;
     _preferredNames = HashBasedTable.create();
     _w = warnings;
+    _configuration = configuration;
 
     // initialize preferred names
     getPreferredName(DEFAULT_VRF_NAME, VRF);
@@ -1151,21 +1153,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   /** This function must be kept in sync with {@link #copyPortChannelCompatibilitySettings}. */
-  private static boolean checkPortChannelCompatibilitySettings(
-      Interface referenceIface, Interface iface) {
+  private boolean checkPortChannelCompatibilitySettings(Interface referenceIface, Interface iface) {
     return Objects.equals(iface.getAccessVlan(), referenceIface.getAccessVlan())
         && Objects.equals(iface.getAllowedVlans(), referenceIface.getAllowedVlans())
         && Objects.equals(iface.getNativeVlan(), referenceIface.getNativeVlan())
-        && iface.getSwitchportMode() == referenceIface.getSwitchportMode();
+        && iface.getSwitchportModeEffective(_configuration.getSystemDefaultSwitchport())
+            == referenceIface.getSwitchportModeEffective(
+                _configuration.getSystemDefaultSwitchport());
   }
 
   /** This function must be kept in sync with {@link #checkPortChannelCompatibilitySettings}. */
-  private static void copyPortChannelCompatibilitySettings(
-      Interface referenceIface, Interface iface) {
+  private void copyPortChannelCompatibilitySettings(Interface referenceIface, Interface iface) {
     iface.setAccessVlan(referenceIface.getAccessVlan());
     iface.setAllowedVlans(referenceIface.getAllowedVlans());
     iface.setNativeVlan(referenceIface.getNativeVlan());
-    iface.setSwitchportMode(referenceIface.getSwitchportMode());
+    if (iface.getSwitchportModeEffective(_configuration.getSystemDefaultSwitchport())
+        != referenceIface.getSwitchportModeEffective(_configuration.getSystemDefaultSwitchport())) {
+      iface.setSwitchportMode(
+          referenceIface.getSwitchportModeEffective(_configuration.getSystemDefaultSwitchport()));
+    }
     assert checkPortChannelCompatibilitySettings(referenceIface, iface);
   }
 
@@ -1215,47 +1221,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitBoot_kickstart(Boot_kickstartContext ctx) {
-    String image = ctx.image.getText();
-    if (ctx.SUP_1() != null) {
-      _configuration.setBootKickstartSup1(image);
-    } else if (ctx.SUP_2() != null) {
-      _configuration.setBootKickstartSup2(image);
-    } else {
-      _configuration.setBootKickstartSup1(image);
-      _configuration.setBootKickstartSup2(image);
-    }
-  }
-
-  @Override
-  public void exitBoot_nxos(Boot_nxosContext ctx) {
-    String image = ctx.image.getText();
-    if (ctx.SUP_1() != null) {
-      _configuration.setBootNxosSup1(image);
-    } else if (ctx.SUP_2() != null) {
-      _configuration.setBootNxosSup2(image);
-    } else {
-      _configuration.setBootNxosSup1(image);
-      _configuration.setBootNxosSup2(image);
-    }
-  }
-
-  @Override
-  public void exitBoot_system(Boot_systemContext ctx) {
-    String image = ctx.image.getText();
-    if (ctx.SUP_1() != null) {
-      _configuration.setBootSystemSup1(image);
-    } else if (ctx.SUP_2() != null) {
-      _configuration.setBootSystemSup2(image);
-    } else {
-      _configuration.setBootSystemSup1(image);
-      _configuration.setBootSystemSup2(image);
-    }
-  }
-
-  @Override
   public void enterCisco_nxos_configuration(Cisco_nxos_configurationContext ctx) {
-    _configuration = new CiscoNxosConfiguration();
     _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
     _currentVrf = _configuration.getDefaultVrf();
     // define built-ins at line 0 (before first line of file).
@@ -1457,7 +1423,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_switchport_switchport(I_switchport_switchportContext ctx) {
     _currentInterfaces.stream()
-        .filter(iface -> iface.getSwitchportMode() == SwitchportMode.NONE)
+        .filter(
+            iface ->
+                iface.getSwitchportMode() == null
+                    || iface.getSwitchportMode() == SwitchportMode.NONE)
         .forEach(iface -> iface.setSwitchportMode(SwitchportMode.ACCESS));
   }
 
@@ -2339,6 +2308,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitSysds_shutdown(Sysds_shutdownContext ctx) {
     _configuration.setSystemDefaultSwitchportShutdown(true);
+  }
+
+  @Override
+  public void exitNo_sysds_shutdown(No_sysds_shutdownContext ctx) {
+    _configuration.setSystemDefaultSwitchportShutdown(false);
+  }
+
+  @Override
+  public void exitSysds_switchport(Sysds_switchportContext ctx) {
+    _configuration.setSystemDefaultSwitchport(true);
+  }
+
+  @Override
+  public void exitNo_sysds_switchport(No_sysds_switchportContext ctx) {
+    _configuration.setSystemDefaultSwitchport(false);
   }
 
   @Override
@@ -3625,11 +3609,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitS_version(S_versionContext ctx) {
-    _configuration.setVersion(ctx.version.getText());
-  }
-
-  @Override
   public void enterS_vrf_context(S_vrf_contextContext ctx) {
     Optional<String> nameOrErr = toString(ctx, ctx.name);
     if (!nameOrErr.isPresent()) {
@@ -4441,7 +4420,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     if (_currentInterfaces.stream()
-        .anyMatch(iface -> iface.getSwitchportMode() != SwitchportMode.NONE)) {
+        .anyMatch(
+            iface ->
+                iface.getSwitchportModeEffective(_configuration.getSystemDefaultSwitchport())
+                    != SwitchportMode.NONE)) {
       _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot assign VRF to switchport interface(s)");
       return;
     }
@@ -5167,17 +5149,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
     return _text.substring(start, end + 1);
-  }
-
-  @Override
-  public @Nullable VendorConfiguration getVendorConfiguration() {
-    return _configuration;
-  }
-
-  @Override
-  public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
-    walker.walk(this, tree);
   }
 
   private @Nullable Integer toBandwidth(
@@ -6109,7 +6080,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return Optional.of(text);
   }
 
-  private static @Nullable CiscoNxosInterfaceType toType(Interface_prefixContext ctx) {
+  static @Nullable CiscoNxosInterfaceType toType(Interface_prefixContext ctx) {
     if (ctx.ETHERNET() != null) {
       return CiscoNxosInterfaceType.ETHERNET;
     } else if (ctx.LOOPBACK() != null) {

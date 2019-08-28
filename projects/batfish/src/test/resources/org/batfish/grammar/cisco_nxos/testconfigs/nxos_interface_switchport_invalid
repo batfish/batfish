@@ -3,6 +3,10 @@
 hostname nxos_interface_switchport_invalid
 !
 
+! force predictable results
+system default switchport
+no system default switchport shutdown
+
 ! Ethernet interface with invalid access vlan > 3967
 ! - switchport mode = access
 ! - switchport access vlan = 1 (access setting does not take)

@@ -2,6 +2,11 @@
 !
 hostname nxos_interface_switchport
 !
+
+! force predictable results
+system default switchport
+no system default switchport shutdown
+
 ! Ethernet interface with no configuration:
 ! - shutdown = false
 ! - active = true

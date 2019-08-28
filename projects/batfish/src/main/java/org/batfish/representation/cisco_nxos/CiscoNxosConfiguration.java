@@ -19,10 +19,7 @@ import static org.batfish.representation.cisco.CiscoConversions.suppressSummariz
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL;
-import static org.batfish.representation.cisco_nxos.Conversions.getNonSwitchportDefaultShutdown;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
-import static org.batfish.representation.cisco_nxos.Conversions.inferMajorVersion;
-import static org.batfish.representation.cisco_nxos.Conversions.inferPlatform;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
@@ -369,17 +366,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
   private final @Nonnull Map<String, LoggingServer> _loggingServers;
   private @Nullable String _loggingSourceInterface;
-  private transient boolean _nonSwitchportDefaultShutdown;
+  private @Nonnull NxosMajorVersion _majorVersion;
+  private boolean _nonSwitchportDefaultShutdown;
   private final @Nonnull Map<String, NtpServer> _ntpServers;
   private @Nullable String _ntpSourceInterface;
   private final @Nonnull Map<Integer, Nve> _nves;
   private final @Nonnull Map<String, ObjectGroup> _objectGroups;
   private final @Nonnull Map<String, DefaultVrfOspfProcess> _ospfProcesses;
+  private @Nonnull NexusPlatform _platform;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, SnmpServer> _snmpServers;
   private @Nullable String _snmpSourceInterface;
+  private boolean _systemDefaultSwitchport;
   private boolean _systemDefaultSwitchportShutdown;
   private final @Nonnull Map<String, TacacsServer> _tacacsServers;
   private @Nullable String _tacacsSourceInterface;
@@ -399,10 +399,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipv6AccessLists = new HashMap<>();
     _ipv6PrefixLists = new HashMap<>();
     _loggingServers = new HashMap<>();
+    _majorVersion = NxosMajorVersion.UNKNOWN;
     _ntpServers = new HashMap<>();
     _nves = new HashMap<>();
     _objectGroups = new HashMap<>();
     _ospfProcesses = new HashMap<>();
+    _platform = NexusPlatform.UNKNOWN;
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
     _snmpServers = new HashMap<>();
@@ -1157,11 +1159,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull CiscoNxosFamily createCiscoNxosFamily() {
-    NxosMajorVersion majorVersion = inferMajorVersion(this);
-    return CiscoNxosFamily.builder()
-        .setPlatform(inferPlatform(this, majorVersion))
-        .setMajorVersion(majorVersion)
-        .build();
+    return CiscoNxosFamily.builder().setPlatform(_platform).setMajorVersion(_majorVersion).build();
   }
 
   /** Disable Vlan interfaces without corresponding top-level vlan declaration. */
@@ -1291,6 +1289,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _loggingSourceInterface;
   }
 
+  public @Nonnull NxosMajorVersion getMajorVersion() {
+    return _majorVersion;
+  }
+
   public @Nonnull Map<String, NtpServer> getNtpServers() {
     return _ntpServers;
   }
@@ -1311,6 +1313,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _ospfProcesses;
   }
 
+  public @Nonnull NexusPlatform getPlatform() {
+    return _platform;
+  }
+
   /** Range of VLAN IDs reserved by the system and therefore unassignable. */
   public @Nonnull IntegerSpace getReservedVlanRange() {
     return _reservedVlanRange;
@@ -1326,6 +1332,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nullable String getSnmpSourceInterface() {
     return _snmpSourceInterface;
+  }
+
+  public boolean getSystemDefaultSwitchport() {
+    return _systemDefaultSwitchport;
   }
 
   public boolean getSystemDefaultSwitchportShutdown() {
@@ -1533,8 +1543,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _loggingSourceInterface = loggingSourceInterface;
   }
 
+  public void setMajorVersion(NxosMajorVersion majorVersion) {
+    _majorVersion = majorVersion;
+  }
+
+  public void setNonSwitchportDefaultShutdown(boolean nonSwitchportDefaultShutdown) {
+    _nonSwitchportDefaultShutdown = nonSwitchportDefaultShutdown;
+  }
+
   public void setNtpSourceInterface(@Nullable String ntpSourceInterface) {
     _ntpSourceInterface = ntpSourceInterface;
+  }
+
+  public void setPlatform(NexusPlatform platform) {
+    _platform = platform;
   }
 
   public void setSnmpSourceInterface(@Nullable String snmpSourceInterface) {
@@ -1543,6 +1565,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public void setTacacsSourceInterface(@Nullable String tacacsSourceInterface) {
     _tacacsSourceInterface = tacacsSourceInterface;
+  }
+
+  public void setSystemDefaultSwitchport(boolean systemDefaultSwitchport) {
+    _systemDefaultSwitchport = systemDefaultSwitchport;
   }
 
   public void setSystemDefaultSwitchportShutdown(boolean systemDefaultSwitchportShutdown) {
@@ -1611,9 +1637,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // warn if non-switchport Ethernet without explicit (no) shutdown on Nexus 7000
-    if (_c.getVendorFamily().getCiscoNxos().getPlatform() == NexusPlatform.NEXUS_7000
+    if (_platform == NexusPlatform.NEXUS_7000
         && iface.getType() == CiscoNxosInterfaceType.ETHERNET
-        && iface.getSwitchportMode() == SwitchportMode.NONE
+        && iface.getSwitchportModeEffective(_systemDefaultSwitchport) == SwitchportMode.NONE
         && iface.getShutdown() == null) {
       _w.redFlag(
           String.format(
@@ -1623,7 +1649,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIfaceBuilder.setActive(
         !iface.getShutdownEffective(
-            _systemDefaultSwitchportShutdown, _nonSwitchportDefaultShutdown));
+            _systemDefaultSwitchport,
+            _systemDefaultSwitchportShutdown,
+            _nonSwitchportDefaultShutdown));
 
     if (!iface.getIpAddressDhcp()) {
       Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata =
@@ -1670,9 +1698,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // switchport+vlan settings
-    SwitchportMode switchportMode = iface.getSwitchportMode();
+    SwitchportMode switchportMode = iface.getSwitchportModeEffective(_systemDefaultSwitchport);
     newIfaceBuilder.setSwitchportMode(switchportMode.toSwitchportMode());
-    switch (iface.getSwitchportMode()) {
+    switch (switchportMode) {
       case ACCESS:
         newIfaceBuilder.setSwitchport(true);
         newIfaceBuilder.setAccessVlan(iface.getAccessVlan());
@@ -3018,8 +3046,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, ConfigurationFormat.CISCO_NX);
     _c.getVendorFamily().setCiscoNxos(createCiscoNxosFamily());
-    _nonSwitchportDefaultShutdown =
-        getNonSwitchportDefaultShutdown(_c.getVendorFamily().getCiscoNxos().getPlatform());
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
 
