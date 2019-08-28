@@ -881,7 +881,12 @@ public class VirtualRouter implements Serializable {
             .setSourcePrefixLength(address.getNetworkBits())
             .setNextHopInterface(ifaceName);
     if (metadata != null) {
-      builder.setTag(metadata.getTag());
+      if (metadata.getAdmin() != null) {
+        builder.setAdmin(metadata.getAdmin());
+      }
+      if (metadata.getTag() != null) {
+        builder.setTag(metadata.getTag());
+      }
     }
     return builder.build();
   }
