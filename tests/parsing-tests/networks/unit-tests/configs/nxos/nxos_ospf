@@ -2,7 +2,14 @@
 hostname nxos_ospf
 feature privilege
 !
+!!! Declare VRFs before they are referenced below
+vrf context OTHER
+vrf context foo
+!
 interface ethernet0/0
+ no switchport
+ no shutdown
+ vrf member OTHER
  ip router ospf 1 area 1
  ip address 1.1.1.2/31
 !
