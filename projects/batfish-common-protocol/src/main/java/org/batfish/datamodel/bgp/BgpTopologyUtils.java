@@ -60,7 +60,7 @@ public final class BgpTopologyUtils {
    */
   public static @Nonnull BgpTopology initBgpTopology(
       Map<String, Configuration> configurations,
-      Map<Ip, Set<String>> ipOwners,
+      Map<Ip, Map<String, Set<String>>> ipOwners,
       boolean keepInvalid,
       @Nullable Layer2Topology layer2Topology) {
     return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, layer2Topology);
@@ -71,8 +71,8 @@ public final class BgpTopologyUtils {
    * BgpSessionProperties}.
    *
    * @param configurations node configurations, keyed by hostname
-   * @param ipOwners network Ip owners (see {@link IpOwners#computeIpNodeOwners(Map, boolean)} for
-   *     reference)
+   * @param ipVrfOwners network Ip owners (see {@link IpOwners#computeIpNodeOwners(Map, boolean)}
+   *     for reference)
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.
@@ -87,7 +87,7 @@ public final class BgpTopologyUtils {
    */
   public static @Nonnull BgpTopology initBgpTopology(
       Map<String, Configuration> configurations,
-      Map<Ip, Set<String>> ipOwners,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
       boolean keepInvalid,
       boolean checkReachability,
       @Nullable TracerouteEngine tracerouteEngine,
@@ -111,6 +111,7 @@ public final class BgpTopologyUtils {
       for (Configuration node : configurations.values()) {
         String hostname = node.getHostname();
         for (Vrf vrf : node.getVrfs().values()) {
+          String vrfName = vrf.getName();
           BgpProcess proc = vrf.getBgpProcess();
           if (proc == null) {
             // nothing to do if no bgp process on this VRF
@@ -124,7 +125,8 @@ public final class BgpTopologyUtils {
             Prefix prefix = entry.getKey();
             BgpPeerConfig bgpPeerConfig = entry.getValue();
 
-            if (!keepInvalid && !bgpConfigPassesSanityChecks(bgpPeerConfig, hostname, ipOwners)) {
+            if (!keepInvalid
+                && !bgpConfigPassesSanityChecks(bgpPeerConfig, hostname, vrfName, ipVrfOwners)) {
               continue;
             }
 
@@ -137,7 +139,10 @@ public final class BgpTopologyUtils {
           // Unnumbered BGP peers: map of interface name to BgpUnnumberedPeerConfig
           proc.getInterfaceNeighbors().entrySet().stream()
               .filter(
-                  e -> keepInvalid || bgpConfigPassesSanityChecks(e.getValue(), hostname, ipOwners))
+                  e ->
+                      keepInvalid
+                          || bgpConfigPassesSanityChecks(
+                              e.getValue(), hostname, vrfName, ipVrfOwners))
               .forEach(
                   e -> graph.addNode(new BgpPeerConfigId(hostname, vrf.getName(), e.getKey())));
         }
@@ -154,7 +159,7 @@ public final class BgpTopologyUtils {
                 neighborId,
                 graph,
                 networkConfigurations,
-                ipOwners,
+                ipVrfOwners,
                 checkReachability,
                 tracerouteEngine);
             break;
@@ -177,7 +182,7 @@ public final class BgpTopologyUtils {
       BgpPeerConfigId neighborId,
       MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph,
       NetworkConfigurations nc,
-      Map<Ip, Set<String>> ipOwners,
+      Map<Ip, Map<String, Set<String>>> ipOwners,
       boolean checkReachability,
       TracerouteEngine tracerouteEngine) {
     BgpActivePeerConfig neighbor = nc.getBgpPointToPointPeerConfig(neighborId);
@@ -189,8 +194,8 @@ public final class BgpTopologyUtils {
       return;
     }
     // Find nodes that own the neighbor's peer address
-    Set<String> possibleHostnames = ipOwners.get(neighbor.getPeerAddress());
-    if (possibleHostnames == null) {
+    Map<String, Set<String>> possibleVrfs = ipOwners.get(neighbor.getPeerAddress());
+    if (possibleVrfs == null) {
       return;
     }
 
@@ -202,7 +207,7 @@ public final class BgpTopologyUtils {
                 // initiate the session), don't bother checking in this direction
                 !alreadyEstablished.contains(candidateId)
                     // Ensure candidate has compatible local/remote IP, AS, & hostname
-                    && bgpCandidatePassesSanityChecks(neighbor, candidateId, possibleHostnames, nc)
+                    && bgpCandidatePassesSanityChecks(neighbor, candidateId, possibleVrfs, nc)
                     // If checking reachability, ensure candidate is reachable
                     && (!checkReachability
                         || isReachableBgpNeighbor(
@@ -265,7 +270,10 @@ public final class BgpTopologyUtils {
    * </ul>
    */
   private static boolean bgpConfigPassesSanityChecks(
-      BgpPeerConfig config, String hostname, Map<Ip, Set<String>> ipOwners) {
+      BgpPeerConfig config,
+      String hostname,
+      String vrfName,
+      Map<Ip, Map<String, Set<String>>> ipOwners) {
     if (config instanceof BgpUnnumberedPeerConfig) {
       return true;
     }
@@ -273,7 +281,8 @@ public final class BgpTopologyUtils {
     Ip localIp = config.getLocalIp();
     return localIp == null
         || localIp.equals(Ip.AUTO) // dynamic
-        || (ipOwners.containsKey(localIp) && ipOwners.get(localIp).contains(hostname));
+        || (ipOwners.containsKey(localIp)
+            && ipOwners.get(localIp).getOrDefault(hostname, ImmutableSet.of()).contains(vrfName));
   }
 
   /**
@@ -283,9 +292,11 @@ public final class BgpTopologyUtils {
   private static boolean bgpCandidatePassesSanityChecks(
       @Nonnull BgpActivePeerConfig neighbor,
       @Nonnull BgpPeerConfigId candidateId,
-      @Nonnull Set<String> possibleHostnames,
+      @Nonnull Map<String, Set<String>> possibleVrfs,
       @Nonnull NetworkConfigurations nc) {
-    if (!possibleHostnames.contains(candidateId.getHostname())
+    if (!possibleVrfs
+            .getOrDefault(candidateId.getHostname(), ImmutableSet.of())
+            .contains(candidateId.getVrfName())
         // Unnumbered configs only form sessions with each other
         || candidateId.getType() == BgpPeerConfigType.UNNUMBERED) {
       return false;
@@ -360,6 +371,7 @@ public final class BgpTopologyUtils {
         initiator.getLocalIp(),
         initiator.getPeerAddress(),
         listenerId.getHostname(),
+        listenerId.getVrfName(),
         BgpSessionProperties.getSessionType(initiator) == SessionType.EBGP_SINGLEHOP,
         tracerouteEngine);
   }
@@ -370,6 +382,7 @@ public final class BgpTopologyUtils {
       @Nonnull Ip initiatorIp,
       @Nonnull Ip listenerIp,
       @Nonnull String listenerNode,
+      @Nonnull String listenerVrf,
       boolean bgpSingleHop,
       @Nonnull TracerouteEngine tracerouteEngine) {
 
@@ -405,7 +418,8 @@ public final class BgpTopologyUtils {
                         && traceAndReverseFlow
                             .getReverseFlow()
                             .getIngressNode()
-                            .equals(listenerNode))
+                            .equals(listenerNode)
+                        && traceAndReverseFlow.getReverseFlow().getIngressVrf().equals(listenerVrf))
             .flatMap(
                 traceAndReverseFlow ->
                     tracerouteEngine

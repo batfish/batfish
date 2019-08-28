@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -352,6 +353,7 @@ public class IncrementalDataPlanePluginTest {
             .setAdministrativeCost(1)
             .build();
     vrf.getStaticRoutes().add(srJustInterface);
+    Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             // TODO: parametrize settings with different schedules
@@ -360,7 +362,7 @@ public class IncrementalDataPlanePluginTest {
     Topology topology = new Topology(Collections.emptySortedSet());
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(
-            ImmutableMap.of(c.getHostname(), c),
+            configs,
             TopologyContext.builder().setLayer3Topology(topology).build(),
             Collections.emptySet());
 
@@ -388,15 +390,13 @@ public class IncrementalDataPlanePluginTest {
             .setAdministrativeCost(1)
             .build();
     vrf.getStaticRoutes().add(sr);
+    Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
     ComputeDataPlaneResult dp =
-        engine.computeDataPlane(
-            ImmutableMap.of(c.getHostname(), c),
-            TopologyContext.builder().build(),
-            Collections.emptySet());
+        engine.computeDataPlane(configs, TopologyContext.builder().build(), Collections.emptySet());
 
     // generating fibs should not crash
     assertThat(

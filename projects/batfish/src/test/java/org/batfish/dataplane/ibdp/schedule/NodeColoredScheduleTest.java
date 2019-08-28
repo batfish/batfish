@@ -1,6 +1,5 @@
 package org.batfish.dataplane.ibdp.schedule;
 
-import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -16,6 +15,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -152,8 +152,7 @@ public class NodeColoredScheduleTest {
     Node n = TestUtils.makeIosRouter("r1");
     Map<String, Node> nodes = ImmutableMap.of("r1", n);
     Map<String, Configuration> configs = ImmutableMap.of("r1", n.getConfiguration());
-    BgpTopology bgpTopology =
-        initBgpTopology(configs, computeIpNodeOwners(configs, false), false, null);
+    BgpTopology bgpTopology = initBgpTopology(configs, ImmutableMap.of(), false, null);
     NodeColoredSchedule schedule =
         new NodeColoredSchedule(
             nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
@@ -172,8 +171,7 @@ public class NodeColoredScheduleTest {
         nodes.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
-    BgpTopology bgpTopology =
-        initBgpTopology(configs, computeIpNodeOwners(configs, false), false, null);
+    BgpTopology bgpTopology = initBgpTopology(configs, ImmutableMap.of(), false, null);
     NodeColoredSchedule schedule =
         new NodeColoredSchedule(
             nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
@@ -186,9 +184,10 @@ public class NodeColoredScheduleTest {
 
   @Test
   public void testTwoNodesConnectedDirectlyViaBGP() {
-
+    // TODO looks like we need real owners
     BgpTopology bgpTopology =
-        initBgpTopology(_configurations, computeIpNodeOwners(_configurations, false), false, null);
+        initBgpTopology(
+            _configurations, new IpOwners(_configurations).getIpVrfOwners(), false, null);
     ImmutableMap<String, Node> nodes =
         _configurations.entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> new Node(e.getValue())));
