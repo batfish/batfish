@@ -820,7 +820,12 @@ public class VirtualRouter implements Serializable {
     ConnectedRoute.Builder builder =
         ConnectedRoute.builder().setNetwork(address.getPrefix()).setNextHopInterface(ifaceName);
     if (metadata != null) {
-      builder.setTag(metadata.getTag());
+      if (metadata.getAdmin() != null) {
+        builder.setAdmin(metadata.getAdmin());
+      }
+      if (metadata.getTag() != null) {
+        builder.setTag(metadata.getTag());
+      }
     }
     return builder.build();
   }
