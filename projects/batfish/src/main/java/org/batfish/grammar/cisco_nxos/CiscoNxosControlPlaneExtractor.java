@@ -92,6 +92,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.MONI
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
@@ -457,8 +459,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_filter_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_nssaContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_stubContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ror_directContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ror_staticContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ror_redistribute_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rot_lsa_arrivalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rot_lsa_group_pacingContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rott_lsaContext;
@@ -2105,13 +2106,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRor_direct(Ror_directContext ctx) {
-    toString(ctx, ctx.rm).ifPresent(_currentOspfProcess::setRedistributeDirectRouteMap);
-  }
-
-  @Override
-  public void exitRor_static(Ror_staticContext ctx) {
-    toString(ctx, ctx.rm).ifPresent(_currentOspfProcess::setRedistributeStaticRouteMap);
+  public void exitRor_redistribute_route_map(Ror_redistribute_route_mapContext ctx) {
+    Optional<RoutingProtocolInstance> rpiOrError =
+        toRoutingProtocolInstance(ctx, ctx.routing_instance_v4());
+    Optional<String> mapOrError = toString(ctx, ctx.route_map_name());
+    if (!rpiOrError.isPresent() || !mapOrError.isPresent()) {
+      return;
+    }
+    RoutingProtocolInstance rpi = rpiOrError.get();
+    String map = mapOrError.get();
+    Optional<CiscoNxosStructureType> type = rpi.getProtocol().getRouterStructureType();
+    if (rpi.getTag() != null && type.isPresent()) {
+      _configuration.referenceStructure(
+          type.get(), rpi.getTag(), OSPF_REDISTRIBUTE_INSTANCE, ctx.getStart().getLine());
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, map, OSPF_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
+    _currentOspfProcess.setRedistributionPolicy(rpi, map);
   }
 
   @Override

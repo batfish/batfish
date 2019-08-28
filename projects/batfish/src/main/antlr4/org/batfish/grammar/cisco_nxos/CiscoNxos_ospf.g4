@@ -202,15 +202,9 @@ ro_redistribute
 :
   REDISTRIBUTE
   (
-    ror_direct
+    ror_redistribute_route_map
     | ror_null
-    | ror_static
   )
-;
-
-ror_direct
-:
-  DIRECT ROUTE_MAP rm = route_map_name NEWLINE
 ;
 
 ror_null
@@ -218,9 +212,9 @@ ror_null
   MAXIMUM_PREFIX null_rest_of_line
 ;
 
-ror_static
+ror_redistribute_route_map
 :
-  STATIC ROUTE_MAP rm = route_map_name NEWLINE
+  routing_instance_v4 ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 ro_router_id
