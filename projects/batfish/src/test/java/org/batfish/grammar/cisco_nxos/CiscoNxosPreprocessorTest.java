@@ -381,8 +381,7 @@ public final class CiscoNxosPreprocessorTest {
   public void testInferPlatform() {
     {
       CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
-      assertThat(
-          inferPlatform(vc, NxosMajorVersion.UNKNOWN, 0, 0), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN, 0, 0), equalTo(NexusPlatform.UNKNOWN));
       vc.setBootNxosSup2("bootflash:/nxos.9.2.3.bin");
       assertThat(inferPlatform(vc, NXOS7, 0, 0), equalTo(NEXUS_9000));
       assertThat(inferPlatform(vc, NXOS7, 0, 0), equalTo(NEXUS_3000));
@@ -397,8 +396,7 @@ public final class CiscoNxosPreprocessorTest {
     }
     {
       CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
-      assertThat(
-          inferPlatform(vc, NxosMajorVersion.UNKNOWN, 0, 0), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN, 0, 0), equalTo(NexusPlatform.UNKNOWN));
       vc.setBootKickstartSup2("bootflash:/n7000-s2-kickstart.6.2.16.bin");
       assertThat(inferPlatform(vc, NXOS6, 0, 0), equalTo(NEXUS_7000));
       vc.setBootKickstartSup1("bootflash:/n6000-uk9-kickstart.6.0.2.N2.3.bin");
