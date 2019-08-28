@@ -2,6 +2,7 @@ package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -27,13 +28,23 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_PASSIVE = "OSPF_Passive";
   public static final String OSPF_COST = "OSPF_Cost";
   public static final String OSPF_NETWORK_TYPE = "OSPF_Network_Type";
+  public static final String OSPF_DEAD_INTERVAL = "OSPF_Dead_Interval";
+  public static final String OSPF_HELLO_INTERVAL = "OSPF_Hello_Interval";
 
   // create an ordered list
   public static final List<String> PROPERTIES =
-      ImmutableList.of(OSPF_AREA_NAME, OSPF_ENABLED, OSPF_PASSIVE, OSPF_COST, OSPF_NETWORK_TYPE);
+      ImmutableList.of(
+          OSPF_AREA_NAME,
+          OSPF_ENABLED,
+          OSPF_PASSIVE,
+          OSPF_COST,
+          OSPF_NETWORK_TYPE,
+          OSPF_HELLO_INTERVAL,
+          OSPF_DEAD_INTERVAL);
 
   /** Hold a map of property name to property descriptor for OSPF interface properties */
-  private static final Map<String, PropertyDescriptor<OspfInterfaceSettings>> JAVA_MAP =
+  @VisibleForTesting
+  static final Map<String, PropertyDescriptor<OspfInterfaceSettings>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<OspfInterfaceSettings>>()
           .put(
               OSPF_AREA_NAME,
@@ -48,9 +59,21 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
                   Schema.INTEGER,
                   "OSPF cost if explicitly configured"))
           .put(
+              OSPF_DEAD_INTERVAL,
+              new PropertyDescriptor<>(
+                  OspfInterfaceSettings::getDeadInterval,
+                  Schema.INTEGER,
+                  "Interval in seconds before a silent OSPF neighbor is declared dead"))
+          .put(
               OSPF_ENABLED,
               new PropertyDescriptor<>(
                   OspfInterfaceSettings::getEnabled, Schema.BOOLEAN, "Whether OSPF is enabled"))
+          .put(
+              OSPF_HELLO_INTERVAL,
+              new PropertyDescriptor<>(
+                  OspfInterfaceSettings::getHelloInterval,
+                  Schema.INTEGER,
+                  "Interval in seconds between sending OSPF hello messages"))
           .put(
               OSPF_PASSIVE,
               new PropertyDescriptor<>(
