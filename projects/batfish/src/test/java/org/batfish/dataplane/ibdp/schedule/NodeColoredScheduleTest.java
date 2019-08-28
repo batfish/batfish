@@ -184,7 +184,6 @@ public class NodeColoredScheduleTest {
 
   @Test
   public void testTwoNodesConnectedDirectlyViaBGP() {
-    // TODO looks like we need real owners
     BgpTopology bgpTopology =
         initBgpTopology(
             _configurations, new IpOwners(_configurations).getIpVrfOwners(), false, null);
