@@ -1,9 +1,9 @@
 !!!!!! trick Batfish into recognizing this as an NXOS device. !!!!!!
-no feature foo
-!!!!!! trick Batfish into recognizing this as an NXOS device. !!!!!!
 feature bgp
 !
 hostname nxosBgpVrf
+!
+vrf context bar
 !
 router bgp 1
    address-family ipv4 unicast

@@ -5,11 +5,12 @@ feature privilege
 vrf context OTHER-VRF
 !
 interface Ethernet1
+ no switchport
+ vrf member OTHER-VRF
  ip address 10.0.0.1/30
  ip ospf network point-to-point
  no ip ospf passive-interface
  ip router ospf 1 area 0.0.0.1
- vrf member OTHER-VRF
 !
 router ospf 1
  passive-interface default

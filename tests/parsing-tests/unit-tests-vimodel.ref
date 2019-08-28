@@ -27871,7 +27871,6 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "ntpServers" : [
-          "1.2.3.4",
           "10.1.2.3"
         ],
         "vendorFamily" : {
@@ -27879,9 +27878,6 @@
             "hostname" : "nxos_ntp",
             "ntp" : {
               "servers" : {
-                "1.2.3.4" : {
-                  "name" : "1.2.3.4"
-                },
                 "10.1.2.3" : {
                   "name" : "10.1.2.3",
                   "vrf" : "management"
@@ -28132,6 +28128,19 @@
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
+                "summaryAdminCost" : 254
+              },
+              "100" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "100",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "1.1.1.2",
                 "summaryAdminCost" : 254
               },
               "ignored" : {

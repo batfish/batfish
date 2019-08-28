@@ -3,7 +3,7 @@ hostname nxos_ospf
 feature privilege
 !
 interface ethernet0/0
- ip ospf 1 area 1
+ ip router ospf 1 area 1
  ip address 1.1.1.2/31
 !
 !!! Interleave process definitions to test correct enter/exit of VRF stanzas under OSPF
@@ -24,8 +24,9 @@ router ospf ignored
  vrf OTHER
   redistribute direct route-map RM_OSPF_DIRECT
 !
-router ospf 100 vrf foo
- max-metric router-lsa include-stub summary-lsa external-lsa on-startup wait-for-bgp  
+router ospf 100
+ vrf foo
+  max-metric router-lsa external-lsa on-startup wait-for bgp 12345 summary-lsa
 !
 router ospf 1
  vrf OTHER

@@ -4244,6 +4244,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.tag != null) {
       address.setTag(toLong(ctx.tag));
     }
+    if (ctx.rp != null) {
+      address.setRoutePreference(toInteger(ctx.rp));
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Unsupported: route-preference declared in interface IP address");
+    }
   }
 
   @Override
