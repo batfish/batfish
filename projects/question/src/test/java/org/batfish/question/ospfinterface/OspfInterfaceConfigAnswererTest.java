@@ -3,7 +3,9 @@ package org.batfish.question.ospfinterface;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_AREA_NAME;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_COST;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_DEAD_INTERVAL;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_ENABLED;
+import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_HELLO_INTERVAL;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_NETWORK_TYPE;
 import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSPF_PASSIVE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE;
@@ -57,6 +59,9 @@ public class OspfInterfaceConfigAnswererTest {
                 .setCost(2)
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .setHelloMultiplier(2)
+                .setHelloInterval(1)
+                .setDeadInterval(2)
+                .setInboundDistributeListPolicy("policy_name")
                 .build())
         .setOwner(configuration)
         .setVrf(vrf)
@@ -96,7 +101,9 @@ public class OspfInterfaceConfigAnswererTest {
             hasColumn(
                 OSPF_NETWORK_TYPE,
                 equalTo(OspfNetworkType.POINT_TO_POINT.toString()),
-                Schema.STRING)));
+                Schema.STRING),
+            hasColumn(OSPF_DEAD_INTERVAL, equalTo(2), Schema.INTEGER),
+            hasColumn(OSPF_HELLO_INTERVAL, equalTo(1), Schema.INTEGER)));
   }
 
   @Test
@@ -117,6 +124,8 @@ public class OspfInterfaceConfigAnswererTest {
                 .add(OSPF_PASSIVE)
                 .add(OSPF_COST)
                 .add(OSPF_NETWORK_TYPE)
+                .add(OSPF_HELLO_INTERVAL)
+                .add(OSPF_DEAD_INTERVAL)
                 .build()));
   }
 }
