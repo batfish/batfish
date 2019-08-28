@@ -247,6 +247,7 @@ interface Ethernet1/3
   ip address 172.16.0.1/24
   ip ospf authentication null
   ip ospf network point-to-point
+  no ip ospf passive-interface
 interface Ethernet1/4
   no switchport
   no shutdown
