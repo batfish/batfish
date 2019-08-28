@@ -1,7 +1,9 @@
 package org.batfish.representation.cisco_nxos;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,20 +70,28 @@ public abstract class OspfProcess implements Serializable {
     _passiveInterfaceDefault = passiveInterfaceDefault;
   }
 
-  public @Nullable String getRedistributeDirectRouteMap() {
-    return _redistributeDirectRouteMap;
+  /** Return all redistribution policies. */
+  public final @Nonnull List<RedistributionPolicy> getRedistributionPolicies() {
+    return ImmutableList.copyOf(_redistributionPolicies.values());
   }
 
-  public void setRedistributeDirectRouteMap(@Nullable String redistributeDirectRouteMap) {
-    _redistributeDirectRouteMap = redistributeDirectRouteMap;
+  /** Return all redistribution policies for the given protocol. */
+  public final @Nonnull List<RedistributionPolicy> getRedistributionPolicies(
+      NxosRoutingProtocol protocol) {
+    return _redistributionPolicies.values().stream()
+        .filter(rp -> rp.getInstance().getProtocol() == protocol)
+        .collect(ImmutableList.toImmutableList());
   }
 
-  public @Nullable String getRedistributeStaticRouteMap() {
-    return _redistributeStaticRouteMap;
+  /** Return the redistribution policy for the given instance, if one has been configured. */
+  public final @Nullable RedistributionPolicy getRedistributionPolicy(
+      RoutingProtocolInstance protocol) {
+    return _redistributionPolicies.get(protocol);
   }
 
-  public void setRedistributeStaticRouteMap(@Nullable String redistributeStaticRouteMap) {
-    _redistributeStaticRouteMap = redistributeStaticRouteMap;
+  /** Set the redistribution policy for the given instance. */
+  public final void setRedistributionPolicy(RoutingProtocolInstance instance, String routeMap) {
+    _redistributionPolicies.put(instance, new RedistributionPolicy(instance, routeMap));
   }
 
   public @Nullable Ip getRouterId() {
@@ -147,8 +157,7 @@ public abstract class OspfProcess implements Serializable {
   private @Nullable OspfMaxMetricRouterLsa _maxMetricRouterLsa;
   private final @Nonnull Map<IpWildcard, Long> _networks;
   private boolean _passiveInterfaceDefault;
-  private @Nullable String _redistributeDirectRouteMap;
-  private @Nullable String _redistributeStaticRouteMap;
+  private final Map<RoutingProtocolInstance, RedistributionPolicy> _redistributionPolicies;
   private @Nullable Ip _routerId;
   private final @Nonnull Map<Prefix, OspfSummaryAddress> _summaryAddresses;
   private int _timersLsaArrivalMbps;
@@ -161,6 +170,7 @@ public abstract class OspfProcess implements Serializable {
     _areas = new HashMap<>();
     _autoCostReferenceBandwidthMbps = DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS;
     _networks = new HashMap<>();
+    _redistributionPolicies = new HashMap<>();
     _summaryAddresses = new HashMap<>();
     _timersLsaArrivalMbps = DEFAULT_TIMERS_LSA_ARRIVAL_MS;
     _timersLsaGroupPacingS = DEFAULT_TIMERS_LSA_GROUP_PACING_S;

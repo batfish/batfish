@@ -4810,13 +4810,18 @@ public final class CiscoNxosGrammarTest {
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("r_direct");
-      assertThat(proc.getRedistributeDirectRouteMap(), equalTo("rm1"));
+      assertThat(proc.getRedistributionPolicies(), hasSize(1));
+      assertThat(
+          proc.getRedistributionPolicy(RoutingProtocolInstance.direct()),
+          equalTo(new RedistributionPolicy(RoutingProtocolInstance.direct(), "rm1")));
     }
     // TODO: extract and test redistribute maximum-prefix
     {
       OspfProcess proc = vc.getOspfProcesses().get("r_static");
-      assertThat(proc.getRedistributeStaticRouteMap(), equalTo("rm1"));
-      assertThat(proc.getRouterId(), nullValue());
+      assertThat(proc.getRedistributionPolicies(), hasSize(1));
+      assertThat(
+          proc.getRedistributionPolicy(RoutingProtocolInstance.staticc()),
+          equalTo(new RedistributionPolicy(RoutingProtocolInstance.staticc(), "rm1")));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("router_id");

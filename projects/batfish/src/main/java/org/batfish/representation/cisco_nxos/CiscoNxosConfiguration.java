@@ -1457,7 +1457,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
-        CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
+        CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT,
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTE_MAP_ENTRY, CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE);
     markConcreteStructure(
@@ -1465,16 +1466,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_EIGRP,
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
+
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_ISIS,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPF,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_OSPF,
-        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPFV3,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
@@ -1482,7 +1487,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_RIP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);
@@ -2158,7 +2164,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
 
     // First try redistributing static routes, which may include default route
-    Optional.ofNullable(proc.getRedistributeStaticRouteMap())
+    Optional.ofNullable(proc.getRedistributionPolicy(RoutingProtocolInstance.staticc()))
+        .map(RedistributionPolicy::getRouteMap)
         .filter(_c.getRoutingPolicies()::containsKey)
         .ifPresent(
             routeMapName -> {
@@ -2200,7 +2207,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       exportStatementsBuilder.add(new If(guard, defaultOriginateStatements.build()));
     }
     // Then try remaining redistribution policies
-    Optional.ofNullable(proc.getRedistributeDirectRouteMap())
+    Optional.ofNullable(proc.getRedistributionPolicy(RoutingProtocolInstance.direct()))
+        .map(RedistributionPolicy::getRouteMap)
         .filter(_c.getRoutingPolicies()::containsKey)
         .ifPresent(
             routeMapName -> {
