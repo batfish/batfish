@@ -292,12 +292,24 @@ no_null
 
 no_system
 :
-  SYSTEM no_sys_default
+  SYSTEM
+  (
+    no_sys_default
+    | no_sys_null
+  )
 ;
 
 no_sys_default
 :
   DEFAULT no_sysd_switchport
+;
+
+no_sys_null
+:
+  (
+    INTERFACE
+    | MODE
+  ) null_rest_of_line
 ;
 
 no_sysd_switchport
