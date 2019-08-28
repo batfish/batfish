@@ -24,7 +24,10 @@ ntp peer 192.168.0.1
 ntp peer 192.168.0.2
 
 ntp server 192.0.2.1
-ntp server 192.0.2.2 use-vrf management
-ntp server 192.0.2.3 prefer
+ntp server 192.0.2.2 key 12345
+ntp server 192.0.2.2 maxpoll 10
+ntp server 192.0.2.2 minpoll 10
+ntp server 192.0.2.3 use-vrf management key 12345 minpoll 10 maxpoll 10
+ntp server 192.0.2.4 prefer
 
 ntp source-interface mgmt0

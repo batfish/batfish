@@ -1388,6 +1388,7 @@ public final class CiscoNxosGrammarTest {
       InterfaceAddressWithAttributes secondary3 =
           new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.3/24"));
       secondary3.setTag(3L);
+      secondary3.setRoutePreference(5);
       assertThat(iface.getAddress(), equalTo(primary));
       assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary2, secondary3));
       assertFalse(iface.getIpAddressDhcp());
@@ -3969,7 +3970,8 @@ public final class CiscoNxosGrammarTest {
   public void testNtpConversion() throws IOException {
     Configuration c = parseConfig("nxos_ntp");
 
-    assertThat(c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3"));
+    assertThat(
+        c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3", "192.0.2.4"));
     assertThat(c.getNtpSourceInterface(), equalTo("mgmt0"));
   }
 
@@ -3977,7 +3979,7 @@ public final class CiscoNxosGrammarTest {
   public void testNtpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp");
 
-    assertThat(vc.getNtpServers(), hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3"));
+    assertThat(vc.getNtpServers(), hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3", "192.0.2.4"));
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.1");
       assertFalse(ntpServer.getPrefer());
@@ -3986,10 +3988,15 @@ public final class CiscoNxosGrammarTest {
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.2");
       assertFalse(ntpServer.getPrefer());
-      assertThat(ntpServer.getUseVrf(), equalTo("management"));
+      assertThat(ntpServer.getUseVrf(), nullValue());
     }
     {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.3");
+      assertFalse(ntpServer.getPrefer());
+      assertThat(ntpServer.getUseVrf(), equalTo("management"));
+    }
+    {
+      NtpServer ntpServer = vc.getNtpServers().get("192.0.2.4");
       assertTrue(ntpServer.getPrefer());
       assertThat(ntpServer.getUseVrf(), nullValue());
     }

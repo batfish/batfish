@@ -6350,7 +6350,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_ospf_area(If_ip_ospf_areaContext ctx) {
-    long area = toInteger(ctx.area);
+    long area;
+    if (ctx.area_dec != null) {
+      area = toInteger(ctx.area_dec);
+    } else {
+      assert ctx.area_ip != null;
+      area = toIp(ctx.area_ip).asLong();
+    }
     String ospfProcessName = ctx.procname.getText();
     for (Interface iface : _currentInterfaces) {
       iface.setOspfArea(area);
@@ -6442,7 +6448,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_router_ospf_area(If_ip_router_ospf_areaContext ctx) {
-    long area = toIp(ctx.area).asLong();
+    long area;
+    if (ctx.area_dec != null) {
+      area = toInteger(ctx.area_dec);
+    } else {
+      assert ctx.area_ip != null;
+      area = toIp(ctx.area_ip).asLong();
+    }
     String ospfProcessName = ctx.procname.getText();
     for (Interface iface : _currentInterfaces) {
       iface.setOspfArea(area);

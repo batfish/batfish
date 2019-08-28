@@ -70,7 +70,16 @@ vcaf6u_route_target
 
 vc_ip
 :
-  IP ip_route
+  IP
+  (
+    ip_route
+    | vc_ip_null
+  )
+;
+
+vc_ip_null
+:
+  PIM null_rest_of_line
 ;
 
 vc_no
@@ -87,6 +96,8 @@ vc_null
 :
   (
     DESCRIPTION
+    | MDT
+    | PIM
   ) null_rest_of_line
 ;
 

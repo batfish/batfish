@@ -390,8 +390,9 @@ i_ip_address_concrete
 :
   addr = interface_address SECONDARY?
   (
-    TAG tag = uint32
-  )? NEWLINE
+    ROUTE_PREFERENCE rp = uint8
+    | TAG tag = uint32
+  )* NEWLINE
 ;
 
 i_ip_address_dhcp

@@ -21,6 +21,14 @@ public final class InterfaceAddressWithAttributes implements Serializable {
     return _address;
   }
 
+  public int getRoutePreference() {
+    return _routePreference;
+  }
+
+  public void setRoutePreference(@Nullable Integer routePreference) {
+    _routePreference = firstNonNull(routePreference, 0);
+  }
+
   public long getTag() {
     return _tag;
   }
@@ -34,6 +42,7 @@ public final class InterfaceAddressWithAttributes implements Serializable {
   //////////////////////////////////////////////////
 
   private final @Nonnull InterfaceAddress _address;
+  private int _routePreference;
   private long _tag;
 
   @Override
@@ -44,12 +53,14 @@ public final class InterfaceAddressWithAttributes implements Serializable {
       return false;
     }
     InterfaceAddressWithAttributes that = (InterfaceAddressWithAttributes) o;
-    return _address.equals(that._address) && _tag == that._tag;
+    return _address.equals(that._address)
+        && _routePreference == that._routePreference
+        && _tag == that._tag;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_address, _tag);
+    return Objects.hash(_address, _routePreference, _tag);
   }
 
   @Override
@@ -57,6 +68,7 @@ public final class InterfaceAddressWithAttributes implements Serializable {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
         .add("address", _address)
+        .add("routePreference", _routePreference)
         .add("tag", _tag)
         .toString();
   }

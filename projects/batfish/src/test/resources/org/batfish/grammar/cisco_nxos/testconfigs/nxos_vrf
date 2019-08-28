@@ -74,3 +74,10 @@ vrf context vrf3
   rd 1.2.3.4:65535
   rd auto
   shutdown
+
+vrf context management
+  ip pim bidir-rp-limit 6
+  mdt mtu 1376
+  mdt enforce-bgp-mdt-safi
+  mdt pim hello-interval 30000
+  mdt pim jp-interval 60

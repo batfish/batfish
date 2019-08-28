@@ -2452,7 +2452,7 @@
       },
       {
         "Filename" : "configs/nxos/nxos_vrf",
-        "Line" : 26,
+        "Line" : 24,
         "Text" : "shutdown",
         "Parser_Context" : "[vrfc_shutdown s_vrf_context stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"

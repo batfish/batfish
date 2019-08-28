@@ -6,6 +6,12 @@ options {
   tokenVocab = CiscoNxosLexer;
 }
 
+ntp_poll_interval
+:
+// 4-16
+  uint8
+;
+
 s_ntp
 :
   NTP
@@ -106,9 +112,27 @@ ntp_server
 :
   SERVER host = ntp_host
   (
-    ntps_prefer
+    ntps_key
+    | ntps_maxpoll
+    | ntps_minpoll
+    | ntps_prefer
     | ntps_use_vrf
   )* NEWLINE
+;
+
+ntps_key
+:
+  KEY ntp_authentication_key_number
+;
+
+ntps_maxpoll
+:
+  MAXPOLL ntp_poll_interval
+;
+
+ntps_minpoll
+:
+  MINPOLL ntp_poll_interval
 ;
 
 ntps_prefer
