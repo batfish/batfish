@@ -274,7 +274,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
-import org.batfish.common.topology.IpOwners;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
@@ -3683,7 +3682,8 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
+    Map<Ip, Map<String, Set<String>>> ipOwners =
+        batfish.getTopologyProvider().getIpOwners(batfish.getNetworkSnapshot()).getIpVrfOwners();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, null).getGraph();
 

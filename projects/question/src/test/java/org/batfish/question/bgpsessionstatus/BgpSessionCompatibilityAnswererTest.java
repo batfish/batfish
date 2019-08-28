@@ -151,8 +151,12 @@ public class BgpSessionCompatibilityAnswererTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    Map<Ip, Set<String>> ipOwners =
-        ImmutableMap.of(localIp, ImmutableSet.of("c1"), remoteIp, ImmutableSet.of("c2"));
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        ImmutableMap.of(
+            localIp,
+            ImmutableMap.of("c1", ImmutableSet.of("vrf1")),
+            remoteIp,
+            ImmutableMap.of("c2", ImmutableSet.of("vrf2")));
 
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
@@ -161,7 +165,7 @@ public class BgpSessionCompatibilityAnswererTest {
     bgpTopology.putEdgeValue(
         remotePeerId, peerId, BgpSessionProperties.from(peer, remotePeer, true));
 
-    Row row = getActivePeerRow(peerId, peer, ipOwners, bgpTopology);
+    Row row = getActivePeerRow(peerId, peer, ipVrfOwners, bgpTopology);
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)

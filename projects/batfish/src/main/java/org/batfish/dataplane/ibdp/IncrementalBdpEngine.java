@@ -1,6 +1,5 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
@@ -31,6 +30,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
@@ -83,7 +83,8 @@ class IncrementalBdpEngine {
       _bfLogger.info("\nComputing Data Plane using iBDP\n");
 
       // TODO: switch to topologies and owners from TopologyProvider
-      Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(configurations, true);
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners = new IpOwners(configurations).getIpVrfOwners();
+
       TopologyContext initialTopologyContext =
           callerTopologyContext
               .toBuilder()
@@ -182,7 +183,7 @@ class IncrementalBdpEngine {
           BgpTopology newBgpTopology =
               initBgpTopology(
                   configurations,
-                  ipOwners,
+                  ipVrfOwners,
                   false,
                   true,
                   new TracerouteEngineImpl(partialDataplane, newLayer3Topology),
@@ -206,7 +207,7 @@ class IncrementalBdpEngine {
                   answerElement,
                   newTopologyContext,
                   networkConfigurations,
-                  ipOwners);
+                  ipVrfOwners);
           if (isOscillating) {
             // If we are oscillating here, network has no stable solution.
             throw new BdpOscillationException("Network has no stable solution");
@@ -566,7 +567,7 @@ class IncrementalBdpEngine {
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
    * @param topologyContext The various network topologies
-   * @param ipOwners The ip owner mapping
+   * @param ipVrfOwners The ip owner mapping
    * @return true iff the computation is oscillating
    */
   private boolean computeNonMonotonicPortionOfDataPlane(
@@ -575,7 +576,7 @@ class IncrementalBdpEngine {
       IncrementalBdpAnswerElement ae,
       TopologyContext topologyContext,
       NetworkConfigurations networkConfigurations,
-      Map<Ip, Set<String>> ipOwners) {
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute EGP").startActive()) {
       assert span != null; // avoid unused warning
 
@@ -616,7 +617,7 @@ class IncrementalBdpEngine {
             .forEach(
                 vr -> {
                   vr.processExternalBgpAdvertisements(
-                      externalAdverts, ipOwners, nodes, bgpTopology, networkConfigurations);
+                      externalAdverts, ipVrfOwners, nodes, bgpTopology, networkConfigurations);
                   vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 });
       }

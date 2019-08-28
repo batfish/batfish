@@ -32,7 +32,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -57,6 +56,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.SpecifierContext;
 
 /** Answerer for {@link BgpSessionStatusQuestion} */
 public class BgpSessionStatusAnswerer extends Answerer {
@@ -122,10 +122,11 @@ public class BgpSessionStatusAnswerer extends Answerer {
   private List<Row> getRows(BgpSessionStatusQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
-    Set<String> remoteNodes =
-        question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
-    Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
+    SpecifierContext specifierContext = _batfish.specifierContext();
+    Set<String> nodes = question.getNodeSpecifier().resolve(specifierContext);
+    Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        _batfish.getTopologyProvider().getIpOwners(_batfish.getNetworkSnapshot()).getIpVrfOwners();
     Layer2Topology layer2Topology =
         _batfish
             .getTopologyProvider()
@@ -133,7 +134,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
             .orElse(null);
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true, layer2Topology).getGraph();
+        BgpTopologyUtils.initBgpTopology(configurations, ipVrfOwners, true, layer2Topology)
+            .getGraph();
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology =
         _batfish.getTopologyProvider().getBgpTopology(_batfish.getNetworkSnapshot()).getGraph();
@@ -148,7 +150,11 @@ public class BgpSessionStatusAnswerer extends Answerer {
                   assert activePeer != null;
                   return Stream.of(
                       getActivePeerRow(
-                          peerId, activePeer, ipOwners, configuredTopology, establishedTopology));
+                          peerId,
+                          activePeer,
+                          ipVrfOwners,
+                          configuredTopology,
+                          establishedTopology));
                 case DYNAMIC:
                   BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
                   assert passivePeer != null;
@@ -175,7 +181,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
   static Row getActivePeerRow(
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
-      Map<Ip, Set<String>> ipOwners,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology) {
     SessionType type = getSessionType(activePeer);
@@ -194,7 +200,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       String remoteNodeName =
           establishedTopology.adjacentNodes(activeId).iterator().next().getHostname();
       remoteNode = new Node(remoteNodeName);
-    } else if (getConfiguredStatus(activeId, activePeer, type, ipOwners, configuredTopology)
+    } else if (getConfiguredStatus(activeId, activePeer, type, ipVrfOwners, configuredTopology)
         == UNIQUE_MATCH) {
       status = NOT_ESTABLISHED;
       // This peer has a unique match, but it's unreachable. Show that remote peer's node.

@@ -122,8 +122,12 @@ public class BgpTopologyUtilsTest {
             .build();
     _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(peer2PeerPrefix, peer2));
 
-    Map<Ip, Set<String>> ipOwners =
-        ImmutableMap.of(ip1, ImmutableSet.of(NODE1), ip2, ImmutableSet.of(NODE2));
+    Map<Ip, Map<String, Set<String>>> ipOwners =
+        ImmutableMap.of(
+            ip1,
+            ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)),
+            ip2,
+            ImmutableMap.of(NODE2, ImmutableSet.of(DEFAULT_VRF_NAME)));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(_configs, ipOwners, true, false, null, null).getGraph();
@@ -169,9 +173,14 @@ public class BgpTopologyUtilsTest {
     _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(prefixForPeer1, peer2));
     _node3BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(prefixForPeer1, peer3));
 
-    Map<Ip, Set<String>> ipOwners =
+    Map<Ip, Map<String, Set<String>>> ipOwners =
         ImmutableMap.of(
-            ip1, ImmutableSet.of(NODE1), ip2, ImmutableSet.of(NODE2), ip3, ImmutableSet.of(NODE3));
+            ip1,
+            ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)),
+            ip2,
+            ImmutableMap.of(NODE2, ImmutableSet.of(DEFAULT_VRF_NAME)),
+            ip3,
+            ImmutableMap.of(NODE3, ImmutableSet.of(DEFAULT_VRF_NAME)));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(_configs, ipOwners, true, false, null, null).getGraph();
