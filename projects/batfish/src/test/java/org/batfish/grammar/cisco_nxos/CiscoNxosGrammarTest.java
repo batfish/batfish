@@ -75,6 +75,7 @@ import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_6000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_7000;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_9000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS5;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS6;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
@@ -626,7 +627,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_boot_nxos";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NEXUS_9000));
   }
 
   @Test
@@ -3952,7 +3953,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c.getVendorFamily().getCiscoNxos().getPlatform(), equalTo(NexusPlatform.UNKNOWN));
-    assertThat(c, hasInterface("Ethernet1/1", isActive(false)));
+    assertThat(c, hasInterface("Ethernet1/1", isActive(true)));
   }
 
   @Test

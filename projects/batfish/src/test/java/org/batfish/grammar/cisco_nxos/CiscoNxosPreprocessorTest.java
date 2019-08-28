@@ -4,6 +4,7 @@ import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_6000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_7000;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_9000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS5;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS6;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS7;
@@ -14,7 +15,6 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferMajorVer
 import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferPlatform;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferPlatformFromImage;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -339,50 +339,74 @@ public final class CiscoNxosPreprocessorTest {
     assertThat(
         inferPlatformFromImage("bootflash:/titanium-d1.7.3.0.D1.1.bin"), equalTo(NEXUS_7000));
 
-    //// Nexus 9000
-    // NOTE: these could be either Nexus 3000 or Nexus 9000.
-    // TODO: find some other way to uniquely identify Nexus 9000.
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I2.2b.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I2.3.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I3.1.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I3.1.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.1.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.3.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.5.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.5.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.5.comp3048.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.5.comp3172.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I5.1.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I5.2.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I7.2.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.7.0.3.I7.4.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/poap/nxos.7.0.3.I3.1.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.9.2.1.bin"), nullValue());
-    assertThat(inferPlatformFromImage("bootflash:/nxos.9.2.3.bin"), nullValue());
+    //// Either Nexus 3000 or Nexus 9000
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I2.2b.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I2.3.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I3.1.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I3.1.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.1.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.3.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.5.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.5.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.5.comp3048.bin"),
+        equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I4.5.comp3172.bin"),
+        equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I5.1.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I5.2.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I7.2.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.7.0.3.I7.4.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/poap/nxos.7.0.3.I3.1.bin"),
+        equalTo(NexusPlatform.UNKNOWN));
+    assertThat(inferPlatformFromImage("bootflash:/nxos.9.2.1.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(inferPlatformFromImage("bootflash:/nxos.9.2.3.bin"), equalTo(NexusPlatform.UNKNOWN));
   }
 
   @Test
   public void testInferPlatform() {
     {
       CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
-      // TODO: something better with multi-platform images
-      assertThat(inferPlatform(vc), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(
+          inferPlatform(vc, NxosMajorVersion.UNKNOWN, 0, 0, 0), equalTo(NexusPlatform.UNKNOWN));
       vc.setBootNxosSup2("bootflash:/nxos.9.2.3.bin");
-      assertThat(inferPlatform(vc), equalTo(NexusPlatform.UNKNOWN));
-      vc.setBootNxosSup1("bootflash:/nxos.9.2.3.bin");
-      assertThat(inferPlatform(vc), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(inferPlatform(vc, NXOS7, 0, 0, 0), equalTo(NEXUS_9000));
+      assertThat(inferPlatform(vc, NXOS7, 1, 0, 0), equalTo(NEXUS_3000));
+      assertThat(inferPlatform(vc, NXOS7, 1, 0, 1), equalTo(NEXUS_9000));
+      assertThat(inferPlatform(vc, NXOS7, 1, 1, 0), equalTo(NEXUS_3000));
+      assertThat(inferPlatform(vc, NXOS7, 1, 1, 1), equalTo(NEXUS_3000));
+      assertThat(inferPlatform(vc, NXOS9, 0, 0, 0), equalTo(NEXUS_9000));
+      assertThat(inferPlatform(vc, NXOS9, 1, 0, 0), equalTo(NEXUS_9000));
+      assertThat(inferPlatform(vc, NXOS9, 1, 0, 1), equalTo(NEXUS_9000));
+      assertThat(inferPlatform(vc, NXOS9, 1, 1, 0), equalTo(NEXUS_9000));
+      assertThat(inferPlatform(vc, NXOS9, 1, 1, 1), equalTo(NEXUS_9000));
     }
     {
       CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
-      assertThat(inferPlatform(vc), equalTo(NexusPlatform.UNKNOWN));
+      assertThat(
+          inferPlatform(vc, NxosMajorVersion.UNKNOWN, 0, 0, 0), equalTo(NexusPlatform.UNKNOWN));
       vc.setBootKickstartSup2("bootflash:/n7000-s2-kickstart.6.2.16.bin");
-      assertThat(inferPlatform(vc), equalTo(NEXUS_7000));
+      assertThat(inferPlatform(vc, NXOS6, 0, 0, 0), equalTo(NEXUS_7000));
       vc.setBootKickstartSup1("bootflash:/n6000-uk9-kickstart.6.0.2.N2.3.bin");
-      assertThat(inferPlatform(vc), equalTo(NEXUS_6000));
+      assertThat(inferPlatform(vc, NXOS6, 0, 0, 0), equalTo(NEXUS_6000));
       vc.setBootSystemSup2("bootflash:/n5000-uk9.5.1.3.N1.1a.bin");
-      assertThat(inferPlatform(vc), equalTo(NEXUS_5000));
+      assertThat(inferPlatform(vc, NXOS5, 0, 0, 0), equalTo(NEXUS_5000));
       vc.setBootSystemSup1("bootflash:/n3000-uk9.6.0.2.U3.2.bin");
-      assertThat(inferPlatform(vc), equalTo(NEXUS_3000));
+      assertThat(inferPlatform(vc, NXOS6, 0, 0, 0), equalTo(NEXUS_3000));
     }
   }
 }

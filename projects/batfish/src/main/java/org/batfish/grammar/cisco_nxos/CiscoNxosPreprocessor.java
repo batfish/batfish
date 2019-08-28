@@ -137,27 +137,61 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
    * Infers {@code NexusPlatform} of a configuration based on names of boot image files. Returns
    * {@link NexusPlatform#UNKNOWN} if unique inference cannot be made.
    */
-  public static @Nonnull NexusPlatform inferPlatform(CiscoNxosConfiguration vc) {
-    return Stream.of(
-            vc.getBootNxosSup1(),
-            vc.getBootNxosSup2(),
-            vc.getBootSystemSup1(),
-            vc.getBootSystemSup2(),
-            vc.getBootKickstartSup1(),
-            vc.getBootKickstartSup2())
-        .filter(Objects::nonNull)
-        .map(CiscoNxosPreprocessor::inferPlatformFromImage)
-        .filter(Objects::nonNull)
-        .findFirst()
-        .orElse(NexusPlatform.UNKNOWN);
+  public static @Nonnull NexusPlatform inferPlatform(
+      CiscoNxosConfiguration vc,
+      NxosMajorVersion majorVersion,
+      int numLayer3UnconfiguredShutdown,
+      int numLayer3ExplicitShutdown,
+      int numLayer3ExplicitNoShutdown) {
+    NexusPlatform initialGuess =
+        Stream.of(
+                vc.getBootNxosSup1(),
+                vc.getBootNxosSup2(),
+                vc.getBootSystemSup1(),
+                vc.getBootSystemSup2(),
+                vc.getBootKickstartSup1(),
+                vc.getBootKickstartSup2())
+            .filter(Objects::nonNull)
+            .map(CiscoNxosPreprocessor::inferPlatformFromImage)
+            .findFirst()
+            .orElse(null);
+    if (initialGuess == null) {
+      // No boot information from which to infer platform
+      return NexusPlatform.UNKNOWN;
+    }
+    if (initialGuess != NexusPlatform.UNKNOWN) {
+      return initialGuess;
+    }
+    // Assume that UNKNOWN means Nexus 3000/9000. Find likely default layer-3 shutdown behavior, and
+    // infer platform accordingly
+    if (majorVersion == NxosMajorVersion.NXOS9) {
+      // In this case, defaults are same for Nexus 3000 and Nexus 9000. So just arbitrarily chooose
+      // Nexus 9000.
+      return NexusPlatform.NEXUS_9000;
+    }
+    if (numLayer3UnconfiguredShutdown == 0) {
+      // Default has no effect. Arbitrarily choose Nexus 9000.
+      return NexusPlatform.NEXUS_9000;
+    }
+    if (numLayer3ExplicitNoShutdown == 0 && numLayer3ExplicitShutdown > 0) {
+      // Apparently, default layer-3 admin status is no shutdown. This corresponds to Nexus 3000.
+      return NexusPlatform.NEXUS_3000;
+    }
+    if (numLayer3ExplicitNoShutdown > 0 && numLayer3ExplicitShutdown == 0) {
+      // Apparently, default layer-3 admin status is shutdown. This corresponds to Nexus 9000.
+      return NexusPlatform.NEXUS_9000;
+    }
+    // Explicits are either both zero or both non-zero.
+    // No idea, really. Bias towards no shutdown by default, i.e. Nexus 3000.
+    return NexusPlatform.NEXUS_3000;
   }
 
   /**
    * Infers {@code NexusPlatform} of a configuration based on name of boot image file. Returns
-   * {@code null} if unique inference cannot be made.
+   * {@link NexusPlatform#UNKNOWN} if unique inference cannot be made.
    */
   @VisibleForTesting
-  static @Nullable NexusPlatform inferPlatformFromImage(String image) {
+  static @Nonnull NexusPlatform inferPlatformFromImage(String image) {
     if (image.contains("n3000")) {
       return NexusPlatform.NEXUS_3000;
     } else if (image.contains("n5000")) {
@@ -167,7 +201,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
     } else if (image.contains("n7000") || image.contains("n7700") || image.contains("titanium")) {
       return NexusPlatform.NEXUS_7000;
     } else {
-      return null;
+      return NexusPlatform.UNKNOWN;
     }
   }
 
@@ -225,14 +259,29 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
     }
   }
 
-  public static boolean getNonSwitchportDefaultShutdown(NexusPlatform platform) {
+  public static boolean getNonSwitchportDefaultShutdown(
+      NexusPlatform platform, NxosMajorVersion majorVersion) {
     switch (platform) {
       case NEXUS_1000V:
         // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus1000/sw/4_2_1_s_v_1_4/command/reference/n1000v_cmd_ref/n1000v_cmds_s.html
         return false;
       case NEXUS_3000:
-        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3000/sw/command/reference/5_0_3/interfaces/3k_cmd_ref_if/3k_cmd_ref_if_cmds.html
-        return false;
+        switch (majorVersion) {
+          case NXOS5:
+          case NXOS6:
+          case NXOS7:
+            // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3000/sw/command/reference/5_0_3/interfaces/3k_cmd_ref_if/3k_cmd_ref_if_cmds.html
+            // TODO: verify for NXOS6,7
+            return false;
+          case NXOS9:
+            // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3600/sw/93x/interfaces/configuration/guide/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x_chapter_011.html
+            return true;
+          case NXOS4:
+          case UNKNOWN:
+          default:
+            throw new IllegalArgumentException(
+                String.format("Unsupported major version: %s", majorVersion));
+        }
       case NEXUS_5000:
         // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus5000/sw/interfaces/command/cisco_nexus_5000_interfaces_command_ref/s_commands.html
         return false;
@@ -246,14 +295,12 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
         return false;
       case NEXUS_9000:
         // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/interfaces/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_Interfaces_Configuration_Guide/b_Cisco_Nexus_9000_Series_NX-OS_Interfaces_Configuration_Guide_chapter_010.html
-        return true;
-      case UNKNOWN:
-        // currently includes nexus 9000; nexus 3000 with NX-OS 9. In either case, shutdown by
-        // default.
         // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/92x/interfaces/configuration/guide/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-92x/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-92x_chapter_011.html#concept_B279E7CC6BC04683BE07B09298887229
         return true;
+      case UNKNOWN:
       default:
-        throw new IllegalArgumentException(String.format("Unsupported platform: %s", platform));
+        // bias towards interfaces being on
+        return false;
     }
   }
 
@@ -268,11 +315,16 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   @SuppressWarnings("unused")
   private final @Nonnull Warnings _w;
 
+  private Boolean _currentInterfaceLayer3;
+  private Boolean _currentInterfaceShutdown;
   private Boolean _currentInterfaceSubinterface;
   private Boolean _currentInterfaceSwitchport;
   private CiscoNxosInterfaceType _currentInterfaceType;
-  private int _defaultLayer3EvidenceCount;
   private int _defaultLayer2EvidenceCount;
+  private int _defaultLayer3EvidenceCount;
+  private int _numLayer3ExplicitNoShutdown;
+  private int _numLayer3ExplicitShutdown;
+  private int _numLayer3UnconfiguredShutdown;
 
   // stop collecting evidence once this becomes true
   private boolean _explicitSystemDefaultSwitchport;
@@ -292,9 +344,16 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   public void exitCisco_nxos_configuration(Cisco_nxos_configurationContext ctx) {
     NxosMajorVersion majorVersion = inferMajorVersion(_configuration);
     _configuration.setMajorVersion(majorVersion);
-    NexusPlatform platform = inferPlatform(_configuration);
+    NexusPlatform platform =
+        inferPlatform(
+            _configuration,
+            majorVersion,
+            _numLayer3UnconfiguredShutdown,
+            _numLayer3ExplicitShutdown,
+            _numLayer3ExplicitNoShutdown);
     _configuration.setPlatform(platform);
-    _configuration.setNonSwitchportDefaultShutdown(getNonSwitchportDefaultShutdown(platform));
+    _configuration.setNonSwitchportDefaultShutdown(
+        getNonSwitchportDefaultShutdown(platform, majorVersion));
     _configuration.setSystemDefaultSwitchport(
         getDefaultDefaultSwitchport(
             _configuration,
@@ -358,26 +417,42 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
 
   @Override
   public void enterS_interface_regular(S_interface_regularContext ctx) {
-    _currentInterfaceType = toType(ctx.irange.iname.prefix);
+    _currentInterfaceLayer3 = false;
+    _currentInterfaceShutdown = null;
     _currentInterfaceSwitchport = null;
     _currentInterfaceSubinterface = ctx.irange.getText().contains(".");
+    _currentInterfaceType = toType(ctx.irange.iname.prefix);
   }
 
   @Override
   public void exitS_interface_regular(S_interface_regularContext ctx) {
-    _currentInterfaceType = null;
+    if (providesLayer3DefaultShutdownEvidence()) {
+      if (_currentInterfaceShutdown == null) {
+        _numLayer3UnconfiguredShutdown++;
+      } else if (_currentInterfaceShutdown) {
+        _numLayer3ExplicitShutdown++;
+      } else {
+        _numLayer3ExplicitNoShutdown++;
+      }
+    }
+
+    _currentInterfaceLayer3 = null;
+    _currentInterfaceShutdown = null;
     _currentInterfaceSwitchport = null;
     _currentInterfaceSubinterface = null;
+    _currentInterfaceType = null;
   }
 
   @Override
   public void exitI_no_switchport(I_no_switchportContext ctx) {
     _currentInterfaceSwitchport = false;
+    _currentInterfaceLayer3 = true;
   }
 
   @Override
   public void exitI_switchport_switchport(I_switchport_switchportContext ctx) {
     _currentInterfaceSwitchport = true;
+    _currentInterfaceLayer3 = false;
   }
 
   @Override
@@ -390,10 +465,17 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
     _explicitSystemDefaultSwitchport = true;
   }
 
-  private boolean providesEvidence() {
+  private boolean providesSwitchportEvidence() {
     return !_explicitSystemDefaultSwitchport
         && !_currentInterfaceSubinterface
         && _currentInterfaceSwitchport == null
+        && (_currentInterfaceType == CiscoNxosInterfaceType.ETHERNET
+            || _currentInterfaceType == CiscoNxosInterfaceType.PORT_CHANNEL);
+  }
+
+  private boolean providesLayer3DefaultShutdownEvidence() {
+    return !_currentInterfaceSubinterface
+        && Boolean.TRUE.equals(_currentInterfaceLayer3)
         && (_currentInterfaceType == CiscoNxosInterfaceType.ETHERNET
             || _currentInterfaceType == CiscoNxosInterfaceType.PORT_CHANNEL);
   }
@@ -404,7 +486,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   public void exitI_switchport(I_switchportContext ctx) {
     // any line but "switchport\n" (i_switchoprt_switchport) is configuring an L2 property.
     boolean configuringL2Property = (ctx.i_switchport_switchport() == null);
-    if (configuringL2Property && providesEvidence()) {
+    if (configuringL2Property && providesSwitchportEvidence()) {
       _defaultLayer2EvidenceCount++;
     }
   }
@@ -413,15 +495,17 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
 
   @Override
   public void exitI_ip_address(I_ip_addressContext ctx) {
-    if (providesEvidence()) {
+    if (providesSwitchportEvidence()) {
       _defaultLayer3EvidenceCount++;
     }
+    _currentInterfaceLayer3 = true;
   }
 
   @Override
   public void exitI_vrf_member(I_vrf_memberContext ctx) {
-    if (providesEvidence()) {
+    if (providesSwitchportEvidence()) {
       _defaultLayer3EvidenceCount++;
     }
+    _currentInterfaceLayer3 = true;
   }
 }
