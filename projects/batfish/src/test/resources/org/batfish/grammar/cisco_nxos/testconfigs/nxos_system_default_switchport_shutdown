@@ -3,6 +3,9 @@
 hostname nxos_system_default_switchport_shutdown
 !
 
+! force predictable results
+boot nxos bootflash:/nxos.9.2.3.bin
+
 system default switchport shutdown
 
 !!! switchports
