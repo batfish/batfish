@@ -149,8 +149,12 @@ public class BgpSessionStatusAnswererTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    Map<Ip, Set<String>> ipOwners =
-        ImmutableMap.of(localIp, ImmutableSet.of("c1"), remoteIp, ImmutableSet.of("c2"));
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        ImmutableMap.of(
+            localIp,
+            ImmutableMap.of("c1", ImmutableSet.of("vrf1")),
+            remoteIp,
+            ImmutableMap.of("c2", ImmutableSet.of("vrf2")));
 
     // Topology containing both peers, but no link between them
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> unlinkedTopology =
@@ -167,7 +171,7 @@ public class BgpSessionStatusAnswererTest {
         remotePeerId, peerId, BgpSessionProperties.from(peer, remotePeer, true));
 
     // Case 1: Peers are compatible, but can't reach each other (established topology is empty)
-    Row row = getActivePeerRow(peerId, peer, ipOwners, linkedTopology, unlinkedTopology);
+    Row row = getActivePeerRow(peerId, peer, ipVrfOwners, linkedTopology, unlinkedTopology);
     Row.RowBuilder expected =
         Row.builder()
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_ESTABLISHED)
@@ -185,12 +189,12 @@ public class BgpSessionStatusAnswererTest {
 
     // Case 2: Peers are NOT both compatible, but session comes up (could happen if one peer is
     // missing local IP or has multiple compatible remotes)
-    row = getActivePeerRow(peerId, peer, ipOwners, unlinkedTopology, linkedTopology);
+    row = getActivePeerRow(peerId, peer, ipVrfOwners, unlinkedTopology, linkedTopology);
     expected.put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED);
     assertThat(row, equalTo(expected.build()));
 
     // Case 3: Peers are compatible and able to reach each other
-    row = getActivePeerRow(peerId, peer, ipOwners, linkedTopology, linkedTopology);
+    row = getActivePeerRow(peerId, peer, ipVrfOwners, linkedTopology, linkedTopology);
     assertThat(row, equalTo(expected.build()));
   }
 
@@ -509,10 +513,21 @@ public class BgpSessionStatusAnswererTest {
     establishedTopology.putEdgeValue(
         establishedId, peerXId, BgpSessionProperties.from(peerX, remotePeer, true));
 
-    Map<Ip, Set<String>> ipOwners =
-        ImmutableMap.of(localIp, ImmutableSet.of("c"), remoteIp, ImmutableSet.of("c2", "c3", "c4"));
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        ImmutableMap.of(
+            localIp,
+            ImmutableMap.of("c", ImmutableSet.of(DEFAULT_VRF_NAME)),
+            remoteIp,
+            ImmutableMap.of(
+                "c2",
+                ImmutableSet.of(DEFAULT_VRF_NAME),
+                "c3",
+                ImmutableSet.of(DEFAULT_VRF_NAME),
+                "c4",
+                ImmutableSet.of(DEFAULT_VRF_NAME)));
 
-    Row row = getActivePeerRow(peerXId, peerX, ipOwners, configuredTopology, establishedTopology);
+    Row row =
+        getActivePeerRow(peerXId, peerX, ipVrfOwners, configuredTopology, establishedTopology);
     assertThat(row, hasColumn(COL_REMOTE_NODE, new Node("c4"), Schema.NODE));
   }
 
@@ -632,6 +647,11 @@ public class BgpSessionStatusAnswererTest {
 
     @Override
     public SortedMap<String, Configuration> loadConfigurations() {
+      return _configs;
+    }
+
+    @Override
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       return _configs;
     }
 

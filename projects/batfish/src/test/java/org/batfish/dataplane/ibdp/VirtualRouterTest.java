@@ -1,6 +1,5 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
 import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
@@ -31,6 +30,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
@@ -554,9 +554,9 @@ public class VirtualRouterTest {
         .setLocalAs(2L)
         .build();
 
-    Interface.Builder ib = nf.interfaceBuilder().setActive(false);
-    ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")).setOwner(c1).build();
-    ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/30")).setOwner(c2).build();
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")).setOwner(c1).setVrf(vrf1).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/30")).setOwner(c2).setVrf(vrf2).build();
 
     Topology topology = synthesizeL3Topology(ImmutableMap.of("r1", c1, "r2", c2));
 
@@ -600,7 +600,7 @@ public class VirtualRouterTest {
 
     // Re-run with non-empty topology
     BgpTopology bgpTopology2 =
-        initBgpTopology(configs, computeIpNodeOwners(configs, false), false, null);
+        initBgpTopology(configs, new IpOwners(configs).getIpVrfOwners(), false, null);
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(DEFAULT_VRF_NAME)

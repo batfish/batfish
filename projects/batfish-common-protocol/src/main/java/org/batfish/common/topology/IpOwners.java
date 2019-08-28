@@ -62,6 +62,9 @@ public final class IpOwners {
    */
   private final Map<String, Map<String, IpSpace>> _activeInterfaceHostIps;
 
+  /** Mapping from an IP to hostname to set of VRFs that own that IP. */
+  private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
+
   private final Map<String, Map<String, IpSpace>> _vrfOwnedIpSpaces;
 
   public IpOwners(Map<String, Configuration> configurations) {
@@ -82,8 +85,8 @@ public final class IpOwners {
     }
 
     {
-      _vrfOwnedIpSpaces =
-          computeVrfOwnedIpSpaces(computeIpVrfOwners(allInterfaces, _activeDeviceOwnedIps));
+      _ipVrfOwners = computeIpVrfOwners(allInterfaces, _activeDeviceOwnedIps);
+      _vrfOwnedIpSpaces = computeVrfOwnedIpSpaces(_ipVrfOwners);
     }
   }
 
@@ -395,6 +398,11 @@ public final class IpOwners {
    */
   public Map<String, Map<String, IpSpace>> getInterfaceOwnedIpSpaces() {
     return _hostToInterfaceToIpSpace;
+  }
+
+  /** Returns a mapping from IP to hostname to set of VRFs that own that IP. */
+  public Map<Ip, Map<String, Set<String>>> getIpVrfOwners() {
+    return _ipVrfOwners;
   }
 
   /**

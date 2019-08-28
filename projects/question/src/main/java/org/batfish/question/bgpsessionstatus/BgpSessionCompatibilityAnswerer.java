@@ -55,6 +55,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.SpecifierContext;
 
 /** Answerer for {@link BgpSessionCompatibilityQuestion} */
 public class BgpSessionCompatibilityAnswerer extends Answerer {
@@ -121,17 +122,18 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
   private List<Row> getRows(BgpSessionCompatibilityQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
-    Set<String> remoteNodes =
-        question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
+    SpecifierContext specifierContext = _batfish.specifierContext();
+    Set<String> nodes = question.getNodeSpecifier().resolve(specifierContext);
+    Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
     Layer2Topology layer2Topology =
         _batfish
             .getTopologyProvider()
             .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
             .orElse(null);
-    Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners = new IpOwners(configurations).getIpVrfOwners();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true, layer2Topology).getGraph();
+        BgpTopologyUtils.initBgpTopology(configurations, ipVrfOwners, true, layer2Topology)
+            .getGraph();
 
     // Generate answer row for each BGP peer (or rows, for dynamic peers with multiple remotes)
     return configuredTopology.nodes().stream()
@@ -142,7 +144,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
                   BgpActivePeerConfig activePeer = nc.getBgpPointToPointPeerConfig(peerId);
                   assert activePeer != null;
                   return Stream.of(
-                      getActivePeerRow(peerId, activePeer, ipOwners, configuredTopology));
+                      getActivePeerRow(peerId, activePeer, ipVrfOwners, configuredTopology));
                 case DYNAMIC:
                   BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
                   assert passivePeer != null;
@@ -165,12 +167,12 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
   static Row getActivePeerRow(
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
-      Map<Ip, Set<String>> ipOwners,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology) {
     // Determine peer's session type and status. If compatible, find its unique remote match
     SessionType type = getSessionType(activePeer);
     ConfiguredSessionStatus status =
-        getConfiguredStatus(activeId, activePeer, type, ipOwners, configuredTopology);
+        getConfiguredStatus(activeId, activePeer, type, ipVrfOwners, configuredTopology);
     Node remoteNode = null;
     if (status == UNIQUE_MATCH) {
       String remoteNodeName =

@@ -492,12 +492,12 @@ public class VirtualRouter implements Serializable {
    * on them, if present.
    *
    * @param externalAdverts a set of external BGP advertisements
-   * @param ipOwners mapping of IPs to their owners in our network
+   * @param ipVrfOwners mapping of IPs to their owners in our network
    * @param bgpTopology the bgp peering relationships
    */
   void processExternalBgpAdvertisements(
       Set<BgpAdvertisement> externalAdverts,
-      Map<Ip, Set<String>> ipOwners,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
       final Map<String, Node> allNodes,
       BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
@@ -523,9 +523,9 @@ public class VirtualRouter implements Serializable {
 
       // If we don't own the IP for this advertisement, ignore it
       Ip dstIp = advert.getDstIp();
-      Set<String> dstIpOwners = ipOwners.get(dstIp);
+      Map<String, Set<String>> dstIpOwners = ipVrfOwners.get(dstIp);
       String hostname = _c.getHostname();
-      if (dstIpOwners == null || !dstIpOwners.contains(hostname)) {
+      if (dstIpOwners == null || !dstIpOwners.containsKey(hostname)) {
         continue;
       }
 
