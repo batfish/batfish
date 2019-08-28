@@ -1,0 +1,14 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_no_system_default_switchport
+!
+
+no system default switchport
+
+interface Ethernet1/1
+
+interface Ethernet1/2
+  no switchport
+
+interface Ethernet1/3
+  switchport

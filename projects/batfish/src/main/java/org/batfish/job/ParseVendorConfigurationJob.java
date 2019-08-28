@@ -29,7 +29,7 @@ import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser;
-import org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor;
+import org.batfish.grammar.cisco_nxos.NxosControlPlaneExtractor;
 import org.batfish.grammar.cumulus_concatenated.CumulusConcatenatedCombinedParser;
 import org.batfish.grammar.cumulus_concatenated.CumulusConcatenatedControlPlaneExtractor;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluCombinedParser;
@@ -232,7 +232,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             CiscoNxosCombinedParser ciscoNxosParser =
                 new CiscoNxosCombinedParser(_fileText, _settings);
             combinedParser = ciscoNxosParser;
-            extractor = new CiscoNxosControlPlaneExtractor(_fileText, ciscoNxosParser, _warnings);
+            extractor = new NxosControlPlaneExtractor(_fileText, ciscoNxosParser, _warnings);
             break;
           }
 

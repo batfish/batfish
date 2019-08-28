@@ -3,6 +3,10 @@
 hostname nxos_vrf_invalid
 !
 
+! force predictable results
+system default switchport
+no system default switchport shutdown
+
 ! Cannot add interface in switchport mode to VRF
 ! - vrf = default (VS)
 ! - vrf = null (VI)

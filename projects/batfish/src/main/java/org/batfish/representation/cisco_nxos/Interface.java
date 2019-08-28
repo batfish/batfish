@@ -141,7 +141,7 @@ public final class Interface implements Serializable {
   private final @Nonnull Set<InterfaceAddressWithAttributes> _secondaryAddresses;
   private @Nullable Boolean _shutdown;
   private @Nullable Integer _speedMbps;
-  private @Nonnull SwitchportMode _switchportMode;
+  private @Nullable SwitchportMode _switchportMode;
   private boolean _switchportMonitor;
   private final @Nonnull CiscoNxosInterfaceType _type;
   private final @Nullable Integer _vlan;
@@ -161,7 +161,6 @@ public final class Interface implements Serializable {
     _type = type;
     _vlan = vlan;
     _autostate = true;
-    _switchportMode = getDefaultSwitchportSettings(parentInterface != null, type);
 
     // Set defaults for individual switchport modes
     // - only effective when corresponding switchport mode is active
@@ -324,11 +323,13 @@ public final class Interface implements Serializable {
    * Returns {@code true} iff this interface is explictly or implicitly administratively shutdown.
    */
   public boolean getShutdownEffective(
-      boolean systemDefaultSwitchportShutdown, boolean nonSwitchportDefaultShutdown) {
+      boolean systemDefaultSwitchport,
+      boolean systemDefaultSwitchportShutdown,
+      boolean nonSwitchportDefaultShutdown) {
     return _shutdown != null
         ? _shutdown
         : defaultShutdown(
-            _switchportMode,
+            getSwitchportModeEffective(systemDefaultSwitchport),
             _type,
             _parentInterface != null,
             systemDefaultSwitchportShutdown,
@@ -343,9 +344,36 @@ public final class Interface implements Serializable {
     _speedMbps = speedMbps;
   }
 
-  @Nonnull
+  @Nullable
   public SwitchportMode getSwitchportMode() {
     return _switchportMode;
+  }
+
+  /** Returns explicit or implicit {@link SwitchportMode}. */
+  public @Nonnull SwitchportMode getSwitchportModeEffective(boolean systemDefaultSwitchport) {
+    return _switchportMode != null
+        ? _switchportMode
+        : defaultSwitchportMode(systemDefaultSwitchport, _parentInterface != null, _type);
+  }
+
+  private @Nonnull SwitchportMode defaultSwitchportMode(
+      boolean systemDefaultSwitchport, boolean isSubinterface, CiscoNxosInterfaceType type) {
+    switch (type) {
+      case ETHERNET:
+      case PORT_CHANNEL:
+        if (isSubinterface) {
+          // this is a subinterface
+          return SwitchportMode.NONE;
+        } else {
+          // this is a parent interface
+          return systemDefaultSwitchport ? SwitchportMode.ACCESS : SwitchportMode.NONE;
+        }
+
+      case LOOPBACK:
+      case MGMT:
+      default:
+        return SwitchportMode.NONE;
+    }
   }
 
   public boolean getSwitchportMonitor() {
@@ -362,26 +390,6 @@ public final class Interface implements Serializable {
 
   public @Nullable String getVrfMember() {
     return _vrfMember;
-  }
-
-  private static @Nonnull SwitchportMode getDefaultSwitchportSettings(
-      boolean isSubinterface, CiscoNxosInterfaceType type) {
-    switch (type) {
-      case ETHERNET:
-      case PORT_CHANNEL:
-        if (isSubinterface) {
-          // this is a subinterface
-          return SwitchportMode.NONE;
-        } else {
-          // this is a parent interface
-          return SwitchportMode.ACCESS;
-        }
-
-      case LOOPBACK:
-      case MGMT:
-      default:
-        return SwitchportMode.NONE;
-    }
   }
 
   public void setAccessVlan(@Nullable Integer accessVlan) {
@@ -456,7 +464,7 @@ public final class Interface implements Serializable {
     _shutdown = shutdown;
   }
 
-  public void setSwitchportMode(SwitchportMode switchportMode) {
+  public void setSwitchportMode(@Nullable SwitchportMode switchportMode) {
     _switchportMode = switchportMode;
   }
 

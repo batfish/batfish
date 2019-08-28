@@ -3,6 +3,10 @@
 hostname nxos_port_channel
 !
 
+! force predictable results
+system default switchport
+no system default switchport shutdown
+
 ! port-channel with no members:
 ! - shutdown = false (default)
 ! - active = false (no members)
