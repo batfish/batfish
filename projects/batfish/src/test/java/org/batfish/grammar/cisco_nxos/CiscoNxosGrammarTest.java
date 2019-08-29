@@ -1102,6 +1102,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testTrackConversion() throws IOException {
+    // TODO: make into conversion test
+    assertThat(parseConfig("nxos_track"), notNullValue());
+  }
+
+  @Test
   public void testEigrpExtraction() {
     String hostname = "nxos_eigrp";
     CiscoNxosConfiguration c = parseVendorConfig(hostname);
