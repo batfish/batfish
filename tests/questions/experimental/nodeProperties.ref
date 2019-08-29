@@ -8,6 +8,10 @@
     "description" : "Returns configuration settings of nodes.",
     "instanceName" : "qname",
     "longDescription" : "Lists global settings of devices in the network. Settings that are specific to interfaces, routing protocols, etc. are available via other questions.",
+    "orderedVariableNames" : [
+      "nodes",
+      "properties"
+    ],
     "tags" : [
       "configuration"
     ],

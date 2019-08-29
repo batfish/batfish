@@ -10,6 +10,10 @@
     "description" : "Returns IPSec tunnels.",
     "instanceName" : "qname",
     "longDescription" : "Lists all IPSec tunnels in the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "remoteNodes"
+    ],
     "tags" : [
       "ipsec",
       "topology"

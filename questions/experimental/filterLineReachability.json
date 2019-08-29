@@ -8,6 +8,11 @@
         "description": "Returns unreachable lines in filters (ACLs and firewall rules).",
         "instanceName": "filterLineReachability",
         "longDescription": "Finds all lines in the specified filters that will not match any packet, either because of being shadowed by prior lines or because of its match condition being empty.",
+        "orderedVariableNames": [
+            "nodes",
+            "filters",
+            "ignoreComposites"
+        ],
         "tags": [
             "acl"
         ],

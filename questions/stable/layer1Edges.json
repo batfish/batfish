@@ -5,6 +5,10 @@
         "description": "Returns Layer 1 links.",
         "instanceName": "layer1Edges",
         "longDescription": "Lists all Layer 1 links in the network.",
+        "orderedVariableNames": [
+            "nodes",
+            "remoteNodes"
+        ],
         "tags": [
             "topology"
         ],
