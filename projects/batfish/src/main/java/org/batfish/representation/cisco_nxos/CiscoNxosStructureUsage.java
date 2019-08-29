@@ -45,6 +45,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   BGP_UNSUPPRESS_MAP("bgp address-family unsuppress-map"),
   /** This {@link CiscoNxosStructureUsage} should be used for ANY built-in structure of any type. */
   BUILT_IN("built-in structure"),
+  CLASS_MAP_CP_MATCH_ACCESS_GROUP("class-map type control-plane match access-group"),
   EIGRP_REDISTRIBUTE_INSTANCE("eigrp address-family redistribute"),
   EIGRP_REDISTRIBUTE_ROUTE_MAP("eigrp address-family redistribute route-map"),
   INTERFACE_CHANNEL_GROUP("interface channel-group"),

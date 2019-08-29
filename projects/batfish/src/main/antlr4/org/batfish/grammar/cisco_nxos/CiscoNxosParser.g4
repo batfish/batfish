@@ -17,6 +17,7 @@ import
   CiscoNxos_ipv6_access_list,
   CiscoNxos_ipv6_prefix_list,
   CiscoNxos_logging,
+  CiscoNxos_mac,
   CiscoNxos_monitor,
   CiscoNxos_ntp,
   CiscoNxos_object_group,
@@ -55,6 +56,7 @@ statement
   | s_ipv6
   | s_key
   | s_logging
+  | s_mac
   | s_monitor
   | s_no
   | s_ntp

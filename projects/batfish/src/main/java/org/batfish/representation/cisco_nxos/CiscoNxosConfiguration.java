@@ -17,6 +17,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGene
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
@@ -1387,11 +1388,27 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         CiscoNxosStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
         CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE);
-    markAbstractStructure(
-        CiscoNxosStructureType.IP_ACCESS_LIST_ABSTRACT_REF,
-        SNMP_SERVER_COMMUNITY_USE_ACL,
-        ImmutableList.of(
-            CiscoNxosStructureType.IP_ACCESS_LIST, CiscoNxosStructureType.IPV6_ACCESS_LIST));
+    {
+      // Mark abstract [mac|ip|ipv6] ACL references
+      List<CiscoNxosStructureType> types =
+          ImmutableList.of(
+              CiscoNxosStructureType.IP_ACCESS_LIST,
+              CiscoNxosStructureType.IPV6_ACCESS_LIST,
+              CiscoNxosStructureType.MAC_ACCESS_LIST);
+      for (CiscoNxosStructureUsage usage : ImmutableList.of(CLASS_MAP_CP_MATCH_ACCESS_GROUP)) {
+        markAbstractStructure(
+            CiscoNxosStructureType.IP_OR_MAC_ACCESS_LIST_ABSTRACT_REF, usage, types);
+      }
+    }
+    {
+      // Mark abstract [v4|v6] ACL references
+      List<CiscoNxosStructureType> types =
+          ImmutableList.of(
+              CiscoNxosStructureType.IP_ACCESS_LIST, CiscoNxosStructureType.IPV6_ACCESS_LIST);
+      for (CiscoNxosStructureUsage usage : ImmutableList.of(SNMP_SERVER_COMMUNITY_USE_ACL)) {
+        markAbstractStructure(CiscoNxosStructureType.IP_ACCESS_LIST_ABSTRACT_REF, usage, types);
+      }
+    }
     markConcreteStructure(
         CiscoNxosStructureType.IP_ACCESS_LIST,
         CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN,
