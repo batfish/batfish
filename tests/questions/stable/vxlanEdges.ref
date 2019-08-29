@@ -10,6 +10,10 @@
     "description" : "Returns VXLAN edges.",
     "instanceName" : "qname",
     "longDescription" : "Lists all VXLAN edges in the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "remoteNodes"
+    ],
     "tags" : [
       "topology",
       "vxlan"

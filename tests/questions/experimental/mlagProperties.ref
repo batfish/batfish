@@ -8,6 +8,10 @@
     "description" : "Returns MLAG configuration.",
     "instanceName" : "qname",
     "longDescription" : "Lists the configuration settings for each MLAG domain in the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "mlagIds"
+    ],
     "tags" : [
       "configuration",
       "mlag"

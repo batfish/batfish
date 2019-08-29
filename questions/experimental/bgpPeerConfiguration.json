@@ -7,6 +7,10 @@
         "description": "Returns configuration settings for BGP peerings.",
         "instanceName": "bgpPeerConfiguration",
         "longDescription": "Reports configuration settings for each configured BGP peering on each node in the network. This question reports peer-specific settings. Settings that are process-wide are reported by the bgpProcessConfiguration question.",
+        "orderedVariableNames": [
+            "nodes",
+            "properties"
+        ],
         "tags": [
             "bgp",
             "configuration"

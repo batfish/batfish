@@ -10,6 +10,10 @@
     "description" : "Returns Layer 1 links.",
     "instanceName" : "qname",
     "longDescription" : "Lists all Layer 1 links in the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "remoteNodes"
+    ],
     "tags" : [
       "topology"
     ],

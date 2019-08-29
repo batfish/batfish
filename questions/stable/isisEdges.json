@@ -5,6 +5,10 @@
         "description": "Returns ISIS adjacencies.",
         "instanceName": "isisEdges",
         "longDescription": "Lists all ISIS adjacencies in the network.",
+        "orderedVariableNames": [
+            "nodes",
+            "remoteNodes"
+        ],
         "tags": [
             "topology",
             "isis"

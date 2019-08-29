@@ -10,6 +10,10 @@
     "description" : "Returns BGP adjacencies.",
     "instanceName" : "qname",
     "longDescription" : "Lists all BGP adjacencies in the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "remoteNodes"
+    ],
     "tags" : [
       "bgp",
       "topology"

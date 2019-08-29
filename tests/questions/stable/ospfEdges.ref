@@ -10,6 +10,10 @@
     "description" : "Returns OSPF adjacencies.",
     "instanceName" : "qname",
     "longDescription" : "Lists all OSPF adjacencies in the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "remoteNodes"
+    ],
     "tags" : [
       "ospf",
       "topology"

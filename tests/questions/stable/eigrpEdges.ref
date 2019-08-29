@@ -10,6 +10,10 @@
     "description" : "Returns EIGRP adjacencies.",
     "instanceName" : "qname",
     "longDescription" : "Lists all EIGRP adjacencies in the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "remoteNodes"
+    ],
     "tags" : [
       "eigrp",
       "topology"
