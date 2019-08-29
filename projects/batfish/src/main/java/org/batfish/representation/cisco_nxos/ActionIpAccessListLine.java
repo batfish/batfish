@@ -21,6 +21,7 @@ public final class ActionIpAccessListLine extends IpAccessListLine {
     private boolean _log;
     private @Nullable IpProtocol _protocol;
     private @Nullable IpAddressSpec _srcAddressSpec;
+    private @Nullable String _text;
 
     private Builder() {}
 
@@ -30,6 +31,7 @@ public final class ActionIpAccessListLine extends IpAccessListLine {
       checkArgument(!_fragments || _l4Options == null, "fragments incompatible with l4Options");
       checkArgument(_line != null, "Missing line");
       checkArgument(_srcAddressSpec != null, "Missing srcAddressSpec");
+      checkArgument(_text != null, "Missing text");
       return new ActionIpAccessListLine(
           _line,
           _action,
@@ -39,7 +41,8 @@ public final class ActionIpAccessListLine extends IpAccessListLine {
           _l4Options,
           _log,
           _protocol,
-          _srcAddressSpec);
+          _srcAddressSpec,
+          _text);
     }
 
     public @Nonnull Builder setAction(LineAction action) {
@@ -86,6 +89,11 @@ public final class ActionIpAccessListLine extends IpAccessListLine {
       _srcAddressSpec = srcAddressSpec;
       return this;
     }
+
+    public @Nonnull Builder setText(@Nullable String text) {
+      _text = text;
+      return this;
+    }
   }
 
   public static @Nonnull Builder builder() {
@@ -110,8 +118,9 @@ public final class ActionIpAccessListLine extends IpAccessListLine {
       Layer4Options l4Options,
       boolean log,
       IpProtocol protocol,
-      IpAddressSpec srcAddressSpec) {
-    super(line);
+      IpAddressSpec srcAddressSpec,
+      String text) {
+    super(line, text);
     _action = action;
     _dstAddressSpec = dstAddressSpec;
     _fragments = fragments;
