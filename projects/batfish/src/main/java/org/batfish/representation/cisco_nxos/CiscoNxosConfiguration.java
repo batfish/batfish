@@ -1386,7 +1386,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE,
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         CiscoNxosStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
-        CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE);
+        CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE,
+        CiscoNxosStructureUsage.TRACK_INTERFACE);
     markAbstractStructure(
         CiscoNxosStructureType.IP_ACCESS_LIST_ABSTRACT_REF,
         SNMP_SERVER_COMMUNITY_USE_ACL,
