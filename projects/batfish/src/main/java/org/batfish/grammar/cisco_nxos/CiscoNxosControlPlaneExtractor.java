@@ -18,7 +18,9 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_AS
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_ABSTRACT_REF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_OR_MAC_ACCESS_LIST_ABSTRACT_REF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PREFIX_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.PORT_CHANNEL;
@@ -70,6 +72,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_TABLE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BUILT_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
@@ -209,6 +212,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cmcpm_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ebgp_multihop_ttlContext;
@@ -217,6 +221,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Eigrp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ev_vniContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_rdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_route_targetContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Generic_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_bandwidthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
@@ -311,6 +316,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_source_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_access_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_destinationContext;
@@ -663,6 +670,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace EIGRP_ASN_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace EIGRP_PROCESS_TAG_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
+  private static final IntegerSpace GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 64));
   private static final IntegerSpace HSRP_DELAY_RELOAD_S_RANGE =
       IntegerSpace.of(Range.closed(0, 10000));
   private static final IntegerSpace HSRP_GROUP_RANGE = IntegerSpace.of(Range.closed(0, 4095));
@@ -695,8 +704,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           .build();
   private static final LongSpace IP_ACCESS_LIST_LINE_NUMBER_RANGE =
       LongSpace.of(Range.closed(1L, 4294967295L));
-  private static final IntegerSpace IP_ACCESS_LIST_NAME_LENGTH_RANGE =
-      IntegerSpace.of(Range.closed(1, 64));
   private static final IntegerSpace IP_AS_PATH_ACCESS_LIST_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace IP_AS_PATH_ACCESS_LIST_REGEX_LENGTH_RANGE =
@@ -1235,6 +1242,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration.defineStructure(VRF, MANAGEMENT_VRF_NAME, 0);
     _configuration.referenceStructure(VRF, DEFAULT_VRF_NAME, BUILT_IN, 0);
     _configuration.referenceStructure(VRF, MANAGEMENT_VRF_NAME, BUILT_IN, 0);
+  }
+
+  @Override
+  public void exitCmcpm_access_group(Cmcpm_access_groupContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.name);
+    if (!acl.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        IP_OR_MAC_ACCESS_LIST_ABSTRACT_REF,
+        acl.get(),
+        CLASS_MAP_CP_MATCH_ACCESS_GROUP,
+        ctx.name.getStart().getLine());
   }
 
   @Override
@@ -1875,6 +1895,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration.setLoggingSourceInterface(name);
     _configuration.referenceStructure(
         INTERFACE, name, LOGGING_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void enterMac_access_list(Mac_access_listContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    todo(ctx);
+    _configuration.defineStructure(MAC_ACCESS_LIST, name.get(), ctx);
   }
 
   @Override
@@ -5785,6 +5815,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Generic_access_list_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE, "access-list name");
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_descriptionContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, INTERFACE_DESCRIPTION_LENGTH_RANGE, "interface description");
@@ -5921,7 +5957,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Ip_access_list_nameContext ctx) {
     return toStringWithLengthInSpace(
-        messageCtx, ctx, IP_ACCESS_LIST_NAME_LENGTH_RANGE, "ip access-list name");
+        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE, "ip access-list name");
   }
 
   /**
@@ -6003,6 +6039,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Ip_prefix_list_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, IP_PREFIX_LIST_NAME_LENGTH_RANGE, "ip prefix-list name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Mac_access_list_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE, "mac access-list name");
   }
 
   private @Nonnull Optional<String> toString(
