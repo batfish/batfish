@@ -749,7 +749,34 @@ i_no_shutdown
 
 i_no_switchport
 :
-  SWITCHPORT NEWLINE
+  SWITCHPORT
+  (
+    inos_access
+    | inos_block
+    | inos_host
+    | inos_switchport
+  )
+;
+
+inos_access
+:
+  ACCESS VLAN NEWLINE
+;
+
+inos_block
+:
+  BLOCK (MULTICAST | UNICAST) NEWLINE
+;
+
+inos_host
+:
+  HOST NEWLINE
+;
+
+inos_switchport
+:
+  // just newline, for `no switchport`
+  NEWLINE
 ;
 
 i_null

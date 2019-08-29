@@ -461,6 +461,11 @@ BIFF
   'biff'
 ;
 
+BLOCK
+:
+  'block'
+;
+
 BOOT
 :
   'boot'
