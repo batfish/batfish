@@ -25,7 +25,7 @@
       "filters" : {
         "description" : "Only consider filters that match this specifier",
         "displayName" : "Filters",
-        "optional" : false,
+        "optional" : true,
         "type" : "filterSpec",
         "value" : ".*"
       },
@@ -89,7 +89,7 @@
       "nodes" : {
         "description" : "Only examine filters on nodes matching this specifier",
         "displayName" : "Nodes",
-        "optional" : false,
+        "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },

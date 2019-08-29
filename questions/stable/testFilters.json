@@ -22,13 +22,13 @@
             "filters": {
                 "description": "Only consider filters that match this specifier",
                 "type": "filterSpec",
-                "value": ".*",
+                "optional": true,
                 "displayName": "Filters"
             },
             "nodes": {
                 "description": "Only examine filters on nodes matching this specifier",
                 "type": "nodeSpec",
-                "value": ".*",
+                "optional": true,
                 "displayName": "Nodes"
             },
             "headers": {
