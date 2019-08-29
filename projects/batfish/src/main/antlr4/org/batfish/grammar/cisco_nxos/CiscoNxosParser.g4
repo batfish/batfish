@@ -450,7 +450,7 @@ s_track
 
 track_interface
 :
-  INTERFACE null_rest_of_line
+  INTERFACE interface_name null_rest_of_line
 ;
 
 track_ip
