@@ -91,4 +91,9 @@ interface Ethernet100/100
   storm-control multicast level 100.00
   storm-control unicast level 100.00
   no storm-control action
+  no switchport access vlan
+  no switchport block multicast
+  no switchport block unicast
+  no switchport host
+  no switchport
   no udld disable

@@ -19,10 +19,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_nxosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_systemContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inos_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_regularContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_versionContext;
@@ -458,7 +458,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   }
 
   @Override
-  public void exitI_no_switchport(I_no_switchportContext ctx) {
+  public void exitInos_switchport(Inos_switchportContext ctx) {
     _currentInterfaceSwitchport = false;
     _currentInterfaceLayer3 = true;
   }
