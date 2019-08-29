@@ -51,6 +51,13 @@ fex_id
   uint8
 ;
 
+// ip or mac access-list
+generic_access_list_name
+:
+// 1-64 characters
+  WORD
+;
+
 group_name
 :
 // 1-32 characters
@@ -166,6 +173,12 @@ line_action
 literal_standard_community
 :
   high = uint16 COLON low = uint16
+;
+
+mac_access_list_name
+:
+// 1-64 characters
+  WORD
 ;
 
 mac_address_literal

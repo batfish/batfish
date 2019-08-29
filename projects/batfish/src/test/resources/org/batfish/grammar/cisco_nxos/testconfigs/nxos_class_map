@@ -2,7 +2,8 @@
 !
 hostname nxos_class_map
 !
-
+mac access-list acl1
+!
 class-map type control-plane match-any cm_cp
   match access-group name acl1
   match exception fcoe-fib-miss

@@ -27,17 +27,23 @@ cmcp_match
   (
     cmcpm_access_group
     | cmcpm_exception
+    | cmcpm_protocol
   )
 ;
 
 cmcpm_access_group
 :
-  ACCESS_GROUP NAME name = ip_access_list_name NEWLINE
+  ACCESS_GROUP NAME name = generic_access_list_name NEWLINE
 ;
 
 cmcpm_exception
 :
   EXCEPTION null_rest_of_line
+;
+
+cmcpm_protocol
+:
+  PROTOCOL ARP NEWLINE
 ;
 
 cm_network_qos
