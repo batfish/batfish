@@ -69799,6 +69799,20 @@
             "        PRIVILEGE:'privilege')",
             "      NEWLINE:'\\n'))",
             "  (stanza",
+            "    (s_vrf_context",
+            "      VRF:'vrf'",
+            "      CONTEXT:'context'",
+            "      name = (variable",
+            "        VARIABLE:'OTHER')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_vrf_context",
+            "      VRF:'vrf'",
+            "      CONTEXT:'context'",
+            "      name = (variable",
+            "        VARIABLE:'foo')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
             "      iname = (interface_name",
@@ -69809,6 +69823,23 @@
             "          (subrange",
             "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_switchport",
+            "          NO:'no'",
+            "          SWITCHPORT:'switchport'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_shutdown",
+            "          NO:'no'",
+            "          SHUTDOWN:'shutdown'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_vrf_member",
+            "          VRF:'vrf'",
+            "          MEMBER:'member'",
+            "          name = (variable",
+            "            VARIABLE:'OTHER')",
+            "          NEWLINE:'\\n'))",
             "      (if_inner",
             "        (if_ip_router_ospf_area",
             "          IP:'ip'",
@@ -82972,9 +83003,12 @@
           "interface" : {
             "Ethernet0/0" : {
               "definitionLines" : [
-                5,
-                6,
-                7
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
               ],
               "numReferrers" : 1
             }
@@ -88791,20 +88825,20 @@
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
-                5
+                9
               ]
             }
           },
           "route-map" : {
             "RM_OSPF_DIRECT" : {
               "ospf redistribute connected route-map" : [
-                20,
-                25
+                27,
+                32
               ]
             },
             "RM_OSPF_STATIC" : {
               "ospf redistribute static route-map" : [
-                21
+                28
               ]
             }
           }
@@ -91049,13 +91083,13 @@
           "route-map" : {
             "RM_OSPF_DIRECT" : {
               "ospf redistribute connected route-map" : [
-                20,
-                25
+                27,
+                32
               ]
             },
             "RM_OSPF_STATIC" : {
               "ospf redistribute static route-map" : [
-                21
+                28
               ]
             }
           }

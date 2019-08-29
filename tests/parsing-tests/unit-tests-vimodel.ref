@@ -27938,7 +27938,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "default"
+            "vrf" : "OTHER"
           }
         },
         "routingPolicies" : {
@@ -28069,7 +28069,28 @@
                   "ospfE2" : 110,
                   "ospfIA" : 110
                 },
+                "areas" : {
+                  "1" : {
+                    "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "Ethernet0/0"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 1,
+                    "stubType" : "NONE"
+                  }
+                },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
+                "neighbors" : {
+                  "Ethernet0/0" : {
+                    "area" : 1,
+                    "hostname" : "nxos_ospf",
+                    "interface" : "Ethernet0/0",
+                    "ip" : "1.1.1.2",
+                    "passive" : false,
+                    "vrf" : "OTHER"
+                  }
+                },
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
@@ -28088,7 +28109,10 @@
                 "routerId" : "5.6.7.8",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "interfaces" : [
+              "Ethernet0/0"
+            ]
           },
           "default" : {
             "name" : "default",
@@ -28100,31 +28124,7 @@
                   "ospfE2" : 110,
                   "ospfIA" : 110
                 },
-                "areas" : {
-                  "1" : {
-                    "injectDefaultRoute" : true,
-                    "interfaces" : [
-                      "Ethernet0/0"
-                    ],
-                    "metricOfDefaultRoute" : 0,
-                    "name" : 1,
-                    "stub" : {
-                      "suppressType3" : false
-                    },
-                    "stubType" : "STUB"
-                  }
-                },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "Ethernet0/0" : {
-                    "area" : 1,
-                    "hostname" : "nxos_ospf",
-                    "interface" : "Ethernet0/0",
-                    "ip" : "1.1.1.2",
-                    "passive" : false,
-                    "vrf" : "default"
-                  }
-                },
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
@@ -28156,10 +28156,7 @@
                 "routerId" : "5.6.7.8",
                 "summaryAdminCost" : 254
               }
-            },
-            "interfaces" : [
-              "Ethernet0/0"
-            ]
+            }
           },
           "foo" : {
             "name" : "foo",
