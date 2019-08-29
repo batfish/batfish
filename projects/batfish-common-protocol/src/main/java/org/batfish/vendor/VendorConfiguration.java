@@ -88,7 +88,9 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
    * expands to a list containing many types of IPv4 and IPv6 access lists.
    */
   protected void markAbstractStructure(
-      StructureType type, StructureUsage usage, Collection<StructureType> structureTypesToCheck) {
+      StructureType type,
+      StructureUsage usage,
+      Collection<? extends StructureType> structureTypesToCheck) {
     Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
         firstNonNull(_structureReferences.get(type), Collections.emptyMap());
     references.forEach(
