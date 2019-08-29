@@ -668,7 +668,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace EIGRP_ASN_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace EIGRP_PROCESS_TAG_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
-  private static final IntegerSpace GENERIC_ACCESS_LIST_NAME_LENTH_RANGE =
+  private static final IntegerSpace GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 64));
   private static final IntegerSpace HSRP_DELAY_RELOAD_S_RANGE =
       IntegerSpace.of(Range.closed(0, 10000));
@@ -5804,7 +5804,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Generic_access_list_nameContext ctx) {
     return toStringWithLengthInSpace(
-        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENTH_RANGE, "access-list name");
+        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE, "access-list name");
   }
 
   private @Nonnull Optional<String> toString(
@@ -5944,7 +5944,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Ip_access_list_nameContext ctx) {
     return toStringWithLengthInSpace(
-        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENTH_RANGE, "ip access-list name");
+        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE, "ip access-list name");
   }
 
   /**
@@ -6031,7 +6031,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Mac_access_list_nameContext ctx) {
     return toStringWithLengthInSpace(
-        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENTH_RANGE, "mac access-list name");
+        messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE, "mac access-list name");
   }
 
   private @Nonnull Optional<String> toString(
