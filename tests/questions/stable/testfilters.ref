@@ -12,6 +12,12 @@
     "description" : "Returns how a flow is processed by a filter (ACLs, firewall rules).",
     "instanceName" : "qname",
     "longDescription" : "Shows how the specified flow is processed through the specified filters, returning its permit/deny status as well as the line(s) it matched.",
+    "orderedVariableNames" : [
+      "nodes",
+      "filters",
+      "headers",
+      "startLocation"
+    ],
     "tags" : [
       "acl"
     ],
