@@ -978,7 +978,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               ra -> {
                 AbstractRoute route = ra.getRoute().getRoute();
                 if (route instanceof Bgpv4Route) {
-                  // There routes came into scrVrf's main RIB from teh srcVrf's BGP RIB,
+                  // These routes came into scrVrf's main RIB from the srcVrf's BGP RIB,
                   // so just convert them to type 5s and send to all neighbors
                   bgpv4RouteToType5Route(ebgpAll, ibgpAll, ourConfig, ra, route, srcVrf);
                 } else if (!(route instanceof BgpRoute)) {
