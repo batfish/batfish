@@ -111,6 +111,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV6ACL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
@@ -512,6 +513,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Template_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_object_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ts_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_portContext;
@@ -3682,6 +3684,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _configuration.referenceStructure(
           INTERFACE, name.get(), SNMP_SERVER_SOURCE_INTERFACE, ctx.name.getStart().getLine());
     }
+  }
+
+  @Override
+  public void exitTrack_interface(Track_interfaceContext ctx) {
+    Optional<String> iface = toString(ctx, ctx.interface_name());
+    if (!iface.isPresent()) {
+      return;
+    }
+    todo(ctx);
+    _configuration.referenceStructure(
+        INTERFACE, iface.get(), TRACK_INTERFACE, ctx.getStart().getLine());
   }
 
   @Override

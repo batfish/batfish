@@ -85,7 +85,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   SNMP_SERVER_COMMUNITY_USE_IPV4ACL("snmp-server community use-ipv4acl"),
   SNMP_SERVER_COMMUNITY_USE_IPV6ACL("snmp-server community use-ipv6acl"),
   SNMP_SERVER_SOURCE_INTERFACE("snmp-server source-interface"),
-  TACACS_SOURCE_INTERFACE("ip tacacs source-interface");
+  TACACS_SOURCE_INTERFACE("ip tacacs source-interface"),
+  TRACK_INTERFACE("track interface");
 
   private final @Nonnull String _description;
 

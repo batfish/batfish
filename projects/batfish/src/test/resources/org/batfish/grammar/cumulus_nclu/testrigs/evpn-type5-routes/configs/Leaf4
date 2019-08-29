@@ -1,0 +1,73 @@
+net del all
+net add time zone Etc/UTC
+net add time ntp server 0.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 1.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 2.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 3.cumulusnetworks.pool.ntp.org iburst
+net add time ntp source eth0
+net add snmp-server listening-address localhost
+net add bgp autonomous-system 65000
+net add routing defaults datacenter
+net add routing service integrated-vtysh-config
+net add routing log syslog informational
+net add vrf vrf1 vni 1004001
+net add bgp router-id 1.1.1.6
+net add bgp neighbor swp4 interface remote-as 65000
+net add bgp neighbor swp14 interface remote-as 65000
+net add bgp ipv4 unicast network 1.1.1.6/32
+net add bgp ipv4 unicast network 1.1.1.101/32
+net add bgp l2vpn evpn  neighbor swp4 activate
+net add bgp l2vpn evpn  neighbor swp14 activate
+net add bgp l2vpn evpn  advertise-all-vni
+net add dns nameserver ipv4 10.0.2.3
+net add ptp global slave-only no
+net add ptp global priority1 255
+net add ptp global priority2 255
+net add ptp global domain-number 0
+net add ptp global logging-level 5
+net add ptp global path-trace-enabled no
+net add ptp global use-syslog yes
+net add ptp global verbose no
+net add ptp global summary-interval 0
+net add ptp global time-stamping
+net add bond peerlink bond slaves swp30,swp31
+net add bond server20 bond slaves swp25
+net add vxlan vni20 vxlan id 10020
+net add vxlan vni4001 vxlan id 1004001
+net add bond server20 bridge access 20
+net add bond server20 clag id 20
+net add bridge bridge ports peerlink,server20,swp21,vni20,vni4001
+net add bridge bridge vids 20,4001
+net add bridge bridge vlan-aware
+net add interface peerlink.4094 clag backup-ip 192.168.100.104
+net add interface peerlink.4094 clag peer-ip 169.254.1.1
+net add interface peerlink.4094 clag priority 2000
+net add interface peerlink.4094 clag sys-mac 44:38:39:FF:00:02
+net add interface peerlink.4094 ip address 169.254.1.2/30
+net add interface swp1-3,5-13,15-20,22-31
+net add interface swp21 bridge access 20
+net add loopback lo clag vxlan-anycast-ip 1.1.1.101
+net add loopback lo ip address 1.1.1.6/32
+net add vlan 20 ip address 192.168.20.104/24
+net add vlan 20 ip address-virtual 00:00:00:00:00:20 192.168.20.1/24
+net add vlan 20 vlan-id 20
+net add vlan 20 vlan-raw-device bridge
+net add vlan 20 vrf vrf1
+net add vlan 4001 hwaddress 44:39:39:FF:40:95
+net add vlan 4001 vlan-id 4001
+net add vlan 4001 vlan-raw-device bridge
+net add vlan 4001 vrf vrf1
+net add vrf vrf1 vrf-table auto
+net add vxlan vni20 bridge access 20
+net add vxlan vni20,4001 bridge arp-nd-suppress on
+net add vxlan vni20,4001 bridge learning off
+net add vxlan vni20,4001 stp bpduguard
+net add vxlan vni20,4001 stp portbpdufilter
+net add vxlan vni20,4001 vxlan local-tunnelip 1.1.1.6
+net add vxlan vni4001 bridge access 4001
+net add hostname Leaf4
+net add dot1x radius accounting-port 1813
+net add dot1x radius authentication-port 1812
+net add dot1x mab-activation-delay 30
+net add dot1x eap-reauth-period 0
+net commit

@@ -35,6 +35,7 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -260,7 +261,8 @@ class IncrementalBdpEngine {
       String iterationLabel,
       Map<String, Node> allNodes,
       TopologyContext topologyContext,
-      NetworkConfigurations networkConfigurations) {
+      NetworkConfigurations networkConfigurations,
+      int iteration) {
     try (ActiveSpan overallSpan =
         GlobalTracer.get().buildSpan(iterationLabel + ": Compute dependent routes").startActive()) {
       assert overallSpan != null; // avoid unused warning
@@ -378,7 +380,12 @@ class IncrementalBdpEngine {
       }
 
       computeIterationOfBgpRoutes(
-          nodes, iterationLabel, allNodes, topologyContext.getBgpTopology(), networkConfigurations);
+          nodes,
+          iterationLabel,
+          allNodes,
+          topologyContext.getBgpTopology(),
+          networkConfigurations,
+          iteration);
 
       try (ActiveSpan span =
           GlobalTracer.get().buildSpan(iterationLabel + ": Redistribute").startActive()) {
@@ -398,7 +405,8 @@ class IncrementalBdpEngine {
       String iterationLabel,
       Map<String, Node> allNodes,
       BgpTopology bgpTopology,
-      NetworkConfigurations networkConfigurations) {
+      NetworkConfigurations networkConfigurations,
+      int iteration) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan(iterationLabel + ": Init for new BGP iteration")
@@ -433,13 +441,8 @@ class IncrementalBdpEngine {
     }
 
     try (ActiveSpan span =
-        GlobalTracer.get().buildSpan(iterationLabel + ": Propagate BGP routes").startActive()) {
+        GlobalTracer.get().buildSpan(iterationLabel + ": Propagate BGP v4 routes").startActive()) {
       assert span != null; // avoid unused warning
-      nodes
-          .values()
-          .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
-          .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
       nodes
           .values()
           .parallelStream()
@@ -450,6 +453,37 @@ class IncrementalBdpEngine {
                     vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(
                     deltas, allNodes, bgpTopology, networkConfigurations);
+              });
+
+      // Merge BGP routes from BGP process into the main RIB
+      nodes
+          .values()
+          .parallelStream()
+          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
+
+      // Multi-VRF redistribution of BGP routes:
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter srcVr : n.getVirtualRouters().values()) {
+                  for (VirtualRouter dstVr : n.getVirtualRouters().values()) {
+                    if (dstVr.getBgpRoutingProcess() == null) {
+                      continue;
+                    }
+                    dstVr
+                        .getBgpRoutingProcess()
+                        .redistribute(
+                            iteration > 1
+                                ? srcVr._mainRibRouteDeltaBuilder.build()
+                                : RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+                                    .add(srcVr.getMainRib().getTypedRoutes())
+                                    .build(),
+                            srcVr.getName());
+                  }
+                }
               });
     }
   }
@@ -659,7 +693,8 @@ class IncrementalBdpEngine {
                 iterationlabel,
                 nodes,
                 topologyContext,
-                networkConfigurations);
+                networkConfigurations,
+                _numIterations);
             ++nodeSet;
           }
 
