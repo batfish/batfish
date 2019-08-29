@@ -9,6 +9,12 @@
         "description": "Returns configuration settings of switched VLANs.",
         "instanceName": "switchedVlanProperties",
         "longDescription": "Lists information about implicitly and explicitly configured switched VLANs.",
+        "orderedVariableNames": [
+            "nodes",
+            "interfaces",
+            "vlans",
+            "excludeShutInterfaces"
+        ],
         "tags": [
             "configuration",
             "vlan"

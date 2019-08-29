@@ -5,6 +5,10 @@
         "description": "Returns Layer 3 links.",
         "instanceName": "layer3Edges",
         "longDescription": "Lists all Layer 3 edges in the network.",
+        "orderedVariableNames": [
+            "nodes",
+            "remoteNodes"
+        ],
         "tags": [
             "topology"
         ],

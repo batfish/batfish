@@ -5,6 +5,13 @@
         "description": "Returns routing tables.",
         "instanceName": "routes",
         "longDescription": "Shows routes for specified RIB, VRF, and node(s).",
+        "orderedVariableNames": [
+            "nodes",
+            "network",
+            "protocols",
+            "vrfs",
+            "rib"
+        ],
         "tags": [
             "dataplane",
             "routing"
@@ -13,13 +20,13 @@
             "nodes": {
                 "description": "Examine routes on nodes matching this specifier",
                 "type": "nodeSpec",
-                "value": ".*",
+                "optional": true,
                 "displayName": "Nodes"
             },
             "vrfs": {
                 "description": "Examine routes on VRFs matching this name or regex",
                 "type": "vrf",
-                "value": ".*",
+                "optional": true,
                 "displayName": "VRFs"
             },
             "network": {

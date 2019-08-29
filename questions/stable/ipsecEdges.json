@@ -5,6 +5,10 @@
         "description": "Returns IPSec tunnels.",
         "instanceName": "ipsecEdges",
         "longDescription": "Lists all IPSec tunnels in the network.",
+        "orderedVariableNames": [
+            "nodes",
+            "remoteNodes"
+        ],
         "tags": [
             "topology",
             "ipsec"

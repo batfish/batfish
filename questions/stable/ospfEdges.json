@@ -5,6 +5,10 @@
         "description": "Returns OSPF adjacencies.",
         "instanceName": "ospfEdges",
         "longDescription": "Lists all OSPF adjacencies in the network.",
+        "orderedVariableNames": [
+            "nodes",
+            "remoteNodes"
+        ],
         "tags": [
             "topology",
             "ospf"

@@ -17,6 +17,11 @@
     "description" : "Validates multipath consistency.",
     "instanceName" : "qname",
     "longDescription" : "Searches across all flows in the network and returns example flows that are treated differently (i.e., dropped versus forwarded) by different paths in the presence of multipath routing.",
+    "orderedVariableNames" : [
+      "pathConstraints",
+      "headers",
+      "maxTraces"
+    ],
     "tags" : [
       "dataplane",
       "reachability"

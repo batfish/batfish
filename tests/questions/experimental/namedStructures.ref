@@ -11,6 +11,13 @@
     "description" : "Returns named structure definitions.",
     "instanceName" : "qname",
     "longDescription" : "Return structures defined in the configurations, represented in a vendor-independent JSON format.",
+    "orderedVariableNames" : [
+      "nodes",
+      "structureTypes",
+      "structureNames",
+      "ignoreGenerated",
+      "indicatePresence"
+    ],
     "tags" : [
       "configuration"
     ],

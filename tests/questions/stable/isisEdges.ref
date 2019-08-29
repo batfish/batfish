@@ -10,6 +10,10 @@
     "description" : "Returns ISIS adjacencies.",
     "instanceName" : "qname",
     "longDescription" : "Lists all ISIS adjacencies in the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "remoteNodes"
+    ],
     "tags" : [
       "isis",
       "topology"

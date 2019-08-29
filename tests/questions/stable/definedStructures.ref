@@ -9,6 +9,11 @@
     "description" : "Lists the structures defined in the network.",
     "instanceName" : "qname",
     "longDescription" : "Lists the structures defined in the network, along with the files and line numbers in which they are defined.",
+    "orderedVariableNames" : [
+      "nodes",
+      "names",
+      "types"
+    ],
     "tags" : [
       "configuration"
     ],
