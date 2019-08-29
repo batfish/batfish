@@ -1846,7 +1846,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 org.batfish.datamodel.IpAccessListLine.builder()
                     .setAction(action)
                     .setMatchCondition(toAclLineMatchExpr(actionIpAccessListLine, action))
-                    .setName(Long.toString(actionIpAccessListLine.getLine()))
+                    .setName(actionIpAccessListLine.getText())
                     .build());
           }
 

@@ -1191,7 +1191,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterAcll_action(Acll_actionContext ctx) {
     _currentActionIpAccessListLineBuilder =
-        ActionIpAccessListLine.builder().setAction(toLineAction(ctx.action));
+        ActionIpAccessListLine.builder()
+            .setAction(toLineAction(ctx.action))
+            .setText(getFullText(ctx.getParent()));
     _currentIpAccessListLineNum.ifPresent(
         num -> _currentActionIpAccessListLineBuilder.setLine(num));
     _currentLayer3OptionsBuilder = Layer3Options.builder();
