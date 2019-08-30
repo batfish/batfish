@@ -100,6 +100,7 @@ s_boot
   BOOT
   (
     boot_kickstart
+    | boot_null
     | boot_nxos
     | boot_system
   )
@@ -108,6 +109,13 @@ s_boot
 boot_kickstart
 :
   KICKSTART image = WORD (SUP_1 | SUP_2)? NEWLINE
+;
+
+boot_null
+:
+  (
+    POAP
+  ) null_rest_of_line
 ;
 
 boot_nxos
@@ -260,8 +268,7 @@ key_string_text
 s_null
 :
   (
-    BOOT
-    | CLI
+    CLI
     | CLOCK
     | ERRDISABLE
     | FEATURE
