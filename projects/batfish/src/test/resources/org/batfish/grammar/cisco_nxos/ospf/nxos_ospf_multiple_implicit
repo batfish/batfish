@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ospf_multiple_implicit
+!
+! Multiple implicit definitions of an OSPF area
+!   implicit == defined in interface but not router
+
+feature ospf
+
+router ospf 1
+
+interface ethernet1/1
+  no switchport
+  no shutdown
+  ip address 1.1.1.1/24
+  ip router ospf 1 area 3
+
+interface ethernet1/2
+  no switchport
+  no shutdown
+  ip address 1.1.2.1/24
+  ip router ospf 1 area 3
