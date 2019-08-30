@@ -2130,6 +2130,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     Stream<OspfArea> implicitAreas =
         _implicitOspfAreas.get(Maps.immutableEntry(processName, vrfName)).stream()
             .filter(Predicates.not(proc.getAreas()::containsKey))
+            .distinct()
             .map(OspfArea::new);
     builder
         .setAreas(
