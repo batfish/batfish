@@ -1499,6 +1499,11 @@ GRACEFUL_RESTART_HELPER
   'graceful-restart-helper'
 ;
 
+GRATUITOUS
+:
+  'gratuitous'
+;
+
 GRE
 :
   'gre'
@@ -1728,9 +1733,9 @@ INCONSISTENCY
   'inconsistency'
 ;
 
-INFORMS
+INFORMATION
 :
-  'informs'
+  'information'
 ;
 
 INFORMATION_REPLY
@@ -1741,6 +1746,11 @@ INFORMATION_REPLY
 INFORMATION_REQUEST
 :
   'information-request'
+;
+
+INFORMS
+:
+  'informs'
 ;
 
 INGRESS_REPLICATION
@@ -1969,6 +1979,11 @@ LAST_AS
 LAST_MEMBER_QUERY_INTERVAL
 :
   'last-member-query-interval'
+;
+
+LATENCY
+:
+  'latency'
 ;
 
 LE
@@ -2444,6 +2459,11 @@ MISSING_AS_WORST
   'missing-as-worst'
 ;
 
+MLD
+:
+  'mld'
+;
+
 MOBILE_IP
 :
   'mobile-ip'
@@ -2536,7 +2556,6 @@ NAME
       pushMode(M_Word);
     }
   }
-
 ;
 
 NAME_SERVER
@@ -2898,6 +2917,11 @@ OVERLAY
   'overlay'
 ;
 
+PACKET
+:
+  'packet'
+;
+
 PACKET_LENGTH
 :
   'packet-length'
@@ -2980,12 +3004,12 @@ PEER_LINK
 
 PEER_POLICY
 :
-  'peer-policy'
+  'peer-policy' -> pushMode ( M_Word )
 ;
 
 PEER_SESSION
 :
-  'peer-session'
+  'peer-session' -> pushMode ( M_Word )
 ;
 
 PEER_VTEP
@@ -3193,6 +3217,11 @@ PROXY
   'proxy'
 ;
 
+PROXY_ARP
+:
+  'proxy-arp'
+;
+
 PROXY_LEAVE
 :
   'proxy-leave'
@@ -3397,6 +3426,11 @@ REPORT_POLICY
 REPORT_SUPPRESSION
 :
   'report-suppression'
+;
+
+REQUEST
+:
+  'request'
 ;
 
 RESET
@@ -3700,6 +3734,11 @@ SMALL
   'small'
 ;
 
+SMART_RELAY
+:
+  'smart-relay'
+;
+
 SMTP
 :
   'smtp'
@@ -3873,6 +3912,11 @@ STUB
 SUB_OPTION
 :
   'sub-option'
+;
+
+SUBNET_BROADCAST
+:
+  'subnet-broadcast'
 ;
 
 SUMMARY_ADDRESS
@@ -4073,6 +4117,11 @@ TFTP
   'tftp'
 ;
 
+THRESHOLD
+:
+  'threshold'
+;
+
 THROTTLE
 :
   'throttle'
@@ -4208,6 +4257,11 @@ TRUST
   'trust'
 ;
 
+TRUSTED
+:
+  'trusted'
+;
+
 TRUSTPOINT
 :
   'trustpoint'
@@ -4301,6 +4355,11 @@ UNSUPPRESS_MAP
   'unsuppress-map'
 ;
 
+UPDATE
+:
+  'update'
+;
+
 UPDATE_SOURCE
 :
   'update-source'
@@ -4336,6 +4395,11 @@ URG
 USE_ACL
 :
   'use-acl' -> pushMode ( M_Word )
+;
+
+USE_BIA
+:
+  'use-bia'
 ;
 
 USE_IPV4ACL
