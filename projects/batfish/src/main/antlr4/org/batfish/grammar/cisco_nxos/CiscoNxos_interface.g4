@@ -447,8 +447,8 @@ i_ip_null
     | IGMP
     | PIM
     | REDIRECTS
-    | VERIFY
     | UNREACHABLES
+    | VERIFY
   ) null_rest_of_line
 ;
 
@@ -664,7 +664,10 @@ min_links_number
 
 il_null
 :
-  SUSPEND_INDIVIDUAL null_rest_of_line
+  (
+    FAST_SELECT_HOT_STANDBY
+    | SUSPEND_INDIVIDUAL
+  ) null_rest_of_line
 ;
 
 i_mac_address
@@ -791,6 +794,7 @@ i_no_null
     | LOGGING
     | MANAGEMENT
     | NEGOTIATE
+    | PORT_CHANNEL
     | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
@@ -861,6 +865,7 @@ i_null
     | STORM_CONTROL
     | UDLD
     | VPC
+    | VTP
   ) null_rest_of_line
 ;
 
