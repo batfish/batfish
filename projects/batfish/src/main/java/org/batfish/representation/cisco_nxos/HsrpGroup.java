@@ -30,6 +30,14 @@ public abstract class HsrpGroup implements Serializable {
     _holdTimeMs = holdTimeMs;
   }
 
+  public @Nullable String getName() {
+    return _name;
+  }
+
+  public void setName(@Nullable String name) {
+    _name = name;
+  }
+
   public @Nullable Integer getPreemptDelayMinimumSeconds() {
     return _preemptDelayMinimumSeconds;
   }
@@ -77,6 +85,7 @@ public abstract class HsrpGroup implements Serializable {
   private final int _group;
   private @Nullable Integer _helloIntervalMs;
   private @Nullable Integer _holdTimeMs;
+  private @Nullable String _name;
   private @Nullable Integer _preemptDelayMinimumSeconds;
   private @Nullable Integer _preemptDelayReloadSeconds;
   private @Nullable Integer _preemptDelaySyncSeconds;

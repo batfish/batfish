@@ -131,6 +131,7 @@ public final class Interface implements Serializable {
   private @Nullable InterfaceIpv6AddressWithAttributes _ipv6Address;
   private boolean _ipv6AddressDhcp;
   private final @Nonnull Set<InterfaceIpv6AddressWithAttributes> _ipv6AddressSecondaries;
+  private @Nullable Boolean _ipProxyArp;
   private @Nullable Lacp _lacp;
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
@@ -256,6 +257,14 @@ public final class Interface implements Serializable {
 
   public @Nonnull Set<InterfaceIpv6AddressWithAttributes> getIpv6AddressSecondaries() {
     return _ipv6AddressSecondaries;
+  }
+
+  public @Nullable Boolean getIpProxyArp() {
+    return _ipProxyArp;
+  }
+
+  public void setIpProxyArp(@Nullable Boolean ipProxyArp) {
+    _ipProxyArp = ipProxyArp;
   }
 
   public @Nullable Lacp getLacp() {

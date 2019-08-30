@@ -9,6 +9,14 @@ import javax.annotation.Nullable;
 /** HSRP settings for an {@link Interface}. */
 public final class InterfaceHsrp implements Serializable {
 
+  public @Nullable Integer getDelayMinimumSeconds() {
+    return _delayMinimumSeconds;
+  }
+
+  public void setDelayMinimumSeconds(@Nullable Integer seconds) {
+    _delayMinimumSeconds = seconds;
+  }
+
   public @Nullable Integer getDelayReloadSeconds() {
     return _delayReloadSeconds;
   }
@@ -37,6 +45,7 @@ public final class InterfaceHsrp implements Serializable {
     _ipv4Groups = new HashMap<>();
   }
 
+  private @Nullable Integer _delayMinimumSeconds;
   private @Nullable Integer _delayReloadSeconds;
   private final @Nonnull Map<Integer, HsrpGroupIpv4> _ipv4Groups;
   private @Nullable Integer _version;

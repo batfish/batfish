@@ -64,6 +64,12 @@ group_name
   WORD
 ;
 
+hsrp_name
+:
+// 1-250 characters
+  WORD
+;
+
 interface_address
 :
   address = ip_address mask = subnet_mask

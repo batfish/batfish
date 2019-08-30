@@ -1711,6 +1711,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIfaceBuilder.setMtu(iface.getMtu());
 
+    newIfaceBuilder.setProxyArp(firstNonNull(iface.getIpProxyArp(), Boolean.FALSE));
+
     // filters
     String ipAccessGroupIn = iface.getIpAccessGroupIn();
     if (ipAccessGroupIn != null) {

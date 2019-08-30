@@ -131,12 +131,27 @@ i_hsrp
 
 ih_delay
 :
-  DELAY ihd_reload
+  DELAY
+  (
+    ihd_minimum ihd_reload?
+    | ihd_reload ihd_minimum?
+  ) NEWLINE
+;
+
+ihd_minimum
+:
+  MINIMUM delay_s = hsrp_delay_minimum
+;
+
+hsrp_delay_minimum
+:
+// 0-10000 (s)
+  uint16
 ;
 
 ihd_reload
 :
-  RELOAD delay_s = hsrp_delay_reload NEWLINE
+  RELOAD delay_s = hsrp_delay_reload
 ;
 
 hsrp_delay_reload
@@ -175,6 +190,8 @@ ihg_ipv6
 ihg_common
 :
   ihg_authentication
+  | ihg_mac_address
+  | ihg_name
   | ihg_preempt
   | ihg_priority
   | ihg_timers
@@ -215,6 +232,16 @@ hsrp_authentication_string
 ihgam_key_chain
 :
   KEY_CHAIN name = key_chain_name NEWLINE
+;
+
+ihg_mac_address
+:
+  MAC_ADDRESS mac = mac_address_literal NEWLINE
+;
+
+ihg_name
+:
+  NAME name = hsrp_name NEWLINE
 ;
 
 ihg_preempt
@@ -345,6 +372,8 @@ i_ip
     | i_ip_null
     | i_ip_ospf
     | i_ip_policy
+    | i_ip_port_unreachable
+    | i_ip_proxy_arp
     | i_ip_router
   )
 ;
@@ -413,10 +442,12 @@ i_ip_dhcp_relay
 i_ip_null
 :
   (
-    FLOW
+    ARP
+    | FLOW
     | IGMP
     | PIM
     | REDIRECTS
+    | VERIFY
     | UNREACHABLES
   ) null_rest_of_line
 ;
@@ -439,6 +470,16 @@ i_ip_ospf
 i_ip_policy
 :
   POLICY ROUTE_MAP name = route_map_name NEWLINE
+;
+
+i_ip_port_unreachable
+:
+  PORT_UNREACHABLE NEWLINE
+;
+
+i_ip_proxy_arp
+:
+  PROXY_ARP NEWLINE
 ;
 
 iipo_authentication
@@ -584,8 +625,11 @@ iip6_null
 :
   (
     DHCP
+    | MLD
     | ND
+    | REDIRECTS
     | ROUTER
+    | VERIFY
   ) null_rest_of_line
 ;
 
@@ -687,19 +731,28 @@ i_no_ip
   (
     inoip_null
     | inoip_ospf
+    | inoip_proxy_arp
   )
 ;
 
 inoip_null
 :
   (
-    REDIRECTS
+    ARP
+    | DHCP
+    | REDIRECTS
+    | VERIFY
   ) null_rest_of_line
 ;
 
 inoip_ospf
 :
   OSPF inoipo_passive_interface
+;
+
+inoip_proxy_arp
+:
+  PROXY_ARP NEWLINE
 ;
 
 inoipo_passive_interface
@@ -730,8 +783,12 @@ i_no_null
     BEACON
     | CDP
     | HARDWARE
+    | HSRP
+    | LACP
+    | LINK
     | LLDP
     | LOAD_INTERVAL
+    | LOGGING
     | MANAGEMENT
     | NEGOTIATE
     | SNMP
@@ -788,6 +845,7 @@ i_null
     | DUPLEX
     | FEX
     | FLOWCONTROL
+    | HARDWARE
     | LINK
     | LLDP
     | LOAD_INTERVAL
@@ -796,6 +854,7 @@ i_null
     | MEDIUM
     | NEGOTIATE
     | OSPFV3
+    | PACKET
     | PRIORITY_FLOW_CONTROL
     | SNMP
     | SPANNING_TREE

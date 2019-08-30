@@ -233,6 +233,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteConte
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_dhcp_relayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_proxy_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_concreteContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
@@ -256,10 +257,12 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_expandedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_standardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_versionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihd_minimumContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihd_reloadContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg4_ipContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipv4Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipv6Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_preemptContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
@@ -275,6 +278,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_eigrpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Il_min_linksContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inherit_sequence_numberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoip_proxy_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoipo_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inos_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
@@ -674,7 +678,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 64));
   private static final IntegerSpace HSRP_DELAY_RELOAD_S_RANGE =
       IntegerSpace.of(Range.closed(0, 10000));
+  private static final IntegerSpace HSRP_DELAY_MINIMUM_S_RANGE =
+      IntegerSpace.of(Range.closed(0, 10000));
   private static final IntegerSpace HSRP_GROUP_RANGE = IntegerSpace.of(Range.closed(0, 4095));
+  private static final IntegerSpace HSRP_GROUP_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 250));
   private static final IntegerSpace HSRP_HELLO_INTERVAL_MS_RANGE =
       IntegerSpace.of(Range.closed(250, 999));
   private static final IntegerSpace HSRP_HELLO_INTERVAL_S_RANGE =
@@ -1382,6 +1390,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIhd_minimum(Ihd_minimumContext ctx) {
+    toIntegerInSpace(ctx, ctx.delay_s, HSRP_DELAY_MINIMUM_S_RANGE, "hsrp minimum delay seconds")
+        .ifPresent(
+            delay ->
+                _currentInterfaces.forEach(
+                    iface -> iface.getOrCreateHsrp().setDelayMinimumSeconds(delay)));
+  }
+
+  @Override
   public void exitIhd_reload(Ihd_reloadContext ctx) {
     toIntegerInSpace(ctx, ctx.delay_s, HSRP_DELAY_RELOAD_S_RANGE, "hsrp reload delay seconds")
         .ifPresent(
@@ -1479,6 +1496,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             ((HsrpGroupIpv4) group).setIp(ip);
           });
     }
+  }
+
+  @Override
+  public void exitIhg_name(Ihg_nameContext ctx) {
+    Optional<String> nameOrError =
+        toStringWithLengthInSpace(ctx, ctx.name, HSRP_GROUP_NAME_LENGTH_RANGE, "hsrp group name");
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _currentInterfaces.forEach(
+        iface -> {
+          HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+          group.setName(name);
+        });
   }
 
   @Override
@@ -4383,6 +4415,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_ip_proxy_arp(I_ip_proxy_arpContext ctx) {
+    _currentInterfaces.forEach(i -> i.setIpProxyArp(true));
+  }
+
+  @Override
   public void exitI_shutdown(I_shutdownContext ctx) {
     _currentInterfaces.forEach(iface -> iface.setShutdown(true));
   }
@@ -4499,6 +4536,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           clearLayer3Configuration(iface);
           iface.setVrfMember(name);
         });
+  }
+
+  @Override
+  public void exitInoip_proxy_arp(Inoip_proxy_arpContext ctx) {
+    _currentInterfaces.forEach(i -> i.setIpProxyArp(false));
   }
 
   @Override

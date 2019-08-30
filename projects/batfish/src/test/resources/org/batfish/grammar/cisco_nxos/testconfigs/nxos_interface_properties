@@ -28,14 +28,20 @@ interface Ethernet1/1
   ip access-group acl_out out
   ip dhcp relay address 1.2.3.4
   ip dhcp relay address 1.2.3.5
+  no ip dhcp relay information trusted
+  no ip dhcp smart-relay
+  no ip dhcp relay subnet-broadcast
   ip flow monitor FOO input sampler BAR
+  ip proxy-arp
   ip router eigrp 100
   ip unreachables
   ipv6 traffic-filter FOO in
   ipv6 traffic-filter BAR out
-  mac-address 1234.5678.9abc
+  no link debounce
   no lldp receive
+  mac-address 1234.5678.9abc
   mtu 9216
+  packet latency threshold 8
   service-policy type qos input pm_qos_in
   service-policy type qos output pm_qos_out
   service-policy type queuing input pm_queuing_in
@@ -52,6 +58,7 @@ interface Ethernet1/2
   autostate
   description this desc should be lost.
   no description
+  no ip proxy-arp
   no snmp trap link-status
   udld disable
 
@@ -70,8 +77,22 @@ interface Ethernet100/100
   carrier-delay msec 100
   flowcontrol receive off
   flowcontrol send off
+  hardware multicast hw-hash
   no hardware multicast hw-hash
   no hardware vethernet mac filtering per-vlan
+  no hsrp bfd
+  hsrp version 2
+  hsrp delay minimum 300
+  hsrp delay minimum 300 reload 300
+  hsrp delay reload 300
+  hsrp delay reload 300 minimum 300
+  no hsrp use-bia
+  ip arp timeout 2400
+  ip arp gratuitous update
+  ip arp gratuitous request
+  ipv6 mld version 2
+  ipv6 mld robustness-variable 2
+  ipv6 mld query-interval 125
   link debounce time 100
   lldp transmit
   lldp receive
@@ -80,6 +101,7 @@ interface Ethernet100/100
   no load-interval counter 3
   logging event port link-status default
   logging event port trunk-status default
+  no logging event port link-status
   no mac-address
   no management
   mdix auto
