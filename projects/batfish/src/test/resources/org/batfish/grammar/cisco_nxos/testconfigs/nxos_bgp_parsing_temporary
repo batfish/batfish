@@ -32,6 +32,13 @@ router bgp 1
       route-map EG_CCC out
       send-community both
       soft-reconfiguration inbound
+  template peer-policy PEER_POLICY
+    next-hop-self
+    soft-reconfiguration inbound
+  template peer-session PEER_SESSION
+    remote-as 12345
+    dynamic-capability
+    timers 60 180
   neighbor 1.1.1.1
     bfd
     inherit peer PEER_BLLF

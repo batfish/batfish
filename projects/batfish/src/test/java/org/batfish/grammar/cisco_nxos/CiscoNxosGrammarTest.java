@@ -1324,6 +1324,7 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get(ifaceName);
       InterfaceHsrp hsrp = iface.getHsrp();
       assertThat(hsrp, notNullValue());
+      assertThat(hsrp.getDelayMinimumSeconds(), equalTo(59));
       assertThat(hsrp.getDelayReloadSeconds(), equalTo(60));
       assertThat(hsrp.getVersion(), equalTo(2));
       assertThat(hsrp.getIpv4Groups(), hasKeys(2));
@@ -1332,6 +1333,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           group.getIpSecondaries(),
           containsInAnyOrder(Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1")));
+      assertThat(group.getName(), equalTo("hsrp-some-named-thing"));
       assertThat(group.getPreemptDelayMinimumSeconds(), equalTo(30));
       assertThat(group.getPreemptDelayReloadSeconds(), equalTo(40));
       assertThat(group.getPreemptDelaySyncSeconds(), equalTo(50));
@@ -2079,6 +2081,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getEigrp(), equalTo("100"));
       assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));
       assertThat(iface.getIpAccessGroupOut(), equalTo("acl_out"));
+      assertThat(iface.getIpProxyArp(), equalTo(Boolean.TRUE));
       assertThat(iface.getMtu(), equalTo(9216));
     }
     {
@@ -2086,10 +2089,12 @@ public final class CiscoNxosGrammarTest {
       assertTrue(iface.getAutostate());
       assertThat(iface.getDescription(), nullValue());
       assertThat(iface.getEigrp(), nullValue());
+      assertThat(iface.getIpProxyArp(), equalTo(Boolean.FALSE));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       assertFalse(iface.getAutostate());
+      assertThat(iface.getIpProxyArp(), nullValue());
     }
   }
 
