@@ -1328,6 +1328,11 @@ FAST_LEAVE
   'fast-leave'
 ;
 
+FAST_SELECT_HOT_STANDBY
+:
+  'fast-select-hot-standby'
+;
+
 FCOE_FIB_MISS
 :
   'fcoe-fib-miss'
@@ -2049,6 +2054,11 @@ LISP
 LLDP
 :
   'lldp'
+;
+
+LOAD_DEFER
+:
+  'load-defer'
 ;
 
 LOAD_INTERVAL
