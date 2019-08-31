@@ -6,7 +6,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
@@ -137,7 +136,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String dimension = "dimension1";
 
     NodeRoleDimensionBean dimBean =
-        new NodeRoleDimensionBean(NodeRoleDimension.builder("dimension1").build(), null, null);
+        new NodeRoleDimensionBean(NodeRoleDimension.builder("dimension1").build(), null);
     Response response =
         getNodeRoleDimensionTarget(network, dimension)
             .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
@@ -151,7 +150,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     Main.getWorkMgr().initNetwork(network, null);
 
     NodeRoleDimensionBean dimBean =
-        new NodeRoleDimensionBean(NodeRoleDimension.builder(dimension).build(), null, null);
+        new NodeRoleDimensionBean(NodeRoleDimension.builder(dimension).build(), null);
     Response response =
         getNodeRoleDimensionTarget(network, dimension)
             .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
@@ -162,13 +161,13 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
 
     // put again should succeed and have new content
     RoleDimensionMapping rdMapping = new RoleDimensionMapping("\\(.*\\)");
-    dimBean.mappings = ImmutableList.of(new RoleDimensionMappingBean(rdMapping, ImmutableSet.of()));
+    dimBean.roleDimensionMappings = ImmutableList.of(new RoleDimensionMappingBean(rdMapping));
     Response response2 =
         getNodeRoleDimensionTarget(network, dimension)
             .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
     assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
     NodeRoleDimension dim2 =
         Main.getWorkMgr().getNetworkNodeRoles(network).getNodeRoleDimension(dimension).get();
-    assertThat(dim2.getRoleDimensionMappings(), equalTo(ImmutableSet.of(rdMapping)));
+    assertThat(dim2.getRoleDimensionMappings(), equalTo(ImmutableList.of(rdMapping)));
   }
 }

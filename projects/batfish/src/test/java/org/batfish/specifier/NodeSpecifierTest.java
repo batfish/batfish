@@ -49,9 +49,10 @@ public class NodeSpecifierTest {
                         .setRoleDimensionMappings(
                             ImmutableList.of(
                                 new RoleDimensionMapping(
-                                    "\\(" + n1.getHostname() + "\\)",
+                                    "(" + n1.getHostname() + ")",
                                     null,
-                                    ImmutableMap.of(n1.getHostname(), roleName))))
+                                    ImmutableMap.of(n1.getHostname(), roleName),
+                                    true)))
                         .build()))
             .build();
   }

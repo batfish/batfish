@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashSet;
@@ -27,12 +28,12 @@ public class NodesSpecifierTest {
     NodeRoleDimension dim1 =
         NodeRoleDimension.builder()
             .setName("dim10")
-            .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("\\(role.\\).*")))
+            .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
             .build();
     NodeRoleDimension dim2 =
         NodeRoleDimension.builder()
             .setName("dim20")
-            .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("role.\\(.*\\)")))
+            .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
             .build();
     SortedSet<NodeRoleDimension> roleDimensions =
         new ImmutableSortedSet.Builder<>(NodeRoleDimension::compareTo).add(dim1).add(dim2).build();
@@ -94,8 +95,7 @@ public class NodesSpecifierTest {
     List<AutocompleteSuggestion> suggestions =
         NodesSpecifier.autoComplete(queryAllDimensions, null, nodeRolesData);
     Set<String> suggestionsText =
-        suggestions
-            .stream()
+        suggestions.stream()
             .map(suggestion -> suggestion.getText())
             .collect(ImmutableSet.toImmutableSet());
 
@@ -122,10 +122,10 @@ public class NodesSpecifierTest {
     NodeRolesData nodeRolesData = initNodeRoleData();
     String queryDimension = "ROLE:dim10:";
     List<AutocompleteSuggestion> suggestions =
-        NodesSpecifier.autoComplete(queryDimension, null, nodeRolesData);
+        NodesSpecifier.autoComplete(
+            queryDimension, ImmutableSet.of("role1", "role2"), nodeRolesData);
     Set<String> suggestionsText =
-        suggestions
-            .stream()
+        suggestions.stream()
             .map(suggestion -> suggestion.getText())
             .collect(ImmutableSet.toImmutableSet());
 
@@ -197,7 +197,12 @@ public class NodesSpecifierTest {
         NodeRoleDimension.builder()
             .setName("dim")
             .setRoleDimensionMappings(
-                ImmutableList.of(new RoleDimensionMapping("\\(.*-border\\).*")))
+                ImmutableList.of(
+                    new RoleDimensionMapping(
+                        "(.+-.+)-.+",
+                        null,
+                        ImmutableMap.of(
+                            "lhr-border", "match1", "svr-border", "match2", "lhr-core", "dumb0"))))
             .build();
 
     Set<String> matchingNodes = specifier.getMatchingNodesByRole(roleDimension, nodes);

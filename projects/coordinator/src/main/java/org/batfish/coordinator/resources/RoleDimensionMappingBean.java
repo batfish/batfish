@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import org.batfish.role.RoleDimensionMapping;
 
 public class RoleDimensionMappingBean {
@@ -12,20 +11,17 @@ public class RoleDimensionMappingBean {
   public String regex;
   public List<Integer> groups;
   public Map<String, String> canonicalRoleNames;
-  public Map<String, String> nodeRolesMap;
+  public boolean caseSensitive;
 
   @JsonCreator
   private RoleDimensionMappingBean() {}
 
-  /**
-   * Instantiate this bean from {@code rdMapping} and mapping the nodes in fromNodes to their
-   * matching role names.
-   */
-  public RoleDimensionMappingBean(RoleDimensionMapping rdMapping, Set<String> fromNodes) {
+  /** Instantiate this bean from {@code rdMapping}. */
+  public RoleDimensionMappingBean(RoleDimensionMapping rdMapping) {
     regex = rdMapping.getRegex();
     groups = rdMapping.getGroups();
     canonicalRoleNames = rdMapping.getCanonicalRoleNames();
-    nodeRolesMap = rdMapping.createNodeRolesMap(fromNodes);
+    caseSensitive = rdMapping.getCaseSensitive();
   }
 
   @Override
@@ -38,16 +34,16 @@ public class RoleDimensionMappingBean {
         && Objects.equals(
             groups, ((org.batfish.coordinator.resources.RoleDimensionMappingBean) o).groups)
         && Objects.equals(canonicalRoleNames, ((RoleDimensionMappingBean) o).canonicalRoleNames)
-        && Objects.equals(nodeRolesMap, ((RoleDimensionMappingBean) o).nodeRolesMap);
+        && caseSensitive == ((RoleDimensionMappingBean) o).caseSensitive;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(regex, groups, canonicalRoleNames, nodeRolesMap);
+    return Objects.hash(regex, groups, canonicalRoleNames);
   }
 
   /** Gets a {@link RoleDimensionMapping} object from this bean. */
   public RoleDimensionMapping toRoleDimensionMapping() {
-    return new RoleDimensionMapping(regex, groups, canonicalRoleNames);
+    return new RoleDimensionMapping(regex, groups, canonicalRoleNames, caseSensitive);
   }
 }

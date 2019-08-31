@@ -34,7 +34,7 @@ public class RoleNameNodeSpecifierTest {
                       .setRoleDimensionMappings(
                           ImmutableList.of(
                               new RoleDimensionMapping(
-                                  "\\(.*\\)",
+                                  "(.*)",
                                   null,
                                   ImmutableMap.of("node1", "role1", "node2", "role2"))))
                       .build(),

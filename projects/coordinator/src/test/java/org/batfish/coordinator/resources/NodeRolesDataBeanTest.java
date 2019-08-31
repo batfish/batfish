@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Set;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -20,8 +19,6 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
   public void testProperties() {
     String snapshot = "snapshot1";
     String dimension = "someDimension";
-    String role = "someRole";
-    Set<String> nodes = ImmutableSet.of("a", "b");
     RoleDimensionMapping rdMapping = new RoleDimensionMapping("\\(.*\\)");
     NodeRoleDimension nodeRoleDimension =
         NodeRoleDimension.builder()
@@ -30,11 +27,11 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
             .build();
     NodeRolesData data =
         NodeRolesData.builder().setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension)).build();
-    NodeRolesDataBean bean = new NodeRolesDataBean(data, snapshot, nodes);
+    NodeRolesDataBean bean = new NodeRolesDataBean(data, snapshot);
 
     assertThat(
         bean.roleDimensions,
-        equalTo(ImmutableSet.of(new NodeRoleDimensionBean(nodeRoleDimension, snapshot, nodes))));
+        equalTo(ImmutableSet.of(new NodeRoleDimensionBean(nodeRoleDimension, snapshot))));
     assertThat(bean.defaultDimension, nullValue());
   }
 }

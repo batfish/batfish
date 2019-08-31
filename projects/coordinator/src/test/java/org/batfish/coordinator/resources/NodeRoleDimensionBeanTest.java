@@ -4,8 +4,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRoleDimension;
@@ -28,19 +26,18 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
   public void testProperties() {
     String snapshot = "snapshot1";
     String dimension = "someDimension";
-    String role = "someRole";
-    Set<String> nodes = ImmutableSet.of("a", "b");
-    RoleDimensionMapping rdMapping = new RoleDimensionMapping("\\(.*\\)");
+    RoleDimensionMapping rdMapping = new RoleDimensionMapping("(.*)");
     NodeRoleDimension nodeRoleDimension =
         NodeRoleDimension.builder()
             .setName(dimension)
             .setRoleDimensionMappings(ImmutableList.of(rdMapping))
             .build();
-    NodeRoleDimensionBean bean = new NodeRoleDimensionBean(nodeRoleDimension, snapshot, nodes);
+    NodeRoleDimensionBean bean = new NodeRoleDimensionBean(nodeRoleDimension, snapshot);
 
     assertThat(bean.name, equalTo(dimension));
     assertThat(
-        bean.mappings, equalTo(ImmutableSet.of(new RoleDimensionMappingBean(rdMapping, nodes))));
+        bean.roleDimensionMappings,
+        equalTo(ImmutableList.of(new RoleDimensionMappingBean(rdMapping))));
     assertThat(bean.snapshot, equalTo(snapshot));
     assertThat(bean.type, equalTo(NodeRoleDimension.Type.CUSTOM));
   }
@@ -48,8 +45,7 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
   @Test
   public void toNodeRoleDimension() {
     NodeRoleDimensionBean dimBean =
-        new NodeRoleDimensionBean(
-            NodeRoleDimension.builder("name").build(), null, ImmutableSet.of());
+        new NodeRoleDimensionBean(NodeRoleDimension.builder("name").build(), null);
     NodeRoleDimension dim = dimBean.toNodeRoleDimension();
 
     // we should get the expected object

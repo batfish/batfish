@@ -260,8 +260,7 @@ public final class InferRoles {
       String chosenNode = Iterables.get(nodes, new Random().nextInt(nodes.size()));
       _tokens = tokenizeName(chosenNode);
       _regex =
-          _tokens
-              .stream()
+          _tokens.stream()
               .map((p) -> p.getToken().tokenToRegex(p.getString()))
               .collect(Collectors.toList());
       Pattern p = Pattern.compile(String.join("", _regex), _patternFlags);
@@ -580,7 +579,8 @@ public final class InferRoles {
     return NodeRoleDimension.builder()
         .setName(dimName)
         .setType(Type.AUTO)
-        .setRoleRegexes(ImmutableList.of(regex))
+        .setRoleDimensionMappings(
+            ImmutableList.of(new RoleDimensionMapping(regex, null, null, _caseSensitive)))
         .build();
   }
 }

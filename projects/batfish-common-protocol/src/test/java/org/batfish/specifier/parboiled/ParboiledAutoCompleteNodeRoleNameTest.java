@@ -43,9 +43,11 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
               ImmutableSortedSet.of(
                   NodeRoleDimension.builder("dim1")
                       .setRoleDimensionMappings(
-                          ImmutableList.of(
-                              new RoleDimensionMapping("\\(r1.+\\)"),
-                              new RoleDimensionMapping("\\(r2.+\\)")))
+                          ImmutableList.of(new RoleDimensionMapping("(r1.+)")))
+                      .build(),
+                  NodeRoleDimension.builder("dim2")
+                      .setRoleDimensionMappings(
+                          ImmutableList.of(new RoleDimensionMapping("(r2.+)")))
                       .build()))
           .build();
 

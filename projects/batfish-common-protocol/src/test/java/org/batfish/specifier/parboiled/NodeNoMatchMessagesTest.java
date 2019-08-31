@@ -23,14 +23,14 @@ public class NodeNoMatchMessagesTest {
 
   private static List<String> getMessages(
       NodeNoMatchMessages nodeNoMatchMessages, CompletionMetadata completionMetadata) {
-    return nodeNoMatchMessages.get(
-        completionMetadata, NodeRolesData.builder().build(), new ReferenceLibrary(null));
+    return getMessages(nodeNoMatchMessages, completionMetadata, NodeRolesData.builder().build());
   }
 
   private static List<String> getMessages(
-      NodeNoMatchMessages nodeNoMatchMessages, NodeRolesData nodeRolesData) {
-    return nodeNoMatchMessages.get(
-        CompletionMetadata.builder().build(), nodeRolesData, new ReferenceLibrary(null));
+      NodeNoMatchMessages nodeNoMatchMessages,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData) {
+    return nodeNoMatchMessages.get(completionMetadata, nodeRolesData, new ReferenceLibrary(null));
   }
 
   @Test
@@ -66,19 +66,30 @@ public class NodeNoMatchMessagesTest {
                     NodeRoleDimension.builder()
                         .setName("dim1")
                         .setRoleDimensionMappings(
-                            ImmutableList.of(new RoleDimensionMapping("\\(.*\\)")))
+                            ImmutableList.of(new RoleDimensionMapping("(.*)")))
                         .build()))
             .build();
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("r1", "r2")).build();
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("nodim", "r1")), nodeRolesData),
+        getMessages(
+            new NodeNoMatchMessages(new RoleNodeAstNode("nodim", "r1")),
+            completionMetadata,
+            nodeRolesData),
         equalTo(ImmutableList.of((getErrorMessageMissingBook("nodim", "Node role dimension")))));
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "norole")), nodeRolesData),
+        getMessages(
+            new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "norole")),
+            completionMetadata,
+            nodeRolesData),
         equalTo(
             ImmutableList.of(
                 (getErrorMessageMissingGroup("norole", "Node role", "dim1", "dimension")))));
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "r1")), nodeRolesData),
+        getMessages(
+            new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "r1")),
+            completionMetadata,
+            nodeRolesData),
         equalTo(ImmutableList.of()));
   }
 

@@ -55,7 +55,7 @@ public class ParboiledNodeSpecifierTest {
                 .setRoleDimensionMappings(
                     ImmutableList.of(
                         new RoleDimensionMapping(
-                            "\\(node1.*\\)", null, ImmutableMap.of("node1", roleName))))
+                            "(node1.*)", null, ImmutableMap.of("node1", roleName))))
                 .build()));
     assertThat(
         new ParboiledNodeSpecifier(new RoleNodeAstNode(dimensionName, roleName))
@@ -75,7 +75,7 @@ public class ParboiledNodeSpecifierTest {
                 .setRoleDimensionMappings(
                     ImmutableList.of(
                         new RoleDimensionMapping(
-                            "\\(node1.*\\)", null, ImmutableMap.of("node1", roleName))))
+                            "(node1.*)", null, ImmutableMap.of("node1", roleName))))
                 .build()));
     assertThat(
         new ParboiledNodeSpecifier(new RoleNodeAstNode(roleName, dimensionName))

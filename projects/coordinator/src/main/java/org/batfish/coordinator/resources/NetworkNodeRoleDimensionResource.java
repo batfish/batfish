@@ -2,7 +2,6 @@ package org.batfish.coordinator.resources;
 
 import static org.batfish.common.util.HttpUtil.checkClientArgument;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Comparator;
@@ -76,9 +75,7 @@ public final class NetworkNodeRoleDimensionResource {
     if (!dimension.isPresent()) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok()
-        .entity(new NodeRoleDimensionBean(dimension.get(), null, ImmutableSet.of()))
-        .build();
+    return Response.ok().entity(new NodeRoleDimensionBean(dimension.get(), null)).build();
   }
 
   /**

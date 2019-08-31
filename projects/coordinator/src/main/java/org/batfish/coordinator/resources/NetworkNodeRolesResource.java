@@ -3,7 +3,6 @@ package org.batfish.coordinator.resources;
 import static org.batfish.common.util.HttpUtil.checkClientArgument;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Optional;
@@ -95,9 +94,7 @@ public final class NetworkNodeRolesResource {
     if (nodeRolesData == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok()
-        .entity(new NodeRolesDataBean(nodeRolesData, null, ImmutableSet.of()))
-        .build();
+    return Response.ok().entity(new NodeRolesDataBean(nodeRolesData, null)).build();
   }
 
   @Consumes(MediaType.APPLICATION_JSON)

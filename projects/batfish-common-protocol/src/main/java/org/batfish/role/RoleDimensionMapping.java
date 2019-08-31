@@ -34,6 +34,7 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
   private static final String PROP_REGEX = "regex";
   private static final String PROP_GROUPS = "groups";
   private static final String PROP_CANONICAL_ROLE_NAMES = "canonicalRoleNames";
+  private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
   // the regular expression that induces this role mapping on node names
   @Nonnull private String _regex;
@@ -42,17 +43,20 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
   // canonical role name
   @Nonnull private Map<String, String> _canonicalRoleNames;
 
+  @Nonnull private boolean _caseSensitive;
+
   @Nonnull private Pattern _pattern;
 
   @JsonCreator
   public RoleDimensionMapping(
       @JsonProperty(PROP_REGEX) String regex,
       @JsonProperty(PROP_GROUPS) @Nullable List<Integer> groups,
-      @JsonProperty(PROP_CANONICAL_ROLE_NAMES) @Nullable Map<String, String> canonicalRoleNames) {
+      @JsonProperty(PROP_CANONICAL_ROLE_NAMES) @Nullable Map<String, String> canonicalRoleNames,
+      @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
     checkArgument(regex != null, "The regex cannot be null");
     _regex = regex;
     try {
-      _pattern = Pattern.compile(regex);
+      _pattern = Pattern.compile(regex, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
@@ -63,7 +67,14 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
                 .boxed()
                 .collect(Collectors.toList()));
     _canonicalRoleNames = firstNonNull(canonicalRoleNames, ImmutableMap.of());
-    /* TODO: Take a flag for case sensitivity */
+    _caseSensitive = caseSensitive;
+  }
+
+  public RoleDimensionMapping(
+      String regex,
+      @Nullable List<Integer> groups,
+      @Nullable Map<String, String> canonicalRoleNames) {
+    this(regex, groups, canonicalRoleNames, false);
   }
 
   public RoleDimensionMapping(String regex) {
@@ -83,6 +94,7 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
                   int cKey = e1.getKey().compareTo(e2.getKey());
                   return cKey != 0 ? cKey : e1.getValue().compareTo(e2.getValue());
                 }))
+        .thenComparing(RoleDimensionMapping::getCaseSensitive)
         .compare(this, o);
   }
 
@@ -93,13 +105,19 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
     }
     return Objects.equals(_regex, ((RoleDimensionMapping) o)._regex)
         && Objects.equals(_groups, ((RoleDimensionMapping) o)._groups)
-        && Objects.equals(_canonicalRoleNames, ((RoleDimensionMapping) o)._canonicalRoleNames);
+        && Objects.equals(_canonicalRoleNames, ((RoleDimensionMapping) o)._canonicalRoleNames)
+        && _caseSensitive == ((RoleDimensionMapping) o)._caseSensitive;
   }
 
   @JsonProperty(PROP_CANONICAL_ROLE_NAMES)
   @Nonnull
   public Map<String, String> getCanonicalRoleNames() {
     return _canonicalRoleNames;
+  }
+
+  @JsonProperty(PROP_CASE_SENSITIVE)
+  public boolean getCaseSensitive() {
+    return _caseSensitive;
   }
 
   @JsonProperty(PROP_GROUPS)
@@ -125,7 +143,7 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_regex, _groups, _canonicalRoleNames);
+    return Objects.hash(_regex, _groups, _canonicalRoleNames, _caseSensitive);
   }
 
   private Optional<String> roleNameForNode(String nodeName) {
@@ -135,6 +153,9 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
     }
     List<String> roleNameParts = _groups.stream().map(matcher::group).collect(Collectors.toList());
     String roleName = String.join("-", roleNameParts);
+    if (!_caseSensitive) {
+      roleName = roleName.toLowerCase();
+    }
     // convert to a canonical role name if there is one provided
     roleName = _canonicalRoleNames.getOrDefault(roleName, roleName);
     return Optional.of(roleName);
@@ -146,6 +167,7 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
         .add(PROP_REGEX, _regex)
         .add(PROP_GROUPS, _groups)
         .add(PROP_CANONICAL_ROLE_NAMES, _canonicalRoleNames)
+        .add(PROP_CASE_SENSITIVE, _caseSensitive)
         .toString();
   }
 }

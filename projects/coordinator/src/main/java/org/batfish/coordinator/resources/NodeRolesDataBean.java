@@ -21,12 +21,11 @@ public class NodeRolesDataBean {
   @JsonCreator
   private NodeRolesDataBean() {}
 
-  public NodeRolesDataBean(
-      @Nonnull NodeRolesData nodeRolesData, @Nullable String snapshot, @Nonnull Set<String> nodes) {
+  public NodeRolesDataBean(@Nonnull NodeRolesData nodeRolesData, @Nullable String snapshot) {
     defaultDimension = nodeRolesData.getDefaultDimension();
     roleDimensions =
         nodeRolesData.getNodeRoleDimensions().stream()
-            .map(dim -> new NodeRoleDimensionBean(dim, snapshot, nodes))
+            .map(dim -> new NodeRoleDimensionBean(dim, snapshot))
             .collect(Collectors.toSet());
   }
 
