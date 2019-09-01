@@ -70,15 +70,8 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
     _caseSensitive = caseSensitive;
   }
 
-  public RoleDimensionMapping(
-      String regex,
-      @Nullable List<Integer> groups,
-      @Nullable Map<String, String> canonicalRoleNames) {
-    this(regex, groups, canonicalRoleNames, false);
-  }
-
   public RoleDimensionMapping(String regex) {
-    this(regex, null, null);
+    this(regex, null, null, false);
   }
 
   @Override

@@ -48,9 +48,9 @@ public class NodeRolesData {
   private static final String PROP_DEFAULT_DIMENSION = "defaultDimension";
   private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
 
-  private String _defaultDimension;
+  @Nullable private String _defaultDimension;
 
-  private SortedSet<NodeRoleDimension> _roleDimensions;
+  @Nonnull SortedSet<NodeRoleDimension> _roleDimensions;
 
   public static @Nonnull Builder builder() {
     return new Builder();

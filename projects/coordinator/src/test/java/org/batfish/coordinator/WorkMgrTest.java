@@ -2684,7 +2684,7 @@ public final class WorkMgrTest {
                         .setRoleDimensionMappings(
                             ImmutableList.of(
                                 new RoleDimensionMapping(
-                                    "\\(" + node + "\\)", null, ImmutableMap.of(node, "role1"))))
+                                    "\\(" + node + "\\)", null, ImmutableMap.of(node, "role1"), false)))
                         .build()))
             .build();
     _manager.getStorage().storeNodeRoles(networkNodeRoles, networkNodeRolesId);

@@ -202,7 +202,8 @@ public class NodesSpecifierTest {
                         "(.+-.+)-.+",
                         null,
                         ImmutableMap.of(
-                            "lhr-border", "match1", "svr-border", "match2", "lhr-core", "dumb0"))))
+                            "lhr-border", "match1", "svr-border", "match2", "lhr-core", "dumb0"),
+                        false)))
             .build();
 
     Set<String> matchingNodes = specifier.getMatchingNodesByRole(roleDimension, nodes);

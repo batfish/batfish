@@ -9,10 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Objects of this class represent a roles specification for the network. */
@@ -23,25 +25,25 @@ public class NodeRolesSpecification {
   private static final String PROP_ROLE_MAPPINGS = "roleMappings";
 
   // the role dimensions used by this network, ordered for hierarchical
-  // visualization, i.e., if D1 comes before D2 then nodes will be
+  // visualization/exploration, i.e., if D1 comes before D2 then nodes will be
   // first partitioned via dimension D1 and then D2.
-  @Nonnull private List<String> _roleDimensionNames;
+  @Nullable private List<String> _roleDimensionNames;
   // the role mappings used to determine the role dimensions of each
   // node and the corresponding role names for each dimension
   @Nonnull private List<RoleMapping> _roleMappings;
 
   @JsonCreator
   public NodeRolesSpecification(
-      @JsonProperty(PROP_ROLE_DIMENSION_NAMES) List<String> roleDimensionNames,
-      @JsonProperty(PROP_ROLE_MAPPINGS) List<RoleMapping> roleMappings) {
-    _roleDimensionNames = firstNonNull(roleDimensionNames, ImmutableList.of());
+      @JsonProperty(PROP_ROLE_MAPPINGS) List<RoleMapping> roleMappings,
+      @JsonProperty(PROP_ROLE_DIMENSION_NAMES) @Nullable List<String> roleDimensionNames) {
     _roleMappings = firstNonNull(roleMappings, ImmutableList.of());
+    _roleDimensionNames = roleDimensionNames;
   }
 
   @JsonProperty(PROP_ROLE_DIMENSION_NAMES)
   @Nonnull
-  public List<String> getRoleDimensionNames() {
-    return _roleDimensionNames;
+  public Optional<List<String>> getRoleDimensionNames() {
+    return Optional.ofNullable(_roleDimensionNames);
   }
 
   @JsonProperty(PROP_ROLE_MAPPINGS)
@@ -64,7 +66,10 @@ public class NodeRolesSpecification {
         List<Integer> groups = entry.getValue();
         RoleDimensionMapping rdmap =
             new RoleDimensionMapping(
-                regex, groups, canonicalRoleNames.getOrDefault(dim, ImmutableMap.of()));
+                regex,
+                groups,
+                canonicalRoleNames.getOrDefault(dim, ImmutableMap.of()),
+                rmap.getCaseSensitive());
         List<RoleDimensionMapping> dimMaps = rdMaps.computeIfAbsent(dim, k -> new LinkedList<>());
         dimMaps.add(rdmap);
       }

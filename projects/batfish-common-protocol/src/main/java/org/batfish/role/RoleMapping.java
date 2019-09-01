@@ -22,6 +22,7 @@ public class RoleMapping {
   private static final String PROP_REGEX = "regex";
   private static final String PROP_ROLE_DIMENSIONS_GROUPS = "roleDimensionsGroups";
   private static final String PROP_CANONICAL_ROLE_NAMES = "canonicalRoleNames";
+  private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
   // the regular expression that induces this role mapping on node names
   @Nonnull private String _regex;
@@ -32,19 +33,21 @@ public class RoleMapping {
   // obtained from the node name to a canonical role name
   @Nonnull private Map<String, Map<String, String>> _canonicalRoleNames;
 
+  private boolean _caseSensitive;
+
   @JsonCreator
   public RoleMapping(
       @JsonProperty(PROP_REGEX) String regex,
       @JsonProperty(PROP_ROLE_DIMENSIONS_GROUPS) Map<String, List<Integer>> roleDimensionsGroups,
-      @JsonProperty(PROP_CANONICAL_ROLE_NAMES)
-          Map<String, Map<String, String>> canonicalRoleNames) {
+      @JsonProperty(PROP_CANONICAL_ROLE_NAMES) Map<String, Map<String, String>> canonicalRoleNames,
+      @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
     checkArgument(regex != null, "The regex cannot be null");
     _regex = regex;
     _roleDimensionsGroups = firstNonNull(roleDimensionsGroups, ImmutableMap.of());
     _canonicalRoleNames = firstNonNull(canonicalRoleNames, ImmutableMap.of());
-    /* TODO: Take a flag for case sensitivity */
+    _caseSensitive = caseSensitive;
     try {
-      Pattern.compile(regex);
+      Pattern.compile(regex, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
@@ -66,5 +69,10 @@ public class RoleMapping {
   @Nonnull
   public String getRegex() {
     return _regex;
+  }
+
+  @JsonProperty(PROP_CASE_SENSITIVE)
+  public boolean getCaseSensitive() {
+    return _caseSensitive;
   }
 }

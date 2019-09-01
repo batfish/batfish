@@ -1113,14 +1113,17 @@ public class AutoCompleteUtilsTest {
                         .setRoleDimensionMappings(
                             ImmutableList.of(
                                 new RoleDimensionMapping(
-                                    "(.*)", null, ImmutableMap.of("node1", "r1", "node2", "s1"))))
+                                    "(.*)",
+                                    null,
+                                    ImmutableMap.of("node1", "r1", "node2", "s1"),
+                                    false)))
                         .build(),
                     NodeRoleDimension.builder()
                         .setName("someDimension")
                         .setRoleDimensionMappings(
                             ImmutableList.of(
                                 new RoleDimensionMapping(
-                                    "(.*)", null, ImmutableMap.of("node3", "r2"))))
+                                    "(.*)", null, ImmutableMap.of("node3", "r2"), false)))
                         .build()))
             .build();
 
