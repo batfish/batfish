@@ -50,8 +50,7 @@ public final class RoleRegexNodeSpecifier implements NodeSpecifier {
       Map<String, SortedSet<String>> roleNodesMap =
           nrDimension.createRoleNodesMap(ctxt.getConfigs().keySet());
 
-      return roleNodesMap.keySet()
-          .stream()
+      return roleNodesMap.keySet().stream()
           .filter(roleName -> _rolePattern.matcher(roleName).matches())
           .flatMap(roleName -> roleNodesMap.get(roleName).stream())
           .collect(ImmutableSet.toImmutableSet());

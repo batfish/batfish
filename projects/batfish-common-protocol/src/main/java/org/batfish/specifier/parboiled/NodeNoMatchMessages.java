@@ -53,9 +53,7 @@ final class NodeNoMatchMessages implements NoMatchMessages {
 
     @Override
     public List<String> visitNameNodeAstNode(NameNodeAstNode nameNodeAstNode) {
-      return (_completionMetadata
-              .getNodes()
-              .stream()
+      return (_completionMetadata.getNodes().stream()
               .anyMatch(n -> n.equalsIgnoreCase(nameNodeAstNode.getName())))
           ? ImmutableList.of()
           : ImmutableList.of(getErrorMessageMissingName(nameNodeAstNode.getName(), "Device"));
@@ -63,9 +61,7 @@ final class NodeNoMatchMessages implements NoMatchMessages {
 
     @Override
     public List<String> visitNameRegexNodeAstNode(NameRegexNodeAstNode nameRegexNodeAstNode) {
-      return (_completionMetadata
-              .getNodes()
-              .stream()
+      return (_completionMetadata.getNodes().stream()
               .anyMatch(n -> nameRegexNodeAstNode.getPattern().matcher(n).find()))
           ? ImmutableList.of()
           : ImmutableList.of(
@@ -77,10 +73,7 @@ final class NodeNoMatchMessages implements NoMatchMessages {
       Optional<NodeRoleDimension> refBook =
           _nodeRolesData.getNodeRoleDimension(roleNodeAstNode.getDimensionName());
       if (refBook.isPresent()) {
-        if (refBook
-            .get()
-            .roleNamesFor(_completionMetadata.getNodes())
-            .stream()
+        if (refBook.get().roleNamesFor(_completionMetadata.getNodes()).stream()
             .anyMatch(r -> r.equalsIgnoreCase(roleNodeAstNode.getRoleName()))) {
           return ImmutableList.of();
         } else {

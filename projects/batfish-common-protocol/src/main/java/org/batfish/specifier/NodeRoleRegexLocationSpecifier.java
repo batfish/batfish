@@ -49,9 +49,7 @@ public abstract class NodeRoleRegexLocationSpecifier implements LocationSpecifie
       NodeRoleDimension nrdim = dimension.get();
       Map<String, SortedSet<String>> roleNodesMap =
           nrdim.createRoleNodesMap(ctxt.getConfigs().keySet());
-      return roleNodesMap
-          .keySet()
-          .stream()
+      return roleNodesMap.keySet().stream()
           .filter(roleName -> _rolePattern.matcher(roleName).matches())
           .flatMap(roleName -> roleNodesMap.get(roleName).stream())
           .flatMap(nodeName -> getNodeLocations(ctxt.getConfigs().get(nodeName)))

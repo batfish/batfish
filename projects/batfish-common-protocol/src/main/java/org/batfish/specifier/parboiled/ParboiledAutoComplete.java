@@ -60,15 +60,13 @@ public final class ParboiledAutoComplete {
 
   static final Function<ReferenceBook, Set<String>> addressGroupGetter =
       book ->
-          book.getAddressGroups()
-              .stream()
+          book.getAddressGroups().stream()
               .map(AddressGroup::getName)
               .collect(ImmutableSet.toImmutableSet());
 
   static final Function<ReferenceBook, Set<String>> interfaceGroupGetter =
       book ->
-          book.getInterfaceGroups()
-              .stream()
+          book.getInterfaceGroups().stream()
               .map(InterfaceGroup::getName)
               .collect(ImmutableSet.toImmutableSet());
 
@@ -164,8 +162,7 @@ public final class ParboiledAutoComplete {
   Set<ParboiledAutoCompleteSuggestion> run() {
     Set<PotentialMatch> potentialMatches = getPotentialMatches(_query);
 
-    return potentialMatches
-        .stream()
+    return potentialMatches.stream()
         .map(this::autoCompletePotentialMatch)
         .flatMap(Collection::stream)
         .collect(ImmutableSet.toImmutableSet());
@@ -309,8 +306,7 @@ public final class ParboiledAutoComplete {
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
             pm.getMatchPrefix(),
-            Grammar.getEnumValues(_grammar)
-                .stream()
+            Grammar.getEnumValues(_grammar).stream()
                 .map(Object::toString)
                 .collect(ImmutableSet.toImmutableSet())),
         false,
@@ -477,9 +473,7 @@ public final class ParboiledAutoComplete {
     String interfaceNamePrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
 
     Set<String> candidateInterfaces =
-        _completionMetadata
-            .getInterfaces()
-            .stream()
+        _completionMetadata.getInterfaces().stream()
             .filter(i -> nodeNameMatches(i.getHostname(), nodeAst))
             .map(NodeInterfacePair::getInterface)
             .collect(ImmutableSet.toImmutableSet());
@@ -664,8 +658,7 @@ public final class ParboiledAutoComplete {
       boolean escape,
       Anchor.Type anchorType,
       int startIndex) {
-    return suggestions
-        .stream()
+    return suggestions.stream()
         .map(
             s ->
                 new ParboiledAutoCompleteSuggestion(

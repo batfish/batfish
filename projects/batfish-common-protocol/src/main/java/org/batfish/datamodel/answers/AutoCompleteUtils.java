@@ -137,8 +137,7 @@ public final class AutoCompleteUtils {
   static List<AutocompleteSuggestion> orderSuggestions(
       String query, List<AutocompleteSuggestion> suggestions) {
     final LevenshteinDistance distance = new LevenshteinDistance();
-    return suggestions
-        .stream()
+    return suggestions.stream()
         .sorted(
             // first order by suggestion type
             Comparator.comparing(AutocompleteSuggestion::getSuggestionType)
@@ -231,13 +230,10 @@ public final class AutoCompleteUtils {
           {
             checkReferenceLibrary(referenceLibrary, network);
             ImmutableSet<String> groups =
-                referenceLibrary
-                    .getReferenceBooks()
-                    .stream()
+                referenceLibrary.getReferenceBooks().stream()
                     .map(
                         b ->
-                            b.getAddressGroups()
-                                .stream()
+                            b.getAddressGroups().stream()
                                 .map(ag -> ag.getName())
                                 .collect(ImmutableSet.toImmutableSet()))
                     .flatMap(Collection::stream)
@@ -374,9 +370,7 @@ public final class AutoCompleteUtils {
             suggestions =
                 baseAutoComplete(
                     query,
-                    completionMetadata
-                        .getInterfaces()
-                        .stream()
+                    completionMetadata.getInterfaces().stream()
                         .map(NodeInterfacePair::toString)
                         .collect(ImmutableSet.toImmutableSet()));
             break;
@@ -389,9 +383,7 @@ public final class AutoCompleteUtils {
           {
             checkReferenceLibrary(referenceLibrary, network);
             ImmutableSet<String> groups =
-                referenceLibrary
-                    .getReferenceBooks()
-                    .stream()
+                referenceLibrary.getReferenceBooks().stream()
                     .flatMap(b -> b.getInterfaceGroups().stream().map(g -> g.getName()))
                     .collect(ImmutableSet.toImmutableSet());
             suggestions = stringAutoComplete(query, groups);
@@ -403,9 +395,7 @@ public final class AutoCompleteUtils {
             suggestions =
                 stringAutoComplete(
                     query,
-                    completionMetadata
-                        .getInterfaces()
-                        .stream()
+                    completionMetadata.getInterfaces().stream()
                         .map(NodeInterfacePair::getInterface)
                         .collect(Collectors.toSet()));
             break;
@@ -578,9 +568,7 @@ public final class AutoCompleteUtils {
             suggestions =
                 stringAutoComplete(
                     query,
-                    nodeRolesData
-                        .getNodeRoleDimensions()
-                        .stream()
+                    nodeRolesData.getNodeRoleDimensions().stream()
                         .map(NodeRoleDimension::getName)
                         .collect(Collectors.toSet()));
             break;
@@ -589,9 +577,7 @@ public final class AutoCompleteUtils {
           {
             checkNodeRolesData(nodeRolesData, network);
             ImmutableSet<String> roles =
-                nodeRolesData
-                    .getNodeRoleDimensions()
-                    .stream()
+                nodeRolesData.getNodeRoleDimensions().stream()
                     .flatMap(d -> d.roleNamesFor(completionMetadata.getNodes()).stream())
                     .collect(ImmutableSet.toImmutableSet());
             suggestions = stringAutoComplete(query, roles);
@@ -659,9 +645,7 @@ public final class AutoCompleteUtils {
             suggestions =
                 stringAutoComplete(
                     query,
-                    referenceLibrary
-                        .getReferenceBooks()
-                        .stream()
+                    referenceLibrary.getReferenceBooks().stream()
                         .map(ReferenceBook::getName)
                         .collect(Collectors.toSet()));
             break;
@@ -749,8 +733,7 @@ public final class AutoCompleteUtils {
      */
     if (queryPattern != null) {
       suggestions.addAll(
-          allProperties
-              .stream()
+          allProperties.stream()
               .filter(prop -> queryPattern.matcher(prop.toLowerCase()).matches())
               .map(prop -> new AutocompleteSuggestion(prop, false))
               .collect(Collectors.toList()));
@@ -769,8 +752,7 @@ public final class AutoCompleteUtils {
 
     String testQuery = query == null ? "" : query.toLowerCase();
 
-    return strings
-        .stream()
+    return strings.stream()
         .filter(s -> s.toLowerCase().contains(testQuery))
         .map(s -> new AutocompleteSuggestion(s, false))
         .collect(ImmutableList.toImmutableList());

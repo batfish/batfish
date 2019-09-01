@@ -45,9 +45,7 @@ public final class RoleNameNodeSpecifier implements NodeSpecifier {
                         "Role dimension '" + _roleDimension + "' not found"));
     SortedMap<String, SortedSet<String>> roleNodesMap =
         nodeRoleDimension.createRoleNodesMap(ctxt.getConfigs().keySet());
-    roleNodesMap
-        .keySet()
-        .stream()
+    roleNodesMap.keySet().stream()
         .filter(r -> r.equalsIgnoreCase(_roleName))
         .findAny()
         .orElseThrow(
