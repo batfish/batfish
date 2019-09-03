@@ -15,13 +15,13 @@ import org.junit.Test;
 /** Tests of {@link CandidateOspfTopology} */
 public class CandidateOspfTopologyTest {
 
-  private OspfNeighborConfigId NODE_A = new OspfNeighborConfigId("a", "b", "c", "d");
-  private OspfNeighborConfigId NODE_E = new OspfNeighborConfigId("e", "f", "g", "h");
-  private OspfNeighborConfigId NODE_I = new OspfNeighborConfigId("i", "j", "k", "l");
-  private OspfNeighborConfigId NODE_M = new OspfNeighborConfigId("m", "n", "o", "p");
+  private static OspfNeighborConfigId NODE_A = new OspfNeighborConfigId("a", "b", "c", "d");
+  private static OspfNeighborConfigId NODE_E = new OspfNeighborConfigId("e", "f", "g", "h");
+  private static OspfNeighborConfigId NODE_I = new OspfNeighborConfigId("i", "j", "k", "l");
+  private static OspfNeighborConfigId NODE_M = new OspfNeighborConfigId("m", "n", "o", "p");
 
-  private OspfSessionStatus NODE_A_TO_E_STATUS = OspfSessionStatus.ESTABLISHED;
-  private OspfSessionStatus NODE_I_TO_M_STATUS = OspfSessionStatus.NETWORK_TYPE_MISMATCH;
+  private static OspfSessionStatus NODE_A_TO_E_STATUS = OspfSessionStatus.ESTABLISHED;
+  private static OspfSessionStatus NODE_I_TO_M_STATUS = OspfSessionStatus.NETWORK_TYPE_MISMATCH;
 
   private @Nonnull CandidateOspfTopology nonTrivialTopology() {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph =
