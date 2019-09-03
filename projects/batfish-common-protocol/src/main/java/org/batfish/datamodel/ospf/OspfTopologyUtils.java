@@ -247,75 +247,14 @@ public final class OspfTopologyUtils {
         configurations.getOspfNeighborConfig(localConfigId).orElse(null);
     OspfNeighborConfig remoteConfig =
         configurations.getOspfNeighborConfig(remoteConfigId).orElse(null);
-    OspfProcess localProcess = configurations.getOspfProcess(localConfigId).orElse(null);
-    OspfProcess remoteProcess = configurations.getOspfProcess(remoteConfigId).orElse(null);
-    Interface localIface =
-        configurations
-            .getInterface(localConfigId.getHostname(), localConfigId.getInterfaceName())
-            .orElse(null);
-    Interface remoteIface =
-        configurations
-            .getInterface(remoteConfigId.getHostname(), remoteConfigId.getInterfaceName())
-            .orElse(null);
 
     if (localConfig == null
         || remoteConfig == null
-        || localProcess == null
-        || remoteProcess == null
-        || localIface == null
-        || remoteIface == null) {
+        || getSessionStatus(localConfigId, remoteConfigId, configurations)
+            != OspfSessionStatus.ESTABLISHED) {
       return Optional.empty();
     }
 
-    long localAreaNum = localConfig.getArea();
-    long remoteAreaNum = remoteConfig.getArea();
-    OspfArea localArea = localProcess.getAreas().get(localAreaNum);
-    OspfArea remoteArea = remoteProcess.getAreas().get(remoteAreaNum);
-    if (localArea == null || remoteArea == null) {
-      return Optional.empty();
-    }
-
-    if (localConfig.isPassive() || remoteConfig.isPassive()) {
-      return Optional.empty();
-    }
-    if (localAreaNum != remoteAreaNum) {
-      return Optional.empty();
-    }
-    if (localProcess.getRouterId().equals(remoteProcess.getRouterId())) {
-      return Optional.empty();
-    }
-    if (localArea.getStubType() != remoteArea.getStubType()) {
-      return Optional.empty();
-    }
-
-    OspfInterfaceSettings localOspf = localIface.getOspfSettings();
-    OspfInterfaceSettings remoteOspf = remoteIface.getOspfSettings();
-    // Guaranteed by initNeighborConfigs
-    assert (localOspf != null);
-    assert (remoteOspf != null);
-    if (localOspf.getHelloInterval() != remoteOspf.getHelloInterval()) {
-      return Optional.empty();
-    }
-    if (localOspf.getDeadInterval() != remoteOspf.getDeadInterval()) {
-      return Optional.empty();
-    }
-
-    // Optimistically assume unspecified network types match and therefore are compatible
-    OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
-    OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
-    if ((localNetworkType != null && remoteNetworkType != null)
-        && (localNetworkType != remoteNetworkType)) {
-      return Optional.empty();
-    }
-
-    /*
-     * TODO: check MTU matches; This is complicated because frame/packet MTU support not fully there
-     * TODO: check reachability (Make sure ACLs/ARP allow communication)
-     * TODO: take into account adjacency types (multi-access/p2p/p2mp, broadcast/non-broadcast) when
-     * supported
-     */
-
-    // invariant localIP == ip1
     return Optional.of(
         new OspfSessionProperties(
             localConfig.getArea(), new IpLink(localConfig.getIp(), remoteConfig.getIp())));

@@ -343,7 +343,7 @@ public class OspfTopologyUtilsTest {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), 0L, Ip.parse("1.1.1.2"), 1L);
 
-    // Confirm we correctly mark a session as incompatible when neighbor areas are not equal
+    // Confirm we do not fetch OspfSessionProps when neighbors are not compatible
     Optional<OspfSessionProperties> val =
         getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(Optional.empty()));
