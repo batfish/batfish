@@ -125,7 +125,12 @@ public final class HsrpGroupMatchers {
 
   /** Provides a matcher that matches if the {@link HsrpGroup} is set to preempt. */
   public static @Nonnull Matcher<HsrpGroup> hasPreempt() {
-    return new HasPreempt(equalTo(true));
+    return hasPreempt(true);
+  }
+
+  /** Provides a matcher that matches if the {@link HsrpGroup} is set to the given value. */
+  public static @Nonnull Matcher<HsrpGroup> hasPreempt(boolean value) {
+    return new HasPreempt(equalTo(value));
   }
 
   /**

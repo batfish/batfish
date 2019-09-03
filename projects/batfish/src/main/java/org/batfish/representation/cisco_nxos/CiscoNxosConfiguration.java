@@ -1607,8 +1607,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         org.batfish.datamodel.hsrp.HsrpGroup.builder()
             .setGroupNumber(group.getGroup())
             .setIp(group.getIp())
-            .setPreempt(
-                group.getPreemptDelayMinimumSeconds() != null); // true iff any preempt delay is set
+            .setPreempt(group.getPreempt());
     if (group.getHelloIntervalMs() != null) {
       builder.setHelloTime(group.getHelloIntervalMs());
     }
