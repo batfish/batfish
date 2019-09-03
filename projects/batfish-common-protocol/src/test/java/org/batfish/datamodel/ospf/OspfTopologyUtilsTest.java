@@ -325,6 +325,16 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
+  public void testGetSessionStatusCompatible() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"));
+
+    // Confirm we correctly identify compatible sessions
+    OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(OspfSessionStatus.ESTABLISHED));
+  }
+
+  @Test
   public void testGetSessionStatusMismatchArea() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), 0L, Ip.parse("1.1.1.2"), 1L);
@@ -435,7 +445,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusPassive() {
+  public void testGetSessionStatusPassiveMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), true, Ip.parse("1.1.1.2"), false);
 

@@ -46,7 +46,7 @@ public class CandidateOspfTopologyTest {
   @Test
   public void testGetNeighborsNonExistentNode() {
     OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
-    assertThat(EMPTY.neighbors(n), empty());
+    assertThat(nonTrivialTopology().neighbors(n), empty());
   }
 
   @Test
@@ -59,7 +59,7 @@ public class CandidateOspfTopologyTest {
 
   @Test
   public void testGetSessionStatusNonExistentEdge() {
-    // Node A and I do NOT represent a valid edge, so their edge's status should be Optional.empty()
+    // Node A and I do NOT represent a valid edge, so their edge's status should be empty
     assertThat(
         nonTrivialTopology().getSessionStatus(new EdgeId(NODE_A, NODE_I)),
         equalTo(Optional.empty()));
