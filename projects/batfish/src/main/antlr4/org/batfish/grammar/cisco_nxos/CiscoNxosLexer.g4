@@ -1559,6 +1559,11 @@ HELLO_INTERVAL
   'hello-interval'
 ;
 
+HEX_UINT32
+:
+  F_HexUint32
+;
+
 HMM
 :
   'hmm'
@@ -4725,6 +4730,12 @@ fragment
 F_HexDigit
 :
   [0-9A-Fa-f]
+;
+
+fragment
+F_HexUint32
+:
+  '0x' F_HexDigit F_HexDigit? F_HexDigit? F_HexDigit? F_HexDigit? F_HexDigit? F_HexDigit? F_HexDigit?
 ;
 
 fragment
