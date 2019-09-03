@@ -380,6 +380,7 @@ i_ip
     | i_ip_address
     | i_ip_authentication
     | i_ip_dhcp
+    | i_ip_forward
     | i_ip_null
     | i_ip_ospf
     | i_ip_policy
@@ -448,6 +449,11 @@ i_ip_dhcp
 i_ip_dhcp_relay
 :
   RELAY ADDRESS ip_address NEWLINE
+;
+
+i_ip_forward
+:
+  FORWARD NEWLINE
 ;
 
 i_ip_null
@@ -744,6 +750,7 @@ i_no_ip
   IP
   (
     inoip_null
+    | inoip_forward
     | inoip_ospf
     | inoip_proxy_arp
   )
@@ -757,6 +764,11 @@ inoip_null
     | REDIRECTS
     | VERIFY
   ) null_rest_of_line
+;
+
+inoip_forward
+:
+  FORWARD NEWLINE
 ;
 
 inoip_ospf

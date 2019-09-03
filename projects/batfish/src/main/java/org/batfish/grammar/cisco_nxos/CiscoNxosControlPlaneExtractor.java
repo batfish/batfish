@@ -232,6 +232,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_dhcp_relayContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_forwardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_proxy_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_concreteContext;
@@ -279,6 +280,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_eigrpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Il_min_linksContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inherit_sequence_numberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoip_forwardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoip_proxy_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoipo_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inos_switchportContext;
@@ -4363,6 +4365,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_ip_forward(I_ip_forwardContext ctx) {
+    _currentInterfaces.forEach(i -> i.setIpForward(true));
+  }
+
+  @Override
   public void exitI_ipv6_address_concrete(I_ipv6_address_concreteContext ctx) {
     InterfaceIpv6AddressWithAttributes address6 = toInterfaceIpv6Address(ctx.addr);
     _currentInterfaces.forEach(iface -> iface.setIpv6AddressDhcp(false));
@@ -4551,6 +4558,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           clearLayer3Configuration(iface);
           iface.setVrfMember(name);
         });
+  }
+
+  @Override
+  public void exitInoip_forward(Inoip_forwardContext ctx) {
+    _currentInterfaces.forEach(i -> i.setIpForward(false));
   }
 
   @Override

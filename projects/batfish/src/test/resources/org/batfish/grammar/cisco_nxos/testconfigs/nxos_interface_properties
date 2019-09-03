@@ -51,6 +51,7 @@ interface Ethernet1/1
   vpc peer-link
   vpc 1101
   no vtp
+  ip forward
 !
 
 interface Ethernet1/2
@@ -61,6 +62,7 @@ interface Ethernet1/2
   no ip proxy-arp
   no snmp trap link-status
   udld disable
+  no ip forward
 
 interface Ethernet1/3
   autostate
