@@ -2,7 +2,7 @@ package org.batfish.datamodel.ospf;
 
 /** Enum for possible status values for OSPF sessions */
 public enum OspfSessionStatus {
-  AREA_MISCONFIGURED,
+  AREA_INVALID,
   AREA_MISMATCH,
   AREA_TYPE_MISMATCH,
   DEAD_INTERVAL_MISMATCH,
@@ -12,6 +12,6 @@ public enum OspfSessionStatus {
   MTU_MISMATCH,
   NETWORK_TYPE_MISMATCH,
   PASSIVE_MISMATCH,
-  PROCESS_MISCONFIGURED,
+  PROCESS_INVALID,
   UNKNOWN_COMPATIBILITY_ISSUE,
 }

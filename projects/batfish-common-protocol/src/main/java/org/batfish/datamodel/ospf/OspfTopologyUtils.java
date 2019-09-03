@@ -174,7 +174,7 @@ public final class OspfTopologyUtils {
             .orElse(null);
 
     if (localProcess == null || remoteProcess == null) {
-      return OspfSessionStatus.PROCESS_MISCONFIGURED;
+      return OspfSessionStatus.PROCESS_INVALID;
     }
 
     if (localConfig == null || remoteConfig == null || localIface == null || remoteIface == null) {
@@ -187,7 +187,7 @@ public final class OspfTopologyUtils {
     OspfArea localArea = localProcess.getAreas().get(localAreaNum);
     OspfArea remoteArea = remoteProcess.getAreas().get(remoteAreaNum);
     if (localArea == null || remoteArea == null) {
-      return OspfSessionStatus.AREA_MISCONFIGURED;
+      return OspfSessionStatus.AREA_INVALID;
     }
 
     if (localConfig.isPassive() || remoteConfig.isPassive()) {

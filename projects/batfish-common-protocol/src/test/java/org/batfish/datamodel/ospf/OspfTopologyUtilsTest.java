@@ -299,21 +299,6 @@ public class OspfTopologyUtilsTest {
     return c;
   }
 
-  private static Configuration buildConfigurationNoProcess(
-      OspfNeighborConfigId configId, int mtu, OspfInterfaceSettings ospfSettings) {
-    String hostname = configId.getHostname();
-    String vrfName = configId.getVrfName();
-    String ifaceName = configId.getInterfaceName();
-    Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
-    Vrf vrf = Vrf.builder().setName(vrfName).build();
-    Builder iface = Interface.builder().setName(ifaceName).setMtu(mtu);
-    iface.setOspfSettings(
-        firstNonNull(ospfSettings, OspfInterfaceSettings.defaultSettingsBuilder().build()));
-    c.getAllInterfaces().put(ifaceName, iface.build());
-    c.getVrfs().put(vrfName, vrf);
-    return c;
-  }
-
   @Test
   public void testTrimLinks() {
     // Setup
@@ -386,15 +371,34 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusMissingConfig() {
+  public void testGetSessionStatusMissingProcess() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"));
-    OspfNeighborConfigId nonExistentConfigId =
+    OspfNeighborConfigId bogusProcConfigId =
         new OspfNeighborConfigId("r2", "vrf2", "bogusProc", "iface2");
 
-    // Confirm we correctly mark a session as incompatible when a neighbor config does not exist
-    OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, nonExistentConfigId, configs);
-    assertThat(val, equalTo(OspfSessionStatus.UNKNOWN_COMPATIBILITY_ISSUE));
+    // No process configured for the remote should result in process missing/misconfigured status
+    OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, bogusProcConfigId, configs);
+    assertThat(val, equalTo(OspfSessionStatus.PROCESS_INVALID));
+  }
+
+  @Test
+  public void testGetSessionStatusMissingArea() {
+    Ip localIp = Ip.parse("1.1.1.1");
+    Ip remoteIp = Ip.parse("1.1.1.2");
+    NetworkConfigurations configs =
+        NetworkConfigurations.of(
+            ImmutableMap.of(
+                LOCAL_CONFIG_ID.getHostname(),
+                buildConfiguration(
+                    LOCAL_CONFIG_ID, localIp, false, localIp, 1, 1500, StubType.NONE, null),
+                REMOTE_CONFIG_ID.getHostname(),
+                buildConfigurationNoArea(
+                    REMOTE_CONFIG_ID, remoteIp, false, remoteIp, 1, 1500, null)));
+
+    // No area configured for the remote should result in area missing/misconfigured status
+    OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(OspfSessionStatus.AREA_INVALID));
   }
 
   @Ignore(
@@ -474,41 +478,5 @@ public class OspfTopologyUtilsTest {
     // Confirm we mark a session as incompatible when routerId is the same for both neighbors
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(OspfSessionStatus.DUPLICATE_ROUTER_ID));
-  }
-
-  @Test
-  public void testGetSessionStatusMisconfiguredProcess() {
-    Ip localIp = Ip.parse("1.1.1.1");
-    NetworkConfigurations configs =
-        NetworkConfigurations.of(
-            ImmutableMap.of(
-                LOCAL_CONFIG_ID.getHostname(),
-                buildConfiguration(
-                    LOCAL_CONFIG_ID, localIp, false, localIp, 1, 1500, StubType.NONE, null),
-                REMOTE_CONFIG_ID.getHostname(),
-                buildConfigurationNoProcess(REMOTE_CONFIG_ID, 1500, null)));
-
-    // No process configured for the remote should result in process misconfigured status
-    OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
-    assertThat(val, equalTo(OspfSessionStatus.PROCESS_MISCONFIGURED));
-  }
-
-  @Test
-  public void testGetSessionStatusMisconfiguredArea() {
-    Ip localIp = Ip.parse("1.1.1.1");
-    Ip remoteIp = Ip.parse("1.1.1.2");
-    NetworkConfigurations configs =
-        NetworkConfigurations.of(
-            ImmutableMap.of(
-                LOCAL_CONFIG_ID.getHostname(),
-                buildConfiguration(
-                    LOCAL_CONFIG_ID, localIp, false, localIp, 1, 1500, StubType.NONE, null),
-                REMOTE_CONFIG_ID.getHostname(),
-                buildConfigurationNoArea(
-                    REMOTE_CONFIG_ID, remoteIp, false, remoteIp, 1, 1500, null)));
-
-    // No area configured for the remote should result in area misconfigured status
-    OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
-    assertThat(val, equalTo(OspfSessionStatus.AREA_MISCONFIGURED));
   }
 }
