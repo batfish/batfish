@@ -263,6 +263,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg4_ipContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipv4Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipv6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_no_preemptContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_preemptContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
@@ -1516,6 +1517,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIhg_no_preempt(Ihg_no_preemptContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+      group.setPreempt(false);
+      group.setPreemptDelayMinimumSeconds(null);
+      group.setPreemptDelayReloadSeconds(null);
+      group.setPreemptDelaySyncSeconds(null);
+    }
+  }
+
+  @Override
   public void exitIhg_preempt(Ihg_preemptContext ctx) {
     @Nullable Integer minimumSeconds = null;
     if (ctx.minimum_s != null) {
@@ -1549,6 +1561,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     for (Interface iface : _currentInterfaces) {
       HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+      group.setPreempt(true);
       if (minimumSeconds != null) {
         group.setPreemptDelayMinimumSeconds(minimumSeconds);
       }

@@ -11,6 +11,7 @@ public abstract class HsrpGroup implements Serializable {
 
   public HsrpGroup(int group) {
     _group = group;
+    _preempt = false;
     _tracks = new HashMap<>();
   }
 
@@ -36,6 +37,14 @@ public abstract class HsrpGroup implements Serializable {
 
   public void setName(@Nullable String name) {
     _name = name;
+  }
+
+  public boolean getPreempt() {
+    return _preempt;
+  }
+
+  public void setPreempt(boolean preempt) {
+    _preempt = preempt;
   }
 
   public @Nullable Integer getPreemptDelayMinimumSeconds() {
@@ -86,6 +95,7 @@ public abstract class HsrpGroup implements Serializable {
   private @Nullable Integer _helloIntervalMs;
   private @Nullable Integer _holdTimeMs;
   private @Nullable String _name;
+  private boolean _preempt;
   private @Nullable Integer _preemptDelayMinimumSeconds;
   private @Nullable Integer _preemptDelayReloadSeconds;
   private @Nullable Integer _preemptDelaySyncSeconds;

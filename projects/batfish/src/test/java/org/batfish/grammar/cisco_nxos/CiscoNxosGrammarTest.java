@@ -113,6 +113,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -1310,6 +1311,7 @@ public final class CiscoNxosGrammarTest {
                       equalTo(
                           ImmutableSortedMap.of(
                               "1", new DecrementPriority(10), "2", new DecrementPriority(20)))))));
+      assertThat(iface, hasHsrpGroup(3, hasPreempt(false)));
       // TODO: convert and test ip secondary
     }
   }
@@ -1328,22 +1330,37 @@ public final class CiscoNxosGrammarTest {
       assertThat(hsrp.getDelayMinimumSeconds(), equalTo(59));
       assertThat(hsrp.getDelayReloadSeconds(), equalTo(60));
       assertThat(hsrp.getVersion(), equalTo(2));
-      assertThat(hsrp.getIpv4Groups(), hasKeys(2));
-      HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(2);
-      assertThat(group.getIp(), equalTo(Ip.parse("192.0.2.1")));
-      assertThat(
-          group.getIpSecondaries(),
-          containsInAnyOrder(Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1")));
-      assertThat(group.getName(), equalTo("hsrp-some-named-thing"));
-      assertThat(group.getPreemptDelayMinimumSeconds(), equalTo(30));
-      assertThat(group.getPreemptDelayReloadSeconds(), equalTo(40));
-      assertThat(group.getPreemptDelaySyncSeconds(), equalTo(50));
-      assertThat(group.getPriority(), equalTo(105));
-      assertThat(group.getHelloIntervalMs(), equalTo(250));
-      assertThat(group.getHoldTimeMs(), equalTo(750));
-      assertThat(group.getTracks(), hasKeys(1, 2));
-      assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
-      assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
+      assertThat(hsrp.getIpv4Groups(), hasKeys(2, 3));
+      {
+        HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(2);
+        assertThat(group.getIp(), equalTo(Ip.parse("192.0.2.1")));
+        assertThat(
+            group.getIpSecondaries(),
+            containsInAnyOrder(Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1")));
+        assertThat(group.getName(), equalTo("hsrp-some-named-thing"));
+        assertTrue(group.getPreempt());
+        assertThat(group.getPreemptDelayMinimumSeconds(), equalTo(30));
+        assertThat(group.getPreemptDelayReloadSeconds(), equalTo(40));
+        assertThat(group.getPreemptDelaySyncSeconds(), equalTo(50));
+        assertThat(group.getPriority(), equalTo(105));
+        assertThat(group.getHelloIntervalMs(), equalTo(250));
+        assertThat(group.getHoldTimeMs(), equalTo(750));
+        assertThat(group.getTracks(), hasKeys(1, 2));
+        assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
+        assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
+      }
+      {
+        HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(3);
+        assertNull((group.getName()));
+        assertFalse(group.getPreempt());
+        assertNull(group.getPreemptDelayMinimumSeconds());
+        assertNull(group.getPreemptDelayReloadSeconds());
+        assertNull(group.getPreemptDelaySyncSeconds());
+        assertNull(group.getPriority());
+        assertNull(group.getHelloIntervalMs());
+        assertNull(group.getHoldTimeMs());
+        assertThat(group.getTracks(), anEmptyMap());
+      }
     }
   }
 

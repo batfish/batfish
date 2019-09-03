@@ -192,6 +192,7 @@ ihg_common
   ihg_authentication
   | ihg_mac_address
   | ihg_name
+  | ihg_no
   | ihg_preempt
   | ihg_priority
   | ihg_timers
@@ -242,6 +243,16 @@ ihg_mac_address
 ihg_name
 :
   NAME name = hsrp_name NEWLINE
+;
+
+ihg_no
+:
+  NO ihg_no_preempt
+;
+
+ihg_no_preempt
+:
+  PREEMPT NEWLINE
 ;
 
 ihg_preempt
