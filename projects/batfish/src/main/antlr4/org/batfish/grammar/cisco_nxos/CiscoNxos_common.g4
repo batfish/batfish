@@ -64,6 +64,11 @@ group_name
   WORD
 ;
 
+hex_uint32
+:
+  HEX_UINT32
+;
+
 hsrp_name
 :
 // 1-250 characters
