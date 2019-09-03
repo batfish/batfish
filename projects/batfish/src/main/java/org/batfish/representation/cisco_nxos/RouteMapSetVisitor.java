@@ -9,6 +9,8 @@ public interface RouteMapSetVisitor<T> {
   T visitRouteMapSetAsPathPrependLiteralAs(
       RouteMapSetAsPathPrependLiteralAs routeMapSetAsPathPrependLiteralAs);
 
+  T visitRouteMapSetCommListDelete(RouteMapSetCommListDelete routeMapSetCommListDelete);
+
   T visitRouteMapSetCommunity(RouteMapSetCommunity routeMapSetCommunity);
 
   T visitRouteMapSetIpNextHopLiteral(RouteMapSetIpNextHopLiteral routeMapSetIpNextHopLiteral);

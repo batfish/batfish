@@ -310,6 +310,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLiteralAs;
+import org.batfish.representation.cisco_nxos.RouteMapSetCommListDelete;
 import org.batfish.representation.cisco_nxos.RouteMapSetCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
@@ -5358,6 +5359,7 @@ public final class CiscoNxosGrammarTest {
             "match_vlan",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
+            "set_comm_list",
             "set_community",
             "set_community_additive",
             "set_ip_next_hop_literal",
@@ -5548,6 +5550,17 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getAsPath(), equalTo(AsPath.ofSingletonAsSets(65000L, 65100L, 2L)));
     }
     {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+    }
+    {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
       Bgpv4Route inRoute =
           base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
@@ -5698,6 +5711,7 @@ public final class CiscoNxosGrammarTest {
             "match_vlan",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
+            "set_comm_list",
             "set_community",
             "set_community_additive",
             "set_ip_next_hop_literal",
@@ -5893,6 +5907,16 @@ public final class CiscoNxosGrammarTest {
           (RouteMapSetAsPathPrependLiteralAs) entry.getSetAsPathPrepend();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getAsNumbers(), contains(65000L, 65100L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_comm_list");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetCommListDelete set = entry.getSetCommListDelete();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getName(), equalTo("community_list_standard"));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_community");

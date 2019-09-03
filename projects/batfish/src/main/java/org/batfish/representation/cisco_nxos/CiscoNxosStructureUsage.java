@@ -80,6 +80,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST("route-map match ip address prefix-list"),
   ROUTE_MAP_MATCH_IPV6_ADDRESS("route-map match ipv6 address"),
   ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST("route-map match ipv6 address prefix-list"),
+  ROUTE_MAP_SET_COMM_LIST_DELETE("route-map set comm-list delete"),
   ROUTER_EIGRP_SELF_REFERENCE("router eigrp"),
   SNMP_SERVER_COMMUNITY_USE_ACL("snmp-server community use-acl"),
   SNMP_SERVER_COMMUNITY_USE_IPV4ACL("snmp-server community use-ipv4acl"),
