@@ -2099,6 +2099,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getEigrp(), equalTo("100"));
       assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));
       assertThat(iface.getIpAccessGroupOut(), equalTo("acl_out"));
+      assertThat(iface.getIpForward(), equalTo(Boolean.TRUE));
       assertThat(iface.getIpProxyArp(), equalTo(Boolean.TRUE));
       assertThat(iface.getMtu(), equalTo(9216));
     }
@@ -2107,11 +2108,13 @@ public final class CiscoNxosGrammarTest {
       assertTrue(iface.getAutostate());
       assertThat(iface.getDescription(), nullValue());
       assertThat(iface.getEigrp(), nullValue());
+      assertThat(iface.getIpForward(), equalTo(Boolean.FALSE));
       assertThat(iface.getIpProxyArp(), equalTo(Boolean.FALSE));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       assertFalse(iface.getAutostate());
+      assertThat(iface.getIpForward(), nullValue());
       assertThat(iface.getIpProxyArp(), nullValue());
     }
   }
