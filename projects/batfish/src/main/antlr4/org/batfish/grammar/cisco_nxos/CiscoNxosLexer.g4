@@ -2238,7 +2238,7 @@ MAC
 
 MAC_ADDRESS
 :
-  'mac-address' -> pushMode(M_MacAddress)
+  'mac-address'
 ;
 
 MAIL
@@ -4678,6 +4678,11 @@ IPV6_PREFIX
   F_Ipv6Prefix
 ;
 
+MAC_ADDRESS_LITERAL
+:
+  F_MacAddress
+;
+
 NEWLINE
 :
   F_Newline+
@@ -5374,23 +5379,6 @@ M_HsrpVersion_VERSION_2
 ;
 
 M_HsrpVersion_WS
-:
-  F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_MacAddress;
-
-M_MacAddress_MAC_ADDRESS_LITERAL
-:
-  F_MacAddress -> type ( MAC_ADDRESS_LITERAL ) , popMode
-;
-
-M_MacAddress_NEWLINE
-:
-  F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_MacAddress_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
