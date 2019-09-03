@@ -6,6 +6,12 @@ options {
   tokenVocab = CiscoNxosLexer;
 }
 
+class_map_description
+:
+// 1-200 characters
+  REMARK_TEXT
+;
+
 s_class_map
 :
   CLASS_MAP
@@ -38,12 +44,12 @@ cmt_network_qos
 
 cmt_qos
 :
- QOS cm_qos
+  QOS cm_qos
 ;
 
 cmt_queuing
 :
- QOS cm_queuing
+  QUEUING cm_queuing
 ;
 
 cm_control_plane
@@ -79,11 +85,40 @@ cmcpm_protocol
 cm_network_qos
 :
   MATCH_ANY? name = class_map_name NEWLINE
+  (
+    cmnq_description
+    | cmnq_match
+  )*
+;
+
+cmnq_description
+:
+  DESCRIPTION desc = class_map_description NEWLINE
+;
+
+cmnq_match
+:
+  MATCH
+  (
+    cmnqm_cos
+    | cmnqm_precedence
+  )
+;
+
+cmnqm_cos
+:
+  COS null_rest_of_line
+;
+
+cmnqm_precedence
+:
+  PRECEDENCE null_rest_of_line
 ;
 
 cm_qos
 :
-  (MATCH_ALL | MATCH_ANY)? name = class_map_name NEWLINE cmq_match*
+  (MATCH_ALL | MATCH_ANY)? name = class_map_name NEWLINE
+  cmq_match*
 ;
 
 cmq_match
@@ -108,5 +143,15 @@ cmqm_precedence
 cm_queuing
 :
   MATCH_ANY? name = class_map_name NEWLINE
-// TODO  cmqu_match*
+  cmqu_match*
+;
+
+cmqu_match
+:
+  MATCH cmqum_cos
+;
+
+cmqum_cos
+:
+  COS null_rest_of_line
 ;
