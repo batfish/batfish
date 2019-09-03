@@ -1424,6 +1424,11 @@ FORCE_ORDER
   'force-order'
 ;
 
+FORWARD
+:
+  'forward'
+;
+
 FORWARDING_THRESHOLD
 :
   'forwarding-threshold'

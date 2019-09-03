@@ -128,6 +128,7 @@ public final class Interface implements Serializable {
   private @Nullable String _ipAccessGroupIn;
   private @Nullable String _ipAccessGroupOut;
   private boolean _ipAddressDhcp;
+  private @Nullable Boolean _ipForward;
   private @Nullable InterfaceIpv6AddressWithAttributes _ipv6Address;
   private boolean _ipv6AddressDhcp;
   private final @Nonnull Set<InterfaceIpv6AddressWithAttributes> _ipv6AddressSecondaries;
@@ -245,6 +246,10 @@ public final class Interface implements Serializable {
 
   public boolean getIpAddressDhcp() {
     return _ipAddressDhcp;
+  }
+
+  public @Nullable Boolean getIpForward() {
+    return _ipForward;
   }
 
   public @Nullable InterfaceIpv6AddressWithAttributes getIpv6Address() {
@@ -447,6 +452,10 @@ public final class Interface implements Serializable {
 
   public void setIpAddressDhcp(boolean ipAddressDhcp) {
     _ipAddressDhcp = ipAddressDhcp;
+  }
+
+  public void setIpForward(@Nullable Boolean ipForward) {
+    _ipForward = ipForward;
   }
 
   public void setIpv6Address(@Nullable InterfaceIpv6AddressWithAttributes ipv6Address) {
