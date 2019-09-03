@@ -13,11 +13,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.util.Set;
+import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
+import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,6 +30,55 @@ import org.junit.rules.ExpectedException;
 public final class CommunityListTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static class UnsupportedCommunitySetExpr extends CommunitySetExpr {
+
+    @Override
+    public <T> T accept(CommunitySetExprVisitor<T> visitor) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void accept(VoidCommunitySetExprVisitor visitor) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean dynamicMatchCommunity() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof UnsupportedCommunitySetExpr;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    @Override
+    public boolean matchCommunities(Environment environment, Set<Community> communitySetCandidate) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean matchCommunity(Environment environment, Community community) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean reducible() {
+      throw new UnsupportedOperationException();
+    }
+  }
 
   @Test
   public void testAsLiteralCommunitiesSupported() {
@@ -44,9 +98,7 @@ public final class CommunityListTest {
     CommunityList expr =
         new CommunityList(
             "",
-            ImmutableList.of(
-                CommunityListLine.accepting(
-                    new LiteralCommunityConjunction(ImmutableSet.of(StandardCommunity.of(1L))))),
+            ImmutableList.of(CommunityListLine.accepting(new UnsupportedCommunitySetExpr())),
             false);
 
     _thrown.expect(UnsupportedOperationException.class);
@@ -189,10 +241,7 @@ public final class CommunityListTest {
     CommunityList unsupported =
         new CommunityList(
             "",
-            ImmutableList.of(
-                CommunityListLine.accepting(
-                    new LiteralCommunityConjunction(
-                        ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L))))),
+            ImmutableList.of(CommunityListLine.accepting(new UnsupportedCommunitySetExpr())),
             false);
 
     _thrown.expect(UnsupportedOperationException.class);

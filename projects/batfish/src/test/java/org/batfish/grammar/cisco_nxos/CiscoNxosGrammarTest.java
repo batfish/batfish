@@ -5559,6 +5559,7 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
           route.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+      // TODO: test where communities actually are deleted once we refactor community matching
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
