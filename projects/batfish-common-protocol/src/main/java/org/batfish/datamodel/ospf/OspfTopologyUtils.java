@@ -250,6 +250,14 @@ public final class OspfTopologyUtils {
       return OspfSessionStatus.AREA_TYPE_MISMATCH;
     }
 
+    // Optimistically assume unspecified network types match and therefore are compatible
+    OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
+    OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
+    if ((localNetworkType != null && remoteNetworkType != null)
+        && (localNetworkType != remoteNetworkType)) {
+      return OspfSessionStatus.NETWORK_TYPE_MISMATCH;
+    }
+
     OspfInterfaceSettings localOspf = localIface.getOspfSettings();
     OspfInterfaceSettings remoteOspf = remoteIface.getOspfSettings();
     // Guaranteed by initNeighborConfigs
@@ -260,14 +268,6 @@ public final class OspfTopologyUtils {
     }
     if (localOspf.getDeadInterval() != remoteOspf.getDeadInterval()) {
       return OspfSessionStatus.DEAD_INTERVAL_MISMATCH;
-    }
-
-    // Optimistically assume unspecified network types match and therefore are compatible
-    OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
-    OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
-    if ((localNetworkType != null && remoteNetworkType != null)
-        && (localNetworkType != remoteNetworkType)) {
-      return OspfSessionStatus.NETWORK_TYPE_MISMATCH;
     }
 
     /*
