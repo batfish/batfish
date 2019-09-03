@@ -18,7 +18,6 @@ import static org.batfish.representation.cisco.CiscoConversions.generateGenerati
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
@@ -164,6 +163,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
@@ -1423,12 +1423,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_OUT,
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_AS_PATH);
-    markAbstractStructure(
-        CiscoNxosStructureType.IP_COMMUNITY_LIST_ABSTRACT_REF,
-        ROUTE_MAP_MATCH_COMMUNITY,
-        ImmutableList.of(
-            CiscoNxosStructureType.IP_COMMUNITY_LIST_EXPANDED,
-            CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD));
+    {
+      // Mark abstract community-list references
+      List<CiscoNxosStructureType> types =
+          ImmutableList.of(
+              CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD,
+              CiscoNxosStructureType.IP_COMMUNITY_LIST_EXPANDED);
+      for (CiscoNxosStructureUsage usage :
+          ImmutableList.of(
+              CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY,
+              CiscoNxosStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE)) {
+        markAbstractStructure(CiscoNxosStructureType.IP_COMMUNITY_LIST_ABSTRACT_REF, usage, types);
+      }
+    }
     markConcreteStructure(
         CiscoNxosStructureType.IP_PREFIX_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_IN,
@@ -2726,6 +2733,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetCommListDelete(
+              RouteMapSetCommListDelete routeMapSetCommListDelete) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
           public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetCommunity(
               RouteMapSetCommunity routeMapSetCommunity) {
             // Not applicable to PBR
@@ -2959,6 +2973,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                         routeMapSetAsPathPrependLiteralAs.getAsNumbers().stream()
                             .map(ExplicitAs::new)
                             .collect(ImmutableList.toImmutableList()))));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetCommListDelete(
+              RouteMapSetCommListDelete routeMapSetCommListDelete) {
+            String name = routeMapSetCommListDelete.getName();
+            if (!_ipCommunityLists.containsKey(name)) {
+              return Stream.of();
+            }
+            return Stream.of(new DeleteCommunity(new NamedCommunitySet(name)));
           }
 
           @Override

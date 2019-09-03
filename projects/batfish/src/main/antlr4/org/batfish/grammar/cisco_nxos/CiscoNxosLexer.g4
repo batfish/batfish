@@ -666,6 +666,11 @@ COMMUNITY
 
 ;
 
+COMM_LIST
+:
+  'comm-list' -> pushMode ( M_Word )
+;
+
 COMMUNITY_LIST
 :
   'community-list'

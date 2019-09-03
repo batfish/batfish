@@ -25,6 +25,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchVlan _matchVlan;
   private final int _sequence;
   private @Nullable RouteMapSetAsPathPrepend _setAsPathPrepend;
+  private @Nullable RouteMapSetCommListDelete _setCommListDelete;
   private @Nullable RouteMapSetCommunity _setCommunity;
   private @Nullable RouteMapSetIpNextHop _setIpNextHop;
   private @Nullable RouteMapSetLocalPreference _setLocalPreference;
@@ -113,6 +114,10 @@ public final class RouteMapEntry implements Serializable {
     return _setAsPathPrepend;
   }
 
+  public @Nullable RouteMapSetCommListDelete getSetCommListDelete() {
+    return _setCommListDelete;
+  }
+
   public @Nullable RouteMapSetCommunity getSetCommunity() {
     return _setCommunity;
   }
@@ -138,8 +143,11 @@ public final class RouteMapEntry implements Serializable {
   }
 
   public @Nonnull Stream<RouteMapSet> getSets() {
+    // set comm-list delete before set community:
+    // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/unicast/command/reference/n7k_unicast_cmds/l3_cmds_s.html#set_comm-list_delete
     return Stream.of(
             _setAsPathPrepend,
+            _setCommListDelete,
             _setCommunity,
             _setIpNextHop,
             _setLocalPreference,
@@ -210,6 +218,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetAsPathPrepend(@Nullable RouteMapSetAsPathPrepend setAsPathPrepend) {
     _setAsPathPrepend = setAsPathPrepend;
+  }
+
+  public void setSetCommListDelete(@Nullable RouteMapSetCommListDelete setCommListDelete) {
+    _setCommListDelete = setCommListDelete;
   }
 
   public void setSetCommunity(@Nullable RouteMapSetCommunity setCommunity) {

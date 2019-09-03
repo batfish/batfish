@@ -154,6 +154,7 @@ rm_set
   SET
   (
     rms_as_path_prepend
+    | rms_comm_list
     | rms_community
     | rms_ip
     | rms_ipv6
@@ -188,6 +189,11 @@ last_as_num_prepends
 rmsapp_literal
 :
   asns += bgp_asn+ NEWLINE
+;
+
+rms_comm_list
+:
+  COMM_LIST name = ip_community_list_name DELETE NEWLINE
 ;
 
 rms_community
