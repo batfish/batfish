@@ -27,6 +27,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PR
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_QUEUING;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_EIGRP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_ISIS;
@@ -369,6 +373,11 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pm_control_planeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pm_network_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pm_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pm_queuingContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistributeContext;
@@ -795,6 +804,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @VisibleForTesting
   public static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
 
+  private static final IntegerSpace POLICY_MAP_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 40));
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace PROTOCOL_INSTANCE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 32));
@@ -2676,6 +2687,46 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ipWildcard = IpWildcard.create(toPrefix(ctx.prefix));
     }
     _currentObjectGroupIpAddress.getLines().put(seq, new ObjectGroupIpAddressLine(seq, ipWildcard));
+  }
+
+  @Override
+  public void enterPm_control_plane(Pm_control_planeContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(POLICY_MAP_CONTROL_PLANE, name, ctx);
+  }
+
+  @Override
+  public void enterPm_network_qos(Pm_network_qosContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(POLICY_MAP_NETWORK_QOS, name, ctx);
+  }
+
+  @Override
+  public void enterPm_qos(Pm_qosContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(POLICY_MAP_QOS, name, ctx);
+  }
+
+  @Override
+  public void enterPm_queuing(Pm_queuingContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(POLICY_MAP_QUEUING, name, ctx);
   }
 
   @Override
@@ -6189,6 +6240,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Object_group_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, OBJECT_GROUP_NAME_LENGTH_RANGE, "object-group name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Policy_map_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, POLICY_MAP_NAME_LENGTH_RANGE, "policy-map name");
   }
 
   private @Nonnull Optional<String> toString(
