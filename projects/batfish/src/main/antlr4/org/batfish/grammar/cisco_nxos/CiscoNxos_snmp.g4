@@ -122,7 +122,7 @@ snmps_source_interface
 
 snmpssi_informs
 :
-  INFORMS name = interface_name NEWLINE
+  (INFORM | INFORMS) name = interface_name NEWLINE
 ;
 
 snmpssi_traps
