@@ -10,17 +10,46 @@ s_policy_map
 :
   POLICY_MAP
   (
-    pm_control_plane
-    | pm_network_qos
-    | pm_qos
-    | pm_queuing
+    pm_type
+    | pm_qos // default type is qos
   )
+;
+
+pm_type
+:
+  TYPE
+  (
+     pmt_control_plane
+     | pmt_network_qos
+     | pmt_qos
+     | pmt_queuing
+   )
+;
+
+pmt_control_plane
+:
+  CONTROL_PLANE pm_control_plane
+;
+
+pmt_network_qos
+:
+  NETWORK_QOS pm_network_qos
+;
+
+pmt_qos
+:
+  QOS pm_qos
+;
+
+pmt_queuing
+:
+  QUEUING pm_queuing
 ;
 
 pm_control_plane
 :
-// type mandatory
-  TYPE CONTROL_PLANE name = policy_map_name NEWLINE pmcp_class*
+  name = policy_map_name NEWLINE
+  pmcp_class*
 ;
 
 pmcp_class
@@ -45,13 +74,15 @@ pmcpc_set
 
 pm_network_qos
 :
-  TYPE NETWORK_QOS name = policy_map_name NEWLINE pmnq_class*
+  name = policy_map_name NEWLINE
+  pmnq_class*
 ;
 
 pmnq_class
 :
 // type mandatory
-  CLASS TYPE NETWORK_QOS name = class_map_name NEWLINE pmnqc_mtu
+  CLASS TYPE NETWORK_QOS name = class_map_name NEWLINE
+  pmnqc_mtu
 ;
 
 pmnqc_mtu
@@ -67,14 +98,15 @@ qos_mtu
 
 pm_qos
 :
-// default type is qos
-  (TYPE QOS)? name = policy_map_name NEWLINE pmq_class*
+  name = policy_map_name NEWLINE
+  pmq_class*
 ;
 
 pmq_class
 :
 // type optional
-  CLASS (TYPE QOS)? name = class_map_name NEWLINE pmqc_set*
+  CLASS (TYPE QOS)? name = class_map_name NEWLINE
+  pmqc_set*
 ;
 
 pmqc_set
@@ -95,12 +127,14 @@ qos_group
 
 pm_queuing
 :
-  TYPE QUEUING name = policy_map_name NEWLINE pmqu_class*
+  name = policy_map_name NEWLINE
+  pmqu_class*
 ;
 
 pmqu_class
 :
-  CLASS TYPE QUEUING name = class_map_name NEWLINE pmquc_null*
+  CLASS TYPE QUEUING name = class_map_name NEWLINE
+  pmquc_null*
 ;
 
 pmquc_null

@@ -10,15 +10,45 @@ s_class_map
 :
   CLASS_MAP
   (
-    cm_control_plane
-    | cm_network_qos
-    | cm_qos
+    cm_type
+    | cm_qos // default type is qos
   )
+;
+
+cm_type
+:
+  TYPE
+  (
+    cmt_control_plane
+    | cmt_network_qos
+    | cmt_qos
+    | cmt_queuing
+  )
+;
+
+cmt_control_plane
+:
+  CONTROL_PLANE cm_control_plane
+;
+
+cmt_network_qos
+:
+  NETWORK_QOS cm_network_qos
+;
+
+cmt_qos
+:
+ QOS cm_qos
+;
+
+cmt_queuing
+:
+ QOS cm_queuing
 ;
 
 cm_control_plane
 :
-  TYPE CONTROL_PLANE (MATCH_ALL | MATCH_ANY)? name = class_map_name NEWLINE cmcp_match*
+  (MATCH_ALL | MATCH_ANY)? name = class_map_name NEWLINE cmcp_match*
 ;
 
 cmcp_match
@@ -48,13 +78,12 @@ cmcpm_protocol
 
 cm_network_qos
 :
-  TYPE NETWORK_QOS MATCH_ANY? name = class_map_name NEWLINE
+  MATCH_ANY? name = class_map_name NEWLINE
 ;
 
 cm_qos
 :
-// default type is qos
-  (TYPE QOS)? (MATCH_ALL | MATCH_ANY)? name = class_map_name NEWLINE cmq_match*
+  (MATCH_ALL | MATCH_ANY)? name = class_map_name NEWLINE cmq_match*
 ;
 
 cmq_match
@@ -74,4 +103,10 @@ cmqm_dscp
 cmqm_precedence
 :
   PRECEDENCE null_rest_of_line
+;
+
+cm_queuing
+:
+  MATCH_ANY? name = class_map_name NEWLINE
+// TODO  cmqu_match*
 ;
