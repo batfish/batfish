@@ -1066,14 +1066,14 @@ public final class CiscoNxosGrammarTest {
             Layer2VniConfig.builder()
                 .setVni(1111)
                 .setVrf(tenantVrfName)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 32768))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
                 .build(),
             Layer2VniConfig.builder()
                 .setVni(2222)
                 .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 32769))
                 .setRouteTarget(ExtendedCommunity.target(1, 2222))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 2222).matchString())
                 .build());
