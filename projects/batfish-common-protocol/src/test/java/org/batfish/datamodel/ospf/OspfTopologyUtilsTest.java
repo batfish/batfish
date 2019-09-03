@@ -1,11 +1,9 @@
 package org.batfish.datamodel.ospf;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.datamodel.ospf.OspfTopologyUtils.getSessionIfCompatible;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.getSessionStatus;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.trimLinks;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -14,7 +12,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
-import java.util.Optional;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -328,28 +325,6 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionIfCompatible() {
-    NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"));
-
-    // Confirm we correctly identify compatible sessions
-    Optional<OspfSessionProperties> val =
-        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
-    assertThat(val.orElse(null), notNullValue());
-  }
-
-  @Test
-  public void testGetSessionIfCompatibleMismatch() {
-    NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), 0L, Ip.parse("1.1.1.2"), 1L);
-
-    // Confirm we do not fetch OspfSessionProps when neighbors are not compatible
-    Optional<OspfSessionProperties> val =
-        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
-    assertThat(val, equalTo(Optional.empty()));
-  }
-
-  @Test
   public void testGetSessionStatusMismatchArea() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), 0L, Ip.parse("1.1.1.2"), 1L);
@@ -467,6 +442,16 @@ public class OspfTopologyUtilsTest {
     // Confirm we correctly mark a session as incompatible when one of the interfaces is passive
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(OspfSessionStatus.PASSIVE_MISMATCH));
+  }
+
+  @Test
+  public void testGetSessionStatusBothPassive() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(Ip.parse("1.1.1.1"), true, Ip.parse("1.1.1.2"), true);
+
+    // Confirm we indicate there is no session when both OSPF peers are passive
+    OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(OspfSessionStatus.NO_SESSION));
   }
 
   @Test

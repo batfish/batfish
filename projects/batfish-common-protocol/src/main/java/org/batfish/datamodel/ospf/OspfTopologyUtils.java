@@ -284,33 +284,6 @@ public final class OspfTopologyUtils {
     return OspfSessionStatus.ESTABLISHED;
   }
 
-  /**
-   * Perform neighbor compatibility checks and return an OSPF session.
-   *
-   * <p>Invariant: Ip address of {@code localConfigId} is the {@link IpLink#getIp1()}
-   */
-  @VisibleForTesting
-  static Optional<OspfSessionProperties> getSessionIfCompatible(
-      OspfNeighborConfigId localConfigId,
-      OspfNeighborConfigId remoteConfigId,
-      NetworkConfigurations configurations) {
-    OspfNeighborConfig localConfig =
-        configurations.getOspfNeighborConfig(localConfigId).orElse(null);
-    OspfNeighborConfig remoteConfig =
-        configurations.getOspfNeighborConfig(remoteConfigId).orElse(null);
-
-    if (localConfig == null
-        || remoteConfig == null
-        || getSessionStatus(localConfigId, remoteConfigId, configurations)
-            != OspfSessionStatus.ESTABLISHED) {
-      return Optional.empty();
-    }
-
-    return Optional.of(
-        new OspfSessionProperties(
-            localConfig.getArea(), new IpLink(localConfig.getIp(), remoteConfig.getIp())));
-  }
-
   /** Ensure links in the graph are bi-directional */
   @VisibleForTesting
   static void trimLinks(MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph) {
