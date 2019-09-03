@@ -1,7 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchCommunities;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -46,8 +48,7 @@ public final class LiteralCommunityConjunctionTest {
         new LiteralCommunityConjunction(
             ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L)));
 
-    _thrown.expect(UnsupportedOperationException.class);
-    l.matchAnyCommunity(null, ImmutableSet.of(StandardCommunity.of(1L)));
+    assertFalse(l.matchAnyCommunity(null, ImmutableSet.of(StandardCommunity.of(1L))));
   }
 
   @Test
@@ -76,8 +77,7 @@ public final class LiteralCommunityConjunctionTest {
         new LiteralCommunityConjunction(
             ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(3L)));
 
-    _thrown.expect(UnsupportedOperationException.class);
-    l.matchCommunity(null, StandardCommunity.of(1L));
+    assertFalse(l.matchCommunity(null, StandardCommunity.of(1L)));
   }
 
   @Test
@@ -86,7 +86,9 @@ public final class LiteralCommunityConjunctionTest {
         new LiteralCommunityConjunction(
             ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(3L)));
 
-    _thrown.expect(UnsupportedOperationException.class);
-    l.matchedCommunities(null, ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L)));
+    assertThat(
+        l.matchedCommunities(
+            null, ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L))),
+        empty());
   }
 }

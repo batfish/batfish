@@ -84,6 +84,9 @@ route-map set_as_path_prepend_last_as permit 10
 route-map set_as_path_prepend_literal_as permit 10
   set as-path prepend 65000 65100
 
+route-map set_comm_list permit 10
+  set comm-list community_list_standard delete
+
 route-map set_community permit 10
   set community 1:1 1:2
 

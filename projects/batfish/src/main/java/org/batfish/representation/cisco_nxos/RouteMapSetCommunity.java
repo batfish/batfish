@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A {@link RouteMapSet} that sets or appends the route's community attribute. */
-public final class RouteMapSetCommunity implements RouteMapSetAsPathPrepend {
+public final class RouteMapSetCommunity implements RouteMapSet {
 
   private boolean _additive;
   private @Nonnull List<StandardCommunity> _communities;

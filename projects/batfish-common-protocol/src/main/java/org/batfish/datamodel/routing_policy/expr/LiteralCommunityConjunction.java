@@ -87,7 +87,8 @@ public final class LiteralCommunityConjunction extends CommunitySetExpr {
 
   @Override
   public boolean matchCommunity(Environment environment, Community community) {
-    throw new UnsupportedOperationException("Can only be used to match a set of communities");
+    // A literal community conjunction cannot match a single community.
+    return false;
   }
 
   @Override

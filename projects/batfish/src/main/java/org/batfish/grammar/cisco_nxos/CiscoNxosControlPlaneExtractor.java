@@ -445,6 +445,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_pbrContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_pbrContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_comm_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_metricContext;
@@ -632,6 +633,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLiteralAs;
+import org.batfish.representation.cisco_nxos.RouteMapSetCommListDelete;
 import org.batfish.representation.cisco_nxos.RouteMapSetCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHop;
 import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopLiteral;
@@ -5007,6 +5009,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             ctx.asns.stream()
                 .map(CiscoNxosControlPlaneExtractor::toLong)
                 .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Override
+  public void exitRms_comm_list(Rms_comm_listContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _currentRouteMapEntry.setSetCommListDelete(new RouteMapSetCommListDelete(name));
+    _configuration.referenceStructure(
+        IP_COMMUNITY_LIST_ABSTRACT_REF, name, ROUTE_MAP_MATCH_COMMUNITY, ctx.getStart().getLine());
   }
 
   @Override
