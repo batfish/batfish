@@ -12,6 +12,12 @@ import org.batfish.datamodel.Prefix;
 /** A virtual routing and forwarding instance. */
 public final class Vrf implements Serializable {
 
+  /**
+   * Offset used to compute Route Distinguisher for VNIs associated with MAC VRFs (L2 VNIs)
+   * https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/vxlan/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x_chapter_0100.html
+   */
+  public static final int MAC_VRF_OFFSET = 32767;
+
   public Vrf(String name, int id) {
     _name = name;
     _id = id;

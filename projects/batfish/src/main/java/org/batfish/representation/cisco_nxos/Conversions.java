@@ -8,7 +8,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpComm
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerEvpnExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeNxosBgpDefaultRouteExportPolicyName;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
+import static org.batfish.representation.cisco_nxos.Vrf.MAC_VRF_OFFSET;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -481,8 +481,8 @@ final class Conversions {
           continue;
         }
 
-        Integer vrfIdForVni = getVrfIdForL2Vni(vsConfig, vniSettings.getVni());
-        if (vrfIdForVni == null) {
+        Integer macVrfId = getMacVrfIdForL2Vni(vsConfig, vniSettings.getVni());
+        if (macVrfId == null) {
           continue;
         }
 
@@ -531,8 +531,7 @@ final class Conversions {
                 .setVni(vniSettings.getVni())
                 .setVrf(tenantVrf.getName())
                 .setRouteDistinguisher(
-                    firstNonNull(
-                        rd, RouteDistinguisher.from(viBgpProcess.getRouterId(), vrfIdForVni)))
+                    firstNonNull(rd, RouteDistinguisher.from(viBgpProcess.getRouterId(), macVrfId)))
                 .setImportRouteTarget(
                     importRtOrAuto.isAuto()
                         ? toRouteTarget(localAs, vniSettings.getVni()).matchString()
@@ -639,12 +638,11 @@ final class Conversions {
   }
 
   /**
-   * Gets the VRF-ID for the supplied l2 VNI, if one can be found. If there is no VLAN mapped to the
-   * VNI returns null. If the Vlan interface has VRF member defined, returns its ID otherwise
-   * returns default VRF ID (1)
+   * Gets the MAC-VRF ID for the supplied L2 VNI as per
+   * https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/vxlan/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x_chapter_0100.html
    */
   @Nullable
-  private static Integer getVrfIdForL2Vni(CiscoNxosConfiguration vsConfig, Integer l2Vni) {
+  private static Integer getMacVrfIdForL2Vni(CiscoNxosConfiguration vsConfig, Integer l2Vni) {
     Integer vlanNumber =
         vsConfig.getVlans().values().stream()
             .filter(vlan -> l2Vni.equals(vlan.getVni()))
@@ -656,16 +654,7 @@ final class Conversions {
       return null;
     }
 
-    String vrfMemberForVlanIface =
-        Optional.ofNullable(vsConfig.getInterfaces().get(String.format("Vlan%d", vlanNumber)))
-            .map(org.batfish.representation.cisco_nxos.Interface::getVrfMember)
-            .orElse(null);
-    if (vrfMemberForVlanIface == null) {
-      return DEFAULT_VRF_ID;
-    }
-    return Optional.ofNullable(vsConfig.getVrfs().get(vrfMemberForVlanIface))
-        .map(org.batfish.representation.cisco_nxos.Vrf::getId)
-        .orElse(DEFAULT_VRF_ID);
+    return MAC_VRF_OFFSET + vlanNumber;
   }
 
   /**
