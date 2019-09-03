@@ -24,12 +24,9 @@ public final class OspfTopologyUtils {
   /** Initialize an OSPF topology. */
   public static OspfTopology computeOspfTopology(
       NetworkConfigurations configurations, Topology l3Topology) {
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> candidateGraph =
-        collectNodes(configurations);
-    establishCandidateLinks(configurations, candidateGraph, l3Topology);
-
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
-        convertToEstablishedGraph(candidateGraph, configurations);
+        convertToEstablishedGraph(
+            computeCandidateOspfTopologyGraph(configurations, l3Topology), configurations);
     trimLinks(graph);
 
     return new OspfTopology(ImmutableValueGraph.copyOf(graph));
@@ -68,13 +65,12 @@ public final class OspfTopologyUtils {
     return graph;
   }
 
-  /** Compute candidate OSPF topology, including incompatible/unestablished links. */
-  public static CandidateOspfTopology computeCandidateOspfTopology(
-      NetworkConfigurations configurations, Topology l3Topology) {
+  /** Helper to compute candidate OSPF topology graph including incompatible/unestablished links */
+  private static MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus>
+      computeCandidateOspfTopologyGraph(NetworkConfigurations configurations, Topology l3Topology) {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph = collectNodes(configurations);
     establishCandidateLinks(configurations, graph, l3Topology);
-
-    return new CandidateOspfTopology(ImmutableValueGraph.copyOf(graph));
+    return graph;
   }
 
   /**
