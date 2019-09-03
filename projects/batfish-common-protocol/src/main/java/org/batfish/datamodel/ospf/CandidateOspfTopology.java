@@ -8,7 +8,6 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 
 /** Candidate OSPF topology, including unestablished/incompatible OSPF neighbors. */
 public final class CandidateOspfTopology {
@@ -28,12 +27,13 @@ public final class CandidateOspfTopology {
   }
 
   /**
-   * Get the session status for the specified edge. If the specified edge is not in the graph, an
-   * empty Optional is returned.
+   * Get the session status for the edge between the specified neighbors. If the specified edge is
+   * not in the graph, an empty Optional is returned.
    */
   @Nonnull
-  public Optional<OspfSessionStatus> getSessionStatus(EdgeId id) {
-    return _graph.edgeValue(id.getTail(), id.getHead());
+  public Optional<OspfSessionStatus> getSessionStatus(
+      OspfNeighborConfigId n, OspfNeighborConfigId n1) {
+    return _graph.edgeValue(n, n1);
   }
 
   /**

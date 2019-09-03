@@ -10,7 +10,6 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.junit.Test;
 
 /** Tests of {@link CandidateOspfTopology} */
@@ -53,15 +52,13 @@ public class CandidateOspfTopologyTest {
   public void testGetSessionStatus() {
     // Node A and E represent a valid edge, so their edge's status should be retrieved
     assertThat(
-        nonTrivialTopology().getSessionStatus(new EdgeId(NODE_A, NODE_E)).orElse(null),
+        nonTrivialTopology().getSessionStatus(NODE_A, NODE_E).orElse(null),
         equalTo(NODE_A_TO_E_STATUS));
   }
 
   @Test
   public void testGetSessionStatusNonExistentEdge() {
     // Node A and I do NOT represent a valid edge, so their edge's status should be empty
-    assertThat(
-        nonTrivialTopology().getSessionStatus(new EdgeId(NODE_A, NODE_I)),
-        equalTo(Optional.empty()));
+    assertThat(nonTrivialTopology().getSessionStatus(NODE_A, NODE_I), equalTo(Optional.empty()));
   }
 }
