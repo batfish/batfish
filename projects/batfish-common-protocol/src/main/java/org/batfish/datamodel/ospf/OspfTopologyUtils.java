@@ -33,6 +33,16 @@ public final class OspfTopologyUtils {
     return new OspfTopology(ImmutableValueGraph.copyOf(graph));
   }
 
+  /** Compute candidate OSPF topology, including incompatible/unestablished links. */
+  public static CandidateOspfTopology computeCandidateOspfTopology(
+      NetworkConfigurations configurations, Topology l3Topology) {
+
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph = collectNodes(configurations);
+    establishCandidateLinks(configurations, graph, l3Topology);
+
+    return new CandidateOspfTopology(ImmutableValueGraph.copyOf(graph));
+  }
+
   /**
    * Examine {@link Configuration} objects to compute and generate IDs for all available OSPF
    * neighbors on all OSPF processes; initialize {@link OspfProcess} map containing all local
@@ -81,9 +91,9 @@ public final class OspfTopologyUtils {
     }
   }
 
-  private static MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> collectNodes(
+  private static <T> MutableValueGraph<OspfNeighborConfigId, T> collectNodes(
       NetworkConfigurations configurations) {
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
+    MutableValueGraph<OspfNeighborConfigId, T> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     // Iterate over all configurations
@@ -152,6 +162,41 @@ public final class OspfTopologyUtils {
     }
   }
 
+  /** For each compatible neighbor relationship, add a link to the graph */
+  private static void establishCandidateLinks(
+      NetworkConfigurations networkConfigurations,
+      MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph,
+      Topology l3topology) {
+
+    for (OspfNeighborConfigId configId : ImmutableSet.copyOf(graph.nodes())) {
+      for (NodeInterfacePair remoteNodeInterface :
+          l3topology.getNeighbors(configId.getNodeInterfacePair())) {
+        Interface remoteInterface =
+            networkConfigurations
+                .getInterface(remoteNodeInterface.getHostname(), remoteNodeInterface.getInterface())
+                .orElse(null);
+
+        if (remoteInterface == null
+            || !remoteInterface.getActive()
+            || remoteInterface.getOspfProcess() == null) {
+          continue;
+        }
+
+        OspfNeighborConfigId remoteConfigId =
+            new OspfNeighborConfigId(
+                remoteNodeInterface.getHostname(),
+                remoteInterface.getVrfName(),
+                remoteInterface.getOspfProcess(),
+                remoteNodeInterface.getInterface());
+        OspfSessionStatus status =
+            getSessionStatus(configId, remoteConfigId, networkConfigurations);
+        if (status != OspfSessionStatus.NO_SESSION) {
+          graph.putEdgeValue(configId, remoteConfigId, status);
+        }
+      }
+    }
+  }
+
   /** Perform neighbor compatibility checks and return an OSPF session status. */
   @VisibleForTesting
   static OspfSessionStatus getSessionStatus(
@@ -190,7 +235,11 @@ public final class OspfTopologyUtils {
       return OspfSessionStatus.AREA_INVALID;
     }
 
-    if (localConfig.isPassive() || remoteConfig.isPassive()) {
+    if (localConfig.isPassive() && remoteConfig.isPassive()) {
+      return OspfSessionStatus.NO_SESSION;
+    }
+
+    if (localConfig.isPassive() != remoteConfig.isPassive()) {
       return OspfSessionStatus.PASSIVE_MISMATCH;
     }
     if (localAreaNum != remoteAreaNum) {
