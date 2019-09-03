@@ -24,19 +24,53 @@ public final class OspfTopologyUtils {
   /** Initialize an OSPF topology. */
   public static OspfTopology computeOspfTopology(
       NetworkConfigurations configurations, Topology l3Topology) {
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> candidateGraph =
+        collectNodes(configurations);
+    establishCandidateLinks(configurations, candidateGraph, l3Topology);
 
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
-        collectNodes(configurations);
-    establishLinks(configurations, graph, l3Topology);
+        convertToEstablishedGraph(candidateGraph, configurations);
     trimLinks(graph);
 
     return new OspfTopology(ImmutableValueGraph.copyOf(graph));
   }
 
+  /**
+   * Helper to convert the specified graph of candidate OSPF sessions and their statuses into a
+   * graph of established sessions and their session properties
+   */
+  private static MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties>
+      convertToEstablishedGraph(
+          MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> candidateGraph,
+          NetworkConfigurations configurations) {
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    for (EndpointPair<OspfNeighborConfigId> i : candidateGraph.edges()) {
+      OspfNeighborConfigId localConfigId = i.nodeU();
+      OspfNeighborConfigId remoteConfigId = i.nodeV();
+      OspfNeighborConfig localConfig =
+          configurations.getOspfNeighborConfig(localConfigId).orElse(null);
+      OspfNeighborConfig remoteConfig =
+          configurations.getOspfNeighborConfig(remoteConfigId).orElse(null);
+
+      if (localConfig == null
+          || remoteConfig == null
+          || getSessionStatus(localConfigId, remoteConfigId, configurations)
+              != OspfSessionStatus.ESTABLISHED) {
+        continue;
+      }
+      graph.putEdgeValue(
+          localConfigId,
+          remoteConfigId,
+          new OspfSessionProperties(
+              localConfig.getArea(), new IpLink(localConfig.getIp(), remoteConfig.getIp())));
+    }
+    return graph;
+  }
+
   /** Compute candidate OSPF topology, including incompatible/unestablished links. */
   public static CandidateOspfTopology computeCandidateOspfTopology(
       NetworkConfigurations configurations, Topology l3Topology) {
-
     MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph = collectNodes(configurations);
     establishCandidateLinks(configurations, graph, l3Topology);
 
@@ -130,39 +164,7 @@ public final class OspfTopologyUtils {
     return graph;
   }
 
-  /** For each compatible neighbor relationship, add a link to the graph */
-  private static void establishLinks(
-      NetworkConfigurations networkConfigurations,
-      MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph,
-      Topology l3topology) {
-
-    for (OspfNeighborConfigId configId : ImmutableSet.copyOf(graph.nodes())) {
-      for (NodeInterfacePair remoteNodeInterface :
-          l3topology.getNeighbors(configId.getNodeInterfacePair())) {
-        Interface remoteInterface =
-            networkConfigurations
-                .getInterface(remoteNodeInterface.getHostname(), remoteNodeInterface.getInterface())
-                .orElse(null);
-
-        if (remoteInterface == null
-            || !remoteInterface.getActive()
-            || remoteInterface.getOspfProcess() == null) {
-          continue;
-        }
-
-        OspfNeighborConfigId remoteConfigId =
-            new OspfNeighborConfigId(
-                remoteNodeInterface.getHostname(),
-                remoteInterface.getVrfName(),
-                remoteInterface.getOspfProcess(),
-                remoteNodeInterface.getInterface());
-        getSessionIfCompatible(configId, remoteConfigId, networkConfigurations)
-            .ifPresent(s -> graph.putEdgeValue(configId, remoteConfigId, s));
-      }
-    }
-  }
-
-  /** For each compatible neighbor relationship, add a link to the graph */
+  /** For each candidate neighbor relationship, add a link to the graph */
   private static void establishCandidateLinks(
       NetworkConfigurations networkConfigurations,
       MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph,
