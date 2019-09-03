@@ -1748,6 +1748,11 @@ INCONSISTENCY
   'inconsistency'
 ;
 
+INFORM
+:
+  'inform'
+;
+
 INFORMATION
 :
   'information'
