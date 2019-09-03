@@ -25,6 +25,17 @@ public class RoleDimensionMappingTest {
   }
 
   @Test
+  public void testNodeRole() {
+    NodeRole nr = new NodeRole("name", "x(.+)y.*");
+    RoleDimensionMapping rdMap = new RoleDimensionMapping(nr);
+    Set<String> nodes = ImmutableSet.of("xbordery", "core", "xbordery2", "xcorey");
+    SortedMap<String, String> nodeRolesMap = rdMap.createNodeRolesMap(nodes);
+    assertThat(
+        nodeRolesMap,
+        equalTo(ImmutableSortedMap.of("xbordery", "name", "xbordery2", "name", "xcorey", "name")));
+  }
+
+  @Test
   public void testGroups() {
     RoleDimensionMapping rdMap =
         new RoleDimensionMapping("x(b.*d)(.+)y.*", ImmutableList.of(2, 1), null, false);
