@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.junit.Test;
 
@@ -16,7 +15,7 @@ public class NodeRolesSpecificationTest {
     NodeRolesSpecification spec = new NodeRolesSpecification(null, null);
     NodeRolesData data = spec.toNodeRolesData();
     assertThat(data.getDefaultDimension(), equalTo(null));
-    assertThat(data.getNodeRoleDimensions(), equalTo(ImmutableSortedSet.of()));
+    assertThat(data.getNodeRoleDimensions(), equalTo(ImmutableList.of()));
   }
 
   @Test
@@ -41,7 +40,7 @@ public class NodeRolesSpecificationTest {
     assertThat(
         data.getNodeRoleDimensions(),
         equalTo(
-            ImmutableSortedSet.of(
+            ImmutableList.of(
                 NodeRoleDimension.builder()
                     .setName("dim1")
                     .setRoleDimensionMappings(

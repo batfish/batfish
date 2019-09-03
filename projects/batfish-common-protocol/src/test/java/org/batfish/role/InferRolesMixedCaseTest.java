@@ -9,9 +9,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -92,12 +92,11 @@ public class InferRolesMixedCaseTest {
 
   @Test
   public void inferRolesOnExampleTopology() throws JsonProcessingException {
-    SortedSet<NodeRoleDimension> roles =
-        new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
+    List<NodeRoleDimension> roles = new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
 
     assertThat(BatfishObjectMapper.writePrettyString(roles), roles, hasSize(2));
 
-    NodeRoleDimension d1 = roles.first();
+    NodeRoleDimension d1 = roles.get(0);
     assertThat(
         d1.createRoleNodesMap(EXAMPLE_NODES),
         equalTo(
@@ -111,7 +110,7 @@ public class InferRolesMixedCaseTest {
                 "dist",
                 filterSet(EXAMPLE_NODES, s -> s.toLowerCase().contains("dist")))));
 
-    NodeRoleDimension d2 = roles.last();
+    NodeRoleDimension d2 = roles.get(1);
     assertThat(
         d2.createRoleNodesMap(EXAMPLE_NODES),
         equalTo(
@@ -121,7 +120,7 @@ public class InferRolesMixedCaseTest {
 
   @Test
   public void inferCaseSensitiveRolesOnExampleTopology() throws JsonProcessingException {
-    SortedSet<NodeRoleDimension> roles =
+    List<NodeRoleDimension> roles =
         new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY, true).inferRoles();
 
     assertThat(BatfishObjectMapper.writePrettyString(roles), roles, hasSize(3));

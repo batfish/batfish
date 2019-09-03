@@ -31,7 +31,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -2678,7 +2677,7 @@ public final class WorkMgrTest {
     NodeRolesData networkNodeRoles =
         NodeRolesData.builder()
             .setRoleDimensions(
-                ImmutableSortedSet.of(
+                ImmutableList.of(
                     NodeRoleDimension.builder()
                         .setName("dim1")
                         .setRoleDimensionMappings(
@@ -2890,7 +2889,7 @@ public final class WorkMgrTest {
         _manager.putNetworkNodeRoles(
             NodeRolesData.builder()
                 .setRoleDimensions(
-                    ImmutableSortedSet.of(NodeRoleDimension.builder().setName("foo").build()))
+                    ImmutableList.of(NodeRoleDimension.builder().setName("foo").build()))
                 .build(),
             networkName);
 

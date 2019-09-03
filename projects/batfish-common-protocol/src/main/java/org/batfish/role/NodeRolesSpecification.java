@@ -10,9 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,12 +22,12 @@ public class NodeRolesSpecification {
   private static final String PROP_ROLE_DIMENSION_NAMES = "roleDimensionNames";
   private static final String PROP_ROLE_MAPPINGS = "roleMappings";
 
-  // the role dimensions used by this network, ordered for hierarchical
-  // visualization/exploration, i.e., if D1 comes before D2 then nodes will be
-  // first partitioned via dimension D1 and then D2.
+  /* the role dimensions used by this network, ordered for hierarchical
+  visualization/exploration, i.e., if D1 comes before D2 then nodes will be
+  first partitioned via dimension D1 and then D2. */
   @Nullable private List<String> _roleDimensionNames;
-  // the role mappings used to determine the role dimensions of each
-  // node and the corresponding role names for each dimension
+  /* the role mappings used to determine the role dimensions of each node
+  and the corresponding role names for each dimension */
   @Nonnull private List<RoleMapping> _roleMappings;
 
   @JsonCreator
@@ -75,7 +73,7 @@ public class NodeRolesSpecification {
       }
     }
     // now build the NodeRoleDimensions, one per dimension name
-    SortedSet<NodeRoleDimension> nodeRoleDimensions = new TreeSet<>();
+    List<NodeRoleDimension> nodeRoleDimensions = new LinkedList<>();
     for (Map.Entry<String, List<RoleDimensionMapping>> entry : rdMaps.entrySet()) {
       String dim = entry.getKey();
       List<RoleDimensionMapping> rdmaps = entry.getValue();

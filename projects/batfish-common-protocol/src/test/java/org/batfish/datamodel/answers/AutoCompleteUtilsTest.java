@@ -1081,7 +1081,7 @@ public class AutoCompleteUtilsTest {
     NodeRoleDimension notSuggested = NodeRoleDimension.builder().setName("blah").build();
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
-            .setRoleDimensions(ImmutableSortedSet.of(suggested, notSuggested))
+            .setRoleDimensions(ImmutableList.of(suggested, notSuggested))
             .build();
 
     assertThat(
@@ -1107,7 +1107,7 @@ public class AutoCompleteUtilsTest {
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
             .setRoleDimensions(
-                ImmutableSortedSet.of(
+                ImmutableList.of(
                     NodeRoleDimension.builder()
                         .setName("someDimension")
                         .setRoleDimensionMappings(

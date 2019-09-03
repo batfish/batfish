@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Comparators;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Comparator;
 import java.util.List;
@@ -26,8 +27,10 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 
-// Objects of this class represent a way to map node names
-// to role names for a particular role dimension, via a regular expression.
+/**
+ * Objects of this class represent a way to map node names to role names for a particular role
+ * dimension, via a regular expression.
+ */
 @ParametersAreNonnullByDefault
 public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
 
@@ -39,13 +42,19 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
   // the regular expression that induces this role mapping on node names
   @Nonnull private String _regex;
   @Nonnull private List<Integer> _groups;
-  // a map from the default role name that was obtained from the node name to a
-  // canonical role name
+  /* this map is used to convert the default role name that was obtained from the node name, via
+  the regex and groups above, to a canonical role name.  the keys are allowed to be arbitrary Java
+  regexes, and any default role name matching the regex is mapped to the corresponding string value
+  as its canonical role name.  we allow regexes in order to also make it easy to convert the old
+  node roles format, based on the NodeRole class, to this new format.
+   */
   @Nonnull private Map<String, String> _canonicalRoleNames;
 
   @Nonnull private boolean _caseSensitive;
 
   @Nonnull private Pattern _pattern;
+
+  private int _patternFlags;
 
   @JsonCreator
   public RoleDimensionMapping(
@@ -55,8 +64,9 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
       @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
     checkArgument(regex != null, "The regex cannot be null");
     _regex = regex;
+    _patternFlags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
     try {
-      _pattern = Pattern.compile(regex, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+      _pattern = Pattern.compile(regex, _patternFlags);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
@@ -72,6 +82,20 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
 
   public RoleDimensionMapping(String regex) {
     this(regex, null, null, false);
+  }
+
+  /**
+   * To ease backward compatibility with an old format for roles, convert a NodeRole into a role
+   * dimension mapping.
+   *
+   * @param role the node role
+   */
+  public RoleDimensionMapping(NodeRole role) {
+    this(
+        "(" + role.getRegex() + ")",
+        ImmutableList.of(1),
+        ImmutableMap.of(role.getRegex(), role.getName()),
+        role.getCaseSensitive());
   }
 
   @Override
@@ -150,7 +174,21 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
       roleName = roleName.toLowerCase();
     }
     // convert to a canonical role name if there is one provided
-    roleName = _canonicalRoleNames.getOrDefault(roleName, roleName);
+    for (Map.Entry<String, String> entry : _canonicalRoleNames.entrySet()) {
+      String roleRegex = entry.getKey();
+      String canonicalRoleName = entry.getValue();
+      Pattern p;
+      try {
+        p = Pattern.compile(roleRegex, _patternFlags);
+      } catch (PatternSyntaxException e) {
+        throw new BatfishException(
+            "Supplied regex is not a valid Java regex: \"" + roleRegex + "\"", e);
+      }
+      if (p.matcher(roleName).matches()) {
+        roleName = canonicalRoleName;
+        break;
+      }
+    }
     return Optional.of(roleName);
   }
 

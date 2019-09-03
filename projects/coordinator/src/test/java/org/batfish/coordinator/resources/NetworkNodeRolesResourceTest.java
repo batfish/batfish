@@ -8,7 +8,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -93,8 +92,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
             .setDefaultDimension("a")
-            .setRoleDimensions(
-                ImmutableSortedSet.of(NodeRoleDimension.builder().setName("a").build()))
+            .setRoleDimensions(ImmutableList.of(NodeRoleDimension.builder().setName("a").build()))
             .build();
     Main.getWorkMgr().putNetworkNodeRoles(nodeRolesData, network);
     Response response = getNodeRolesTarget(network).get();
@@ -111,7 +109,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
         new NodeRolesDataBean(
             NodeRolesData.builder()
                 .setRoleDimensions(
-                    ImmutableSortedSet.of(
+                    ImmutableList.of(
                         NodeRoleDimension.builder()
                             .setName(name)
                             .setRoleDimensionMappings(
@@ -132,7 +130,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
         new NodeRolesDataBean(
             NodeRolesData.builder()
                 .setRoleDimensions(
-                    ImmutableSortedSet.of(
+                    ImmutableList.of(
                         NodeRoleDimension.builder().setName(name1).build(),
                         NodeRoleDimension.builder().setName(name2).build()))
                 .build(),
@@ -149,7 +147,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
         new NodeRolesDataBean(
             NodeRolesData.builder()
                 .setRoleDimensions(
-                    ImmutableSortedSet.of(
+                    ImmutableList.of(
                         NodeRoleDimension.builder().setName(name1).build(),
                         NodeRoleDimension.builder().setName(name2).build()))
                 .build(),
@@ -167,7 +165,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
         new NodeRolesDataBean(
             NodeRolesData.builder()
                 .setRoleDimensions(
-                    ImmutableSortedSet.of(
+                    ImmutableList.of(
                         NodeRoleDimension.builder()
                             .setName(name)
                             .setRoleDimensionMappings(
@@ -212,8 +210,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
             .setDefaultDimension("a")
-            .setRoleDimensions(
-                ImmutableSortedSet.of(NodeRoleDimension.builder().setName("a").build()))
+            .setRoleDimensions(ImmutableList.of(NodeRoleDimension.builder().setName("a").build()))
             .build();
     NodeRolesDataBean nodeRolesDataBean = new NodeRolesDataBean(nodeRolesData, null);
     Response response =

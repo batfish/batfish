@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -40,7 +39,7 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
   private static NodeRolesData testNodeRolesData =
       NodeRolesData.builder()
           .setRoleDimensions(
-              ImmutableSortedSet.of(
+              ImmutableList.of(
                   NodeRoleDimension.builder("dim1")
                       .setRoleDimensionMappings(
                           ImmutableList.of(new RoleDimensionMapping("(r1.+)")))

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -26,7 +25,7 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
             .setRoleDimensionMappings(ImmutableList.of(rdMapping))
             .build();
     NodeRolesData data =
-        NodeRolesData.builder().setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension)).build();
+        NodeRolesData.builder().setRoleDimensions(ImmutableList.of(nodeRoleDimension)).build();
     NodeRolesDataBean bean = new NodeRolesDataBean(data, snapshot);
 
     assertThat(

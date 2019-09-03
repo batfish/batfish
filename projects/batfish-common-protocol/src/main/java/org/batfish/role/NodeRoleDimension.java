@@ -12,6 +12,7 @@ import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,12 +64,6 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
       return this;
     }
 
-    // for backward compatibility with an older version of NodeRoleDimension
-    public @Nonnull Builder setRoleRegexes(List<String> regexes) {
-      return setRoleDimensionMappings(
-          regexes.stream().map(RoleDimensionMapping::new).collect(Collectors.toList()));
-    }
-
     public @Nonnull Builder setType(Type type) {
       _type = type;
       return this;
@@ -93,6 +88,8 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
   public static final String AUTO_DIMENSION_PRIMARY = "auto0";
   private static final String PROP_NAME = "name";
+  private static final String PROP_ROLES = "roles";
+  private static final String PROP_ROLE_REGEXES = "roleRegexes";
   private static final String PROP_ROLE_DIMENSION_MAPPINGS = "roleDimensionMappings";
   private static final String PROP_TYPE = "type";
 
@@ -115,20 +112,37 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
     _roleDimensionMappings = mappings;
   }
 
+  /**
+   * Create a node role dimension.
+   *
+   * @param name the name of the dimension
+   * @param roles for backward-compatibility with an older format for node role dimensions, a list
+   *     of node roles is accepted and each is converted into a role dimension mapping (see below)
+   * @param type whether the dimension was automatically generated or user-provided
+   * @param roleRegexes for backward-compatibility with an older format for node role dimensions, a
+   *     list of role regexes is accepted **but has no effect on the produced node role dimension**
+   * @param mappings a list of role dimension mappings, which specify how to identify role names for
+   *     this dimension from node names
+   * @return the new node role dimension
+   */
   @JsonCreator
   private static @Nonnull NodeRoleDimension create(
       @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_ROLES) List<NodeRole> roles,
       @Nullable @JsonProperty(PROP_TYPE) Type type,
+      @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> roleRegexes,
       @Nullable @JsonProperty(PROP_ROLE_DIMENSION_MAPPINGS) List<RoleDimensionMapping> mappings) {
     checkArgument(name != null, "Name of node role cannot be null");
     checkArgument(
         type != NodeRoleDimension.Type.AUTO || name.startsWith(AUTO_DIMENSION_PREFIX),
         "Name for a AUTO role dimension must begin with: %s",
         AUTO_DIMENSION_PREFIX);
+    List<RoleDimensionMapping> rdMaps =
+        new LinkedList<>(firstNonNull(mappings, ImmutableList.of()));
+    List<NodeRole> nodeRoles = firstNonNull(roles, ImmutableList.of());
+    rdMaps.addAll(nodeRoles.stream().map(RoleDimensionMapping::new).collect(Collectors.toList()));
     return new NodeRoleDimension(
-        name,
-        firstNonNull(type, NodeRoleDimension.Type.CUSTOM),
-        firstNonNull(mappings, ImmutableList.of()));
+        name, firstNonNull(type, NodeRoleDimension.Type.CUSTOM), ImmutableList.copyOf(rdMaps));
   }
 
   private static final Comparator<NodeRoleDimension> COMPARATOR =

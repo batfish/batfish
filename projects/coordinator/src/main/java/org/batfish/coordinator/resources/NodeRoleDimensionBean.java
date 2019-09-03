@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -13,18 +14,25 @@ import org.batfish.role.RoleDimensionMapping;
 public class NodeRoleDimensionBean {
 
   public String name;
+  // list of NodeRoles kept for backward-compatibility with an older node roles format
+  public List<NodeRoleBean> roles;
   public List<RoleDimensionMappingBean> roleDimensionMappings;
   public String snapshot;
   public NodeRoleDimension.Type type;
 
   @JsonCreator
-  private NodeRoleDimensionBean() {}
+  private NodeRoleDimensionBean() {
+    // in case one or both of these is not provided, initialize them so they're non-null
+    roles = ImmutableList.of();
+    roleDimensionMappings = ImmutableList.of();
+  }
 
   public NodeRoleDimensionBean(NodeRoleDimension nrDim, String snapshot) {
     this.name = nrDim.getName();
+    this.roles = ImmutableList.of();
     this.roleDimensionMappings =
         nrDim.getRoleDimensionMappings().stream()
-            .map(m -> new RoleDimensionMappingBean(m))
+            .map(RoleDimensionMappingBean::new)
             .collect(Collectors.toList());
     this.snapshot = snapshot;
     this.type = nrDim.getType();
@@ -36,6 +44,7 @@ public class NodeRoleDimensionBean {
       return false;
     }
     return Objects.equals(name, ((NodeRoleDimensionBean) o).name)
+        && Objects.equals(roles, ((NodeRoleDimensionBean) o).roles)
         && Objects.equals(roleDimensionMappings, ((NodeRoleDimensionBean) o).roleDimensionMappings)
         && Objects.equals(snapshot, ((NodeRoleDimensionBean) o).snapshot)
         && Objects.equals(type, ((NodeRoleDimensionBean) o).type);
@@ -43,17 +52,21 @@ public class NodeRoleDimensionBean {
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, roleDimensionMappings, snapshot, type);
+    return Objects.hash(name, roles, roleDimensionMappings, snapshot, type);
   }
 
   /** Returns a {@link NodeRoleDimension} object corresponding to this bean */
   public NodeRoleDimension toNodeRoleDimension() {
-    List<RoleDimensionMapping> rdMappings =
-        roleDimensionMappings == null
-            ? ImmutableList.of()
-            : roleDimensionMappings.stream()
-                .map(RoleDimensionMappingBean::toRoleDimensionMapping)
-                .collect(ImmutableList.toImmutableList());
+    List<RoleDimensionMapping> rdMappings = new LinkedList<>();
+    rdMappings.addAll(
+        roleDimensionMappings.stream()
+            .map(RoleDimensionMappingBean::toRoleDimensionMapping)
+            .collect(ImmutableList.toImmutableList()));
+    rdMappings.addAll(
+        roles.stream()
+            .map(NodeRoleBean::toNodeRole)
+            .map(RoleDimensionMapping::new)
+            .collect(ImmutableList.toImmutableList()));
     return NodeRoleDimension.builder()
         .setName(name)
         .setRoleDimensionMappings(rdMappings)
@@ -65,6 +78,7 @@ public class NodeRoleDimensionBean {
   public String toString() {
     return toStringHelper(getClass())
         .add("name", name)
+        .add("roles", roles)
         .add("mappings", roleDimensionMappings)
         .add("snapshot", snapshot)
         .add("type", type)

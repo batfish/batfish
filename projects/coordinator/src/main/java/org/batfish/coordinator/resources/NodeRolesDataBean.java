@@ -3,8 +3,7 @@ package org.batfish.coordinator.resources;
 import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
+import com.google.common.collect.ImmutableList;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,7 +50,7 @@ public class NodeRolesDataBean {
         .setRoleDimensions(
             roleDimensions.stream()
                 .map(NodeRoleDimensionBean::toNodeRoleDimension)
-                .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())))
+                .collect(ImmutableList.toImmutableList()))
         .build();
   }
 

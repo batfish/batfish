@@ -48,6 +48,28 @@ public class NodeRoleDimensionTest {
   }
 
   @Test
+  public void testNodeRoles() {
+    NodeRole nodeRole = new NodeRole("roleName", "x(.+)y.*", true);
+    RoleDimensionMapping rdMap = new RoleDimensionMapping(nodeRole);
+
+    assertThat(rdMap.getRegex(), equalTo("(x(.+)y.*)"));
+    assertThat(rdMap.getCaseSensitive(), equalTo(true));
+
+    NodeRoleDimension nrDim =
+        NodeRoleDimension.builder()
+            .setName("mydim")
+            .setRoleDimensionMappings(ImmutableList.of(rdMap))
+            .build();
+    Set<String> nodes = ImmutableSet.of("xbordery", "core", "xbordery2", "xcorey");
+    SortedMap<String, String> nodeRolesMap = nrDim.createNodeRolesMap(nodes);
+    assertThat(
+        nodeRolesMap,
+        equalTo(
+            ImmutableSortedMap.of(
+                "xbordery", "roleName", "xbordery2", "roleName", "xcorey", "roleName")));
+  }
+
+  @Test
   public void testRoleNodesMap() {
     RoleDimensionMapping rdMap1 = new RoleDimensionMapping("x(.+)y.*");
     RoleDimensionMapping rdMap2 = new RoleDimensionMapping("(.+)y.*");

@@ -6,7 +6,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -74,9 +73,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     NodeRoleDimension nodeRoleDimension = NodeRoleDimension.builder().setName(dimension).build();
     Main.getWorkMgr()
         .putNetworkNodeRoles(
-            NodeRolesData.builder()
-                .setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension))
-                .build(),
+            NodeRolesData.builder().setRoleDimensions(ImmutableList.of(nodeRoleDimension)).build(),
             network);
     Response response = getNodeRoleDimensionTarget(network, dimension).delete();
 
@@ -118,9 +115,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     NodeRoleDimension nodeRoleDimension = NodeRoleDimension.builder().setName(dimension).build();
     Main.getWorkMgr()
         .putNetworkNodeRoles(
-            NodeRolesData.builder()
-                .setRoleDimensions(ImmutableSortedSet.of(nodeRoleDimension))
-                .build(),
+            NodeRolesData.builder().setRoleDimensions(ImmutableList.of(nodeRoleDimension)).build(),
             network);
 
     Response response = getNodeRoleDimensionTarget(network, dimension).get();

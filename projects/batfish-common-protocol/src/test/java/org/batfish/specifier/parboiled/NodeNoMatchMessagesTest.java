@@ -9,7 +9,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -62,7 +61,7 @@ public class NodeNoMatchMessagesTest {
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
             .setRoleDimensions(
-                ImmutableSortedSet.of(
+                ImmutableList.of(
                     NodeRoleDimension.builder()
                         .setName("dim1")
                         .setRoleDimensionMappings(

@@ -14,8 +14,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 
-// Objects of this class represent a way to map node names
-// to role dimensions and associated role names, via a regular expression.
+/**
+ * Objects of this class represent a way to map node names to role dimensions and associated role
+ * names, via a regular expression.
+ */
 @ParametersAreNonnullByDefault
 public class RoleMapping {
 
@@ -26,11 +28,11 @@ public class RoleMapping {
 
   // the regular expression that induces this role mapping on node names
   @Nonnull private String _regex;
-  // a map from each role dimension name to the list of regex groups
-  // that signify the role name for that dimension
+  /* a map from each role dimension name to the list of regex groups
+  that signify the role name for that dimension */
   @Nonnull private Map<String, List<Integer>> _roleDimensionsGroups;
-  // for each role dimension, a map from the default role name that was
-  // obtained from the node name to a canonical role name
+  /* for each role dimension, a map from the default role name that was
+  obtained from the node name to a canonical role name */
   @Nonnull private Map<String, Map<String, String>> _canonicalRoleNames;
 
   private boolean _caseSensitive;

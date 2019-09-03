@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -180,29 +181,29 @@ public final class InferRoles {
     return "(" + s + ")";
   }
 
-  public SortedSet<NodeRoleDimension> inferRoles() {
+  public List<NodeRoleDimension> inferRoles() {
 
     if (_nodes.isEmpty()) {
-      return ImmutableSortedSet.of();
+      return ImmutableList.of();
     }
 
     boolean commonRegexFound = inferCommonRegex(_nodes);
 
     if (!commonRegexFound) {
-      return ImmutableSortedSet.of();
+      return ImmutableList.of();
     }
 
     // find the possible candidates that have a single role group
     List<List<String>> candidateRegexes = possibleRoleGroups();
 
     if (candidateRegexes.isEmpty()) {
-      return ImmutableSortedSet.of();
+      return ImmutableList.of();
     }
 
     // if there is at least one role group, let's fine the best role dimension according
     // to our metric, and also keep all the others.
 
-    SortedSet<NodeRoleDimension> allDims;
+    List<NodeRoleDimension> allDims;
 
     RegexScore bestRegexAndScore = findBestRegex(candidateRegexes);
 
@@ -222,7 +223,7 @@ public final class InferRoles {
     allDims = createRoleDimensions(candidateRegexes);
 
     if (bestIsAboveThreshold) {
-      allDims.add(optResult.get());
+      allDims.add(0, optResult.get());
     } else {
 
       // if no single role group is above threshold, we attempt to make the best role found so far
@@ -242,6 +243,7 @@ public final class InferRoles {
       if (!candidateRegexes.isEmpty()) {
         // determine the best one according to our metric, even if it's below threshold
         allDims.add(
+            0,
             toNodeRoleDimension(
                 findBestRegex(candidateRegexes),
                 candidateRegexes,
@@ -414,9 +416,9 @@ public final class InferRoles {
     return candidateRegexes;
   }
 
-  private SortedSet<NodeRoleDimension> createRoleDimensions(List<List<String>> regexes) {
+  private List<NodeRoleDimension> createRoleDimensions(List<List<String>> regexes) {
 
-    SortedSet<NodeRoleDimension> result = new TreeSet<>();
+    List<NodeRoleDimension> result = new LinkedList<>();
     for (int i = 0; i < regexes.size(); i++) {
       String dimName = NodeRoleDimension.AUTO_DIMENSION_PREFIX + (i + 1);
       String regex = regexTokensToRegex(regexes.get(i));

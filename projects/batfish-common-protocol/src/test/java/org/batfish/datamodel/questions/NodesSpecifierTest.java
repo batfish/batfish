@@ -9,11 +9,9 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.regex.Pattern;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.questions.NodesSpecifier.Type;
@@ -35,9 +33,7 @@ public class NodesSpecifierTest {
             .setName("dim20")
             .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
             .build();
-    SortedSet<NodeRoleDimension> roleDimensions =
-        new ImmutableSortedSet.Builder<>(NodeRoleDimension::compareTo).add(dim1).add(dim2).build();
-    return NodeRolesData.builder().setRoleDimensions(roleDimensions).build();
+    return NodeRolesData.builder().setRoleDimensions(ImmutableList.of(dim1, dim2)).build();
   }
 
   @Test

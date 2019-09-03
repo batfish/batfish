@@ -3,7 +3,7 @@ package org.batfish.coordinator.resources;
 import static org.batfish.common.util.HttpUtil.checkClientArgument;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.Optional;
 import javax.ws.rs.Consumes;
@@ -68,7 +68,7 @@ public final class NetworkNodeRolesResource {
             NodeRolesData.builder()
                 .setDefaultDimension(nodeRolesData.getDefaultDimension())
                 .setRoleDimensions(
-                    ImmutableSortedSet.<NodeRoleDimension>naturalOrder()
+                    ImmutableList.<NodeRoleDimension>builder()
                         .addAll(nodeRolesData.getNodeRoleDimensions())
                         .add(dimBean.toNodeRoleDimension())
                         .build())
