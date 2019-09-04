@@ -1408,7 +1408,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     String name = nameOrError.get();
     _configuration.referenceStructure(
-        CLASS_MAP_CONTROL_PLANE, name, CONTROL_PLANE_SERVICE_POLICY, ctx.getStart().getLine());
+        POLICY_MAP_CONTROL_PLANE, name, CONTROL_PLANE_SERVICE_POLICY, ctx.getStart().getLine());
   }
 
   @Override
@@ -2066,7 +2066,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _configuration.referenceStructure(
-        CLASS_MAP_QOS, name.get(), INTERFACE_SERVICE_POLICY_QOS, ctx.getStart().getLine());
+        POLICY_MAP_QOS, name.get(), INTERFACE_SERVICE_POLICY_QOS, ctx.getStart().getLine());
   }
 
   @Override
@@ -2076,7 +2076,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _configuration.referenceStructure(
-        CLASS_MAP_QUEUING, name.get(), INTERFACE_SERVICE_POLICY_QUEUING, ctx.getStart().getLine());
+        POLICY_MAP_QUEUING, name.get(), INTERFACE_SERVICE_POLICY_QUEUING, ctx.getStart().getLine());
   }
 
   @Override
@@ -2661,7 +2661,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _configuration.referenceStructure(
-        CLASS_MAP_NETWORK_QOS, name.get(), SYSQOS_NETWORK_QOS, ctx.getStart().getLine());
+        POLICY_MAP_NETWORK_QOS, name.get(), SYSQOS_NETWORK_QOS, ctx.getStart().getLine());
   }
 
   @Override
@@ -2671,7 +2671,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _configuration.referenceStructure(
-        CLASS_MAP_QOS, name.get(), SYSQOS_QOS, ctx.getStart().getLine());
+        POLICY_MAP_QOS, name.get(), SYSQOS_QOS, ctx.getStart().getLine());
   }
 
   @Override
@@ -2681,7 +2681,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _configuration.referenceStructure(
-        CLASS_MAP_QUEUING, name.get(), SYSQOS_QUEUING, ctx.getStart().getLine());
+        POLICY_MAP_QUEUING, name.get(), SYSQOS_QUEUING, ctx.getStart().getLine());
   }
 
   @Override
