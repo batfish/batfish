@@ -3,31 +3,20 @@
     "class" : "org.batfish.question.RolesQuestionPlugin$RolesAnswerElement",
     "roleDimension" : {
       "name" : "default",
-      "roles" : [
+      "roleDimensionMappings" : [
         {
           "caseSensitive" : false,
-          "name" : "border",
-          "regex" : ".*border.*"
+          "groups" : [
+            1
+          ],
+          "regex" : "as.(.*).+"
         },
         {
           "caseSensitive" : false,
-          "name" : "core",
-          "regex" : ".*core.*"
-        },
-        {
-          "caseSensitive" : false,
-          "name" : "dept",
-          "regex" : ".*dept.*"
-        },
-        {
-          "caseSensitive" : false,
-          "name" : "dist",
-          "regex" : ".*dist.*"
-        },
-        {
-          "caseSensitive" : false,
-          "name" : "host",
-          "regex" : ".*host.*"
+          "groups" : [
+            1
+          ],
+          "regex" : "(.*).+"
         }
       ],
       "type" : "CUSTOM"

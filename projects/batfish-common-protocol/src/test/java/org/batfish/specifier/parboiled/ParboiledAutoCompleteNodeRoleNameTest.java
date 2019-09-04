@@ -10,13 +10,12 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -40,12 +39,14 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
   private static NodeRolesData testNodeRolesData =
       NodeRolesData.builder()
           .setRoleDimensions(
-              ImmutableSortedSet.of(
+              ImmutableList.of(
                   NodeRoleDimension.builder("dim1")
-                      .setRoles(ImmutableSet.of(new NodeRole("r11", ""), new NodeRole("r12", "")))
+                      .setRoleDimensionMappings(
+                          ImmutableList.of(new RoleDimensionMapping("(r1.+)")))
                       .build(),
                   NodeRoleDimension.builder("dim2")
-                      .setRoles(ImmutableSet.of(new NodeRole("r21", "")))
+                      .setRoleDimensionMappings(
+                          ImmutableList.of(new RoleDimensionMapping("(r2.+)")))
                       .build()))
           .build();
 
@@ -67,7 +68,7 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
         "snapshot",
         query,
         Integer.MAX_VALUE,
-        CompletionMetadata.builder().build(),
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("r11", "r12", "r21")).build(),
         testNodeRolesData,
         new ReferenceLibrary(null));
   }

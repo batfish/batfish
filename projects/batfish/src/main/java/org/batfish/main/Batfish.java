@@ -2426,12 +2426,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
     Set<String> nodeNames = loadConfigurations().keySet();
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(getNetworkSnapshot());
-    SortedSet<NodeRoleDimension> autoRoles =
-        new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
+    List<NodeRoleDimension> autoRoles = new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
       if (!autoRoles.isEmpty()) {
-        snapshotNodeRoles.setDefaultDimension(autoRoles.first().getName());
+        snapshotNodeRoles.setDefaultDimension(autoRoles.get(0).getName());
         snapshotNodeRoles.setRoleDimensions(autoRoles);
       }
       _storage.storeNodeRoles(snapshotNodeRoles.build(), snapshotNodeRolesId);

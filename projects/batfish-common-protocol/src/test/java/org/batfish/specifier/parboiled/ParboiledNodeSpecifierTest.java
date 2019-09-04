@@ -3,14 +3,15 @@ package org.batfish.specifier.parboiled;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.RoleDimensionMapping;
 import org.batfish.specifier.MockSpecifierContext;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,7 +52,10 @@ public class ParboiledNodeSpecifierTest {
         ImmutableSortedSet.of(
             NodeRoleDimension.builder()
                 .setName(dimensionName)
-                .setRoles(ImmutableSet.of(new NodeRole(roleName, "node1.*")))
+                .setRoleDimensionMappings(
+                    ImmutableList.of(
+                        new RoleDimensionMapping(
+                            "(node1.*)", null, ImmutableMap.of("node1", roleName), false)))
                 .build()));
     assertThat(
         new ParboiledNodeSpecifier(new RoleNodeAstNode(dimensionName, roleName))
@@ -68,7 +72,10 @@ public class ParboiledNodeSpecifierTest {
         ImmutableSortedSet.of(
             NodeRoleDimension.builder()
                 .setName(dimensionName)
-                .setRoles(ImmutableSet.of(new NodeRole(roleName, "node1.*")))
+                .setRoleDimensionMappings(
+                    ImmutableList.of(
+                        new RoleDimensionMapping(
+                            "(node1.*)", null, ImmutableMap.of("node1", roleName), false)))
                 .build()));
     assertThat(
         new ParboiledNodeSpecifier(new RoleNodeAstNode(roleName, dimensionName))

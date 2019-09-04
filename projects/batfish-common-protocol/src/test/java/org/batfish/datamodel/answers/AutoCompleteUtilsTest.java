@@ -41,6 +41,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -58,9 +59,9 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1080,7 +1081,7 @@ public class AutoCompleteUtilsTest {
     NodeRoleDimension notSuggested = NodeRoleDimension.builder().setName("blah").build();
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
-            .setRoleDimensions(ImmutableSortedSet.of(suggested, notSuggested))
+            .setRoleDimensions(ImmutableList.of(suggested, notSuggested))
             .build();
 
     assertThat(
@@ -1106,22 +1107,38 @@ public class AutoCompleteUtilsTest {
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
             .setRoleDimensions(
-                ImmutableSortedSet.of(
+                ImmutableList.of(
                     NodeRoleDimension.builder()
                         .setName("someDimension")
-                        .setRoles(
-                            ImmutableSortedSet.of(
-                                new NodeRole("r1", ".*"), new NodeRole("s2", ".*")))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(
+                                new RoleDimensionMapping(
+                                    "(.*)",
+                                    null,
+                                    ImmutableMap.of("node1", "r1", "node2", "s1"),
+                                    false)))
                         .build(),
                     NodeRoleDimension.builder()
                         .setName("someDimension")
-                        .setRoles(ImmutableSortedSet.of(new NodeRole("r2", ".*")))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(
+                                new RoleDimensionMapping(
+                                    "(.*)", null, ImmutableMap.of("node3", "r2"), false)))
                         .build()))
             .build();
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, "snapshot", Type.NODE_ROLE_NAME, "r", 5, null, nodeRolesData, null)
+                network,
+                "snapshot",
+                Type.NODE_ROLE_NAME,
+                "r",
+                5,
+                CompletionMetadata.builder()
+                    .setNodes(ImmutableSet.of("node1", "node2", "node3"))
+                    .build(),
+                nodeRolesData,
+                null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),

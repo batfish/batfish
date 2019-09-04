@@ -9,13 +9,12 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Test;
 
 /** Tests for {@link NodeNoMatchMessages} */
@@ -23,14 +22,14 @@ public class NodeNoMatchMessagesTest {
 
   private static List<String> getMessages(
       NodeNoMatchMessages nodeNoMatchMessages, CompletionMetadata completionMetadata) {
-    return nodeNoMatchMessages.get(
-        completionMetadata, NodeRolesData.builder().build(), new ReferenceLibrary(null));
+    return getMessages(nodeNoMatchMessages, completionMetadata, NodeRolesData.builder().build());
   }
 
   private static List<String> getMessages(
-      NodeNoMatchMessages nodeNoMatchMessages, NodeRolesData nodeRolesData) {
-    return nodeNoMatchMessages.get(
-        CompletionMetadata.builder().build(), nodeRolesData, new ReferenceLibrary(null));
+      NodeNoMatchMessages nodeNoMatchMessages,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData) {
+    return nodeNoMatchMessages.get(completionMetadata, nodeRolesData, new ReferenceLibrary(null));
   }
 
   @Test
@@ -62,23 +61,34 @@ public class NodeNoMatchMessagesTest {
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
             .setRoleDimensions(
-                ImmutableSortedSet.of(
+                ImmutableList.of(
                     NodeRoleDimension.builder()
                         .setName("dim1")
-                        .setRoles(
-                            ImmutableSet.of(new NodeRole("r1", ".*"), new NodeRole("r2", ".*")))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(new RoleDimensionMapping("(.*)")))
                         .build()))
             .build();
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("r1", "r2")).build();
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("nodim", "r1")), nodeRolesData),
+        getMessages(
+            new NodeNoMatchMessages(new RoleNodeAstNode("nodim", "r1")),
+            completionMetadata,
+            nodeRolesData),
         equalTo(ImmutableList.of((getErrorMessageMissingBook("nodim", "Node role dimension")))));
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "norole")), nodeRolesData),
+        getMessages(
+            new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "norole")),
+            completionMetadata,
+            nodeRolesData),
         equalTo(
             ImmutableList.of(
                 (getErrorMessageMissingGroup("norole", "Node role", "dim1", "dimension")))));
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "r1")), nodeRolesData),
+        getMessages(
+            new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "r1")),
+            completionMetadata,
+            nodeRolesData),
         equalTo(ImmutableList.of()));
   }
 

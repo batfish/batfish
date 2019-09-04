@@ -578,7 +578,7 @@ public final class AutoCompleteUtils {
             checkNodeRolesData(nodeRolesData, network);
             ImmutableSet<String> roles =
                 nodeRolesData.getNodeRoleDimensions().stream()
-                    .flatMap(d -> d.getRoles().stream().map(r -> r.getName()))
+                    .flatMap(d -> d.roleNamesFor(completionMetadata.getNodes()).stream())
                     .collect(ImmutableSet.toImmutableSet());
             suggestions = stringAutoComplete(query, roles);
             break;

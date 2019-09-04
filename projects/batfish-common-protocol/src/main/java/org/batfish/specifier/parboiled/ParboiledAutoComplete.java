@@ -45,7 +45,6 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.parboiled.Rule;
@@ -521,10 +520,7 @@ public final class ParboiledAutoComplete {
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
-            matchPrefix,
-            nodeRoleDimension.getRoles().stream()
-                .map(NodeRole::getName)
-                .collect(ImmutableSet.toImmutableSet())),
+            matchPrefix, nodeRoleDimension.roleNamesFor(_completionMetadata.getNodes())),
         !matchPrefix.equals(pm.getMatchPrefix()),
         pm.getAnchorType(),
         pm.getMatchStartIndex());

@@ -2,10 +2,8 @@ package org.batfish.coordinator.resources;
 
 import static org.batfish.common.util.HttpUtil.checkClientArgument;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -56,8 +54,7 @@ public final class NetworkNodeRoleDimensionResource {
                 .setRoleDimensions(
                     nodeRolesData.getNodeRoleDimensions().stream()
                         .filter(dim -> !dim.getName().equalsIgnoreCase(dimension.get().getName()))
-                        .collect(
-                            ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))
+                        .collect(ImmutableList.toImmutableList()))
                 .build(),
             _network)) {
       // if network was deleted while we were working
@@ -76,9 +73,7 @@ public final class NetworkNodeRoleDimensionResource {
     if (!dimension.isPresent()) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok()
-        .entity(new NodeRoleDimensionBean(dimension.get(), null, ImmutableSet.of()))
-        .build();
+    return Response.ok().entity(new NodeRoleDimensionBean(dimension.get(), null)).build();
   }
 
   /**
@@ -97,7 +92,7 @@ public final class NetworkNodeRoleDimensionResource {
             NodeRolesData.builder()
                 .setDefaultDimension(nodeRolesData.getDefaultDimension())
                 .setRoleDimensions(
-                    ImmutableSortedSet.<NodeRoleDimension>naturalOrder()
+                    ImmutableList.<NodeRoleDimension>builder()
                         .addAll(
                             nodeRolesData.getNodeRoleDimensions().stream()
                                 .filter(d -> !d.getName().equalsIgnoreCase(dimBean.name))

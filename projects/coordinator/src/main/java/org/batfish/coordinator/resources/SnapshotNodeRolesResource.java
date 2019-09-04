@@ -46,7 +46,7 @@ public final class SnapshotNodeRolesResource {
     if (nodes == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok().entity(new NodeRolesDataBean(data, _snapshot, nodes)).build();
+    return Response.ok().entity(new NodeRolesDataBean(data, _snapshot)).build();
   }
 
   @Path("/{dimension}")
@@ -63,11 +63,7 @@ public final class SnapshotNodeRolesResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok()
-        .entity(
-            new NodeRoleDimensionBean(
-                nodeRolesDimension.get(),
-                _snapshot,
-                Main.getWorkMgr().getNodes(_network, _snapshot)))
+        .entity(new NodeRoleDimensionBean(nodeRolesDimension.get(), _snapshot))
         .build();
   }
 }

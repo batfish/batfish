@@ -75,7 +75,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(NodeRolesDataBean.class),
-        equalTo(new NodeRolesDataBean(nodeRolesData, snapshot, nodes)));
+        equalTo(new NodeRolesDataBean(nodeRolesData, snapshot)));
   }
 
   @Test
@@ -110,6 +110,6 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(NodeRolesDataBean.class),
-        equalTo(new NodeRolesDataBean(nodeRolesData, snapshot, nodes)));
+        equalTo(new NodeRolesDataBean(nodeRolesData, snapshot)));
   }
 }
