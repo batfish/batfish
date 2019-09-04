@@ -1757,7 +1757,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           // convert any connected route metadata
           addressMetadata.put(
               (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
-              ConnectedRouteMetadata.builder().setTag(addrWithAttr.getTag()).build());
+              ConnectedRouteMetadata.builder()
+                  .setAdmin(addrWithAttr.getRoutePreference())
+                  .setTag(addrWithAttr.getTag())
+                  .build());
         }
       }
       newIfaceBuilder.setSecondaryAddresses(
@@ -1770,7 +1773,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               addr ->
                   addressMetadata.put(
                       (ConcreteInterfaceAddress) addr.getAddress(),
-                      ConnectedRouteMetadata.builder().setTag(addr.getTag()).build()));
+                      ConnectedRouteMetadata.builder()
+                          .setAdmin(addr.getRoutePreference())
+                          .setTag(addr.getTag())
+                          .build()));
       newIfaceBuilder.setAddressMetadata(addressMetadata.build());
     }
     // TODO: handle DHCP
