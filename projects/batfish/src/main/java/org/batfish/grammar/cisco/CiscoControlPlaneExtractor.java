@@ -1399,8 +1399,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
-  private static final String DUPLICATE = "DUPLICATE";
-
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
