@@ -13,59 +13,45 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 
+/** Changes the next hop attribute for a BGP route */
 @ParametersAreNonnullByDefault
 public final class SetNextHop extends Statement {
-  private static final String PROP_DESTINATION_VRF = "destinationVrf";
   private static final String PROP_EXPR = "expr";
-
-  private boolean _destinationVrf;
 
   @Nonnull private NextHopExpr _expr;
 
   @JsonCreator
-  private static SetNextHop jsonCreator(
-      @Nullable @JsonProperty(PROP_DESTINATION_VRF) Boolean destinationVrf,
-      @Nullable @JsonProperty(PROP_EXPR) NextHopExpr expr) {
-    checkArgument(destinationVrf != null, "%s must be provided", PROP_DESTINATION_VRF);
+  private static SetNextHop jsonCreator(@Nullable @JsonProperty(PROP_EXPR) NextHopExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_EXPR);
-    return new SetNextHop(expr, destinationVrf);
+    return new SetNextHop(expr);
   }
 
-  public SetNextHop(NextHopExpr expr, boolean destinationVrf) {
+  public SetNextHop(NextHopExpr expr) {
     _expr = expr;
-    _destinationVrf = destinationVrf;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof SetNextHop)) {
-      return false;
-    }
-    SetNextHop other = (SetNextHop) obj;
-    return _destinationVrf == other._destinationVrf && _expr.equals(other._expr);
   }
 
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
+    // Do nothing for a route that is not BGP.
+    if (!(environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>)) {
+      return result;
+    }
+
+    // Handle "discard" next hop, where the route acts as a null route.
     if (_expr.getDiscard()) {
       BgpRoute.Builder<?, ?> bgpRouteBuilder =
           (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       bgpRouteBuilder.setDiscard(true);
     }
+
+    // Evaluate our next hop expression. If the result is non-null, modify the next hop IP.
     Ip nextHop = _expr.getNextHopIp(environment);
     if (nextHop == null) {
       return result;
     }
     environment.getOutputRoute().setNextHopIp(nextHop);
     return result;
-  }
-
-  @JsonProperty(PROP_DESTINATION_VRF)
-  public boolean getDestinationVrf() {
-    return _destinationVrf;
   }
 
   @JsonProperty(PROP_EXPR)
@@ -75,11 +61,19 @@ public final class SetNextHop extends Statement {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof SetNextHop)) {
+      return false;
+    }
+    SetNextHop that = (SetNextHop) o;
+    return _expr.equals(that._expr);
+  }
+
+  @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + (_destinationVrf ? 1231 : 1237);
-    result = prime * result + _expr.hashCode();
-    return result;
+    return _expr.hashCode();
   }
 }

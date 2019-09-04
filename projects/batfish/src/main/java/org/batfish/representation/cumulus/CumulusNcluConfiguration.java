@@ -400,7 +400,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .map(BgpNeighborIpv4UnicastAddressFamily::getNextHopSelf)
             .orElse(false);
 
-    return nextHopSelf ? new SetNextHop(SelfNextHop.getInstance(), false) : null;
+    return nextHopSelf ? new SetNextHop(SelfNextHop.getInstance()) : null;
   }
 
   /** Scan all interfaces, find first that contains given remote IP */

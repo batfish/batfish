@@ -3004,7 +3004,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               return Stream.empty();
             }
             assert !nextHopIps.isEmpty();
-            return Stream.of(new SetNextHop(new IpNextHop(nextHopIps), false));
+            return Stream.of(new SetNextHop(new IpNextHop(nextHopIps)));
           }
 
           @Override

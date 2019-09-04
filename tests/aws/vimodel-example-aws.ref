@@ -2238,7 +2238,6 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "destinationVrf" : false,
                 "expr" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
                 }

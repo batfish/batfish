@@ -356,7 +356,7 @@ public class CiscoConversions {
       Warnings w) {
     List<Statement> exportPolicyStatements = new ArrayList<>();
     if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
-      exportPolicyStatements.add(new SetNextHop(SelfNextHop.getInstance(), false));
+      exportPolicyStatements.add(new SetNextHop(SelfNextHop.getInstance()));
     }
     if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
       exportPolicyStatements.add(Statements.RemovePrivateAs.toStaticStatement());
