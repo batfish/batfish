@@ -34,12 +34,10 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
   static final String COL_VRF = "VRF";
   static final String COL_IP = "IP";
   static final String COL_AREA = "Area";
-
   static final String COL_REMOTE_INTERFACE = "Remote_Interface";
   static final String COL_REMOTE_VRF = "Remote_VRF";
   static final String COL_REMOTE_IP = "Remote_IP";
   static final String COL_REMOTE_AREA = "Remote_Area";
-
   static final String COL_SESSION_STATUS = "Session_Status";
 
   public OspfSessionCompatibilityAnswerer(Question question, IBatfish batfish) {

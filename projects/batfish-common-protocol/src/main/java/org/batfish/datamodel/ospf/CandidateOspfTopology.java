@@ -16,7 +16,6 @@ public final class CandidateOspfTopology {
   public static final CandidateOspfTopology EMPTY =
       new CandidateOspfTopology(ValueGraphBuilder.directed().build());
 
-  @VisibleForTesting
   public CandidateOspfTopology(ValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph) {
     _graph = ImmutableValueGraph.copyOf(graph);
   }
