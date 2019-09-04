@@ -109,6 +109,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.MONI
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_AREA_NSSA_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_DEFAULT_INFORMATION_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.POLICY_MAP_CLASS;
@@ -2248,6 +2250,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         return;
       }
       routeMap = routeMapOrErr.get();
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, OSPF_DEFAULT_INFORMATION_ROUTE_MAP, ctx.getStart().getLine());
     }
     OspfDefaultOriginate defaultOriginate = _currentOspfProcess.getDefaultOriginate();
     if (defaultOriginate == null) {
@@ -2481,6 +2485,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         return;
       }
       routeMap = routeMapOrErr.get();
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, OSPF_AREA_NSSA_ROUTE_MAP, ctx.getStart().getLine());
     }
     OspfAreaNssa nssa =
         Optional.ofNullable(_currentOspfArea.getTypeSettings())

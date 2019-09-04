@@ -1579,6 +1579,11 @@ HELLO_INTERVAL
   'hello-interval'
 ;
 
+HELPER_DISABLE
+:
+  'helper-disable'
+;
+
 HEX_UINT32
 :
   F_HexUint32
@@ -3120,6 +3125,11 @@ PING
 PINNING
 :
   'pinning'
+;
+
+PLANNED_ONLY
+:
+  'planned-only'
 ;
 
 POAP
