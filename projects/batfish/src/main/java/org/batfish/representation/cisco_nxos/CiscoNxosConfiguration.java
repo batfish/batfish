@@ -229,6 +229,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/qos/config/cisco_nexus7000_qos_config_guide_8x/configuring_classification.html
   /** On NX-OS, there is an implicit QoS class-map "class-default". */
   public static final String DEFAULT_CLASS_MAP_NAME = "class-default";
+  /**
+   * On NX-OS, there are implicit policy-maps "default-in-policy" and "default-out-policy" depending
+   * on type.
+   */
+  public static final String DEFAULT_POLICY_MAP_IN = "default-in-policy";
+  /**
+   * On NX-OS, there are implicit policy-maps "default-in-policy" and "default-out-policy" depending
+   * on type.
+   */
+  public static final String DEFAULT_POLICY_MAP_OUT = "default-out-policy";
 
   private int _currentContextVrfId;
 

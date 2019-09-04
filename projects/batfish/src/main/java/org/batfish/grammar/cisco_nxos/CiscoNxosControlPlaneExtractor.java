@@ -3,6 +3,8 @@ package org.batfish.grammar.cisco_nxos;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_CLASS_MAP_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_POLICY_MAP_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_POLICY_MAP_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRouteMapEntryName;
@@ -1323,6 +1325,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration.referenceStructure(CLASS_MAP_QOS, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
     _configuration.defineStructure(CLASS_MAP_QUEUING, DEFAULT_CLASS_MAP_NAME, 0);
     _configuration.referenceStructure(CLASS_MAP_QUEUING, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
+    // policy-maps
+    _configuration.defineStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_IN, 0);
+    _configuration.referenceStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_IN, BUILT_IN, 0);
+    _configuration.defineStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_OUT, 0);
+    _configuration.referenceStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_OUT, BUILT_IN, 0);
   }
 
   @Override
