@@ -171,6 +171,11 @@ public final class MockGrammarSettings implements GrammarSettings {
   }
 
   @Override
+  public boolean getUseAristaBgp() {
+    return false;
+  }
+
+  @Override
   public boolean getUseNewCiscoNxosParser() {
     return _useNewCiscoNxosParser;
   }

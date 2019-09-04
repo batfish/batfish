@@ -2472,6 +2472,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .putBoolean(settings.getPrintParseTree())
               .putBoolean(settings.getThrowOnLexerError())
               .putBoolean(settings.getThrowOnParserError())
+              .putBoolean(settings.getUseAristaBgp())
               .putBoolean(settings.getUseNewCiscoNxosParser())
               .hash()
               .toString();

@@ -1,5 +1,6 @@
 package org.batfish.config;
 
+import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 
 import com.google.common.collect.ImmutableList;
@@ -487,6 +488,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public boolean getUnimplementedRecord() {
     return !_config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
+  }
+
+  @Override
+  public boolean getUseAristaBgp() {
+    return debugFlagEnabled(DEBUG_FLAG_USE_ARISTA_BGP);
   }
 
   @Override

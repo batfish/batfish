@@ -14,6 +14,8 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(CiscoLexer.NEWLINE, "\n");
 
+  public static final String DEBUG_FLAG_USE_ARISTA_BGP = "aristabgp";
+
   public CiscoCombinedParser(String input, GrammarSettings settings, ConfigurationFormat format) {
     super(
         CiscoParser.class,
@@ -47,6 +49,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
     boolean cadant = format == ConfigurationFormat.CADANT;
     _lexer.setCadant(cadant);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
+    _parser.setAristaBgp(settings.getUseAristaBgp() && format == ConfigurationFormat.ARISTA);
     _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _parser.setEos(format == ConfigurationFormat.ARISTA);
     _parser.setCadant(cadant);
