@@ -3899,6 +3899,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testLineParsing() throws IOException {
+    parseConfig("nxos_line");
+    // Don't crash.
+  }
+
+  @Test
   public void testLoggingConversion() throws IOException {
     String hostname = "nxos_logging";
     Configuration c = parseConfig(hostname);
