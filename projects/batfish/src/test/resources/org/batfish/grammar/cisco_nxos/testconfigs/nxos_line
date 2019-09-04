@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_line
+!
+ip access-list VTY_ACL
+  10 permit ip 10.0.0.0/8 any
+!
+line console
+  exec-timeout 15
+line vty
+  exec-timeout 15
+  access-class VTY_ACL in
