@@ -122,7 +122,8 @@ public class OspfSessionCompatibilityAnswererTest {
             ImmutableSet.of("configuration_u", "configuration_w"),
             ImmutableSet.of("configuration_v", "configuration_x"),
             _ospfTopology,
-            createTableMetadata().toColumnMap());
+            createTableMetadata().toColumnMap(),
+            ImmutableSet.copyOf(OspfSessionStatus.values()));
 
     Iterator<Row> i = rows.iterator();
     assertThat(
@@ -178,7 +179,8 @@ public class OspfSessionCompatibilityAnswererTest {
             ImmutableSet.of(),
             ImmutableSet.of("configuration_v"),
             _ospfTopology,
-            createTableMetadata().toColumnMap());
+            createTableMetadata().toColumnMap(),
+            ImmutableSet.copyOf(OspfSessionStatus.values()));
 
     Multiset<Row> rowsWithRemoteNodesFilter =
         getRows(
@@ -186,10 +188,26 @@ public class OspfSessionCompatibilityAnswererTest {
             ImmutableSet.of("configuration_u"),
             ImmutableSet.of(),
             _ospfTopology,
-            createTableMetadata().toColumnMap());
+            createTableMetadata().toColumnMap(),
+            ImmutableSet.copyOf(OspfSessionStatus.values()));
 
     assertThat(rowsWithNodesFilter, hasSize(0));
     assertThat(rowsWithRemoteNodesFilter, hasSize(0));
+  }
+
+  @Test
+  public void testGetRowsWithFilterStatus() {
+    Multiset<Row> rowsWithStatusFilter =
+        getRows(
+            _configurations,
+            ImmutableSet.of("configuration_u", "configuration_w"),
+            ImmutableSet.of("configuration_v", "configuration_x"),
+            _ospfTopology,
+            createTableMetadata().toColumnMap(),
+            ImmutableSet.of(OspfSessionStatus.ESTABLISHED));
+
+    // Should only get the one established session result
+    assertThat(rowsWithStatusFilter, hasSize(1));
   }
 
   @Test

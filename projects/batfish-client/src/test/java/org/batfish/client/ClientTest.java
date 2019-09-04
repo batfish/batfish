@@ -71,6 +71,7 @@ import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.LOCATION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.LONG;
 import static org.batfish.datamodel.questions.Variable.Type.NODE_ROLE_DIMENSION_NAME;
+import static org.batfish.datamodel.questions.Variable.Type.OSPF_SESSION_STATUS_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX_RANGE;
 import static org.batfish.datamodel.questions.Variable.Type.PROTOCOL;
@@ -747,6 +748,15 @@ public final class ClientTest {
   public void testInvalidNodeRoleDimensionValue() throws IOException {
     String input = "5";
     Type expectedType = NODE_ROLE_DIMENSION_NAME;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidOspfSessionStatusValue() throws IOException {
+    String input = "5";
+    Type expectedType = OSPF_SESSION_STATUS_SPEC;
     String expectedMessage =
         String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
@@ -1784,6 +1794,14 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(NODE_ROLE_DIMENSION_NAME);
     Client.validateType(nodeRoleDimensionNode, variable);
+  }
+
+  @Test
+  public void testValidOspfSessionStatusValue() throws IOException {
+    JsonNode sessionStatusNode = _mapper.readTree("\"sessionStatus\"");
+    Variable variable = new Variable();
+    variable.setType(OSPF_SESSION_STATUS_SPEC);
+    Client.validateType(sessionStatusNode, variable);
   }
 
   @Test

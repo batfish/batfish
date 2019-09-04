@@ -625,6 +625,20 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
+        case OSPF_SESSION_STATUS_SPEC:
+          {
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.OSPF_SESSION_STATUS_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
+            break;
+          }
         case PREFIX:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);

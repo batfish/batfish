@@ -51,6 +51,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
@@ -421,6 +422,19 @@ public class AutoCompleteUtilsTest {
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
+  }
+
+  @Test
+  public void testOspfSessionStatusAutocomplete() {
+    assertThat(
+        AutoCompleteUtils.autoComplete(Type.OSPF_SESSION_STATUS_SPEC, "area", 5).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                OspfSessionStatus.AREA_TYPE_MISMATCH.toString(),
+                OspfSessionStatus.AREA_MISMATCH.toString(),
+                OspfSessionStatus.AREA_INVALID.toString())));
   }
 
   @Test

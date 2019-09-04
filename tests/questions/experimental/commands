@@ -67,7 +67,7 @@ test -raw tests/questions/experimental/ospfAreaConfiguration.ref validate-templa
 test -raw tests/questions/experimental/ospfProcessConfiguration.ref validate-template ospfProcessConfiguration nodes=".*", properties="props-.*"
 
 # validate ospfSessionCompatibility
-test -raw tests/questions/experimental/ospfSessionCompatibility.ref validate-template ospfSessionCompatibility nodes=".*", remoteNodes=".*"
+test -raw tests/questions/experimental/ospfSessionCompatibility.ref validate-template ospfSessionCompatibility nodes=".*", remoteNodes=".*", statuses=".*"
 
 # validate prefixTracer
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"

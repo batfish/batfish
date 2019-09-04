@@ -64,7 +64,13 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
             NetworkConfigurations.of(configurations),
             _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot()));
     Multiset<Row> propertyRows =
-        getRows(configurations, nodes, remoteNodes, candidateTopo, tableMetadata.toColumnMap());
+        getRows(
+            configurations,
+            nodes,
+            remoteNodes,
+            candidateTopo,
+            tableMetadata.toColumnMap(),
+            question.getStatusSet());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;
@@ -76,7 +82,8 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
       Set<String> nodes,
       Set<String> remoteNodes,
       CandidateOspfTopology ospfTopology,
-      Map<String, ColumnMetadata> columnMetadataMap) {
+      Map<String, ColumnMetadata> columnMetadataMap,
+      Set<OspfSessionStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
     for (String node : nodes) {
       Configuration configuration = configurations.get(node);
@@ -106,7 +113,8 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
                                     ospfNeighborConfigId,
                                     filteredNeighbors,
                                     ospfTopology,
-                                    columnMetadataMap));
+                                    columnMetadataMap,
+                                    statuses));
                           });
                 }
               });
@@ -119,7 +127,8 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
       OspfNeighborConfigId nodeU,
       Set<OspfNeighborConfigId> nodeVs,
       CandidateOspfTopology ospfTopology,
-      Map<String, ColumnMetadata> columnMetadataMap) {
+      Map<String, ColumnMetadata> columnMetadataMap,
+      Set<OspfSessionStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
     NetworkConfigurations nf = NetworkConfigurations.of(configurations);
     Optional<OspfNeighborConfig> nodeUConfig = nf.getOspfNeighborConfig(nodeU);
@@ -133,10 +142,13 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
       }
       Optional<OspfSessionStatus> session = ospfTopology.getSessionStatus(nodeU, nodeV);
       session.ifPresent(
-          ospfSessionStatus ->
+          ospfSessionStatus -> {
+            if (statuses.contains(ospfSessionStatus)) {
               rows.add(
                   createRow(
-                      nodeUConfig.get(), nodeVConfig.get(), ospfSessionStatus, columnMetadataMap)));
+                      nodeUConfig.get(), nodeVConfig.get(), ospfSessionStatus, columnMetadataMap));
+            }
+          });
     }
     return rows;
   }
