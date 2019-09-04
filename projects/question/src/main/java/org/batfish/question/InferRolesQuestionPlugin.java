@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -63,7 +64,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       // collect relevant nodes in a list.
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      SortedSet<NodeRoleDimension> roleDimensions =
+      List<NodeRoleDimension> roleDimensions =
           new InferRoles(
                   nodes,
                   _batfish

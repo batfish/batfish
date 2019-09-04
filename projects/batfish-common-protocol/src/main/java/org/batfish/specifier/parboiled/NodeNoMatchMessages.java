@@ -73,8 +73,8 @@ final class NodeNoMatchMessages implements NoMatchMessages {
       Optional<NodeRoleDimension> refBook =
           _nodeRolesData.getNodeRoleDimension(roleNodeAstNode.getDimensionName());
       if (refBook.isPresent()) {
-        if (refBook.get().getRoles().stream()
-            .anyMatch(r -> r.getName().equalsIgnoreCase(roleNodeAstNode.getRoleName()))) {
+        if (refBook.get().roleNamesFor(_completionMetadata.getNodes()).stream()
+            .anyMatch(r -> r.equalsIgnoreCase(roleNodeAstNode.getRoleName()))) {
           return ImmutableList.of();
         } else {
           return ImmutableList.of(

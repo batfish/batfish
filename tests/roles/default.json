@@ -1,25 +1,11 @@
 {
     "name": "default",
-    "roles": [
+    "roleDimensionMappings": [
         {
-            "name": "border",
-            "regex": ".*border.*"
+            "regex": "as.(.*).+"
         },
         {
-            "name": "core",
-            "regex": ".*core.*"
-        },
-        {
-            "name": "dept",
-            "regex": ".*dept.*"
-        },
-        {
-            "name": "dist",
-            "regex": ".*dist.*"
-        },
-        {
-            "name": "host",
-            "regex": ".*host.*"
+            "regex": "(.*).+"
         }
     ]
 }

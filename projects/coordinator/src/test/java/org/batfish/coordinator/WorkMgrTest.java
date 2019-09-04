@@ -31,7 +31,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -115,9 +114,9 @@ import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleDimensionMapping;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.StoredObjectMetadata;
 import org.hamcrest.io.FileMatchers;
@@ -2678,10 +2677,16 @@ public final class WorkMgrTest {
     NodeRolesData networkNodeRoles =
         NodeRolesData.builder()
             .setRoleDimensions(
-                ImmutableSortedSet.of(
+                ImmutableList.of(
                     NodeRoleDimension.builder()
                         .setName("dim1")
-                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(
+                                new RoleDimensionMapping(
+                                    "\\(" + node + "\\)",
+                                    null,
+                                    ImmutableMap.of(node, "role1"),
+                                    false)))
                         .build()))
             .build();
     _manager.getStorage().storeNodeRoles(networkNodeRoles, networkNodeRolesId);
@@ -2884,7 +2889,7 @@ public final class WorkMgrTest {
         _manager.putNetworkNodeRoles(
             NodeRolesData.builder()
                 .setRoleDimensions(
-                    ImmutableSortedSet.of(NodeRoleDimension.builder().setName("foo").build()))
+                    ImmutableList.of(NodeRoleDimension.builder().setName("foo").build()))
                 .build(),
             networkName);
 

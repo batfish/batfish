@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +18,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.SpecifierContext;
@@ -189,12 +189,12 @@ public class NodesSpecifier {
           String roleDimensionPrefix = "ROLE:" + dimension.getName() + ":";
           String rolePrefix = finalQuery.endsWith(":") ? "" : parts[2];
           List<AutocompleteSuggestion> roleSuggestions =
-              dimension.getRoles().stream()
-                  .filter(role -> role.getName().startsWith(rolePrefix))
+              dimension.roleNamesFor(nodes).stream()
+                  .filter(role -> role.startsWith(rolePrefix))
                   .map(
                       role ->
                           new AutocompleteSuggestion(
-                              "ROLE:" + dimension.getName() + ":" + role.getName(),
+                              "ROLE:" + dimension.getName() + ":" + role,
                               false,
                               "All nodes that belong to this role"))
                   .collect(Collectors.toList());
@@ -267,7 +267,7 @@ public class NodesSpecifier {
 
   public Set<String> getMatchingNodesByRole(NodeRoleDimension roleDimension, Set<String> nodes) {
     return nodes.stream()
-        .filter(n -> nodeNameInMatchingRole(n, roleDimension.getRoles()))
+        .filter(n -> nodeNameInMatchingRole(n, roleDimension))
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -297,9 +297,9 @@ public class NodesSpecifier {
   }
 
   /** Does this nodeName match any of roles that match our _regex? */
-  private boolean nodeNameInMatchingRole(String nodeName, Set<NodeRole> roles) {
-    for (NodeRole role : roles) {
-      if (_regex.matcher(role.getName()).matches() && role.matches(nodeName)) {
+  private boolean nodeNameInMatchingRole(String nodeName, NodeRoleDimension roleDimension) {
+    for (String role : roleDimension.roleNamesFor(ImmutableSortedSet.of(nodeName))) {
+      if (_regex.matcher(role).matches()) {
         return true;
       }
     }

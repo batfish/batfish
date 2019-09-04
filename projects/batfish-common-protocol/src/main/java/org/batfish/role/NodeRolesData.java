@@ -6,12 +6,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,10 +23,10 @@ public class NodeRolesData {
 
   public static final class Builder {
     private String _defaultDimension;
-    private SortedSet<NodeRoleDimension> _roleDimensions;
+    private List<NodeRoleDimension> _roleDimensions;
 
     private Builder() {
-      _roleDimensions = ImmutableSortedSet.of();
+      _roleDimensions = ImmutableList.of();
     }
 
     public @Nonnull NodeRolesData build() {
@@ -39,8 +38,8 @@ public class NodeRolesData {
       return this;
     }
 
-    public @Nonnull Builder setRoleDimensions(SortedSet<NodeRoleDimension> roleDimensions) {
-      _roleDimensions = ImmutableSortedSet.copyOf(roleDimensions);
+    public @Nonnull Builder setRoleDimensions(List<NodeRoleDimension> roleDimensions) {
+      _roleDimensions = ImmutableList.copyOf(roleDimensions);
       return this;
     }
   }
@@ -48,16 +47,15 @@ public class NodeRolesData {
   private static final String PROP_DEFAULT_DIMENSION = "defaultDimension";
   private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
 
-  private String _defaultDimension;
+  @Nullable private String _defaultDimension;
 
-  private SortedSet<NodeRoleDimension> _roleDimensions;
+  @Nonnull List<NodeRoleDimension> _roleDimensions;
 
   public static @Nonnull Builder builder() {
     return new Builder();
   }
 
-  private NodeRolesData(
-      @Nullable String defaultDimension, SortedSet<NodeRoleDimension> roleDimensions) {
+  private NodeRolesData(@Nullable String defaultDimension, List<NodeRoleDimension> roleDimensions) {
     checkNotNull(roleDimensions);
     if (defaultDimension != null) {
       Names.checkName(defaultDimension, "role dimension", Type.REFERENCE_OBJECT);
@@ -69,10 +67,9 @@ public class NodeRolesData {
   @JsonCreator
   private static @Nonnull NodeRolesData create(
       @JsonProperty(PROP_DEFAULT_DIMENSION) @Nullable String defaultDimension,
-      @JsonProperty(PROP_ROLE_DIMENSIONS) @Nullable Set<NodeRoleDimension> roleDimensions) {
+      @JsonProperty(PROP_ROLE_DIMENSIONS) @Nullable List<NodeRoleDimension> roleDimensions) {
     return new NodeRolesData(
-        defaultDimension,
-        ImmutableSortedSet.copyOf(firstNonNull(roleDimensions, ImmutableSortedSet.of())));
+        defaultDimension, ImmutableList.copyOf(firstNonNull(roleDimensions, ImmutableList.of())));
   }
 
   @Override
@@ -133,7 +130,7 @@ public class NodeRolesData {
   }
 
   @JsonProperty(PROP_ROLE_DIMENSIONS)
-  public @Nonnull SortedSet<NodeRoleDimension> getNodeRoleDimensions() {
+  public @Nonnull List<NodeRoleDimension> getNodeRoleDimensions() {
     return _roleDimensions;
   }
 

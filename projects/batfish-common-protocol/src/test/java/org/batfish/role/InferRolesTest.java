@@ -8,8 +8,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Predicate;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Edge;
@@ -89,14 +89,13 @@ public class InferRolesTest {
 
   @Test
   public void inferRolesOnExampleTopology() throws JsonProcessingException {
-    SortedSet<NodeRoleDimension> roles =
-        new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
+    List<NodeRoleDimension> roles = new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
 
     assertThat(BatfishObjectMapper.writePrettyString(roles), roles, hasSize(2));
 
     // Note: currently we do not find a "host" role because it does not match the majority
     // tokenization. If we had as1host1, e.g., we would.
-    NodeRoleDimension d1 = roles.first();
+    NodeRoleDimension d1 = roles.get(0);
     assertThat(
         d1.createRoleNodesMap(EXAMPLE_NODES),
         equalTo(
@@ -110,7 +109,7 @@ public class InferRolesTest {
                 "dist",
                 filterSet(EXAMPLE_NODES, s -> s.contains("dist")))));
 
-    NodeRoleDimension d2 = roles.last();
+    NodeRoleDimension d2 = roles.get(1);
     assertThat(
         d2.createRoleNodesMap(EXAMPLE_NODES),
         equalTo(ImmutableMap.of("as", filterSet(EXAMPLE_NODES, s -> s.startsWith("as")))));

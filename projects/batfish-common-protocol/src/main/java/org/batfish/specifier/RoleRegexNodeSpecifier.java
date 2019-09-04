@@ -1,14 +1,15 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 
 /**
@@ -44,15 +45,17 @@ public final class RoleRegexNodeSpecifier implements NodeSpecifier {
   @Override
   public Set<String> resolve(SpecifierContext ctxt) {
     Optional<NodeRoleDimension> dimension = ctxt.getNodeRoleDimension(_roleDimension);
-    Set<NodeRole> roles =
-        dimension.isPresent()
-            ? dimension.get().getRoles().stream()
-                .filter(role -> _rolePattern.matcher(role.getName()).matches())
-                .collect(ImmutableSet.toImmutableSet())
-            : ImmutableSet.of();
+    if (dimension.isPresent()) {
+      NodeRoleDimension nrDimension = dimension.get();
+      Map<String, SortedSet<String>> roleNodesMap =
+          nrDimension.createRoleNodesMap(ctxt.getConfigs().keySet());
 
-    return ctxt.getConfigs().keySet().stream()
-        .filter(node -> roles.stream().anyMatch(role -> role.matches(node)))
-        .collect(ImmutableSet.toImmutableSet());
+      return roleNodesMap.keySet().stream()
+          .filter(roleName -> _rolePattern.matcher(roleName).matches())
+          .flatMap(roleName -> roleNodesMap.get(roleName).stream())
+          .collect(ImmutableSet.toImmutableSet());
+    } else {
+      return ImmutableSet.of();
+    }
   }
 }

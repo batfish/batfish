@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.List;
@@ -21,8 +20,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
-import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.RoleDimensionMapping;
 import org.junit.Test;
 
 /** Tests for built-in location specifiers. */
@@ -80,7 +79,13 @@ public class LocationSpecifierTest {
                 ImmutableSet.of(
                     NodeRoleDimension.builder()
                         .setName(_roleDim)
-                        .setRoles(ImmutableSortedSet.of(new NodeRole(roleName, n1.getHostname())))
+                        .setRoleDimensionMappings(
+                            ImmutableList.of(
+                                new RoleDimensionMapping(
+                                    "(" + n1.getHostname() + ")",
+                                    null,
+                                    ImmutableMap.of(n1.getHostname(), roleName),
+                                    true)))
                         .build()))
             .build();
   }
