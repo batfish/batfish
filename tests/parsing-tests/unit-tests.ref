@@ -74090,19 +74090,19 @@
         "configs/cadant_acl" : {
           "Parse warnings" : [
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 123",
               "Line" : 22,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "permit icmp any any 123"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: nd-type",
               "Line" : 24,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "permit nd any dead::/8 nd-type 133"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 133",
               "Line" : 24,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "permit nd any dead::/8 nd-type 133"
@@ -74112,13 +74112,13 @@
         "configs/cisco_acl" : {
           "Parse warnings" : [
             {
-              "Comment" : "Unsupported clause in extended access list",
+              "Comment" : "Unsupported clause in extended access list: ttleq255",
               "Line" : 10,
               "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
               "Text" : "60 permit tcp any any eq mlag ttl eq 255"
             },
             {
-              "Comment" : "Unsupported clause in extended access list",
+              "Comment" : "Unsupported clause in extended access list: ttleq255",
               "Line" : 11,
               "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
               "Text" : "70 permit udp any any eq mlag ttl eq 255"
@@ -74292,73 +74292,73 @@
         "configs/cisco_ipv6_access_list" : {
           "Parse warnings" : [
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: router",
               "Line" : 9,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmpv6 any any router hoplimit"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: hoplimit",
               "Line" : 9,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmpv6 any any router hoplimit"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: router",
               "Line" : 10,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmpv6 any any router"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: nd",
               "Line" : 11,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmpv6 any any nd"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: nd",
               "Line" : 12,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmpv6 any any nd"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 141",
               "Line" : 13,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmpv6 any any 141"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 142",
               "Line" : 14,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmpv6 any any 142"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: neighbor",
               "Line" : 15,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmpv6 any any neighbor"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: mld-query",
               "Line" : 20,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "10 permit icmp any any mld-query"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: mld-report",
               "Line" : 21,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "20 permit icmp any any mld-report"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: mld-reduction",
               "Line" : 22,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "30 permit icmp any any mld-reduction"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: mldv2",
               "Line" : 23,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "40 permit icmp any any mldv2"
@@ -76174,37 +76174,37 @@
         "configs/foundry_access_list" : {
           "Parse warnings" : [
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 133",
               "Line" : 11,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmp any any 133 sequence 10"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 134",
               "Line" : 12,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmp any any 134 sequence 20"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 135",
               "Line" : 13,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmp any any 135 sequence 30"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 136",
               "Line" : 14,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmp any any 136 sequence 40"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 141",
               "Line" : 15,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmp any any 141 sequence 50"
             },
             {
-              "Comment" : "Unsupported clause in IPv6 extended access list",
+              "Comment" : "Unsupported clause in IPv6 extended access list: 142",
               "Line" : 16,
               "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
               "Text" : "deny icmp any any 142 sequence 60"

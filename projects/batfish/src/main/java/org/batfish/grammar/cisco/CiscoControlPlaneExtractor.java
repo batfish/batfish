@@ -5790,7 +5790,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpCode = toInteger(feature.icmp_message_code);
           }
         } else {
-          warn(ctx, "Unsupported clause in extended access list");
+          warn(ctx, "Unsupported clause in extended access list: " + feature.getText());
           return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
       }
@@ -6005,7 +6005,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setUseUrg(true)
                 .build());
       } else {
-        warn(ctx, "Unsupported clause in IPv6 extended access list");
+        warn(ctx, "Unsupported clause in IPv6 extended access list: " + feature.getText());
       }
     }
     String name = getFullText(ctx).trim();
