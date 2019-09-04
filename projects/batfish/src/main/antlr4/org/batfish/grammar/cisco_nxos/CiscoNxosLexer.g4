@@ -343,7 +343,7 @@ ASSOCIATE_VRF
 
 ATTRIBUTE_MAP
 :
-  'attribute-map'
+  'attribute-map' -> pushMode ( M_Word )
 ;
 
 AUTH
