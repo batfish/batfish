@@ -165,7 +165,8 @@ public final class OspfTopology {
             .thenComparing(OspfNeighborConfigId::getVrfName)
             .thenComparing(OspfNeighborConfigId::getInterfaceName);
 
-    private EdgeId(OspfNeighborConfigId tail, OspfNeighborConfigId head) {
+    @VisibleForTesting
+    EdgeId(OspfNeighborConfigId tail, OspfNeighborConfigId head) {
       _tail = tail;
       _head = head;
     }
