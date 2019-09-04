@@ -2,6 +2,9 @@ package org.batfish.grammar.cisco_nxos;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_CLASS_MAP_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_POLICY_MAP_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_POLICY_MAP_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRouteMapEntryName;
@@ -9,6 +12,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCa
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_SESSION;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.CLASS_MAP_CONTROL_PLANE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.CLASS_MAP_NETWORK_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.CLASS_MAP_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.CLASS_MAP_QUEUING;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_PREFIX_LIST;
@@ -23,6 +30,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PR
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_QUEUING;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_EIGRP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_ISIS;
@@ -73,6 +84,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BUILT_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
@@ -82,6 +94,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_EIGRP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_OSPF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_SERVICE_POLICY_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_SERVICE_POLICY_QUEUING;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP;
@@ -97,6 +111,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.POLICY_MAP_CLASS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
@@ -110,6 +125,9 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV4ACL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV6ACL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQOS_NETWORK_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQOS_QOS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQOS_QUEUING;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
@@ -212,7 +230,16 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Class_map_cp_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Class_map_network_qos_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Class_map_qos_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Class_map_queuing_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cm_control_planeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cm_network_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cm_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cm_queuingContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cmcpm_access_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cp_service_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ebgp_multihop_ttlContext;
@@ -318,6 +345,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_list_line_prefix_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Isis_instanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ispt_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ispt_queuingContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
@@ -360,6 +389,18 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pm_control_planeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pm_network_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pm_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pm_queuingContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pmcp_classContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pmnq_classContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pmq_classContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pmqu_classContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_cp_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_network_qos_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_qos_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_queuing_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistributeContext;
@@ -517,6 +558,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Subnet_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_switchportContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysqosspt_network_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysqosspt_qosContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysqosspt_queueingContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
@@ -675,6 +719,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 80));
   private static final IntegerSpace BGP_TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace CLASS_MAP_CONTROL_PLANE_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 64));
+  private static final IntegerSpace CLASS_MAP_NETWORK_QOS_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 40));
+  private static final IntegerSpace CLASS_MAP_QOS_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 40));
+  private static final IntegerSpace CLASS_MAP_QUEUING_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 40));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
   private static final IntegerSpace EIGRP_ASN_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace EIGRP_PROCESS_TAG_LENGTH_RANGE =
@@ -784,6 +836,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @VisibleForTesting
   public static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
 
+  private static final IntegerSpace POLICY_MAP_CONTROL_PLANE_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 64));
+  private static final IntegerSpace POLICY_MAP_NETWORK_QOS_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 40));
+  private static final IntegerSpace POLICY_MAP_QOS_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 40));
+  private static final IntegerSpace POLICY_MAP_QUEUING_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 40));
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace PROTOCOL_INSTANCE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 32));
@@ -1251,10 +1311,65 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
     _currentVrf = _configuration.getDefaultVrf();
     // define built-ins at line 0 (before first line of file).
+    // vrfs
     _configuration.defineStructure(VRF, DEFAULT_VRF_NAME, 0);
     _configuration.defineStructure(VRF, MANAGEMENT_VRF_NAME, 0);
     _configuration.referenceStructure(VRF, DEFAULT_VRF_NAME, BUILT_IN, 0);
     _configuration.referenceStructure(VRF, MANAGEMENT_VRF_NAME, BUILT_IN, 0);
+    // class-maps
+    _configuration.defineStructure(CLASS_MAP_CONTROL_PLANE, DEFAULT_CLASS_MAP_NAME, 0);
+    _configuration.referenceStructure(CLASS_MAP_CONTROL_PLANE, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
+    _configuration.defineStructure(CLASS_MAP_NETWORK_QOS, DEFAULT_CLASS_MAP_NAME, 0);
+    _configuration.referenceStructure(CLASS_MAP_NETWORK_QOS, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
+    _configuration.defineStructure(CLASS_MAP_QOS, DEFAULT_CLASS_MAP_NAME, 0);
+    _configuration.referenceStructure(CLASS_MAP_QOS, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
+    _configuration.defineStructure(CLASS_MAP_QUEUING, DEFAULT_CLASS_MAP_NAME, 0);
+    _configuration.referenceStructure(CLASS_MAP_QUEUING, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
+    // policy-maps
+    _configuration.defineStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_IN, 0);
+    _configuration.referenceStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_IN, BUILT_IN, 0);
+    _configuration.defineStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_OUT, 0);
+    _configuration.referenceStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_OUT, BUILT_IN, 0);
+  }
+
+  @Override
+  public void enterCm_control_plane(Cm_control_planeContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(CLASS_MAP_CONTROL_PLANE, name, ctx);
+  }
+
+  @Override
+  public void enterCm_network_qos(Cm_network_qosContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(CLASS_MAP_NETWORK_QOS, name, ctx);
+  }
+
+  @Override
+  public void enterCm_qos(Cm_qosContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(CLASS_MAP_QOS, name, ctx);
+  }
+
+  @Override
+  public void enterCm_queuing(Cm_queuingContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(CLASS_MAP_QUEUING, name, ctx);
   }
 
   @Override
@@ -1268,6 +1383,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         acl.get(),
         CLASS_MAP_CP_MATCH_ACCESS_GROUP,
         ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitCp_service_policy(Cp_service_policyContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        CLASS_MAP_CONTROL_PLANE, name, CONTROL_PLANE_SERVICE_POLICY, ctx.getStart().getLine());
   }
 
   @Override
@@ -1907,6 +2033,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIspt_qos(Ispt_qosContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        CLASS_MAP_QOS, name.get(), INTERFACE_SERVICE_POLICY_QOS, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIspt_queuing(Ispt_queuingContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        CLASS_MAP_QUEUING, name.get(), INTERFACE_SERVICE_POLICY_QUEUING, ctx.getStart().getLine());
+  }
+
+  @Override
   public void enterIpv6_access_list(Ipv6_access_listContext ctx) {
     Optional<String> name = toString(ctx, ctx.name);
     if (!name.isPresent()) {
@@ -2421,6 +2567,36 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitSysqosspt_network_qos(Sysqosspt_network_qosContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        CLASS_MAP_NETWORK_QOS, name.get(), SYSQOS_NETWORK_QOS, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitSysqosspt_qos(Sysqosspt_qosContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        CLASS_MAP_QOS, name.get(), SYSQOS_QOS, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitSysqosspt_queueing(Sysqosspt_queueingContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        CLASS_MAP_QUEUING, name.get(), SYSQOS_QUEUING, ctx.getStart().getLine());
+  }
+
+  @Override
   public void enterRouter_eigrp(Router_eigrpContext ctx) {
     Optional<String> processTagOrErr = toString(ctx, ctx.tag);
     if (processTagOrErr.isPresent()) {
@@ -2625,6 +2801,46 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ipWildcard = IpWildcard.create(toPrefix(ctx.prefix));
     }
     _currentObjectGroupIpAddress.getLines().put(seq, new ObjectGroupIpAddressLine(seq, ipWildcard));
+  }
+
+  @Override
+  public void enterPm_control_plane(Pm_control_planeContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(POLICY_MAP_CONTROL_PLANE, name, ctx);
+  }
+
+  @Override
+  public void enterPm_network_qos(Pm_network_qosContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(POLICY_MAP_NETWORK_QOS, name, ctx);
+  }
+
+  @Override
+  public void enterPm_qos(Pm_qosContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(POLICY_MAP_QOS, name, ctx);
+  }
+
+  @Override
+  public void enterPm_queuing(Pm_queuingContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.defineStructure(POLICY_MAP_QUEUING, name, ctx);
   }
 
   @Override
@@ -4807,6 +5023,50 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitPmcp_class(Pmcp_classContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        CLASS_MAP_CONTROL_PLANE, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitPmnq_class(Pmnq_classContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        CLASS_MAP_NETWORK_QOS, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitPmq_class(Pmq_classContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        CLASS_MAP_QOS, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitPmqu_class(Pmqu_classContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        CLASS_MAP_QUEUING, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
+  }
+
+  @Override
   public void exitRm_continue(Rm_continueContext ctx) {
     Optional<Integer> continueTargetOrErr = toInteger(ctx, ctx.next);
     if (!continueTargetOrErr.isPresent()) {
@@ -5896,6 +6156,40 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Class_map_cp_nameContext ctx) {
+    return toStringWithLengthInSpace(
+            messageCtx,
+            ctx,
+            CLASS_MAP_CONTROL_PLANE_NAME_LENGTH_RANGE,
+            "class-map type control-plane name")
+        .map(name -> getPreferredName(name, CLASS_MAP_CONTROL_PLANE));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Class_map_network_qos_nameContext ctx) {
+    return toStringWithLengthInSpace(
+            messageCtx,
+            ctx,
+            CLASS_MAP_NETWORK_QOS_NAME_LENGTH_RANGE,
+            "class-map type network-qos name")
+        .map(name -> getPreferredName(name, CLASS_MAP_NETWORK_QOS));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Class_map_qos_nameContext ctx) {
+    return toStringWithLengthInSpace(
+            messageCtx, ctx, CLASS_MAP_QOS_NAME_LENGTH_RANGE, "class-map type qos name")
+        .map(name -> getPreferredName(name, CLASS_MAP_QOS));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Class_map_queuing_nameContext ctx) {
+    return toStringWithLengthInSpace(
+            messageCtx, ctx, CLASS_MAP_QUEUING_NAME_LENGTH_RANGE, "class-map type queuing name")
+        .map(name -> getPreferredName(name, CLASS_MAP_QUEUING));
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Generic_access_list_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE, "access-list name");
@@ -6132,6 +6426,36 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Object_group_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, OBJECT_GROUP_NAME_LENGTH_RANGE, "object-group name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Policy_map_cp_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx,
+        ctx,
+        POLICY_MAP_CONTROL_PLANE_NAME_LENGTH_RANGE,
+        "policy-map type control-plane name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Policy_map_network_qos_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx,
+        ctx,
+        POLICY_MAP_NETWORK_QOS_NAME_LENGTH_RANGE,
+        "policy-map type network-qos name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Policy_map_qos_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, POLICY_MAP_QOS_NAME_LENGTH_RANGE, "policy-map type qos name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Policy_map_queuing_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, POLICY_MAP_QUEUING_NAME_LENGTH_RANGE, "policy-map type queuing name");
   }
 
   private @Nonnull Optional<String> toString(
