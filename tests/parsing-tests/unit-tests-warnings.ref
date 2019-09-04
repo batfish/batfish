@@ -176,39 +176,46 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/bgp_default_originate_policy",
+        "Line" : 11,
+        "Text" : "route-policy cust_v4_in(ama-coe-v4, ama-coe-as-path, ama-coe-no-auth, ama-coe-need-auth, 65517, ama-coe-isp-authorized) in",
+        "Parser_Context" : "[route_policy_bgp_tail bgp_tail address_family_rb_stanza neighbor_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "configs/cadant_acl",
         "Line" : 22,
-        "Text" : "123",
+        "Text" : "permit icmp any any 123",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cadant_acl",
         "Line" : 24,
-        "Text" : "nd-type",
+        "Text" : "permit nd any dead::/8 nd-type 133",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cadant_acl",
         "Line" : 24,
-        "Text" : "133",
+        "Text" : "permit nd any dead::/8 nd-type 133",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_acl",
         "Line" : 10,
-        "Text" : "ttl eq 255",
+        "Text" : "60 permit tcp any any eq mlag ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in extended access list"
+        "Comment" : "Unsupported clause in extended access list"
       },
       {
         "Filename" : "configs/cisco_acl",
         "Line" : 11,
-        "Text" : "ttl eq 255",
+        "Text" : "70 permit udp any any eq mlag ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in extended access list"
+        "Comment" : "Unsupported clause in extended access list"
       },
       {
         "Filename" : "configs/cisco_bgp",
@@ -381,86 +388,86 @@
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 9,
-        "Text" : "router",
+        "Text" : "deny icmpv6 any any router hoplimit",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 9,
-        "Text" : "hoplimit",
+        "Text" : "deny icmpv6 any any router hoplimit",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 10,
-        "Text" : "router",
+        "Text" : "deny icmpv6 any any router",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 11,
-        "Text" : "nd",
+        "Text" : "deny icmpv6 any any nd",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 12,
-        "Text" : "nd",
+        "Text" : "deny icmpv6 any any nd",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 13,
-        "Text" : "141",
+        "Text" : "deny icmpv6 any any 141",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 14,
-        "Text" : "142",
+        "Text" : "deny icmpv6 any any 142",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 15,
-        "Text" : "neighbor",
+        "Text" : "deny icmpv6 any any neighbor",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 20,
-        "Text" : "mld-query",
+        "Text" : "10 permit icmp any any mld-query",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 21,
-        "Text" : "mld-report",
+        "Text" : "20 permit icmp any any mld-report",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 22,
-        "Text" : "mld-reduction",
+        "Text" : "30 permit icmp any any mld-reduction",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 23,
-        "Text" : "mldv2",
+        "Text" : "40 permit icmp any any mldv2",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/cisco_ospf",
@@ -552,6 +559,13 @@
         "Text" : "source-protocol ospf 1",
         "Parser_Context" : "[match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cisco_route_map",
+        "Line" : 56,
+        "Text" : "route-map MAP_NAME2 permit 20\n match as-path AS_PATH_UNDEF",
+        "Parser_Context" : "[route_map_stanza stanza cisco_configuration]",
+        "Comment" : "Route map 'MAP_NAME2' already contains clause numbered '20'. Duplicate clause will be merged with original clause."
       },
       {
         "Filename" : "configs/cisco_zone",
@@ -2215,44 +2229,44 @@
       {
         "Filename" : "configs/foundry_access_list",
         "Line" : 11,
-        "Text" : "133",
+        "Text" : "deny icmp any any 133 sequence 10",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/foundry_access_list",
         "Line" : 12,
-        "Text" : "134",
+        "Text" : "deny icmp any any 134 sequence 20",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/foundry_access_list",
         "Line" : 13,
-        "Text" : "135",
+        "Text" : "deny icmp any any 135 sequence 30",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/foundry_access_list",
         "Line" : 14,
-        "Text" : "136",
+        "Text" : "deny icmp any any 136 sequence 40",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/foundry_access_list",
         "Line" : 15,
-        "Text" : "141",
+        "Text" : "deny icmp any any 141 sequence 50",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/foundry_access_list",
         "Line" : 16,
-        "Text" : "142",
+        "Text" : "deny icmp any any 142 sequence 60",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "clause in IPv6 extended access list"
+        "Comment" : "Unsupported clause in IPv6 extended access list"
       },
       {
         "Filename" : "configs/ios_bgp",
@@ -2295,6 +2309,76 @@
         "Text" : "maximum paths 16",
         "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 17,
+        "Text" : "interface Bundle-Ether101\n   bfd fast-detect\n   network broadcast\n   message-digest-key 20 md5 encrypted FF00FF00FF00FF00FF00FF\n   priority 2",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface Bundle-Ethernet101 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 23,
+        "Text" : "interface Bundle-Ether103\n   network broadcast\n   priority 2",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface Bundle-Ethernet103 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 27,
+        "Text" : "interface Bundle-Ether201\n   cost 1\n   network point-to-point\n   passive enable",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface Bundle-Ethernet201 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 32,
+        "Text" : "interface Loopback0\n   passive enable",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface Loopback0 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 35,
+        "Text" : "interface TenGigE0/0/0/4\n   passive enable",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface TenGigabitEthernet0/0/0/4 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 38,
+        "Text" : "interface TenGigE0/0/0/5\n   passive enable",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface TenGigabitEthernet0/0/0/5 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 41,
+        "Text" : "interface HundredGigE0/2/0/0.292",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/0.292 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 43,
+        "Text" : "interface HundredGigE0/2/0/3\n   network broadcast",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/3 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_ospf",
+        "Line" : 50,
+        "Text" : "interface TenGigE0/0/0/2\n   network broadcast",
+        "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "OSPF interface TenGigabitEthernet0/0/0/2 not declared before OSPF process"
+      },
+      {
+        "Filename" : "configs/ios_xr_route_policy",
+        "Line" : 163,
+        "Text" : "set path-selection backup 1 install multipath-protect advertise",
+        "Parser_Context" : "[set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_configuration]",
+        "Comment" : "Could not convert to RoutePolicyStatement: set path-selection backup 1 install multipath-protect advertise\n"
       },
       {
         "Filename" : "configs/ip_default_route_classless",
@@ -2494,10 +2578,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 350 results",
+      "notes" : "Found 362 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 350
+      "numResults" : 362
     }
   }
 ]
