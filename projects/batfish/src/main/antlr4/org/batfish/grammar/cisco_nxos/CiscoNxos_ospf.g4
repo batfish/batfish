@@ -21,6 +21,7 @@ ro_common
   | ro_auto_cost
   | ro_bfd
   | ro_default_information
+  | ro_graceful_restart
   | ro_log_adjacency_changes
   | ro_max_metric
   | ro_network
@@ -142,6 +143,29 @@ ro_default_information
   (
     ROUTE_MAP rm = route_map_name
   )? NEWLINE
+;
+
+ro_graceful_restart
+:
+  GRACEFUL_RESTART
+  (
+    rogr_graceful_restart
+    | rogr_null
+  )
+;
+
+rogr_graceful_restart
+:
+  NEWLINE
+;
+
+rogr_null
+:
+  (
+    GRACE_PERIOD
+    | HELPER_DISABLE
+    | PLANNED_ONLY
+  ) null_rest_of_line
 ;
 
 ro_log_adjacency_changes
@@ -303,5 +327,6 @@ rott_null
 
 ro_vrf
 :
-  VRF name = vrf_non_default_name NEWLINE ro_common*
+  VRF name = vrf_non_default_name NEWLINE
+  ro_common*
 ;

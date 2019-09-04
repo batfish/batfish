@@ -1519,6 +1519,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT,
+        CiscoNxosStructureUsage.OSPF_AREA_NSSA_ROUTE_MAP,
+        CiscoNxosStructureUsage.OSPF_DEFAULT_INFORMATION_ROUTE_MAP,
         CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTE_MAP_ENTRY, CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE);
