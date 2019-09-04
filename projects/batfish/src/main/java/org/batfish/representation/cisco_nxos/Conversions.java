@@ -158,12 +158,12 @@ final class Conversions {
     // Next, NX-OS prefers the IP of loopback0 if one exists.
     org.batfish.datamodel.Interface loopback0 = interfaceMap.get("loopback0");
     if (loopback0 != null) {
-      w.redFlag(String.format("%s. Using the IP address of loopback0", messageBase));
+      // No need to warn.
       return loopback0.getConcreteAddress().getIp();
     }
 
-    // Next, NX-OS prefers "first" loopback interface. NX-OS is non-deterministic, but we will
-    // enforce determinism by always choosing the smallest loopback IP.
+    // Next, NX-OS prefers "first" loopback interface. Older versions of NX-OS appear to be
+    // non-deterministic, newer ones always choose the smallest loopback IP.
     Collection<org.batfish.datamodel.Interface> interfaces = interfaceMap.values();
     Optional<Ip> lowestLoopback =
         interfaces.stream()
@@ -172,24 +172,18 @@ final class Conversions {
             .map(ConcreteInterfaceAddress::getIp)
             .min(Comparator.naturalOrder());
     if (lowestLoopback.isPresent()) {
-      w.redFlag(
-          String.format(
-              "%s. Making a non-deterministic choice from associated loopbacks", messageBase));
       return lowestLoopback.get();
     }
 
     // Finally, NX-OS uses the first non-loopback interface defined in the vrf, assuming no loopback
-    // addresses with IP address are present in the vrf. NX-OS is non-deterministic, but we will
-    // enforce determinism by always choosing the smallest interface IP.
+    // addresses with IP address are present in the vrf. Older versions of NX-OS are
+    // non-deterministic, newer ones choose the smallest IP.
     Optional<Ip> lowestIp =
         interfaces.stream()
             .map(org.batfish.datamodel.Interface::getConcreteAddress)
             .filter(Objects::nonNull)
             .map(ConcreteInterfaceAddress::getIp)
             .min(Comparator.naturalOrder());
-    w.redFlag(
-        String.format(
-            "%s. Making a non-deterministic choice from associated interfaces", messageBase));
     assert lowestIp.isPresent(); // This cannot happen if interfaces is non-empty.
     return lowestIp.get();
   }
