@@ -1,0 +1,6 @@
+! !RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp
+!
+router bgp 1
+  shutdown

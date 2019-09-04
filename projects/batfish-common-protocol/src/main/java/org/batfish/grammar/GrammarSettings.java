@@ -66,6 +66,9 @@ public interface GrammarSettings {
    */
   boolean getThrowOnParserError();
 
+  /** Whether or not to use the separate Arista BGP parse rules */
+  boolean getUseAristaBgp();
+
   /** Whether or not to use the new standalone Cisco NX-OS parser */
   boolean getUseNewCiscoNxosParser();
 
