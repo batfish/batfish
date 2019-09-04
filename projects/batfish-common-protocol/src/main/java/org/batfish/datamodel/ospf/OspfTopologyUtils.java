@@ -32,6 +32,12 @@ public final class OspfTopologyUtils {
     return new OspfTopology(ImmutableValueGraph.copyOf(graph));
   }
 
+  /** Compute candidate OSPF topology, including incompatible/unestablished links. */
+  public static CandidateOspfTopology computeCandidateOspfTopology(
+      NetworkConfigurations configurations, Topology l3Topology) {
+    return new CandidateOspfTopology(computeCandidateOspfTopologyGraph(configurations, l3Topology));
+  }
+
   /**
    * Helper to convert the specified graph of candidate OSPF sessions and their statuses into a
    * graph of established sessions and their session properties

@@ -3,13 +3,15 @@
     "differential": false,
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}",
+    "statuses": "${statuses}",
     "instance": {
         "description": "Returns compatible OSPF sessions.",
         "longDescription": "Returns compatible OSPF sessions in the network. A session is compatible if the interfaces involved are not shutdown and do run OSPF, are not OSPF passive and are associated with the same OSPF area.",
         "instanceName": "ospfSessionCompatibility",
          "orderedVariableNames": [
             "nodes",
-            "remoteNodes"
+            "remoteNodes",
+            "statuses"
         ],
         "tags": [
             "ospf",
@@ -27,6 +29,12 @@
                 "type": "nodeSpec",
                 "optional": true,
                 "displayName": "Remote Nodes"
+            },
+             "statuses": {
+                "description": "Only include sessions matching this status specifier",
+                "type": "ospfSessionStatusSpec",
+                "optional": true,
+                "displayName": "Session Statuses"
             }
         }
     }

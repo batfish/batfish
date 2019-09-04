@@ -16,6 +16,6 @@ public class OspfSessionCompatibilityQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new OspfSessionCompatibilityQuestion(null, null);
+    return new OspfSessionCompatibilityQuestion(null, null, null);
   }
 }

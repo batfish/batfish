@@ -7,6 +7,7 @@ import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.BgpSessionStatus;
@@ -45,6 +46,7 @@ public enum Grammar {
       "ospfInterfacePropertySpecifier", "ospf-interface-property-specifier"),
   OSPF_PROCESS_PROPERTY_SPECIFIER(
       "ospfProcessPropertySpecifier", "ospf-process-property-specifier"),
+  OSPF_SESSION_STATUS_SPECIFIER("ospfSessionStatusSpecifier", "ospf-session-status-specifier"),
   ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier"),
   ROUTING_PROTOCOL_SPECIFIER("routingProtocolSpecifier", "routing-protocol-specifier"),
   VXLAN_VNI_PROPERTY_SPECIFIER("vxlanVniPropertySpecifier", "vxlan-vni-property-specifier");
@@ -106,6 +108,8 @@ public enum Grammar {
         return OspfInterfacePropertySpecifier.ALL.getMatchingProperties();
       case OSPF_PROCESS_PROPERTY_SPECIFIER:
         return OspfProcessPropertySpecifier.ALL.getMatchingProperties();
+      case OSPF_SESSION_STATUS_SPECIFIER:
+        return Arrays.asList(OspfSessionStatus.values());
       case ROUTING_PROTOCOL_SPECIFIER:
         return RoutingProtocolSpecifier.getAllProtocolKeys();
       case VXLAN_VNI_PROPERTY_SPECIFIER:

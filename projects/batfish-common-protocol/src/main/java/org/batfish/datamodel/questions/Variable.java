@@ -79,6 +79,7 @@ public class Variable {
     NODE_SPEC("nodeSpec", true),
     OSPF_INTERFACE_PROPERTY_SPEC("ospfInterfacePropertySpec", true),
     OSPF_PROCESS_PROPERTY_SPEC("ospfProcessPropertySpec", true),
+    OSPF_SESSION_STATUS_SPEC("ospfSessionStatusSpec", true),
     PATH_CONSTRAINT("pathConstraint", true),
     PREFIX("prefix", true),
     PREFIX_RANGE("prefixRange", true),

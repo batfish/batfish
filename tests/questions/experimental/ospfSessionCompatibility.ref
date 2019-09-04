@@ -2,6 +2,7 @@
   "class" : "org.batfish.question.ospfsession.OspfSessionCompatibilityQuestion",
   "nodes" : ".*",
   "remoteNodes" : ".*",
+  "statuses" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -10,7 +11,8 @@
     "longDescription" : "Returns compatible OSPF sessions in the network. A session is compatible if the interfaces involved are not shutdown and do run OSPF, are not OSPF passive and are associated with the same OSPF area.",
     "orderedVariableNames" : [
       "nodes",
-      "remoteNodes"
+      "remoteNodes",
+      "statuses"
     ],
     "tags" : [
       "ospf",
@@ -29,6 +31,13 @@
         "displayName" : "Remote Nodes",
         "optional" : true,
         "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "statuses" : {
+        "description" : "Only include sessions matching this status specifier",
+        "displayName" : "Session Statuses",
+        "optional" : true,
+        "type" : "ospfSessionStatusSpec",
         "value" : ".*"
       }
     }
