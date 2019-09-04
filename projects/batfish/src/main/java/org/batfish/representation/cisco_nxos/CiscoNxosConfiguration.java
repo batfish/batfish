@@ -18,7 +18,6 @@ import static org.batfish.representation.cisco.CiscoConversions.generateGenerati
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
@@ -1442,7 +1441,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       List<CiscoNxosStructureType> types =
           ImmutableList.of(
               CiscoNxosStructureType.IP_ACCESS_LIST, CiscoNxosStructureType.IPV6_ACCESS_LIST);
-      for (CiscoNxosStructureUsage usage : ImmutableList.of(SNMP_SERVER_COMMUNITY_USE_ACL)) {
+      for (CiscoNxosStructureUsage usage :
+          ImmutableList.of(
+              CiscoNxosStructureUsage.NTP_ACCESS_GROUP_PEER,
+              CiscoNxosStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY,
+              CiscoNxosStructureUsage.NTP_ACCESS_GROUP_SERVE,
+              CiscoNxosStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY,
+              CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL)) {
         markAbstractStructure(CiscoNxosStructureType.IP_ACCESS_LIST_ABSTRACT_REF, usage, types);
       }
     }
