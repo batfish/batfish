@@ -1343,6 +1343,11 @@ FAST_SELECT_HOT_STANDBY
   'fast-select-hot-standby'
 ;
 
+FCOE
+:
+  'fcoe'
+;
+
 FCOE_FIB_MISS
 :
   'fcoe-fib-miss'
@@ -3070,6 +3075,11 @@ PER_LINK
 PER_VLAN
 :
   'per-vlan'
+;
+
+PERCENT
+:
+  'percent'
 ;
 
 PERIODIC

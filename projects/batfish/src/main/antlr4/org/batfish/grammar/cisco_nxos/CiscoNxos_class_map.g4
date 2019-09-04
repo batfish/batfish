@@ -102,7 +102,7 @@ cmnq_match
   MATCH
   (
     cmnqm_cos
-    | cmnqm_precedence
+    | cmnqm_protocol
   )
 ;
 
@@ -111,9 +111,9 @@ cmnqm_cos
   COS null_rest_of_line
 ;
 
-cmnqm_precedence
+cmnqm_protocol
 :
-  PRECEDENCE null_rest_of_line
+  PROTOCOL null_rest_of_line
 ;
 
 cm_qos

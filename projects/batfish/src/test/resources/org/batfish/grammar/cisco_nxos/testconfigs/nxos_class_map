@@ -26,6 +26,9 @@ class-map type control-plane match-any cm_cp
   match exception ttl-failure
 
 class-map type network-qos cm_network_qos
+  description some network-qos class
+  match cos 1-2,4
+  match protocol fcoe
 
 class-map type qos match-any cm_qos
   match dscp 18,20,22
