@@ -107,6 +107,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.LOGG
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.MONITOR_SESSION_DESTINATION_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.MONITOR_SESSION_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.MONITOR_SESSION_SOURCE_VLAN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_ACCESS_GROUP_PEER;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_ACCESS_GROUP_SERVE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
@@ -367,6 +371,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_source_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntpag_peerContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntpag_query_onlyContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntpag_serveContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntpag_serve_onlyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntps_preferContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntps_use_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_host_reachabilityContext;
@@ -2176,6 +2184,52 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitNtp_server(Ntp_serverContext ctx) {
     _currentNtpServer = null;
+  }
+
+  @Override
+  public void exitNtpag_peer(Ntpag_peerContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.ip_access_list_name());
+    if (!acl.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST_ABSTRACT_REF, acl.get(), NTP_ACCESS_GROUP_PEER, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitNtpag_query_only(Ntpag_query_onlyContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.ip_access_list_name());
+    if (!acl.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST_ABSTRACT_REF,
+        acl.get(),
+        NTP_ACCESS_GROUP_QUERY_ONLY,
+        ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitNtpag_serve(Ntpag_serveContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.ip_access_list_name());
+    if (!acl.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST_ABSTRACT_REF, acl.get(), NTP_ACCESS_GROUP_SERVE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitNtpag_serve_only(Ntpag_serve_onlyContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.ip_access_list_name());
+    if (!acl.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST_ABSTRACT_REF,
+        acl.get(),
+        NTP_ACCESS_GROUP_SERVE_ONLY,
+        ctx.getStart().getLine());
   }
 
   @Override
