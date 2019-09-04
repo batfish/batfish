@@ -210,6 +210,10 @@ router ospf timers
 
 !!!!! VRF
 router ospf with_vrf
+  graceful-restart
+  graceful-restart grace-period 90
+  graceful-restart helper-disable
+  graceful-restart planned-only
   area 0 authentication
   vrf v1
     area 1 authentication
