@@ -24,13 +24,53 @@ public final class OspfTopologyUtils {
   /** Initialize an OSPF topology. */
   public static OspfTopology computeOspfTopology(
       NetworkConfigurations configurations, Topology l3Topology) {
-
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
-        collectNodes(configurations);
-    establishLinks(configurations, graph, l3Topology);
+        convertToEstablishedGraph(
+            computeCandidateOspfTopologyGraph(configurations, l3Topology), configurations);
     trimLinks(graph);
 
     return new OspfTopology(ImmutableValueGraph.copyOf(graph));
+  }
+
+  /**
+   * Helper to convert the specified graph of candidate OSPF sessions and their statuses into a
+   * graph of established sessions and their session properties
+   */
+  private static MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties>
+      convertToEstablishedGraph(
+          MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> candidateGraph,
+          NetworkConfigurations configurations) {
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    for (EndpointPair<OspfNeighborConfigId> i : candidateGraph.edges()) {
+      OspfNeighborConfigId localConfigId = i.nodeU();
+      OspfNeighborConfigId remoteConfigId = i.nodeV();
+      OspfNeighborConfig localConfig =
+          configurations.getOspfNeighborConfig(localConfigId).orElse(null);
+      OspfNeighborConfig remoteConfig =
+          configurations.getOspfNeighborConfig(remoteConfigId).orElse(null);
+
+      if (localConfig == null
+          || remoteConfig == null
+          || getSessionStatus(localConfigId, remoteConfigId, configurations)
+              != OspfSessionStatus.ESTABLISHED) {
+        continue;
+      }
+      graph.putEdgeValue(
+          localConfigId,
+          remoteConfigId,
+          new OspfSessionProperties(
+              localConfig.getArea(), new IpLink(localConfig.getIp(), remoteConfig.getIp())));
+    }
+    return graph;
+  }
+
+  /** Helper to compute candidate OSPF topology graph including incompatible/unestablished links */
+  private static MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus>
+      computeCandidateOspfTopologyGraph(NetworkConfigurations configurations, Topology l3Topology) {
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph = collectNodes(configurations);
+    establishCandidateLinks(configurations, graph, l3Topology);
+    return graph;
   }
 
   /**
@@ -81,9 +121,9 @@ public final class OspfTopologyUtils {
     }
   }
 
-  private static MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> collectNodes(
+  private static <T> MutableValueGraph<OspfNeighborConfigId, T> collectNodes(
       NetworkConfigurations configurations) {
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
+    MutableValueGraph<OspfNeighborConfigId, T> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     // Iterate over all configurations
@@ -120,10 +160,10 @@ public final class OspfTopologyUtils {
     return graph;
   }
 
-  /** For each compatible neighbor relationship, add a link to the graph */
-  private static void establishLinks(
+  /** For each candidate neighbor relationship, add a link to the graph */
+  private static void establishCandidateLinks(
       NetworkConfigurations networkConfigurations,
-      MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph,
+      MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> graph,
       Topology l3topology) {
 
     for (OspfNeighborConfigId configId : ImmutableSet.copyOf(graph.nodes())) {
@@ -146,19 +186,18 @@ public final class OspfTopologyUtils {
                 remoteInterface.getVrfName(),
                 remoteInterface.getOspfProcess(),
                 remoteNodeInterface.getInterface());
-        getSessionIfCompatible(configId, remoteConfigId, networkConfigurations)
-            .ifPresent(s -> graph.putEdgeValue(configId, remoteConfigId, s));
+        OspfSessionStatus status =
+            getSessionStatus(configId, remoteConfigId, networkConfigurations);
+        if (status != OspfSessionStatus.NO_SESSION) {
+          graph.putEdgeValue(configId, remoteConfigId, status);
+        }
       }
     }
   }
 
-  /**
-   * Perform neighbor compatibility checks and return an OSPF session.
-   *
-   * <p>Invariant: Ip address of {@code localConfigId} is the {@link IpLink#getIp1()}
-   */
+  /** Perform neighbor compatibility checks and return an OSPF session status. */
   @VisibleForTesting
-  static Optional<OspfSessionProperties> getSessionIfCompatible(
+  static OspfSessionStatus getSessionStatus(
       OspfNeighborConfigId localConfigId,
       OspfNeighborConfigId remoteConfigId,
       NetworkConfigurations configurations) {
@@ -177,13 +216,13 @@ public final class OspfTopologyUtils {
             .getInterface(remoteConfigId.getHostname(), remoteConfigId.getInterfaceName())
             .orElse(null);
 
-    if (localConfig == null
-        || remoteConfig == null
-        || localProcess == null
-        || remoteProcess == null
-        || localIface == null
-        || remoteIface == null) {
-      return Optional.empty();
+    if (localProcess == null || remoteProcess == null) {
+      return OspfSessionStatus.PROCESS_INVALID;
+    }
+
+    if (localConfig == null || remoteConfig == null || localIface == null || remoteIface == null) {
+      // This probably shouldn't ever happen...but handle it just in case
+      return OspfSessionStatus.UNKNOWN_COMPATIBILITY_ISSUE;
     }
 
     long localAreaNum = localConfig.getArea();
@@ -191,20 +230,32 @@ public final class OspfTopologyUtils {
     OspfArea localArea = localProcess.getAreas().get(localAreaNum);
     OspfArea remoteArea = remoteProcess.getAreas().get(remoteAreaNum);
     if (localArea == null || remoteArea == null) {
-      return Optional.empty();
+      return OspfSessionStatus.AREA_INVALID;
     }
 
-    if (localConfig.isPassive() || remoteConfig.isPassive()) {
-      return Optional.empty();
+    if (localConfig.isPassive() && remoteConfig.isPassive()) {
+      return OspfSessionStatus.NO_SESSION;
+    }
+
+    if (localConfig.isPassive() != remoteConfig.isPassive()) {
+      return OspfSessionStatus.PASSIVE_MISMATCH;
     }
     if (localAreaNum != remoteAreaNum) {
-      return Optional.empty();
+      return OspfSessionStatus.AREA_MISMATCH;
     }
     if (localProcess.getRouterId().equals(remoteProcess.getRouterId())) {
-      return Optional.empty();
+      return OspfSessionStatus.DUPLICATE_ROUTER_ID;
     }
     if (localArea.getStubType() != remoteArea.getStubType()) {
-      return Optional.empty();
+      return OspfSessionStatus.AREA_TYPE_MISMATCH;
+    }
+
+    // Optimistically assume unspecified network types match and therefore are compatible
+    OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
+    OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
+    if ((localNetworkType != null && remoteNetworkType != null)
+        && (localNetworkType != remoteNetworkType)) {
+      return OspfSessionStatus.NETWORK_TYPE_MISMATCH;
     }
 
     OspfInterfaceSettings localOspf = localIface.getOspfSettings();
@@ -213,18 +264,10 @@ public final class OspfTopologyUtils {
     assert (localOspf != null);
     assert (remoteOspf != null);
     if (localOspf.getHelloInterval() != remoteOspf.getHelloInterval()) {
-      return Optional.empty();
+      return OspfSessionStatus.HELLO_INTERVAL_MISMATCH;
     }
     if (localOspf.getDeadInterval() != remoteOspf.getDeadInterval()) {
-      return Optional.empty();
-    }
-
-    // Optimistically assume unspecified network types match and therefore are compatible
-    OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
-    OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
-    if ((localNetworkType != null && remoteNetworkType != null)
-        && (localNetworkType != remoteNetworkType)) {
-      return Optional.empty();
+      return OspfSessionStatus.DEAD_INTERVAL_MISMATCH;
     }
 
     /*
@@ -234,10 +277,7 @@ public final class OspfTopologyUtils {
      * supported
      */
 
-    // invariant localIP == ip1
-    return Optional.of(
-        new OspfSessionProperties(
-            localConfig.getArea(), new IpLink(localConfig.getIp(), remoteConfig.getIp())));
+    return OspfSessionStatus.ESTABLISHED;
   }
 
   /** Ensure links in the graph are bi-directional */
