@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Arista_bgp, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 
 options {
@@ -10,6 +10,8 @@ options {
 }
 
 @members {
+   private boolean _aristaBgp;
+
    private boolean _eos;
 
    private boolean _cadant;
@@ -18,12 +20,20 @@ options {
 
    private boolean _nxos;
 
+   public boolean getAristaBgp() {
+      return _aristaBgp;
+   }
+
    public boolean isEos() {
       return _eos;
    }
 
    public boolean isNxos() {
       return _nxos;
+   }
+
+   public void setAristaBgp(boolean b) {
+      _aristaBgp = b;
    }
 
    public void setEos(boolean b) {
@@ -44,11 +54,12 @@ options {
 
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n_eos: %s\n",
+      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n_eos: %s\n, _aristaBgp: %s\n",
          _cadant,
          _multilineBgpNeighbors,
          _nxos,
-         _eos
+         _eos,
+         _aristaBgp
       );
    }
 }
@@ -3666,6 +3677,7 @@ stanza
    | banner_stanza
    | community_set_stanza
    | del_stanza
+   | { _aristaBgp }? eos_router_bgp
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
    | ip_as_path_access_list_stanza
@@ -3686,7 +3698,7 @@ stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
    | route_policy_stanza
-   | router_bgp_stanza
+   | { !_aristaBgp }? router_bgp_stanza
    | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
