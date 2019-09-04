@@ -46,6 +46,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   /** This {@link CiscoNxosStructureUsage} should be used for ANY built-in structure of any type. */
   BUILT_IN("built-in structure"),
   CLASS_MAP_CP_MATCH_ACCESS_GROUP("class-map type control-plane match access-group"),
+  CONTROL_PLANE_SERVICE_POLICY("control-plane service-policy"),
   EIGRP_REDISTRIBUTE_INSTANCE("eigrp address-family redistribute"),
   EIGRP_REDISTRIBUTE_ROUTE_MAP("eigrp address-family redistribute route-map"),
   INTERFACE_CHANNEL_GROUP("interface channel-group"),
@@ -55,6 +56,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_IP_ROUTER_EIGRP("interface ip router eigrp"),
   INTERFACE_IP_ROUTER_OSPF("interface ip router ospf"),
   INTERFACE_SELF_REFERENCE("interface"),
+  INTERFACE_SERVICE_POLICY_QOS("interface service-policy type qos"),
+  INTERFACE_SERVICE_POLICY_QUEUING("interface service-policy type queuing"),
   INTERFACE_VLAN("interface vlan"),
   INTERFACE_VRF_MEMBER("interface vrf member"),
   IP_ACCESS_LIST_DESTINATION_ADDRGROUP("ip access-list destination addrgroup"),
@@ -72,6 +75,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   OSPF_AREA_FILTER_LIST_OUT("router ospf area filter-list out"),
   OSPF_REDISTRIBUTE_INSTANCE("ospf redistribute"),
   OSPF_REDISTRIBUTE_ROUTE_MAP("ospf redistribute route-map"),
+  POLICY_MAP_CLASS("policy-map class"),
   ROUTE_MAP_CONTINUE("route-map continue"),
   ROUTE_MAP_MATCH_AS_PATH("route-map match as-path"),
   ROUTE_MAP_MATCH_COMMUNITY("route-map match community"),
@@ -86,6 +90,9 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   SNMP_SERVER_COMMUNITY_USE_IPV4ACL("snmp-server community use-ipv4acl"),
   SNMP_SERVER_COMMUNITY_USE_IPV6ACL("snmp-server community use-ipv6acl"),
   SNMP_SERVER_SOURCE_INTERFACE("snmp-server source-interface"),
+  SYSQOS_NETWORK_QOS("system qos service-policy type network-qos"),
+  SYSQOS_QOS("system qos service-policy type qos"),
+  SYSQOS_QUEUING("system qos service-policy type queuing"),
   TACACS_SOURCE_INTERFACE("ip tacacs source-interface"),
   TRACK_INTERFACE("track interface");
 

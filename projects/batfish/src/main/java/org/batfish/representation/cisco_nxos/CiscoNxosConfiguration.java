@@ -226,6 +226,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   /** On NX-OS, management VRF has id 2. */
   public static final int MANAGEMENT_VRF_ID = 2;
 
+  // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/qos/config/cisco_nexus7000_qos_config_guide_8x/configuring_classification.html
+  /** On NX-OS, there is an implicit QoS class-map "class-default". */
+  public static final String DEFAULT_CLASS_MAP_NAME = "class-default";
+  /**
+   * On NX-OS, there are implicit policy-maps "default-in-policy" and "default-out-policy" depending
+   * on type.
+   */
+  public static final String DEFAULT_POLICY_MAP_IN = "default-in-policy";
+  /**
+   * On NX-OS, there are implicit policy-maps "default-in-policy" and "default-out-policy" depending
+   * on type.
+   */
+  public static final String DEFAULT_POLICY_MAP_OUT = "default-out-policy";
+
   private int _currentContextVrfId;
 
   /** Returns canonical prefix of interface name if valid, else {@code null}. */
@@ -1373,6 +1387,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void markStructures() {
+    markConcreteStructure(
+        CiscoNxosStructureType.CLASS_MAP_CONTROL_PLANE,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY,
+        CiscoNxosStructureUsage.POLICY_MAP_CLASS);
+    markConcreteStructure(
+        CiscoNxosStructureType.CLASS_MAP_NETWORK_QOS,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.POLICY_MAP_CLASS,
+        CiscoNxosStructureUsage.SYSQOS_NETWORK_QOS);
+    markConcreteStructure(
+        CiscoNxosStructureType.CLASS_MAP_QOS,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.INTERFACE_SERVICE_POLICY_QOS,
+        CiscoNxosStructureUsage.POLICY_MAP_CLASS,
+        CiscoNxosStructureUsage.SYSQOS_QOS);
+    markConcreteStructure(
+        CiscoNxosStructureType.CLASS_MAP_QUEUING,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.INTERFACE_SERVICE_POLICY_QUEUING,
+        CiscoNxosStructureUsage.POLICY_MAP_CLASS,
+        CiscoNxosStructureUsage.SYSQOS_QUEUING);
     markConcreteStructure(
         CiscoNxosStructureType.INTERFACE,
         CiscoNxosStructureUsage.AAA_GROUP_SERVER_RADIUS_SOURCE_INTERFACE,

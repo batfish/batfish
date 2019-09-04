@@ -135,7 +135,7 @@ s_control_plane
 
 cp_service_policy
 :
-  SERVICE_POLICY INPUT name = policy_map_name NEWLINE
+  SERVICE_POLICY INPUT name = policy_map_cp_name NEWLINE
 ;
 
 s_hostname
@@ -435,17 +435,17 @@ sysqos_service_policy
 
 sysqosspt_network_qos
 :
-  NETWORK_QOS name = policy_map_name NEWLINE
+  NETWORK_QOS name = policy_map_network_qos_name NEWLINE
 ;
 
 sysqosspt_qos
 :
-  QOS INPUT name = policy_map_name NEWLINE
+  QOS INPUT name = policy_map_qos_name NEWLINE
 ;
 
 sysqosspt_queueing
 :
-  QUEUING (INPUT | OUTPUT) name = policy_map_name NEWLINE
+  QUEUING (INPUT | OUTPUT) name = policy_map_queuing_name NEWLINE
 ;
 
 s_track

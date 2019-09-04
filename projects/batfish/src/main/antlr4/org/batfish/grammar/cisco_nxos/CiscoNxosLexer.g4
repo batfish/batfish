@@ -711,6 +711,11 @@ CONFORM
   'conform'
 ;
 
+CONGESTION_CONTROL
+:
+  'congestion-control'
+;
+
 CONNECT
 :
   'connect'
@@ -1336,6 +1341,11 @@ FAST_LEAVE
 FAST_SELECT_HOT_STANDBY
 :
   'fast-select-hot-standby'
+;
+
+FCOE
+:
+  'fcoe'
 ;
 
 FCOE_FIB_MISS
@@ -3067,6 +3077,11 @@ PER_VLAN
   'per-vlan'
 ;
 
+PERCENT
+:
+  'percent'
+;
+
 PERIODIC
 :
   'periodic'
@@ -4085,6 +4100,11 @@ TACACSP
 TAG
 :
   'tag'
+;
+
+TAIL_DROP
+:
+  'tail-drop'
 ;
 
 TALK
