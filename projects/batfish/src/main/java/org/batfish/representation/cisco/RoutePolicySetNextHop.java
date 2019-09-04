@@ -26,6 +26,6 @@ public class RoutePolicySetNextHop extends RoutePolicySetStatement {
 
   @Override
   protected Statement toSetStatement(CiscoConfiguration cc, Configuration c, Warnings w) {
-    return new SetNextHop(_nextHop.toNextHopExpr(cc, c, w), _destinationVrf);
+    return new SetNextHop(_nextHop.toNextHopExpr(cc, c, w));
   }
 }

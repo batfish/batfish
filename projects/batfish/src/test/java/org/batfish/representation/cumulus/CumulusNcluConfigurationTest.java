@@ -208,8 +208,7 @@ public class CumulusNcluConfigurationTest {
       ipv4af.setNextHopSelf(true);
 
       assertThat(
-          getSetNextHop(bgpNeighbor, bgpVrf),
-          equalTo(new SetNextHop(SelfNextHop.getInstance(), false)));
+          getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
   }
 

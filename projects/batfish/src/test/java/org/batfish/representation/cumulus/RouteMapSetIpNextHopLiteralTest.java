@@ -27,7 +27,6 @@ public class RouteMapSetIpNextHopLiteralTest {
     ImmutableList<Statement> result =
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());
     assertThat(
-        result,
-        equalTo(ImmutableList.of(new SetNextHop(new IpNextHop(ImmutableList.of(IP)), false))));
+        result, equalTo(ImmutableList.of(new SetNextHop(new IpNextHop(ImmutableList.of(IP))))));
   }
 }

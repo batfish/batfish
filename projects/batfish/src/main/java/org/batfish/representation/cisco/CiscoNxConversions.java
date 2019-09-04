@@ -337,7 +337,7 @@ final class CiscoNxConversions {
     // Export policy
     List<Statement> exportStatements = new LinkedList<>();
     if (naf4 != null && firstNonNull(naf4.getNextHopSelf(), Boolean.FALSE)) {
-      exportStatements.add(new SetNextHop(SelfNextHop.getInstance(), false));
+      exportStatements.add(new SetNextHop(SelfNextHop.getInstance()));
     }
     if (neighbor.getRemovePrivateAs() != null) {
       // TODO(handle different types of RemovePrivateAs)
