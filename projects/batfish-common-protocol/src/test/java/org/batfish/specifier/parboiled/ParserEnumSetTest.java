@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.BgpSessionStatus;
@@ -457,6 +458,14 @@ public class ParserEnumSetTest {
         OspfProcessPropertySpecifier.AREA_BORDER_ROUTER,
         OspfProcessPropertySpecifier.AREAS,
         Grammar.OSPF_PROCESS_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testParseOspfSessionStatus() {
+    testParseOtherProperties(
+        OspfSessionStatus.NETWORK_TYPE_MISMATCH.toString(),
+        OspfSessionStatus.ESTABLISHED.toString(),
+        Grammar.OSPF_SESSION_STATUS_SPECIFIER);
   }
 
   @Test

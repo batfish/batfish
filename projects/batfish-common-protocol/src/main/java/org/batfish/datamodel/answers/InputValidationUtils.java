@@ -60,6 +60,13 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case OSPF_SESSION_STATUS_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.OSPF_SESSION_STATUS_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case BGP_SESSION_STATUS_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.BGP_SESSION_STATUS_SPECIFIER,

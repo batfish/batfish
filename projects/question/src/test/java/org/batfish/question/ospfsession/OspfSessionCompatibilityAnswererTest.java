@@ -8,6 +8,7 @@ import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.COL_REMOTE_INTERFACE;
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.COL_REMOTE_IP;
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.COL_REMOTE_VRF;
+import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.COL_SESSION_STATUS;
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.COL_VRF;
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.createTableMetadata;
 import static org.batfish.question.ospfsession.OspfSessionCompatibilityAnswerer.getRows;
@@ -23,22 +24,22 @@ import com.google.common.collect.Multiset;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.CandidateOspfTopology;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
-import org.batfish.datamodel.ospf.OspfSessionProperties;
-import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
@@ -48,83 +49,69 @@ import org.junit.Test;
 public class OspfSessionCompatibilityAnswererTest {
 
   private Map<String, Configuration> _configurations;
-  private OspfTopology _ospfTopology;
+  private CandidateOspfTopology _ospfTopology;
+
+  private Configuration buildConfig(
+      NetworkFactory nf, String hostname, String vrfName, String iface, Ip addr) {
+    Configuration configuration =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(hostname)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setName(vrfName).setOwner(configuration).build();
+
+    nf.interfaceBuilder()
+        .setAddress(ConcreteInterfaceAddress.create(addr, 31))
+        .setName(iface)
+        .setVrf(vrf)
+        .setOwner(configuration)
+        .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().setProcess("proc").build())
+        .build();
+
+    nf.ospfProcessBuilder()
+        .setVrf(vrf)
+        .setProcessId("proc")
+        .setNeighbors(
+            ImmutableMap.of(
+                iface,
+                OspfNeighborConfig.builder()
+                    .setArea(1L)
+                    .setHostname(hostname)
+                    .setInterfaceName(iface)
+                    .setVrfName(vrfName)
+                    .setIp(addr)
+                    .build()))
+        .setRouterId(Ip.ZERO)
+        .build();
+    return configuration;
+  }
 
   @Before
   public void setup() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration configurationU =
-        nf.configurationBuilder()
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .setHostname("configuration_u")
-            .build();
-
-    Configuration configurationV =
-        nf.configurationBuilder()
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .setHostname("configuration_v")
-            .build();
-
-    Vrf vrfU = nf.vrfBuilder().setName("vrf_u").setOwner(configurationU).build();
-    Vrf vrfV = nf.vrfBuilder().setName("vrf_v").setOwner(configurationV).build();
-
-    nf.interfaceBuilder()
-        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.2"), 31))
-        .setName("int_u")
-        .setVrf(vrfU)
-        .setOwner(configurationU)
-        .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().setProcess("U").build())
-        .build();
-
-    nf.interfaceBuilder()
-        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.3"), 31))
-        .setName("int_v")
-        .setVrf(vrfV)
-        .setOwner(configurationV)
-        .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().setProcess("V").build())
-        .build();
-
-    nf.ospfProcessBuilder()
-        .setVrf(vrfU)
-        .setProcessId("U")
-        .setNeighbors(
-            ImmutableMap.of(
-                "int_u",
-                OspfNeighborConfig.builder()
-                    .setArea(1L)
-                    .setHostname("configuration_u")
-                    .setInterfaceName("int_u")
-                    .setVrfName("vrf_u")
-                    .setIp(Ip.parse("1.1.1.2"))
-                    .build()))
-        .setRouterId(Ip.ZERO)
-        .build();
-    nf.ospfProcessBuilder()
-        .setVrf(vrfV)
-        .setProcessId("V")
-        .setNeighbors(
-            ImmutableMap.of(
-                "int_v",
-                OspfNeighborConfig.builder()
-                    .setArea(1L)
-                    .setHostname("configuration_v")
-                    .setInterfaceName("int_v")
-                    .setVrfName("vrf_v")
-                    .setIp(Ip.parse("1.1.1.3"))
-                    .build()))
-        .setRouterId(Ip.MAX)
-        .build();
     _configurations =
-        ImmutableMap.of("configuration_u", configurationU, "configuration_v", configurationV);
+        ImmutableMap.of(
+            "configuration_u",
+            buildConfig(nf, "configuration_u", "vrf_u", "int_u", Ip.parse("1.1.1.2")),
+            "configuration_v",
+            buildConfig(nf, "configuration_v", "vrf_v", "int_v", Ip.parse("1.1.1.3")),
+            "configuration_w",
+            buildConfig(nf, "configuration_w", "vrf_w", "int_w", Ip.parse("1.1.1.4")),
+            "configuration_x",
+            buildConfig(nf, "configuration_x", "vrf_x", "int_x", Ip.parse("1.1.1.5")));
 
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfGraph =
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> ospfGraph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     ospfGraph.putEdgeValue(
-        new OspfNeighborConfigId("configuration_u", "vrf_u", "U", "int_u"),
-        new OspfNeighborConfigId("configuration_v", "vrf_v", "V", "int_v"),
-        new OspfSessionProperties(0, new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3"))));
-    _ospfTopology = new OspfTopology(ImmutableValueGraph.copyOf(ospfGraph));
+        new OspfNeighborConfigId("configuration_u", "vrf_u", "proc", "int_u"),
+        new OspfNeighborConfigId("configuration_v", "vrf_v", "proc", "int_v"),
+        OspfSessionStatus.ESTABLISHED);
+    ospfGraph.putEdgeValue(
+        new OspfNeighborConfigId("configuration_w", "vrf_w", "proc", "int_w"),
+        new OspfNeighborConfigId("configuration_x", "vrf_x", "proc", "int_x"),
+        OspfSessionStatus.NETWORK_TYPE_MISMATCH);
+    _ospfTopology = new CandidateOspfTopology(ImmutableValueGraph.copyOf(ospfGraph));
   }
 
   @Test
@@ -132,13 +119,15 @@ public class OspfSessionCompatibilityAnswererTest {
     Multiset<Row> rows =
         getRows(
             _configurations,
-            ImmutableSet.of("configuration_u"),
-            ImmutableSet.of("configuration_v"),
+            ImmutableSet.of("configuration_u", "configuration_w"),
+            ImmutableSet.of("configuration_v", "configuration_x"),
             _ospfTopology,
-            createTableMetadata().toColumnMap());
+            createTableMetadata().toColumnMap(),
+            ImmutableSet.copyOf(OspfSessionStatus.values()));
 
+    Iterator<Row> i = rows.iterator();
     assertThat(
-        rows.iterator().next(),
+        i.next(),
         allOf(
             hasColumn(
                 COL_INTERFACE,
@@ -146,17 +135,40 @@ public class OspfSessionCompatibilityAnswererTest {
                 Schema.INTERFACE),
             hasColumn(COL_VRF, equalTo("vrf_u"), Schema.STRING),
             hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.2")), Schema.IP),
-            hasColumn(COL_AREA, equalTo(1L), Schema.LONG)));
-    assertThat(
-        rows.iterator().next(),
-        allOf(
+            hasColumn(COL_AREA, equalTo(1L), Schema.LONG),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("configuration_v", "int_v")),
                 Schema.INTERFACE),
             hasColumn(COL_REMOTE_VRF, equalTo("vrf_v"), Schema.STRING),
             hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("1.1.1.3")), Schema.IP),
-            hasColumn(COL_REMOTE_AREA, equalTo(1L), Schema.LONG)));
+            hasColumn(COL_REMOTE_AREA, equalTo(1L), Schema.LONG),
+            hasColumn(
+                COL_SESSION_STATUS,
+                equalTo(OspfSessionStatus.ESTABLISHED.toString()),
+                Schema.STRING)));
+    Row r2 = i.next();
+    assertThat(
+        r2,
+        allOf(
+            hasColumn(
+                COL_INTERFACE,
+                equalTo(new NodeInterfacePair("configuration_w", "int_w")),
+                Schema.INTERFACE),
+            hasColumn(COL_VRF, equalTo("vrf_w"), Schema.STRING),
+            hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.4")), Schema.IP),
+            hasColumn(COL_AREA, equalTo(1L), Schema.LONG),
+            hasColumn(
+                COL_REMOTE_INTERFACE,
+                equalTo(new NodeInterfacePair("configuration_x", "int_x")),
+                Schema.INTERFACE),
+            hasColumn(COL_REMOTE_VRF, equalTo("vrf_x"), Schema.STRING),
+            hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("1.1.1.5")), Schema.IP),
+            hasColumn(COL_REMOTE_AREA, equalTo(1L), Schema.LONG),
+            hasColumn(
+                COL_SESSION_STATUS,
+                equalTo(OspfSessionStatus.NETWORK_TYPE_MISMATCH.toString()),
+                Schema.STRING)));
   }
 
   @Test
@@ -167,7 +179,8 @@ public class OspfSessionCompatibilityAnswererTest {
             ImmutableSet.of(),
             ImmutableSet.of("configuration_v"),
             _ospfTopology,
-            createTableMetadata().toColumnMap());
+            createTableMetadata().toColumnMap(),
+            ImmutableSet.copyOf(OspfSessionStatus.values()));
 
     Multiset<Row> rowsWithRemoteNodesFilter =
         getRows(
@@ -175,10 +188,26 @@ public class OspfSessionCompatibilityAnswererTest {
             ImmutableSet.of("configuration_u"),
             ImmutableSet.of(),
             _ospfTopology,
-            createTableMetadata().toColumnMap());
+            createTableMetadata().toColumnMap(),
+            ImmutableSet.copyOf(OspfSessionStatus.values()));
 
     assertThat(rowsWithNodesFilter, hasSize(0));
     assertThat(rowsWithRemoteNodesFilter, hasSize(0));
+  }
+
+  @Test
+  public void testGetRowsWithFilterStatus() {
+    Multiset<Row> rowsWithStatusFilter =
+        getRows(
+            _configurations,
+            ImmutableSet.of("configuration_u", "configuration_w"),
+            ImmutableSet.of("configuration_v", "configuration_x"),
+            _ospfTopology,
+            createTableMetadata().toColumnMap(),
+            ImmutableSet.of(OspfSessionStatus.ESTABLISHED));
+
+    // Should only get the one established session result
+    assertThat(rowsWithStatusFilter, hasSize(1));
   }
 
   @Test
@@ -198,6 +227,7 @@ public class OspfSessionCompatibilityAnswererTest {
                 .add(COL_REMOTE_VRF)
                 .add(COL_REMOTE_IP)
                 .add(COL_REMOTE_AREA)
+                .add(COL_SESSION_STATUS)
                 .build()));
   }
 }
