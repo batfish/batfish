@@ -18,7 +18,7 @@ s_line
   (
     line_console
     | line_vty
-  )*
+  )
 ;
 
 line_console
