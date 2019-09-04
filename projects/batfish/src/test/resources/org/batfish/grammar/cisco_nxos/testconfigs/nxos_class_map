@@ -29,7 +29,16 @@ class-map type network-qos cm_network_qos
   description some network-qos class
   match cos 1-2,4
   match protocol fcoe
+  match qos-group 3
 
 class-map type qos match-any cm_qos
   match dscp 18,20,22
   match precedence 3-4
+
+!! You cannot override these, but this is the head of `show run all | sec class-map`
+class-map type queuing match-any c-out-q-default
+  match qos-group 0
+class-map type queuing match-any c-out-8q-q7
+  match qos-group 7
+class-map type queuing match-any c-out-8q-q6
+  match qos-group 6
