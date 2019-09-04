@@ -111,8 +111,8 @@ pmnqc_no
 pmnqc_no_null
 :
   (
-    PAUSE
-    | CONGESTION_CONTROL
+    CONGESTION_CONTROL
+    | PAUSE
   ) null_rest_of_line
 ;
 
