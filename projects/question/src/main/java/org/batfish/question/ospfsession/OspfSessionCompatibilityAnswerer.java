@@ -161,7 +161,6 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
     return Row.builder(columnMetadataMap)
         .put(COL_INTERFACE, new NodeInterfacePair(nodeU.getHostname(), nodeU.getInterfaceName()))
         .put(COL_VRF, nodeU.getVrfName())
-        // .put(COL_IP, Ip.parse("255.255.255.255"))
         .put(COL_IP, nodeU.getIp())
         .put(COL_AREA, nodeU.getArea())
         .put(

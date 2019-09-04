@@ -26,7 +26,6 @@ public class OspfSessionCompatibilityQuestion extends Question {
 
   @Nullable private String _statuses;
 
-  // Set of statuses matching status specifier
   @Nonnull private final Set<OspfSessionStatus> _expandedStatuses;
 
   public OspfSessionCompatibilityQuestion(
@@ -36,7 +35,7 @@ public class OspfSessionCompatibilityQuestion extends Question {
     _nodes = nodes;
     _remoteNodes = remoteNodes;
     _statuses = statuses;
-    // Generate the set of all statuses matching the status specifier
+    // Generate set of all statuses matching the status specifier
     _expandedStatuses =
         SpecifierFactories.getEnumSetSpecifierOrDefault(
                 statuses,
