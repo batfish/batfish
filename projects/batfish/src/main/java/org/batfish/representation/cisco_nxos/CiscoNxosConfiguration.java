@@ -1492,6 +1492,24 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP,
         CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP);
     markConcreteStructure(
+        CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY);
+    markConcreteStructure(
+        CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.SYSQOS_NETWORK_QOS);
+    markConcreteStructure(
+        CiscoNxosStructureType.POLICY_MAP_QOS,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.INTERFACE_SERVICE_POLICY_QOS,
+        CiscoNxosStructureUsage.SYSQOS_QOS);
+    markConcreteStructure(
+        CiscoNxosStructureType.POLICY_MAP_QUEUING,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.INTERFACE_SERVICE_POLICY_QUEUING,
+        CiscoNxosStructureUsage.SYSQOS_QUEUING);
+    markConcreteStructure(
         CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTE_MAP,
