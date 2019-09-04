@@ -267,6 +267,12 @@ policy_map_queuing_name
   WORD
 ;
 
+qos_group
+:
+// 0-7
+  uint8
+;
+
 quoted_text
 :
   QUOTED_TEXT

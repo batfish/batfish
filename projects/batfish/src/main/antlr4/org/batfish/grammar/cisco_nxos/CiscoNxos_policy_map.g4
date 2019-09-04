@@ -166,12 +166,6 @@ pmq_description
   DESCRIPTION policy_map_description NEWLINE
 ;
 
-qos_group
-:
-// 0-7
-  uint8
-;
-
 pm_queuing
 :
   name = policy_map_queuing_name NEWLINE

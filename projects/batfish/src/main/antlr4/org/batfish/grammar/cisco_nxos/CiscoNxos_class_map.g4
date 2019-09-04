@@ -103,6 +103,7 @@ cmnq_match
   (
     cmnqm_cos
     | cmnqm_protocol
+    | cmnqm_qos_group
   )
 ;
 
@@ -114,6 +115,11 @@ cmnqm_cos
 cmnqm_protocol
 :
   PROTOCOL null_rest_of_line
+;
+
+cmnqm_qos_group
+:
+  QOS_GROUP group = qos_group NEWLINE
 ;
 
 cm_qos
@@ -157,10 +163,19 @@ cm_queuing
 
 cmqu_match
 :
-  MATCH cmqum_cos
+  MATCH
+  (
+    cmqum_cos
+    | cmqum_qos_group
+  )
 ;
 
 cmqum_cos
 :
   COS null_rest_of_line
+;
+
+cmqum_qos_group
+:
+  QOS_GROUP group = qos_group NEWLINE
 ;
