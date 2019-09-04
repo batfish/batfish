@@ -908,12 +908,12 @@ isp_type
 
 ispt_qos
 :
-  QOS (INPUT | OUTPUT) name = policy_map_name NEWLINE
+  QOS (INPUT | OUTPUT) name = policy_map_qos_name NEWLINE
 ;
 
 ispt_queuing
 :
-  QUEUING (INPUT | OUTPUT) name = policy_map_name NEWLINE
+  QUEUING (INPUT | OUTPUT) name = policy_map_queuing_name NEWLINE
 ;
 
 i_shutdown

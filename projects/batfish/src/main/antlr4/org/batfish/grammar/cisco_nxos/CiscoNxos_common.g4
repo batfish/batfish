@@ -10,6 +10,14 @@ bgp_asn
   | high = uint16 PERIOD low = uint16
 ;
 
+// Shared NX-OS syntax for route-target, redistribution, route leak, etc.
+both_export_import
+:
+  BOTH
+  | EXPORT
+  | IMPORT
+;
+
 cisco_nxos_password
 :
 // Lexer mode change required prior to entering this rule
@@ -26,18 +34,28 @@ cisco_nxos_password
   )
 ;
 
-class_map_name
+class_map_cp_name
+:
+// 1-64 characters
+  WORD
+;
+
+class_map_network_qos_name
 :
 // 1-40 characters
   WORD
 ;
 
-// Shared NX-OS syntax for route-target, redistribution, route leak, etc.
-both_export_import
+class_map_qos_name
 :
-  BOTH
-  | EXPORT
-  | IMPORT
+// 1-40 characters
+  WORD
+;
+
+class_map_queuing_name
+:
+// 1-40 characters
+  WORD
 ;
 
 double_quoted_string
@@ -225,7 +243,25 @@ ospf_area_id
   | ip = ip_address
 ;
 
-policy_map_name
+policy_map_cp_name
+:
+// 1-64 characters
+  WORD
+;
+
+policy_map_network_qos_name
+:
+// 1-40 characters
+  WORD
+;
+
+policy_map_qos_name
+:
+// 1-40 characters
+  WORD
+;
+
+policy_map_queuing_name
 :
 // 1-40 characters
   WORD

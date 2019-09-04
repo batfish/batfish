@@ -6,6 +6,12 @@ options {
   tokenVocab = CiscoNxosLexer;
 }
 
+policy_map_description
+:
+// 1-200 characters
+  REMARK_TEXT
+;
+
 s_policy_map
 :
   POLICY_MAP
@@ -48,13 +54,13 @@ pmt_queuing
 
 pm_control_plane
 :
-  name = policy_map_name NEWLINE
+  name = policy_map_cp_name NEWLINE
   pmcp_class*
 ;
 
 pmcp_class
 :
-  CLASS name = class_map_name NEWLINE
+  CLASS name = class_map_cp_name NEWLINE
   (
     pmcpc_police
     | pmcpc_set
@@ -74,20 +80,53 @@ pmcpc_set
 
 pm_network_qos
 :
-  name = policy_map_name NEWLINE
-  pmnq_class*
+  name = policy_map_network_qos_name NEWLINE
+  (
+    pmnq_class
+    | pmnq_description
+  )*
 ;
 
 pmnq_class
 :
 // type mandatory
-  CLASS TYPE NETWORK_QOS name = class_map_name NEWLINE
-  pmnqc_mtu
+  CLASS TYPE NETWORK_QOS name = class_map_network_qos_name NEWLINE
+  (
+    pmnqc_mtu
+    | pmnqc_no
+    | pmnqc_null
+  )*
 ;
 
 pmnqc_mtu
 :
   MTU qos_mtu NEWLINE
+;
+
+pmnqc_no
+:
+  NO pmnqc_no_null
+;
+
+pmnqc_no_null
+:
+  (
+    PAUSE
+    | CONGESTION_CONTROL
+  ) null_rest_of_line
+;
+
+pmnqc_null
+:
+  (
+    CONGESTION_CONTROL
+    | PAUSE
+  ) null_rest_of_line
+;
+
+pmnq_description
+:
+  DESCRIPTION policy_map_description NEWLINE
 ;
 
 qos_mtu
@@ -98,14 +137,17 @@ qos_mtu
 
 pm_qos
 :
-  name = policy_map_name NEWLINE
-  pmq_class*
+  name = policy_map_qos_name NEWLINE
+  (
+    pmq_class
+    | pmq_description
+  )*
 ;
 
 pmq_class
 :
 // type optional
-  CLASS (TYPE QOS)? name = class_map_name NEWLINE
+  CLASS (TYPE QOS)? name = class_map_qos_name NEWLINE
   pmqc_set*
 ;
 
@@ -119,6 +161,11 @@ pmqcs_qos_group
   QOS_GROUP qg = qos_group NEWLINE
 ;
 
+pmq_description
+:
+  DESCRIPTION policy_map_description NEWLINE
+;
+
 qos_group
 :
 // 0-7
@@ -127,20 +174,21 @@ qos_group
 
 pm_queuing
 :
-  name = policy_map_name NEWLINE
+  name = policy_map_queuing_name NEWLINE
   pmqu_class*
 ;
 
 pmqu_class
 :
-  CLASS TYPE QUEUING name = class_map_name NEWLINE
+  CLASS TYPE QUEUING name = class_map_queuing_name NEWLINE
   pmquc_null*
 ;
 
 pmquc_null
 :
   (
-    PAUSE
+    BANDWIDTH
+    | PAUSE
     | PRIORITY
     | QUEUE_LIMIT
     | RANDOM_DETECT

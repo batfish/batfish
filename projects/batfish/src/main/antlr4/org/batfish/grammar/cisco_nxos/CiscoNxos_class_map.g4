@@ -54,7 +54,8 @@ cmt_queuing
 
 cm_control_plane
 :
-  (MATCH_ALL | MATCH_ANY)? name = class_map_name NEWLINE cmcp_match*
+  (MATCH_ALL | MATCH_ANY)? name = class_map_cp_name NEWLINE
+  cmcp_match*
 ;
 
 cmcp_match
@@ -84,7 +85,7 @@ cmcpm_protocol
 
 cm_network_qos
 :
-  MATCH_ANY? name = class_map_name NEWLINE
+  MATCH_ANY? name = class_map_network_qos_name NEWLINE
   (
     cmnq_description
     | cmnq_match
@@ -117,8 +118,16 @@ cmnqm_precedence
 
 cm_qos
 :
-  (MATCH_ALL | MATCH_ANY)? name = class_map_name NEWLINE
-  cmq_match*
+  (MATCH_ALL | MATCH_ANY)? name = class_map_qos_name NEWLINE
+  (
+    cmq_description
+    | cmq_match
+  )*
+;
+
+cmq_description
+:
+  DESCRIPTION class_map_description NEWLINE
 ;
 
 cmq_match
@@ -142,7 +151,7 @@ cmqm_precedence
 
 cm_queuing
 :
-  MATCH_ANY? name = class_map_name NEWLINE
+  MATCH_ANY? name = class_map_queuing_name NEWLINE
   cmqu_match*
 ;
 

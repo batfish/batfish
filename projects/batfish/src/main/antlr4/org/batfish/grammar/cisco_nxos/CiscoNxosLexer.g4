@@ -711,6 +711,11 @@ CONFORM
   'conform'
 ;
 
+CONGESTION_CONTROL
+:
+  'congestion-control'
+;
+
 CONNECT
 :
   'connect'
@@ -4085,6 +4090,11 @@ TACACSP
 TAG
 :
   'tag'
+;
+
+TAIL_DROP
+:
+  'tail-drop'
 ;
 
 TALK
