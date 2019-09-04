@@ -153,6 +153,7 @@ s_ip
     | ip_domain_name
     | ip_name_server
     | ip_null
+    | ip_pim
     | ip_prefix_list
     | ip_route
     | ip_tacacs
@@ -188,6 +189,19 @@ ip_null
     ARP
     | DOMAIN_LOOKUP
   ) null_rest_of_line
+;
+
+ip_pim
+:
+  PIM
+  (
+    ipp_rp_address
+  )
+;
+
+ipp_rp_address
+:
+  RP_ADDRESS ip = ip_address (ROUTE_MAP map = route_map_name)? BIDIR? OVERRIDE? NEWLINE
 ;
 
 ip_sla

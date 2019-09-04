@@ -451,6 +451,11 @@ BGP
   'bgp'
 ;
 
+BIDIR
+:
+  'bidir'
+;
+
 BIDIR_RP_LIMIT
 :
   'bidir-rp-limit'
@@ -2962,6 +2967,11 @@ OVERLAY
   'overlay'
 ;
 
+OVERRIDE
+:
+  'override'
+;
+
 PACKET
 :
   'packet'
@@ -3596,6 +3606,11 @@ ROUTER_SOLICITATION
 ROUTINE
 :
   'routine'
+;
+
+RP_ADDRESS
+:
+  'rp-address'
 ;
 
 RPF_FAILURE

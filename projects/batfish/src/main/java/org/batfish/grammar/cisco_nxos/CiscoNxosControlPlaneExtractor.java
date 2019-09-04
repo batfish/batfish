@@ -100,6 +100,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.LOGGING_SOURCE_INTERFACE;
@@ -340,6 +341,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_prefix
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_route_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipp_rp_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipt_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_addressContext;
@@ -2005,6 +2007,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitIp_prefix_list(Ip_prefix_listContext ctx) {
     _currentIpPrefixList = null;
+  }
+
+  @Override
+  public void exitIpp_rp_address(Ipp_rp_addressContext ctx) {
+    if (ctx.map != null) {
+      Optional<String> map = toString(ctx, ctx.map);
+      if (!map.isPresent()) {
+        return;
+      }
+      _configuration.referenceStructure(
+          ROUTE_MAP, map.get(), IP_PIM_RP_ADDRESS_ROUTE_MAP, ctx.getStart().getLine());
+    }
   }
 
   @Override

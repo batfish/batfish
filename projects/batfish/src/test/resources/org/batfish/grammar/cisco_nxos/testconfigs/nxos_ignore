@@ -22,6 +22,10 @@ errdisable recovery cause security-violation
 errdisable recovery cause storm-control
 errdisable recovery cause udld
 no ip domain-lookup
+ip pim rp-address 1.2.3.4 route-map foo bidir override
+ip pim rp-address 1.2.3.4 bidir override
+ip pim rp-address 1.2.3.4 bidir
+ip pim rp-address 1.2.3.4 override
 service dhcp
 username xxxxxxx password 5 xxxxxxx role network-admin
 username xxxxxxx password 5 xxxxxxx role network-operator
