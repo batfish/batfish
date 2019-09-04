@@ -1399,8 +1399,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
-  private static final String DUPLICATE = "DUPLICATE";
-
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
@@ -1421,7 +1419,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else if (ctx.NON_BROADCAST() != null) {
         iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
       } else {
-        _w.redFlag(String.format("Cannot determine OSPF network type for %s", ctx.getText()));
+        warn(ctx, "Cannot determine OSPF network type.");
       }
     }
   }
@@ -2330,7 +2328,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.getCryptoMapSets().put(name, cryptoMapSet);
       defineStructure(CRYPTO_DYNAMIC_MAP_SET, name, ctx);
     } else if (!cryptoMapSet.getDynamic()) {
-      _w.redFlag(
+      warn(
+          ctx,
           String.format("Cannot add dynamic crypto map entry %s to a static crypto map set", name));
       return;
     }
@@ -2349,7 +2348,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.getCryptoMapSets().put(_currentCryptoMapName, cryptoMapSet);
       defineStructure(CRYPTO_MAP_SET, _currentCryptoMapName, ctx);
     } else if (cryptoMapSet.getDynamic()) {
-      _w.redFlag(
+      warn(
+          ctx,
           String.format(
               "Cannot add static crypto map entry %s to a dynamic crypto map set",
               _currentCryptoMapName));
@@ -2410,7 +2410,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_eosVxlan == null) {
       _eosVxlan = new AristaEosVxlan(canonicalVxlanName);
     } else if (!_eosVxlan.getInterfaceName().equals(canonicalVxlanName)) {
-      _w.redFlag("Only one VXLAN interface may be defined, appending to existing interface");
+      warn(ctx, "Only one VXLAN interface may be defined, appending to existing interface");
     }
     _configuration.setEosVxlan(_eosVxlan);
     defineStructure(VXLAN, canonicalVxlanName, ctx);
@@ -2767,9 +2767,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         proc.addIpPeerGroup(ip);
         _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
       } else {
-        _w.redFlag(
-            "Duplicate IP peer group in neighbor config (line:" + ctx.start.getLine() + ")",
-            DUPLICATE);
+        warn(ctx, "Duplicate IP peer group in neighbor config.");
       }
       pushPeer(_currentIpPeerGroup);
     } else if (ctx.ip_prefix != null) {
@@ -2778,9 +2776,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (_currentDynamicIpPeerGroup == null) {
         _currentDynamicIpPeerGroup = proc.addDynamicIpPeerGroup(prefix);
       } else {
-        _w.redFlag(
-            "Duplicate DynamicIP peer group neighbor config (line:" + ctx.start.getLine() + ")",
-            DUPLICATE);
+        warn(ctx, "Duplicate DynamicIP peer group neighbor config.");
       }
       pushPeer(_currentDynamicIpPeerGroup);
     } else if (ctx.ipv6_address != null) {
@@ -2790,9 +2786,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         proc.addIpv6PeerGroup(ip6);
         pg = proc.getIpv6PeerGroups().get(ip6);
       } else {
-        _w.redFlag(
-            "Duplicate IPV6 peer group in neighbor config (line:" + ctx.start.getLine() + ")",
-            DUPLICATE);
+        warn(ctx, "Duplicate IPV6 peer group in neighbor config.");
       }
       pushPeer(pg);
       _currentIpv6PeerGroup = pg;
@@ -2802,9 +2796,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (pg == null) {
         pg = proc.addDynamicIpv6PeerGroup(prefix6);
       } else {
-        _w.redFlag(
-            "Duplicate Dynamic Ipv6 peer group neighbor config (line:" + ctx.start.getLine() + ")",
-            DUPLICATE);
+        warn(ctx, "Duplicate Dynamic Ipv6 peer group neighbor config.");
       }
       pushPeer(pg);
       _currentDynamicIpv6PeerGroup = pg;
@@ -2951,7 +2943,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     if (_configuration.getObjectGroups().containsKey(name)) {
       _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
-      warnObjectGroupRedefinition(name);
+      warnObjectGroupRedefinition(ctx.name);
     } else {
       _currentIcmpTypeObjectGroup =
           _configuration.getIcmpTypeObjectGroups().computeIfAbsent(name, IcmpTypeObjectGroup::new);
@@ -2982,7 +2974,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
     if (_configuration.getObjectGroups().containsKey(name)) {
-      warnObjectGroupRedefinition(name);
+      warnObjectGroupRedefinition(ctx.name);
     } else {
       _configuration.getIcmpTypeObjectGroups().put(name, _currentIcmpTypeObjectGroup);
       _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
@@ -3012,7 +3004,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentNetworkObjectGroup = new NetworkObjectGroup(name);
     if (_configuration.getObjectGroups().containsKey(name)) {
-      warnObjectGroupRedefinition(name);
+      warnObjectGroupRedefinition(ctx.name);
     } else {
       _configuration.getNetworkObjectGroups().put(name, _currentNetworkObjectGroup);
       _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
@@ -3038,7 +3030,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentProtocolObjectGroup = new ProtocolObjectGroup(name);
     if (_configuration.getObjectGroups().containsKey(name)) {
-      warnObjectGroupRedefinition(name);
+      warnObjectGroupRedefinition(ctx.name);
     } else {
       _configuration.getProtocolObjectGroups().put(name, _currentProtocolObjectGroup);
       _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
@@ -3068,7 +3060,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     ServiceProtocol protocol = toServiceProtocol(ctx.protocol_type);
     _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
     if (_configuration.getObjectGroups().containsKey(name)) {
-      warnObjectGroupRedefinition(name);
+      warnObjectGroupRedefinition(ctx.name);
     } else {
       _configuration.getServiceObjectGroups().put(name, _currentServiceObjectGroup);
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
@@ -3092,7 +3084,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
       _currentNetworkObjectGroup = new NetworkObjectGroup(name);
-      warnObjectGroupRedefinition(name);
+      warnObjectGroupRedefinition(ctx.name);
     } else {
       _currentNetworkObjectGroup =
           _configuration.getNetworkObjectGroups().computeIfAbsent(name, NetworkObjectGroup::new);
@@ -3113,7 +3105,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
       _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
-      warnObjectGroupRedefinition(name);
+      warnObjectGroupRedefinition(ctx.name);
     } else {
       _currentServiceObjectGroup =
           _configuration
@@ -3135,7 +3127,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
       _currentProtocolObjectGroup = new ProtocolObjectGroup(name);
-      warnObjectGroupRedefinition(name);
+      warnObjectGroupRedefinition(ctx.name);
     } else {
       _currentProtocolObjectGroup =
           _configuration.getProtocolObjectGroups().computeIfAbsent(name, ProtocolObjectGroup::new);
@@ -3191,7 +3183,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           NETWORK_OBJECT, name, NETWORK_OBJECT_GROUP_NETWORK_OBJECT, ctx.name.start.getLine());
     }
     if (ipSpace == null) {
-      _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
+      warn(ctx, "Unimplemented object-group network line.");
     } else {
       _currentNetworkObjectGroup.getLines().add(ipSpace);
     }
@@ -3295,7 +3287,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOn_fqdn(On_fqdnContext ctx) {
     _configuration.getNetworkObjects().put(_currentNetworkObjectName, new FqdnNetworkObject());
-    _w.redFlag("Unknown how to resolve domain name to IP address: " + getFullText(ctx));
+    warn(ctx, "Unknown how to resolve domain name to IP address");
   }
 
   @Override
@@ -3306,7 +3298,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .put(_currentNetworkObjectName, new HostNetworkObject(Ip.parse(ctx.address.getText())));
     } else {
       // IPv6
-      _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
+      warn(ctx, "Unimplemented network object line");
     }
   }
 
@@ -3442,7 +3434,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   Prefix.create(Ip.parse(ctx.address.getText()), Ip.parse(ctx.mask.getText()))));
     } else {
       // IPv6
-      _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
+      warn(ctx, "Unimplemented network object line");
     }
   }
 
@@ -3702,7 +3694,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.MED() != null && ctx.NON_DETERMINISTIC() != null) {
       _currentBgpNxVrfConfiguration.setBestpathMedNonDeterministic(true);
     } else {
-      _w.redFlag("Unsupported BGP bestpath configuration: " + ctx.getText());
+      warn(ctx, "Unsupported BGP bestpath configuration");
     }
   }
 
@@ -4089,7 +4081,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         INTERFACE, ifaceName, OSPF_AREA_INTERFACE, ctx.iname.getStart().getLine());
     Interface iface = _configuration.getInterfaces().get(ifaceName);
     if (iface == null) {
-      _w.redFlag("OSPF: Interface: '" + ifaceName + "' not declared before OSPF process");
+      warn(
+          ctx.iname,
+          String.format("OSPF interface %s not declared before OSPF process", ifaceName));
       iface = addInterface(ifaceName, ctx.iname, false);
     }
     // might cause problems if interfaces are declared after ospf, but
@@ -4116,12 +4110,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       clause = new RouteMapClause(action, name, num);
       routeMap.getClauses().put(num, clause);
     } else {
-      _w.redFlag(
-          "Route map '"
-              + _currentRouteMap.getName()
-              + "' already contains clause numbered '"
-              + num
-              + "'. Duplicate clause will be merged with original clause.");
+      warn(
+          ctx,
+          String.format(
+              "Route map '%s' already contains clause numbered '%d'. Duplicate clause will be merged with original clause.",
+              _currentRouteMap.getName(), num));
     }
     _currentRouteMapClause = clause;
     defineStructure(ROUTE_MAP, name, ctx);
@@ -4158,7 +4151,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       BgpProcess proc = vrf.getBgpProcess();
       if (proc.getProcnum() != procNum && procNum != 0) {
-        _w.redFlag("Cannot have multiple BGP processes with different ASNs");
+        warn(ctx, "Cannot have multiple BGP processes with different ASNs");
         return;
       }
       pushPeer(proc.getMasterBgpPeerGroup());
@@ -4260,12 +4253,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     try {
       canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     } catch (BatfishException e) {
-      _w.redFlag(
-          "Error fetching interface name at: "
-              + getLocation(ctx)
-              + getFullText(ctx)
-              + " : "
-              + e.getMessage());
+      warn(ctx, "Error fetching interface name: " + e.getMessage());
       _currentInterfaces = ImmutableList.of();
       return;
     }
@@ -4867,12 +4855,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAdvertise_map_bgp_tail(Advertise_map_bgp_tailContext ctx) {
     // TODO: https://github.com/batfish/batfish/issues/1836
-    todo(ctx, "BGP advertise-map is not currently supported");
+    warn(ctx, "BGP advertise-map is not currently supported");
     String advertiseMapName = ctx.am_name.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, advertiseMapName, BGP_ROUTE_MAP_ADVERTISE, ctx.am_name.getStart().getLine());
     if (ctx.em_name != null) {
-      todo(ctx, "BGP exist-map is not currently supported");
+      warn(ctx, "BGP exist-map is not currently supported");
       String existMapName = ctx.em_name.getText();
       _configuration.referenceStructure(
           ROUTE_MAP, existMapName, BGP_ADVERTISE_MAP_EXIST_MAP, ctx.em_name.getStart().getLine());
@@ -4971,7 +4959,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     AsPathSet asPathSet = _configuration.getAsPathSets().get(name);
     if (asPathSet != null) {
-      _w.redFlag("Redeclaration of as-path-set: '" + name + "'");
+      warn(ctx, "Redeclaration of as-path-set: '" + name + "'.");
     }
     asPathSet = new AsPathSet(name);
     _configuration.getAsPathSets().put(name, asPathSet);
@@ -5225,7 +5213,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new InspectClassMapMatchProtocol(
           toInspectClassMapProtocol(ctx.cm_iosim_protocol().inspect_protocol()));
     } else {
-      _w.redFlag("Class-map match unsupported " + getFullText(ctx));
+      warn(ctx, "Class-map match unsupported");
       return null;
     }
   }
@@ -5529,7 +5517,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private void exitEigrpProcess(ParserRuleContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     EigrpProcess proc = _currentEigrpProcess;
@@ -5542,7 +5530,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
        * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
        * process with null ASN.
        */
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP ASN configured");
+      warn(ctx, "No EIGRP ASN configured");
       return;
     }
     proc.computeNetworks(_configuration.getInterfaces().values());
@@ -5552,7 +5540,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Map<Long, EigrpProcess> eigrpProcesses = currentVrf().getEigrpProcesses();
     boolean duplicate = eigrpProcesses.containsKey(proc.getAsn());
     if (duplicate) {
-      _w.redFlag("Duplicate EIGRP router ASN");
+      warn(ctx, "Duplicate EIGRP router ASN");
     } else {
       eigrpProcesses.put(proc.getAsn(), proc);
     }
@@ -5800,7 +5788,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpCode = toInteger(feature.icmp_message_code);
           }
         } else {
-          _w.addWarning(ctx, getFullText(feature), _parser, "clause in extended access list");
+          warn(ctx, "Unsupported clause in extended access list: " + feature.getText());
           return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
       }
@@ -6015,7 +6003,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setUseUrg(true)
                 .build());
       } else {
-        _w.addWarning(ctx, getFullText(feature), _parser, "clause in IPv6 extended access list");
+        warn(ctx, "Unsupported clause in IPv6 extended access list: " + feature.getText());
       }
     }
     String name = getFullText(ctx).trim();
@@ -6171,7 +6159,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      _w.redFlag(
+      warn(
+          ctx,
           String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
       return;
     }
@@ -6240,10 +6229,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
     }
     if (ctx.ROUTE_PREFERENCE() != null) {
-      todo(ctx, "Unsupported: route-preference declared in interface IP address");
+      warn(ctx, "Unsupported: route-preference declared in interface IP address");
     }
     if (ctx.TAG() != null) {
-      todo(ctx, "Unsupported: tag declared in interface IP address");
+      warn(ctx, "Unsupported: tag declared in interface IP address");
     }
   }
 
@@ -6324,17 +6313,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (acl == null) {
       // incomplete definition. ignore
-      _w.addWarning(
-          ctx, getFullText(ctx), _parser, "Arista dynamic source nat missing required ACL.");
+      warn(ctx, "Arista dynamic source nat missing required ACL.");
       return;
     }
     if (pool == null && !overload) {
       // incomplete definition. ignore
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          "Arista dynamic source nat must have a pool or be overload.");
+      warn(ctx, "Arista dynamic source nat must have a pool or be overload.");
       return;
     }
 
@@ -6423,7 +6407,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_policy(If_ip_policyContext ctx) {
     String policyName = ctx.name.getText();
-    todo(ctx, "PBR is not supported");
+    warn(ctx, "PBR is not supported");
     //    for (Interface currentInterface : _currentInterfaces) {
     //      currentInterface.setRoutingPolicy(policyName);
     //    }
@@ -6540,9 +6524,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String alias = ctx.name.getText();
     Map<String, Interface> ifaces = _configuration.getInterfaces();
     if (ifaces.containsKey(alias)) {
-      _w.redFlag(String.format("Interface alias '%s' is already in use.", alias));
+      warn(ctx, String.format("Interface alias '%s' is already in use.", alias));
     } else if (_currentInterfaces.size() > 1) {
-      _w.redFlag("Parse assertion failed for _currentInterfaces");
+      warn(ctx, "Parse assertion failed for _currentInterfaces");
     } else {
       // Define the alias as an interface to make ref tracking easier
       defineStructure(INTERFACE, alias, ctx);
@@ -6575,11 +6559,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_no_security_level(If_no_security_levelContext ctx) {
     if (_currentInterfaces.size() != 1) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          "Security level can only be configured in single-interface context");
+      warn(ctx, "Security level can only be configured in single-interface context");
       return;
     }
     _currentInterfaces.get(0).setSecurityLevel(0);
@@ -6588,11 +6568,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_security_level(If_security_levelContext ctx) {
     if (_currentInterfaces.size() != 1) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          "Security level can only be configured in single-interface context");
+      warn(ctx, "Security level can only be configured in single-interface context");
       return;
     }
     _currentInterfaces.get(0).setSecurityLevel(toInteger(ctx.level));
@@ -7044,10 +7020,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (CommunityContext communityCtx : ctx.communities) {
       Long community = toLong(communityCtx);
       if (community == null) {
-        _w.redFlag(
-            String.format(
-                "Invalid standard community: '%s' in: '%s'",
-                communityCtx.getText(), getFullText(ctx)));
+        warn(ctx, String.format("Invalid standard community: '%s'", communityCtx.getText()));
         return;
       }
       communities.add(community);
@@ -7127,18 +7100,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    */
   private void createNatPool(String name, Ip first, Ip last, Prefix subnet, ParserRuleContext ctx) {
     if (!subnet.containsIp(first)) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          String.format("Subnet of NAT pool %s does not contain first pool IP", name));
+      warn(ctx, String.format("Subnet of NAT pool %s does not contain first pool IP", name));
     }
     if (!subnet.containsIp(last)) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          String.format("Subnet of NAT pool %s does not contain last pool IP", name));
+      warn(ctx, String.format("Subnet of NAT pool %s does not contain last pool IP", name));
     }
 
     Ip firstHostIp = subnet.getFirstHostIp();
@@ -7282,12 +7247,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration.referenceStructure(
             INTERFACE, nextHopInterface, IP_ROUTE_NHINT, ctx.nexthopint.getStart().getLine());
       } catch (BatfishException e) {
-        _w.redFlag(
-            "Error fetching interface name at: "
-                + getLocation(ctx)
-                + getFullText(ctx)
-                + " : "
-                + e.getMessage());
+        warn(ctx, "Error fetching interface name: " + e.getMessage());
         _currentInterfaces = ImmutableList.of();
         return;
       }
@@ -7686,7 +7646,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (rps.isEmpty()) {
       // This should not be possible.
-      _w.redFlag("Unexpected: empty routing protocol list to match against " + getFullText(ctx));
+      warn(ctx, "Unexpected: empty routing protocol list to match against.");
       return;
     }
     _currentRouteMapClause.addMatchLine(new RouteMapMatchSourceProtocolLine(rps));
@@ -7857,7 +7817,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_autonomous_system(Re_autonomous_systemContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
 
@@ -7869,7 +7829,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_default_metric(Re_default_metricContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     if (ctx.NO() == null) {
@@ -7884,7 +7844,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_eigrp_router_id(Re_eigrp_router_idContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     if (ctx.NO() == null) {
@@ -7898,7 +7858,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRe_network(Re_networkContext ctx) {
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     // In process context
@@ -7914,7 +7874,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_passive_interface(Re_passive_interfaceContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     boolean passive = (ctx.NO() == null);
@@ -7931,7 +7891,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_passive_interface_default(Re_passive_interface_defaultContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     boolean passive = (ctx.NO() == null);
@@ -7942,7 +7902,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
@@ -7968,7 +7928,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_connected(Re_redistribute_connectedContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
@@ -7993,7 +7953,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_eigrp(Re_redistribute_eigrpContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
@@ -8030,7 +7990,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_ospf(Re_redistribute_ospfContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
@@ -8060,7 +8020,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_rip(Re_redistribute_ripContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
@@ -8084,7 +8044,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_static(Re_redistribute_staticContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
@@ -8113,12 +8073,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitReafi_passive_interface(Reafi_passive_interfaceContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     // In interface context
     if (_currentEigrpInterface == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP interface available");
+      warn(ctx, "No EIGRP interface available");
       return;
     }
 
@@ -8171,8 +8131,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip ip = toIp(ctx.ip);
       IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
       if (pg == null) {
-        String message = "ignoring attempt to activate undefined ip peer group: " + ip;
-        _w.redFlag(message);
+        warn(ctx, "ignoring attempt to activate undefined ip peer group: " + ip);
       } else {
         pg.setActive(false);
       }
@@ -8180,8 +8139,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
       if (pg == null) {
-        String message = "ignoring attempt to activate undefined ipv6 peer group: " + ip6;
-        _w.redFlag(message);
+        warn(ctx, "ignoring attempt to activate undefined ipv6 peer group: " + ip6);
       } else {
         pg.setActive(false);
       }
@@ -8212,8 +8170,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
       // TODO: see if it is always ok to set active on 'no shutdown'
       if (pg == null) {
-        String message = "ignoring attempt to shut down to undefined ip peer group: " + ip;
-        _w.redFlag(message);
+        warn(ctx, "ignoring attempt to shut down to undefined ip peer group: " + ip);
       } else {
         pg.setActive(true);
         pg.setShutdown(false);
@@ -8223,14 +8180,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
       // TODO: see if it is always ok to set active on 'no shutdown'
       if (pg == null) {
-        String message = "ignoring attempt to shut down undefined ipv6 peer group: " + ip6;
-        _w.redFlag(message);
+        warn(ctx, "ignoring attempt to shut down undefined ipv6 peer group: " + ip6);
       } else {
         pg.setActive(true);
         pg.setShutdown(false);
       }
     } else if (ctx.peergroup != null) {
-      _w.redFlag("'no shutdown' of  peer group unsupported");
+      warn(ctx, "'no shutdown' of  peer group unsupported");
     }
   }
 
@@ -8297,7 +8253,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitNull_as_path_regex(Null_as_path_regexContext ctx) {
-    _w.redFlag("as-path regexes this complicated are not supported yet");
+    todo(ctx);
   }
 
   @Override
@@ -8908,7 +8864,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRe_distribute_list(Re_distribute_listContext ctx) {
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      warn(ctx, "No EIGRP process available");
       return;
     }
     if (ctx.iname == null) {
@@ -9296,7 +9252,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(ROUTE_POLICY, name, usage, ctx.name.getStart().getLine());
 
     if (ctx.route_policy_params_list() != null && !ctx.route_policy_params_list().isEmpty()) {
-      _w.redFlag("Unimplemented: IOS-XR RPL functions" + getFullText(ctx));
+      todo(ctx);
     }
   }
 
@@ -9327,7 +9283,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     if (ctx.TUNNELED() != null) {
-      _w.redFlag("Interface default tunnel gateway option not yet supported.");
+      warn(ctx, "Interface default tunnel gateway option not yet supported.");
     }
 
     StaticRoute route =
@@ -9560,7 +9516,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      _w.redFlag(String.format("mtu refers to interface '%s' which does not exist", ifaceName));
+      warn(ctx, String.format("mtu refers to interface '%s' which does not exist", ifaceName));
       return;
     }
     iface.setMtu(toInteger(ctx.bytes));
@@ -9766,7 +9722,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      _w.redFlag(
+      warn(
+          ctx,
           String.format("service-policy refers to interface '%s' which does not exist", ifaceName));
       return;
     }
@@ -9896,9 +9853,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (CommunityContext c : ctx.communities) {
       Long community = toLong(c);
       if (community == null) {
-        _w.redFlag(
-            String.format(
-                "Invalid standard community: '%s' in: '%s'", c.getText(), getFullText(ctx)));
+        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
         return;
       }
       builder.add(StandardCommunity.of(community));
@@ -9953,9 +9908,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (CommunityContext c : ctx.communities) {
       Long community = toLong(c);
       if (community == null) {
-        _w.redFlag(
-            String.format(
-                "Invalid standard community: '%s' in: '%s'", c.getText(), getFullText(ctx)));
+        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
         return;
       }
       commList.add(community);
@@ -10343,7 +10296,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.mapname.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_ROUTE_MAP_UNSUPPRESS, ctx.getStart().getLine());
-    todo(ctx, "BGP unusuppress-map is not currently supported");
+    warn(ctx, "BGP unusuppress-map is not currently supported");
   }
 
   @Override
@@ -10715,10 +10668,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.community() != null) {
       Long value = toLong(ctx.community());
       if (value == null) {
-        _w.redFlag(
-            String.format(
-                "Invalid standard community: '%s' in: '%s'",
-                ctx.community().getText(), getFullText(ctx)));
+        warn(ctx, String.format("Invalid standard community: '%s'.", ctx.community().getText()));
         return convProblem(CommunitySetElem.class, ctx, null);
       }
       return new CommunitySetElemHalves(value);
@@ -10756,7 +10706,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _w.todo(ctx, getFullText(ctx), _parser);
   }
 
-  private void todo(ParserRuleContext ctx, String message) {
+  private void warn(ParserRuleContext ctx, String message) {
     _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
@@ -12242,7 +12192,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     boolean destVrf = (ctx.DESTINATION_VRF() != null);
     if (destVrf) {
-      _w.redFlag("Unimplemented 'destination-vrf' directive in: " + getFullText(ctx));
+      warn(ctx, "Unimplemented 'destination-vrf' directive.");
     }
     return new RoutePolicySetNextHop(hop, destVrf);
   }
@@ -12322,7 +12272,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
-    _w.redFlag(convErrorMessage(returnType, ctx));
+    warn(ctx, convErrorMessage(returnType, ctx));
     return defaultReturnValue;
   }
 
@@ -12416,8 +12366,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private void warnObjectGroupRedefinition(String name) {
-    _w.redFlag("Object group defined multiple times: '" + name + "'");
+  private void warnObjectGroupRedefinition(ParserRuleContext name) {
+    ParserRuleContext outer = firstNonNull(name.getParent(), name);
+    warn(outer, "Object group defined multiple times: '" + name.getText() + "'.");
   }
 
   @Nullable
@@ -12434,7 +12385,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       case "tcp-udp":
         return ServiceProtocol.TCP_UDP;
       default:
-        _w.redFlag("got unexpected service protocol type: '" + protocol.getText() + "'");
+        warn(protocol, "Unexpected service protocol type.");
         return null;
     }
   }
