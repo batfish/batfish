@@ -4440,7 +4440,6 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "destinationVrf" : false,
                 "expr" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
                 }
@@ -16549,7 +16548,6 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "destinationVrf" : false,
                 "expr" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
                 }
@@ -31609,7 +31607,6 @@
                     "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                      "destinationVrf" : false,
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.IpNextHop",
                         "ips" : [
@@ -32459,7 +32456,6 @@
                     "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                      "destinationVrf" : false,
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.Ip6NextHop",
                         "ips" : [
@@ -32491,7 +32487,6 @@
                     "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                      "destinationVrf" : false,
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
                       }
@@ -32728,7 +32723,6 @@
                     "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                      "destinationVrf" : false,
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.IpNextHop",
                         "ips" : [

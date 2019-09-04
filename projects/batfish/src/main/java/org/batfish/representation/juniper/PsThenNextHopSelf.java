@@ -20,6 +20,6 @@ public final class PsThenNextHopSelf extends PsThen {
       JuniperConfiguration juniperVendorConfiguration,
       Configuration c,
       Warnings w) {
-    statements.add(new SetNextHop(SelfNextHop.getInstance(), false));
+    statements.add(new SetNextHop(SelfNextHop.getInstance()));
   }
 }

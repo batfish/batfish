@@ -767,7 +767,7 @@ final class Conversions {
 
     // Next Hop Self
     if (firstNonNull(naf.getNextHopSelf(), Boolean.FALSE)) {
-      statementsBuilder.add(new SetNextHop(SelfNextHop.getInstance(), false));
+      statementsBuilder.add(new SetNextHop(SelfNextHop.getInstance()));
     }
     if (neighbor.getRemovePrivateAs() != null) {
       // TODO(handle different types of RemovePrivateAs)

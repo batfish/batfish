@@ -258,7 +258,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // next-hop-self
     if (Boolean.TRUE.equals(neighbor.getNextHopSelf())) {
-      peerExportPolicy.addStatement(new SetNextHop(SelfNextHop.getInstance(), false));
+      peerExportPolicy.addStatement(new SetNextHop(SelfNextHop.getInstance()));
     }
 
     Conjunction peerExportConditions = new Conjunction();

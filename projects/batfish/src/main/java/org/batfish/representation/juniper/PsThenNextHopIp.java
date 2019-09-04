@@ -24,7 +24,7 @@ public final class PsThenNextHopIp extends PsThen {
       Configuration c,
       Warnings warnings) {
     // todo: something with destination-vrf
-    statements.add(new SetNextHop(new IpNextHop(Collections.singletonList(_nextHopIp)), false));
+    statements.add(new SetNextHop(new IpNextHop(Collections.singletonList(_nextHopIp))));
   }
 
   public Ip getNextHopIp() {
