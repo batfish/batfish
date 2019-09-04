@@ -76264,56 +76264,56 @@
             {
               "Comment" : "OSPF interface Bundle-Ethernet101 not declared before OSPF process",
               "Line" : 17,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface Bundle-Ether101\n   bfd fast-detect\n   network broadcast\n   message-digest-key 20 md5 encrypted FF00FF00FF00FF00FF00FF\n   priority 2"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "Bundle-Ether101"
             },
             {
               "Comment" : "OSPF interface Bundle-Ethernet103 not declared before OSPF process",
               "Line" : 23,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface Bundle-Ether103\n   network broadcast\n   priority 2"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "Bundle-Ether103"
             },
             {
               "Comment" : "OSPF interface Bundle-Ethernet201 not declared before OSPF process",
               "Line" : 27,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface Bundle-Ether201\n   cost 1\n   network point-to-point\n   passive enable"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "Bundle-Ether201"
             },
             {
               "Comment" : "OSPF interface Loopback0 not declared before OSPF process",
               "Line" : 32,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface Loopback0\n   passive enable"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "Loopback0"
             },
             {
               "Comment" : "OSPF interface TenGigabitEthernet0/0/0/4 not declared before OSPF process",
               "Line" : 35,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface TenGigE0/0/0/4\n   passive enable"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "TenGigE0/0/0/4"
             },
             {
               "Comment" : "OSPF interface TenGigabitEthernet0/0/0/5 not declared before OSPF process",
               "Line" : 38,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface TenGigE0/0/0/5\n   passive enable"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "TenGigE0/0/0/5"
             },
             {
               "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/0.292 not declared before OSPF process",
               "Line" : 41,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface HundredGigE0/2/0/0.292"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "HundredGigE0/2/0/0.292"
             },
             {
               "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/3 not declared before OSPF process",
               "Line" : 43,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface HundredGigE0/2/0/3\n   network broadcast"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "HundredGigE0/2/0/3"
             },
             {
               "Comment" : "OSPF interface TenGigabitEthernet0/0/0/2 not declared before OSPF process",
               "Line" : 50,
-              "Parser_Context" : "[roa_interface ro_area s_router_ospf stanza cisco_configuration]",
-              "Text" : "interface TenGigE0/0/0/2\n   network broadcast"
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Text" : "TenGigE0/0/0/2"
             }
           ]
         },

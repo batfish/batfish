@@ -4083,7 +4083,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         INTERFACE, ifaceName, OSPF_AREA_INTERFACE, ctx.iname.getStart().getLine());
     Interface iface = _configuration.getInterfaces().get(ifaceName);
     if (iface == null) {
-      warn(ctx, String.format("OSPF interface %s not declared before OSPF process", ifaceName));
+      warn(
+          ctx.iname,
+          String.format("OSPF interface %s not declared before OSPF process", ifaceName));
       iface = addInterface(ifaceName, ctx.iname, false);
     }
     // might cause problems if interfaces are declared after ospf, but
