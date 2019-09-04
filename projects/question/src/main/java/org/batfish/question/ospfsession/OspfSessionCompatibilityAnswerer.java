@@ -15,11 +15,12 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.CandidateOspfTopology;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.ospf.OspfSessionProperties;
-import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfSessionStatus;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -38,6 +39,8 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
   static final String COL_REMOTE_VRF = "Remote_VRF";
   static final String COL_REMOTE_IP = "Remote_IP";
   static final String COL_REMOTE_AREA = "Remote_Area";
+
+  static final String COL_SESSION_STATUS = "Session_Status";
 
   // no column for session compatibility since only compatible sessions are shown
 
@@ -58,6 +61,7 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
 
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
+    /*
     Multiset<Row> propertyRows =
         getRows(
             configurations,
@@ -65,6 +69,14 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
             remoteNodes,
             _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot()),
             tableMetadata.toColumnMap());
+    */
+
+    CandidateOspfTopology candidateTopo =
+        OspfTopologyUtils.computeCandidateOspfTopology(
+            NetworkConfigurations.of(configurations),
+            _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot()));
+    Multiset<Row> propertyRows =
+        getRows(configurations, nodes, remoteNodes, candidateTopo, tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;
@@ -75,7 +87,7 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
       Map<String, Configuration> configurations,
       Set<String> nodes,
       Set<String> remoteNodes,
-      OspfTopology ospfTopology,
+      CandidateOspfTopology ospfTopology,
       Map<String, ColumnMetadata> columnMetadataMap) {
     Multiset<Row> rows = HashMultiset.create();
     for (String node : nodes) {
@@ -118,7 +130,7 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
       Map<String, Configuration> configurations,
       OspfNeighborConfigId nodeU,
       Set<OspfNeighborConfigId> nodeVs,
-      OspfTopology ospfTopology,
+      CandidateOspfTopology ospfTopology,
       Map<String, ColumnMetadata> columnMetadataMap) {
     Multiset<Row> rows = HashMultiset.create();
     NetworkConfigurations nf = NetworkConfigurations.of(configurations);
@@ -131,16 +143,12 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
       if (!nodeVConfig.isPresent()) {
         continue;
       }
-      Optional<OspfSessionProperties> session =
-          ospfTopology.getSession(OspfTopology.makeEdge(nodeU, nodeV));
+      Optional<OspfSessionStatus> session = ospfTopology.getSessionStatus(nodeU, nodeV);
       session.ifPresent(
-          ospfSessionProperties ->
+          ospfSessionStatus ->
               rows.add(
                   createRow(
-                      nodeUConfig.get(),
-                      nodeVConfig.get(),
-                      ospfSessionProperties,
-                      columnMetadataMap)));
+                      nodeUConfig.get(), nodeVConfig.get(), ospfSessionStatus, columnMetadataMap)));
     }
     return rows;
   }
@@ -148,19 +156,21 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
   private static Row createRow(
       OspfNeighborConfig nodeU,
       OspfNeighborConfig nodeV,
-      OspfSessionProperties session,
+      OspfSessionStatus sessionStatus,
       Map<String, ColumnMetadata> columnMetadataMap) {
     return Row.builder(columnMetadataMap)
         .put(COL_INTERFACE, new NodeInterfacePair(nodeU.getHostname(), nodeU.getInterfaceName()))
         .put(COL_VRF, nodeU.getVrfName())
-        .put(COL_IP, session.getIpLink().getIp1())
+        // .put(COL_IP, Ip.parse("255.255.255.255"))
+        .put(COL_IP, nodeU.getIp())
         .put(COL_AREA, nodeU.getArea())
         .put(
             COL_REMOTE_INTERFACE,
             new NodeInterfacePair(nodeV.getHostname(), nodeV.getInterfaceName()))
         .put(COL_REMOTE_VRF, nodeV.getVrfName())
-        .put(COL_REMOTE_IP, session.getIpLink().getIp2())
+        .put(COL_REMOTE_IP, nodeV.getIp())
         .put(COL_REMOTE_AREA, nodeV.getArea())
+        .put(COL_SESSION_STATUS, sessionStatus.toString())
         .build();
   }
 
@@ -178,6 +188,9 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
     columnBuilder.add(new ColumnMetadata(COL_REMOTE_VRF, Schema.STRING, "Remote VRF", false, true));
     columnBuilder.add(new ColumnMetadata(COL_REMOTE_IP, Schema.IP, "Remote IP", false, true));
     columnBuilder.add(new ColumnMetadata(COL_REMOTE_AREA, Schema.LONG, "Remote Area", false, true));
+    columnBuilder.add(
+        new ColumnMetadata(
+            COL_SESSION_STATUS, Schema.STRING, "Status of the OSPF session", false, true));
 
     return new TableMetadata(columnBuilder.build(), "Display OSPF sessions");
   }
