@@ -1450,6 +1450,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureType.IP_ACCESS_LIST,
         CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN,
         CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT,
+        CiscoNxosStructureUsage.LINE_VTY_ACCESS_CLASS_IN,
+        CiscoNxosStructureUsage.LINE_VTY_ACCESS_CLASS_OUT,
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS,
         CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV4ACL);
     markConcreteStructure(

@@ -103,6 +103,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_A
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.LINE_VTY_ACCESS_CLASS_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.LINE_VTY_ACCESS_CLASS_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.LOGGING_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.MONITOR_SESSION_DESTINATION_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.MONITOR_SESSION_SOURCE_INTERFACE;
@@ -356,6 +358,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_source_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Lv_access_classContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
@@ -2106,6 +2109,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration.setLoggingSourceInterface(name);
     _configuration.referenceStructure(
         INTERFACE, name, LOGGING_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitLv_access_class(Lv_access_classContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.acl);
+    if (!acl.isPresent()) {
+      return;
+    }
+    CiscoNxosStructureUsage usage =
+        ctx.IN() != null ? LINE_VTY_ACCESS_CLASS_IN : LINE_VTY_ACCESS_CLASS_OUT;
+    _configuration.referenceStructure(IP_ACCESS_LIST, acl.get(), usage, ctx.getStart().getLine());
   }
 
   @Override

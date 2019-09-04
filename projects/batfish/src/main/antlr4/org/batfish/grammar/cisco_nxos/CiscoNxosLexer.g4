@@ -39,6 +39,11 @@ ACCESS
   'access'
 ;
 
+ACCESS_CLASS
+:
+  'access-class' -> pushMode ( M_Word )
+;
+
 ACCESS_GROUP
 :
   'access-group'
@@ -47,7 +52,6 @@ ACCESS_GROUP
       pushMode(M_Word);
     }
   }
-  
 ;
 
 ACCESS_LIST
@@ -731,6 +735,11 @@ CONNECTION_MODE
   'connection-mode'
 ;
 
+CONSOLE
+:
+  'console'
+;
+
 CONTACT
 :
 // followed by arbitrary contact information
@@ -1286,6 +1295,11 @@ EXCEPTION
 EXEC
 :
   'exec'
+;
+
+EXEC_TIMEOUT
+:
+  'exec-timeout'
 ;
 
 EXEMPT
@@ -2044,6 +2058,11 @@ LEVEL
 LICENSE
 :
   'license'
+;
+
+LINE
+:
+  'line'
 ;
 
 LINE_PROTOCOL
@@ -4610,6 +4629,11 @@ VRF
 VTP
 :
   'vtp'
+;
+
+VTY
+:
+  'vty'
 ;
 
 WAIT_FOR
