@@ -42,8 +42,6 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
 
   static final String COL_SESSION_STATUS = "Session_Status";
 
-  // no column for session compatibility since only compatible sessions are shown
-
   public OspfSessionCompatibilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -60,16 +58,6 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
     TableMetadata tableMetadata = createTableMetadata();
 
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
-
-    /*
-    Multiset<Row> propertyRows =
-        getRows(
-            configurations,
-            nodes,
-            remoteNodes,
-            _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot()),
-            tableMetadata.toColumnMap());
-    */
 
     CandidateOspfTopology candidateTopo =
         OspfTopologyUtils.computeCandidateOspfTopology(
