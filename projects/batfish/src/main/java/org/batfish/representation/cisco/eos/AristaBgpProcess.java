@@ -20,20 +20,24 @@ public final class AristaBgpProcess implements Serializable {
     return _asn;
   }
 
+  /** Hold timer, in seconds */
   @Nullable
   public Integer getHoldTimer() {
     return _holdTimer;
   }
 
+  /** Set the Hold timer, in seconds */
   public void setHoldTimer(@Nullable Integer holdTimer) {
     _holdTimer = holdTimer;
   }
 
+  /** Keepalive timer, in seconds */
   @Nullable
   public Integer getKeepAliveTimer() {
     return _keepAliveTimer;
   }
 
+  /** Set the Keepalive timer, in seconds */
   public void setKeepAliveTimer(@Nullable Integer keepAliveTimer) {
     _keepAliveTimer = keepAliveTimer;
   }
