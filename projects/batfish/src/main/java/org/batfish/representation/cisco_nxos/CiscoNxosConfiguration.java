@@ -1483,6 +1483,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureType.IP_PREFIX_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_OUT,
+        CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_PREFIX_LIST,
+        CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_PREFIX_LIST,
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
     markConcreteStructure(
         CiscoNxosStructureType.IPV6_ACCESS_LIST,
@@ -1542,6 +1544,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_TABLE_MAP,
         CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP,
+        CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_ROUTE_MAP,
+        CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_ROUTE_MAP,
         CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT,

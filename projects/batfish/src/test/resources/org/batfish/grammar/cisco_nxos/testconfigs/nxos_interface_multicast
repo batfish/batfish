@@ -9,8 +9,19 @@ interface Ethernet1/1
   no switchport
   no shutdown
   no ip redirects
-  ip pim hello-interval 1000
-  ip pim sparse-mode
+  ip address 8.1.2.3/24
   ip igmp query-max-response-time 1
   ip igmp query-interval 3
   ip igmp version 3
+  ip pim bfd-instance
+  ip pim sparse-mode
+  ip pim border
+  ip pim strict-rfc-compliant
+  ip pim dr-delay 1
+  ip pim hello-interval 355
+  ip pim jp-policy RM
+  ip pim jp-policy prefix-list PL
+  ip pim hello-authentication ah-md5 3 32a67eb4d3078aa8
+  ip pim neighbor-policy RM
+  ip pim neighbor-policy prefix-list PL
+  ip pim passive

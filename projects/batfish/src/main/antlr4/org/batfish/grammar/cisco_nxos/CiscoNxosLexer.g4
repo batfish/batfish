@@ -253,6 +253,11 @@ AGGRESSIVE
   'aggressive'
 ;
 
+AH_MD5
+:
+  'ah-md5' -> pushMode ( M_Password )
+;
+
 AHP
 :
   'ahp'
@@ -450,6 +455,11 @@ BFD
   'bfd'
 ;
 
+BFD_INSTANCE
+:
+  'bfd-instance'
+;
+
 BGP
 :
   'bgp'
@@ -488,6 +498,11 @@ BOOTPC
 BOOTPS
 :
   'bootps'
+;
+
+BORDER
+:
+  'border'
 ;
 
 BOTH
@@ -1096,6 +1111,16 @@ DOT1Q_TUNNEL
   'dot1q-tunnel'
 ;
 
+DR_DELAY
+:
+  'dr-delay'
+;
+
+DR_PRIORITY
+:
+  'dr-priority'
+;
+
 DRIP
 :
   'drip'
@@ -1593,6 +1618,11 @@ HEAD
   'head'
 ;
 
+HELLO_AUTHENTICATION
+:
+  'hello-authentication'
+;
+
 HELLO_INTERVAL
 :
   'hello-interval'
@@ -1929,6 +1959,11 @@ ISOLATE
 JP_INTERVAL
 :
   'jp-interval'
+;
+
+JP_POLICY
+:
+  'jp-policy' -> pushMode ( M_PrefixListOrWord )
 ;
 
 KBPS
@@ -2670,6 +2705,11 @@ NEGOTIATE
 NEIGHBOR
 :
   'neighbor'
+;
+
+NEIGHBOR_POLICY
+:
+  'neighbor-policy' -> pushMode ( M_PrefixListOrWord )
 ;
 
 NEQ
@@ -3991,6 +4031,11 @@ STORM_CONTROL
 STPX
 :
   'stpx'
+;
+
+STRICT_RFC_COMPLIANT
+:
+  'strict-rfc-compliant'
 ;
 
 STUB
@@ -5588,6 +5633,28 @@ M_PolicyMapType_QUEUING
 ;
 
 M_PolicyMapType_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PrefixListOrWord;
+
+M_PrefixListOrWord_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_PrefixListOrWord_PREFIX_LIST
+:
+  'prefix-list' -> type ( PREFIX_LIST ) , mode ( M_Word )
+;
+
+M_PrefixListOrWord_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_PrefixListOrWord_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
