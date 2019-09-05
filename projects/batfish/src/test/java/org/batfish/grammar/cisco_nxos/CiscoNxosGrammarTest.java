@@ -219,11 +219,15 @@ import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
@@ -581,6 +585,61 @@ public final class CiscoNxosGrammarTest {
       assertThat(l2vpn, notNullValue());
       assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ALL));
     }
+  }
+
+  @Test
+  public void testBgpNextHopUnchanged() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_nh_unchanged");
+    RoutingPolicy nhipUnchangedPolicy = c.getRoutingPolicies().get("NHIP-UNCHANGED");
+
+    // assert on the structure of routing policy
+    Statement defaultPermitStatement =
+        new If(
+            BooleanExprs.CALL_EXPR_CONTEXT,
+            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
+    Statement defaultDenyStatement =
+        new If(
+            BooleanExprs.CALL_EXPR_CONTEXT,
+            ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    assertThat(
+        nhipUnchangedPolicy.getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new SetNextHop(UnchangedNextHop.getInstance()),
+                defaultPermitStatement,
+                defaultDenyStatement)));
+
+    // assert on the behavior of routing policy
+    Ip originalNhip = Ip.parse("12.12.12.12");
+    Bgpv4Route originalRoute =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.parse("1.2.3.4/31"))
+            .setNextHopIp(originalNhip)
+            .setAdmin(1)
+            .setOriginatorIp(Ip.parse("9.8.7.6"))
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route.Builder outputRouteBuilder =
+        Bgpv4Route.builder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+    Prefix ibgpNeighbor = Prefix.parse("2.2.2.2/32");
+    Prefix ebgpNeighbor = Prefix.parse("1.1.1.1/32");
+
+    boolean shouldExportToIbgp =
+        nhipUnchangedPolicy.process(
+            originalRoute, outputRouteBuilder, null, ibgpNeighbor, "default", Direction.OUT);
+    assertTrue(shouldExportToIbgp);
+    // NHIP was not set for iBGP neighbor
+    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+
+    boolean shouldExportToEbgp =
+        nhipUnchangedPolicy.process(
+            originalRoute, outputRouteBuilder, null, ebgpNeighbor, "default", Direction.OUT);
+    assertTrue(shouldExportToEbgp);
+    // NHIP was set to original route's NHIP for eBGP neighbor
+    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(originalNhip));
   }
 
   @Test
