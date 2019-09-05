@@ -51,6 +51,7 @@ s_interface_regular
     | i_mtu
     | i_no
     | i_null
+    | i_ospfv3
     | i_service_policy
     | i_shutdown
     | i_speed
@@ -680,6 +681,7 @@ i_ipv6
   (
     iip6_address
     | iip6_null
+    | iip6_router
     | iip6_traffic_filter
   )
 ;
@@ -713,9 +715,16 @@ iip6_null
     | MLD
     | ND
     | REDIRECTS
-    | ROUTER
     | VERIFY
   ) null_rest_of_line
+;
+
+iip6_router
+:
+  ROUTER
+  (
+    iip6r_ospfv3
+  )
 ;
 
 iip6_traffic_filter
@@ -725,6 +734,11 @@ iip6_traffic_filter
     IN
     | OUT
   ) NEWLINE
+;
+
+iip6r_ospfv3
+:
+  ospfv3_instance AREA area = ospf_area_id NEWLINE
 ;
 
 i_lacp
@@ -948,7 +962,6 @@ i_null
     | MDIX
     | MEDIUM
     | NEGOTIATE
-    | OSPFV3
     | PACKET
     | PRIORITY_FLOW_CONTROL
     | SNMP
@@ -958,6 +971,37 @@ i_null
     | VPC
     | VTP
   ) null_rest_of_line
+;
+
+i_ospfv3
+:
+  OSPFV3
+  (
+    io3_bfd
+    | io3_dead_interval
+    | io3_hello_interval
+    | io3_network
+  )
+;
+
+io3_bfd
+:
+  BFD NEWLINE
+;
+
+io3_dead_interval
+:
+  DEAD_INTERVAL interval_s = ospf_dead_interval NEWLINE
+;
+
+io3_hello_interval
+:
+  HELLO_INTERVAL interval_s = ospf_hello_interval NEWLINE
+;
+
+io3_network
+:
+  NETWORK POINT_TO_POINT NEWLINE
 ;
 
 i_service_policy

@@ -10,12 +10,6 @@ options {
 ///// VARIOUS SUBTYPES /////
 ////////////////////////////
 
-bgp_distance
-:
-// 1-255
-  UINT8
-;
-
 dampen_igp_metric_interval
 :
 // 20-3600
@@ -26,12 +20,6 @@ dampen_igp_metric_interval
 decay_half_life
 :
 // 1-45
-  UINT8
-;
-
-maximum_paths
-:
-// 1-64
   UINT8
 ;
 
@@ -319,7 +307,7 @@ rb_afip_default_metric
 
 rb_afip_distance
 :
-  DISTANCE ebgp = bgp_distance ibgp = bgp_distance local = bgp_distance NEWLINE
+  DISTANCE ebgp = protocol_distance ibgp = protocol_distance local = protocol_distance NEWLINE
 ;
 
 rb_afip_inject_map

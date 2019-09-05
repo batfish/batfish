@@ -59,6 +59,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_IP_POLICY("interface ip policy"),
   INTERFACE_IP_ROUTER_EIGRP("interface ip router eigrp"),
   INTERFACE_IP_ROUTER_OSPF("interface ip router ospf"),
+  INTERFACE_IPV6_ROUTER_OSPFV3("interface ipv6 router ospfv3"),
   INTERFACE_SELF_REFERENCE("interface"),
   INTERFACE_SERVICE_POLICY_QOS("interface service-policy type qos"),
   INTERFACE_SERVICE_POLICY_QUEUING("interface service-policy type queuing"),
@@ -88,6 +89,16 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   OSPF_DEFAULT_INFORMATION_ROUTE_MAP("router ospf default-information originate route-map"),
   OSPF_REDISTRIBUTE_INSTANCE("router ospf redistribute"),
   OSPF_REDISTRIBUTE_ROUTE_MAP("router ospf redistribute route-map"),
+  OSPFV3_AREA_FILTER_LIST_ROUTE_MAP(
+      "router ospfv3 address-family area ipv6 unicast filter-list route-map"),
+  OSPFV3_DEFAULT_INFORMATION_ORIGINATE_ROUTE_MAP(
+      "router ospfv3 address-family default-information originate route-map"),
+  OSPFV3_NSSA_DEFAULT_INFORMATION_ORIGINATE_ROUTE_MAP(
+      "router ospfv3 area nssa default-information-originate route-map"),
+  OSPFV3_REDISTRIBUTE_INSTANCE("router ospfv3 address-family redistribute"),
+  OSPFV3_REDISTRIBUTE_ROUTE_MAP("router ospfv3 address-family redistribute route-map"),
+  OSPFV3_TABLE_MAP("router ospfv3 address-family table-map"),
+  OSPFV3_VRF("router ospfv3 vrf"),
   POLICY_MAP_CLASS("policy-map class"),
   ROUTE_MAP_CONTINUE("route-map continue"),
   ROUTE_MAP_ENTRY_PREV_REF("route-map entry"),

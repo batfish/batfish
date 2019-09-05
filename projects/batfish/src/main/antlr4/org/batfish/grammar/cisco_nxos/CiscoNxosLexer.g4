@@ -931,6 +931,11 @@ DEFAULT_INFORMATION
   'default-information'
 ;
 
+DEFAULT_INFORMATION_ORIGINATE
+:
+  'default-information-originate'
+;
+
 DEFAULT_LIFETIME
 :
   'default-lifetime'
@@ -1049,6 +1054,11 @@ DISABLE_PEER_AS_CHECK
 DISCARD
 :
   'discard'
+;
+
+DISCARD_ROUTE
+:
+  'discard-route'
 ;
 
 DISTANCE
@@ -1877,6 +1887,11 @@ INSTALL
   'install'
 ;
 
+INTER_AREA_PREFIX_LSA
+:
+  'inter-area-prefix-lsa'
+;
+
 INTERFACE
 :
 // most common abbreviation
@@ -2405,6 +2420,11 @@ MAX_LINKS
   'max-links'
 ;
 
+MAX_LSA
+:
+  'max-lsa'
+;
+
 MAX_METRIC
 :
   'max-metric'
@@ -2662,6 +2682,11 @@ NAME
   }
 ;
 
+NAME_LOOKUP
+:
+  'name-lookup'
+;
+
 NAME_SERVER
 :
   'name-server'
@@ -2765,6 +2790,11 @@ NETWORK_QOS
 NETWORK_UNKNOWN
 :
   'network-unknown'
+;
+
+NEVER
+:
+  'never'
 ;
 
 NEWROOT
@@ -3582,6 +3612,11 @@ RETAIN
   'retain'
 ;
 
+RETRANSMIT_INTERVAL
+:
+  'retransmit-interval'
+;
+
 RIP
 :
   'rip' -> pushMode ( M_Word )
@@ -4043,6 +4078,11 @@ STUB
   'stub'
 ;
 
+STUB_PREFIX_LSA
+:
+  'stub-prefix-lsa'
+;
+
 SUB_OPTION
 :
   'sub-option'
@@ -4113,6 +4153,12 @@ SUPPRESS_MAP
   'suppress-map'
 ;
 
+// sic
+SUPRESS_FA
+:
+  'supress-fa'
+;
+
 SUSPEND_INDIVIDUAL
 :
   'suspend-individual'
@@ -4162,7 +4208,7 @@ SYSTEM
 
 TABLE_MAP
 :
-  'table-map'
+  'table-map' -> pushMode ( M_Word )
 ;
 
 TACACS
@@ -4331,9 +4377,19 @@ TRAFFIC_FILTER
   'traffic-filter' -> pushMode ( M_Word )
 ;
 
+TRANSLATE
+:
+  'translate'
+;
+
 TRANSMIT
 :
   'transmit'
+;
+
+TRANSMIT_DELAY
+:
+  'transmit-delay'
 ;
 
 TRANSPORT
@@ -4447,6 +4503,11 @@ TYPE_1
 TYPE_2
 :
   'type-2'
+;
+
+TYPE7
+:
+  'type7'
 ;
 
 UDLD

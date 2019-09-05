@@ -215,6 +215,12 @@ mac_address_literal
   MAC_ADDRESS_LITERAL
 ;
 
+maximum_paths
+:
+// 1-64
+  UINT8
+;
+
 md5_string
 :
 // 1-15 characters
@@ -237,10 +243,46 @@ nve_interface_name
   NVE first = uint8
 ;
 
+ospf_area_default_cost
+:
+// 0-16777215
+  uint32
+;
+
 ospf_area_id
 :
   num = uint32
   | ip = ip_address
+;
+
+ospf_area_range_cost
+:
+// 0-16777215
+  uint32
+;
+
+ospf_max_metric_external_lsa
+:
+// 1-16777215
+  uint32
+;
+
+ospf_on_startup_wait_period
+:
+// 5-86400
+  uint32
+;
+
+ospf_ref_bw_gbps
+:
+// 1-4000
+  uint16
+;
+
+ospf_ref_bw_mbps
+:
+// 1-4,000,000
+  uint32
 ;
 
 policy_map_cp_name
@@ -358,6 +400,13 @@ ospf_instance
 ospfv3_instance
 :
   OSPFV3 router_ospfv3_name
+;
+
+// The admin distance (static route calls it preference) for a non-local/direct route.
+protocol_distance
+:
+// 1-255
+  uint8
 ;
 
 rip_instance

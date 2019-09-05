@@ -6383,14 +6383,14 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.0.0/24")).iterator().next();
       assertTrue(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(0L));
     }
     {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.1.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
     }
@@ -6398,7 +6398,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.2.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
@@ -6407,7 +6407,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.13.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), nullValue());
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
@@ -6416,7 +6416,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.3.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
@@ -6426,7 +6426,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.4.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
@@ -6437,7 +6437,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.5.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
@@ -6448,7 +6448,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.6.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getPreference(), equalTo(5));
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
@@ -6459,7 +6459,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.7.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getPreference(), equalTo(5));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
@@ -6470,7 +6470,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.8.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getPreference(), equalTo(5));
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
@@ -6481,7 +6481,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.9.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getPreference(), equalTo(5));
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
       assertThat(route.getNextHopInterface(), nullValue());
@@ -6493,7 +6493,7 @@ public final class CiscoNxosGrammarTest {
       StaticRoute route =
           vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.10.0/24")).iterator().next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getPreference(), equalTo(5));
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/2"));
@@ -6510,7 +6510,7 @@ public final class CiscoNxosGrammarTest {
               .iterator()
               .next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
       assertThat(route.getNextHopVrf(), nullValue());
@@ -6524,7 +6524,7 @@ public final class CiscoNxosGrammarTest {
               .iterator()
               .next();
       assertFalse(route.getDiscard());
-      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getPreference(), equalTo(1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/100"));
