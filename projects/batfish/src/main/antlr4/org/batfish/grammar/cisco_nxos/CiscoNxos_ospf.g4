@@ -56,12 +56,6 @@ roa_default_cost
   DEFAULT_COST cost = ospf_area_default_cost NEWLINE
 ;
 
-ospf_area_default_cost
-:
-// 0-16777215
-  uint32
-;
-
 roa_filter_list
 :
   FILTER_LIST ROUTE_MAP name = route_map_name
@@ -94,12 +88,6 @@ roa_range
   )? NEWLINE
 ;
 
-ospf_area_range_cost
-:
-// 0-16777215
-  uint32
-;
-
 roa_stub
 :
 // non-zero area only
@@ -115,21 +103,9 @@ ro_auto_cost
 :
   AUTO_COST REFERENCE_BANDWIDTH
   (
-    gbps = acrbw_gbps GBPS
-    | mbps = acrbw_mbps MBPS?
+    gbps = ospf_ref_bw_gbps GBPS
+    | mbps = ospf_ref_bw_mbps MBPS?
   ) NEWLINE
-;
-
-acrbw_gbps
-:
-// 1-4000
-  uint16
-;
-
-acrbw_mbps
-:
-// 1-4,000,000
-  uint32
 ;
 
 ro_bfd
@@ -177,7 +153,7 @@ ro_max_metric
 :
   MAX_METRIC ROUTER_LSA
   (
-    external_lsa = EXTERNAL_LSA manual_external_lsa = max_metric_external_lsa?
+    external_lsa = EXTERNAL_LSA manual_external_lsa = ospf_max_metric_external_lsa?
   )? include_stub = INCLUDE_STUB?
   (
     on_startup = ON_STARTUP wait_period = ospf_on_startup_wait_period?
@@ -188,18 +164,6 @@ ro_max_metric
   (
     summary_lsa = SUMMARY_LSA manual_summary_lsa = max_metric_summary_lsa?
   )? NEWLINE
-;
-
-max_metric_external_lsa
-:
-// 1-16777215
-  uint32
-;
-
-ospf_on_startup_wait_period
-:
-// 5-86400
-  uint32
 ;
 
 max_metric_summary_lsa

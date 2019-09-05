@@ -23,6 +23,7 @@ import
   CiscoNxos_ntp,
   CiscoNxos_object_group,
   CiscoNxos_ospf,
+  CiscoNxos_ospfv3,
   CiscoNxos_policy_map,
   CiscoNxos_route_map,
   CiscoNxos_snmp,
@@ -387,6 +388,7 @@ s_router
     router_bgp
     | router_eigrp
     | router_ospf
+    | router_ospfv3
   )
 ;
 
