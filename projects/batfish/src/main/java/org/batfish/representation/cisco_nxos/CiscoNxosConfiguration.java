@@ -160,6 +160,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
@@ -3090,8 +3091,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public Stream<Statement> visitRouteMapSetIpNextHopUnchanged(
               RouteMapSetIpNextHopUnchanged routeMapSetIpNextHopUnchanged) {
-            // TODO: implement
-            return Stream.empty();
+            return Stream.of(new SetNextHop(UnchangedNextHop.getInstance()));
           }
 
           @Override
