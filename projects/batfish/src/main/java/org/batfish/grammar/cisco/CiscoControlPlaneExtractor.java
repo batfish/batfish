@@ -625,6 +625,10 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_linkContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_router_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_shutdownContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_timersContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_router_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_trunkContext;
@@ -1384,6 +1388,7 @@ import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
@@ -1544,6 +1549,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
+
+  private AristaBgpProcess _currentAristaBgpProcess;
 
   @Nullable private CiscoAsaNat _currentAsaNat;
 
@@ -2393,6 +2400,41 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _configuration.referenceStructure(
         L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void enterEos_router_bgp(Eos_router_bgpContext ctx) {
+    _currentAristaBgpProcess = _configuration.getAristaBgp();
+    long asn = toAsNum(ctx.asn);
+    if (_currentAristaBgpProcess == null) {
+      _currentAristaBgpProcess = new AristaBgpProcess(asn);
+      _configuration.setAristaBgp(_currentAristaBgpProcess);
+    } else if (asn != _currentAristaBgpProcess.getAsn()) {
+      // Create a dummy node
+      _currentAristaBgpProcess = new AristaBgpProcess(asn);
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
+    }
+  }
+
+  @Override
+  public void exitEos_router_bgp(Eos_router_bgpContext ctx) {
+    _currentAristaBgpProcess = null;
+  }
+
+  @Override
+  public void exitEos_rb_router_id(Eos_rb_router_idContext ctx) {
+    _currentAristaBgpProcess.setRouterId(toIp(ctx.id));
+  }
+
+  @Override
+  public void exitEos_rb_timers(Eos_rb_timersContext ctx) {
+    _currentAristaBgpProcess.setHoldTimer(toInteger(ctx.hold));
+    _currentAristaBgpProcess.setKeepAliveTimer(toInteger(ctx.keepalive));
+  }
+
+  @Override
+  public void exitEos_rb_shutdown(Eos_rb_shutdownContext ctx) {
+    _currentAristaBgpProcess.setShutdown(true);
   }
 
   @Override
