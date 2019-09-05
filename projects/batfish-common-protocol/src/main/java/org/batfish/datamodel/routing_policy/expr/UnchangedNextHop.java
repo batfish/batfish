@@ -33,6 +33,7 @@ public class UnchangedNextHop extends NextHopExpr {
     if (peerPrefix == null) {
       return null;
     }
+    // TODO: extend to dynamic and unnumbered neighbors
     BgpActivePeerConfig activeNeighbor =
         environment.getBgpProcess().getActiveNeighbors().get(peerPrefix);
     if (activeNeighbor == null || Objects.isNull(activeNeighbor.getLocalAs())) {
