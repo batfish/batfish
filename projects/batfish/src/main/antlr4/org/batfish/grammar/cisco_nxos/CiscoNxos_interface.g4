@@ -383,6 +383,7 @@ i_ip
     | i_ip_forward
     | i_ip_null
     | i_ip_ospf
+    | i_ip_pim
     | i_ip_policy
     | i_ip_port_unreachable
     | i_ip_proxy_arp
@@ -462,7 +463,6 @@ i_ip_null
     ARP
     | FLOW
     | IGMP
-    | PIM
     | REDIRECTS
     | UNREACHABLES
     | VERIFY
@@ -482,6 +482,74 @@ i_ip_ospf
     | iipo_network
     | iipo_passive_interface
   )
+;
+
+i_ip_pim
+:
+  PIM
+  (
+    iipp_hello_authentication
+    | iipp_jp_policy
+    | iipp_neighbor_policy
+    | iipp_null
+  )
+;
+
+iipp_hello_authentication
+:
+  HELLO_AUTHENTICATION AH_MD5 cisco_nxos_password NEWLINE
+;
+
+iipp_jp_policy
+:
+  JP_POLICY
+  (
+    iipp_jp_policy_prefix_list
+    | iipp_jp_policy_route_map
+  )
+;
+
+iipp_jp_policy_prefix_list
+:
+  PREFIX_LIST list = ip_prefix_list_name (IN | OUT)? NEWLINE
+;
+
+iipp_jp_policy_route_map
+:
+  map = route_map_name (IN | OUT)? NEWLINE
+;
+
+iipp_neighbor_policy
+:
+  NEIGHBOR_POLICY
+  (
+    iipp_neighbor_policy_prefix_list
+    | iipp_neighbor_policy_route_map
+  )
+;
+
+iipp_neighbor_policy_prefix_list
+:
+  PREFIX_LIST list = ip_prefix_list_name (IN | OUT)? NEWLINE
+;
+
+iipp_neighbor_policy_route_map
+:
+  map = route_map_name (IN | OUT)? NEWLINE
+;
+
+iipp_null
+:
+  (
+    BFD_INSTANCE
+    | BORDER
+    | DR_DELAY
+    | DR_PRIORITY
+    | HELLO_INTERVAL
+    | PASSIVE
+    | SPARSE_MODE
+    | STRICT_RFC_COMPLIANT
+  ) null_rest_of_line
 ;
 
 i_ip_policy

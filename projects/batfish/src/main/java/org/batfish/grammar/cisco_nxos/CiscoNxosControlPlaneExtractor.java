@@ -90,6 +90,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGR
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_PREFIX_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_PREFIX_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_EIGRP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_OSPF;
@@ -312,6 +316,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_passive_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipp_jp_policy_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipp_jp_policy_route_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipp_neighbor_policy_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipp_neighbor_policy_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_eigrpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Il_min_linksContext;
@@ -1918,6 +1926,52 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitIipo_passive_interface(Iipo_passive_interfaceContext ctx) {
     _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setPassive(true));
+  }
+
+  @Override
+  public void exitIipp_jp_policy_prefix_list(Iipp_jp_policy_prefix_listContext ctx) {
+    Optional<String> list = toString(ctx, ctx.list);
+    if (!list.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        IP_PREFIX_LIST,
+        list.get(),
+        INTERFACE_IP_PIM_JP_POLICY_PREFIX_LIST,
+        ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIipp_jp_policy_route_map(Iipp_jp_policy_route_mapContext ctx) {
+    Optional<String> map = toString(ctx, ctx.map);
+    if (!map.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, map.get(), INTERFACE_IP_PIM_JP_POLICY_ROUTE_MAP, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIipp_neighbor_policy_prefix_list(Iipp_neighbor_policy_prefix_listContext ctx) {
+    Optional<String> list = toString(ctx, ctx.list);
+    if (!list.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        IP_PREFIX_LIST,
+        list.get(),
+        INTERFACE_IP_PIM_NEIGHBOR_POLICY_PREFIX_LIST,
+        ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIipp_neighbor_policy_route_map(Iipp_neighbor_policy_route_mapContext ctx) {
+    Optional<String> map = toString(ctx, ctx.map);
+    if (!map.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, map.get(), INTERFACE_IP_PIM_NEIGHBOR_POLICY_ROUTE_MAP, ctx.getStart().getLine());
   }
 
   @Override
