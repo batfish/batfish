@@ -1475,9 +1475,10 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceMulticastParsing() {
+  public void testInterfaceMulticastParsing() throws IOException {
     // TODO: make into extraction test
-    assertThat(parseVendorConfig("nxos_interface_multicast"), notNullValue());
+    parseConfig("nxos_interface_multicast");
+    // don't crash.
   }
 
   @Test
