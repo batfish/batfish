@@ -20,7 +20,7 @@ public final class StaticRoute implements Serializable {
     private @Nullable String _nextHopInterface;
     private @Nullable Ip _nextHopIp;
     private @Nullable String _nextHopVrf;
-    private short _preference;
+    private int _preference;
     private @Nonnull Prefix _prefix;
     private long _tag;
     private @Nullable Short _track;
@@ -37,7 +37,7 @@ public final class StaticRoute implements Serializable {
           !_discard || (_nextHopInterface == null && _nextHopIp == null && _nextHopVrf == null),
           "Discard static route mutually exclusive with next-hop options");
       checkArgument(
-          STATIC_ROUTE_PREFERENCE_RANGE.contains((int) _preference),
+          STATIC_ROUTE_PREFERENCE_RANGE.contains(_preference),
           "Invalid preference %s outside of %s",
           _preference,
           STATIC_ROUTE_PREFERENCE_RANGE);
@@ -87,7 +87,7 @@ public final class StaticRoute implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setPreference(short preference) {
+    public @Nonnull Builder setPreference(int preference) {
       _preference = preference;
       return this;
     }
@@ -122,7 +122,7 @@ public final class StaticRoute implements Serializable {
   private final @Nullable String _nextHopInterface;
   private final @Nullable Ip _nextHopIp;
   private final @Nullable String _nextHopVrf;
-  private final short _preference;
+  private final int _preference;
   private final @Nonnull Prefix _prefix;
   private final long _tag;
 
@@ -134,7 +134,7 @@ public final class StaticRoute implements Serializable {
       @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
       @Nullable String nextHopVrf,
-      short preference,
+      int preference,
       Prefix prefix,
       @Nullable Short track,
       long tag) {
@@ -177,7 +177,7 @@ public final class StaticRoute implements Serializable {
     return _nextHopVrf;
   }
 
-  public short getPreference() {
+  public int getPreference() {
     return _preference;
   }
 

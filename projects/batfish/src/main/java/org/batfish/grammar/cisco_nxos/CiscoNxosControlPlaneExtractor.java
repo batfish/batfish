@@ -30,6 +30,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PR
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OSPF_AREA;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_QOS;
@@ -120,12 +121,20 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NTP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPFV3_AREA_FILTER_LIST_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPFV3_DEFAULT_INFORMATION_ORIGINATE_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPFV3_NSSA_DEFAULT_INFORMATION_ORIGINATE_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPFV3_REDISTRIBUTE_INSTANCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPFV3_REDISTRIBUTE_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPFV3_TABLE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPFV3_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_AREA_NSSA_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_DEFAULT_INFORMATION_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.POLICY_MAP_CLASS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_OSPFV3_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_OSPF_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_ENTRY_PREV_REF;
@@ -148,7 +157,6 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRAC
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
-import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -240,7 +248,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.As_path_regexContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_execContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asnContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
@@ -312,6 +319,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip6r_ospfv3Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_bfdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
@@ -426,6 +434,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_cp_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_network_qos_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_qos_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_queuing_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Protocol_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistributeContext;
@@ -525,6 +534,12 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_last_asContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsipnh_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsipnh_unchangedContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro3_af6_a_filter_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro3_af6_default_informationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro3_af6_rd_routing_instanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro3_af6_table_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro3_vrfContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro3a_nssa_o_default_information_originateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_areaContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_bfdContext;
@@ -560,6 +575,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_eigrp_process_tagCo
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_isis_process_tagContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospf_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfv3Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfv3_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_rip_process_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Routing_instance_v4Context;
@@ -579,7 +595,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_informsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_trapsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Subnet_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_switchportContext;
@@ -734,7 +749,6 @@ import org.batfish.representation.cisco_nxos.VrfAddressFamily;
 public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener {
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
-  private static final IntegerSpace BGP_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace BGP_EBGP_MULTIHOP_TTL_RANGE =
       IntegerSpace.of(Range.closed(2, 255));
   private static final IntegerSpace BGP_INHERIT_RANGE = IntegerSpace.of(Range.closed(1, 65535));
@@ -855,6 +869,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(0, 5000));
   private static final IntegerSpace OSPFV3_PROCESS_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
+  private static final IntegerSpace PROTOCOL_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace RIP_PROCESS_ID_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
 
@@ -1879,6 +1894,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIip6r_ospfv3(Iip6r_ospfv3Context ctx) {
+    Optional<RoutingProtocolInstance> proc = toRoutingProtocolInstance(ctx, ctx.ospfv3_instance());
+    if (!proc.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        ROUTER_OSPFV3, proc.get().getTag(), INTERFACE_IP_ROUTER_OSPF, ctx.getStart().getLine());
+  }
+
+  @Override
   public void exitIipo_bfd(Iipo_bfdContext ctx) {
     _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setBfd(true));
   }
@@ -2144,7 +2169,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentIpv6AccessList =
         _configuration.getIpv6AccessLists().computeIfAbsent(name.get(), Ipv6AccessList::new);
-    _configuration.defineStructure(CiscoNxosStructureType.IPV6_ACCESS_LIST, name.get(), ctx);
+    _configuration.defineStructure(IPV6_ACCESS_LIST, name.get(), ctx);
   }
 
   @Override
@@ -2346,7 +2371,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterRo_area(Ro_areaContext ctx) {
     long areaId = toLong(ctx.id);
     _currentOspfArea = _currentOspfProcess.getAreas().computeIfAbsent(areaId, OspfArea::new);
-    _configuration.defineStructure(CiscoNxosStructureType.OSPF_AREA, Long.toString(areaId), ctx);
+    _configuration.defineStructure(OSPF_AREA, Long.toString(areaId), ctx);
   }
 
   @Override
@@ -2606,8 +2631,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       usage = CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT;
       _currentOspfArea.setFilterListOut(name);
     }
-    _configuration.referenceStructure(
-        CiscoNxosStructureType.ROUTE_MAP, name, usage, ctx.getStart().getLine());
+    _configuration.referenceStructure(ROUTE_MAP, name, usage, ctx.getStart().getLine());
   }
 
   @Override
@@ -2776,7 +2800,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .getOspfProcesses()
             .computeIfAbsent(nameOrErr.get(), DefaultVrfOspfProcess::new);
     _currentOspfProcess = _currentDefaultVrfOspfProcess;
-    _configuration.defineStructure(CiscoNxosStructureType.ROUTER_OSPF, nameOrErr.get(), ctx);
+    _configuration.defineStructure(ROUTER_OSPF, nameOrErr.get(), ctx);
     _configuration.referenceStructure(
         ROUTER_OSPF, nameOrErr.get(), ROUTER_OSPF_SELF_REFERENCE, ctx.name.getStart().getLine());
   }
@@ -2785,6 +2809,20 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitRouter_ospf(Router_ospfContext ctx) {
     _currentDefaultVrfOspfProcess = null;
     _currentOspfProcess = null;
+  }
+
+  @Override
+  public void enterRouter_ospfv3(Router_ospfv3Context ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      return;
+    }
+    _configuration.defineStructure(ROUTER_OSPFV3, nameOrErr.get(), ctx);
+    _configuration.referenceStructure(
+        ROUTER_OSPFV3,
+        nameOrErr.get(),
+        ROUTER_OSPFV3_SELF_REFERENCE,
+        ctx.name.getStart().getLine());
   }
 
   @Override
@@ -3875,6 +3913,87 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration.referenceStructure(
         ROUTE_MAP, map, EIGRP_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
     _currentEigrpVrfIpAf.setRedistributionPolicy(rpi, map);
+  }
+
+  @Override
+  public void exitRo3_af6_a_filter_list(Ro3_af6_a_filter_listContext ctx) {
+    Optional<String> map = toString(ctx, ctx.name);
+    if (!map.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, map.get(), OSPFV3_AREA_FILTER_LIST_ROUTE_MAP, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRo3_af6_default_information(Ro3_af6_default_informationContext ctx) {
+    if (ctx.rm == null) {
+      return;
+    }
+    Optional<String> map = toString(ctx, ctx.rm);
+    if (!map.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP,
+        map.get(),
+        OSPFV3_DEFAULT_INFORMATION_ORIGINATE_ROUTE_MAP,
+        ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRo3_af6_rd_routing_instance(Ro3_af6_rd_routing_instanceContext ctx) {
+    Optional<RoutingProtocolInstance> rpiOrError =
+        toRoutingProtocolInstance(ctx, ctx.routing_instance_v6());
+    Optional<String> mapOrError = toString(ctx, ctx.route_map_name());
+    if (!rpiOrError.isPresent() || !mapOrError.isPresent()) {
+      return;
+    }
+    RoutingProtocolInstance rpi = rpiOrError.get();
+    String map = mapOrError.get();
+    Optional<CiscoNxosStructureType> type = rpi.getProtocol().getRouterStructureType();
+    if (rpi.getTag() != null && type.isPresent()) {
+      _configuration.referenceStructure(
+          type.get(), rpi.getTag(), OSPFV3_REDISTRIBUTE_INSTANCE, ctx.getStart().getLine());
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, map, OSPFV3_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRo3_af6_table_map(Ro3_af6_table_mapContext ctx) {
+    Optional<String> map = toString(ctx, ctx.map);
+    if (!map.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, map.get(), OSPFV3_TABLE_MAP, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRo3a_nssa_o_default_information_originate(
+      Ro3a_nssa_o_default_information_originateContext ctx) {
+    if (ctx.map == null) {
+      return;
+    }
+    Optional<String> map = toString(ctx, ctx.map);
+    if (!map.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP,
+        map.get(),
+        OSPFV3_NSSA_DEFAULT_INFORMATION_ORIGINATE_ROUTE_MAP,
+        ctx.getStart().getLine());
+  }
+
+  @Override
+  public void enterRo3_vrf(Ro3_vrfContext ctx) {
+    Optional<String> vrf = toString(ctx, ctx.name);
+    if (!vrf.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(VRF, vrf.get(), OSPFV3_VRF, ctx.getStart().getLine());
   }
 
   @Override
@@ -4976,11 +5095,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       builder.setDiscard(true);
     }
     if (ctx.pref != null) {
-      Short pref = toShort(ctx, ctx.pref);
-      if (pref == null) {
+      Optional<Integer> pref = toInteger(ctx, ctx.pref);
+      if (!pref.isPresent()) {
         return;
       }
-      builder.setPreference(pref);
+      builder.setPreference(pref.get());
     }
     if (ctx.tag != null) {
       builder.setTag(toLong(ctx.tag));
@@ -5727,11 +5846,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<Integer> toInteger(
-      ParserRuleContext messageCtx, Bgp_distanceContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx, BGP_DISTANCE_RANGE, "BGP distance");
-  }
-
-  private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Dscp_numberContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, DSCP_RANGE, "DSCP number");
   }
@@ -5864,6 +5978,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Packet_lengthContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, PACKET_LENGTH_RANGE, "packet length");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Protocol_distanceContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, PROTOCOL_DISTANCE_RANGE, "distance");
   }
 
   private @Nonnull Optional<Integer> toInteger(
@@ -6228,18 +6347,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       todo(ctx);
       return Optional.empty();
     }
-  }
-
-  private @Nullable Short toShort(ParserRuleContext messageCtx, Static_route_prefContext ctx) {
-    short pref = Short.parseShort(ctx.getText());
-    if (!STATIC_ROUTE_PREFERENCE_RANGE.contains((int) pref)) {
-      _w.redFlag(
-          String.format(
-              "Expected prefernce in range %s, but got '%d' in: %s",
-              STATIC_ROUTE_PREFERENCE_RANGE, pref, getFullText(messageCtx)));
-      return null;
-    }
-    return pref;
   }
 
   private @Nullable Short toShort(ParserRuleContext messageCtx, Track_object_numberContext ctx) {
