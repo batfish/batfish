@@ -1,5 +1,7 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
@@ -51,6 +53,8 @@ public final class BgpProtocolHelper {
 
     // Make a new builder
     B builder = route.toBuilder();
+    // this will be set later during export policy transformation or after it is exported
+    builder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
 
     // sessionProperties represents incoming edge, so fromNeighbor's IP is its headIp
     Ip fromNeighborIp = sessionProperties.getHeadIp();
