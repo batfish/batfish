@@ -187,6 +187,7 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
+import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpRedistributionPolicy;
@@ -425,6 +426,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String output = withoutQuotes.replaceAll("_", underscoreReplacement);
     return output;
   }
+
+  @Nullable private AristaBgpProcess _aristaBgp;
 
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
@@ -709,6 +712,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(line -> line instanceof RouteMapMatchIpv6AccessListLine)
         .anyMatch(
             line -> ((RouteMapMatchIpv6AccessListLine) line).getListNames().contains(eaListName));
+  }
+
+  @Nullable
+  public AristaBgpProcess getAristaBgp() {
+    return _aristaBgp;
+  }
+
+  public void setAristaBgp(@Nullable AristaBgpProcess aristaBgp) {
+    _aristaBgp = aristaBgp;
   }
 
   public Map<String, IpAsPathAccessList> getAsPathAccessLists() {

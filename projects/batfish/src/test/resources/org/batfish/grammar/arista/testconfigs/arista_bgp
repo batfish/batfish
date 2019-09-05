@@ -3,4 +3,6 @@
 hostname arista_bgp
 !
 router bgp 1
+  router-id 1.2.3.4
+  timers bgp 3 9
   shutdown

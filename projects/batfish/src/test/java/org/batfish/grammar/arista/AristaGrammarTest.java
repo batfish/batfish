@@ -1,6 +1,9 @@
 package org.batfish.grammar.arista;
 
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
@@ -12,6 +15,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
@@ -45,8 +49,12 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseBgpFile() {
+  public void testTopLevelBgpExtraction() {
     // Don't crash
-    parseVendorConfig("arista_bgp");
+    CiscoConfiguration config = parseVendorConfig("arista_bgp");
+    assertTrue(config.getAristaBgp().getShutdown());
+    assertThat(config.getAristaBgp().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(config.getAristaBgp().getKeepAliveTimer(), equalTo(3));
+    assertThat(config.getAristaBgp().getHoldTimer(), equalTo(9));
   }
 }
