@@ -1564,7 +1564,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureType.ROUTER_ISIS,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.ROUTER_ISIS_SELF_REFERENCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPF,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
@@ -1575,12 +1576,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPFV3,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.ROUTER_OSPFV3_SELF_REFERENCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_RIP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.ROUTER_RIP_SELF_REFERENCE);
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);
