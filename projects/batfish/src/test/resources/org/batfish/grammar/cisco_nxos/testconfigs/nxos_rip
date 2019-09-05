@@ -1,0 +1,59 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_rip
+feature rip
+!
+interface Vlan1
+  ip router rip 1
+  ip rip route-filter route-map RM out
+  ip rip route-filter prefix-list PL in
+  ip rip authentication mode md5
+  ip rip authentication key-chain CHAIN
+!
+router rip 1
+  flush-routes
+  no flush-routes
+  isolate
+  no isolate
+  shutdown
+  no shutdown
+  address-family ipv4 unicast
+    default-information originate
+    default-information originate always
+    default-information originate always route-map foo
+    default-information originate route-map foo
+    default-metric 10
+    distance 5
+    maximum-paths 16
+    redistribute bgp 1 route-map BGP
+    redistribute direct route-map DIRECT
+    redistribute eigrp 1 route-map EIGRP
+    redistribute isis 1 route-map ISIS
+    redistribute lisp route-map LISP
+    redistribute ospf 1 route-map OSPF
+    redistribute rip 1 route-map RIP
+    redistribute static route-map STATIC
+    timers basic 7 8 9 10
+  address-family ipv6 unicast
+    default-information originate
+    default-information originate always
+    default-information originate always route-map foo
+    default-information originate route-map foo
+    default-metric 10
+    distance 5
+    maximum-paths 16
+    redistribute bgp 1 route-map BGP
+    redistribute direct route-map DIRECT
+    redistribute eigrp 1 route-map EIGRP
+    redistribute isis 1 route-map ISIS
+    redistribute lisp route-map LISP
+    redistribute ospfv3 1 route-map OSPFv3
+    redistribute rip 1 route-map RIP
+    redistribute static route-map STATIC
+    timers basic 7 8 9 10
+  vrf VRF
+    address-family ipv4 unicast
+      default-information originate
+      timers basic 5 20 0 20
+    shutdown
+    no shutdown

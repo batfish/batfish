@@ -430,6 +430,11 @@ BASH_SHELL
   'bash-shell'
 ;
 
+BASIC
+:
+  'basic'
+;
+
 BC
 :
   'bc'
@@ -3619,7 +3624,18 @@ RETRANSMIT_INTERVAL
 
 RIP
 :
-  'rip' -> pushMode ( M_Word )
+  'rip'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    switch (lastTokenType()) {
+      case REDISTRIBUTE:
+      case ROUTER:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 ROBUSTNESS_VARIABLE
@@ -3650,6 +3666,11 @@ ROUTABLE
 ROUTE
 :
   'route'
+;
+
+ROUTE_FILTER
+:
+  'route-filter'
 ;
 
 ROUTE_MAP

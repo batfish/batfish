@@ -5421,6 +5421,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testRipParsing() throws IOException {
+    parseConfig("nxos_rip");
+    // don't crash.
+  }
+
+  @Test
   public void testRoleParsing() {
     // TODO: make into ref test
     assertThat(parseVendorConfig("nxos_role"), notNullValue());
