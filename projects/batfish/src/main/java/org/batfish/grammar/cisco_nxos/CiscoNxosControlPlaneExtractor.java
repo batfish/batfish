@@ -122,7 +122,9 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.POLICY_MAP_CLASS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_OSPF_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_ENTRY_PREV_REF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_INTERFACE;
@@ -2721,6 +2723,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(nameOrErr.get(), DefaultVrfOspfProcess::new);
     _currentOspfProcess = _currentDefaultVrfOspfProcess;
     _configuration.defineStructure(CiscoNxosStructureType.ROUTER_OSPF, nameOrErr.get(), ctx);
+    _configuration.referenceStructure(
+        ROUTER_OSPF, nameOrErr.get(), ROUTER_OSPF_SELF_REFERENCE, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -3980,8 +3984,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
 
     _configuration.defineStructure(ROUTE_MAP, name, ctx.parent);
-    _configuration.defineStructure(
-        ROUTE_MAP_ENTRY, computeRouteMapEntryName(name, sequence), ctx.parent);
+    String entryName = computeRouteMapEntryName(name, sequence);
+    _configuration.defineStructure(ROUTE_MAP_ENTRY, entryName, ctx.parent);
+    _configuration.referenceStructure(
+        ROUTE_MAP_ENTRY, entryName, ROUTE_MAP_ENTRY_PREV_REF, ctx.getStart().getLine());
   }
 
   @Override
