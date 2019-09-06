@@ -41,14 +41,14 @@ public class BgpNextHopUnchangedTest {
   private NetworkFactory _nf = new NetworkFactory();
 
   /** Routing policies */
-  private RoutingPolicy.Builder routingPolicyNhUnchanged =
+  private RoutingPolicy.Builder _routingPolicyNhUnchanged =
       _nf.routingPolicyBuilder()
           .setStatements(
               ImmutableList.of(
                   new SetNextHop(UnchangedNextHop.getInstance()),
                   Statements.ExitAccept.toStaticStatement()));
 
-  private RoutingPolicy.Builder permitAllBgp =
+  private RoutingPolicy.Builder _permitAllBgp =
       _nf.routingPolicyBuilder()
           .setStatements(
               ImmutableList.of(
@@ -59,7 +59,7 @@ public class BgpNextHopUnchangedTest {
                               new MatchProtocol(RoutingProtocol.IBGP))),
                       ImmutableList.of(Statements.ExitAccept.toStaticStatement()))));
 
-  private RoutingPolicy.Builder routingPolicyRedistributeStatic =
+  private RoutingPolicy.Builder _routingPolicyRedistributeStatic =
       _nf.routingPolicyBuilder()
           .setStatements(
               ImmutableList.of(
@@ -70,16 +70,16 @@ public class BgpNextHopUnchangedTest {
   /** Hostnames, IPs and prefixes */
   private Prefix advertisedBgpPrefix = Prefix.parse("23.23.23.23/24");
 
-  private String r1Name = "r1";
-  private String r2Name = "r2";
-  private String r3Name = "r3";
-  private Ip routerId1 = Ip.parse("1.1.1.1");
-  private Ip routerId2 = Ip.parse("2.2.2.2");
-  private Ip routerId3 = Ip.parse("3.3.3.3");
-  private ConcreteInterfaceAddress r1Addr1 = ConcreteInterfaceAddress.parse("2.2.2.2/24");
-  private ConcreteInterfaceAddress r2Addr1 = ConcreteInterfaceAddress.parse("2.2.2.3/24");
-  private ConcreteInterfaceAddress r2Addr2 = ConcreteInterfaceAddress.parse("3.3.3.3/24");
-  private ConcreteInterfaceAddress r3Addr1 = ConcreteInterfaceAddress.parse("3.3.3.4/24");
+  private String _r1Name = "r1";
+  private String _r2Name = "r2";
+  private String _r3Name = "r3";
+  private Ip _routerId1 = Ip.parse("1.1.1.1");
+  private Ip _routerId2 = Ip.parse("2.2.2.2");
+  private Ip _routerId3 = Ip.parse("3.3.3.3");
+  private ConcreteInterfaceAddress _r1Addr1 = ConcreteInterfaceAddress.parse("2.2.2.2/24");
+  private ConcreteInterfaceAddress _r2Addr1 = ConcreteInterfaceAddress.parse("2.2.2.3/24");
+  private ConcreteInterfaceAddress _r2Addr2 = ConcreteInterfaceAddress.parse("3.3.3.3/24");
+  private ConcreteInterfaceAddress _r3Addr1 = ConcreteInterfaceAddress.parse("3.3.3.4/24");
 
   /** A default BGP process to start with */
   private BgpProcess.Builder _bgpProcessBuilder =
@@ -106,11 +106,11 @@ public class BgpNextHopUnchangedTest {
     // r1
     Configuration r1 =
         _nf.configurationBuilder()
-            .setHostname(r1Name)
+            .setHostname(_r1Name)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Vrf r1Vrf = _nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(r1).setOwner(r1).build();
-    _nf.interfaceBuilder().setName("r1_r2").setAddress(r1Addr1).setVrf(r1Vrf).setOwner(r1).build();
+    _nf.interfaceBuilder().setName("r1_r2").setAddress(_r1Addr1).setVrf(r1Vrf).setOwner(r1).build();
     // needed to activate static route
     Interface ifaceForStaticRoute =
         _nf.interfaceBuilder()
@@ -126,43 +126,43 @@ public class BgpNextHopUnchangedTest {
                 .setNetwork(advertisedBgpPrefix)
                 .setNextHopInterface(ifaceForStaticRoute.getName())
                 .build()));
-    BgpProcess bgpProcessR1 = _bgpProcessBuilder.setRouterId(routerId1).setVrf(r1Vrf).build();
+    BgpProcess bgpProcessR1 = _bgpProcessBuilder.setRouterId(_routerId1).setVrf(r1Vrf).build();
     _nf.bgpNeighborBuilder()
-        .setPeerAddress(r2Addr1.getIp())
+        .setPeerAddress(_r2Addr1.getIp())
         .setLocalAs(1L)
-        .setLocalIp(r1Addr1.getIp())
+        .setLocalIp(_r1Addr1.getIp())
         .setRemoteAs(ebgp ? 2L : 1L)
         .setBgpProcess(bgpProcessR1)
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
-                .setExportPolicy(routingPolicyRedistributeStatic.setOwner(r1).build().getName())
+                .setExportPolicy(_routingPolicyRedistributeStatic.setOwner(r1).build().getName())
                 .build())
         .build();
 
     // r2
     Configuration r2 =
         _nf.configurationBuilder()
-            .setHostname(r2Name)
+            .setHostname(_r2Name)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Vrf r2Vrf = _nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(r2).setOwner(r2).build();
-    _nf.interfaceBuilder().setName("r2_r1").setAddress(r2Addr1).setVrf(r2Vrf).setOwner(r2).build();
-    _nf.interfaceBuilder().setName("r2_r3").setAddress(r2Addr2).setVrf(r2Vrf).setOwner(r2).build();
-    BgpProcess bgpProcessR2 = _bgpProcessBuilder.setRouterId(routerId2).setVrf(r2Vrf).build();
+    _nf.interfaceBuilder().setName("r2_r1").setAddress(_r2Addr1).setVrf(r2Vrf).setOwner(r2).build();
+    _nf.interfaceBuilder().setName("r2_r3").setAddress(_r2Addr2).setVrf(r2Vrf).setOwner(r2).build();
+    BgpProcess bgpProcessR2 = _bgpProcessBuilder.setRouterId(_routerId2).setVrf(r2Vrf).build();
     _nf.bgpNeighborBuilder()
-        .setPeerAddress(r1Addr1.getIp())
-        .setLocalIp(r2Addr1.getIp())
+        .setPeerAddress(_r1Addr1.getIp())
+        .setLocalIp(_r2Addr1.getIp())
         .setLocalAs(ebgp ? 2L : 1L)
         .setRemoteAs(1L)
         .setBgpProcess(bgpProcessR2)
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
-                .setExportPolicy(permitAllBgp.setOwner(r2).build().getName())
+                .setExportPolicy(_permitAllBgp.setOwner(r2).build().getName())
                 .build())
         .build();
     _nf.bgpNeighborBuilder()
-        .setLocalIp(r2Addr2.getIp())
-        .setPeerAddress(r3Addr1.getIp())
+        .setLocalIp(_r2Addr2.getIp())
+        .setPeerAddress(_r3Addr1.getIp())
         .setLocalAs(ebgp ? 2L : 1L)
         .setRemoteAs(ebgp ? 3L : 1L)
         .setBgpProcess(bgpProcessR2)
@@ -170,7 +170,7 @@ public class BgpNextHopUnchangedTest {
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
                 .setExportPolicy(
-                    (nhUnchanged ? routingPolicyNhUnchanged : permitAllBgp)
+                    (nhUnchanged ? _routingPolicyNhUnchanged : _permitAllBgp)
                         .setOwner(r2)
                         .build()
                         .getName())
@@ -180,21 +180,21 @@ public class BgpNextHopUnchangedTest {
     // r3
     Configuration r3 =
         _nf.configurationBuilder()
-            .setHostname(r3Name)
+            .setHostname(_r3Name)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Vrf r3Vrf = _nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(r3).setOwner(r3).build();
-    _nf.interfaceBuilder().setName("r3_r2").setAddress(r3Addr1).setVrf(r3Vrf).setOwner(r3).build();
-    BgpProcess bgpProcessR3 = _bgpProcessBuilder.setRouterId(routerId3).setVrf(r3Vrf).build();
+    _nf.interfaceBuilder().setName("r3_r2").setAddress(_r3Addr1).setVrf(r3Vrf).setOwner(r3).build();
+    BgpProcess bgpProcessR3 = _bgpProcessBuilder.setRouterId(_routerId3).setVrf(r3Vrf).build();
     _nf.bgpNeighborBuilder()
-        .setLocalIp(r3Addr1.getIp())
-        .setPeerAddress(r2Addr2.getIp())
+        .setLocalIp(_r3Addr1.getIp())
+        .setPeerAddress(_r2Addr2.getIp())
         .setLocalAs(ebgp ? 3L : 1L)
         .setRemoteAs(ebgp ? 2L : 1L)
         .setBgpProcess(bgpProcessR3)
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
-                .setExportPolicy(permitAllBgp.setOwner(r3).build().getName())
+                .setExportPolicy(_permitAllBgp.setOwner(r3).build().getName())
                 .build())
         .build();
 
@@ -210,8 +210,8 @@ public class BgpNextHopUnchangedTest {
         IncrementalBdpEngine.getRoutes(dataplane);
 
     // next hop IPs get overwritten
-    assertRoute(routes, RoutingProtocol.BGP, r2Name, advertisedBgpPrefix, 0, r1Addr1.getIp());
-    assertRoute(routes, RoutingProtocol.BGP, r3Name, advertisedBgpPrefix, 0, r2Addr2.getIp());
+    assertRoute(routes, RoutingProtocol.BGP, _r2Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.BGP, _r3Name, advertisedBgpPrefix, 0, _r2Addr2.getIp());
   }
 
   @Test
@@ -222,9 +222,9 @@ public class BgpNextHopUnchangedTest {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
-    assertRoute(routes, RoutingProtocol.BGP, r2Name, advertisedBgpPrefix, 0, r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.BGP, _r2Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
     // nh IP will remain the same at r3
-    assertRoute(routes, RoutingProtocol.BGP, r3Name, advertisedBgpPrefix, 0, r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.BGP, _r3Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
   }
 
   @Test
@@ -236,7 +236,7 @@ public class BgpNextHopUnchangedTest {
         IncrementalBdpEngine.getRoutes(dataplane);
 
     // irrespective of absence of NH unchanged command, next hops are preserved for iBGP peerings
-    assertRoute(routes, RoutingProtocol.IBGP, r2Name, advertisedBgpPrefix, 0, r1Addr1.getIp());
-    assertRoute(routes, RoutingProtocol.IBGP, r3Name, advertisedBgpPrefix, 0, r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.IBGP, _r2Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.IBGP, _r3Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
   }
 }
