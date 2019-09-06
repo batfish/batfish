@@ -317,12 +317,6 @@ public class Row implements Comparable<Row>, Serializable {
     return keyList;
   }
 
-  /** This used to be the old signature, changed now to {@link #getKey(List)} */
-  @Deprecated
-  public List<Object> getKey(TableMetadata metadata) {
-    return getKey(metadata.getColumnMetadata());
-  }
-
   public NodeInterfacePair getInterface(String column) {
     return (NodeInterfacePair) get(column, Schema.INTERFACE);
   }
@@ -377,12 +371,6 @@ public class Row implements Comparable<Row>, Serializable {
       }
     }
     return valueList;
-  }
-
-  /** This used to be the old signature, changed now to {@link #getValue(List)} */
-  @Deprecated
-  public List<Object> getValue(TableMetadata metadata) {
-    return getValue(metadata.getColumnMetadata());
   }
 
   @Override
