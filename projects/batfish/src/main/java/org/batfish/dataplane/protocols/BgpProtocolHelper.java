@@ -271,8 +271,14 @@ public final class BgpProtocolHelper {
   }
 
   /**
-   * Perform BGP export transformations on a given route <em>after</em> export policy has been
+   * Perform BGP export transformations on a given route <em>after</em> export policy has been *
    * applied to the route, route was accepted, but before route is sent "onto the wire".
+   *
+   * @param routeBuilder Builder for the output (exported) route
+   * @param isEbgp true for ebgp sessions
+   * @param localAs local AS
+   * @param fromNeighborIp IP of the neighbor which is exporting the route
+   * @param originalRouteNhip Next hop IP of the original route
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       void transformBgpRoutePostExport(

@@ -68,7 +68,7 @@ public class BgpNextHopUnchangedTest {
                       ImmutableList.of(Statements.ExitAccept.toStaticStatement()))));
 
   /** Hostnames, IPs and prefixes */
-  private Prefix advertisedBgpPrefix = Prefix.parse("23.23.23.23/24");
+  private Prefix _advertisedBgpPrefix = Prefix.parse("23.23.23.23/24");
 
   private String _r1Name = "r1";
   private String _r2Name = "r2";
@@ -123,7 +123,7 @@ public class BgpNextHopUnchangedTest {
         ImmutableSortedSet.of(
             StaticRoute.builder()
                 .setAdministrativeCost(1)
-                .setNetwork(advertisedBgpPrefix)
+                .setNetwork(_advertisedBgpPrefix)
                 .setNextHopInterface(ifaceForStaticRoute.getName())
                 .build()));
     BgpProcess bgpProcessR1 = _bgpProcessBuilder.setRouterId(_routerId1).setVrf(r1Vrf).build();
@@ -210,8 +210,8 @@ public class BgpNextHopUnchangedTest {
         IncrementalBdpEngine.getRoutes(dataplane);
 
     // next hop IPs get overwritten
-    assertRoute(routes, RoutingProtocol.BGP, _r2Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
-    assertRoute(routes, RoutingProtocol.BGP, _r3Name, advertisedBgpPrefix, 0, _r2Addr2.getIp());
+    assertRoute(routes, RoutingProtocol.BGP, _r2Name, _advertisedBgpPrefix, 0, _r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.BGP, _r3Name, _advertisedBgpPrefix, 0, _r2Addr2.getIp());
   }
 
   @Test
@@ -222,9 +222,9 @@ public class BgpNextHopUnchangedTest {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
-    assertRoute(routes, RoutingProtocol.BGP, _r2Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.BGP, _r2Name, _advertisedBgpPrefix, 0, _r1Addr1.getIp());
     // nh IP will remain the same at r3
-    assertRoute(routes, RoutingProtocol.BGP, _r3Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.BGP, _r3Name, _advertisedBgpPrefix, 0, _r1Addr1.getIp());
   }
 
   @Test
@@ -236,7 +236,7 @@ public class BgpNextHopUnchangedTest {
         IncrementalBdpEngine.getRoutes(dataplane);
 
     // irrespective of absence of NH unchanged command, next hops are preserved for iBGP peerings
-    assertRoute(routes, RoutingProtocol.IBGP, _r2Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
-    assertRoute(routes, RoutingProtocol.IBGP, _r3Name, advertisedBgpPrefix, 0, _r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.IBGP, _r2Name, _advertisedBgpPrefix, 0, _r1Addr1.getIp());
+    assertRoute(routes, RoutingProtocol.IBGP, _r3Name, _advertisedBgpPrefix, 0, _r1Addr1.getIp());
   }
 }
