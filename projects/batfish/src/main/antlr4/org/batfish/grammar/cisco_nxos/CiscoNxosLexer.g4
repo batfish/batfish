@@ -2385,6 +2385,11 @@ MAP
   'map'
 ;
 
+MAPPING
+:
+  'mapping'
+;
+
 MASK
 :
   'mask'
@@ -3361,6 +3366,11 @@ PRIV
   'priv' -> pushMode ( M_Priv )
 ;
 
+PRIVATE_VLAN
+:
+  'private-vlan'
+;
+
 PROTOCOL
 :
   'protocol'
@@ -4077,6 +4087,11 @@ STATIC_GROUP
 STATISTICS
 :
   'statistics'
+;
+
+STICKY_ARP
+:
+  'sticky-arp'
 ;
 
 STORM_CONTROL
