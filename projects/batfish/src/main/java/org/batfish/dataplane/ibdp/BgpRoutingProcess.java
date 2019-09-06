@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
@@ -822,6 +823,21 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             ourConfigId.getRemotePeerPrefix(),
             ourConfigId.getVrfName(),
             Direction.OUT);
+
+    // setting next hop IP for outgoing route
+    // sessionProperties represents incoming edge, so fromNeighbor's IP is its headIp
+    Ip fromNeighborIp = sessionProperties.getHeadIp();
+    if (sessionProperties.isEbgp()
+        && transformedOutgoingRouteBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+      transformedOutgoingRouteBuilder.setNextHopIp(fromNeighborIp);
+    } else if (!sessionProperties.isEbgp()) {
+      // iBGP session: if route has next-hop ip, preserve it. If not, set our own.
+      // Note: implementation of next-hop-self in the general case is delegated to routing policy
+      transformedOutgoingRouteBuilder.setNextHopIp(
+          exportCandidate.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)
+              ? fromNeighborIp
+              : exportCandidate.getNextHopIp());
+    }
 
     if (!shouldExport) {
       // This route could not be exported due to export policy

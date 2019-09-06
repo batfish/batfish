@@ -21,7 +21,6 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -169,19 +168,6 @@ public final class BgpProtocolHelper {
         sessionProperties.isEbgp()
             ? BgpRoute.DEFAULT_LOCAL_PREFERENCE
             : route.getLocalPreference());
-
-    // Outgoing nextHopIp
-    if (sessionProperties.isEbgp()) {
-      // If session is eBGP, always override next-hop
-      builder.setNextHopIp(fromNeighborIp);
-    } else {
-      // iBGP session: if route has next-hop ip, preserve it. If not, set our own.
-      // Note: implementation of next-hop-self in the general case is delegated to routing policy
-      builder.setNextHopIp(
-          route.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
-              ? fromNeighborIp
-              : route.getNextHopIp());
-    }
 
     return builder;
   }
