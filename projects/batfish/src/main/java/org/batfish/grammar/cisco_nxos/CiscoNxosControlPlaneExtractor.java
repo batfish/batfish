@@ -6835,11 +6835,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nullable Integer toVlanId(ParserRuleContext messageCtx, Unreserved_vlan_idContext ctx) {
-    return toIntegerInSpace(ctx, ctx, _currentValidVlanRange, "VLAN id").orElse(null);
+    return toIntegerInSpace(messageCtx, ctx, _currentValidVlanRange, "VLAN id").orElse(null);
   }
 
   private @Nullable Integer toVlanId(ParserRuleContext messageCtx, Vlan_idContext ctx) {
-    return toIntegerInSpace(ctx, ctx, VLAN_RANGE, "VLAN id").orElse(null);
+    return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "VLAN id").orElse(null);
   }
 
   private @Nullable IntegerSpace toVlanIdRange(
