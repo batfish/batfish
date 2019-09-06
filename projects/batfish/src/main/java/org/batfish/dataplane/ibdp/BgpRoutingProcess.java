@@ -836,7 +836,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
-        transformedOutgoingRouteBuilder, sessionProperties.isEbgp(), ourConfig.getLocalAs());
+        transformedOutgoingRouteBuilder,
+        sessionProperties.isEbgp(),
+        ourConfig.getLocalAs(),
+        sessionProperties.getHeadIp(),
+        exportCandidate.getNextHopIp());
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
 
@@ -915,7 +919,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
-        transformedOutgoingRouteBuilder, sessionProperties.isEbgp(), ourConfig.getLocalAs());
+        transformedOutgoingRouteBuilder,
+        sessionProperties.isEbgp(),
+        ourConfig.getLocalAs(),
+        sessionProperties.getHeadIp(),
+        sessionProperties.getHeadIp());
 
     // Successfully exported route
     Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();

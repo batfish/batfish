@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
@@ -29,6 +30,10 @@ public class UnchangedNextHop extends NextHopExpr {
   @Override
   @Nullable
   public Ip getNextHopIp(Environment environment) {
+    // applies only to BGP to BGP transformations
+    if (!(environment.getOriginalRoute() instanceof BgpRoute<?, ?>)) {
+      return null;
+    }
     Prefix peerPrefix = environment.getPeerPrefix();
     if (peerPrefix == null) {
       return null;
