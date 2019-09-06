@@ -40,8 +40,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
   @VisibleForTesting static final String COL_VLAN_ID = "VLAN_ID";
   @VisibleForTesting static final String COL_VXLAN_VNI = "VXLAN_VNI";
 
-  @VisibleForTesting
-  static void addVlanVnis(
+  private static void addVlanVnis(
       Configuration c,
       IntegerSpace vlans,
       Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces,
@@ -50,7 +49,8 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
         .values()
         .forEach(
             vrf ->
-                vrf.getVniSettings().values().stream()
+                vrf.getVniSettings()
+                    .values()
                     .forEach(
                         vniSettings ->
                             tryAddVlanVni(
@@ -106,12 +106,12 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       Map<String, ColumnMetadata> columns,
       String node,
       Integer vlan,
-      Map<Integer, Builder<NodeInterfacePair>> switchedVlanInterfaces,
+      Set<NodeInterfacePair> switchedVlanInterfaces,
       Map<Integer, Integer> vlanVnis) {
     return Row.builder(columns)
         .put(COL_NODE, new Node(node))
         .put(COL_VLAN_ID, vlan)
-        .put(COL_INTERFACES, switchedVlanInterfaces.get(vlan).build())
+        .put(COL_INTERFACES, switchedVlanInterfaces)
         .put(COL_VXLAN_VNI, vlanVnis.get(vlan))
         .build();
   }
@@ -182,10 +182,9 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       Map<String, ColumnMetadata> columns,
       Collection<Row> rows) {
     Map<Integer, Integer> vlanVnis = vlanVnisBuilder.build();
-    switchedVlanInterfaces
-        .keySet()
-        .forEach(
-            vlan -> rows.add(createRow(columns, node, vlan, switchedVlanInterfaces, vlanVnis)));
+    switchedVlanInterfaces.forEach(
+        (vlan, interfaces) ->
+            rows.add(createRow(columns, node, vlan, interfaces.build(), vlanVnis)));
   }
 
   @VisibleForTesting
