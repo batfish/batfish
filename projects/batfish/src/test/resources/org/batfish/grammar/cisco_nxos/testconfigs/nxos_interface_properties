@@ -92,6 +92,7 @@ interface Ethernet100/100
   ip arp timeout 2400
   ip arp gratuitous update
   ip arp gratuitous request
+  ip port access-group AG in
   ipv6 mld version 2
   ipv6 mld robustness-variable 2
   ipv6 mld query-interval 125
