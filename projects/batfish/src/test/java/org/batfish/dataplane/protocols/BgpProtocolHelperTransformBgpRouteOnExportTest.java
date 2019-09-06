@@ -164,7 +164,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    */
   private void runTransformBgpRoutePostExport(Bgpv4Route.Builder routeBuilder) {
     BgpProtocolHelper.transformBgpRoutePostExport(
-        routeBuilder, _sessionProperties.isEbgp(), _fromNeighbor.getLocalAs());
+        routeBuilder, _sessionProperties.isEbgp(), _fromNeighbor.getLocalAs(), Ip.ZERO, Ip.ZERO);
   }
 
   /**

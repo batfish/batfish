@@ -117,9 +117,9 @@ public class BgpProtocolHelperTest {
   @Test
   public void testTransformPostExportClearTag() {
     Builder builder = _baseBgpRouteBuilder.setTag(MAX_TAG);
-    transformBgpRoutePostExport(builder, true, 1);
+    transformBgpRoutePostExport(builder, true, 1, DEST_IP, Ip.ZERO);
     assertThat("Tag is cleared", builder.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
-    transformBgpRoutePostExport(builder, false, 1);
+    transformBgpRoutePostExport(builder, false, 1, DEST_IP, Ip.ZERO);
     assertThat("Tag is cleared", builder.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
   }
 }

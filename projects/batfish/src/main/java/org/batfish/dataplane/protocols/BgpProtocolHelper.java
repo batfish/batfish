@@ -275,7 +275,8 @@ public final class BgpProtocolHelper {
    * applied to the route, route was accepted, but before route is sent "onto the wire".
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
-      void transformBgpRoutePostExport(B routeBuilder, boolean isEbgp, long localAs) {
+      void transformBgpRoutePostExport(
+          B routeBuilder, boolean isEbgp, long localAs, Ip fromNeighborIp, Ip originalRouteNhip) {
     if (isEbgp) {
       // if eBGP, prepend as-path sender's as-path number
       routeBuilder.setAsPath(
@@ -286,6 +287,15 @@ public final class BgpProtocolHelper {
                   .build()));
       // Tags are non-transitive
       routeBuilder.setTag(null);
+    }
+
+    if (isEbgp && routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+      routeBuilder.setNextHopIp(fromNeighborIp);
+    } else if (!isEbgp && routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+      // iBGP session: if original route has next-hop ip, preserve it. If not, set our own.
+      // Note: implementation of next-hop-self in the general case is delegated to routing policy
+      routeBuilder.setNextHopIp(
+          originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP) ? fromNeighborIp : originalRouteNhip);
     }
   }
 
