@@ -96,6 +96,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_POLICY;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PORT_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_RIP_ROUTE_FILTER_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_RIP_ROUTE_FILTER_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_EIGRP;
@@ -332,6 +333,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip6r_ospfv3Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip_port_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_bfdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
@@ -1914,6 +1916,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     List<String> existingServers =
         _configuration.getIpNameServersByUseVrf().computeIfAbsent(vrf, v -> new LinkedList<>());
     ctx.servers.stream().map(ParserRuleContext::getText).forEach(existingServers::add);
+  }
+
+  @Override
+  public void exitIip_port_access_group(Iip_port_access_groupContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.acl);
+    if (!acl.isPresent()) {
+      return;
+    }
+    todo(ctx);
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, acl.get(), INTERFACE_IP_PORT_ACCESS_GROUP, ctx.getStart().getLine());
   }
 
   @Override
