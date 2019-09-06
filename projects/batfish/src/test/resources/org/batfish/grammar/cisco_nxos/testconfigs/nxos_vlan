@@ -73,3 +73,13 @@ interface Vlan7
 interface Ethernet1/1
   switchport access vlan 7
 !
+
+interface Vlan1000
+  description no extraction test, just parsing
+  no shutdown
+  mtu 9216
+  private-vlan mapping 1001
+  ip address 1.2.3.4/26
+  ip proxy-arp
+  ip sticky-arp ignore
+  ip dhcp relay address 1.2.3.5

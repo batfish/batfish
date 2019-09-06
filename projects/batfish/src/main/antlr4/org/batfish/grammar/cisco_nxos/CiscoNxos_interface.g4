@@ -52,6 +52,7 @@ s_interface_regular
     | i_no
     | i_null
     | i_ospfv3
+    | i_private_vlan
     | i_service_policy
     | i_shutdown
     | i_speed
@@ -390,6 +391,7 @@ i_ip
     | i_ip_proxy_arp
     | i_ip_rip
     | i_ip_router
+    | i_ip_sticky_arp
   )
 ;
 
@@ -567,6 +569,11 @@ i_ip_port_unreachable
 i_ip_proxy_arp
 :
   PROXY_ARP NEWLINE
+;
+
+i_ip_sticky_arp
+:
+  STICKY_ARP IGNORE NEWLINE
 ;
 
 iipo_authentication
@@ -1056,6 +1063,11 @@ io3_hello_interval
 io3_network
 :
   NETWORK POINT_TO_POINT NEWLINE
+;
+
+i_private_vlan
+:
+  PRIVATE_VLAN MAPPING (ADD | REMOVE)? vlan_id_range NEWLINE
 ;
 
 i_service_policy
