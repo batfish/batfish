@@ -70,7 +70,7 @@ i_bandwidth
   BANDWIDTH
   (
     inherit = INHERIT bw = interface_bandwidth_kbps?
-    | inherit = INHERIT? bw = interface_bandwidth_kbps
+    | bw = interface_bandwidth_kbps
   ) NEWLINE
 ;
 
