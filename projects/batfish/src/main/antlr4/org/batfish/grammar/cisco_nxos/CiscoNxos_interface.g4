@@ -388,6 +388,7 @@ i_ip
     | i_ip_policy
     | i_ip_port_unreachable
     | i_ip_proxy_arp
+    | i_ip_rip
     | i_ip_router
   )
 ;
@@ -656,12 +657,60 @@ iipo_passive_interface
   PASSIVE_INTERFACE NEWLINE
 ;
 
+i_ip_rip
+:
+  RIP
+  (
+    iiprip_authentication
+    | iiprip_route_filter
+  )
+;
+
+iiprip_authentication
+:
+  AUTHENTICATION
+  (
+    iiprip_a_mode
+    | iiprip_a_key_chain
+  )
+;
+
+iiprip_a_mode
+:
+  MODE MD5 NEWLINE
+;
+
+iiprip_a_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
+;
+
+iiprip_route_filter
+:
+  ROUTE_FILTER
+  (
+    iiprip_rf_prefix_list
+    | iiprip_rf_route_map
+  )
+;
+
+iiprip_rf_prefix_list
+:
+  PREFIX_LIST name = ip_prefix_list_name (IN | OUT) NEWLINE
+;
+
+iiprip_rf_route_map
+:
+  ROUTE_MAP name = route_map_name (IN | OUT) NEWLINE
+;
+
 i_ip_router
 :
   ROUTER
   (
     iipr_eigrp
     | iipr_ospf
+    | iipr_rip
   )
 ;
 
@@ -673,6 +722,11 @@ iipr_eigrp
 iipr_ospf
 :
   ospf_instance AREA area = ospf_area_id NEWLINE
+;
+
+iipr_rip
+:
+  rip_instance NEWLINE
 ;
 
 i_ipv6
