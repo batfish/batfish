@@ -6623,7 +6623,7 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         c.getAllInterfaces(),
-        hasKeys("Ethernet1/1", "Vlan1", "Vlan2", "Vlan3", "Vlan4", "Vlan6", "Vlan7"));
+        hasKeys("Ethernet1/1", "Vlan1", "Vlan2", "Vlan3", "Vlan4", "Vlan6", "Vlan7", "Vlan1000"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Vlan1");
       assertThat(iface, isActive(false));

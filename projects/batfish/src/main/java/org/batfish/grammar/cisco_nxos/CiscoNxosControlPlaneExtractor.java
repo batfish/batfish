@@ -301,6 +301,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_private_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_speed_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext;
@@ -5054,6 +5055,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_ip_proxy_arp(I_ip_proxy_arpContext ctx) {
     _currentInterfaces.forEach(i -> i.setIpProxyArp(true));
+  }
+
+  @Override
+  public void exitI_private_vlan(I_private_vlanContext ctx) {
+    IntegerSpace space = toVlanIdRange(ctx, ctx.vlan_id_range());
+    if (space == null) {
+      return;
+    }
+    todo(ctx);
   }
 
   @Override
