@@ -58,5 +58,5 @@ monitor_session_source_interface
 
 monitor_session_source_vlan
 :
-  VLAN vlans = vlan_id_range NEWLINE
+  VLAN vlans = unreserved_vlan_id_range NEWLINE
 ;

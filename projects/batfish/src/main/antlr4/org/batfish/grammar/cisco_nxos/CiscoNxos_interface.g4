@@ -117,7 +117,7 @@ interface_description
 
 i_encapsulation
 :
-  ENCAPSULATION DOT1Q vlan = vlan_id NEWLINE
+  ENCAPSULATION DOT1Q vlan = unreserved_vlan_id NEWLINE
 ;
 
 i_hsrp
@@ -1127,7 +1127,7 @@ i_switchport
 
 i_switchport_access
 :
-  ACCESS VLAN vlan = vlan_id NEWLINE
+  ACCESS VLAN vlan = unreserved_vlan_id NEWLINE
 ;
 
 i_switchport_mode
@@ -1201,7 +1201,7 @@ i_switchport_trunk_allowed
 
 i_switchport_trunk_native
 :
-  NATIVE VLAN vlan = vlan_id NEWLINE
+  NATIVE VLAN vlan = unreserved_vlan_id NEWLINE
 ;
 
 i_vrf_member

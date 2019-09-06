@@ -146,7 +146,7 @@ rmm_tag
 
 rmm_vlan
 :
-  VLAN range = vlan_id_range NEWLINE
+  VLAN range = unreserved_vlan_id_range NEWLINE
 ;
 
 rm_set
