@@ -533,11 +533,32 @@ user_password
 // 1-127 characters
 ;
 
+unreserved_vlan_id
+:
+// 1-4094, minus the 128 vlans currently reserved
+  uint16
+;
+
+unreserved_vlan_id_range
+:
+  intervals += unreserved_vlan_id_interval
+  (
+    COMMA intervals += unreserved_vlan_id_interval
+  )*
+;
+
+unreserved_vlan_id_interval
+:
+  low = unreserved_vlan_id
+  (
+    DASH high = unreserved_vlan_id
+  )?
+;
+
 vlan_id
 :
 // 1-4094
-  UINT8
-  | UINT16
+  uint16
 ;
 
 vlan_id_range

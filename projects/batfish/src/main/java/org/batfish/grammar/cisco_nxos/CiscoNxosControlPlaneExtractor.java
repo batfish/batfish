@@ -613,6 +613,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_port_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint16Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint32Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint8Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Unreserved_vlan_idContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Unreserved_vlan_id_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_rdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_shutdownContext;
@@ -4971,7 +4973,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitI_switchport_trunk_allowed(I_switchport_trunk_allowedContext ctx) {
     IntegerSpace vlans;
     if (ctx.vlans != null) {
-      vlans = ctx.vlans != null ? toVlanIdRange(ctx, ctx.vlans) : null;
+      vlans = toVlanIdRange(ctx, ctx.vlans);
       if (vlans == null) {
         // invalid VLAN in range
         return;
@@ -6832,20 +6834,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return null;
   }
 
+  private @Nullable Integer toVlanId(ParserRuleContext messageCtx, Unreserved_vlan_idContext ctx) {
+    return toIntegerInSpace(ctx, ctx, _currentValidVlanRange, "VLAN id").orElse(null);
+  }
+
   private @Nullable Integer toVlanId(ParserRuleContext messageCtx, Vlan_idContext ctx) {
-    int vlan = Integer.parseInt(ctx.getText());
-    if (!_currentValidVlanRange.contains(vlan)) {
-      _w.redFlag(
-          String.format(
-              "Expected VLAN in range %s, but got '%d' in: %s",
-              _currentValidVlanRange, vlan, getFullText(messageCtx)));
-      return null;
-    }
-    return vlan;
+    return toIntegerInSpace(ctx, ctx, VLAN_RANGE, "VLAN id").orElse(null);
   }
 
   private @Nullable IntegerSpace toVlanIdRange(
-      ParserRuleContext messageCtx, Vlan_id_rangeContext ctx) {
+      ParserRuleContext messageCtx, Unreserved_vlan_id_rangeContext ctx) {
     String rangeText = ctx.getText();
     IntegerSpace value = IntegerSpace.parse(rangeText);
     if (!_currentValidVlanRange.contains(value)) {
@@ -6853,6 +6851,20 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           String.format(
               "Expected VLANs in range %s, but got '%s' in: %s",
               _currentValidVlanRange, rangeText, getFullText(messageCtx)));
+      return null;
+    }
+    return value;
+  }
+
+  private @Nullable IntegerSpace toVlanIdRange(
+      ParserRuleContext messageCtx, Vlan_id_rangeContext ctx) {
+    String rangeText = ctx.getText();
+    IntegerSpace value = IntegerSpace.parse(rangeText);
+    if (!VLAN_RANGE.contains(value)) {
+      _w.redFlag(
+          String.format(
+              "Expected VLANs in range %s, but got '%s' in: %s",
+              VLAN_RANGE, rangeText, getFullText(messageCtx)));
       return null;
     }
     return value;

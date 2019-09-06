@@ -62,7 +62,7 @@ vlan_null
 
 vlan_vlan
 :
-  vlans = vlan_id_range NEWLINE
+  vlans = unreserved_vlan_id_range NEWLINE
   (
     vv_null
     | vv_vn_segment
