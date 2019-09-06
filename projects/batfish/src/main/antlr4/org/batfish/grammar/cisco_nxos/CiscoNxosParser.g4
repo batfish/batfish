@@ -16,13 +16,16 @@ import
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
   CiscoNxos_ipv6_prefix_list,
+  CiscoNxos_line,
   CiscoNxos_logging,
   CiscoNxos_mac,
   CiscoNxos_monitor,
   CiscoNxos_ntp,
   CiscoNxos_object_group,
   CiscoNxos_ospf,
+  CiscoNxos_ospfv3,
   CiscoNxos_policy_map,
+  CiscoNxos_rip,
   CiscoNxos_route_map,
   CiscoNxos_snmp,
   CiscoNxos_static,
@@ -55,6 +58,7 @@ statement
   | s_ip
   | s_ipv6
   | s_key
+  | s_line
   | s_logging
   | s_mac
   | s_monitor
@@ -385,6 +389,8 @@ s_router
     router_bgp
     | router_eigrp
     | router_ospf
+    | router_ospfv3
+    | router_rip
   )
 ;
 

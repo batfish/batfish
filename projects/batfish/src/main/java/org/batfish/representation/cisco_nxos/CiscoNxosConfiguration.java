@@ -1456,6 +1456,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureType.IP_ACCESS_LIST,
         CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN,
         CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT,
+        CiscoNxosStructureUsage.INTERFACE_IP_PORT_ACCESS_GROUP,
+        CiscoNxosStructureUsage.LINE_VTY_ACCESS_CLASS_IN,
+        CiscoNxosStructureUsage.LINE_VTY_ACCESS_CLASS_OUT,
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS,
         CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV4ACL);
     markConcreteStructure(
@@ -1482,6 +1485,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureType.IP_PREFIX_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_OUT,
+        CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_PREFIX_LIST,
+        CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_PREFIX_LIST,
+        CiscoNxosStructureUsage.INTERFACE_IP_RIP_ROUTE_FILTER_PREFIX_LIST,
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
     markConcreteStructure(
         CiscoNxosStructureType.IPV6_ACCESS_LIST,
@@ -1497,6 +1503,24 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS,
         CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP,
         CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP);
+    markConcreteStructure(
+        CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY);
+    markConcreteStructure(
+        CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.SYSQOS_NETWORK_QOS);
+    markConcreteStructure(
+        CiscoNxosStructureType.POLICY_MAP_QOS,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.INTERFACE_SERVICE_POLICY_QOS,
+        CiscoNxosStructureUsage.SYSQOS_QOS);
+    markConcreteStructure(
+        CiscoNxosStructureType.POLICY_MAP_QUEUING,
+        CiscoNxosStructureUsage.BUILT_IN,
+        CiscoNxosStructureUsage.INTERFACE_SERVICE_POLICY_QUEUING,
+        CiscoNxosStructureUsage.SYSQOS_QUEUING);
     markConcreteStructure(
         CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
     markConcreteStructure(
@@ -1523,42 +1547,75 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_TABLE_MAP,
         CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP,
+        CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_ROUTE_MAP,
+        CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_ROUTE_MAP,
+        CiscoNxosStructureUsage.INTERFACE_IP_RIP_ROUTE_FILTER_ROUTE_MAP,
         CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT,
         CiscoNxosStructureUsage.OSPF_AREA_NSSA_ROUTE_MAP,
         CiscoNxosStructureUsage.OSPF_DEFAULT_INFORMATION_ROUTE_MAP,
-        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP);
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_ROUTE_MAP,
+        CiscoNxosStructureUsage.OSPFV3_DEFAULT_INFORMATION_ORIGINATE_ROUTE_MAP,
+        CiscoNxosStructureUsage.OSPFV3_AREA_FILTER_LIST_ROUTE_MAP,
+        CiscoNxosStructureUsage.OSPFV3_NSSA_DEFAULT_INFORMATION_ORIGINATE_ROUTE_MAP,
+        CiscoNxosStructureUsage.OSPFV3_REDISTRIBUTE_ROUTE_MAP,
+        CiscoNxosStructureUsage.OSPFV3_TABLE_MAP,
+        CiscoNxosStructureUsage.RIP_AF4_DEFAULT_INFORMATION_ROUTE_MAP,
+        CiscoNxosStructureUsage.RIP_AF4_REDISTRIBUTE_ROUTE_MAP,
+        CiscoNxosStructureUsage.RIP_AF6_DEFAULT_INFORMATION_ROUTE_MAP,
+        CiscoNxosStructureUsage.RIP_AF6_REDISTRIBUTE_ROUTE_MAP);
     markConcreteStructure(
-        CiscoNxosStructureType.ROUTE_MAP_ENTRY, CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE);
+        CiscoNxosStructureType.ROUTE_MAP_ENTRY,
+        CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE,
+        CiscoNxosStructureUsage.ROUTE_MAP_ENTRY_PREV_REF);
+
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_EIGRP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_EIGRP,
         CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
-
+        CiscoNxosStructureUsage.OSPFV3_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE,
+        CiscoNxosStructureUsage.RIP_AF4_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.RIP_AF6_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_ISIS,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.OSPFV3_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.ROUTER_ISIS_SELF_REFERENCE,
+        CiscoNxosStructureUsage.RIP_AF4_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.RIP_AF6_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPF,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_OSPF,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.ROUTER_OSPF_SELF_REFERENCE,
+        CiscoNxosStructureUsage.RIP_AF4_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPFV3,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.INTERFACE_IPV6_ROUTER_OSPFV3,
+        CiscoNxosStructureUsage.OSPFV3_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.ROUTER_OSPFV3_SELF_REFERENCE,
+        CiscoNxosStructureUsage.RIP_AF6_REDISTRIBUTE_INSTANCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_RIP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_INSTANCE,
         CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE,
-        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE);
+        CiscoNxosStructureUsage.INTERFACE_IP_ROUTER_RIP,
+        CiscoNxosStructureUsage.OSPF_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.OSPFV3_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.RIP_AF4_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.RIP_AF6_REDISTRIBUTE_INSTANCE,
+        CiscoNxosStructureUsage.ROUTER_RIP_SELF_REFERENCE);
+
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);
@@ -1578,7 +1635,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.AAA_GROUP_SERVER_TACACSP_USE_VRF,
         CiscoNxosStructureUsage.BUILT_IN,
         CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER,
-        CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF);
+        CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF,
+        CiscoNxosStructureUsage.OSPFV3_VRF,
+        CiscoNxosStructureUsage.ROUTER_RIP_VRF);
   }
 
   public void setBootKickstartSup1(@Nullable String bootKickstartSup1) {
@@ -1738,7 +1797,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           // convert any connected route metadata
           addressMetadata.put(
               (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
-              ConnectedRouteMetadata.builder().setTag(addrWithAttr.getTag()).build());
+              ConnectedRouteMetadata.builder()
+                  .setAdmin(addrWithAttr.getRoutePreference())
+                  .setTag(addrWithAttr.getTag())
+                  .build());
         }
       }
       newIfaceBuilder.setSecondaryAddresses(
@@ -1751,7 +1813,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               addr ->
                   addressMetadata.put(
                       (ConcreteInterfaceAddress) addr.getAddress(),
-                      ConnectedRouteMetadata.builder().setTag(addr.getTag()).build()));
+                      ConnectedRouteMetadata.builder()
+                          .setAdmin(addr.getRoutePreference())
+                          .setTag(addr.getTag())
+                          .build()));
       newIfaceBuilder.setAddressMetadata(addressMetadata.build());
     }
     // TODO: handle DHCP
@@ -3130,7 +3195,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       newNextHopInterface = UNSET_NEXT_HOP_INTERFACE;
     }
     return org.batfish.datamodel.StaticRoute.builder()
-        .setAdministrativeCost((int) staticRoute.getPreference())
+        .setAdministrativeCost(staticRoute.getPreference())
         .setMetric(0L)
         .setNetwork(staticRoute.getPrefix())
         .setNextHopInterface(newNextHopInterface)

@@ -39,15 +39,19 @@ ACCESS
   'access'
 ;
 
+ACCESS_CLASS
+:
+  'access-class' -> pushMode ( M_Word )
+;
+
 ACCESS_GROUP
 :
   'access-group'
   {
-    if (lastTokenType() == IP) {
+    if (lastTokenType() == IP || lastTokenType() == PORT) {
       pushMode(M_Word);
     }
   }
-  
 ;
 
 ACCESS_LIST
@@ -249,6 +253,11 @@ AGGRESSIVE
   'aggressive'
 ;
 
+AH_MD5
+:
+  'ah-md5' -> pushMode ( M_Password )
+;
+
 AHP
 :
   'ahp'
@@ -421,6 +430,11 @@ BASH_SHELL
   'bash-shell'
 ;
 
+BASIC
+:
+  'basic'
+;
+
 BC
 :
   'bc'
@@ -444,6 +458,11 @@ BESTPATH_LIMIT
 BFD
 :
   'bfd'
+;
+
+BFD_INSTANCE
+:
+  'bfd-instance'
 ;
 
 BGP
@@ -484,6 +503,11 @@ BOOTPC
 BOOTPS
 :
   'bootps'
+;
+
+BORDER
+:
+  'border'
 ;
 
 BOTH
@@ -731,6 +755,11 @@ CONNECTION_MODE
   'connection-mode'
 ;
 
+CONSOLE
+:
+  'console'
+;
+
 CONTACT
 :
 // followed by arbitrary contact information
@@ -907,6 +936,11 @@ DEFAULT_INFORMATION
   'default-information'
 ;
 
+DEFAULT_INFORMATION_ORIGINATE
+:
+  'default-information-originate'
+;
+
 DEFAULT_LIFETIME
 :
   'default-lifetime'
@@ -1027,6 +1061,11 @@ DISCARD
   'discard'
 ;
 
+DISCARD_ROUTE
+:
+  'discard-route'
+;
+
 DISTANCE
 :
   'distance'
@@ -1085,6 +1124,16 @@ DOT1Q
 DOT1Q_TUNNEL
 :
   'dot1q-tunnel'
+;
+
+DR_DELAY
+:
+  'dr-delay'
+;
+
+DR_PRIORITY
+:
+  'dr-priority'
 ;
 
 DRIP
@@ -1286,6 +1335,11 @@ EXCEPTION
 EXEC
 :
   'exec'
+;
+
+EXEC_TIMEOUT
+:
+  'exec-timeout'
 ;
 
 EXEMPT
@@ -1579,6 +1633,11 @@ HEAD
   'head'
 ;
 
+HELLO_AUTHENTICATION
+:
+  'hello-authentication'
+;
+
 HELLO_INTERVAL
 :
   'hello-interval'
@@ -1833,6 +1892,11 @@ INSTALL
   'install'
 ;
 
+INTER_AREA_PREFIX_LSA
+:
+  'inter-area-prefix-lsa'
+;
+
 INTERFACE
 :
 // most common abbreviation
@@ -1915,6 +1979,11 @@ ISOLATE
 JP_INTERVAL
 :
   'jp-interval'
+;
+
+JP_POLICY
+:
+  'jp-policy' -> pushMode ( M_PrefixListOrWord )
 ;
 
 KBPS
@@ -2044,6 +2113,11 @@ LEVEL
 LICENSE
 :
   'license'
+;
+
+LINE
+:
+  'line'
 ;
 
 LINE_PROTOCOL
@@ -2311,6 +2385,11 @@ MAP
   'map'
 ;
 
+MAPPING
+:
+  'mapping'
+;
+
 MASK
 :
   'mask'
@@ -2349,6 +2428,11 @@ MAX_LENGTH
 MAX_LINKS
 :
   'max-links'
+;
+
+MAX_LSA
+:
+  'max-lsa'
 ;
 
 MAX_METRIC
@@ -2608,6 +2692,11 @@ NAME
   }
 ;
 
+NAME_LOOKUP
+:
+  'name-lookup'
+;
+
 NAME_SERVER
 :
   'name-server'
@@ -2651,6 +2740,11 @@ NEGOTIATE
 NEIGHBOR
 :
   'neighbor'
+;
+
+NEIGHBOR_POLICY
+:
+  'neighbor-policy' -> pushMode ( M_PrefixListOrWord )
 ;
 
 NEQ
@@ -2706,6 +2800,11 @@ NETWORK_QOS
 NETWORK_UNKNOWN
 :
   'network-unknown'
+;
+
+NEVER
+:
+  'never'
 ;
 
 NEWROOT
@@ -3267,6 +3366,11 @@ PRIV
   'priv' -> pushMode ( M_Priv )
 ;
 
+PRIVATE_VLAN
+:
+  'private-vlan'
+;
+
 PROTOCOL
 :
   'protocol'
@@ -3523,9 +3627,25 @@ RETAIN
   'retain'
 ;
 
+RETRANSMIT_INTERVAL
+:
+  'retransmit-interval'
+;
+
 RIP
 :
-  'rip' -> pushMode ( M_Word )
+  'rip'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    switch (lastTokenType()) {
+      case REDISTRIBUTE:
+      case ROUTER:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 ROBUSTNESS_VARIABLE
@@ -3556,6 +3676,11 @@ ROUTABLE
 ROUTE
 :
   'route'
+;
+
+ROUTE_FILTER
+:
+  'route-filter'
 ;
 
 ROUTE_MAP
@@ -3964,6 +4089,11 @@ STATISTICS
   'statistics'
 ;
 
+STICKY_ARP
+:
+  'sticky-arp'
+;
+
 STORM_CONTROL
 :
   'storm-control'
@@ -3974,9 +4104,19 @@ STPX
   'stpx'
 ;
 
+STRICT_RFC_COMPLIANT
+:
+  'strict-rfc-compliant'
+;
+
 STUB
 :
   'stub'
+;
+
+STUB_PREFIX_LSA
+:
+  'stub-prefix-lsa'
 ;
 
 SUB_OPTION
@@ -4049,6 +4189,12 @@ SUPPRESS_MAP
   'suppress-map'
 ;
 
+// sic
+SUPRESS_FA
+:
+  'supress-fa'
+;
+
 SUSPEND_INDIVIDUAL
 :
   'suspend-individual'
@@ -4098,7 +4244,7 @@ SYSTEM
 
 TABLE_MAP
 :
-  'table-map'
+  'table-map' -> pushMode ( M_Word )
 ;
 
 TACACS
@@ -4267,9 +4413,19 @@ TRAFFIC_FILTER
   'traffic-filter' -> pushMode ( M_Word )
 ;
 
+TRANSLATE
+:
+  'translate'
+;
+
 TRANSMIT
 :
   'transmit'
+;
+
+TRANSMIT_DELAY
+:
+  'transmit-delay'
 ;
 
 TRANSPORT
@@ -4383,6 +4539,11 @@ TYPE_1
 TYPE_2
 :
   'type-2'
+;
+
+TYPE7
+:
+  'type7'
 ;
 
 UDLD
@@ -4610,6 +4771,11 @@ VRF
 VTP
 :
   'vtp'
+;
+
+VTY
+:
+  'vty'
 ;
 
 WAIT_FOR
@@ -5564,6 +5730,28 @@ M_PolicyMapType_QUEUING
 ;
 
 M_PolicyMapType_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PrefixListOrWord;
+
+M_PrefixListOrWord_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_PrefixListOrWord_PREFIX_LIST
+:
+  'prefix-list' -> type ( PREFIX_LIST ) , mode ( M_Word )
+;
+
+M_PrefixListOrWord_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_PrefixListOrWord_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

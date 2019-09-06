@@ -20,8 +20,8 @@ ip_route_network
   network = route_network
   (
     null0 = NULL0
-    | nhint = interface_name? nhip = ip_address
     | nhint = interface_name nhip = ip_address?
+    | nhip = ip_address
   )
   (
     VRF nhvrf = vrf_name
@@ -33,8 +33,8 @@ ip_route_network
     NAME name = static_route_name
   )?
   (
-    (TAG tag = uint32) pref = static_route_pref?
-    | pref = static_route_pref (TAG tag = uint32)?
+    (TAG tag = uint32) pref = protocol_distance?
+    | pref = protocol_distance (TAG tag = uint32)?
   )? NEWLINE
 ;
 
@@ -42,12 +42,6 @@ static_route_name
 :
 // 1-50 characters
   WORD
-;
-
-static_route_pref
-:
-// 1-255
-  UINT8
 ;
 
 ip_route_static

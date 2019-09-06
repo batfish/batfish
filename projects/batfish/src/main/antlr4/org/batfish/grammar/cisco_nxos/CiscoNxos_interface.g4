@@ -51,6 +51,8 @@ s_interface_regular
     | i_mtu
     | i_no
     | i_null
+    | i_ospfv3
+    | i_private_vlan
     | i_service_policy
     | i_shutdown
     | i_speed
@@ -69,7 +71,7 @@ i_bandwidth
   BANDWIDTH
   (
     inherit = INHERIT bw = interface_bandwidth_kbps?
-    | inherit = INHERIT? bw = interface_bandwidth_kbps
+    | bw = interface_bandwidth_kbps
   ) NEWLINE
 ;
 
@@ -116,7 +118,7 @@ interface_description
 
 i_encapsulation
 :
-  ENCAPSULATION DOT1Q vlan = vlan_id NEWLINE
+  ENCAPSULATION DOT1Q vlan = unreserved_vlan_id NEWLINE
 ;
 
 i_hsrp
@@ -383,10 +385,14 @@ i_ip
     | i_ip_forward
     | i_ip_null
     | i_ip_ospf
+    | i_ip_pim
     | i_ip_policy
+    | i_ip_port
     | i_ip_port_unreachable
     | i_ip_proxy_arp
+    | i_ip_rip
     | i_ip_router
+    | i_ip_sticky_arp
   )
 ;
 
@@ -462,7 +468,6 @@ i_ip_null
     ARP
     | FLOW
     | IGMP
-    | PIM
     | REDIRECTS
     | UNREACHABLES
     | VERIFY
@@ -484,9 +489,87 @@ i_ip_ospf
   )
 ;
 
+i_ip_pim
+:
+  PIM
+  (
+    iipp_hello_authentication
+    | iipp_jp_policy
+    | iipp_neighbor_policy
+    | iipp_null
+  )
+;
+
+iipp_hello_authentication
+:
+  HELLO_AUTHENTICATION AH_MD5 cisco_nxos_password NEWLINE
+;
+
+iipp_jp_policy
+:
+  JP_POLICY
+  (
+    iipp_jp_policy_prefix_list
+    | iipp_jp_policy_route_map
+  )
+;
+
+iipp_jp_policy_prefix_list
+:
+  PREFIX_LIST list = ip_prefix_list_name (IN | OUT)? NEWLINE
+;
+
+iipp_jp_policy_route_map
+:
+  map = route_map_name (IN | OUT)? NEWLINE
+;
+
+iipp_neighbor_policy
+:
+  NEIGHBOR_POLICY
+  (
+    iipp_neighbor_policy_prefix_list
+    | iipp_neighbor_policy_route_map
+  )
+;
+
+iipp_neighbor_policy_prefix_list
+:
+  PREFIX_LIST list = ip_prefix_list_name (IN | OUT)? NEWLINE
+;
+
+iipp_neighbor_policy_route_map
+:
+  map = route_map_name (IN | OUT)? NEWLINE
+;
+
+iipp_null
+:
+  (
+    BFD_INSTANCE
+    | BORDER
+    | DR_DELAY
+    | DR_PRIORITY
+    | HELLO_INTERVAL
+    | PASSIVE
+    | SPARSE_MODE
+    | STRICT_RFC_COMPLIANT
+  ) null_rest_of_line
+;
+
 i_ip_policy
 :
   POLICY ROUTE_MAP name = route_map_name NEWLINE
+;
+
+i_ip_port
+:
+  PORT iip_port_access_group
+;
+
+iip_port_access_group
+:
+  ACCESS_GROUP acl = ip_access_list_name IN NEWLINE
 ;
 
 i_ip_port_unreachable
@@ -497,6 +580,11 @@ i_ip_port_unreachable
 i_ip_proxy_arp
 :
   PROXY_ARP NEWLINE
+;
+
+i_ip_sticky_arp
+:
+  STICKY_ARP IGNORE NEWLINE
 ;
 
 iipo_authentication
@@ -587,12 +675,60 @@ iipo_passive_interface
   PASSIVE_INTERFACE NEWLINE
 ;
 
+i_ip_rip
+:
+  RIP
+  (
+    iiprip_authentication
+    | iiprip_route_filter
+  )
+;
+
+iiprip_authentication
+:
+  AUTHENTICATION
+  (
+    iiprip_a_mode
+    | iiprip_a_key_chain
+  )
+;
+
+iiprip_a_mode
+:
+  MODE MD5 NEWLINE
+;
+
+iiprip_a_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
+;
+
+iiprip_route_filter
+:
+  ROUTE_FILTER
+  (
+    iiprip_rf_prefix_list
+    | iiprip_rf_route_map
+  )
+;
+
+iiprip_rf_prefix_list
+:
+  PREFIX_LIST name = ip_prefix_list_name (IN | OUT) NEWLINE
+;
+
+iiprip_rf_route_map
+:
+  ROUTE_MAP name = route_map_name (IN | OUT) NEWLINE
+;
+
 i_ip_router
 :
   ROUTER
   (
     iipr_eigrp
     | iipr_ospf
+    | iipr_rip
   )
 ;
 
@@ -606,12 +742,18 @@ iipr_ospf
   ospf_instance AREA area = ospf_area_id NEWLINE
 ;
 
+iipr_rip
+:
+  rip_instance NEWLINE
+;
+
 i_ipv6
 :
   IPV6
   (
     iip6_address
     | iip6_null
+    | iip6_router
     | iip6_traffic_filter
   )
 ;
@@ -645,9 +787,16 @@ iip6_null
     | MLD
     | ND
     | REDIRECTS
-    | ROUTER
     | VERIFY
   ) null_rest_of_line
+;
+
+iip6_router
+:
+  ROUTER
+  (
+    iip6r_ospfv3
+  )
 ;
 
 iip6_traffic_filter
@@ -657,6 +806,11 @@ iip6_traffic_filter
     IN
     | OUT
   ) NEWLINE
+;
+
+iip6r_ospfv3
+:
+  ospfv3_instance AREA area = ospf_area_id NEWLINE
 ;
 
 i_lacp
@@ -880,7 +1034,6 @@ i_null
     | MDIX
     | MEDIUM
     | NEGOTIATE
-    | OSPFV3
     | PACKET
     | PRIORITY_FLOW_CONTROL
     | SNMP
@@ -890,6 +1043,42 @@ i_null
     | VPC
     | VTP
   ) null_rest_of_line
+;
+
+i_ospfv3
+:
+  OSPFV3
+  (
+    io3_bfd
+    | io3_dead_interval
+    | io3_hello_interval
+    | io3_network
+  )
+;
+
+io3_bfd
+:
+  BFD NEWLINE
+;
+
+io3_dead_interval
+:
+  DEAD_INTERVAL interval_s = ospf_dead_interval NEWLINE
+;
+
+io3_hello_interval
+:
+  HELLO_INTERVAL interval_s = ospf_hello_interval NEWLINE
+;
+
+io3_network
+:
+  NETWORK POINT_TO_POINT NEWLINE
+;
+
+i_private_vlan
+:
+  PRIVATE_VLAN MAPPING (ADD | REMOVE)? vlan_id_range NEWLINE
 ;
 
 i_service_policy
@@ -961,7 +1150,7 @@ i_switchport
 
 i_switchport_access
 :
-  ACCESS VLAN vlan = vlan_id NEWLINE
+  ACCESS VLAN vlan = unreserved_vlan_id NEWLINE
 ;
 
 i_switchport_mode
@@ -1035,7 +1224,7 @@ i_switchport_trunk_allowed
 
 i_switchport_trunk_native
 :
-  NATIVE VLAN vlan = vlan_id NEWLINE
+  NATIVE VLAN vlan = unreserved_vlan_id NEWLINE
 ;
 
 i_vrf_member

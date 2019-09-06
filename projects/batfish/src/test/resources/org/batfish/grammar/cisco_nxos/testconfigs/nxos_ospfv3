@@ -14,3 +14,47 @@ interface Ethernet1/1
   ospfv3 dead-interval 10
   ospfv3 hello-interval 3
   ospfv3 network point-to-point
+
+router ospfv3 1
+  bfd
+  router-id 1.2.3.4
+  flush-routes
+  area 0.0.0.5 nssa no-summary no-redistribution default-information-originate
+  area 0.0.0.6 stub no-summary
+  isolate
+  area 0.0.0.5 nssa translate type7 always supress-fa
+  log-adjacency-changes detail
+  shutdown
+  auto-cost reference-bandwidth 50000 Mbps
+  area 0.0.0.7 virtual-link 1.2.3.4
+    dead-interval 5
+    hello-interval 6
+    retransmit-interval 11
+    transmit-delay 6
+  address-family ipv6 unicast
+    area 0.0.0.0 range ::1/8 not-advertise cost 6
+    area 0.0.0.0 default-cost 5
+    default-information originate always route-map baz
+    redistribute direct route-map DIR
+    redistribute bgp 1 route-map BGP
+    redistribute maximum-prefix 66
+    area 0.0.0.0 filter-list route-map bar out
+    area 0.0.0.0 filter-list route-map foo in
+    summary-address ::1/5 not-advertise
+    timers throttle spf 6 10 100
+    distance 5
+    table-map TBL filter
+    maximum-paths 5
+    default-metric 6
+  timers lsa-group-pacing 40
+  timers lsa-arrival 101
+  timers throttle lsa 5 500 5001
+  passive-interface default
+  max-metric router-lsa external-lsa inter-area-prefix-lsa 5
+  name-lookup
+  max-lsa 5
+  vrf foo
+    router-id 5.4.6.7
+    address-family ipv6 unicast
+    passive-interface default
+    max-metric router-lsa external-lsa 5 stub-prefix-lsa on-startup wait-for bgp 5 inter-area-prefix-lsa 5
