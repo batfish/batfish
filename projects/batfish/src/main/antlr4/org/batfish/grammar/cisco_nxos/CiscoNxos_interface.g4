@@ -387,6 +387,7 @@ i_ip
     | i_ip_ospf
     | i_ip_pim
     | i_ip_policy
+    | i_ip_port
     | i_ip_port_unreachable
     | i_ip_proxy_arp
     | i_ip_rip
@@ -559,6 +560,16 @@ iipp_null
 i_ip_policy
 :
   POLICY ROUTE_MAP name = route_map_name NEWLINE
+;
+
+i_ip_port
+:
+  PORT iip_port_access_group
+;
+
+iip_port_access_group
+:
+  ACCESS_GROUP acl = ip_access_list_name IN NEWLINE
 ;
 
 i_ip_port_unreachable

@@ -48,7 +48,7 @@ ACCESS_GROUP
 :
   'access-group'
   {
-    if (lastTokenType() == IP) {
+    if (lastTokenType() == IP || lastTokenType() == PORT) {
       pushMode(M_Word);
     }
   }
