@@ -1,5 +1,7 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
@@ -19,7 +21,6 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -51,6 +52,8 @@ public final class BgpProtocolHelper {
 
     // Make a new builder
     B builder = route.toBuilder();
+    // this will be set later during export policy transformation or after it is exported
+    builder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
 
     // sessionProperties represents incoming edge, so fromNeighbor's IP is its headIp
     Ip fromNeighborIp = sessionProperties.getHeadIp();
@@ -166,19 +169,6 @@ public final class BgpProtocolHelper {
             ? BgpRoute.DEFAULT_LOCAL_PREFERENCE
             : route.getLocalPreference());
 
-    // Outgoing nextHopIp
-    if (sessionProperties.isEbgp()) {
-      // If session is eBGP, always override next-hop
-      builder.setNextHopIp(fromNeighborIp);
-    } else {
-      // iBGP session: if route has next-hop ip, preserve it. If not, set our own.
-      // Note: implementation of next-hop-self in the general case is delegated to routing policy
-      builder.setNextHopIp(
-          route.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
-              ? fromNeighborIp
-              : route.getNextHopIp());
-    }
-
     return builder;
   }
 
@@ -281,11 +271,18 @@ public final class BgpProtocolHelper {
   }
 
   /**
-   * Perform BGP export transformations on a given route <em>after</em> export policy has been
+   * Perform BGP export transformations on a given route <em>after</em> export policy has been *
    * applied to the route, route was accepted, but before route is sent "onto the wire".
+   *
+   * @param routeBuilder Builder for the output (exported) route
+   * @param isEbgp true for ebgp sessions
+   * @param localAs local AS
+   * @param fromNeighborIp IP of the neighbor which is exporting the route
+   * @param originalRouteNhip Next hop IP of the original route
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
-      void transformBgpRoutePostExport(B routeBuilder, boolean isEbgp, long localAs) {
+      void transformBgpRoutePostExport(
+          B routeBuilder, boolean isEbgp, long localAs, Ip fromNeighborIp, Ip originalRouteNhip) {
     if (isEbgp) {
       // if eBGP, prepend as-path sender's as-path number
       routeBuilder.setAsPath(
@@ -296,6 +293,15 @@ public final class BgpProtocolHelper {
                   .build()));
       // Tags are non-transitive
       routeBuilder.setTag(null);
+    }
+
+    if (isEbgp && routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+      routeBuilder.setNextHopIp(fromNeighborIp);
+    } else if (!isEbgp && routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+      // iBGP session: if original route has next-hop ip, preserve it. If not, set our own.
+      // Note: implementation of next-hop-self in the general case is delegated to routing policy
+      routeBuilder.setNextHopIp(
+          originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP) ? fromNeighborIp : originalRouteNhip);
     }
   }
 
