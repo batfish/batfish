@@ -126,6 +126,19 @@ eigrp_metric
    bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
 ;
 
+eos_vlan_id
+:
+   vlan_ids += subrange
+   (
+      COMMA vlan_ids += subrange
+   )*
+;
+
+eos_vxlan_interface_name
+:
+   VXLAN DEC
+;
+
 exit_line
 :
    EXIT NEWLINE
@@ -199,11 +212,6 @@ int_expr
    )
    | IGP_COST
    | RP_VARIABLE
-;
-
-eos_vxlan_interface_name
-:
-   VXLAN DEC
 ;
 
 interface_name

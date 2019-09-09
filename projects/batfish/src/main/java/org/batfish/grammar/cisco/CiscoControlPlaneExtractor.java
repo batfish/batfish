@@ -628,6 +628,12 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_timersContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vab_vlanContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlanContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_aware_bundleContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_rdContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_redistributeContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_router_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
@@ -1389,6 +1395,9 @@ import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
+import org.batfish.representation.cisco.eos.AristaBgpVlan;
+import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
+import org.batfish.representation.cisco.eos.AristaBgpVlanBase;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
@@ -1484,6 +1493,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return (Long.parseLong(parts[0]) << 16) + Long.parseLong(parts[1]);
   }
 
+  @Nonnull
+  private static IntegerSpace toIntegerSpace(Eos_vlan_idContext ctx) {
+    return ctx.vlan_ids.stream()
+        .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
+        .reduce(IntegerSpace::union)
+        .get();
+  }
+
   private static Ip toIp(TerminalNode t) {
     return Ip.parse(t.getText());
   }
@@ -1551,6 +1568,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
   private AristaBgpProcess _currentAristaBgpProcess;
+  private AristaBgpVlanBase _currentAristaBgpVlan;
 
   @Nullable private CiscoAsaNat _currentAsaNat;
 
@@ -2438,12 +2456,61 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rb_vab_vlan(Eos_rb_vab_vlanContext ctx) {
+    // Enforced by the grammar
+    assert _currentAristaBgpVlan instanceof AristaBgpVlanAwareBundle;
+    ((AristaBgpVlanAwareBundle) _currentAristaBgpVlan).setVlans(toIntegerSpace(ctx.vlans));
+  }
+
+  @Override
+  public void enterEos_rb_vlan(Eos_rb_vlanContext ctx) {
+    int vlan = toInteger(ctx.id);
+    _currentAristaBgpVlan =
+        _currentAristaBgpProcess.getVlans().computeIfAbsent(vlan, AristaBgpVlan::new);
+  }
+
+  @Override
+  public void exitEos_rb_vlan(Eos_rb_vlanContext ctx) {
+    _currentAristaBgpVlan = null;
+  }
+
+  @Override
+  public void exitEos_rb_vlan_tail_rd(Eos_rb_vlan_tail_rdContext ctx) {
+    _currentAristaBgpVlan.setRd(toRouteDistinguisher(ctx.rd));
+  }
+
+  @Override
+  public void exitEos_rb_vlan_tail_redistribute(Eos_rb_vlan_tail_redistributeContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEos_rb_vlan_tail_route_target(Eos_rb_vlan_tail_route_targetContext ctx) {
+    ExtendedCommunity rt = toRouteTarget(ctx.rt);
+    if (ctx.IMPORT() != null || ctx.BOTH() != null) {
+      _currentAristaBgpVlan.setRtImport(rt);
+    }
+    if (ctx.EXPORT() != null || ctx.BOTH() != null) {
+      _currentAristaBgpVlan.setRtExport(rt);
+    }
+  }
+
+  @Override
+  public void enterEos_rb_vlan_aware_bundle(Eos_rb_vlan_aware_bundleContext ctx) {
+    _currentAristaBgpVlan =
+        _currentAristaBgpProcess
+            .getVlanAwareBundles()
+            .computeIfAbsent(ctx.name.getText(), AristaBgpVlanAwareBundle::new);
+  }
+
+  @Override
+  public void exitEos_rb_vlan_aware_bundle(Eos_rb_vlan_aware_bundleContext ctx) {
+    _currentAristaBgpVlan = null;
+  }
+
+  @Override
   public void enterEos_vlan_id(Eos_vlan_idContext ctx) {
-    _currentVlans =
-        ctx.vlan_ids.stream()
-            .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
-            .reduce(IntegerSpace::union)
-            .get();
+    _currentVlans = toIntegerSpace(ctx);
   }
 
   @Override
