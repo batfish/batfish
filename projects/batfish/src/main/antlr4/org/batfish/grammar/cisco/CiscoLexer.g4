@@ -5552,6 +5552,11 @@ HOST_REDIRECT
    'host-redirect'
 ;
 
+HOST_ROUTE
+:
+'host-route'
+;
+
 HOST_ROUTING
 :
    'host-routing'
@@ -6722,6 +6727,11 @@ LE
 LEAK_MAP
 :
    'leak-map'
+;
+
+LEARNED
+:
+   'learned'
 ;
 
 LEASE
@@ -10986,6 +10996,11 @@ ROUTER_LSA
   'router-lsa'
 ;
 
+ROUTER_MAC
+:
+   'router-mac'
+;
+
 ROUTER_SOLICITATION
 :
    'router-solicitation'
@@ -13821,6 +13836,11 @@ VFI
 VLAN
 :
    'vlan'
+;
+
+VLAN_AWARE_BUNDLE
+:
+   'vlan-aware-bundle'
 ;
 
 VLAN_GROUP

@@ -6,14 +6,6 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-eos_vlan_id
-:
-   vlan_ids += subrange
-   (
-      COMMA vlan_ids += subrange
-   )*
-;
-
 eos_vlan_name
 :
    NAME name = variable NEWLINE

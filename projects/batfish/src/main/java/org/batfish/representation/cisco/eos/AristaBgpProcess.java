@@ -1,6 +1,9 @@
 package org.batfish.representation.cisco.eos;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
@@ -11,9 +14,13 @@ public final class AristaBgpProcess implements Serializable {
   @Nullable private Integer _keepAliveTimer;
   @Nullable private Ip _routerId;
   @Nullable private Boolean _shutdown;
+  @Nonnull private final Map<String, AristaBgpVlanAwareBundle> _vlanAwareBundles;
+  @Nonnull private final Map<Integer, AristaBgpVlan> _vlans;
 
   public AristaBgpProcess(long asn) {
     _asn = asn;
+    _vlanAwareBundles = new HashMap<>(0);
+    _vlans = new HashMap<>(0);
   }
 
   public long getAsn() {
@@ -58,5 +65,15 @@ public final class AristaBgpProcess implements Serializable {
 
   public void setShutdown(@Nullable Boolean shutdown) {
     _shutdown = shutdown;
+  }
+
+  @Nonnull
+  public Map<String, AristaBgpVlanAwareBundle> getVlanAwareBundles() {
+    return _vlanAwareBundles;
+  }
+
+  @Nonnull
+  public Map<Integer, AristaBgpVlan> getVlans() {
+    return _vlans;
   }
 }

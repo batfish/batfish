@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_vlans
+router bgp 1
+   vlan 300
+       rd 192.168.255.100:10103
+       route-target both 10101:10103
+       redistribute host-route
+       redistribute learned
+       redistribute router-mac
+       redistribute static
+   vlan-aware-bundle Tenant_A
+       rd 192.168.255.8:10101
+       route-target both 10101:10101
+       redistribute host-route
+       redistribute learned
+       redistribute router-mac
+       redistribute static
+       vlan 1,110-111
+
