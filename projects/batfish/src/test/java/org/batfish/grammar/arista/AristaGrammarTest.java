@@ -56,7 +56,6 @@ public class AristaGrammarTest {
 
   @Test
   public void testTopLevelBgpExtraction() {
-    // Don't crash
     CiscoConfiguration config = parseVendorConfig("arista_bgp");
     assertTrue(config.getAristaBgp().getShutdown());
     assertThat(config.getAristaBgp().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
@@ -66,7 +65,6 @@ public class AristaGrammarTest {
 
   @Test
   public void testBgpVlansExtraction() {
-    // Don't crash
     CiscoConfiguration config = parseVendorConfig("arista_bgp_vlans");
     {
       AristaBgpVlanAwareBundle bundle = config.getAristaBgp().getVlanAwareBundles().get("Tenant_A");
