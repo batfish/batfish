@@ -7,6 +7,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY("bgp additional-paths selection route-policy"),
   BGP_ADVERTISE_MAP_EXIST_MAP("bgp neighbor advertise-map exist-map"),
   BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),
+  BGP_AGGREGATE_MATCH_MAP("bgp vrf aggregate-address match-map"),
   BGP_AGGREGATE_ROUTE_POLICY("aggregate-address route-policy"),
   BGP_DEFAULT_ORIGINATE_ROUTE_MAP("bgp default-originate route-map"),
   BGP_INBOUND_FILTER_LIST("bgp inbound filter-list"),

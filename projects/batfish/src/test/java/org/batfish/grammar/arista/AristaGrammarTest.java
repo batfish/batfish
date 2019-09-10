@@ -19,12 +19,14 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.junit.Test;
@@ -77,6 +79,44 @@ public class AristaGrammarTest {
       String vrfName = "tenant2_vrf";
       assertTrue(config.getAristaBgp().getVrfs().get(vrfName).getShutdown());
       assertThat(config.getAristaBgp().getVrfs().get(vrfName).getRouterId(), nullValue());
+    }
+  }
+
+  @Test
+  public void testAggregateAddressExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_aggregate_address");
+    {
+      AristaBgpAggregateNetwork agg =
+          config.getAristaBgp().getDefaultVrf().getV4aggregates().get(Prefix.parse("1.2.33.0/24"));
+      assertTrue(agg.getAdvertiseOnly());
+      assertTrue(agg.getAsSet());
+      assertTrue(agg.getSummaryOnly());
+      assertThat(agg.getAttributeMap(), equalTo("ATTR_MAP"));
+      assertThat(agg.getMatchMap(), equalTo("MATCH_MAP"));
+    }
+    {
+      AristaBgpAggregateNetwork agg =
+          config.getAristaBgp().getDefaultVrf().getV4aggregates().get(Prefix.parse("1.2.44.0/24"));
+      assertThat(agg.getAdvertiseOnly(), nullValue());
+      assertThat(agg.getAsSet(), nullValue());
+      assertTrue(agg.getSummaryOnly());
+      assertThat(agg.getAttributeMap(), nullValue());
+      assertThat(agg.getMatchMap(), nullValue());
+    }
+    {
+      AristaBgpAggregateNetwork agg =
+          config.getAristaBgp().getDefaultVrf().getV4aggregates().get(Prefix.parse("1.2.55.0/24"));
+      assertThat(agg, notNullValue());
+    }
+    {
+      AristaBgpAggregateNetwork agg =
+          config
+              .getAristaBgp()
+              .getVrfs()
+              .get("FOO")
+              .getV4aggregates()
+              .get(Prefix.parse("5.6.7.0/24"));
+      assertTrue(agg.getAsSet());
     }
   }
 

@@ -19,9 +19,19 @@ eos_router_bgp
 
 eos_rb_inner
 :
-  eos_rbi_router_id
+  eos_rbi_aggregate_address
+  | eos_rbi_router_id
   | eos_rbi_shutdown
   | eos_rbi_timers
+;
+
+eos_rbi_aggregate_address
+:
+  AGGREGATE_ADDRESS
+  (
+    eos_rb_aa_v4
+    | eos_rb_aa_v6
+  )
 ;
 
 eos_rbi_router_id
@@ -37,6 +47,29 @@ eos_rbi_shutdown
 eos_rbi_timers
 :
   TIMERS BGP keepalive = DEC hold = DEC NEWLINE
+;
+
+eos_rb_aa_modifiers
+:
+  ADVERTISE_ONLY
+  | AS_SET
+  | ATTRIBUTE_MAP attr_map = VARIABLE
+  | MATCH_MAP match_map = VARIABLE
+  | SUMMARY_ONLY
+;
+
+eos_rb_aa_v4
+:
+  (
+    ip = IP_ADDRESS mask = IP_ADDRESS
+    | prefix = IP_PREFIX
+  ) eos_rb_aa_modifiers*
+  NEWLINE
+;
+
+eos_rb_aa_v6
+:
+  prefix = IPV6_PREFIX eos_rb_aa_modifiers* NEWLINE
 ;
 
 eos_rb_vlan

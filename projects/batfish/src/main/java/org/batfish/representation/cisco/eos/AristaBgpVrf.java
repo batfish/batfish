@@ -1,13 +1,17 @@
 package org.batfish.representation.cisco.eos;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 
 /** BGP configuration for a single VRF */
 public final class AristaBgpVrf implements Serializable {
 
+  @Nonnull private final Map<Prefix, AristaBgpAggregateNetwork> _v4aggregates;
   @Nullable private Integer _holdTimer;
   @Nullable private Integer _keepAliveTimer;
   @Nullable private Ip _routerId;
@@ -16,6 +20,7 @@ public final class AristaBgpVrf implements Serializable {
 
   public AristaBgpVrf(String name) {
     _name = name;
+    _v4aggregates = new HashMap<>(0);
   }
 
   /** Hold timer, in seconds */
@@ -61,5 +66,10 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setShutdown(@Nullable Boolean shutdown) {
     _shutdown = shutdown;
+  }
+
+  @Nonnull
+  public Map<Prefix, AristaBgpAggregateNetwork> getV4aggregates() {
+    return _v4aggregates;
   }
 }

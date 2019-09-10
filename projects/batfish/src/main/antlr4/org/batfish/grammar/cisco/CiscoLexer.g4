@@ -444,6 +444,11 @@ ADVERTISE_MAP
    'advertise-map'
 ;
 
+ADVERTISE_ONLY
+:
+   'advertise-only'
+;
+
 AES
 :
    'aes'
@@ -7427,6 +7432,11 @@ MATCH_ALL
 MATCH_ANY
 :
    'match-any'
+;
+
+MATCH_MAP
+:
+   'match-map'
 ;
 
 MATCH_NONE
