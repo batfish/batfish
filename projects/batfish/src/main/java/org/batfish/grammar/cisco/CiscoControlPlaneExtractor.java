@@ -77,6 +77,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_MATCH_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER6_LIST;
@@ -2474,10 +2475,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentAristaBgpAggregateNetwork.setAsSet(true);
     }
     if (ctx.ATTRIBUTE_MAP() != null) {
-      _currentAristaBgpAggregateNetwork.setAttributeMap(ctx.attr_map.getText());
+      String routeMapName = ctx.attr_map.getText();
+      _currentAristaBgpAggregateNetwork.setAttributeMap(routeMapName);
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.getStart().getLine());
     }
     if (ctx.MATCH_MAP() != null) {
-      _currentAristaBgpAggregateNetwork.setMatchMap(ctx.match_map.getText());
+      String routeMapName = ctx.match_map.getText();
+      _currentAristaBgpAggregateNetwork.setMatchMap(routeMapName);
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMapName, BGP_AGGREGATE_MATCH_MAP, ctx.getStart().getLine());
     }
     if (ctx.SUMMARY_ONLY() != null) {
       _currentAristaBgpAggregateNetwork.setSummaryOnly(true);
