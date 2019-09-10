@@ -77,6 +77,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_MATCH_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER6_LIST;
@@ -626,6 +627,8 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_linkContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_aa_modifiersContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_aa_v4Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vab_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_aware_bundleContext;
@@ -1396,6 +1399,7 @@ import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
@@ -1570,6 +1574,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
+  private AristaBgpAggregateNetwork _currentAristaBgpAggregateNetwork;
   private AristaBgpProcess _currentAristaBgpProcess;
   private AristaBgpVlanBase _currentAristaBgpVlan;
   private AristaBgpVrf _currentAristaBgpVrf;
@@ -2444,6 +2449,46 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitEos_router_bgp(Eos_router_bgpContext ctx) {
     _currentAristaBgpProcess = null;
     _currentAristaBgpVrf = null;
+  }
+
+  @Override
+  public void enterEos_rb_aa_v4(Eos_rb_aa_v4Context ctx) {
+    Prefix prefix =
+        ctx.prefix != null
+            ? Prefix.parse(ctx.prefix.getText())
+            : Prefix.create(toIp(ctx.ip), toIp(ctx.mask));
+    _currentAristaBgpAggregateNetwork = new AristaBgpAggregateNetwork();
+    _currentAristaBgpVrf.getV4aggregates().put(prefix, _currentAristaBgpAggregateNetwork);
+  }
+
+  @Override
+  public void exitEos_rb_aa_v4(Eos_rb_aa_v4Context ctx) {
+    _currentAristaBgpAggregateNetwork = null;
+  }
+
+  @Override
+  public void exitEos_rb_aa_modifiers(Eos_rb_aa_modifiersContext ctx) {
+    if (ctx.ADVERTISE_ONLY() != null) {
+      _currentAristaBgpAggregateNetwork.setAdvertiseOnly(true);
+    }
+    if (ctx.AS_SET() != null) {
+      _currentAristaBgpAggregateNetwork.setAsSet(true);
+    }
+    if (ctx.ATTRIBUTE_MAP() != null) {
+      String routeMapName = ctx.attr_map.getText();
+      _currentAristaBgpAggregateNetwork.setAttributeMap(routeMapName);
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.getStart().getLine());
+    }
+    if (ctx.MATCH_MAP() != null) {
+      String routeMapName = ctx.match_map.getText();
+      _currentAristaBgpAggregateNetwork.setMatchMap(routeMapName);
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMapName, BGP_AGGREGATE_MATCH_MAP, ctx.getStart().getLine());
+    }
+    if (ctx.SUMMARY_ONLY() != null) {
+      _currentAristaBgpAggregateNetwork.setSummaryOnly(true);
+    }
   }
 
   @Override

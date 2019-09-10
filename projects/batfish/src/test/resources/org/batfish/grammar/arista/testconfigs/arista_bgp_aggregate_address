@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_aggregate_address
+!
+router bgp 1
+  aggregate-address 1.2.33.0/24 advertise-only as-set summary-only attribute-map ATTR_MAP match-map MATCH_MAP
+  aggregate-address 1.2.44.0 255.255.255.0 summary-only
+  aggregate-address 1.2.55.0 255.255.255.0
+  aggregate-address 2001:0db8:85a3:0000:0000:8a2e:0370::/112
+
+  vrf FOO
+    aggregate-address 5.6.7.0/24 as-set
+    aggregate-address 2001:0db8:85a3:0000:0000:8a2e:0370::/112
