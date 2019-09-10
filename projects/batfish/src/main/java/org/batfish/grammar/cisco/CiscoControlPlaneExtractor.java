@@ -302,6 +302,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
+import static org.batfish.representation.cisco.eos.AristaBgpProcess.DEFAULT_VRF;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -625,15 +626,16 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_linkContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_rb_router_idContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_rb_shutdownContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_rb_timersContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vab_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_aware_bundleContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_redistributeContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_route_targetContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_router_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_shutdownContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_timersContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_router_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
@@ -1398,6 +1400,7 @@ import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.cisco.eos.AristaBgpVlanBase;
+import org.batfish.representation.cisco.eos.AristaBgpVrf;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
@@ -1569,6 +1572,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private AristaBgpProcess _currentAristaBgpProcess;
   private AristaBgpVlanBase _currentAristaBgpVlan;
+  private AristaBgpVrf _currentAristaBgpVrf;
 
   @Nullable private CiscoAsaNat _currentAsaNat;
 
@@ -2432,27 +2436,30 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentAristaBgpProcess = new AristaBgpProcess(asn);
       _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
     }
+    _currentAristaBgpVrf =
+        _currentAristaBgpProcess.getVrfs().computeIfAbsent(DEFAULT_VRF, AristaBgpVrf::new);
   }
 
   @Override
   public void exitEos_router_bgp(Eos_router_bgpContext ctx) {
     _currentAristaBgpProcess = null;
+    _currentAristaBgpVrf = null;
   }
 
   @Override
-  public void exitEos_rb_router_id(Eos_rb_router_idContext ctx) {
-    _currentAristaBgpProcess.setRouterId(toIp(ctx.id));
+  public void exitEos_rbi_router_id(Eos_rbi_router_idContext ctx) {
+    _currentAristaBgpVrf.setRouterId(toIp(ctx.id));
   }
 
   @Override
-  public void exitEos_rb_timers(Eos_rb_timersContext ctx) {
-    _currentAristaBgpProcess.setHoldTimer(toInteger(ctx.hold));
-    _currentAristaBgpProcess.setKeepAliveTimer(toInteger(ctx.keepalive));
+  public void exitEos_rbi_timers(Eos_rbi_timersContext ctx) {
+    _currentAristaBgpVrf.setHoldTimer(toInteger(ctx.hold));
+    _currentAristaBgpVrf.setKeepAliveTimer(toInteger(ctx.keepalive));
   }
 
   @Override
-  public void exitEos_rb_shutdown(Eos_rb_shutdownContext ctx) {
-    _currentAristaBgpProcess.setShutdown(true);
+  public void exitEos_rbi_shutdown(Eos_rbi_shutdownContext ctx) {
+    _currentAristaBgpVrf.setShutdown(true);
   }
 
   @Override
@@ -2506,6 +2513,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rb_vlan_aware_bundle(Eos_rb_vlan_aware_bundleContext ctx) {
     _currentAristaBgpVlan = null;
+  }
+
+  @Override
+  public void enterEos_rb_vrf(Eos_rb_vrfContext ctx) {
+    String name = ctx.name.getText();
+    _currentAristaBgpVrf =
+        _currentAristaBgpProcess.getVrfs().computeIfAbsent(name, AristaBgpVrf::new);
+  }
+
+  @Override
+  public void exitEos_rb_vrf(Eos_rb_vrfContext ctx) {
+    _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
   }
 
   @Override

@@ -4,6 +4,7 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -57,10 +58,26 @@ public class AristaGrammarTest {
   @Test
   public void testTopLevelBgpExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_bgp");
-    assertTrue(config.getAristaBgp().getShutdown());
-    assertThat(config.getAristaBgp().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
-    assertThat(config.getAristaBgp().getKeepAliveTimer(), equalTo(3));
-    assertThat(config.getAristaBgp().getHoldTimer(), equalTo(9));
+    // Basic VRF config
+    {
+      assertTrue(config.getAristaBgp().getDefaultVrf().getShutdown());
+      assertThat(config.getAristaBgp().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+      assertThat(config.getAristaBgp().getDefaultVrf().getKeepAliveTimer(), equalTo(3));
+      assertThat(config.getAristaBgp().getDefaultVrf().getHoldTimer(), equalTo(9));
+    }
+    {
+      String vrfName = "tenant_vrf";
+      assertThat(config.getAristaBgp().getVrfs().get(vrfName).getShutdown(), nullValue());
+      assertThat(
+          config.getAristaBgp().getVrfs().get(vrfName).getRouterId(), equalTo(Ip.parse("5.6.7.8")));
+      assertThat(config.getAristaBgp().getVrfs().get(vrfName).getKeepAliveTimer(), equalTo(6));
+      assertThat(config.getAristaBgp().getVrfs().get(vrfName).getHoldTimer(), equalTo(18));
+    }
+    {
+      String vrfName = "tenant2_vrf";
+      assertTrue(config.getAristaBgp().getVrfs().get(vrfName).getShutdown());
+      assertThat(config.getAristaBgp().getVrfs().get(vrfName).getRouterId(), nullValue());
+    }
   }
 
   @Test
