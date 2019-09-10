@@ -3,6 +3,7 @@ package org.batfish.grammar.arista;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +28,7 @@ import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.junit.Test;
@@ -138,6 +140,42 @@ public class AristaGrammarTest {
       assertThat(vlan.getRd(), equalTo(RouteDistinguisher.parse("192.168.255.100:10103")));
       assertThat(vlan.getRtImport(), equalTo(ExtendedCommunity.target(10101, 10103)));
       assertThat(vlan.getRtExport(), equalTo(ExtendedCommunity.target(10101, 10103)));
+    }
+  }
+
+  @Test
+  public void testNeighborExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_neighbors");
+    {
+      String peergName = "PEER_G";
+      assertThat(config.getAristaBgp().getPeerGroups(), hasKey(peergName));
+      assertThat(config.getAristaBgp().getPeerGroups().get(peergName).getAllowAsIn(), equalTo(3));
+    }
+    {
+      Ip neighborAddr = Ip.parse("1.1.1.1");
+      AristaBgpV4Neighbor neighbor =
+          config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(neighbor.getAllowAsIn(), nullValue());
+      // TODO: default-originate
+      assertThat(neighbor.getDescription(), equalTo("SOME NEIGHBOR"));
+      assertTrue(neighbor.getDontCapabilityNegotiate());
+      assertThat(neighbor.getEbgpMultihop(), equalTo(Integer.MAX_VALUE));
+      assertThat(neighbor.getPeerGroup(), equalTo("PEER_G"));
+      assertThat(neighbor.getRemoteAs(), equalTo(35L));
+    }
+    {
+      Ip neighborAddr = Ip.parse("2.2.2.2");
+      AristaBgpV4Neighbor neighbor =
+          config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(neighbor.getRemoteAs(), equalTo(36L));
+      assertThat(neighbor.getEbgpMultihop(), equalTo(10));
+      // TODO: default-originate
+    }
+    {
+      Ip neighborAddr = Ip.parse("2.2.2.2");
+      AristaBgpV4Neighbor neighbor =
+          config.getAristaBgp().getVrfs().get("tenant").getV4neighbors().get(neighborAddr);
+      assertThat(neighbor.getRemoteAs(), equalTo(88L));
     }
   }
 }

@@ -17,10 +17,12 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Ip _routerId;
   @Nonnull private final String _name;
   @Nullable private Boolean _shutdown;
+  @Nonnull private Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
 
   public AristaBgpVrf(String name) {
     _name = name;
     _v4aggregates = new HashMap<>(0);
+    _v4neighbors = new HashMap<>(0);
   }
 
   /** Hold timer, in seconds */
@@ -71,5 +73,10 @@ public final class AristaBgpVrf implements Serializable {
   @Nonnull
   public Map<Prefix, AristaBgpAggregateNetwork> getV4aggregates() {
     return _v4aggregates;
+  }
+
+  @Nonnull
+  public Map<Ip, AristaBgpV4Neighbor> getV4neighbors() {
+    return _v4neighbors;
   }
 }

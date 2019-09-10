@@ -10,12 +10,14 @@ import javax.annotation.Nullable;
 public final class AristaBgpProcess implements Serializable {
   public static final String DEFAULT_VRF = "default";
   private final long _asn;
+  @Nonnull private Map<String, AristaBgpPeerGroupNeighbor> _peerGroups;
   @Nonnull private final Map<String, AristaBgpVlanAwareBundle> _vlanAwareBundles;
   @Nonnull private final Map<Integer, AristaBgpVlan> _vlans;
   @Nonnull private final Map<String, AristaBgpVrf> _vrfs;
 
   public AristaBgpProcess(long asn) {
     _asn = asn;
+    _peerGroups = new HashMap<>(0);
     _vlanAwareBundles = new HashMap<>(0);
     _vlans = new HashMap<>(0);
     _vrfs = new HashMap<>(0);
@@ -23,6 +25,11 @@ public final class AristaBgpProcess implements Serializable {
 
   public long getAsn() {
     return _asn;
+  }
+
+  @Nonnull
+  public Map<String, AristaBgpPeerGroupNeighbor> getPeerGroups() {
+    return _peerGroups;
   }
 
   @Nonnull

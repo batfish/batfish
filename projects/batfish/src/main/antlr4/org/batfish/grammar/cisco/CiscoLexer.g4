@@ -4518,6 +4518,11 @@ EXPORT
    'export'
 ;
 
+EXPORT_LOCALPREF
+:
+   'export-localpref'
+;
+
 EXPORT_PROTOCOL
 :
    'export-protocol'
