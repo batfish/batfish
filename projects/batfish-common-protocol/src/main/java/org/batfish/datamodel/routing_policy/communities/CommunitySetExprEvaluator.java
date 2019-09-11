@@ -32,9 +32,8 @@ public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<
       CommunitySetExprReference communitySetExprReference) {
     CommunitySetExpr communitySetExpr =
         _ctx.getCommunitySetExprs().get(communitySetExprReference.getName());
-    if (communitySetExpr == null) {
-      return CommunitySet.empty();
-    }
+    // conversion to VI should guarantee communitySetExpr is not null
+    assert communitySetExpr != null;
     return communitySetExpr.accept(this);
   }
 
@@ -42,9 +41,8 @@ public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<
   public @Nonnull CommunitySet visitCommunitySetReference(
       CommunitySetReference communitySetReference) {
     CommunitySet communitySet = _ctx.getCommunitySets().get(communitySetReference.getName());
-    if (communitySet == null) {
-      return CommunitySet.empty();
-    }
+    // conversion to VI should guarantee communitySet is not null
+    assert communitySet != null;
     return communitySet;
   }
 

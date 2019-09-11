@@ -99,11 +99,6 @@ public final class CommunitySetMatchExprEvaluatorTest {
         r.accept(
             ctx.getCommunitySetMatchExprEvaluator(), CommunitySet.of(StandardCommunity.of(1L))));
     assertFalse(r.accept(ctx.getCommunitySetMatchExprEvaluator(), CommunitySet.empty()));
-
-    // undefined reference should not match
-    assertFalse(
-        new CommunitySetMatchExprReference("undefined")
-            .accept(ctx.getCommunitySetMatchExprEvaluator(), CommunitySet.empty()));
   }
 
   @Test

@@ -66,9 +66,8 @@ public final class CommunityMatchExprEvaluator
       CommunityMatchExprReference communityMatchExprReference, Community arg) {
     CommunityMatchExpr expr =
         _ctx.getCommunityMatchExprs().get(communityMatchExprReference.getName());
-    if (expr == null) {
-      return false;
-    }
+    // conversion to VI should guarantee expr is not null
+    assert expr != null;
     return expr.accept(this, arg);
   }
 

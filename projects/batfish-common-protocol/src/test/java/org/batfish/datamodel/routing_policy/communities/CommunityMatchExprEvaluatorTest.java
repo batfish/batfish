@@ -113,11 +113,6 @@ public final class CommunityMatchExprEvaluatorTest {
     CommunityMatchExprReference r = new CommunityMatchExprReference("defined");
     assertTrue(r.accept(ctx.getCommunityMatchExprEvaluator(), StandardCommunity.of(1L)));
     assertFalse(r.accept(ctx.getCommunityMatchExprEvaluator(), StandardCommunity.of(2L)));
-
-    // undefined reference should not match
-    assertFalse(
-        new CommunityMatchExprReference("undefined")
-            .accept(ctx.getCommunityMatchExprEvaluator(), StandardCommunity.of(1L)));
   }
 
   @Test

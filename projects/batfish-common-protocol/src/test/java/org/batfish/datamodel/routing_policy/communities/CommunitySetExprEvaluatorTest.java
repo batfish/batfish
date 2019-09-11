@@ -48,9 +48,6 @@ public final class CommunitySetExprEvaluatorTest {
     assertThat(
         new CommunitySetExprReference("defined").accept(new CommunitySetExprEvaluator(ctx)),
         equalTo(cs));
-    assertThat(
-        new CommunitySetExprReference("undefined").accept(new CommunitySetExprEvaluator(ctx)),
-        equalTo(CommunitySet.empty()));
   }
 
   @Test
@@ -62,9 +59,6 @@ public final class CommunitySetExprEvaluatorTest {
     assertThat(
         new CommunitySetReference("defined").accept(new CommunitySetExprEvaluator(ctx)),
         equalTo(cs));
-    assertThat(
-        new CommunitySetReference("undefined").accept(new CommunitySetExprEvaluator(ctx)),
-        equalTo(CommunitySet.empty()));
   }
 
   @Test

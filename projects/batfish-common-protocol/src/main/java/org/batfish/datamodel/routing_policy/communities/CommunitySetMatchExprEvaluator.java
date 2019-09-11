@@ -39,9 +39,8 @@ public final class CommunitySetMatchExprEvaluator
       CommunitySetMatchExprReference communitySetMatchExprReference, CommunitySet arg) {
     CommunitySetMatchExpr expr =
         _ctx.getCommunitySetMatchExprs().get(communitySetMatchExprReference.getName());
-    if (expr == null) {
-      return false;
-    }
+    // conversion to VI should guarantee expr is not null
+    assert expr != null;
     return expr.accept(this, arg);
   }
 
