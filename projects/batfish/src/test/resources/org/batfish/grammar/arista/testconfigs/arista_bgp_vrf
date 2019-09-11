@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_vrf
+!
+router bgp 1
+  vrf FOO
+    rd 123:123
+    route-target export 1:1
+    route-target import 2:2
+    local-as 65000

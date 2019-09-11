@@ -652,6 +652,9 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_export_localprefContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_local_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_rdContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_router_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
@@ -2682,6 +2685,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rb_vrf(Eos_rb_vrfContext ctx) {
     _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
+  }
+
+  @Override
+  public void exitEos_rbv_local_as(Eos_rbv_local_asContext ctx) {
+    _currentAristaBgpVrf.setLocalAs(toAsNum(ctx.asn));
+  }
+
+  @Override
+  public void exitEos_rbv_rd(Eos_rbv_rdContext ctx) {
+    _currentAristaBgpVrf.setRouteDistinguisher(toRouteDistinguisher(ctx.rd));
+  }
+
+  @Override
+  public void exitEos_rbv_route_target(Eos_rbv_route_targetContext ctx) {
+    if (ctx.EXPORT() != null) {
+      _currentAristaBgpVrf.setExportRouteTarget(toRouteTarget(ctx.rt));
+    }
+    if (ctx.IMPORT() != null) {
+      _currentAristaBgpVrf.setImportRouteTarget(toRouteTarget(ctx.rt));
+    }
   }
 
   @Override
