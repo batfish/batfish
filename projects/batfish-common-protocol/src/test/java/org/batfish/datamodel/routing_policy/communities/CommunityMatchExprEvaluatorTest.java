@@ -148,6 +148,7 @@ public final class CommunityMatchExprEvaluatorTest {
     assertFalse(
         RouteTargetExtendedCommunities.instance()
             .accept(eval(ExtendedCommunity.of(0x0000, 1L, 1L))));
+    assertFalse(RouteTargetExtendedCommunities.instance().accept(eval(StandardCommunity.of(1L))));
   }
 
   @Test
@@ -158,6 +159,7 @@ public final class CommunityMatchExprEvaluatorTest {
     assertFalse(
         SiteOfOriginExtendedCommunities.instance()
             .accept(eval(ExtendedCommunity.of(0x0000, 1L, 1L))));
+    assertFalse(SiteOfOriginExtendedCommunities.instance().accept(eval(StandardCommunity.of(1L))));
   }
 
   @Test
@@ -168,5 +170,7 @@ public final class CommunityMatchExprEvaluatorTest {
     assertFalse(
         VpnDistinguisherExtendedCommunities.instance()
             .accept(eval(ExtendedCommunity.of(0x0000, 1L, 1L))));
+    assertFalse(
+        VpnDistinguisherExtendedCommunities.instance().accept(eval(StandardCommunity.of(1L))));
   }
 }

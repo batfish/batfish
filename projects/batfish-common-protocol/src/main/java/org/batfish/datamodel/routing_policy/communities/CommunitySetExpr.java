@@ -2,7 +2,6 @@ package org.batfish.datamodel.routing_policy.communities;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -11,10 +10,6 @@ import javax.annotation.Nullable;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CommunitySetExpr implements Serializable {
-
-  public final @Nonnull CommunitySet evaluate(CommunityContext ctx) {
-    return accept(new CommunitySetExprEvaluator(ctx));
-  }
 
   @Override
   public abstract boolean equals(@Nullable Object obj);
