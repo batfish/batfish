@@ -2,6 +2,9 @@ package org.batfish.datamodel.routing_policy.communities;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -24,7 +27,15 @@ public final class CommunitySet implements Serializable {
   }
 
   public static @Nonnull CommunitySet of(Iterable<Community> communities) {
-    return new CommunitySet(communities);
+    return of(ImmutableSet.copyOf(communities));
+  }
+
+  public static @Nonnull CommunitySet of(Set<Community> communities) {
+    if (communities.isEmpty()) {
+      return empty();
+    }
+    ImmutableSet<Community> immutableValue = ImmutableSet.copyOf(communities);
+    return CACHE.getUnchecked(immutableValue);
   }
 
   public @Nonnull Set<Community> getCommunities() {
@@ -44,7 +55,12 @@ public final class CommunitySet implements Serializable {
 
   @Override
   public int hashCode() {
-    return _communities.hashCode();
+    int h = _hashCode;
+    if (h == 0) {
+      h = _communities.hashCode();
+      _hashCode = h;
+    }
+    return h;
   }
 
   private static final CommunitySet EMPTY = new CommunitySet(ImmutableSet.of());
@@ -56,8 +72,8 @@ public final class CommunitySet implements Serializable {
 
   private final @Nonnull Set<Community> _communities;
 
-  private CommunitySet(Iterable<Community> communities) {
-    _communities = ImmutableSet.copyOf(communities);
+  private CommunitySet(ImmutableSet<Community> communities) {
+    _communities = communities;
   }
 
   @JsonValue
@@ -65,4 +81,15 @@ public final class CommunitySet implements Serializable {
     // sorted for refs
     return ImmutableSortedSet.copyOf(_communities);
   }
+
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
+  private static final LoadingCache<ImmutableSet<Community>, CommunitySet> CACHE =
+      CacheBuilder.newBuilder()
+          .softValues()
+          .maximumSize(1 << 16)
+          .build(CacheLoader.from(CommunitySet::new));
+
+  /* Cache the hashcode */
+  private transient int _hashCode = 0;
 }
