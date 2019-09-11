@@ -1486,6 +1486,11 @@ BASIC_54_0
   'basic-54.0'
 ;
 
+BATCH_SIZE
+:
+  'batch-size'
+;
+
 BCMC_OPTIMIZATION
 :
    'bcmc-optimization'
@@ -4042,6 +4047,11 @@ ENCAPSULATION
    'encapsulation'
 ;
 
+ENCODING_WEIGHTED
+:
+   'encoding-weighted'
+;
+
 ENCR
 :
    'encr'
@@ -4728,6 +4738,11 @@ FEATURE
 FEATURE_SET
 :
    'feature-set'
+;
+
+FEC
+:
+   'fec'
 ;
 
 FEX
@@ -6867,6 +6882,11 @@ LINECODE
 LINK
 :
    'link'
+;
+
+LINK_BANDWIDTH
+:
+   'link-bandwidth'
 ;
 
 LINK_FAIL
@@ -10436,6 +10456,11 @@ RECORD_ENTRY
    'record-entry'
 ;
 
+RECURSIVE
+:
+   'recursive'
+;
+
 RED
 :
    'red'
@@ -13383,6 +13408,11 @@ UAUTH
    'uauth'
 ;
 
+UCMP
+:
+   'ucmp'
+;
+
 UC_TX_QUEUE
 :
    'uc-tx-queue'
@@ -13501,6 +13531,11 @@ UPDATE
 UPDATE_CALENDAR
 :
    'update-calendar'
+;
+
+UPDATE_DELAY
+:
+   'update-delay'
 ;
 
 UPDATE_SOURCE
@@ -14095,9 +14130,19 @@ WAIT_FOR_BGP
   'wait-for-bgp'
 ;
 
+WAIT_FOR_CONVERGENCE
+:
+  'wait-for-convergence'
+;
+
 WAIT_IGP_CONVERGENCE
 :
    'wait-igp-convergence'
+;
+
+WAIT_INSTALL
+:
+   'wait-install'
 ;
 
 WAIT_START
