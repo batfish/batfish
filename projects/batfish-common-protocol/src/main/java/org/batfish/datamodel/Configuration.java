@@ -647,22 +647,23 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_COMMUNITY_MATCH_EXPRS)
-  public void setCommunityMatchExprs(Map<String, CommunityMatchExpr> communityMatchExprs) {
+  public void setCommunityMatchExprs(@Nonnull Map<String, CommunityMatchExpr> communityMatchExprs) {
     _communityMatchExprs = communityMatchExprs;
   }
 
   @JsonProperty(PROP_COMMUNITY_SET_EXPRS)
-  public void setCommunitySetExprs(Map<String, CommunitySetExpr> communitySetExprs) {
+  public void setCommunitySetExprs(@Nonnull Map<String, CommunitySetExpr> communitySetExprs) {
     _communitySetExprs = communitySetExprs;
   }
 
   @JsonProperty(PROP_COMMUNITY_SET_MATCH_EXPRS)
-  public void setCommunitySetMatchExprs(Map<String, CommunitySetMatchExpr> communitySetMatchExprs) {
+  public void setCommunitySetMatchExprs(
+      @Nonnull Map<String, CommunitySetMatchExpr> communitySetMatchExprs) {
     _communitySetMatchExprs = communitySetMatchExprs;
   }
 
   @JsonProperty(PROP_COMMUNITY_SETS)
-  public void setCommunitySets(Map<String, CommunitySet> communitySets) {
+  public void setCommunitySets(@Nonnull Map<String, CommunitySet> communitySets) {
     _communitySets = communitySets;
   }
 
