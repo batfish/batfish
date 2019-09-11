@@ -12,12 +12,13 @@ public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<
   }
 
   @Override
-  public CommunitySet visitInputCommunities(InputCommunities inputCommunities) {
+  public @Nonnull CommunitySet visitInputCommunities(InputCommunities inputCommunities) {
     return _ctx.getInputCommunitySet();
   }
 
   @Override
-  public CommunitySet visitCommunitySetDifference(CommunitySetDifference communitySetDifference) {
+  public @Nonnull CommunitySet visitCommunitySetDifference(
+      CommunitySetDifference communitySetDifference) {
     CommunitySet initial = communitySetDifference.getInitial().accept(this);
     CommunityMatchExpr removalCriterion = communitySetDifference.getRemovalCriterion();
     return CommunitySet.of(
@@ -27,7 +28,7 @@ public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<
   }
 
   @Override
-  public CommunitySet visitCommunitySetExprReference(
+  public @Nonnull CommunitySet visitCommunitySetExprReference(
       CommunitySetExprReference communitySetExprReference) {
     CommunitySetExpr communitySetExpr =
         _ctx.getCommunitySetExprs().get(communitySetExprReference.getName());
@@ -38,7 +39,8 @@ public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<
   }
 
   @Override
-  public CommunitySet visitCommunitySetReference(CommunitySetReference communitySetReference) {
+  public @Nonnull CommunitySet visitCommunitySetReference(
+      CommunitySetReference communitySetReference) {
     CommunitySet communitySet = _ctx.getCommunitySets().get(communitySetReference.getName());
     if (communitySet == null) {
       return CommunitySet.empty();
@@ -47,7 +49,7 @@ public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<
   }
 
   @Override
-  public CommunitySet visitCommunitySetUnion(CommunitySetUnion communitySetUnion) {
+  public @Nonnull CommunitySet visitCommunitySetUnion(CommunitySetUnion communitySetUnion) {
     return CommunitySet.of(
         ImmutableSet.<Community>builder()
             .addAll(communitySetUnion.getExpr1().accept(this).getCommunities())
@@ -56,7 +58,7 @@ public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<
   }
 
   @Override
-  public CommunitySet visitLiteralCommunitySet(LiteralCommunitySet literalCommunitySet) {
+  public @Nonnull CommunitySet visitLiteralCommunitySet(LiteralCommunitySet literalCommunitySet) {
     return literalCommunitySet.getCommunitySet();
   }
 

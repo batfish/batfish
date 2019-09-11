@@ -13,7 +13,7 @@ public final class CommunitySetMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitCommunitySetAcl(CommunitySetAcl communitySetAcl, CommunitySet arg) {
+  public @Nonnull Boolean visitCommunitySetAcl(CommunitySetAcl communitySetAcl, CommunitySet arg) {
     for (CommunitySetAclLine line : communitySetAcl.getLines()) {
       if (line.getCommunitySetMatchExpr().accept(this, arg)) {
         return line.getAction() == LineAction.PERMIT;
@@ -23,19 +23,19 @@ public final class CommunitySetMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitCommunitySetMatchAll(
+  public @Nonnull Boolean visitCommunitySetMatchAll(
       CommunitySetMatchAll communitySetMatchAll, CommunitySet arg) {
     return communitySetMatchAll.getExprs().stream().allMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
-  public Boolean visitCommunitySetMatchAny(
+  public @Nonnull Boolean visitCommunitySetMatchAny(
       CommunitySetMatchAny communitySetMatchAny, CommunitySet arg) {
     return communitySetMatchAny.getExprs().stream().anyMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
-  public Boolean visitCommunitySetMatchExprReference(
+  public @Nonnull Boolean visitCommunitySetMatchExprReference(
       CommunitySetMatchExprReference communitySetMatchExprReference, CommunitySet arg) {
     CommunitySetMatchExpr expr =
         _ctx.getCommunitySetMatchExprs().get(communitySetMatchExprReference.getName());
@@ -46,7 +46,7 @@ public final class CommunitySetMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitCommunitySetMatchRegex(
+  public @Nonnull Boolean visitCommunitySetMatchRegex(
       CommunitySetMatchRegex communitySetMatchRegex, CommunitySet arg) {
     return Pattern.compile(communitySetMatchRegex.getRegex())
         .matcher(
@@ -57,12 +57,12 @@ public final class CommunitySetMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitCommunitySetNot(CommunitySetNot communitySetNot, CommunitySet arg) {
+  public @Nonnull Boolean visitCommunitySetNot(CommunitySetNot communitySetNot, CommunitySet arg) {
     return !communitySetNot.getExpr().accept(this, arg);
   }
 
   @Override
-  public Boolean visitHasCommunity(HasCommunity hasCommunity, CommunitySet arg) {
+  public @Nonnull Boolean visitHasCommunity(HasCommunity hasCommunity, CommunitySet arg) {
     return arg.getCommunities().stream()
         .anyMatch(c -> hasCommunity.getExpr().accept(_ctx.getCommunityMatchExprEvaluator(), c));
   }

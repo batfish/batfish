@@ -17,24 +17,25 @@ public final class CommunityMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitAllExtendedCommunities(
+  public @Nonnull Boolean visitAllExtendedCommunities(
       AllExtendedCommunities allExtendedCommunities, Community arg) {
     return arg instanceof ExtendedCommunity;
   }
 
   @Override
-  public Boolean visitAllLargeCommunities(AllLargeCommunities allLargeCommunities, Community arg) {
+  public @Nonnull Boolean visitAllLargeCommunities(
+      AllLargeCommunities allLargeCommunities, Community arg) {
     return arg instanceof LargeCommunity;
   }
 
   @Override
-  public Boolean visitAllStandardCommunities(
+  public @Nonnull Boolean visitAllStandardCommunities(
       AllStandardCommunities allStandardCommunities, Community arg) {
     return arg instanceof StandardCommunity;
   }
 
   @Override
-  public Boolean visitCommunityAcl(CommunityAcl communityAcl, Community arg) {
+  public @Nonnull Boolean visitCommunityAcl(CommunityAcl communityAcl, Community arg) {
     for (CommunityAclLine line : communityAcl.getLines()) {
       if (line.getCommunityMatchExpr().accept(this, arg)) {
         return line.getAction() == LineAction.PERMIT;
@@ -44,22 +45,24 @@ public final class CommunityMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitCommunityIs(CommunityIs communityIs, Community arg) {
+  public @Nonnull Boolean visitCommunityIs(CommunityIs communityIs, Community arg) {
     return arg.equals(communityIs.getCommunity());
   }
 
   @Override
-  public Boolean visitCommunityMatchAll(CommunityMatchAll communityMatchAll, Community arg) {
+  public @Nonnull Boolean visitCommunityMatchAll(
+      CommunityMatchAll communityMatchAll, Community arg) {
     return communityMatchAll.getExprs().stream().allMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
-  public Boolean visitCommunityMatchAny(CommunityMatchAny communityMatchAny, Community arg) {
+  public @Nonnull Boolean visitCommunityMatchAny(
+      CommunityMatchAny communityMatchAny, Community arg) {
     return communityMatchAny.getExprs().stream().anyMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
-  public Boolean visitCommunityMatchExprReference(
+  public @Nonnull Boolean visitCommunityMatchExprReference(
       CommunityMatchExprReference communityMatchExprReference, Community arg) {
     CommunityMatchExpr expr =
         _ctx.getCommunityMatchExprs().get(communityMatchExprReference.getName());
@@ -70,7 +73,8 @@ public final class CommunityMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitCommunityMatchRegex(CommunityMatchRegex communityMatchRegex, Community arg) {
+  public @Nonnull Boolean visitCommunityMatchRegex(
+      CommunityMatchRegex communityMatchRegex, Community arg) {
     return Pattern.compile(communityMatchRegex.getRegex())
         .matcher(
             communityMatchRegex.getCommunityRendering().accept(CommunityRenderer.instance(), arg))
@@ -78,12 +82,12 @@ public final class CommunityMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitCommunityNot(CommunityNot communityNot, Community arg) {
+  public @Nonnull Boolean visitCommunityNot(CommunityNot communityNot, Community arg) {
     return !communityNot.getExpr().accept(this, arg);
   }
 
   @Override
-  public Boolean visitRouteTargetExtendedCommunities(
+  public @Nonnull Boolean visitRouteTargetExtendedCommunities(
       RouteTargetExtendedCommunities routeTargetExtendedCommunities, Community arg) {
     if (!(arg instanceof ExtendedCommunity)) {
       return false;
@@ -92,7 +96,7 @@ public final class CommunityMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitSiteOfOriginExtendedCommunities(
+  public @Nonnull Boolean visitSiteOfOriginExtendedCommunities(
       SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, Community arg) {
     if (!(arg instanceof ExtendedCommunity)) {
       return false;
@@ -101,7 +105,7 @@ public final class CommunityMatchExprEvaluator
   }
 
   @Override
-  public Boolean visitVpnDistinguisherExtendedCommunities(
+  public @Nonnull Boolean visitVpnDistinguisherExtendedCommunities(
       VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, Community arg) {
     if (!(arg instanceof ExtendedCommunity)) {
       return false;
