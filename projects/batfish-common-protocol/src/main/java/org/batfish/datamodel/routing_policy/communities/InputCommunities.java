@@ -4,7 +4,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * A {@link CommunitySetExpr} representing the set of all communities of all types in a BGP route.
+ * A {@link CommunitySetExpr} representing the set of all communities of all types in the BGP route
+ * that is the input to the {@link MatchCommunities} or {@link SetCommunities} in which this
+ * expression is evaluated.
  */
 public final class InputCommunities extends CommunitySetExpr {
 
