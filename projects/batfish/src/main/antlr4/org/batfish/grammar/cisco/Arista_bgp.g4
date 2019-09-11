@@ -20,6 +20,8 @@ eos_router_bgp
 eos_rb_inner
 :
   eos_rbi_aggregate_address
+  | eos_rbi_default_metric
+  | eos_rbi_distance
   | eos_rbi_neighbor
   | eos_rbi_router_id
   | eos_rbi_shutdown
@@ -35,6 +37,16 @@ eos_rbi_aggregate_address
   )
 ;
 
+
+eos_rbi_default_metric
+:
+  DEFAULT_METRIC metric = DEC NEWLINE
+;
+
+eos_rbi_distance
+:
+  DISTANCE external = DEC (internal = DEC local = DEC)? NEWLINE
+;
 eos_rbi_neighbor
 :
   NEIGHBOR

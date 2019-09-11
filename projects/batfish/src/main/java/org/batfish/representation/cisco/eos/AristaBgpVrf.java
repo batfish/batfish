@@ -13,6 +13,10 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 /** BGP configuration for a single VRF */
 public final class AristaBgpVrf implements Serializable {
 
+  @Nullable private Long _defaultMetric;
+  @Nullable private Integer _defaultEbgpAdminDistance;
+  @Nullable private Integer _defaultIbgpAdminDistance;
+  @Nullable private Integer _defaultLocalAdminDistance;
   @Nullable private ExtendedCommunity _exportRouteTarget;
   @Nullable private ExtendedCommunity _importRouteTarget;
   @Nullable private Integer _holdTimer;
@@ -23,12 +27,48 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Ip _routerId;
   @Nullable private Boolean _shutdown;
   @Nonnull private final Map<Prefix, AristaBgpAggregateNetwork> _v4aggregates;
-  @Nonnull private Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
+  @Nonnull private final Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
 
   public AristaBgpVrf(String name) {
     _name = name;
     _v4aggregates = new HashMap<>(0);
     _v4neighbors = new HashMap<>(0);
+  }
+
+  @Nullable
+  public Long getDefaultMetric() {
+    return _defaultMetric;
+  }
+
+  public void setDefaultMetric(@Nullable Long defaultMetric) {
+    _defaultMetric = defaultMetric;
+  }
+
+  @Nullable
+  public Integer getDefaultEbgpAdminDistance() {
+    return _defaultEbgpAdminDistance;
+  }
+
+  public void setDefaultEbgpAdminDistance(@Nullable Integer defaultEbgpAdminDistance) {
+    _defaultEbgpAdminDistance = defaultEbgpAdminDistance;
+  }
+
+  @Nullable
+  public Integer getDefaultIbgpAdminDistance() {
+    return _defaultIbgpAdminDistance;
+  }
+
+  public void setDefaultIbgpAdminDistance(@Nullable Integer defaultIbgpAdminDistance) {
+    _defaultIbgpAdminDistance = defaultIbgpAdminDistance;
+  }
+
+  @Nullable
+  public Integer getDefaultLocalAdminDistance() {
+    return _defaultLocalAdminDistance;
+  }
+
+  public void setDefaultLocalAdminDistance(@Nullable Integer defaultLocalAdminDistance) {
+    _defaultLocalAdminDistance = defaultLocalAdminDistance;
   }
 
   @Nullable

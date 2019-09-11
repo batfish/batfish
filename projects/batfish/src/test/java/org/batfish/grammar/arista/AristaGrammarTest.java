@@ -65,18 +65,26 @@ public class AristaGrammarTest {
     CiscoConfiguration config = parseVendorConfig("arista_bgp");
     // Basic VRF config
     {
-      assertTrue(config.getAristaBgp().getDefaultVrf().getShutdown());
-      assertThat(config.getAristaBgp().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
-      assertThat(config.getAristaBgp().getDefaultVrf().getKeepAliveTimer(), equalTo(3));
-      assertThat(config.getAristaBgp().getDefaultVrf().getHoldTimer(), equalTo(9));
+      AristaBgpVrf defaultVrf = config.getAristaBgp().getDefaultVrf();
+      assertTrue(defaultVrf.getShutdown());
+      assertThat(defaultVrf.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+      assertThat(defaultVrf.getKeepAliveTimer(), equalTo(3));
+      assertThat(defaultVrf.getHoldTimer(), equalTo(9));
+      assertThat(defaultVrf.getDefaultEbgpAdminDistance(), equalTo(300));
+      assertThat(defaultVrf.getDefaultIbgpAdminDistance(), nullValue());
+      assertThat(defaultVrf.getDefaultLocalAdminDistance(), nullValue());
+      assertThat(defaultVrf.getDefaultMetric(), equalTo(100L));
     }
     {
       String vrfName = "tenant_vrf";
-      assertThat(config.getAristaBgp().getVrfs().get(vrfName).getShutdown(), nullValue());
-      assertThat(
-          config.getAristaBgp().getVrfs().get(vrfName).getRouterId(), equalTo(Ip.parse("5.6.7.8")));
-      assertThat(config.getAristaBgp().getVrfs().get(vrfName).getKeepAliveTimer(), equalTo(6));
-      assertThat(config.getAristaBgp().getVrfs().get(vrfName).getHoldTimer(), equalTo(18));
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get(vrfName);
+      assertThat(vrf.getShutdown(), nullValue());
+      assertThat(vrf.getRouterId(), equalTo(Ip.parse("5.6.7.8")));
+      assertThat(vrf.getKeepAliveTimer(), equalTo(6));
+      assertThat(vrf.getHoldTimer(), equalTo(18));
+      assertThat(vrf.getDefaultEbgpAdminDistance(), equalTo(333));
+      assertThat(vrf.getDefaultIbgpAdminDistance(), equalTo(400));
+      assertThat(vrf.getDefaultLocalAdminDistance(), equalTo(500));
     }
     {
       String vrfName = "tenant2_vrf";
