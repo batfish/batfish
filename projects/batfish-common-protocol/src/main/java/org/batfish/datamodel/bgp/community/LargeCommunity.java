@@ -64,6 +64,23 @@ public final class LargeCommunity extends Community {
   }
 
   @Override
+  public <T> T accept(CommunityVisitor<T> visitor) {
+    return visitor.visitLargeCommunity(this);
+  }
+
+  public long getGlobalAdministrator() {
+    return _globalAdministrator;
+  }
+
+  public long getLocalData1() {
+    return _localData1;
+  }
+
+  public long getLocalData2() {
+    return _localData2;
+  }
+
+  @Override
   public boolean isTransitive() {
     // False by default
     return false;

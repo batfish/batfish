@@ -1,0 +1,30 @@
+package org.batfish.datamodel.routing_policy.communities;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.junit.Test;
+
+/** Test of {@link CommunitySetRenderer}. */
+public final class CommunitySetRendererTest {
+
+  @Test
+  public void testVisitTypesFirstAscendingSpaceSeparated() {
+    CommunitySetRendering r =
+        new TypesFirstAscendingSpaceSeparated(IntegerValueRendering.instance());
+    assertThat(
+        r.accept(
+            new CommunitySetRenderer(
+                CommunitySet.of(
+                    LargeCommunity.of(0L, 0L, 1L),
+                    ExtendedCommunity.of(0, 0L, 3L),
+                    ExtendedCommunity.of(0, 0L, 4L),
+                    StandardCommunity.of(5L),
+                    LargeCommunity.of(0L, 0L, 2L),
+                    StandardCommunity.of(6L)))),
+        equalTo("5 6 3 4 1 2"));
+  }
+}
