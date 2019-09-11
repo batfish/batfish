@@ -47,8 +47,8 @@ public final class CommunitySetMatchRegex extends CommunitySetMatchExpr {
   }
 
   @Override
-  protected <T> T accept(CommunitySetMatchExprVisitor<T> visitor) {
-    return visitor.visitCommunitySetMatchRegex(this);
+  protected <T, U> T accept(CommunitySetMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitCommunitySetMatchRegex(this, arg);
   }
 
   private static final String PROP_COMMUNITY_SET_RENDERING = "communityRendering";

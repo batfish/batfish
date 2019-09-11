@@ -15,8 +15,8 @@ public final class IntegerValueRendering implements CommunityRendering {
   }
 
   @Override
-  public <T> T accept(CommunityRenderingVisitor<T> visitor) {
-    return visitor.visitIntegerValueRendering(this);
+  public <T, U> T accept(CommunityRenderingVisitor<T, U> visitor, U arg) {
+    return visitor.visitIntegerValueRendering(this, arg);
   }
 
   @Override

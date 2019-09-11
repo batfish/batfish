@@ -17,5 +17,5 @@ public abstract class CommunityMatchExpr implements Serializable {
   @Override
   public abstract int hashCode();
 
-  protected abstract <T> T accept(CommunityMatchExprVisitor<T> visitor);
+  protected abstract <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg);
 }

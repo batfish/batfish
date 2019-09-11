@@ -9,32 +9,34 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A visitor for evaluating a {@link CommunityMatchExpr} under a {@link CommunityContext}. */
-public final class CommunityMatchExprEvaluator implements CommunityMatchExprVisitor<Boolean> {
+public final class CommunityMatchExprEvaluator
+    implements CommunityMatchExprVisitor<Boolean, Community> {
 
-  public CommunityMatchExprEvaluator(Community community, CommunityContext ctx) {
-    _community = community;
+  public CommunityMatchExprEvaluator(CommunityContext ctx) {
     _ctx = ctx;
   }
 
   @Override
-  public Boolean visitAllExtendedCommunities(AllExtendedCommunities allExtendedCommunities) {
-    return _community instanceof ExtendedCommunity;
+  public Boolean visitAllExtendedCommunities(
+      AllExtendedCommunities allExtendedCommunities, Community arg) {
+    return arg instanceof ExtendedCommunity;
   }
 
   @Override
-  public Boolean visitAllLargeCommunities(AllLargeCommunities allLargeCommunities) {
-    return _community instanceof LargeCommunity;
+  public Boolean visitAllLargeCommunities(AllLargeCommunities allLargeCommunities, Community arg) {
+    return arg instanceof LargeCommunity;
   }
 
   @Override
-  public Boolean visitAllStandardCommunities(AllStandardCommunities allStandardCommunities) {
-    return _community instanceof StandardCommunity;
+  public Boolean visitAllStandardCommunities(
+      AllStandardCommunities allStandardCommunities, Community arg) {
+    return arg instanceof StandardCommunity;
   }
 
   @Override
-  public Boolean visitCommunityAcl(CommunityAcl communityAcl) {
+  public Boolean visitCommunityAcl(CommunityAcl communityAcl, Community arg) {
     for (CommunityAclLine line : communityAcl.getLines()) {
-      if (line.getCommunityMatchExpr().accept(this)) {
+      if (line.getCommunityMatchExpr().accept(this, arg)) {
         return line.getAction() == LineAction.PERMIT;
       }
     }
@@ -42,71 +44,70 @@ public final class CommunityMatchExprEvaluator implements CommunityMatchExprVisi
   }
 
   @Override
-  public Boolean visitCommunityIs(CommunityIs communityIs) {
-    return _community.equals(communityIs.getCommunity());
+  public Boolean visitCommunityIs(CommunityIs communityIs, Community arg) {
+    return arg.equals(communityIs.getCommunity());
   }
 
   @Override
-  public Boolean visitCommunityMatchAll(CommunityMatchAll communityMatchAll) {
-    return communityMatchAll.getExprs().stream().allMatch(expr -> expr.accept(this));
+  public Boolean visitCommunityMatchAll(CommunityMatchAll communityMatchAll, Community arg) {
+    return communityMatchAll.getExprs().stream().allMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
-  public Boolean visitCommunityMatchAny(CommunityMatchAny communityMatchAny) {
-    return communityMatchAny.getExprs().stream().anyMatch(expr -> expr.accept(this));
+  public Boolean visitCommunityMatchAny(CommunityMatchAny communityMatchAny, Community arg) {
+    return communityMatchAny.getExprs().stream().anyMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
   public Boolean visitCommunityMatchExprReference(
-      CommunityMatchExprReference communityMatchExprReference) {
+      CommunityMatchExprReference communityMatchExprReference, Community arg) {
     CommunityMatchExpr expr =
         _ctx.getCommunityMatchExprs().get(communityMatchExprReference.getName());
     if (expr == null) {
       return false;
     }
-    return expr.accept(this);
+    return expr.accept(this, arg);
   }
 
   @Override
-  public Boolean visitCommunityMatchRegex(CommunityMatchRegex communityMatchRegex) {
+  public Boolean visitCommunityMatchRegex(CommunityMatchRegex communityMatchRegex, Community arg) {
     return Pattern.compile(communityMatchRegex.getRegex())
         .matcher(
-            communityMatchRegex.getCommunityRendering().accept(new CommunityRenderer(_community)))
+            communityMatchRegex.getCommunityRendering().accept(CommunityRenderer.instance(), arg))
         .find();
   }
 
   @Override
-  public Boolean visitCommunityNot(CommunityNot communityNot) {
-    return !communityNot.getExpr().accept(this);
+  public Boolean visitCommunityNot(CommunityNot communityNot, Community arg) {
+    return !communityNot.getExpr().accept(this, arg);
   }
 
   @Override
   public Boolean visitRouteTargetExtendedCommunities(
-      RouteTargetExtendedCommunities routeTargetExtendedCommunities) {
-    if (!(_community instanceof ExtendedCommunity)) {
+      RouteTargetExtendedCommunities routeTargetExtendedCommunities, Community arg) {
+    if (!(arg instanceof ExtendedCommunity)) {
       return false;
     }
-    return ((ExtendedCommunity) _community).isRouteTarget();
+    return ((ExtendedCommunity) arg).isRouteTarget();
   }
 
   @Override
   public Boolean visitSiteOfOriginExtendedCommunities(
-      SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities) {
-    if (!(_community instanceof ExtendedCommunity)) {
+      SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, Community arg) {
+    if (!(arg instanceof ExtendedCommunity)) {
       return false;
     }
-    return ((ExtendedCommunity) _community).isRouteOrigin();
+    return ((ExtendedCommunity) arg).isRouteOrigin();
   }
 
   @Override
   public Boolean visitVpnDistinguisherExtendedCommunities(
-      VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities) {
-    if (!(_community instanceof ExtendedCommunity)) {
+      VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, Community arg) {
+    if (!(arg instanceof ExtendedCommunity)) {
       return false;
     }
-    return ((ExtendedCommunity) _community).isVpnDistinguisher();
+    return ((ExtendedCommunity) arg).isVpnDistinguisher();
   }
 
-  private final @Nonnull Community _community;
   private final @Nonnull CommunityContext _ctx;
 }

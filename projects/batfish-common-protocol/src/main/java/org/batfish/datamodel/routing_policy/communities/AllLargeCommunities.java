@@ -21,8 +21,8 @@ public final class AllLargeCommunities extends CommunityMatchExpr {
   }
 
   @Override
-  protected <T> T accept(CommunityMatchExprVisitor<T> visitor) {
-    return visitor.visitAllLargeCommunities(this);
+  protected <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitAllLargeCommunities(this, arg);
   }
 
   private static final AllLargeCommunities INSTANCE = new AllLargeCommunities();

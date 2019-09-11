@@ -23,11 +23,9 @@ public final class MatchCommunities extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     CommunityContext ctx = CommunityContext.fromEnvironment(environment);
-    CommunitySetExprEvaluator communitySetEvaluator = new CommunitySetExprEvaluator(ctx);
-    CommunitySet communitySet = _communitySetExpr.accept(communitySetEvaluator);
-    CommunitySetMatchExprEvaluator communitySetMatchExprEvaluator =
-        new CommunitySetMatchExprEvaluator(ctx, communitySet);
-    boolean ret = _communitySetMatchExpr.accept(communitySetMatchExprEvaluator);
+    CommunitySet communitySet = _communitySetExpr.accept(ctx.getCommunitySetExprEvaluator());
+    boolean ret =
+        _communitySetMatchExpr.accept(ctx.getCommunitySetMatchExprEvaluator(), communitySet);
     return Result.builder().setBooleanValue(ret).build();
   }
 

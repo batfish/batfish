@@ -24,8 +24,8 @@ public final class RouteTargetExtendedCommunities extends CommunityMatchExpr {
   }
 
   @Override
-  protected <T> T accept(CommunityMatchExprVisitor<T> visitor) {
-    return visitor.visitRouteTargetExtendedCommunities(this);
+  protected <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitRouteTargetExtendedCommunities(this, arg);
   }
 
   private static final RouteTargetExtendedCommunities INSTANCE =

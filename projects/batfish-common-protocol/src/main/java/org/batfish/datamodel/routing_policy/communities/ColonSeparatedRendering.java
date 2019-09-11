@@ -23,8 +23,8 @@ public final class ColonSeparatedRendering implements CommunityRendering {
   }
 
   @Override
-  public <T> T accept(CommunityRenderingVisitor<T> visitor) {
-    return visitor.visitColonSeparatedRendering(this);
+  public <T, U> T accept(CommunityRenderingVisitor<T, U> visitor, U arg) {
+    return visitor.visitColonSeparatedRendering(this, arg);
   }
 
   @Override

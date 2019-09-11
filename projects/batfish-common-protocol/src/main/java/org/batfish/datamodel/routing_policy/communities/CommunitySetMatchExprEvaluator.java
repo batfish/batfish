@@ -5,17 +5,17 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.LineAction;
 
 /** A visitor for evaluating a {@link CommunitySetMatchExpr} under a {@link CommunityContext}. */
-public final class CommunitySetMatchExprEvaluator implements CommunitySetMatchExprVisitor<Boolean> {
+public final class CommunitySetMatchExprEvaluator
+    implements CommunitySetMatchExprVisitor<Boolean, CommunitySet> {
 
-  public CommunitySetMatchExprEvaluator(CommunityContext ctx, CommunitySet communitySet) {
+  public CommunitySetMatchExprEvaluator(CommunityContext ctx) {
     _ctx = ctx;
-    _communitySet = communitySet;
   }
 
   @Override
-  public Boolean visitCommunitySetAcl(CommunitySetAcl communitySetAcl) {
+  public Boolean visitCommunitySetAcl(CommunitySetAcl communitySetAcl, CommunitySet arg) {
     for (CommunitySetAclLine line : communitySetAcl.getLines()) {
-      if (line.getCommunitySetMatchExpr().accept(this)) {
+      if (line.getCommunitySetMatchExpr().accept(this, arg)) {
         return line.getAction() == LineAction.PERMIT;
       }
     }
@@ -23,47 +23,49 @@ public final class CommunitySetMatchExprEvaluator implements CommunitySetMatchEx
   }
 
   @Override
-  public Boolean visitCommunitySetMatchAll(CommunitySetMatchAll communitySetMatchAll) {
-    return communitySetMatchAll.getExprs().stream().allMatch(expr -> expr.accept(this));
+  public Boolean visitCommunitySetMatchAll(
+      CommunitySetMatchAll communitySetMatchAll, CommunitySet arg) {
+    return communitySetMatchAll.getExprs().stream().allMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
-  public Boolean visitCommunitySetMatchAny(CommunitySetMatchAny communitySetMatchAny) {
-    return communitySetMatchAny.getExprs().stream().anyMatch(expr -> expr.accept(this));
+  public Boolean visitCommunitySetMatchAny(
+      CommunitySetMatchAny communitySetMatchAny, CommunitySet arg) {
+    return communitySetMatchAny.getExprs().stream().anyMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
   public Boolean visitCommunitySetMatchExprReference(
-      CommunitySetMatchExprReference communitySetMatchExprReference) {
+      CommunitySetMatchExprReference communitySetMatchExprReference, CommunitySet arg) {
     CommunitySetMatchExpr expr =
         _ctx.getCommunitySetMatchExprs().get(communitySetMatchExprReference.getName());
     if (expr == null) {
       return false;
     }
-    return expr.accept(this);
+    return expr.accept(this, arg);
   }
 
   @Override
-  public Boolean visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex) {
+  public Boolean visitCommunitySetMatchRegex(
+      CommunitySetMatchRegex communitySetMatchRegex, CommunitySet arg) {
     return Pattern.compile(communitySetMatchRegex.getRegex())
         .matcher(
             communitySetMatchRegex
                 .getCommunitySetRendering()
-                .accept(new CommunitySetRenderer(_communitySet)))
+                .accept(CommunitySetRenderer.instance(), arg))
         .find();
   }
 
   @Override
-  public Boolean visitCommunitySetNot(CommunitySetNot communitySetNot) {
-    return !communitySetNot.getExpr().accept(this);
+  public Boolean visitCommunitySetNot(CommunitySetNot communitySetNot, CommunitySet arg) {
+    return !communitySetNot.getExpr().accept(this, arg);
   }
 
   @Override
-  public Boolean visitHasCommunity(HasCommunity hasCommunity) {
-    return _communitySet.getCommunities().stream()
-        .anyMatch(c -> hasCommunity.getExpr().accept(new CommunityMatchExprEvaluator(c, _ctx)));
+  public Boolean visitHasCommunity(HasCommunity hasCommunity, CommunitySet arg) {
+    return arg.getCommunities().stream()
+        .anyMatch(c -> hasCommunity.getExpr().accept(_ctx.getCommunityMatchExprEvaluator(), c));
   }
 
   private final @Nonnull CommunityContext _ctx;
-  private final @Nonnull CommunitySet _communitySet;
 }

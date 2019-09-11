@@ -23,8 +23,8 @@ public final class AllExtendedCommunities extends CommunityMatchExpr {
   }
 
   @Override
-  protected <T> T accept(CommunityMatchExprVisitor<T> visitor) {
-    return visitor.visitAllExtendedCommunities(this);
+  protected <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitAllExtendedCommunities(this, arg);
   }
 
   private static final AllExtendedCommunities INSTANCE = new AllExtendedCommunities();

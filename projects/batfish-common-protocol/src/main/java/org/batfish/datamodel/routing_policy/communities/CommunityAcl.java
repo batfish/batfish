@@ -41,8 +41,8 @@ public final class CommunityAcl extends CommunityMatchExpr {
   }
 
   @Override
-  protected <T> T accept(CommunityMatchExprVisitor<T> visitor) {
-    return visitor.visitCommunityAcl(this);
+  protected <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitCommunityAcl(this, arg);
   }
 
   private static final String PROP_LINES = "lines";

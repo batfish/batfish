@@ -24,8 +24,8 @@ public final class VpnDistinguisherExtendedCommunities extends CommunityMatchExp
   }
 
   @Override
-  protected <T> T accept(CommunityMatchExprVisitor<T> visitor) {
-    return visitor.visitVpnDistinguisherExtendedCommunities(this);
+  protected <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitVpnDistinguisherExtendedCommunities(this, arg);
   }
 
   private static final VpnDistinguisherExtendedCommunities INSTANCE =

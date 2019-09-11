@@ -42,8 +42,8 @@ public final class CommunitySetMatchAny extends CommunitySetMatchExpr {
   }
 
   @Override
-  protected <T> T accept(CommunitySetMatchExprVisitor<T> visitor) {
-    return visitor.visitCommunitySetMatchAny(this);
+  protected <T, U> T accept(CommunitySetMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitCommunitySetMatchAny(this, arg);
   }
 
   private static final String PROP_EXPRS = "exprs";

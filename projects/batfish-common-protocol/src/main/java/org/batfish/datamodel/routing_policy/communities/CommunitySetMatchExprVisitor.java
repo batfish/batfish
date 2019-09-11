@@ -1,20 +1,20 @@
 package org.batfish.datamodel.routing_policy.communities;
 
 /** A visitor of {@link CommunitySetMatchExpr}. */
-public interface CommunitySetMatchExprVisitor<T> {
+public interface CommunitySetMatchExprVisitor<T, U> {
 
-  T visitCommunitySetAcl(CommunitySetAcl communitySetAcl);
+  T visitCommunitySetAcl(CommunitySetAcl communitySetAcl, U arg);
 
-  T visitCommunitySetMatchAll(CommunitySetMatchAll communitySetMatchAll);
+  T visitCommunitySetMatchAll(CommunitySetMatchAll communitySetMatchAll, U arg);
 
-  T visitCommunitySetMatchAny(CommunitySetMatchAny communitySetMatchAny);
+  T visitCommunitySetMatchAny(CommunitySetMatchAny communitySetMatchAny, U arg);
 
   T visitCommunitySetMatchExprReference(
-      CommunitySetMatchExprReference communitySetMatchExprReference);
+      CommunitySetMatchExprReference communitySetMatchExprReference, U arg);
 
-  T visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex);
+  T visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, U arg);
 
-  T visitCommunitySetNot(CommunitySetNot communitySetNot);
+  T visitCommunitySetNot(CommunitySetNot communitySetNot, U arg);
 
-  T visitHasCommunity(HasCommunity hasCommunity);
+  T visitHasCommunity(HasCommunity hasCommunity, U arg);
 }

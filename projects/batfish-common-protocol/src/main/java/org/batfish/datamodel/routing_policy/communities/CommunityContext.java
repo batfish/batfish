@@ -114,11 +114,27 @@ public final class CommunityContext {
         .build();
   }
 
+  public @Nonnull CommunityMatchExprEvaluator getCommunityMatchExprEvaluator() {
+    return _communityMatchExprEvaluator;
+  }
+
+  public @Nonnull CommunitySetExprEvaluator getCommunitySetExprEvaluator() {
+    return _communitySetExprEvaluator;
+  }
+
+  public @Nonnull CommunitySetMatchExprEvaluator getCommunitySetMatchExprEvaluator() {
+    return _communitySetMatchExprEvaluator;
+  }
+
   private final @Nonnull Map<String, CommunityMatchExpr> _communityMatchExprs;
   private final @Nonnull Map<String, CommunitySetExpr> _communitySetExprs;
   private final @Nonnull Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
   private final @Nonnull Map<String, CommunitySet> _communitySets;
   private final @Nonnull CommunitySet _inputCommunitySet;
+
+  private final @Nonnull CommunityMatchExprEvaluator _communityMatchExprEvaluator;
+  private final @Nonnull CommunitySetExprEvaluator _communitySetExprEvaluator;
+  private final @Nonnull CommunitySetMatchExprEvaluator _communitySetMatchExprEvaluator;
 
   private CommunityContext(
       Map<String, CommunityMatchExpr> communityMatchExprs,
@@ -131,5 +147,10 @@ public final class CommunityContext {
     _communitySetMatchExprs = communitySetMatchExprs;
     _communitySets = communitySets;
     _inputCommunitySet = inputCommunitySet;
+
+    // instantiate evaluators
+    _communityMatchExprEvaluator = new CommunityMatchExprEvaluator(this);
+    _communitySetExprEvaluator = new CommunitySetExprEvaluator(this);
+    _communitySetMatchExprEvaluator = new CommunitySetMatchExprEvaluator(this);
   }
 }

@@ -22,7 +22,7 @@ public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<
     CommunityMatchExpr removalCriterion = communitySetDifference.getRemovalCriterion();
     return CommunitySet.of(
         initial.getCommunities().stream()
-            .filter(c -> removalCriterion.accept(new CommunityMatchExprEvaluator(c, _ctx)))
+            .filter(c -> removalCriterion.accept(_ctx.getCommunityMatchExprEvaluator(), c))
             .collect(ImmutableSet.toImmutableSet()));
   }
 

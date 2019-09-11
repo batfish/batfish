@@ -15,33 +15,34 @@ public final class CommunityRendererTest {
   public void testVisitColonSeparatedRendering() {
     assertThat(
         ColonSeparatedRendering.instance()
-            .accept(new CommunityRenderer(StandardCommunity.of(1, 1))),
+            .accept(CommunityRenderer.instance(), StandardCommunity.of(1, 1)),
         equalTo("1:1"));
 
     // TODO: implement and change expected value
     assertThat(
         ColonSeparatedRendering.instance()
-            .accept(new CommunityRenderer(ExtendedCommunity.of(0, 0L, 0L))),
+            .accept(CommunityRenderer.instance(), ExtendedCommunity.of(0, 0L, 0L)),
         equalTo(""));
 
     assertThat(
         ColonSeparatedRendering.instance()
-            .accept(new CommunityRenderer(LargeCommunity.of(0L, 0L, 0L))),
+            .accept(CommunityRenderer.instance(), LargeCommunity.of(0L, 0L, 0L)),
         equalTo("0:0:0"));
   }
 
   @Test
   public void testVisitIntegerValueRendering() {
     assertThat(
-        IntegerValueRendering.instance().accept(new CommunityRenderer(StandardCommunity.of(1, 1))),
+        IntegerValueRendering.instance()
+            .accept(CommunityRenderer.instance(), StandardCommunity.of(1, 1)),
         equalTo("65537"));
     assertThat(
         IntegerValueRendering.instance()
-            .accept(new CommunityRenderer(ExtendedCommunity.of(0, 0L, 0L))),
+            .accept(CommunityRenderer.instance(), ExtendedCommunity.of(0, 0L, 0L)),
         equalTo("0"));
     assertThat(
         IntegerValueRendering.instance()
-            .accept(new CommunityRenderer(LargeCommunity.of(0L, 0L, 0L))),
+            .accept(CommunityRenderer.instance(), LargeCommunity.of(0L, 0L, 0L)),
         equalTo("0"));
   }
 }

@@ -39,8 +39,8 @@ public final class HasCommunity extends CommunitySetMatchExpr {
   }
 
   @Override
-  protected <T> T accept(CommunitySetMatchExprVisitor<T> visitor) {
-    return visitor.visitHasCommunity(this);
+  protected <T, U> T accept(CommunitySetMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitHasCommunity(this, arg);
   }
 
   private static final String PROP_EXPR = "expr";

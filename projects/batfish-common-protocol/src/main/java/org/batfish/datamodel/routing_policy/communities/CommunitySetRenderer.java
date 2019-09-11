@@ -10,22 +10,23 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A {@link CommunitySetRenderingVisitor} that renders a {@link CommunitySet} as a string. */
-public final class CommunitySetRenderer implements CommunitySetRenderingVisitor<String> {
+public final class CommunitySetRenderer
+    implements CommunitySetRenderingVisitor<String, CommunitySet> {
 
-  public CommunitySetRenderer(CommunitySet communitySet) {
-    _communitySet = communitySet;
+  public static @Nonnull CommunitySetRenderer instance() {
+    return INSTANCE;
   }
 
   @Override
   public String visitTypesFirstAscendingSpaceSeparated(
-      TypesFirstAscendingSpaceSeparated typesFirstAscendingSpaceSeparated) {
-    return _communitySet.getCommunities().stream()
+      TypesFirstAscendingSpaceSeparated typesFirstAscendingSpaceSeparated, CommunitySet arg) {
+    return arg.getCommunities().stream()
         .sorted(TYPES_FIRST_ASCENDING_COMPARATOR)
         .map(
             c ->
                 typesFirstAscendingSpaceSeparated
                     .getCommunityRendering()
-                    .accept(new CommunityRenderer(c)))
+                    .accept(CommunityRenderer.instance(), c))
         .collect(Collectors.joining(" "));
   }
 
@@ -50,6 +51,7 @@ public final class CommunitySetRenderer implements CommunitySetRenderingVisitor<
   private static final Comparator<Community> TYPES_FIRST_ASCENDING_COMPARATOR =
       Comparator.<Community, Integer>comparing(c -> c.accept(COMMUNITY_PRIORITY))
           .thenComparing(Community::asBigInt);
+  private static final CommunitySetRenderer INSTANCE = new CommunitySetRenderer();
 
-  private final @Nonnull CommunitySet _communitySet;
+  private CommunitySetRenderer() {}
 }

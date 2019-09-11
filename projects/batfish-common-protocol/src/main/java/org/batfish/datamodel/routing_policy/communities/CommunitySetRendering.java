@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CommunitySetRendering implements Serializable {
 
-  public abstract <T> T accept(CommunitySetRenderingVisitor<T> visitor);
+  public abstract <T, U> T accept(CommunitySetRenderingVisitor<T, U> visitor, U arg);
 
   @JsonProperty(PROP_COMMUNITY_RENDERING)
   public final @Nonnull CommunityRendering getCommunityRendering() {

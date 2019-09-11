@@ -15,8 +15,8 @@ public final class CommunityMatchExprReference extends CommunityMatchExpr {
   }
 
   @Override
-  public <T> T accept(CommunityMatchExprVisitor<T> visitor) {
-    return visitor.visitCommunityMatchExprReference(this);
+  protected <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitCommunityMatchExprReference(this, arg);
   }
 
   @JsonProperty(PROP_NAME)

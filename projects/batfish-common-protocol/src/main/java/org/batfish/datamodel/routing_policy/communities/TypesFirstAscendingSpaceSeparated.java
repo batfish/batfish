@@ -19,8 +19,8 @@ public final class TypesFirstAscendingSpaceSeparated extends CommunitySetRenderi
   }
 
   @Override
-  public <T> T accept(CommunitySetRenderingVisitor<T> visitor) {
-    return visitor.visitTypesFirstAscendingSpaceSeparated(this);
+  public <T, U> T accept(CommunitySetRenderingVisitor<T, U> visitor, U arg) {
+    return visitor.visitTypesFirstAscendingSpaceSeparated(this, arg);
   }
 
   @Override
