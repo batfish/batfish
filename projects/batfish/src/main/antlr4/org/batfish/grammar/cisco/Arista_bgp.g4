@@ -280,8 +280,32 @@ eos_rb_vlan_tail
   | eos_rb_vlan_tail_route_target
 ;
 
+
+eos_rbv_local_as
+:
+  LOCAL_AS asn = bgp_asn NEWLINE
+;
+
+eos_rbv_rd
+:
+  RD rd = route_distinguisher NEWLINE
+;
+
+eos_rbv_route_target
+:
+  ROUTE_TARGET
+  ( IMPORT | EXPORT )
+  rt = route_target NEWLINE
+;
+
 eos_rb_vrf
 :
   VRF name = VARIABLE NEWLINE
-  eos_rb_inner*
+  (
+//    eos_rbv_address_family
+    eos_rb_inner
+    | eos_rbv_local_as
+    | eos_rbv_rd
+    | eos_rbv_route_target
+  )*
 ;

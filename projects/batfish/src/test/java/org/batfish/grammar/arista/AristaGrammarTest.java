@@ -31,6 +31,7 @@ import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
+import org.batfish.representation.cisco.eos.AristaBgpVrf;
 import org.junit.Test;
 
 @ParametersAreNonnullByDefault
@@ -177,5 +178,15 @@ public class AristaGrammarTest {
           config.getAristaBgp().getVrfs().get("tenant").getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getRemoteAs(), equalTo(88L));
     }
+  }
+
+  @Test
+  public void testVrfExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_vrf");
+    AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
+    assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("123:123")));
+    assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
+    assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
+    assertThat(vrf.getLocalAs(), equalTo(65000L));
   }
 }
