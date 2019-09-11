@@ -52,7 +52,7 @@ public final class CommunitySetMatchExprEvaluator
         .matcher(
             communitySetMatchRegex
                 .getCommunitySetRendering()
-                .accept(CommunitySetRenderer.instance(), arg))
+                .accept(CommunitySetToRegexInputString.instance(), arg))
         .find();
   }
 

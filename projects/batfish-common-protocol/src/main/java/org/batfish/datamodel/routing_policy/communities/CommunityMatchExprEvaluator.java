@@ -77,7 +77,9 @@ public final class CommunityMatchExprEvaluator
       CommunityMatchRegex communityMatchRegex, Community arg) {
     return Pattern.compile(communityMatchRegex.getRegex())
         .matcher(
-            communityMatchRegex.getCommunityRendering().accept(CommunityRenderer.instance(), arg))
+            communityMatchRegex
+                .getCommunityRendering()
+                .accept(CommunityToRegexInputString.instance(), arg))
         .find();
   }
 

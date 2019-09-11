@@ -8,9 +8,10 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** Visitor for rendering a {@link Community} given a {@link CommunityRendering}. */
-public final class CommunityRenderer implements CommunityRenderingVisitor<String, Community> {
+public final class CommunityToRegexInputString
+    implements CommunityRenderingVisitor<String, Community> {
 
-  public static @Nonnull CommunityRenderer instance() {
+  public static @Nonnull CommunityToRegexInputString instance() {
     return INSTANCE;
   }
 
@@ -68,7 +69,7 @@ public final class CommunityRenderer implements CommunityRenderingVisitor<String
   private static final ColonSeparatedRenderer COLON_SEPARATED_RENDERER =
       new ColonSeparatedRenderer();
   private static final IntegerValueRenderer INTEGER_VALUE_RENDERER = new IntegerValueRenderer();
-  private static final CommunityRenderer INSTANCE = new CommunityRenderer();
+  private static final CommunityToRegexInputString INSTANCE = new CommunityToRegexInputString();
 
-  private CommunityRenderer() {}
+  private CommunityToRegexInputString() {}
 }

@@ -8,8 +8,8 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Test;
 
-/** Test of {@link CommunitySetRenderer}. */
-public final class CommunitySetRendererTest {
+/** Test of {@link CommunitySetToRegexInputString}. */
+public final class CommunitySetToRegexInputStringTest {
 
   @Test
   public void testVisitTypesFirstAscendingSpaceSeparated() {
@@ -17,7 +17,7 @@ public final class CommunitySetRendererTest {
         new TypesFirstAscendingSpaceSeparated(IntegerValueRendering.instance());
     assertThat(
         r.accept(
-            CommunitySetRenderer.instance(),
+            CommunitySetToRegexInputString.instance(),
             CommunitySet.of(
                 LargeCommunity.of(0L, 0L, 1L),
                 ExtendedCommunity.of(0, 0L, 3L),

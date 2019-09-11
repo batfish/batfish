@@ -8,25 +8,25 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Test;
 
-/** Test of {@link CommunityRenderer}. */
-public final class CommunityRendererTest {
+/** Test of {@link CommunityToRegexInputString}. */
+public final class CommunityToRegexInputStringTest {
 
   @Test
   public void testVisitColonSeparatedRendering() {
     assertThat(
         ColonSeparatedRendering.instance()
-            .accept(CommunityRenderer.instance(), StandardCommunity.of(1, 1)),
+            .accept(CommunityToRegexInputString.instance(), StandardCommunity.of(1, 1)),
         equalTo("1:1"));
 
     // TODO: implement and change expected value
     assertThat(
         ColonSeparatedRendering.instance()
-            .accept(CommunityRenderer.instance(), ExtendedCommunity.of(0, 0L, 0L)),
+            .accept(CommunityToRegexInputString.instance(), ExtendedCommunity.of(0, 0L, 0L)),
         equalTo(""));
 
     assertThat(
         ColonSeparatedRendering.instance()
-            .accept(CommunityRenderer.instance(), LargeCommunity.of(0L, 0L, 0L)),
+            .accept(CommunityToRegexInputString.instance(), LargeCommunity.of(0L, 0L, 0L)),
         equalTo("0:0:0"));
   }
 
@@ -34,15 +34,15 @@ public final class CommunityRendererTest {
   public void testVisitIntegerValueRendering() {
     assertThat(
         IntegerValueRendering.instance()
-            .accept(CommunityRenderer.instance(), StandardCommunity.of(1, 1)),
+            .accept(CommunityToRegexInputString.instance(), StandardCommunity.of(1, 1)),
         equalTo("65537"));
     assertThat(
         IntegerValueRendering.instance()
-            .accept(CommunityRenderer.instance(), ExtendedCommunity.of(0, 0L, 0L)),
+            .accept(CommunityToRegexInputString.instance(), ExtendedCommunity.of(0, 0L, 0L)),
         equalTo("0"));
     assertThat(
         IntegerValueRendering.instance()
-            .accept(CommunityRenderer.instance(), LargeCommunity.of(0L, 0L, 0L)),
+            .accept(CommunityToRegexInputString.instance(), LargeCommunity.of(0L, 0L, 0L)),
         equalTo("0"));
   }
 }

@@ -10,10 +10,10 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A {@link CommunitySetRenderingVisitor} that renders a {@link CommunitySet} as a string. */
-public final class CommunitySetRenderer
+public final class CommunitySetToRegexInputString
     implements CommunitySetRenderingVisitor<String, CommunitySet> {
 
-  public static @Nonnull CommunitySetRenderer instance() {
+  public static @Nonnull CommunitySetToRegexInputString instance() {
     return INSTANCE;
   }
 
@@ -26,7 +26,7 @@ public final class CommunitySetRenderer
             c ->
                 typesFirstAscendingSpaceSeparated
                     .getCommunityRendering()
-                    .accept(CommunityRenderer.instance(), c))
+                    .accept(CommunityToRegexInputString.instance(), c))
         .collect(Collectors.joining(" "));
   }
 
@@ -51,7 +51,8 @@ public final class CommunitySetRenderer
   private static final Comparator<Community> TYPES_FIRST_ASCENDING_COMPARATOR =
       Comparator.<Community, Integer>comparing(c -> c.accept(COMMUNITY_PRIORITY))
           .thenComparing(Community::asBigInt);
-  private static final CommunitySetRenderer INSTANCE = new CommunitySetRenderer();
+  private static final CommunitySetToRegexInputString INSTANCE =
+      new CommunitySetToRegexInputString();
 
-  private CommunitySetRenderer() {}
+  private CommunitySetToRegexInputString() {}
 }
