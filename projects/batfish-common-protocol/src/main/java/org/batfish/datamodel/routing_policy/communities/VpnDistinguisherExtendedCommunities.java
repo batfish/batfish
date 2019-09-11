@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  * Matches a {@link org.batfish.datamodel.bgp.community.Community} iff it is a vpn-distinguisher
  * extended community.
  */
-public class VpnDistinguisherExtendedCommunities extends CommunityMatchExpr {
+public final class VpnDistinguisherExtendedCommunities extends CommunityMatchExpr {
 
   public static @Nonnull VpnDistinguisherExtendedCommunities instance() {
     return INSTANCE;

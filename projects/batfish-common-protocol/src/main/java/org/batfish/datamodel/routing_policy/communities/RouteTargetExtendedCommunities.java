@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  * Matches a {@link org.batfish.datamodel.bgp.community.Community} iff it is a route-target extended
  * community.
  */
-public class RouteTargetExtendedCommunities extends CommunityMatchExpr {
+public final class RouteTargetExtendedCommunities extends CommunityMatchExpr {
 
   public static @Nonnull RouteTargetExtendedCommunities instance() {
     return INSTANCE;

@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 /**
  * Matches a {@link org.batfish.datamodel.bgp.community.Community} iff it is an extended community.
  */
-public class AllExtendedCommunities extends CommunityMatchExpr {
+public final class AllExtendedCommunities extends CommunityMatchExpr {
 
   public static @Nonnull AllExtendedCommunities instance() {
     return INSTANCE;

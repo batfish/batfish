@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import javax.annotation.Nonnull;
 
 /** Matches a {@link org.batfish.datamodel.bgp.community.Community} iff it is a large community. */
-public class AllLargeCommunities extends CommunityMatchExpr {
+public final class AllLargeCommunities extends CommunityMatchExpr {
 
   public static @Nonnull AllLargeCommunities instance() {
     return INSTANCE;

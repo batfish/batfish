@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  * Matches a {@link org.batfish.datamodel.bgp.community.Community} iff it is a site-of-origin
  * extended community.
  */
-public class SiteOfOriginExtendedCommunities extends CommunityMatchExpr {
+public final class SiteOfOriginExtendedCommunities extends CommunityMatchExpr {
 
   public static @Nonnull SiteOfOriginExtendedCommunities instance() {
     return INSTANCE;

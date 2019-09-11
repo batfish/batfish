@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
  *   <li>The rendering for 96-bit large communities is undefined.
  * </ul>
  */
-public class ColonSeparatedRendering implements CommunityRendering {
+public final class ColonSeparatedRendering implements CommunityRendering {
 
   public static @Nonnull ColonSeparatedRendering instance() {
     return INSTANCE;

@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  * A rendering of a {@link org.batfish.datamodel.bgp.community.Community} as its unsigned decimal
  * integer value.
  */
-public class IntegerValueRendering implements CommunityRendering {
+public final class IntegerValueRendering implements CommunityRendering {
 
   public static @Nonnull IntegerValueRendering instance() {
     return INSTANCE;
