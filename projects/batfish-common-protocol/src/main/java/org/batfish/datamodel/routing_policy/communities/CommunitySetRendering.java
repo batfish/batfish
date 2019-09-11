@@ -26,8 +26,10 @@ public abstract class CommunitySetRendering implements Serializable {
     _communityRendering = communityRendering;
   }
 
+  @Override
   public abstract boolean equals(@Nullable Object obj);
 
+  @Override
   public abstract int hashCode();
 
   protected final @Nonnull CommunityRendering _communityRendering;

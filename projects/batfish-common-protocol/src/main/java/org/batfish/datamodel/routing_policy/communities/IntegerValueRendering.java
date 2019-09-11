@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** A rendering of a {@link Community} as its unsigned decimal integer value. */
+/**
+ * A rendering of a {@link org.batfish.datamodel.bgp.community.Community} as its unsigned decimal
+ * integer value.
+ */
 public class IntegerValueRendering implements CommunityRendering {
 
   public static @Nonnull IntegerValueRendering instance() {

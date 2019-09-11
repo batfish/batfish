@@ -5,7 +5,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * A rendering of a {@link Community} as a colon-separated list of its integer components.
+ * A rendering of a {@link org.batfish.datamodel.bgp.community.Community} as a colon-separated list
+ * of its integer components.
  *
  * <ul>
  *   <li>A standard community would be rendered as A:B where A and B are unsigned 16-bit decimal

@@ -16,8 +16,10 @@ public abstract class CommunitySetExpr implements Serializable {
     return accept(new CommunitySetExprEvaluator(ctx));
   }
 
+  @Override
   public abstract boolean equals(@Nullable Object obj);
 
+  @Override
   public abstract int hashCode();
 
   protected abstract <T> T accept(CommunitySetExprVisitor<T> visitor);
