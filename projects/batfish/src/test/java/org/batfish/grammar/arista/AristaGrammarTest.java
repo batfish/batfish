@@ -171,6 +171,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getEbgpMultihop(), equalTo(Integer.MAX_VALUE));
       assertThat(neighbor.getPeerGroup(), equalTo("PEER_G"));
       assertThat(neighbor.getRemoteAs(), equalTo(35L));
+      assertTrue(neighbor.getSendCommunity());
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");

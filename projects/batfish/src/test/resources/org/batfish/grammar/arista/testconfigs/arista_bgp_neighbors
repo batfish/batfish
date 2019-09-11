@@ -16,6 +16,7 @@ router bgp 1
   neighbor 1.1.1.1 fall-over bfd
   neighbor 1.1.1.1 peer-group PEER_G
   neighbor 1.1.1.1 remote-as 35
+  neighbor 1.1.1.1 send-community
 !
   neighbor 2.2.2.2 remote-as 36
   neighbor 2.2.2.2 default-originate always route-map DEF_ORIG_MAP
