@@ -2535,6 +2535,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinc_default_originate(Eos_rbinc_default_originateContext ctx) {
     todo(ctx);
+    if (ctx.rm != null) {
+      String routeMapName = ctx.rm.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
+    }
   }
 
   @Override
@@ -2585,11 +2590,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_rbi_peer_group(Eos_rbi_peer_groupContext ctx) {
-    String name = ctx.name.getText();
+    String peerGroupName = ctx.name.getText();
     _currentAristaBgpNeighbor =
         _currentAristaBgpProcess
             .getPeerGroups()
-            .computeIfAbsent(name, AristaBgpPeerGroupNeighbor::new);
+            .computeIfAbsent(peerGroupName, AristaBgpPeerGroupNeighbor::new);
+    _configuration.defineStructure(BGP_PEER_GROUP, peerGroupName, ctx.getStart().getLine());
   }
 
   @Override
