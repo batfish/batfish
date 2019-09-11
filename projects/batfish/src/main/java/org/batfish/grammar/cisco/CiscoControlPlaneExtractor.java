@@ -636,6 +636,8 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_redistributeContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_distanceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_neighbor4Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_router_idContext;
@@ -2509,6 +2511,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.SUMMARY_ONLY() != null) {
       _currentAristaBgpAggregateNetwork.setSummaryOnly(true);
+    }
+  }
+
+  @Override
+  public void exitEos_rbi_default_metric(Eos_rbi_default_metricContext ctx) {
+    _currentAristaBgpVrf.setDefaultMetric(toLong(ctx.metric));
+  }
+
+  @Override
+  public void exitEos_rbi_distance(Eos_rbi_distanceContext ctx) {
+    _currentAristaBgpVrf.setDefaultEbgpAdminDistance(toInteger(ctx.external));
+    if (ctx.internal != null) {
+      _currentAristaBgpVrf.setDefaultIbgpAdminDistance(toInteger(ctx.internal));
+    }
+    if (ctx.local != null) {
+      _currentAristaBgpVrf.setDefaultLocalAdminDistance(toInteger(ctx.local));
     }
   }
 
