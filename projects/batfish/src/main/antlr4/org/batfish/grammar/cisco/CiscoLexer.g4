@@ -14110,6 +14110,11 @@ WARNINGS
    'warnings'
 ;
 
+WARNING_LIMIT
+:
+   'warning-limit'
+;
+
 WARNING_ONLY
 :
    'warning-only'

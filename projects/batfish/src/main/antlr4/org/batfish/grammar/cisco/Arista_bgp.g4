@@ -99,7 +99,8 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_import_localpref
 //    | eos_rbinc_link_bandwidth
     | eos_rbinc_local_as
-//    | eos_rbinc_maximum_accepted_routes
+    | eos_rbinc_maximum_accepted_routes
+    | eos_rbinc_maximum_routes
 //    | eos_rbinc_metric_out
 //    | eos_rbinc_monitoring
 //    | eos_rbinc_next_hop_peer
@@ -181,6 +182,21 @@ eos_rbinc_fall_over
 eos_rbinc_local_as
 :
   LOCAL_AS asn = bgp_asn NEWLINE
+;
+
+eos_rbinc_maximum_accepted_routes
+:
+  MAXIMUM_ACCEPTED_ROUTES num = DEC (WARNING_LIMIT warn_limit = DEC)? NEWLINE
+;
+
+eos_rbinc_maximum_routes
+:
+  MAXIMUM_ROUTES num = DEC
+  (
+    WARNING_ONLY
+    | (WARNING_LIMIT warn_limit = DEC PERCENT_LITERAL?)
+  )*
+  NEWLINE
 ;
 
 eos_rbinc_remote_as
