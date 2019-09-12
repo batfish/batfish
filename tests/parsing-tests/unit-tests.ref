@@ -87745,7 +87745,7 @@
           },
           "interface" : {
             "bond1.4094" : {
-              "interface self-reference" : [
+              "net add interface" : [
                 20,
                 28,
                 29,
@@ -87754,44 +87754,34 @@
               ]
             },
             "eth0" : {
-              "interface self-reference" : [
+              "net add interface" : [
                 7
               ]
             },
             "swp1" : {
-              "bgp neighbor interface" : [
-                37
-              ],
               "bond slave" : [
                 15
               ],
-              "interface self-reference" : [
+              "net add interface" : [
                 6,
                 8
               ]
             },
             "swp2" : {
-              "bgp neighbor interface" : [
-                38
-              ],
               "bond slave" : [
                 15
               ],
-              "interface self-reference" : [
+              "net add interface" : [
                 6,
                 9,
                 10
               ]
             },
             "swp3" : {
-              "bgp neighbor interface" : [
-                39,
-                40
-              ],
               "bond slave" : [
                 15
               ],
-              "interface self-reference" : [
+              "net add interface" : [
                 6
               ]
             },
@@ -88006,7 +87996,7 @@
         "configs/cumulus_nclu_interface" : {
           "interface" : {
             "swp1" : {
-              "interface self-reference" : [
+              "net add interface" : [
                 6,
                 7,
                 8,
@@ -88023,7 +88013,7 @@
               ]
             },
             "swp1s2" : {
-              "interface self-reference" : [
+              "net add interface" : [
                 21
               ]
             }
@@ -88127,7 +88117,7 @@
               "bond slave" : [
                 12
               ],
-              "interface self-reference" : [
+              "net add interface" : [
                 5,
                 6,
                 7,

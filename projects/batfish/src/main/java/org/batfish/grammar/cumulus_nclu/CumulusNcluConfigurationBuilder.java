@@ -3,6 +3,9 @@ package org.batfish.grammar.cumulus_nclu;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
+import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BOND_SLAVE;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.NET_ADD_INTERFACE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.BoundType;
@@ -363,7 +366,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  private @Nullable CumulusNcluConfiguration _c;
+  private CumulusNcluConfiguration _c;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable String _currentBgpNeighborName;
   private @Nullable BgpProcess _currentBgpProcess;
@@ -615,8 +618,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void enterA_interface(A_interfaceContext ctx) {
     Set<String> interfaceNames = toStrings(ctx.interfaces);
-    _currentInterfaces =
-        initInterfacesIfAbsent(interfaceNames, ctx, CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
+    _currentInterfaces = initInterfacesIfAbsent(interfaceNames, ctx);
+    _currentInterfaces.forEach(
+        i ->
+            _c.referenceStructure(
+                INTERFACE, i.getName(), NET_ADD_INTERFACE, ctx.getStart().getLine()));
   }
 
   @Override
@@ -1088,8 +1094,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return;
     }
     Set<String> slaves = toStrings(ctx.slaves);
-    List<Interface> interfaces =
-        initInterfacesIfAbsent(slaves, ctx, CumulusStructureUsage.BOND_SLAVE);
+    List<Interface> interfaces = initInterfacesIfAbsent(slaves, ctx);
+    interfaces.forEach(
+        i -> _c.referenceStructure(INTERFACE, i.getName(), BOND_SLAVE, ctx.getStart().getLine()));
+
     Bond b = _currentBonds.get(0);
     b.setSlaves(interfaces.isEmpty() ? ImmutableSet.of() : slaves);
   }
@@ -1447,9 +1455,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * empty {@link List} if any name in {@code names} is invalid.
    */
   private @Nonnull List<Interface> initInterfacesIfAbsent(
-      Set<String> names, ParserRuleContext ctx, @Nonnull CumulusStructureUsage usage) {
+      Set<String> names, ParserRuleContext ctx) {
     ImmutableList.Builder<Interface> interfacesBuilder = ImmutableList.builder();
-    ImmutableList.Builder<String> newInterfaces = ImmutableList.builder();
+    List<Interface> newInterfaces = new LinkedList<>();
     for (String name : names) {
       Interface iface = _c.getInterfaces().get(name);
       if (iface == null) {
@@ -1457,21 +1465,20 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         if (iface == null) {
           return ImmutableList.of();
         }
-        newInterfaces.add(name);
+        newInterfaces.add(iface);
       }
       interfacesBuilder.add(iface);
     }
-    List<Interface> interfaces = interfacesBuilder.build();
-    interfaces.forEach(iface -> _c.getInterfaces().computeIfAbsent(iface.getName(), n -> iface));
+
+    // Add and define all the new interfaces, but do it after the above for loop in case any name
+    // was invalid. In that case, we pretend the line was rejected and don't define anything.
     int line = ctx.getStart().getLine();
-    newInterfaces
-        .build()
-        .forEach(
-            name -> {
-              _c.defineStructure(CumulusStructureType.INTERFACE, name, line);
-            });
-    names.forEach(name -> _c.referenceStructure(CumulusStructureType.INTERFACE, name, usage, line));
-    return interfaces;
+    for (Interface iface : newInterfaces) {
+      _c.getInterfaces().put(iface.getName(), iface);
+      _c.defineStructure(INTERFACE, iface.getName(), line);
+    }
+
+    return interfacesBuilder.build();
   }
 
   /** Returns already-present or newly-created {@link Vlan}s with given {@code names}. */
@@ -1567,20 +1574,24 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    */
   private boolean referenceAbstractInterfaces(
       Set<String> names, ParserRuleContext ctx, CumulusStructureUsage usage) {
-    Set<String> potentialInterfaceNames =
+    // Create any new interfaces (of interface type) if needed.
+    Set<String> potentialNewInterfaceNames =
         names.stream()
             .filter(not(_c.getBonds()::containsKey))
+            .filter(not(_c.getInterfaces()::containsKey))
+            .filter(not(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME::equals))
             .filter(not(_c.getVlans()::containsKey))
             .filter(not(_c.getVrfs()::containsKey))
             .filter(not(_c.getVxlans()::containsKey))
-            .filter(not("lo"::equals))
             .collect(ImmutableSet.toImmutableSet());
-    if (!potentialInterfaceNames.isEmpty()
-        && initInterfacesIfAbsent(potentialInterfaceNames, ctx, usage).isEmpty()) {
+    if (!potentialNewInterfaceNames.isEmpty()
+        && initInterfacesIfAbsent(potentialNewInterfaceNames, ctx).isEmpty()) {
+      // We had some name that did not yet exist, but we could not create it. Bail.
       return false;
     }
+
     int line = ctx.getStart().getLine();
-    if (potentialInterfaceNames.contains(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
+    if (names.contains(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
         && !_c.getLoopback().getConfigured()) {
       _c.defineStructure(
           CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, line);
