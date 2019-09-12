@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -31,12 +32,14 @@ import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
+import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
 import org.batfish.representation.cisco.eos.AristaBgpVrfEvpnAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
+import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.junit.Test;
 
 @ParametersAreNonnullByDefault
@@ -266,5 +269,28 @@ public class AristaGrammarTest {
   public void testVxlanExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_vxlan");
     assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
+  }
+
+  @Test
+  public void testRedistributeExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_redistribute");
+    {
+      Map<AristaRedistributeType, AristaBgpRedistributionPolicy> redistributionPolicies =
+          config.getAristaBgp().getDefaultVrf().getRedistributionPolicies();
+      assertThat(
+          redistributionPolicies,
+          hasEntry(
+              AristaRedistributeType.CONNECTED,
+              new AristaBgpRedistributionPolicy(AristaRedistributeType.CONNECTED, "RM")));
+    }
+    {
+      Map<AristaRedistributeType, AristaBgpRedistributionPolicy> redistributionPolicies =
+          config.getAristaBgp().getVrfs().get("tenant").getRedistributionPolicies();
+      assertThat(
+          redistributionPolicies,
+          hasEntry(
+              AristaRedistributeType.STATIC,
+              new AristaBgpRedistributionPolicy(AristaRedistributeType.STATIC, "RM2")));
+    }
   }
 }

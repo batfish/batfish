@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_redistribute
+!
+router bgp 1
+  redistribute attached-host
+  redistribute connected route-map RM
+  redistribute dynamic
+  redistribute isis
+  redistribute isis level-1
+  redistribute isis level-2
+  redistribute isis level-1-2 route-map RM
+  redistribute ospf
+  redistribute ospf match internal
+  redistribute ospf match external
+  redistribute ospf match nssa-external
+  redistribute ospf match nssa-external 1
+  redistribute ospf match nssa-external 2
+  redistribute ospf
+  redistribute ospf3 match internal
+  redistribute ospf3 match external
+  redistribute ospf3 match nssa-external
+  redistribute ospf3 match nssa-external 1
+  redistribute ospf3 match nssa-external 2
+  redistribute rip
+  redistribute attached-host
+  vrf tenant
+    redistribute static route-map RM2

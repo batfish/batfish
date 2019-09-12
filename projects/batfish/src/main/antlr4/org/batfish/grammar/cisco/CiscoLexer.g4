@@ -1066,6 +1066,11 @@ ASYNCHRONOUS
    'asynchronous'
 ;
 
+ATTACHED_HOST
+:
+   'attached-host'
+;
+
 ATM
 :
    'atm'

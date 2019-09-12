@@ -23,6 +23,10 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Integer _keepAliveTimer;
   @Nullable private Long _localAs;
   @Nonnull private final String _name;
+
+  @Nonnull
+  private final Map<AristaRedistributeType, AristaBgpRedistributionPolicy> _redistributionPolicies;
+
   @Nullable private RouteDistinguisher _routeDistinguisher;
   @Nullable private Ip _routerId;
   @Nullable private Boolean _shutdown;
@@ -37,6 +41,7 @@ public final class AristaBgpVrf implements Serializable {
     _v4neighbors = new HashMap<>(0);
     // V4 unicast is enabled by default
     _v4UnicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
+    _redistributionPolicies = new HashMap<>(0);
   }
 
   @Nullable
@@ -144,6 +149,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setLocalAs(@Nullable Long localAs) {
     _localAs = localAs;
+  }
+
+  @Nonnull
+  public Map<AristaRedistributeType, AristaBgpRedistributionPolicy> getRedistributionPolicies() {
+    return _redistributionPolicies;
+  }
+
+  public void addRedistributionPolicy(AristaRedistributeType type, @Nullable String routeMap) {
+    _redistributionPolicies.put(type, new AristaBgpRedistributionPolicy(type, routeMap));
   }
 
   @Nullable
