@@ -118,7 +118,12 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
     c.setRoutingPolicies(
         verifyAndToImmutableMap(c.getRoutingPolicies(), RoutingPolicy::getName, w));
+    verifyCommunityStructures();
     removeInvalidAcls(c, w);
+  }
+
+  private static void verifyCommunityStructures() {
+    // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
   }
 
   /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */

@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.communities;
 
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
+import org.batfish.common.util.PatternProvider;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -83,7 +83,7 @@ public final class CommunityMatchExprEvaluator
   @Override
   public @Nonnull Boolean visitCommunityMatchRegex(
       CommunityMatchRegex communityMatchRegex, Community arg) {
-    return Pattern.compile(communityMatchRegex.getRegex())
+    return PatternProvider.fromString(communityMatchRegex.getRegex())
         .matcher(
             communityMatchRegex
                 .getCommunityRendering()

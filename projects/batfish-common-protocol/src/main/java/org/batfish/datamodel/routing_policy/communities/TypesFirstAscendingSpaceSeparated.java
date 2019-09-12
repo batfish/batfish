@@ -9,8 +9,8 @@ import javax.annotation.Nullable;
 
 /**
  * A {@link CommunitySetRendering} accomplished by rendering of each constituent community,
- * separated by spaces, sorted first by community type, and then in ascdending order of integer
- * value.
+ * separated by spaces, sorted first by community type (standard, extended, then large), and then in
+ * ascdending order of integer value.
  */
 public final class TypesFirstAscendingSpaceSeparated extends CommunitySetRendering {
 
