@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +12,6 @@ import javax.annotation.Nonnull;
 
 public class DefinedStructureInfo implements Serializable {
 
-  public static final int UNKNOWN_NUM_REFERRERS = -1;
   private static final String PROP_DEFINITION_LINES = "definitionLines";
   private static final String PROP_NUM_REFERRERS = "numReferrers";
 
@@ -22,8 +22,9 @@ public class DefinedStructureInfo implements Serializable {
   public DefinedStructureInfo(
       @JsonProperty(PROP_DEFINITION_LINES) SortedSet<Integer> definitionLines,
       @JsonProperty(PROP_NUM_REFERRERS) Integer numReferrers) {
+    checkArgument(numReferrers != null, "Missing %s", PROP_NUM_REFERRERS);
     _definitionLines = firstNonNull(definitionLines, new TreeSet<>());
-    _numReferrers = firstNonNull(numReferrers, UNKNOWN_NUM_REFERRERS);
+    _numReferrers = numReferrers;
   }
 
   @JsonProperty(PROP_DEFINITION_LINES)
