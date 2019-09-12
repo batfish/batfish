@@ -29,6 +29,7 @@ import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
@@ -232,6 +233,32 @@ public class AristaGrammarTest {
       assertThat(pg.getV4UnicastAf().getActivate(), nullValue());
       assertThat(pg.getEvpnAf(), notNullValue());
       assertTrue(pg.getEvpnAf().getActivate());
+    }
+  }
+
+  @Test
+  public void testNetworkExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_network");
+    {
+      Prefix prefix = Prefix.parse("1.1.1.0/24");
+      AristaBgpNetworkConfiguration network =
+          config.getAristaBgp().getDefaultVrf().getV4UnicastAf().getNetworks().get(prefix);
+      assertThat(network, notNullValue());
+      assertThat(network.getRouteMap(), nullValue());
+    }
+    {
+      Prefix prefix = Prefix.parse("1.1.2.0/24");
+      AristaBgpNetworkConfiguration network =
+          config.getAristaBgp().getDefaultVrf().getV4UnicastAf().getNetworks().get(prefix);
+      assertThat(network, notNullValue());
+      assertThat(network.getRouteMap(), nullValue());
+    }
+    {
+      Prefix prefix = Prefix.parse("1.1.3.0/24");
+      AristaBgpNetworkConfiguration network =
+          config.getAristaBgp().getDefaultVrf().getV4UnicastAf().getNetworks().get(prefix);
+      assertThat(network, notNullValue());
+      assertThat(network.getRouteMap(), equalTo("RM"));
     }
   }
 
