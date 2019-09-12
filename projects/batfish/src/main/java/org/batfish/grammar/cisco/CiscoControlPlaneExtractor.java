@@ -629,6 +629,9 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_aa_modifiersContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_aa_v4Context;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_af_evpnContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_af_evpn_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_af_ipv4Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vab_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_aware_bundleContext;
@@ -636,6 +639,8 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_redistributeContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4u_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_activateContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_distanceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_neighbor4Context;
@@ -1425,6 +1430,7 @@ import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.cisco.eos.AristaBgpNeighbor;
+import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
@@ -1603,6 +1609,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private AristaBgpAggregateNetwork _currentAristaBgpAggregateNetwork;
   private AristaBgpNeighbor _currentAristaBgpNeighbor;
+  private AristaBgpNeighborAddressFamily _currentAristaBgpNeighborAddressFamily;
   private AristaBgpProcess _currentAristaBgpProcess;
   private AristaBgpVlanBase _currentAristaBgpVlan;
   private AristaBgpVrf _currentAristaBgpVrf;
@@ -2517,6 +2524,76 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.SUMMARY_ONLY() != null) {
       _currentAristaBgpAggregateNetwork.setSummaryOnly(true);
     }
+  }
+
+  @Override
+  public void enterEos_rb_af_evpn(Eos_rb_af_evpnContext ctx) {
+    _currentAristaBgpVrf.getOrCreateEvpnAf();
+  }
+
+  @Override
+  public void enterEos_rb_af_evpn_neighbor(Eos_rb_af_evpn_neighborContext ctx) {
+    AristaBgpNeighbor neighbor;
+    if (ctx.v4 != null) {
+      neighbor =
+          _currentAristaBgpVrf
+              .getV4neighbors()
+              .computeIfAbsent(toIp(ctx.v4), AristaBgpV4Neighbor::new);
+    } else if (ctx.pg != null) {
+      neighbor =
+          _currentAristaBgpProcess
+              .getPeerGroups()
+              .computeIfAbsent(ctx.pg.getText(), AristaBgpPeerGroupNeighbor::new);
+    } else if (ctx.v6 != null) {
+      todo(ctx);
+      neighbor = new AristaBgpPeerGroupNeighbor("dummy");
+    } else {
+      throw new IllegalStateException(
+          String.format("Unknown neighbor type in %s", getFullText(ctx)));
+    }
+    _currentAristaBgpNeighborAddressFamily = neighbor.getOrCreateEvpnAf();
+  }
+
+  @Override
+  public void exitEos_rb_af_evpn_neighbor(Eos_rb_af_evpn_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
+    _currentAristaBgpVrf.getOrCreateV4UnicastAf();
+  }
+
+  @Override
+  public void enterEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
+    AristaBgpNeighbor neighbor = new AristaBgpPeerGroupNeighbor("dummy");
+    if (ctx.v4 != null) {
+      neighbor =
+          _currentAristaBgpVrf
+              .getV4neighbors()
+              .computeIfAbsent(toIp(ctx.v4), AristaBgpV4Neighbor::new);
+    } else if (ctx.pg != null) {
+      neighbor =
+          _currentAristaBgpProcess
+              .getPeerGroups()
+              .computeIfAbsent(ctx.pg.getText(), AristaBgpPeerGroupNeighbor::new);
+    } else if (ctx.v6 != null) {
+      todo(ctx);
+    } else {
+      throw new IllegalStateException(
+          String.format("Unknown neighbor type in %s", getFullText(ctx)));
+    }
+    _currentAristaBgpNeighborAddressFamily = neighbor.getOrCreateV4UnicastAf();
+  }
+
+  @Override
+  public void exitEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void exitEos_rbafnc_activate(Eos_rbafnc_activateContext ctx) {
+    _currentAristaBgpNeighborAddressFamily.setActivate(true);
   }
 
   @Override
