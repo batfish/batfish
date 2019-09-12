@@ -11,6 +11,8 @@ public interface CommunityMatchExprVisitor<T, U> {
 
   T visitCommunityAcl(CommunityAcl communityAcl, U arg);
 
+  T visitCommunityIn(CommunityIn communityIn, U arg);
+
   T visitCommunityIs(CommunityIs communityIs, U arg);
 
   T visitCommunityMatchAll(CommunityMatchAll communityMatchAll, U arg);

@@ -53,6 +53,15 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
+  public void testVisitCommunityIn() {
+    CommunityIn in =
+        new CommunityIn(new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(1L))));
+
+    assertTrue(in.accept(EVAL, StandardCommunity.of(1L)));
+    assertFalse(in.accept(EVAL, StandardCommunity.of(2L)));
+  }
+
+  @Test
   public void testVisitCommunityIs() {
     CommunityIs is = new CommunityIs(StandardCommunity.of(1L));
 

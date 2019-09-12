@@ -45,6 +45,15 @@ public final class CommunityMatchExprEvaluator
   }
 
   @Override
+  public @Nonnull Boolean visitCommunityIn(CommunityIn communityIn, Community arg) {
+    return communityIn
+        .getCommunitySetExpr()
+        .accept(_ctx.getCommunitySetExprEvaluator())
+        .getCommunities()
+        .contains(arg);
+  }
+
+  @Override
   public @Nonnull Boolean visitCommunityIs(CommunityIs communityIs, Community arg) {
     return arg.equals(communityIs.getCommunity());
   }
