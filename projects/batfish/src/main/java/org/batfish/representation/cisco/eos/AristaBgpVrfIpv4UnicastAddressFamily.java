@@ -31,6 +31,11 @@ public class AristaBgpVrfIpv4UnicastAddressFamily extends AristaBgpVrfAddressFam
     return _networks;
   }
 
+  @Nonnull
+  public AristaBgpNetworkConfiguration getOrCreateNetwork(Prefix prefix) {
+    return _networks.computeIfAbsent(prefix, p -> new AristaBgpNetworkConfiguration());
+  }
+
   @Nullable
   public Boolean getRedistributeInternal() {
     return _redistributeInternal;

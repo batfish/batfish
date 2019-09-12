@@ -2717,13 +2717,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.prefix != null
             ? Prefix.parse(ctx.prefix.getText())
             : Prefix.create(toIp(ctx.ip), toIp(ctx.mask));
+    AristaBgpNetworkConfiguration conf = af.getOrCreateNetwork(network);
     String routeMapName = ctx.rm == null ? null : ctx.rm.getText();
-    AristaBgpNetworkConfiguration conf = new AristaBgpNetworkConfiguration(routeMapName);
     if (routeMapName != null) {
       _configuration.referenceStructure(
           ROUTE_MAP, routeMapName, BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.getStart().getLine());
+      conf.setRouteMap(routeMapName);
     }
-    af.getNetworks().put(network, conf);
   }
 
   @Override
