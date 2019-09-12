@@ -136,7 +136,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     return _v4UnicastAf;
   }
 
-  @Nullable
+  @Nonnull
   public AristaBgpNeighborIpv4UnicastAddressFamily getOrCreateV4UnicastAf() {
     if (_v4UnicastAf == null) {
       _v4UnicastAf = new AristaBgpNeighborIpv4UnicastAddressFamily();

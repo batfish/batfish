@@ -28,7 +28,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Boolean _shutdown;
   @Nonnull private final Map<Prefix, AristaBgpAggregateNetwork> _v4aggregates;
   @Nonnull private final Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
-  @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4unicastAf;
+  @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4UnicastAf;
   @Nullable private AristaBgpVrfEvpnAddressFamily _evpnAf;
 
   public AristaBgpVrf(String name) {
@@ -36,7 +36,7 @@ public final class AristaBgpVrf implements Serializable {
     _v4aggregates = new HashMap<>(0);
     _v4neighbors = new HashMap<>(0);
     // V4 unicast is enabled by default
-    _v4unicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
+    _v4UnicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
   }
 
   @Nullable
@@ -184,19 +184,19 @@ public final class AristaBgpVrf implements Serializable {
   }
 
   @Nullable
-  public AristaBgpVrfIpv4UnicastAddressFamily getV4unicastAf() {
-    return _v4unicastAf;
+  public AristaBgpVrfIpv4UnicastAddressFamily getV4UnicastAf() {
+    return _v4UnicastAf;
   }
 
   @Nonnull
-  public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4unicastAf() {
-    if (_v4unicastAf == null) {
-      _v4unicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
+  public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4UnicastAf() {
+    if (_v4UnicastAf == null) {
+      _v4UnicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
     }
-    return _v4unicastAf;
+    return _v4UnicastAf;
   }
 
-  public void setV4unicastAf(@Nullable AristaBgpVrfIpv4UnicastAddressFamily v4unicastAf) {
-    _v4unicastAf = v4unicastAf;
+  public void setV4UnicastAf(@Nullable AristaBgpVrfIpv4UnicastAddressFamily v4UnicastAf) {
+    _v4UnicastAf = v4UnicastAf;
   }
 }

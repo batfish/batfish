@@ -208,7 +208,7 @@ public class AristaGrammarTest {
   public void testAddressFamilyExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_af");
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af =
-        config.getAristaBgp().getDefaultVrf().getV4unicastAf();
+        config.getAristaBgp().getDefaultVrf().getV4UnicastAf();
     AristaBgpVrfEvpnAddressFamily evpnaf = config.getAristaBgp().getDefaultVrf().getEvpnAf();
     assertThat(ipv4af, notNullValue());
     assertThat(evpnaf, notNullValue());

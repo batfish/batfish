@@ -2568,7 +2568,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
-    _currentAristaBgpVrfAddressFamily = _currentAristaBgpVrf.getOrCreateV4unicastAf();
+    _currentAristaBgpVrfAddressFamily = _currentAristaBgpVrf.getOrCreateV4UnicastAf();
   }
 
   @Override
