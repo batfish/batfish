@@ -233,7 +233,7 @@ eos_rbi_ucmp
 
 eos_rbiu_fec
 :
-  FEC THRESHOLD TRIGGER DEC CLEAR DEC WARNING_ONLY NEWLINE
+  FEC THRESHOLD TRIGGER trigger = DEC CLEAR clear = DEC WARNING_ONLY NEWLINE
 ;
 
 eos_rbiu_link_bandwidth
@@ -243,7 +243,11 @@ eos_rbiu_link_bandwidth
 
 eos_rbiu_mode
 :
-  MODE DEC (DEC (FLOAT)?)? NEWLINE
+  MODE mode_num = DEC
+  (
+    next_hops = DEC
+    (oversubscription = FLOAT)?
+  )? NEWLINE
 ;
 
 eos_rbi_update
