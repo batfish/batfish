@@ -20,31 +20,40 @@ eos_router_bgp
 
 eos_rb_address_family
 :
-  eos_rb_af_ipv4
-//  | eos_rb_af_ipv4_multicast
-//  | eos_rb_af_ipv4_labeled_multicast
-//  | eos_rb_af_ipv4_sr_te
+  ADDRESS_FAMILY
+  (
+    eos_rb_af_ipv4
 //  | eos_rb_af_ipv6
-//  | eos_rb_af_ipv6_labeled_multicast
-//  | eos_rb_af_ipv6_sr_te
-  | eos_rb_af_evpn
+    | eos_rb_af_evpn
 //  | eos_rb_af_vpn_v4
 //  | eos_rb_af_vpn_v6
+  )
 ;
 
 eos_rb_af_ipv4
 :
-  ADDRESS_FAMILY IPV4 NEWLINE
+  IPV4
   (
-    eos_rbafipv4_bgp
-//    | eos_rbafipv4_graceful_restart
-    | eos_rbafipv4_neighbor
-//    | eos_rbafipv4_network
-//    | eos_rbafipv4_redistribute
+    eos_rb_af_ipv4_unicast
+//  | eos_rb_af_ipv4_multicast
+//  | eos_rb_af_ipv4_labeled_multicast
+//  | eos_rb_af_ipv4_sr_te
+  )
+;
+
+eos_rb_af_ipv4_unicast
+:
+  NEWLINE
+  (
+    eos_rbafipv4u_bgp
+//    | eos_rbafipv4u_graceful_restart
+    | eos_rbafipv4u_neighbor
+//    | eos_rbafipv4u_network
+//    | eos_rbafipv4u_redistribute
   )*
 ;
 
-eos_rbafipv4_bgp
+eos_rbafipv4u_bgp
 :
   BGP
   null_rest_of_line
@@ -56,7 +65,7 @@ eos_rbafipv4_bgp
 //  )
 ;
 
-eos_rbafipv4_neighbor
+eos_rbafipv4u_neighbor
 :
   NEIGHBOR
   (
@@ -69,7 +78,7 @@ eos_rbafipv4_neighbor
 
 eos_rb_af_evpn
 :
-  ADDRESS_FAMILY EVPN NEWLINE
+  EVPN NEWLINE
   (
     eos_rb_af_evpn_bgp
 //    | eos_rb_af_evpn_graceful_restart

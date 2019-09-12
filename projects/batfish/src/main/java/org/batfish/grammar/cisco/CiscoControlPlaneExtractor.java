@@ -639,7 +639,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_redistributeContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vrfContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4u_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_activateContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_distanceContext;
@@ -2577,7 +2577,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterEos_rbafipv4_neighbor(Eos_rbafipv4_neighborContext ctx) {
+  public void enterEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
     AristaBgpNeighbor neighbor = new AristaBgpPeerGroupNeighbor("dummy");
     if (ctx.v4 != null) {
       neighbor =
@@ -2599,7 +2599,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitEos_rbafipv4_neighbor(Eos_rbafipv4_neighborContext ctx) {
+  public void exitEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
     _currentAristaBgpNeighborAddressFamily = null;
   }
 
