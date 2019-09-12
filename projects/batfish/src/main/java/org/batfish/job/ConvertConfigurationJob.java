@@ -71,6 +71,19 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   }
 
   /**
+   * Converts {@link Map} to {@link ImmutableMap}. The created maps are sorted by key in ascending
+   * order.
+   */
+  private static <T> ImmutableMap<String, T> toImmutableMap(@Nullable Map<String, T> map) {
+    if (map == null || map.isEmpty()) {
+      return ImmutableMap.of();
+    }
+    return map.entrySet().stream()
+        .sorted(Comparator.comparing(Entry::getKey)) /* ImmutableMap is insert ordered. */
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
+
+  /**
    * Applies sanity checks and finishing touches to the given {@link Configuration}.
    *
    * <p>Sanity checks such as asserting that required properties hold.
@@ -92,6 +105,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
     c.setCommunityLists(verifyAndToImmutableMap(c.getCommunityLists(), CommunityList::getName, w));
+    c.setCommunityMatchExprs(toImmutableMap(c.getCommunityMatchExprs()));
+    c.setCommunitySetExprs(toImmutableMap(c.getCommunitySetExprs()));
+    c.setCommunitySetMatchExprs(toImmutableMap(c.getCommunitySetMatchExprs()));
+    c.setCommunitySets(toImmutableMap(c.getCommunitySets()));
     c.setInterfaces(verifyAndToImmutableMap(c.getAllInterfaces(), Interface::getName, w));
     c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
     c.setIp6AccessLists(verifyAndToImmutableMap(c.getIp6AccessLists(), Ip6AccessList::getName, w));
@@ -101,7 +118,12 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
     c.setRoutingPolicies(
         verifyAndToImmutableMap(c.getRoutingPolicies(), RoutingPolicy::getName, w));
+    verifyCommunityStructures();
     removeInvalidAcls(c, w);
+  }
+
+  private static void verifyCommunityStructures() {
+    // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
   }
 
   /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */

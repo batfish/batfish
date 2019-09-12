@@ -79,6 +79,11 @@ public final class StandardCommunity extends Community {
   }
 
   @Override
+  public <T> T accept(CommunityVisitor<T> visitor) {
+    return visitor.visitStandardCommunity(this);
+  }
+
+  @Override
   public boolean isTransitive() {
     // By default standard communities are not transitive
     return false;

@@ -13,6 +13,7 @@ import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -30,6 +31,10 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -101,6 +106,10 @@ public final class Configuration implements Serializable {
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
   private static final String PROP_AUTHENTICATION_KEY_CHAINS = "authenticationKeyChains";
   private static final String PROP_COMMUNITY_LISTS = "communityLists";
+  private static final String PROP_COMMUNITY_MATCH_EXPRS = "communityMatchExprs";
+  private static final String PROP_COMMUNITY_SET_EXPRS = "communitySetExprs";
+  private static final String PROP_COMMUNITY_SET_MATCH_EXPRS = "communitySetMatchExprs";
+  private static final String PROP_COMMUNITY_SETS = "communitySets";
   private static final String PROP_CONFIGURATION_FORMAT = "configurationFormat";
   private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
@@ -147,6 +156,11 @@ public final class Configuration implements Serializable {
   private NavigableMap<String, AuthenticationKeyChain> _authenticationKeyChains;
 
   private Map<String, CommunityList> _communityLists;
+
+  private Map<String, CommunityMatchExpr> _communityMatchExprs;
+  private Map<String, CommunitySetExpr> _communitySetExprs;
+  private Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
+  private Map<String, CommunitySet> _communitySets;
 
   private final ConfigurationFormat _configurationFormat;
 
@@ -240,6 +254,10 @@ public final class Configuration implements Serializable {
     _asPathAccessLists = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
+    _communityMatchExprs = new HashMap<>();
+    _communitySetExprs = new HashMap<>();
+    _communitySetMatchExprs = new HashMap<>();
+    _communitySets = new HashMap<>();
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
     _domainName = null;
@@ -329,6 +347,46 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_COMMUNITY_LISTS)
   public Map<String, CommunityList> getCommunityLists() {
     return _communityLists;
+  }
+
+  @JsonIgnore
+  public @Nonnull Map<String, CommunityMatchExpr> getCommunityMatchExprs() {
+    return _communityMatchExprs;
+  }
+
+  @JsonProperty(PROP_COMMUNITY_MATCH_EXPRS)
+  private @Nonnull NavigableMap<String, CommunityMatchExpr> getCommunityMatchExprsSorted() {
+    return ImmutableSortedMap.copyOf(_communityMatchExprs);
+  }
+
+  @JsonIgnore
+  public @Nonnull Map<String, CommunitySetExpr> getCommunitySetExprs() {
+    return _communitySetExprs;
+  }
+
+  @JsonProperty(PROP_COMMUNITY_SET_EXPRS)
+  private @Nonnull NavigableMap<String, CommunitySetExpr> getCommunitySetExprsSorted() {
+    return ImmutableSortedMap.copyOf(_communitySetExprs);
+  }
+
+  @JsonIgnore
+  public @Nonnull Map<String, CommunitySetMatchExpr> getCommunitySetMatchExprs() {
+    return _communitySetMatchExprs;
+  }
+
+  @JsonProperty(PROP_COMMUNITY_SET_MATCH_EXPRS)
+  private @Nonnull NavigableMap<String, CommunitySetMatchExpr> getCommunitySetMatchExprsSorted() {
+    return ImmutableSortedMap.copyOf(_communitySetMatchExprs);
+  }
+
+  @JsonIgnore
+  public @Nonnull Map<String, CommunitySet> getCommunitySets() {
+    return _communitySets;
+  }
+
+  @JsonProperty(PROP_COMMUNITY_SETS)
+  private @Nonnull NavigableMap<String, CommunitySet> getCommunitySetsSorted() {
+    return ImmutableSortedMap.copyOf(_communitySets);
   }
 
   /**
@@ -586,6 +644,27 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_COMMUNITY_LISTS)
   public void setCommunityLists(Map<String, CommunityList> communityLists) {
     _communityLists = communityLists;
+  }
+
+  @JsonProperty(PROP_COMMUNITY_MATCH_EXPRS)
+  public void setCommunityMatchExprs(@Nonnull Map<String, CommunityMatchExpr> communityMatchExprs) {
+    _communityMatchExprs = communityMatchExprs;
+  }
+
+  @JsonProperty(PROP_COMMUNITY_SET_EXPRS)
+  public void setCommunitySetExprs(@Nonnull Map<String, CommunitySetExpr> communitySetExprs) {
+    _communitySetExprs = communitySetExprs;
+  }
+
+  @JsonProperty(PROP_COMMUNITY_SET_MATCH_EXPRS)
+  public void setCommunitySetMatchExprs(
+      @Nonnull Map<String, CommunitySetMatchExpr> communitySetMatchExprs) {
+    _communitySetMatchExprs = communitySetMatchExprs;
+  }
+
+  @JsonProperty(PROP_COMMUNITY_SETS)
+  public void setCommunitySets(@Nonnull Map<String, CommunitySet> communitySets) {
+    _communitySets = communitySets;
   }
 
   public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
