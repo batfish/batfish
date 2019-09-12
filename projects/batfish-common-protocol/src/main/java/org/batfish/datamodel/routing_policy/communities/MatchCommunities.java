@@ -21,7 +21,7 @@ public final class MatchCommunities extends BooleanExpr {
   }
 
   @Override
-  public Result evaluate(Environment environment) {
+  public @Nonnull Result evaluate(Environment environment) {
     CommunityContext ctx = CommunityContext.fromEnvironment(environment);
     CommunitySet communitySet = _communitySetExpr.accept(ctx.getCommunitySetExprEvaluator());
     boolean ret =

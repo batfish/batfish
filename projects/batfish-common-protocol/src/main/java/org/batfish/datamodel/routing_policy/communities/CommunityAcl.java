@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 public final class CommunityAcl extends CommunityMatchExpr {
 
   public CommunityAcl(List<CommunityAclLine> lines) {
-    _lines = lines;
+    _lines = ImmutableList.copyOf(lines);
   }
 
   @JsonProperty(PROP_LINES)

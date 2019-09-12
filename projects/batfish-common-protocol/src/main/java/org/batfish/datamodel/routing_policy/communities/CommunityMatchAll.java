@@ -4,10 +4,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
+import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -57,8 +57,8 @@ public final class CommunityMatchAll extends CommunityMatchExpr {
   private final @Nonnull Set<CommunityMatchExpr> _exprs;
 
   @JsonProperty(PROP_EXPRS)
-  private @Nonnull SortedSet<CommunityMatchExpr> getExprsSorted() {
-    // sorted for refs
-    return ImmutableSortedSet.copyOf(_exprs);
+  private @Nonnull List<CommunityMatchExpr> getExprsSorted() {
+    // ordered for refs
+    return ImmutableList.copyOf(_exprs);
   }
 }

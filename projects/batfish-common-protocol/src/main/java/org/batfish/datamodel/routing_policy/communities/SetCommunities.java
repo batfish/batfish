@@ -21,7 +21,7 @@ public final class SetCommunities extends Statement {
   }
 
   @Override
-  public Result execute(Environment environment) {
+  public @Nonnull Result execute(Environment environment) {
     CommunityContext ctx = CommunityContext.fromEnvironment(environment);
     CommunitySet communitySet = _communitySetExpr.accept(new CommunitySetExprEvaluator(ctx));
     BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
