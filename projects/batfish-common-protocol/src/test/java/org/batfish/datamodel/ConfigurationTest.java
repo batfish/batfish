@@ -4,17 +4,31 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ConfigurationTest {
+/** Test of {@link Configuration}. */
+public final class ConfigurationTest {
 
   private NetworkFactory _factory;
 
@@ -127,5 +141,53 @@ public class ConfigurationTest {
     assertThat(
         ospfProcess.getExportPolicySources(),
         containsInAnyOrder(ospfExportPolicyName, ospfExportSubPolicyName));
+  }
+
+  @Test
+  public void testJacksonSerialization() throws IOException {
+    // TODO: other properties
+    Map<String, CommunityMatchExpr> communityMatchExprs =
+        ImmutableMap.of("cme", AllStandardCommunities.instance());
+    Map<String, CommunitySetExpr> communitySetExprs =
+        ImmutableMap.of("cse", new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(2L))));
+    Map<String, CommunitySetMatchExpr> communitySetMatchExprs =
+        ImmutableMap.of("csme", new HasCommunity(AllStandardCommunities.instance()));
+    Map<String, CommunitySet> communitySets =
+        ImmutableMap.of("cs", CommunitySet.of(StandardCommunity.of(1L)));
+    Configuration c = new Configuration("h", ConfigurationFormat.CISCO_IOS);
+    c.setCommunityMatchExprs(communityMatchExprs);
+    c.setCommunitySetExprs(communitySetExprs);
+    c.setCommunitySetMatchExprs(communitySetMatchExprs);
+    c.setCommunitySets(communitySets);
+    Configuration cloned = BatfishObjectMapper.clone(c, Configuration.class);
+
+    assertThat(cloned.getCommunityMatchExprs(), equalTo(communityMatchExprs));
+    assertThat(cloned.getCommunitySetExprs(), equalTo(communitySetExprs));
+    assertThat(cloned.getCommunitySetMatchExprs(), equalTo(communitySetMatchExprs));
+    assertThat(cloned.getCommunitySets(), equalTo(communitySets));
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    // TODO: other properties
+    Map<String, CommunityMatchExpr> communityMatchExprs =
+        ImmutableMap.of("cme", AllStandardCommunities.instance());
+    Map<String, CommunitySetExpr> communitySetExprs =
+        ImmutableMap.of("cse", new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(2L))));
+    Map<String, CommunitySetMatchExpr> communitySetMatchExprs =
+        ImmutableMap.of("csme", new HasCommunity(AllStandardCommunities.instance()));
+    Map<String, CommunitySet> communitySets =
+        ImmutableMap.of("cs", CommunitySet.of(StandardCommunity.of(1L)));
+    Configuration c = new Configuration("h", ConfigurationFormat.CISCO_IOS);
+    c.setCommunityMatchExprs(communityMatchExprs);
+    c.setCommunitySetExprs(communitySetExprs);
+    c.setCommunitySetMatchExprs(communitySetMatchExprs);
+    c.setCommunitySets(communitySets);
+    Configuration cloned = SerializationUtils.clone(c);
+
+    assertThat(cloned.getCommunityMatchExprs(), equalTo(communityMatchExprs));
+    assertThat(cloned.getCommunitySetExprs(), equalTo(communitySetExprs));
+    assertThat(cloned.getCommunitySetMatchExprs(), equalTo(communitySetMatchExprs));
+    assertThat(cloned.getCommunitySets(), equalTo(communitySets));
   }
 }

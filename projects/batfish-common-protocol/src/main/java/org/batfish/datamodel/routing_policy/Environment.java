@@ -26,6 +26,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 
 public class Environment {
   /**
@@ -37,6 +41,10 @@ public class Environment {
     return new Builder()
         .setAsPathAccessLists(c.getAsPathAccessLists())
         .setCommunityLists(c.getCommunityLists())
+        .setCommunityMatchExprs(c.getCommunityMatchExprs())
+        .setCommunitySetExprs(c.getCommunitySetExprs())
+        .setCommunitySetMatchExprs(c.getCommunitySetMatchExprs())
+        .setCommunitySets(c.getCommunitySets())
         .setIpAccessLists(c.getIpAccessLists())
         .setIp6AccessLists(c.getIp6AccessLists())
         .setRouteFilterLists(c.getRouteFilterLists())
@@ -73,6 +81,11 @@ public class Environment {
   private boolean _callStatementContext;
 
   private final Map<String, CommunityList> _communityLists;
+
+  private final Map<String, CommunityMatchExpr> _communityMatchExprs;
+  private final Map<String, CommunitySetExpr> _communitySetExprs;
+  private final Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
+  private final Map<String, CommunitySet> _communitySets;
 
   private boolean _defaultAction;
 
@@ -125,6 +138,10 @@ public class Environment {
       boolean callExprContext,
       boolean callStatementContext,
       Map<String, CommunityList> communityLists,
+      Map<String, CommunityMatchExpr> communityMatchExprs,
+      Map<String, CommunitySetExpr> communitySetExprs,
+      Map<String, CommunitySetMatchExpr> communitySetMatchExprs,
+      Map<String, CommunitySet> communitySets,
       boolean defaultAction,
       String defaultPolicy,
       Direction direction,
@@ -151,6 +168,10 @@ public class Environment {
     _callExprContext = callExprContext;
     _callStatementContext = callStatementContext;
     _communityLists = communityLists;
+    _communityMatchExprs = communityMatchExprs;
+    _communitySetExprs = communitySetExprs;
+    _communitySetMatchExprs = communitySetMatchExprs;
+    _communitySets = communitySets;
     _defaultAction = defaultAction;
     _defaultPolicy = defaultPolicy;
     _direction = direction;
@@ -199,6 +220,22 @@ public class Environment {
 
   public Map<String, CommunityList> getCommunityLists() {
     return _communityLists;
+  }
+
+  public Map<String, CommunityMatchExpr> getCommunityMatchExprs() {
+    return _communityMatchExprs;
+  }
+
+  public Map<String, CommunitySetExpr> getCommunitySetExprs() {
+    return _communitySetExprs;
+  }
+
+  public Map<String, CommunitySetMatchExpr> getCommunitySetMatchExprs() {
+    return _communitySetMatchExprs;
+  }
+
+  public Map<String, CommunitySet> getCommunitySets() {
+    return _communitySets;
   }
 
   public boolean getDefaultAction() {
@@ -336,6 +373,10 @@ public class Environment {
     private boolean _callExprContext;
     private boolean _callStatementContext;
     private Map<String, CommunityList> _communityLists;
+    private Map<String, CommunityMatchExpr> _communityMatchExprs;
+    private Map<String, CommunitySetExpr> _communitySetExprs;
+    private Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
+    private Map<String, CommunitySet> _communitySets;
     private boolean _defaultAction;
     private String _defaultPolicy;
     private Direction _direction;
@@ -386,6 +427,27 @@ public class Environment {
 
     public Builder setCommunityLists(Map<String, CommunityList> communityLists) {
       _communityLists = toImmutableMap(communityLists);
+      return this;
+    }
+
+    public Builder setCommunityMatchExprs(Map<String, CommunityMatchExpr> communityMatchExprs) {
+      _communityMatchExprs = toImmutableMap(communityMatchExprs);
+      return this;
+    }
+
+    public Builder setCommunitySetExprs(Map<String, CommunitySetExpr> communitySetExprs) {
+      _communitySetExprs = toImmutableMap(communitySetExprs);
+      return this;
+    }
+
+    public Builder setCommunitySetMatchExprs(
+        Map<String, CommunitySetMatchExpr> communitySetMatchExprs) {
+      _communitySetMatchExprs = toImmutableMap(communitySetMatchExprs);
+      return this;
+    }
+
+    public Builder setCommunitySets(Map<String, CommunitySet> communitySets) {
+      _communitySets = toImmutableMap(communitySets);
       return this;
     }
 
@@ -487,6 +549,10 @@ public class Environment {
           _callExprContext,
           _callStatementContext,
           firstNonNull(_communityLists, ImmutableMap.of()),
+          firstNonNull(_communityMatchExprs, ImmutableMap.of()),
+          firstNonNull(_communitySetExprs, ImmutableMap.of()),
+          firstNonNull(_communitySetMatchExprs, ImmutableMap.of()),
+          firstNonNull(_communitySets, ImmutableMap.of()),
           _defaultAction,
           _defaultPolicy,
           _direction,

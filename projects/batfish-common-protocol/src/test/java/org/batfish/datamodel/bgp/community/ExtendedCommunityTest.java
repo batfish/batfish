@@ -180,10 +180,32 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testIsRouteOrigin() {
+    assertTrue(ExtendedCommunity.of(0x0003, 1, 1).isRouteOrigin());
+    assertTrue(ExtendedCommunity.of(0x0103, 1, 1).isRouteOrigin());
+    assertTrue(ExtendedCommunity.of(0x0203, 1, 1).isRouteOrigin());
+    assertFalse(ExtendedCommunity.of(0x0303, 1, 1).isRouteOrigin());
+    assertFalse(ExtendedCommunity.of(0x0002, 1, 1).isRouteOrigin());
+  }
+
+  @Test
   public void testIsRouteTarget() {
     assertTrue(ExtendedCommunity.target(1, 1).isRouteTarget());
     assertTrue(ExtendedCommunity.parse("514:65555L:1").isRouteTarget());
+    assertTrue(ExtendedCommunity.of(0x0002, 1, 1).isRouteTarget());
+    assertTrue(ExtendedCommunity.of(0x0102, 1, 1).isRouteTarget());
+    assertTrue(ExtendedCommunity.of(0x0202, 1, 1).isRouteTarget());
+    assertFalse(ExtendedCommunity.of(0x0302, 1, 1).isRouteTarget());
+    assertFalse(ExtendedCommunity.of(0x0003, 1, 1).isRouteTarget());
     assertFalse(ExtendedCommunity.of(1, 1, 1).isRouteTarget());
+  }
+
+  @Test
+  public void testIsVpnDistinguisher() {
+    assertTrue(ExtendedCommunity.of(0x0010, 1, 1).isVpnDistinguisher());
+    assertTrue(ExtendedCommunity.of(0x0110, 1, 1).isVpnDistinguisher());
+    assertFalse(ExtendedCommunity.of(0x0003, 1, 1).isVpnDistinguisher());
+    assertFalse(ExtendedCommunity.of(0x0210, 1, 1).isVpnDistinguisher());
   }
 
   @Test

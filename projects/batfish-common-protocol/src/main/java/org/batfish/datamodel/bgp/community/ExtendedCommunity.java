@@ -177,14 +177,33 @@ public final class ExtendedCommunity extends Community {
   }
 
   @Override
+  public <T> T accept(CommunityVisitor<T> visitor) {
+    return visitor.visitExtendedCommunity(this);
+  }
+
+  @Override
   public boolean isTransitive() {
     // Second most significant bit is set
     return (_type & (byte) 0x40) != 0;
   }
 
+  /** Check whether this community is of type route-origin / site-of-origin */
+  public boolean isRouteOrigin() {
+    // https://tools.ietf.org/html/rfc4360
+    // https://tools.ietf.org/html/rfc4364
+    return (_type == 0x00 || _type == 0x01 || _type == 0x02) && _subType == 0x03;
+  }
+
   /** Check whether this community represents an BGP VPN/MPLS route target */
   public boolean isRouteTarget() {
-    return _subType == 0x02;
+    // https://tools.ietf.org/html/rfc4360
+    return (_type == 0x00 || _type == 0x01 || _type == 0x02) && _subType == 0x02;
+  }
+
+  /** Check whether this community is of type Cisco VPN-Distinguisher */
+  public boolean isVpnDistinguisher() {
+    // https://tools.ietf.org/html/rfc7153
+    return (_type == 0x00 || _type == 0x01) && _subType == 0x10;
   }
 
   /**

@@ -58,6 +58,8 @@ public abstract class Community implements Serializable, Comparable<Community> {
    */
   public abstract boolean isTransitive();
 
+  public abstract <T> T accept(CommunityVisitor<T> visitor);
+
   /**
    * Return the community value as a {@link java.math.BigInteger} so it can be compared and ordered
    * deterministically regardless of community type
