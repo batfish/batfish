@@ -3717,7 +3717,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .flatMap(e -> e.getValue().stream())
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
-      defineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());
+      defineSingleLineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());
     }
 
     markConcreteStructure(

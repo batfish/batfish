@@ -605,7 +605,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         if (bond == null) {
           continue;
         } else {
-          _c.defineStructure(CumulusStructureType.BOND, name, line);
+          _c.defineSingleLineStructure(CumulusStructureType.BOND, name, line);
           _c.referenceStructure(
               CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SELF_REFERENCE, line);
           _c.getBonds().put(name, bond);
@@ -628,7 +628,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void enterA_loopback(A_loopbackContext ctx) {
     _c.getLoopback().setConfigured(true);
-    _c.defineStructure(
+    _c.defineSingleLineStructure(
         CumulusStructureType.LOOPBACK,
         CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
         ctx.getStart().getLine());
@@ -832,7 +832,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void enterR_route_map(R_route_mapContext ctx) {
     String name = ctx.name.getText();
-    _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
+    _c.defineSingleLineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
     LineAction action = toLineAction(ctx.action);
     _currentRouteMapEntry =
         _c.getRouteMaps()
@@ -1475,7 +1475,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     int line = ctx.getStart().getLine();
     for (Interface iface : newInterfaces) {
       _c.getInterfaces().put(iface.getName(), iface);
-      _c.defineStructure(INTERFACE, iface.getName(), line);
+      _c.defineSingleLineStructure(INTERFACE, iface.getName(), line);
     }
 
     return interfacesBuilder.build();
@@ -1490,7 +1490,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
                     .computeIfAbsent(
                         name,
                         n -> {
-                          _c.defineStructure(CumulusStructureType.VLAN, n, line);
+                          _c.defineSingleLineStructure(CumulusStructureType.VLAN, n, line);
                           return new Vlan(n);
                         }))
         .collect(ImmutableList.toImmutableList());
@@ -1522,7 +1522,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         .build()
         .forEach(
             name -> {
-              _c.defineStructure(CumulusStructureType.VRF, name, line);
+              _c.defineSingleLineStructure(CumulusStructureType.VRF, name, line);
             });
     names.forEach(name -> _c.referenceStructure(CumulusStructureType.VRF, name, usage, line));
     return vrfs;
@@ -1554,7 +1554,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         .build()
         .forEach(
             name -> {
-              _c.defineStructure(CumulusStructureType.VXLAN, name, line);
+              _c.defineSingleLineStructure(CumulusStructureType.VXLAN, name, line);
               _c.referenceStructure(
                   CumulusStructureType.VXLAN,
                   name,
@@ -1593,7 +1593,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     int line = ctx.getStart().getLine();
     if (names.contains(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
         && !_c.getLoopback().getConfigured()) {
-      _c.defineStructure(
+      _c.defineSingleLineStructure(
           CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, line);
     }
     names.forEach(

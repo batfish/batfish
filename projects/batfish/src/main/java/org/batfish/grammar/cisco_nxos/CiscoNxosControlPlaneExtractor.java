@@ -1377,23 +1377,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentVrf = _configuration.getDefaultVrf();
     // define built-ins at line 0 (before first line of file).
     // vrfs
-    _configuration.defineStructure(VRF, DEFAULT_VRF_NAME, 0);
-    _configuration.defineStructure(VRF, MANAGEMENT_VRF_NAME, 0);
+    _configuration.defineSingleLineStructure(VRF, DEFAULT_VRF_NAME, 0);
+    _configuration.defineSingleLineStructure(VRF, MANAGEMENT_VRF_NAME, 0);
     _configuration.referenceStructure(VRF, DEFAULT_VRF_NAME, BUILT_IN, 0);
     _configuration.referenceStructure(VRF, MANAGEMENT_VRF_NAME, BUILT_IN, 0);
     // class-maps
-    _configuration.defineStructure(CLASS_MAP_CONTROL_PLANE, DEFAULT_CLASS_MAP_NAME, 0);
+    _configuration.defineSingleLineStructure(CLASS_MAP_CONTROL_PLANE, DEFAULT_CLASS_MAP_NAME, 0);
     _configuration.referenceStructure(CLASS_MAP_CONTROL_PLANE, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
-    _configuration.defineStructure(CLASS_MAP_NETWORK_QOS, DEFAULT_CLASS_MAP_NAME, 0);
+    _configuration.defineSingleLineStructure(CLASS_MAP_NETWORK_QOS, DEFAULT_CLASS_MAP_NAME, 0);
     _configuration.referenceStructure(CLASS_MAP_NETWORK_QOS, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
-    _configuration.defineStructure(CLASS_MAP_QOS, DEFAULT_CLASS_MAP_NAME, 0);
+    _configuration.defineSingleLineStructure(CLASS_MAP_QOS, DEFAULT_CLASS_MAP_NAME, 0);
     _configuration.referenceStructure(CLASS_MAP_QOS, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
-    _configuration.defineStructure(CLASS_MAP_QUEUING, DEFAULT_CLASS_MAP_NAME, 0);
+    _configuration.defineSingleLineStructure(CLASS_MAP_QUEUING, DEFAULT_CLASS_MAP_NAME, 0);
     _configuration.referenceStructure(CLASS_MAP_QUEUING, DEFAULT_CLASS_MAP_NAME, BUILT_IN, 0);
     // policy-maps
-    _configuration.defineStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_IN, 0);
+    _configuration.defineSingleLineStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_IN, 0);
     _configuration.referenceStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_IN, BUILT_IN, 0);
-    _configuration.defineStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_OUT, 0);
+    _configuration.defineSingleLineStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_OUT, 0);
     _configuration.referenceStructure(POLICY_MAP_QUEUING, DEFAULT_POLICY_MAP_OUT, BUILT_IN, 0);
   }
 
@@ -4307,9 +4307,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(sequence, RouteMapEntry::new);
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
 
-    _configuration.defineStructure(ROUTE_MAP, name, ctx.parent);
+    _configuration.defineStructure(ROUTE_MAP, name, ctx.getParent());
     String entryName = computeRouteMapEntryName(name, sequence);
-    _configuration.defineStructure(ROUTE_MAP_ENTRY, entryName, ctx.parent);
+    _configuration.defineStructure(ROUTE_MAP_ENTRY, entryName, ctx.getParent());
     _configuration.referenceStructure(
         ROUTE_MAP_ENTRY, entryName, ROUTE_MAP_ENTRY_PREV_REF, ctx.getStart().getLine());
   }
@@ -4328,7 +4328,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .getRouteMaps()
         .computeIfAbsent(_currentRouteMapName.get(), RouteMap::new)
         .setPbrStatistics(true);
-    _configuration.defineStructure(ROUTE_MAP, _currentRouteMapName.get(), ctx.parent);
+    _configuration.defineStructure(ROUTE_MAP, _currentRouteMapName.get(), ctx.getParent());
   }
 
   @Override
@@ -4924,10 +4924,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           newNonVlanInterface(portChannelInterfaceName, null, CiscoNxosInterfaceType.PORT_CHANNEL);
       copyPortChannelCompatibilitySettings(referenceIface, portChannelIface);
       _configuration.getInterfaces().put(portChannelInterfaceName, portChannelIface);
-      _configuration.defineStructure(INTERFACE, portChannelInterfaceName, line);
+      _configuration.defineSingleLineStructure(INTERFACE, portChannelInterfaceName, line);
       _configuration.referenceStructure(
           INTERFACE, portChannelInterfaceName, INTERFACE_SELF_REFERENCE, line);
-      _configuration.defineStructure(PORT_CHANNEL, portChannelInterfaceName, line);
+      _configuration.defineSingleLineStructure(PORT_CHANNEL, portChannelInterfaceName, line);
     }
 
     _currentInterfaces.forEach(

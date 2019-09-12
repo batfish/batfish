@@ -501,7 +501,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
     // VRFs are declared in /etc/network/interfaces file, but this is part of the definition
     _currentVrf = _c.getVrfs().get(name);
-    _c.defineStructure(CumulusStructureType.VRF, name, ctx.getStart().getLine());
+    _c.defineSingleLineStructure(CumulusStructureType.VRF, name, ctx.getStart().getLine());
   }
 
   @Override
@@ -557,7 +557,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .getEntries()
             .computeIfAbsent(
                 sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
-    _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
+    _c.defineSingleLineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
   }
 
   @Override
@@ -670,7 +670,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .map(StandardCommunity::parse)
             .collect(ImmutableList.toImmutableList());
 
-    _c.defineStructure(IP_COMMUNITY_LIST, name, ctx.getStart().getLine());
+    _c.defineSingleLineStructure(IP_COMMUNITY_LIST, name, ctx.getStart().getLine());
     _c.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, action, communityList));
   }
 
@@ -682,7 +682,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .computeIfAbsent(
                 name,
                 n -> {
-                  _c.defineStructure(
+                  _c.defineSingleLineStructure(
                       CumulusStructureType.IP_PREFIX_LIST, name, ctx.getStart().getLine());
                   return new IpPrefixList(n);
                 });
