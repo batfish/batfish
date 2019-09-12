@@ -106,7 +106,7 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_metric_out
 //    | eos_rbinc_monitoring
 //    | eos_rbinc_next_hop_peer
-//    | eos_rbinc_next_hop_self
+    | eos_rbinc_next_hop_self
 //    | eos_rbinc_next_hop_unchanged
 //    | eos_rbinc_out_delay
 //    | eos_rbinc_password
@@ -199,6 +199,11 @@ eos_rbinc_maximum_routes
     | (WARNING_LIMIT warn_limit = DEC PERCENT_LITERAL?)
   )*
   NEWLINE
+;
+
+eos_rbinc_next_hop_self
+:
+  NEXT_HOP_SELF NEWLINE
 ;
 
 eos_rbinc_remote_as
