@@ -1,10 +1,13 @@
 package org.batfish.representation.cisco.eos;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 
 public class AristaEosVxlan implements Serializable {
@@ -12,28 +15,24 @@ public class AristaEosVxlan implements Serializable {
   public static final Integer DEFAULT_UDP_PORT = 4789;
 
   private String _description;
-
   private SortedSet<Ip> _floodAddresses;
-
   private String _interfaceName;
-
   private Ip _multicastGroup;
-
   private String _sourceInterface;
-
   private Integer _udpPort;
-
   /** Map of VLAN number to VLAN-specific flood addresses */
   private SortedMap<Integer, SortedSet<Ip>> _vlanFloodAddresses;
-
   /** Map of VLAN number to VXLAN segment id (VNI) */
   private SortedMap<Integer, Integer> _vlanVnis;
+
+  @Nonnull private final Map<String, Integer> _vrfToVni;
 
   public AristaEosVxlan(String interfaceName) {
     _floodAddresses = new TreeSet<>();
     _interfaceName = interfaceName;
     _vlanFloodAddresses = new TreeMap<>();
     _vlanVnis = new TreeMap<>();
+    _vrfToVni = new HashMap<>(0);
   }
 
   public String getDescription() {
@@ -82,5 +81,10 @@ public class AristaEosVxlan implements Serializable {
 
   public void setUdpPort(Integer udpPort) {
     _udpPort = udpPort;
+  }
+
+  @Nonnull
+  public Map<String, Integer> getVrfToVni() {
+    return _vrfToVni;
   }
 }

@@ -25,6 +25,7 @@ eos_vxlan_if_inner
          | eos_vxif_vxlan_source_interface
          | eos_vxif_vxlan_udp_port
          | eos_vxif_vxlan_vlan
+         | eos_vxif_vxlan_vrf
       )
    )
    | eos_vxif_description
@@ -67,6 +68,11 @@ eos_vxif_vxlan_vlan
 eos_vxif_vxlan_vlan_vni
 :
    VNI num = DEC NEWLINE
+;
+
+eos_vxif_vxlan_vrf
+:
+   VRF vrf = VARIABLE VNI vni = DEC NEWLINE
 ;
 
 if_autostate
