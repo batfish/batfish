@@ -114,7 +114,7 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_route_map
 //    | eos_rbinc_route_reflector_client
 //    | eos_rbinc_route_to_peer
-//    | eos_rbinc_send_community
+    | eos_rbinc_send_community
 //    | eos_rbinc_shutdown
 //    | eos_rbinc_soft_reconfiguration
 //    | eos_rbinc_soft_timers
@@ -202,6 +202,24 @@ eos_rbinc_maximum_routes
 eos_rbinc_remote_as
 :
   REMOTE_AS asn = bgp_asn NEWLINE
+;
+
+eos_rbinc_send_community
+:
+  SEND_COMMUNITY
+  (ADD | REMOVE)?
+  (
+    EXTENDED
+    | STANDARD
+//    TODO: support for link-bandwidth
+//
+//    | LINK_BANDWIDTH
+//      (
+//        AGGREGATE "0.0-4294967295.0 or nn.nn(K|M|G)  Reference link speed in bits/second"
+//        | DIVIDE (EQUAL | RATIO)
+//      )
+  )*
+  NEWLINE
 ;
 
 // Assigning a peer group to a neighbor

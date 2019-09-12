@@ -14,6 +14,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private Long _localAs;
   @Nullable private Boolean _nextHopSelf;
   @Nullable private Long _remoteAs;
+  @Nullable private Boolean _sendCommunity;
+
+  public AristaBgpNeighbor() {}
 
   @Nullable
   public Integer getAllowAsIn() {
@@ -94,5 +97,14 @@ public abstract class AristaBgpNeighbor implements Serializable {
 
   public void setRemoteAs(@Nullable Long remoteAs) {
     _remoteAs = remoteAs;
+  }
+
+  @Nullable
+  public Boolean getSendCommunity() {
+    return _sendCommunity;
+  }
+
+  public void setSendCommunity(@Nullable Boolean sendCommunity) {
+    _sendCommunity = sendCommunity;
   }
 }
