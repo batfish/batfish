@@ -141,6 +141,7 @@ eos_rb_inner
   | eos_rbi_distance
   | eos_rbi_neighbor
   | eos_rbi_network
+  | eos_rbi_redistribute
   | eos_rbi_router_id
   | eos_rbi_shutdown
   | eos_rbi_timers
@@ -389,6 +390,84 @@ eos_rbi_peer_group
     PEER_GROUP NEWLINE
     | eos_rbi_neighbor_common
   )
+;
+
+eos_rbi_redistribute
+:
+  REDISTRIBUTE
+  (
+    eos_rbir_attached_host
+    | eos_rbir_connected
+    | eos_rbir_dynamic
+    | eos_rbir_isis
+    | eos_rbir_ospf
+    | eos_rbir_ospf3
+    | eos_rbir_rip
+    | eos_rbir_static
+  )
+;
+
+eos_rbir_attached_host
+:
+  ATTACHED_HOST (ROUTE_MAP rm = VARIABLE)? NEWLINE
+;
+
+eos_rbir_connected
+:
+  CONNECTED (ROUTE_MAP rm = VARIABLE)? NEWLINE
+;
+
+eos_rbir_dynamic
+:
+  DYNAMIC (ROUTE_MAP rm = VARIABLE)? NEWLINE
+;
+
+eos_rbir_isis
+:
+  ISIS
+  (LEVEL_1 | LEVEL_2 | LEVEL_1_2)?
+  (ROUTE_MAP rm = VARIABLE)?
+  NEWLINE
+;
+
+eos_rbir_ospf
+:
+  OSPF
+  (
+    MATCH
+    (
+      INTERNAL
+      | EXTERNAL
+      | (NSSA_EXTERNAL DEC?)
+    )
+  )?
+  (ROUTE_MAP rm = VARIABLE)?
+  NEWLINE
+;
+
+eos_rbir_ospf3
+:
+  OSPF3
+  (
+    MATCH
+    (
+      INTERNAL
+      | EXTERNAL
+      | (NSSA_EXTERNAL DEC?)
+    )
+  )?
+  (ROUTE_MAP rm = VARIABLE)?
+  NEWLINE
+;
+
+eos_rbir_rip
+:
+  RIP (ROUTE_MAP rm = VARIABLE)? NEWLINE
+;
+
+eos_rbir_static
+:
+  STATIC (ROUTE_MAP rm = VARIABLE)? NEWLINE
 ;
 
 eos_rbi_router_id
