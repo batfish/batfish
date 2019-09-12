@@ -1438,7 +1438,6 @@ import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.cisco.eos.AristaBgpVlanBase;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
-import org.batfish.representation.cisco.eos.AristaBgpVrfAddressFamily;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
@@ -1614,7 +1613,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private AristaBgpProcess _currentAristaBgpProcess;
   private AristaBgpVlanBase _currentAristaBgpVlan;
   private AristaBgpVrf _currentAristaBgpVrf;
-  private AristaBgpVrfAddressFamily _currentAristaBgpVrfAddressFamily;
 
   @Nullable private CiscoAsaNat _currentAsaNat;
 
@@ -2530,12 +2528,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_rb_af_evpn(Eos_rb_af_evpnContext ctx) {
-    _currentAristaBgpVrfAddressFamily = _currentAristaBgpVrf.getOrCreateEvpnAf();
-  }
-
-  @Override
-  public void exitEos_rb_af_evpn(Eos_rb_af_evpnContext ctx) {
-    _currentAristaBgpVrfAddressFamily = null;
+    _currentAristaBgpVrf.getOrCreateEvpnAf();
   }
 
   @Override
@@ -2568,12 +2561,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
-    _currentAristaBgpVrfAddressFamily = _currentAristaBgpVrf.getOrCreateV4UnicastAf();
-  }
-
-  @Override
-  public void exitEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
-    _currentAristaBgpVrfAddressFamily = null;
+    _currentAristaBgpVrf.getOrCreateV4UnicastAf();
   }
 
   @Override
