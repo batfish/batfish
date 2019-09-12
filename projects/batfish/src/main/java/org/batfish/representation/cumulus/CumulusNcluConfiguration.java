@@ -1016,35 +1016,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             CumulusStructureType.LOOPBACK,
             CumulusStructureType.VLAN,
             CumulusStructureType.VRF));
-    markConcreteStructure(CumulusStructureType.BOND, CumulusStructureUsage.BOND_SELF_REFERENCE);
-    markConcreteStructure(
-        CumulusStructureType.INTERFACE,
-        CumulusStructureUsage.BOND_SLAVE,
-        CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
-    markConcreteStructure(
-        CumulusStructureType.IP_COMMUNITY_LIST,
-        CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST);
-    markConcreteStructure(
-        CumulusStructureType.IP_PREFIX_LIST,
-        CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
-    markConcreteStructure(
-        CumulusStructureType.LOOPBACK, CumulusStructureUsage.LOOPBACK_SELF_REFERENCE);
-    markConcreteStructure(
-        CumulusStructureType.ROUTE_MAP,
-        CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_IN,
-        CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT,
-        CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP,
-        CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP);
-    markConcreteStructure(CumulusStructureType.VLAN, CumulusStructureUsage.VLAN_SELF_REFERENCE);
-    markConcreteStructure(
-        CumulusStructureType.VRF,
-        CumulusStructureUsage.BGP_VRF,
-        CumulusStructureUsage.BOND_VRF,
-        CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
-        CumulusStructureUsage.INTERFACE_VRF,
-        CumulusStructureUsage.VLAN_VRF,
-        CumulusStructureUsage.VRF_SELF_REFERENCE);
-    markConcreteStructure(CumulusStructureType.VXLAN, CumulusStructureUsage.VXLAN_SELF_REFERENCE);
+    markConcreteStructure(CumulusStructureType.BOND);
+    markConcreteStructure(CumulusStructureType.INTERFACE);
+    markConcreteStructure(CumulusStructureType.IP_COMMUNITY_LIST);
+    markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
+    markConcreteStructure(CumulusStructureType.LOOPBACK);
+    markConcreteStructure(CumulusStructureType.ROUTE_MAP);
+    markConcreteStructure(CumulusStructureType.VLAN);
+    markConcreteStructure(CumulusStructureType.VRF);
+    markConcreteStructure(CumulusStructureType.VXLAN);
   }
 
   public void setBgpProcess(@Nullable BgpProcess bgpProcess) {

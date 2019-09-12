@@ -80,6 +80,30 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   /**
+   * Mark all references to a structure of the given type.
+   *
+   * <p>Do not use if {@code type} is used as an abstract structure type; instead use {@link
+   * #markAbstractStructure(StructureType, StructureUsage, Collection)}.
+   */
+  protected void markConcreteStructure(StructureType type) {
+    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
+        _structureReferences.getOrDefault(type, Collections.emptySortedMap());
+    Map<String, DefinedStructureInfo> definitions =
+        _structureDefinitions.getOrDefault(type.getDescription(), Collections.emptySortedMap());
+    references.forEach(
+        (name, byUsage) -> {
+          DefinedStructureInfo def = definitions.get(name);
+          if (def == null) {
+            byUsage.forEach(
+                (usage, lines) -> lines.forEach(line -> undefined(type, name, usage, line)));
+          } else if (def.getNumReferrers() != DefinedStructureInfo.UNKNOWN_NUM_REFERRERS) {
+            int count = byUsage.values().stream().mapToInt(Multiset::size).sum();
+            def.setNumReferrers(def.getNumReferrers() + count);
+          } // else leave as UNKNOWN_NUM_REFERRERS.
+        });
+  }
+
+  /**
    * Updates referrers and/or warns for undefined structures based on references to an abstract
    * {@link StructureType}: a reference type that may refer to one of a number of defined structure
    * types passed in {@code structureTypesToCheck}.
@@ -122,6 +146,8 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
    * Updates referrers and/or warns for undefined structures based on references to then given
    * {@link StructureType}. Compared to {@link #markAbstractStructure}, this function is used when
    * the reference type and the structure type are guaranteed to match.
+   *
+   * <p>Prefer {@link #markConcreteStructure(StructureType)} for new uses.
    */
   protected void markConcreteStructure(StructureType type, StructureUsage... usages) {
     for (StructureUsage usage : usages) {

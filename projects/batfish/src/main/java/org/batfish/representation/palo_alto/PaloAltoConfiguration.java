@@ -1156,22 +1156,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);
-    markConcreteStructure(
-        PaloAltoStructureType.INTERFACE,
-        PaloAltoStructureUsage.IMPORT_INTERFACE,
-        PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE,
-        PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
-        PaloAltoStructureUsage.VSYS_IMPORT_INTERFACE,
-        PaloAltoStructureUsage.ZONE_INTERFACE);
-    markConcreteStructure(PaloAltoStructureType.RULE, PaloAltoStructureUsage.RULE_SELF_REF);
-    markConcreteStructure(
-        PaloAltoStructureType.ZONE,
-        PaloAltoStructureUsage.RULE_FROM_ZONE,
-        PaloAltoStructureUsage.RULE_TO_ZONE);
-    markConcreteStructure(
-        PaloAltoStructureType.VIRTUAL_ROUTER,
-        PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR,
-        PaloAltoStructureUsage.VIRTUAL_ROUTER_SELF_REFERENCE);
+    markConcreteStructure(PaloAltoStructureType.INTERFACE);
+    markConcreteStructure(PaloAltoStructureType.RULE);
+    markConcreteStructure(PaloAltoStructureType.ZONE);
+    markConcreteStructure(PaloAltoStructureType.VIRTUAL_ROUTER);
 
     // Handle marking for structures that may exist in one of a couple namespaces
     // Handle application objects/groups that may overlap with built-in names
