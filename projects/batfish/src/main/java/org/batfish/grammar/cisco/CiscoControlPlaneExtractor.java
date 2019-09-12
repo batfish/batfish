@@ -653,6 +653,8 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_ebgp_multihopContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_export_localprefContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_local_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_accepted_routesContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_rdContext;
@@ -2593,6 +2595,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinc_local_as(Eos_rbinc_local_asContext ctx) {
     _currentAristaBgpNeighbor.setLocalAs(toAsNum(ctx.asn));
+  }
+
+  @Override
+  public void exitEos_rbinc_maximum_accepted_routes(Eos_rbinc_maximum_accepted_routesContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEos_rbinc_maximum_routes(Eos_rbinc_maximum_routesContext ctx) {
+    todo(ctx);
   }
 
   @Override
