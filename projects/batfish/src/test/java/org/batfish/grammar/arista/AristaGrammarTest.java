@@ -169,6 +169,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getDescription(), equalTo("SOME NEIGHBOR"));
       assertTrue(neighbor.getDontCapabilityNegotiate());
       assertThat(neighbor.getEbgpMultihop(), equalTo(Integer.MAX_VALUE));
+      assertTrue(neighbor.getNextHopSelf());
       assertThat(neighbor.getPeerGroup(), equalTo("PEER_G"));
       assertThat(neighbor.getRemoteAs(), equalTo(35L));
       assertTrue(neighbor.getSendCommunity());
