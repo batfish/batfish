@@ -1266,10 +1266,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
             // Now update reference count if applicable
             if (info != null) {
-              info.setNumReferrers(
-                  info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                      ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                      : info.getNumReferrers() + lines.size());
+              info.setNumReferrers(info.getNumReferrers() + lines.size());
             } else if (!ignoreUndefined) {
               for (int line : lines) {
                 undefined(type, name, usage, line);

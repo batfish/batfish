@@ -96,10 +96,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
           if (def == null) {
             byUsage.forEach(
                 (usage, lines) -> lines.forEach(line -> undefined(type, name, usage, line)));
-          } else if (def.getNumReferrers() != DefinedStructureInfo.UNKNOWN_NUM_REFERRERS) {
+          } else {
             int count = byUsage.values().stream().mapToInt(Multiset::size).sum();
             def.setNumReferrers(def.getNumReferrers() + count);
-          } // else leave as UNKNOWN_NUM_REFERRERS.
+          }
         });
   }
 
@@ -133,11 +133,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
             }
           } else {
             matchingStructures.forEach(
-                info ->
-                    info.setNumReferrers(
-                        info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                            ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-                            : info.getNumReferrers() + lines.size()));
+                info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
           }
         });
   }
@@ -260,11 +256,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     DefinedStructureInfo info =
         byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), 0));
     info.getDefinitionLines().add(line);
-    if (info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
-        || numReferrers == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS) {
-      info.setNumReferrers(DefinedStructureInfo.UNKNOWN_NUM_REFERRERS);
-    } else {
-      info.setNumReferrers(info.getNumReferrers() + numReferrers);
-    }
+    info.setNumReferrers(info.getNumReferrers() + numReferrers);
   }
 }
