@@ -26,6 +26,8 @@ eos_rb_inner
   | eos_rbi_router_id
   | eos_rbi_shutdown
   | eos_rbi_timers
+  | eos_rbi_ucmp
+  | eos_rbi_update
 ;
 
 eos_rbi_aggregate_address
@@ -251,6 +253,44 @@ eos_rbi_shutdown
 eos_rbi_timers
 :
   TIMERS BGP keepalive = DEC hold = DEC NEWLINE
+;
+
+eos_rbi_ucmp
+:
+  UCMP
+  (
+    eos_rbiu_fec
+    | eos_rbiu_link_bandwidth
+    | eos_rbiu_mode
+  )
+;
+
+eos_rbiu_fec
+:
+  FEC THRESHOLD TRIGGER trigger = DEC CLEAR clear = DEC WARNING_ONLY NEWLINE
+;
+
+eos_rbiu_link_bandwidth
+:
+  LINK_BANDWIDTH (ENCODING_WEIGHTED | RECURSIVE | UPDATE_DELAY DEC) NEWLINE
+;
+
+eos_rbiu_mode
+:
+  MODE mode_num = DEC
+  (
+    next_hops = DEC
+    (oversubscription = FLOAT)?
+  )? NEWLINE
+;
+
+eos_rbi_update
+:
+  UPDATE
+  (
+    WAIT_FOR_CONVERGENCE
+    | WAIT_INSTALL (BATCH_SIZE DEC)?
+  ) NEWLINE
 ;
 
 eos_rb_aa_modifiers
