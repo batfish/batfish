@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_vxlan
+!
+interface Vxlan1
+  vxlan vrf TENANT vni 10000

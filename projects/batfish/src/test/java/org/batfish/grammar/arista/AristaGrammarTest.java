@@ -3,6 +3,7 @@ package org.batfish.grammar.arista;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -196,5 +197,11 @@ public class AristaGrammarTest {
     assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
     assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
     assertThat(vrf.getLocalAs(), equalTo(65000L));
+  }
+
+  @Test
+  public void testVxlanExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_vxlan");
+    assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
   }
 }

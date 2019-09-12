@@ -668,6 +668,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_source_interfaceCont
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_udp_portContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_vlan_vniContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
@@ -2806,6 +2807,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_vxif_vxlan_vlan_vni(Eos_vxif_vxlan_vlan_vniContext ctx) {
     _eosVxlan.getVlanVnis().computeIfAbsent(_currentVxlanVlanNum, n -> toInteger(ctx.num));
+  }
+
+  @Override
+  public void exitEos_vxif_vxlan_vrf(Eos_vxif_vxlan_vrfContext ctx) {
+    _eosVxlan.getVrfToVni().put(ctx.vrf.getText(), toInteger(ctx.vni));
   }
 
   @Override
