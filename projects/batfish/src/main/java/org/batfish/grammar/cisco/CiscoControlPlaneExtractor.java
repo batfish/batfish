@@ -110,7 +110,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_LISP_MAP;
@@ -665,6 +667,14 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_attached_hostContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_connectedContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_dynamicContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_isisContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_ospf3Context;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_ospfContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_ripContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
@@ -1443,6 +1453,7 @@ import org.batfish.representation.cisco.eos.AristaBgpVlanBase;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
+import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
@@ -2756,6 +2767,87 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbi_peer_group(Eos_rbi_peer_groupContext ctx) {
     _currentAristaBgpNeighbor = null;
+  }
+
+  @Override
+  public void exitEos_rbir_attached_host(Eos_rbir_attached_hostContext ctx) {
+    todo(ctx);
+    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
+    if (routeMap != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_ATTACHED_HOST_MAP, ctx.getStart().getLine());
+    }
+    _currentAristaBgpVrf.addRedistributionPolicy(AristaRedistributeType.ATTACHED_HOST, routeMap);
+  }
+
+  @Override
+  public void exitEos_rbir_connected(Eos_rbir_connectedContext ctx) {
+    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
+    if (routeMap != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_CONNECTED_MAP, ctx.getStart().getLine());
+    }
+    _currentAristaBgpVrf.addRedistributionPolicy(AristaRedistributeType.CONNECTED, routeMap);
+  }
+
+  @Override
+  public void exitEos_rbir_dynamic(Eos_rbir_dynamicContext ctx) {
+    todo(ctx);
+    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
+    if (routeMap != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_DYNAMIC_MAP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitEos_rbir_isis(Eos_rbir_isisContext ctx) {
+    todo(ctx);
+    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
+    if (routeMap != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_ISIS_MAP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitEos_rbir_ospf(Eos_rbir_ospfContext ctx) {
+    todo(ctx);
+    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
+    if (routeMap != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_OSPF_MAP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitEos_rbir_ospf3(Eos_rbir_ospf3Context ctx) {
+    todo(ctx);
+    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
+    if (routeMap != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_OSPFV3_MAP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitEos_rbir_rip(Eos_rbir_ripContext ctx) {
+    todo(ctx);
+    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
+    if (routeMap != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_RIP_MAP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitEos_rbir_static(Eos_rbir_staticContext ctx) {
+    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
+    if (routeMap != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_STATIC_MAP, ctx.getStart().getLine());
+    }
+    _currentAristaBgpVrf.addRedistributionPolicy(AristaRedistributeType.STATIC, routeMap);
   }
 
   @Override
