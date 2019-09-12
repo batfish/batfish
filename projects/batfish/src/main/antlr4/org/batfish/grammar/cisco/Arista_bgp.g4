@@ -140,6 +140,7 @@ eos_rb_inner
   | eos_rbi_default_metric
   | eos_rbi_distance
   | eos_rbi_neighbor
+  | eos_rbi_network
   | eos_rbi_router_id
   | eos_rbi_shutdown
   | eos_rbi_timers
@@ -354,6 +355,30 @@ eos_rbinc_send_community
 eos_rbin_peer_group
 :
   PEER_GROUP name = VARIABLE NEWLINE
+;
+
+eos_rbi_network
+:
+  NETWORK
+  (
+    eos_rbi_network4
+    | eos_rbi_network6
+  )
+;
+
+eos_rbi_network4
+:
+  (
+    ip = IP_ADDRESS mask = IP_ADDRESS
+    | prefix = IP_PREFIX
+  )
+  (ROUTE_MAP rm = VARIABLE)?
+  NEWLINE
+;
+
+eos_rbi_network6
+:
+  IPV6_PREFIX (ROUTE_MAP rm = VARIABLE)? NEWLINE
 ;
 
 // Defining a peer group

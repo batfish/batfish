@@ -644,6 +644,8 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_activateContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_distanceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_neighbor4Context;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_network4Context;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_network6Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_shutdownContext;
@@ -1431,6 +1433,7 @@ import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.cisco.eos.AristaBgpNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
+import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
@@ -1438,6 +1441,7 @@ import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.cisco.eos.AristaBgpVlanBase;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
+import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
@@ -2703,6 +2707,30 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.ADD() != null || ctx.EXTENDED() != null || ctx.REMOVE() != null) {
       // TODO: figure out all the valid modifiers/combos
       todo(ctx);
+    }
+  }
+
+  @Override
+  public void exitEos_rbi_network4(Eos_rbi_network4Context ctx) {
+    AristaBgpVrfIpv4UnicastAddressFamily af = _currentAristaBgpVrf.getOrCreateV4UnicastAf();
+    Prefix network =
+        ctx.prefix != null
+            ? Prefix.parse(ctx.prefix.getText())
+            : Prefix.create(toIp(ctx.ip), toIp(ctx.mask));
+    String routeMapName = ctx.rm == null ? null : ctx.rm.getText();
+    AristaBgpNetworkConfiguration conf = new AristaBgpNetworkConfiguration(routeMapName);
+    if (routeMapName != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, routeMapName, BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.getStart().getLine());
+    }
+    af.getNetworks().put(network, conf);
+  }
+
+  @Override
+  public void exitEos_rbi_network6(Eos_rbi_network6Context ctx) {
+    if (ctx.rm != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, ctx.rm.getText(), BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.getStart().getLine());
     }
   }
 

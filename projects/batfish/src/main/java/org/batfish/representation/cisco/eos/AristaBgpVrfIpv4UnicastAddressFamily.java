@@ -1,14 +1,21 @@
 package org.batfish.representation.cisco.eos;
 
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Prefix;
 
 /** Settings specific to IPv4 unicast address family, which can be set at the VRF level. */
 public class AristaBgpVrfIpv4UnicastAddressFamily extends AristaBgpVrfAddressFamily {
   @Nullable private String _installMap;
+  @Nonnull private final Map<Prefix, AristaBgpNetworkConfiguration> _networks;
   // TODO: "bgp next-hop address-family ipv6"
   @Nullable private Boolean _redistributeInternal;
 
-  public AristaBgpVrfIpv4UnicastAddressFamily() {}
+  public AristaBgpVrfIpv4UnicastAddressFamily() {
+    _networks = new HashMap<>(0);
+  }
 
   @Nullable
   public String getInstallMap() {
@@ -17,6 +24,11 @@ public class AristaBgpVrfIpv4UnicastAddressFamily extends AristaBgpVrfAddressFam
 
   public void setInstallMap(@Nullable String installMap) {
     _installMap = installMap;
+  }
+
+  @Nonnull
+  public Map<Prefix, AristaBgpNetworkConfiguration> getNetworks() {
+    return _networks;
   }
 
   @Nullable
