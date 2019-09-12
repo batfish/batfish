@@ -23,5 +23,5 @@ public final class PatternProvider {
       CacheBuilder.newBuilder()
           .softValues()
           .maximumSize(1 << 16)
-          .build(CacheLoader.from(Pattern::compile));
+          .build(CacheLoader.<String, Pattern>from(Pattern::compile));
 }
