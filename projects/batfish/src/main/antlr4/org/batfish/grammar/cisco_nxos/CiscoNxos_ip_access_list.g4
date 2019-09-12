@@ -221,12 +221,9 @@ aclla_l4
 acllal4_icmp
 :
   ICMP acllal3_src_address acllal3_dst_address
-  (
-    acllal3_option
-    // extractor should enforce at most 1 icmp option
-
-    | acllal4icmp_option
-  )* NEWLINE
+  // NX-OS allows multiple l3 options but only one l4 option, interleaved in any order.
+  acllal3_option* acllal4icmp_option acllal3_option*
+  NEWLINE
 ;
 
 acllal4icmp_option
