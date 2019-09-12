@@ -350,7 +350,7 @@ public class RoutesAnswererUtil {
 
   /**
    * Converts {@link List} of {@link DiffRoutesOutput} to {@link Row}s with one row corresponding to
-   * each {@link DiffRoutesOutput#_diffInAttributes} of the {@link DiffRoutesOutput}
+   * each {@link DiffRoutesOutput#getDiffInAttributes} of the {@link DiffRoutesOutput}
    *
    * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for {@link Bgpv4Route}s
    * @return {@link Multiset} of {@link Row}s
@@ -485,7 +485,7 @@ public class RoutesAnswererUtil {
 
   /**
    * Converts {@link List} of {@link DiffRoutesOutput} to {@link Row}s with one row corresponding to
-   * each {@link DiffRoutesOutput#_diffInAttributes} of the {@link DiffRoutesOutput}
+   * each {@link DiffRoutesOutput#getDiffInAttributes} of the {@link DiffRoutesOutput}
    *
    * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for routes in Main RIB
    * @return {@link Multiset} of {@link Row}s
