@@ -404,6 +404,7 @@ eos_rbinc_send_community
 eos_rbin_peer_group
 :
   PEER_GROUP name = VARIABLE NEWLINE
+  | PEER GROUP name = VARIABLE NEWLINE
 ;
 
 eos_rbi_network
@@ -458,7 +459,7 @@ eos_rbi_peer_group
 :
   name = VARIABLE
   (
-    PEER_GROUP NEWLINE
+    (PEER_GROUP | PEER GROUP) NEWLINE
     | eos_rbi_neighbor_common
   )
 ;
