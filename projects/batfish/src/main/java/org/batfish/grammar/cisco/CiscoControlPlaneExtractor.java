@@ -671,6 +671,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_route_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_default_ipv4_unicastContext;
@@ -2790,6 +2791,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinc_remote_as(Eos_rbinc_remote_asContext ctx) {
     _currentAristaBgpNeighbor.setRemoteAs(toAsNum(ctx.asn));
+  }
+
+  @Override
+  public void exitEos_rbinc_route_map(Eos_rbinc_route_mapContext ctx) {
+    if (ctx.IN() != null) {
+      _currentAristaBgpNeighbor.setRouteMapIn(ctx.name.getText());
+    } else if (ctx.OUT() != null) {
+      _currentAristaBgpNeighbor.setRouteMapOut(ctx.name.getText());
+    } else {
+      throw new IllegalStateException("Invalid route map direction for neighbor");
+    }
   }
 
   @Override

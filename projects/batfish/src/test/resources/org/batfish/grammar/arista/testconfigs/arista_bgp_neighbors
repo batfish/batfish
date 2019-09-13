@@ -20,6 +20,8 @@ router bgp 1
   neighbor 1.1.1.1 next-hop-unchanged
   neighbor 1.1.1.1 peer-group PEER_G
   neighbor 1.1.1.1 remote-as 35
+  neighbor 1.1.1.1 route-map RM_IN in
+  neighbor 1.1.1.1 route-map RM_OUT out
   neighbor 1.1.1.1 send-community
   neighbor 1.1.1.1 update-source Loopback0
 !
