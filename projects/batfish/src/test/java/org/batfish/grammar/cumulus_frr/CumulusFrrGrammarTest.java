@@ -464,7 +464,7 @@ public class CumulusFrrGrammarTest {
     parse("vrf NAME\n exit-vrf\n");
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines(),
-        contains(1));
+        contains(1, 2));
   }
 
   @Test
