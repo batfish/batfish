@@ -252,7 +252,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
    * ParserRuleContext)}.
    */
   public void defineFlattenedStructure(
-      StructureType type, String name, RuleContext ctx, BatfishCombinedParser parser) {
+      StructureType type, String name, RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
     /* Recursively process children to find all relevant definition lines for the specified context */
     for (int i = 0; i < ctx.getChildCount(); i++) {
       ParseTree child = ctx.getChild(i);
