@@ -7,6 +7,7 @@ router bgp 1
   timers bgp 3 9
   default-metric 100
   distance bgp 300
+  maximum-paths 2
   shutdown
   ucmp fec threshold trigger 10 clear 20 warning-only
   ucmp link-bandwidth encoding-weighted
@@ -23,5 +24,6 @@ router bgp 1
     router-id 5.6.7.8
     timers bgp 6 18
     distance bgp 333 400 500
+    maximum-paths 3 ecmp 2
   vrf tenant2_vrf
     shutdown

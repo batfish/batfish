@@ -648,6 +648,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_activateContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnonc_activateContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_distanceContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_maximum_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_neighbor4Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_network4Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_network6Context;
@@ -2688,6 +2689,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.local != null) {
       _currentAristaBgpVrf.setLocalAdminDistance(toInteger(ctx.local));
+    }
+  }
+
+  @Override
+  public void exitEos_rbi_maximum_paths(Eos_rbi_maximum_pathsContext ctx) {
+    _currentAristaBgpVrf.setMaxPaths(toInteger(ctx.num));
+    if (ctx.ecmp != null) {
+      _currentAristaBgpVrf.setMaxPathsEcmp(toInteger(ctx.ecmp));
     }
   }
 
