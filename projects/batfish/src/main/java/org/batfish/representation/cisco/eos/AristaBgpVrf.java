@@ -23,6 +23,8 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Integer _keepAliveTimer;
   @Nullable private Integer _localAdminDistance;
   @Nullable private Long _localAs;
+  @Nullable private Integer _maxPaths;
+  @Nullable private Integer _maxPathsEcmp;
   @Nonnull private final String _name;
 
   @Nonnull
@@ -156,6 +158,24 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setLocalAs(@Nullable Long localAs) {
     _localAs = localAs;
+  }
+
+  @Nullable
+  public Integer getMaxPaths() {
+    return _maxPaths;
+  }
+
+  public void setMaxPaths(@Nullable Integer maxPaths) {
+    _maxPaths = maxPaths;
+  }
+
+  @Nullable
+  public Integer getMaxPathsEcmp() {
+    return _maxPathsEcmp;
+  }
+
+  public void setMaxPathsEcmp(@Nullable Integer maxPathsEcmp) {
+    _maxPathsEcmp = maxPathsEcmp;
   }
 
   @Nonnull

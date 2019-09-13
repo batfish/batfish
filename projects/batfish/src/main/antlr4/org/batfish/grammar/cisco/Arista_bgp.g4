@@ -186,6 +186,7 @@ eos_rb_inner
   eos_rbi_aggregate_address
   | eos_rbi_default_metric
   | eos_rbi_distance
+  | eos_rbi_maximum_paths
   | eos_rbi_neighbor
   | eos_rbi_network
   | eos_rbi_no
@@ -214,6 +215,11 @@ eos_rbi_default_metric
 eos_rbi_distance
 :
   DISTANCE BGP external = DEC (internal = DEC local = DEC)? NEWLINE
+;
+
+eos_rbi_maximum_paths
+:
+  MAXIMUM_PATHS num = DEC (ECMP ecmp = DEC)? NEWLINE
 ;
 
 eos_rbi_neighbor

@@ -84,6 +84,8 @@ public class AristaGrammarTest {
       assertThat(defaultVrf.getLocalAdminDistance(), nullValue());
       assertThat(defaultVrf.getDefaultMetric(), equalTo(100L));
       assertFalse(defaultVrf.getDefaultIpv4Unicast());
+      assertThat(defaultVrf.getMaxPaths(), equalTo(2));
+      assertThat(defaultVrf.getMaxPathsEcmp(), nullValue());
     }
     {
       String vrfName = "tenant_vrf";
@@ -96,6 +98,8 @@ public class AristaGrammarTest {
       assertThat(vrf.getIbgpAdminDistance(), equalTo(400));
       assertThat(vrf.getLocalAdminDistance(), equalTo(500));
       assertTrue(vrf.getDefaultIpv4Unicast());
+      assertThat(vrf.getMaxPaths(), equalTo(3));
+      assertThat(vrf.getMaxPathsEcmp(), equalTo(2));
     }
     {
       String vrfName = "tenant2_vrf";
