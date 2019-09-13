@@ -176,6 +176,10 @@ public class AristaGrammarTest {
       assertThat(config.getAristaBgp().getPeerGroups().get(peergName).getAllowAsIn(), equalTo(3));
     }
     {
+      AristaBgpPeerGroupNeighbor pg = config.getAristaBgp().getPeerGroups().get("PEER_G2");
+      assertThat(pg, notNullValue());
+    }
+    {
       Ip neighborAddr = Ip.parse("1.1.1.1");
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
@@ -196,6 +200,12 @@ public class AristaGrammarTest {
       assertThat(neighbor.getRemoteAs(), equalTo(36L));
       assertThat(neighbor.getEbgpMultihop(), equalTo(10));
       // TODO: default-originate
+    }
+    {
+      Ip neighborAddr = Ip.parse("3.3.3.3");
+      AristaBgpV4Neighbor neighbor =
+          config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(neighbor.getPeerGroup(), equalTo("PEER_G2"));
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");
