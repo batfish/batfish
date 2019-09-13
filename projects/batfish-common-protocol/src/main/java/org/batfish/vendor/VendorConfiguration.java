@@ -17,6 +17,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -27,6 +28,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.grammar.BatfishCombinedParser;
 
 public abstract class VendorConfiguration implements Serializable, GenericConfigObject {
 
@@ -231,31 +233,47 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
    * Updates structure definitions to include the specified structure {@code name} and {@code
    * structureType} and initializes the number of referrers.
    */
-  public void defineStructure(StructureType structureType, String name, int line) {
-    recordStructure(structureType, name, 0, line);
-  }
-
-  /** Mark the specified structure as defined on each line in the supplied context */
-  public void defineStructure(StructureType type, String name, RuleContext ctx) {
-    /* Recursively process children to find all relevant definition lines for the specified context */
-    for (int i = 0; i < ctx.getChildCount(); i++) {
-      ParseTree child = ctx.getChild(i);
-      if (child instanceof TerminalNode) {
-        defineStructure(type, name, ((TerminalNode) child).getSymbol().getLine());
-      } else if (child instanceof RuleContext) {
-        defineStructure(type, name, (RuleContext) child);
-      }
-    }
-  }
-
-  public void recordStructure(
-      StructureType structureType, String name, int numReferrers, int line) {
+  public void defineSingleLineStructure(StructureType structureType, String name, int line) {
     String type = structureType.getDescription();
     SortedMap<String, DefinedStructureInfo> byName =
         _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
     DefinedStructureInfo info =
         byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), 0));
     info.getDefinitionLines().add(line);
-    info.setNumReferrers(info.getNumReferrers() + numReferrers);
+  }
+
+  /**
+   * Mark the specified structure as defined on each line in the supplied context. This method
+   * proceeds by examining every token in the given {@code context}, rather than just the start and
+   * stop intervals. It uses the given {@code parser} to find the original (pre-flattening) line
+   * number of each token.
+   *
+   * <p>For structures in non-flattened files, see {@link #defineStructure(StructureType, String,
+   * ParserRuleContext)}.
+   */
+  public void defineFlattenedStructure(
+      StructureType type, String name, RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
+    /* Recursively process children to find all relevant definition lines for the specified context */
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+      ParseTree child = ctx.getChild(i);
+      if (child instanceof TerminalNode) {
+        defineSingleLineStructure(type, name, parser.getLine(((TerminalNode) child).getSymbol()));
+      } else if (child instanceof RuleContext) {
+        defineFlattenedStructure(type, name, (RuleContext) child, parser);
+      }
+    }
+  }
+
+  /**
+   * Mark the specified structure as defined on each line in the supplied context. This method marks
+   * every line between the start and stop intervals of the given {@code context}.
+   *
+   * <p>For flattened structures, see {@link #defineFlattenedStructure(StructureType, String,
+   * RuleContext, BatfishCombinedParser)}.
+   */
+  public void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
+    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
+      defineSingleLineStructure(type, name, i);
+    }
   }
 }

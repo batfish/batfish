@@ -1460,7 +1460,6 @@ import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode;
-import org.batfish.vendor.StructureType;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
@@ -1490,12 +1489,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else {
         warn(ctx, "Cannot determine OSPF network type.");
       }
-    }
-  }
-
-  private void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
-    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
-      _configuration.defineStructure(type, name, i);
     }
   }
 
@@ -2035,7 +2028,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     pushPeer(afGroup);
     _currentNamedPeerGroup = afGroup;
-    defineStructure(BGP_AF_GROUP, name, ctx);
+    _configuration.defineStructure(BGP_AF_GROUP, name, ctx);
   }
 
   @Override
@@ -2049,7 +2042,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("IpsecProfile should be null!");
     }
     _currentIpsecProfile = new IpsecProfile(ctx.name.getText());
-    defineStructure(IPSEC_PROFILE, ctx.name.getText(), ctx);
+    _configuration.defineStructure(IPSEC_PROFILE, ctx.name.getText(), ctx);
   }
 
   @Override
@@ -2058,7 +2051,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("IpsecTransformSet should be null!");
     }
     _currentIpsecTransformSet = new IpsecTransformSet(ctx.name.getText());
-    defineStructure(IPSEC_TRANSFORM_SET, ctx.name.getText(), ctx);
+    _configuration.defineStructure(IPSEC_TRANSFORM_SET, ctx.name.getText(), ctx);
     if (ctx.ipsec_encryption() != null) {
       _currentIpsecTransformSet.setEncryptionAlgorithm(
           toEncryptionAlgorithm(ctx.ipsec_encryption()));
@@ -2083,7 +2076,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String keyName = ctx.name.getText();
     _currentNamedRsaPubKey =
         _configuration.getCryptoNamedRsaPubKeys().computeIfAbsent(keyName, NamedRsaPubKey::new);
-    defineStructure(NAMED_RSA_PUB_KEY, keyName, ctx);
+    _configuration.defineStructure(NAMED_RSA_PUB_KEY, keyName, ctx);
     /* RSA pub keys are dynamically matched and not explicitly referenced, so adding a
     self-reference here */
     _configuration.referenceStructure(
@@ -2204,7 +2197,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     _currentIsakmpPolicy.setLifetimeSeconds(86400);
-    defineStructure(ISAKMP_POLICY, priority.toString(), ctx);
+    _configuration.defineStructure(ISAKMP_POLICY, priority.toString(), ctx);
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
     here */
     _configuration.referenceStructure(
@@ -2214,7 +2207,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCis_profile(Cis_profileContext ctx) {
     _currentIsakmpProfile = new IsakmpProfile(ctx.name.getText());
-    defineStructure(ISAKMP_PROFILE, ctx.name.getText(), ctx);
+    _configuration.defineStructure(ISAKMP_PROFILE, ctx.name.getText(), ctx);
     /* Isakmp profiles are checked against for matches not explicitly referenced, so add a
     self-reference here */
     _configuration.referenceStructure(
@@ -2341,7 +2334,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getCable()
             .getDocsisPolicies()
             .computeIfAbsent(name, DocsisPolicy::new);
-    defineStructure(DOCSIS_POLICY, name, ctx);
+    _configuration.defineStructure(DOCSIS_POLICY, name, ctx);
     policy.getRules().add(rule);
     _configuration.referenceStructure(
         DOCSIS_POLICY_RULE, rule, DOCSIS_POLICY_DOCSIS_POLICY_RULE, ctx.getStart().getLine());
@@ -2355,7 +2348,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .getCable()
         .getDocsisPolicyRules()
         .computeIfAbsent(name, DocsisPolicyRule::new);
-    defineStructure(DOCSIS_POLICY_RULE, name, ctx);
+    _configuration.defineStructure(DOCSIS_POLICY_RULE, name, ctx);
   }
 
   @Override
@@ -2366,7 +2359,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCommunity_set_stanza(Community_set_stanzaContext ctx) {
     String name = ctx.name.getText();
-    defineStructure(COMMUNITY_SET, name, ctx);
+    _configuration.defineStructure(COMMUNITY_SET, name, ctx);
     _configuration
         .getCommunitySets()
         .computeIfAbsent(
@@ -2386,7 +2379,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("Keyring should be null!");
     }
     _currentKeyring = new Keyring(ctx.name.getText());
-    defineStructure(KEYRING, ctx.name.getText(), ctx);
+    _configuration.defineStructure(KEYRING, ctx.name.getText(), ctx);
   }
 
   @Override
@@ -2410,7 +2403,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       cryptoMapSet = new CryptoMapSet();
       cryptoMapSet.setDynamic(true);
       _configuration.getCryptoMapSets().put(name, cryptoMapSet);
-      defineStructure(CRYPTO_DYNAMIC_MAP_SET, name, ctx);
+      _configuration.defineStructure(CRYPTO_DYNAMIC_MAP_SET, name, ctx);
     } else if (!cryptoMapSet.getDynamic()) {
       warn(
           ctx,
@@ -2430,7 +2423,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (cryptoMapSet == null) {
       cryptoMapSet = new CryptoMapSet();
       _configuration.getCryptoMapSets().put(_currentCryptoMapName, cryptoMapSet);
-      defineStructure(CRYPTO_MAP_SET, _currentCryptoMapName, ctx);
+      _configuration.defineStructure(CRYPTO_MAP_SET, _currentCryptoMapName, ctx);
     } else if (cryptoMapSet.getDynamic()) {
       warn(
           ctx,
@@ -2462,7 +2455,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getCable()
             .getServiceClasses()
             .computeIfAbsent(number, ServiceClass::new);
-    defineStructure(SERVICE_CLASS, number, ctx);
+    _configuration.defineStructure(SERVICE_CLASS, number, ctx);
   }
 
   @Override
@@ -2761,7 +2754,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _currentAristaBgpProcess
             .getPeerGroups()
             .computeIfAbsent(peerGroupName, AristaBgpPeerGroupNeighbor::new);
-    _configuration.defineStructure(BGP_PEER_GROUP, peerGroupName, ctx.getStart().getLine());
+    _configuration.defineSingleLineStructure(
+        BGP_PEER_GROUP, peerGroupName, ctx.getStart().getLine());
   }
 
   @Override
@@ -2965,7 +2959,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "Only one VXLAN interface may be defined, appending to existing interface");
     }
     _configuration.setEosVxlan(_eosVxlan);
-    defineStructure(VXLAN, canonicalVxlanName, ctx);
+    _configuration.defineStructure(VXLAN, canonicalVxlanName, ctx);
     _configuration.referenceStructure(
         VXLAN, canonicalVxlanName, VXLAN_SELF_REF, ctx.iname.getStart().getLine());
   }
@@ -3053,7 +3047,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentExtendedAcl =
         _configuration.getExtendedAcls().computeIfAbsent(name, ExtendedAccessList::new);
-    defineStructure(IPV4_ACCESS_LIST_EXTENDED, name, ctx);
+    _configuration.defineStructure(IPV4_ACCESS_LIST_EXTENDED, name, ctx);
   }
 
   @Override
@@ -3066,7 +3060,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentExtendedIpv6Acl =
         _configuration.getExtendedIpv6Acls().computeIfAbsent(name, ExtendedIpv6AccessList::new);
-    defineStructure(IPV6_ACCESS_LIST_EXTENDED, name, ctx);
+    _configuration.defineStructure(IPV6_ACCESS_LIST_EXTENDED, name, ctx);
   }
 
   @Override
@@ -3223,7 +3217,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentAsPathAcl =
         _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
-    defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
+    _configuration.defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -3240,7 +3234,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration
             .getExpandedCommunityLists()
             .computeIfAbsent(name, ExpandedCommunityList::new);
-    defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
+    _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
@@ -3257,14 +3251,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration
             .getStandardCommunityLists()
             .computeIfAbsent(name, StandardCommunityList::new);
-    defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
+    _configuration.defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
   @Override
   public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
     String name = ctx.name.getText();
     _currentPrefixList = _configuration.getPrefixLists().computeIfAbsent(name, PrefixList::new);
-    defineStructure(PREFIX_LIST, name, ctx);
+    _configuration.defineStructure(PREFIX_LIST, name, ctx);
   }
 
   @Override
@@ -3281,7 +3275,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterIpv6_prefix_list_stanza(Ipv6_prefix_list_stanzaContext ctx) {
     String name = ctx.name.getText();
     _currentPrefix6List = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
-    defineStructure(PREFIX6_LIST, name, ctx);
+    _configuration.defineStructure(PREFIX6_LIST, name, ctx);
   }
 
   @Override
@@ -3457,7 +3451,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
     }
     pushPeer(_currentNamedPeerGroup);
-    defineStructure(BGP_NEIGHBOR_GROUP, name, ctx);
+    _configuration.defineStructure(BGP_NEIGHBOR_GROUP, name, ctx);
   }
 
   @Override
@@ -3474,7 +3468,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .getNetworkObjectInfos()
         .putIfAbsent(_currentNetworkObjectName, new NetworkObjectInfo(_currentNetworkObjectName));
 
-    defineStructure(NETWORK_OBJECT, _currentNetworkObjectName, ctx);
+    _configuration.defineStructure(NETWORK_OBJECT, _currentNetworkObjectName, ctx);
   }
 
   @Override
@@ -3487,7 +3481,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentServiceObject =
         _configuration.getServiceObjects().computeIfAbsent(name, ServiceObject::new);
-    defineStructure(SERVICE_OBJECT, name, ctx);
+    _configuration.defineStructure(SERVICE_OBJECT, name, ctx);
   }
 
   @Override
@@ -3505,7 +3499,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIcmpTypeObjectGroup =
           _configuration.getIcmpTypeObjectGroups().computeIfAbsent(name, IcmpTypeObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
-      defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
+      _configuration.defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -3535,7 +3529,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getIcmpTypeObjectGroups().put(name, _currentIcmpTypeObjectGroup);
       _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
-      defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
+      _configuration.defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -3565,7 +3559,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getNetworkObjectGroups().put(name, _currentNetworkObjectGroup);
       _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
-      defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
+      _configuration.defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -3591,7 +3585,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getProtocolObjectGroups().put(name, _currentProtocolObjectGroup);
       _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
-      defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
+      _configuration.defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -3621,7 +3615,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getServiceObjectGroups().put(name, _currentServiceObjectGroup);
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
-      defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
+      _configuration.defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -3646,7 +3640,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNetworkObjectGroup =
           _configuration.getNetworkObjectGroups().computeIfAbsent(name, NetworkObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
-      defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
+      _configuration.defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -3669,7 +3663,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               .getServiceObjectGroups()
               .computeIfAbsent(name, (groupName) -> new ServiceObjectGroup(groupName, protocol));
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
-      defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
+      _configuration.defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -3689,7 +3683,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentProtocolObjectGroup =
           _configuration.getProtocolObjectGroups().computeIfAbsent(name, ProtocolObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
-      defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
+      _configuration.defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
     }
   }
 
@@ -4003,7 +3997,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterPrefix_set_stanza(Prefix_set_stanzaContext ctx) {
     _currentPrefixSetName = ctx.name.getText();
-    defineStructure(PREFIX_SET, _currentPrefixSetName, ctx);
+    _configuration.defineStructure(PREFIX_SET, _currentPrefixSetName, ctx);
   }
 
   @Override
@@ -4545,7 +4539,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.peer.getText();
     _currentBgpNxVrfNeighbor =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeer(name);
-    defineStructure(BGP_TEMPLATE_PEER, name, ctx);
+    _configuration.defineStructure(BGP_TEMPLATE_PEER, name, ctx);
   }
 
   @Override
@@ -4558,7 +4552,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.policy.getText();
     _currentBgpNxVrfNeighborAddressFamily =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeerPolicy(name);
-    defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
+    _configuration.defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
   }
 
   @Override
@@ -4571,7 +4565,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.session.getText();
     _currentBgpNxVrfNeighbor =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeerSession(name);
-    defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
+    _configuration.defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
   }
 
   @Override
@@ -4674,7 +4668,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               _currentRouteMap.getName(), num));
     }
     _currentRouteMapClause = clause;
-    defineStructure(ROUTE_MAP, name, ctx);
+    _configuration.defineStructure(ROUTE_MAP, name, ctx);
   }
 
   @Override
@@ -4685,7 +4679,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     List<RoutePolicyStatement> stmts = _currentRoutePolicy.getStatements();
 
     stmts.addAll(toRoutePolicyStatementList(ctx.stanzas));
-    defineStructure(ROUTE_POLICY, name, ctx);
+    _configuration.defineStructure(ROUTE_POLICY, name, ctx);
   }
 
   @Override
@@ -4765,7 +4759,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_bfd_template(S_bfd_templateContext ctx) {
-    defineStructure(BFD_TEMPLATE, ctx.name.getText(), ctx);
+    _configuration.defineStructure(BFD_TEMPLATE, ctx.name.getText(), ctx);
   }
 
   @Override
@@ -4779,21 +4773,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterS_class_map(S_class_mapContext ctx) {
     // TODO: do something with this.
     String name = ctx.name.getText();
-    defineStructure(CLASS_MAP, name, ctx);
+    _configuration.defineStructure(CLASS_MAP, name, ctx);
   }
 
   @Override
   public void enterS_depi_class(S_depi_classContext ctx) {
     String name = ctx.name.getText();
     _configuration.getCf().getDepiClasses().computeIfAbsent(name, DepiClass::new);
-    defineStructure(DEPI_CLASS, name, ctx);
+    _configuration.defineStructure(DEPI_CLASS, name, ctx);
   }
 
   @Override
   public void enterS_depi_tunnel(S_depi_tunnelContext ctx) {
     String name = ctx.name.getText();
     _configuration.getCf().getDepiTunnels().computeIfAbsent(name, DepiTunnel::new);
-    defineStructure(DEPI_TUNNEL, name, ctx);
+    _configuration.defineStructure(DEPI_TUNNEL, name, ctx);
   }
 
   @Override
@@ -4825,7 +4819,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         for (int i = range.getStart(); i <= range.getEnd(); i++) {
           String name = namePrefix.toString() + i;
           addInterface(name, ctx.iname, true);
-          defineStructure(INTERFACE, name, ctx);
+          _configuration.defineStructure(INTERFACE, name, ctx);
           _configuration.referenceStructure(
               INTERFACE, name, INTERFACE_SELF_REF, ctx.getStart().getLine());
         }
@@ -4864,7 +4858,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterS_l2tp_class(S_l2tp_classContext ctx) {
     String name = ctx.name.getText();
     _configuration.getCf().getL2tpClasses().computeIfAbsent(name, L2tpClass::new);
-    defineStructure(L2TP_CLASS, name, ctx);
+    _configuration.defineStructure(L2TP_CLASS, name, ctx);
   }
 
   @Override
@@ -4977,7 +4971,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.num.getText();
     _currentMacAccessList =
         _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    defineStructure(MAC_ACCESS_LIST, name, ctx);
+    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -4993,7 +4987,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentMacAccessList =
         _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    defineStructure(MAC_ACCESS_LIST, name, ctx);
+    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -5008,7 +5002,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // TODO: do something with this.
     if (ctx.variable_policy_map_header() != null) {
       String name = ctx.variable_policy_map_header().getText();
-      defineStructure(POLICY_MAP, name, ctx);
+      _configuration.defineStructure(POLICY_MAP, name, ctx);
     }
   }
 
@@ -5028,7 +5022,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterS_service_template(S_service_templateContext ctx) {
     // TODO: do something with this.
     String name = ctx.name.getText();
-    defineStructure(SERVICE_TEMPLATE, name, ctx);
+    _configuration.defineStructure(SERVICE_TEMPLATE, name, ctx);
   }
 
   @Override
@@ -5106,7 +5100,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterS_track(S_trackContext ctx) {
     String name = ctx.name.getText();
     _currentTrackingGroup = name;
-    defineStructure(TRACK, name, ctx);
+    _configuration.defineStructure(TRACK, name, ctx);
   }
 
   @Override
@@ -5212,7 +5206,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       proc.addPeerSession(name);
       _currentPeerSession = proc.getPeerSessions().get(name);
     }
-    defineStructure(BGP_SESSION_GROUP, name, ctx);
+    _configuration.defineStructure(BGP_SESSION_GROUP, name, ctx);
     pushPeer(_currentPeerSession);
   }
 
@@ -5251,7 +5245,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentStandardAcl =
         _configuration.getStandardAcls().computeIfAbsent(name, StandardAccessList::new);
-    defineStructure(IPV4_ACCESS_LIST_STANDARD, name, ctx);
+    _configuration.defineStructure(IPV4_ACCESS_LIST_STANDARD, name, ctx);
   }
 
   @Override
@@ -5264,7 +5258,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentStandardIpv6Acl =
         _configuration.getStandardIpv6Acls().computeIfAbsent(name, StandardIpv6AccessList::new);
-    defineStructure(IPV6_ACCESS_LIST_STANDARD, name, ctx);
+    _configuration.defineStructure(IPV6_ACCESS_LIST_STANDARD, name, ctx);
   }
 
   @Override
@@ -5277,7 +5271,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
     }
     pushPeer(_currentNamedPeerGroup);
-    defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
+    _configuration.defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
   }
 
   @Override
@@ -5289,7 +5283,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       proc.addPeerSession(name);
       _currentPeerSession = proc.getPeerSessions().get(name);
     }
-    defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
+    _configuration.defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
     pushPeer(_currentPeerSession);
   }
 
@@ -5524,7 +5518,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       AsPathSetElem elem = toAsPathSetElem(elemCtx);
       asPathSet.getElements().add(elem);
     }
-    defineStructure(AS_PATH_SET, name, ctx);
+    _configuration.defineStructure(AS_PATH_SET, name, ctx);
   }
 
   @Override
@@ -5634,7 +5628,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentInspectClassMap =
         _configuration.getInspectClassMaps().computeIfAbsent(name, InspectClassMap::new);
-    defineStructure(INSPECT_CLASS_MAP, name, ctx);
+    _configuration.defineStructure(INSPECT_CLASS_MAP, name, ctx);
     MatchSemantics matchSemantics =
         ctx.match_semantics() != null
             ? toMatchSemantics(ctx.match_semantics())
@@ -5657,10 +5651,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     if (ctx.SECURITY() != null) {
       _configuration.getSecurityZones().computeIfAbsent(name, SecurityZone::new);
-      defineStructure(SECURITY_ZONE, name, ctx);
+      _configuration.defineStructure(SECURITY_ZONE, name, ctx);
     } else {
       todo(ctx);
-      defineStructure(TRAFFIC_ZONE, name, ctx);
+      _configuration.defineStructure(TRAFFIC_ZONE, name, ctx);
     }
   }
 
@@ -5673,7 +5667,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String dstName = ctx.destination.getText();
     int dstLine = ctx.destination.getStart().getLine();
     _configuration.referenceStructure(SECURITY_ZONE, dstName, ZONE_PAIR_DESTINATION_ZONE, dstLine);
-    defineStructure(SECURITY_ZONE_PAIR, name, ctx);
+    _configuration.defineStructure(SECURITY_ZONE_PAIR, name, ctx);
     _currentSecurityZonePair =
         _configuration
             .getSecurityZonePairs()
@@ -7086,7 +7080,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "Parse assertion failed for _currentInterfaces");
     } else {
       // Define the alias as an interface to make ref tracking easier
-      defineStructure(INTERFACE, alias, ctx);
+      _configuration.defineStructure(INTERFACE, alias, ctx);
       _configuration.referenceStructure(
           INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
       Interface iface = _currentInterfaces.get(0);
@@ -7631,7 +7625,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getNatPools().put(name, new NatPool(first, last));
     }
-    defineStructure(NAT_POOL, name, ctx);
+    _configuration.defineStructure(NAT_POOL, name, ctx);
   }
 
   @Override
@@ -7645,7 +7639,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.getNatPools().put(name, new NatPool(first, last));
     }
-    defineStructure(NAT_POOL, name, ctx);
+    _configuration.defineStructure(NAT_POOL, name, ctx);
   }
 
   /**
@@ -8873,7 +8867,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         npg.setActive(true);
       }
     }
-    defineStructure(BGP_PEER_GROUP, name, ctx);
+    _configuration.defineStructure(BGP_PEER_GROUP, name, ctx);
   }
 
   @Override
@@ -8953,7 +8947,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentInspectPolicyMap =
         _configuration.getInspectPolicyMaps().computeIfAbsent(name, InspectPolicyMap::new);
-    defineStructure(INSPECT_POLICY_MAP, name, ctx);
+    _configuration.defineStructure(INSPECT_POLICY_MAP, name, ctx);
   }
 
   @Override
@@ -8965,7 +8959,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if ("class-default".equals(name)) {
       // This is a hack because there's an implicit class named "class-default" and we don't want
       // a false positive undefined reference.
-      _configuration.defineStructure(CLASS_MAP, "class-default", ctx.getStart().getLine());
+      _configuration.defineSingleLineStructure(
+          CLASS_MAP, "class-default", ctx.getStart().getLine());
     }
   }
 

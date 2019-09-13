@@ -78,11 +78,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -279,7 +276,6 @@ import org.batfish.representation.f5_bigip.SnatTranslation;
 import org.batfish.representation.f5_bigip.Trunk;
 import org.batfish.representation.f5_bigip.Vlan;
 import org.batfish.representation.f5_bigip.VlanInterface;
-import org.batfish.vendor.StructureType;
 
 @ParametersAreNonnullByDefault
 public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener {
@@ -429,19 +425,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     return defaultReturnValue;
   }
 
-  /** Mark the specified structure as defined on each line in the supplied context */
-  private void defineStructure(StructureType type, String name, RuleContext ctx) {
-    /* Recursively process children to find all relevant definition lines for the specified context */
-    for (int i = 0; i < ctx.getChildCount(); i++) {
-      ParseTree child = ctx.getChild(i);
-      if (child instanceof TerminalNode) {
-        _c.defineStructure(type, name, ((TerminalNode) child).getSymbol().getLine());
-      } else if (child instanceof RuleContext) {
-        defineStructure(type, name, (RuleContext) child);
-      }
-    }
-  }
-
   @Override
   public void enterF5_bigip_structured_configuration(F5_bigip_structured_configurationContext ctx) {
     _c = new F5BigipConfiguration();
@@ -450,27 +433,27 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterL_node(L_nodeContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(NODE, name, ctx);
+    _c.defineStructure(NODE, name, ctx);
     _currentNode = _c.getNodes().computeIfAbsent(name, Node::new);
   }
 
   @Override
   public void enterL_pool(L_poolContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(POOL, name, ctx);
+    _c.defineStructure(POOL, name, ctx);
     _currentPool = _c.getPools().computeIfAbsent(name, Pool::new);
   }
 
   @Override
   public void enterL_rule(L_ruleContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(RULE, name, ctx);
+    _c.defineStructure(RULE, name, ctx);
   }
 
   @Override
   public void enterL_snat(L_snatContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(SNAT, name, ctx);
+    _c.defineStructure(SNAT, name, ctx);
     _c.referenceStructure(SNAT, name, SNAT_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentSnat = _c.getSnats().computeIfAbsent(name, Snat::new);
   }
@@ -478,21 +461,21 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterL_snat_translation(L_snat_translationContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(SNAT_TRANSLATION, name, ctx);
+    _c.defineStructure(SNAT_TRANSLATION, name, ctx);
     _currentSnatTranslation = _c.getSnatTranslations().computeIfAbsent(name, SnatTranslation::new);
   }
 
   @Override
   public void enterL_snatpool(L_snatpoolContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(SNATPOOL, name, ctx);
+    _c.defineStructure(SNATPOOL, name, ctx);
     _currentSnatPool = _c.getSnatPools().computeIfAbsent(name, SnatPool::new);
   }
 
   @Override
   public void enterL_virtual(L_virtualContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(VIRTUAL, name, ctx);
+    _c.defineStructure(VIRTUAL, name, ctx);
     _c.referenceStructure(VIRTUAL, name, VIRTUAL_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentVirtual = _c.getVirtuals().computeIfAbsent(name, Virtual::new);
   }
@@ -500,32 +483,32 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterL_virtual_address(L_virtual_addressContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(VIRTUAL_ADDRESS, name, ctx);
+    _c.defineStructure(VIRTUAL_ADDRESS, name, ctx);
     _currentVirtualAddress = _c.getVirtualAddresses().computeIfAbsent(name, VirtualAddress::new);
   }
 
   @Override
   public void enterLm_http(Lm_httpContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(MONITOR_HTTP, name, ctx);
+    _c.defineStructure(MONITOR_HTTP, name, ctx);
   }
 
   @Override
   public void enterLm_https(Lm_httpsContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(MONITOR_HTTPS, name, ctx);
+    _c.defineStructure(MONITOR_HTTPS, name, ctx);
   }
 
   @Override
   public void enterLper_source_addr(Lper_source_addrContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PERSISTENCE_SOURCE_ADDR, name, ctx);
+    _c.defineStructure(PERSISTENCE_SOURCE_ADDR, name, ctx);
   }
 
   @Override
   public void enterLper_ssl(Lper_sslContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PERSISTENCE_SSL, name, ctx);
+    _c.defineStructure(PERSISTENCE_SSL, name, ctx);
   }
 
   @Override
@@ -541,37 +524,37 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterLprof_client_ssl(Lprof_client_sslContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PROFILE_CLIENT_SSL, name, ctx);
+    _c.defineStructure(PROFILE_CLIENT_SSL, name, ctx);
   }
 
   @Override
   public void enterLprof_http(Lprof_httpContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PROFILE_HTTP, name, ctx);
+    _c.defineStructure(PROFILE_HTTP, name, ctx);
   }
 
   @Override
   public void enterLprof_ocsp_stapling_params(Lprof_ocsp_stapling_paramsContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PROFILE_OCSP_STAPLING_PARAMS, name, ctx);
+    _c.defineStructure(PROFILE_OCSP_STAPLING_PARAMS, name, ctx);
   }
 
   @Override
   public void enterLprof_one_connect(Lprof_one_connectContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PROFILE_ONE_CONNECT, name, ctx);
+    _c.defineStructure(PROFILE_ONE_CONNECT, name, ctx);
   }
 
   @Override
   public void enterLprof_server_ssl(Lprof_server_sslContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PROFILE_SERVER_SSL, name, ctx);
+    _c.defineStructure(PROFILE_SERVER_SSL, name, ctx);
   }
 
   @Override
   public void enterLprof_tcp(Lprof_tcpContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PROFILE_TCP, name, ctx);
+    _c.defineStructure(PROFILE_TCP, name, ctx);
   }
 
   @Override
@@ -598,7 +581,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNet_interface(Net_interfaceContext ctx) {
     String name = ctx.name.getText();
-    defineStructure(INTERFACE, name, ctx);
+    _c.defineStructure(INTERFACE, name, ctx);
     _c.referenceStructure(INTERFACE, name, INTERFACE_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentInterface = _c.getInterfaces().computeIfAbsent(name, Interface::new);
   }
@@ -606,7 +589,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNet_route(Net_routeContext ctx) {
     String name = ctx.name.getText();
-    defineStructure(ROUTE, name, ctx);
+    _c.defineStructure(ROUTE, name, ctx);
     _c.referenceStructure(ROUTE, name, ROUTE_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentRoute = _c.getRoutes().computeIfAbsent(name, Route::new);
   }
@@ -614,7 +597,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNet_self(Net_selfContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(SELF, name, ctx);
+    _c.defineStructure(SELF, name, ctx);
     _c.referenceStructure(SELF, name, SELF_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentSelf = _c.getSelves().computeIfAbsent(name, Self::new);
   }
@@ -622,21 +605,21 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNet_trunk(Net_trunkContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(F5BigipStructureType.TRUNK, name, ctx);
+    _c.defineStructure(F5BigipStructureType.TRUNK, name, ctx);
     _currentTrunk = _c.getTrunks().computeIfAbsent(name, Trunk::new);
   }
 
   @Override
   public void enterNet_vlan(Net_vlanContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(VLAN, name, ctx);
+    _c.defineStructure(VLAN, name, ctx);
     _currentVlan = _c.getVlans().computeIfAbsent(name, Vlan::new);
   }
 
   @Override
   public void enterNr_bgp(Nr_bgpContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(BGP_PROCESS, name, ctx);
+    _c.defineStructure(BGP_PROCESS, name, ctx);
     _c.referenceStructure(
         BGP_PROCESS, name, BGP_PROCESS_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentBgpProcess = _c.getBgpProcesses().computeIfAbsent(name, BgpProcess::new);
@@ -645,14 +628,14 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNr_prefix_list(Nr_prefix_listContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(PREFIX_LIST, name, ctx);
+    _c.defineStructure(PREFIX_LIST, name, ctx);
     _currentPrefixList = _c.getPrefixLists().computeIfAbsent(name, PrefixList::new);
   }
 
   @Override
   public void enterNr_route_map(Nr_route_mapContext ctx) {
     String name = toName(ctx.name);
-    defineStructure(ROUTE_MAP, name, ctx);
+    _c.defineStructure(ROUTE_MAP, name, ctx);
     _currentRouteMap = _c.getRouteMaps().computeIfAbsent(name, RouteMap::new);
   }
 
@@ -677,7 +660,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNrbn_name(Nrbn_nameContext ctx) {
     String name = ctx.name.getText();
-    defineStructure(BGP_NEIGHBOR, name, ctx);
+    _c.defineStructure(BGP_NEIGHBOR, name, ctx);
     _c.referenceStructure(BGP_NEIGHBOR, name, BGP_NEIGHBOR_SELF_REFERENCE, ctx.name.getLine());
     _currentBgpNeighbor = _currentBgpProcess.getNeighbors().computeIfAbsent(name, BgpNeighbor::new);
   }
@@ -1477,7 +1460,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String name = ctx.name.getText();
     if (!_c.getInterfaces().containsKey(name)) {
       _c.getInterfaces().put(name, new Interface(name));
-      defineStructure(INTERFACE, name, ctx);
+      _c.defineStructure(INTERFACE, name, ctx);
     }
     _c.referenceStructure(INTERFACE, name, TRUNK_INTERFACE, ctx.name.getStart().getLine());
     _currentTrunk.getInterfaces().add(name);
