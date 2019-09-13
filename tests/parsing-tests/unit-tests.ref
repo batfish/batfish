@@ -50904,7 +50904,7 @@
             "            BGP:'bgp'",
             "            DEFAULT:'default'",
             "            (null_rest_of_line",
-            "              VARIABLE:'ipv4-unicast'",
+            "              IPV4_UNICAST:'ipv4-unicast'",
             "              NEWLINE:'\\n'))))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
