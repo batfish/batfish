@@ -213,7 +213,7 @@ eos_rbi_default_metric
 
 eos_rbi_distance
 :
-  DISTANCE external = DEC (internal = DEC local = DEC)? NEWLINE
+  DISTANCE BGP external = DEC (internal = DEC local = DEC)? NEWLINE
 ;
 
 eos_rbi_neighbor
