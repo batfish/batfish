@@ -223,6 +223,7 @@ public class AristaGrammarTest {
     assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
     assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
     assertThat(vrf.getLocalAs(), equalTo(65000L));
+    assertThat(config.getVrfs(), hasKey("FOO"));
   }
 
   @Test
