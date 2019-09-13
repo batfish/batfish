@@ -5170,6 +5170,9 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          },
+          "vrf-foo1" : {
+            "name" : "vrf-foo1"
           }
         }
       },
