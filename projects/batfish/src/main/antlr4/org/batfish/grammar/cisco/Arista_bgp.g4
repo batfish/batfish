@@ -292,10 +292,10 @@ eos_rbi_neighbor_common
     | eos_rbinc_send_community
 //    | eos_rbinc_shutdown
 //    | eos_rbinc_soft_reconfiguration
-//    | eos_rbinc_soft_timers
-//    | eos_rbinc_soft_transport
-//    | eos_rbinc_soft_ttl
-//    | eos_rbinc_soft_weight
+    | eos_rbinc_timers
+//    | eos_rbinc_transport
+//    | eos_rbinc_ttl
+//    | eos_rbinc_weight
     | eos_rbinc_update_source
   )
 ;
@@ -356,7 +356,7 @@ eos_rbinc_fall_over
 
 eos_rbinc_local_as
 :
-  LOCAL_AS asn = bgp_asn NEWLINE
+  LOCAL_AS asn = bgp_asn NO_PREPEND REPLACE_AS FALLBACK? NEWLINE
 ;
 
 eos_rbinc_maximum_accepted_routes
@@ -409,6 +409,11 @@ eos_rbinc_send_community
 //      )
   )*
   NEWLINE
+;
+
+eos_rbinc_timers
+:
+  TIMERS keepalive = DEC hold = DEC NEWLINE
 ;
 
 eos_rbinc_update_source

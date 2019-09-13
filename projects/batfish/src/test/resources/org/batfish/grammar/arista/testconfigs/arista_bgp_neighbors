@@ -16,6 +16,8 @@ router bgp 1
   neighbor 1.1.1.1 ebgp-multihop
   neighbor 1.1.1.1 enforce-first-as
   neighbor 1.1.1.1 fall-over bfd
+  neighbor 1.1.1.1 local-as 65111 no-prepend replace-as
+  neighbor 1.1.1.1 local-as 65111 no-prepend replace-as fallback
   neighbor 1.1.1.1 next-hop-self
   neighbor 1.1.1.1 next-hop-unchanged
   neighbor 1.1.1.1 peer-group PEER_G
@@ -38,6 +40,7 @@ router bgp 1
   neighbor PARSE_ONLY maximum-accepted-routes 5555
   neighbor PARSE_ONLY maximum-accepted-routes 6666 warning-limit 60000
   neighbor PARSE_ONLY password YzQ2ZTRlYTNhYzVhZTc0MDE2MTc2ZGEzODhkZmMyMmM=
+  neighbor PARSE_ONLY timers 3 9
 !
 !
   vrf tenant
