@@ -3414,10 +3414,12 @@ s_vrf_context
    )*
 ;
 
-// a way to define a VRF on IOS
+// a way to define a VRF on IOS or EOS
 s_vrf_definition
 :
-   VRF DEFINITION? name = variable NEWLINE
+   // DEFINITION is for IOS and older versions of EOS (pre-4.23)
+   // INSTANCE is for EOS 4.23 and later
+   VRF (DEFINITION | INSTANCE)? name = variable NEWLINE
    (
       vrfd_address_family
       | vrfd_description

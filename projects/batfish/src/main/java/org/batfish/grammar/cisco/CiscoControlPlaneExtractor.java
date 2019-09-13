@@ -5251,6 +5251,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_vrf_definition(S_vrf_definitionContext ctx) {
     _currentVrf = ctx.name.getText();
+    initVrf(_currentVrf);
   }
 
   @Override

@@ -8,3 +8,6 @@ router bgp 1
     route-target export 1:1
     route-target import 2:2
     local-as 65000
+
+
+vrf instance FOO
