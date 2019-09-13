@@ -15,8 +15,10 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private Boolean _enforceFirstAs;
   @Nullable private Long _localAs;
   @Nullable private Boolean _nextHopSelf;
+  @Nullable private Boolean _nextHopUnchanged;
   @Nullable private Long _remoteAs;
   @Nullable private Boolean _sendCommunity;
+  @Nullable private String _updateSource;
   @Nullable private AristaBgpNeighborIpv4UnicastAddressFamily _v4UnicastAf;
 
   protected AristaBgpNeighbor() {
@@ -114,6 +116,15 @@ public abstract class AristaBgpNeighbor implements Serializable {
   }
 
   @Nullable
+  public Boolean getNextHopUnchanged() {
+    return _nextHopUnchanged;
+  }
+
+  public void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
+    _nextHopUnchanged = nextHopUnchanged;
+  }
+
+  @Nullable
   public Long getRemoteAs() {
     return _remoteAs;
   }
@@ -129,6 +140,15 @@ public abstract class AristaBgpNeighbor implements Serializable {
 
   public void setSendCommunity(@Nullable Boolean sendCommunity) {
     _sendCommunity = sendCommunity;
+  }
+
+  @Nullable
+  public String getUpdateSource() {
+    return _updateSource;
+  }
+
+  public void setUpdateSource(@Nullable String updateSource) {
+    _updateSource = updateSource;
   }
 
   @Nullable

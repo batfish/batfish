@@ -189,9 +189,11 @@ public class AristaGrammarTest {
       assertTrue(neighbor.getDontCapabilityNegotiate());
       assertThat(neighbor.getEbgpMultihop(), equalTo(Integer.MAX_VALUE));
       assertTrue(neighbor.getNextHopSelf());
+      assertTrue(neighbor.getNextHopUnchanged());
       assertThat(neighbor.getPeerGroup(), equalTo("PEER_G"));
       assertThat(neighbor.getRemoteAs(), equalTo(35L));
       assertTrue(neighbor.getSendCommunity());
+      assertThat(neighbor.getUpdateSource(), equalTo("Loopback0"));
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");

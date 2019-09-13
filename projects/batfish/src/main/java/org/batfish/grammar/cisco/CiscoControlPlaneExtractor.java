@@ -669,8 +669,10 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_accepted_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_default_ipv4_unicastContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_attached_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_connectedContext;
@@ -2781,6 +2783,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rbinc_next_hop_unchanged(Eos_rbinc_next_hop_unchangedContext ctx) {
+    _currentAristaBgpNeighbor.setNextHopUnchanged(true);
+  }
+
+  @Override
   public void exitEos_rbinc_remote_as(Eos_rbinc_remote_asContext ctx) {
     _currentAristaBgpNeighbor.setRemoteAs(toAsNum(ctx.asn));
   }
@@ -2792,6 +2799,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // TODO: figure out all the valid modifiers/combos
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitEos_rbinc_update_source(Eos_rbinc_update_sourceContext ctx) {
+    _currentAristaBgpNeighbor.setUpdateSource(ctx.iface.getText());
   }
 
   @Override
