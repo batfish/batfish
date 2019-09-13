@@ -280,7 +280,7 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_monitoring
 //    | eos_rbinc_next_hop_peer
     | eos_rbinc_next_hop_self
-//    | eos_rbinc_next_hop_unchanged
+    | eos_rbinc_next_hop_unchanged
 //    | eos_rbinc_out_delay
     | eos_rbinc_password
 //    | eos_rbinc_prefix_list
@@ -295,8 +295,8 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_soft_timers
 //    | eos_rbinc_soft_transport
 //    | eos_rbinc_soft_ttl
-//    | eos_rbinc_soft_update_source
 //    | eos_rbinc_soft_weight
+    | eos_rbinc_update_source
   )
 ;
 
@@ -379,6 +379,11 @@ eos_rbinc_next_hop_self
   NEXT_HOP_SELF NEWLINE
 ;
 
+eos_rbinc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
 eos_rbinc_password
 :
   PASSWORD (encrypt_level = DEC)? VARIABLE NEWLINE
@@ -404,6 +409,11 @@ eos_rbinc_send_community
 //      )
   )*
   NEWLINE
+;
+
+eos_rbinc_update_source
+:
+  UPDATE_SOURCE iface = interface_name NEWLINE
 ;
 
 // Assigning a peer group to a neighbor
