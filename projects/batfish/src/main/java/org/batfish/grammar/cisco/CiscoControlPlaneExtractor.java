@@ -2831,8 +2831,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _currentAristaBgpProcess
             .getPeerGroups()
             .computeIfAbsent(peerGroupName, AristaBgpPeerGroupNeighbor::new);
-    _configuration.defineSingleLineStructure(
-        BGP_PEER_GROUP, peerGroupName, ctx.getStart().getLine());
+    _configuration.defineStructure(BGP_PEER_GROUP, peerGroupName, ctx);
   }
 
   @Override
