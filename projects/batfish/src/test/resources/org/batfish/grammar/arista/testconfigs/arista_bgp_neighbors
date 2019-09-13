@@ -5,6 +5,8 @@ hostname arista_bgp_neighbors
 router bgp 1
   neighbor PEER_G peer-group
   neighbor PEER_G allowas-in 3
+  ! "peer group" is new syntax for EOS 4.23 and on
+  neighbor PEER_G2 peer group
   neighbor 1.1.1.1 additional-paths send any
   neighbor 1.1.1.1 additional-paths receive
   neighbor 1.1.1.1 auto-local-addr
@@ -22,6 +24,9 @@ router bgp 1
   neighbor 2.2.2.2 remote-as 36
   neighbor 2.2.2.2 default-originate always route-map DEF_ORIG_MAP
   neighbor 2.2.2.2 ebgp-multihop 10
+!
+  ! "peer group" is new syntax for EOS 4.23 and on
+  neighbor 3.3.3.3 peer group PEER_G2
 !
   neighbor PARSE_ONLY maximum-routes 2222
   neighbor PARSE_ONLY maximum-routes 3333 warning-limit 3000
