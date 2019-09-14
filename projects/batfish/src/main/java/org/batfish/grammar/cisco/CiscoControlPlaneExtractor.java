@@ -2557,11 +2557,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterEos_rb_af_evpn_neighbor(Eos_rb_af_evpn_neighborContext ctx) {
     if (ctx.v4 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp(ctx.v4));
+      Ip address = toIp(ctx.v4);
+      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
     } else if (ctx.pg != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreatePeerGroup(ctx.pg.getText());
+      String name = ctx.pg.getText();
+      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
@@ -2579,11 +2581,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterEos_rb_af_evpn_no_neighbor(Eos_rb_af_evpn_no_neighborContext ctx) {
     if (ctx.v4 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp(ctx.v4));
+      Ip address = toIp(ctx.v4);
+      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
     } else if (ctx.pg != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreatePeerGroup(ctx.pg.getText());
+      String name = ctx.pg.getText();
+      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
@@ -2611,11 +2615,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
     if (ctx.v4 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp(ctx.v4));
+      Ip address = toIp(ctx.v4);
+      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
     } else if (ctx.pg != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreatePeerGroup(ctx.pg.getText());
+      String name = ctx.pg.getText();
+      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
@@ -2643,11 +2649,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterEos_rbafipv4_no_neighbor(Eos_rbafipv4_no_neighborContext ctx) {
     if (ctx.v4 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp(ctx.v4));
+      Ip address = toIp(ctx.v4);
+      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
     } else if (ctx.pg != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreatePeerGroup(ctx.pg.getText());
+      String name = ctx.pg.getText();
+      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));

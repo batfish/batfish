@@ -224,6 +224,11 @@ public final class AristaBgpVrf implements Serializable {
     return _v4neighbors;
   }
 
+  @Nonnull
+  public AristaBgpV4Neighbor getOrCreateV4Neighbor(Ip address) {
+    return _v4neighbors.computeIfAbsent(address, AristaBgpV4Neighbor::new);
+  }
+
   @Nullable
   public AristaBgpVrfIpv4UnicastAddressFamily getV4UnicastAf() {
     return _v4UnicastAf;
