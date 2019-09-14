@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco.eos;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Base class for all Arista BGP neighbors */
@@ -19,7 +20,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private String _routeMapOut;
   @Nullable private Boolean _sendCommunity;
   @Nullable private String _updateSource;
-  @Nullable private AristaBgpNeighborAddressFamily _genericAddressFamily;
+  @Nonnull private AristaBgpNeighborAddressFamily _genericAddressFamily;
 
   @Nullable
   public Integer getAllowAsIn() {
@@ -73,6 +74,11 @@ public abstract class AristaBgpNeighbor implements Serializable {
 
   public void setEnforceFirstAs(@Nullable Boolean enforceFirstAs) {
     _enforceFirstAs = enforceFirstAs;
+  }
+
+  @Nonnull
+  public AristaBgpNeighborAddressFamily getGenericAddressFamily() {
+    return _genericAddressFamily;
   }
 
   @Nullable
@@ -145,5 +151,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
 
   public void setUpdateSource(@Nullable String updateSource) {
     _updateSource = updateSource;
+  }
+
+  protected AristaBgpNeighbor() {
+    _genericAddressFamily = new AristaBgpNeighborAddressFamily();
   }
 }
