@@ -1073,8 +1073,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     org.batfish.datamodel.BgpProcess newProc =
         new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin);
     newProc.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
-    newProc.setMultipathEbgp(false);
-    newProc.setMultipathIbgp(false);
+    /*
+      BGP multipath enabled by default
+      https://docs.cumulusnetworks.com/cumulus-linux/Layer-3/Border-Gateway-Protocol-BGP/#maximum-paths
+    */
+    newProc.setMultipathEbgp(true);
+    newProc.setMultipathIbgp(true);
 
     BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
     if (ipv4Unicast != null) {
