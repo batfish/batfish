@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco.eos;
 
-import java.util.Map;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 
 /** Interface for neighbors that can inherit settings from a peer group */
 public interface AristaBgpHasPeerGroup {
@@ -10,5 +10,5 @@ public interface AristaBgpHasPeerGroup {
 
   public void setPeerGroup(@Nullable String peerGroup);
 
-  public void inherit(Map<String, AristaBgpPeerGroupNeighbor> peerGroups);
+  public void inherit(AristaBgpProcess bgpGlobal, AristaBgpVrf bgpVrf, Warnings w);
 }

@@ -20,7 +20,11 @@ public final class AristaBgpProcess implements Serializable {
     _peerGroups = new HashMap<>(0);
     _vlanAwareBundles = new HashMap<>(0);
     _vlans = new HashMap<>(0);
-    _vrfs = new HashMap<>(0);
+    _vrfs = new HashMap<>(1);
+    // Create the default VRF automatically, with default v4 activate set to true.
+    AristaBgpVrf defaultVrf = new AristaBgpVrf(DEFAULT_VRF);
+    defaultVrf.setDefaultIpv4Unicast(true);
+    _vrfs.put(DEFAULT_VRF, defaultVrf);
   }
 
   public long getAsn() {
@@ -35,6 +39,11 @@ public final class AristaBgpProcess implements Serializable {
   @Nonnull
   public AristaBgpPeerGroupNeighbor getOrCreatePeerGroup(String name) {
     return _peerGroups.computeIfAbsent(name, AristaBgpPeerGroupNeighbor::new);
+  }
+
+  @Nullable
+  public AristaBgpPeerGroupNeighbor getPeerGroup(String name) {
+    return _peerGroups.get(name);
   }
 
   @Nonnull

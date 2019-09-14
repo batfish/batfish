@@ -13,7 +13,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 /** BGP configuration for a single VRF */
 public final class AristaBgpVrf implements Serializable {
 
-  @Nullable private boolean _defaultIpv4Unicast = true;
+  private boolean _defaultIpv4Unicast;
   @Nullable private Long _defaultMetric;
   @Nullable private Integer _ebgpAdminDistance;
   @Nullable private ExtendedCommunity _exportRouteTarget;

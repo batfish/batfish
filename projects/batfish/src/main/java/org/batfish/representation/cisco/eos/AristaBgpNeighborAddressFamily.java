@@ -17,29 +17,29 @@ public final class AristaBgpNeighborAddressFamily implements Serializable {
   @Nullable private Integer _weight;
 
   @Nullable
-  public Boolean getActivate() {
+  public final Boolean getActivate() {
     return _activate;
   }
 
-  public void setActivate(@Nullable Boolean activate) {
+  public final void setActivate(@Nullable Boolean activate) {
     _activate = activate;
   }
 
   @Nullable
-  public AristaBgpAdditionalPathsConfig getAdditionalPaths() {
+  public final AristaBgpAdditionalPathsConfig getAdditionalPaths() {
     return _additionalPaths;
   }
 
-  public void setAdditionalPaths(@Nullable AristaBgpAdditionalPathsConfig additionalPaths) {
+  public final void setAdditionalPaths(@Nullable AristaBgpAdditionalPathsConfig additionalPaths) {
     _additionalPaths = additionalPaths;
   }
 
   /** Whether the neighbors by default are activated in this address family */
-  public boolean isDefaultActivate() {
+  public final boolean isDefaultActivate() {
     return _defaultActivate;
   }
 
-  public void setDefaultActivate(boolean defaultActivate) {
+  public final void setDefaultActivate(boolean defaultActivate) {
     _defaultActivate = defaultActivate;
   }
 
@@ -57,7 +57,7 @@ public final class AristaBgpNeighborAddressFamily implements Serializable {
     return _nextHopUnchanged;
   }
 
-  public void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
+  public final void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
     _nextHopUnchanged = nextHopUnchanged;
   }
 
@@ -84,25 +84,47 @@ public final class AristaBgpNeighborAddressFamily implements Serializable {
     return _routeMapIn;
   }
 
-  public void setRouteMapIn(@Nullable String routeMapIn) {
+  public final void setRouteMapIn(@Nullable String routeMapIn) {
     _routeMapIn = routeMapIn;
   }
 
   @Nullable
-  public String getRouteMapOut() {
+  public final String getRouteMapOut() {
     return _routeMapOut;
   }
 
-  public void setRouteMapOut(@Nullable String routeMapOut) {
+  public final void setRouteMapOut(@Nullable String routeMapOut) {
     _routeMapOut = routeMapOut;
   }
 
   @Nullable
-  public Integer getWeight() {
+  public final Integer getWeight() {
     return _weight;
   }
 
-  public void setWeight(@Nullable Integer weight) {
+  public final void setWeight(@Nullable Integer weight) {
     _weight = weight;
+  }
+
+  public void inheritFrom(AristaBgpNeighborAddressFamily other) {
+    if (_activate == null) {
+      _activate = other._activate;
+    }
+    if (_additionalPaths == null) {
+      _additionalPaths = other._additionalPaths;
+    }
+    // how does defaultActivate play in?
+    if (_nextHopUnchanged == null) {
+      _nextHopUnchanged = other._nextHopUnchanged;
+    }
+    if (_routeMapIn == null) {
+      _routeMapIn = other._routeMapIn;
+    }
+    if (_routeMapOut == null) {
+      _routeMapOut = other._routeMapOut;
+    }
+    if (_weight == null) {
+      _weight = other._weight;
+    }
   }
 }
