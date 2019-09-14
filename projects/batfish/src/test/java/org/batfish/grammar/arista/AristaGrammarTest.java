@@ -31,6 +31,7 @@ import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
@@ -236,29 +237,31 @@ public class AristaGrammarTest {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_af");
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af =
         config.getAristaBgp().getDefaultVrf().getV4UnicastAf();
-    AristaBgpVrfEvpnAddressFamily evpnaf = config.getAristaBgp().getDefaultVrf().getEvpnAf();
     assertThat(ipv4af, notNullValue());
+    AristaBgpVrfEvpnAddressFamily evpnaf = config.getAristaBgp().getDefaultVrf().getEvpnAf();
     assertThat(evpnaf, notNullValue());
 
     {
-      AristaBgpV4Neighbor neighbor =
-          config.getAristaBgp().getDefaultVrf().getV4neighbors().get(Ip.parse("1.1.1.1"));
-      assertTrue(neighbor.getV4UnicastAf().getActivate());
-      assertTrue(neighbor.getEvpnAf().getActivate());
+      AristaBgpNeighborAddressFamily v4 = ipv4af.getNeighbor(Ip.parse("1.1.1.1"));
+      assertThat(v4, notNullValue());
+      assertThat(v4.getActivate(), equalTo(Boolean.TRUE));
+      AristaBgpNeighborAddressFamily evpn = evpnaf.getNeighbor(Ip.parse("1.1.1.1"));
+      assertThat(evpn, notNullValue());
+      assertThat(evpn.getActivate(), equalTo(Boolean.TRUE));
     }
     {
-      AristaBgpV4Neighbor neighbor =
-          config.getAristaBgp().getDefaultVrf().getV4neighbors().get(Ip.parse("2.2.2.2"));
-      assertThat(neighbor.getV4UnicastAf(), notNullValue());
-      assertFalse(neighbor.getV4UnicastAf().getActivate());
-      assertThat(neighbor.getEvpnAf(), nullValue());
+      AristaBgpNeighborAddressFamily v4 = ipv4af.getNeighbor(Ip.parse("2.2.2.2"));
+      assertThat(v4, notNullValue());
+      assertThat(v4.getActivate(), equalTo(Boolean.FALSE));
+      AristaBgpNeighborAddressFamily evpn = evpnaf.getNeighbor(Ip.parse("2.2.2.2"));
+      assertThat(evpn, nullValue());
     }
     {
-      AristaBgpPeerGroupNeighbor pg = config.getAristaBgp().getPeerGroups().get("PG");
-      assertThat(pg.getV4UnicastAf(), notNullValue());
-      assertThat(pg.getV4UnicastAf().getActivate(), nullValue());
-      assertThat(pg.getEvpnAf(), notNullValue());
-      assertTrue(pg.getEvpnAf().getActivate());
+      AristaBgpNeighborAddressFamily v4 = ipv4af.getPeerGroup("PG");
+      assertThat(v4, nullValue());
+      AristaBgpNeighborAddressFamily evpn = evpnaf.getPeerGroup("PG");
+      assertThat(evpn, notNullValue());
+      assertThat(evpn.getActivate(), equalTo(Boolean.TRUE));
     }
   }
 
