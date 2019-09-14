@@ -3,15 +3,18 @@ package org.batfish.representation.cisco.eos;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 
-/** Per-neighbor settings, common to all address families */
-public abstract class AristaBgpNeighborAddressFamily implements Serializable {
-  @Nullable protected Boolean _activate;
-  @Nullable protected AristaBgpAdditionalPathsConfig _additionalPaths;
-  @Nullable protected boolean _defaultActivate = false;
-  @Nullable protected Boolean _nextHopUnchanged;
-  @Nullable protected String _routeMapIn;
-  @Nullable protected String _routeMapOut;
-  @Nullable protected Integer _weight;
+/** BGP neighbor settings. This class implements the union of all address families. */
+public final class AristaBgpNeighborAddressFamily implements Serializable {
+  @Nullable private Boolean _activate;
+  @Nullable private AristaBgpAdditionalPathsConfig _additionalPaths;
+  private boolean _defaultActivate = false;
+  @Nullable private AristaBgpDefaultOriginate _defaultOriginate;
+  @Nullable private Boolean _nextHopUnchanged;
+  @Nullable private String _prefixListIn;
+  @Nullable private String _prefixListOut;
+  @Nullable private String _routeMapIn;
+  @Nullable private String _routeMapOut;
+  @Nullable private Integer _weight;
 
   @Nullable
   public Boolean getActivate() {
@@ -41,12 +44,39 @@ public abstract class AristaBgpNeighborAddressFamily implements Serializable {
   }
 
   @Nullable
+  public AristaBgpDefaultOriginate getDefaultOriginate() {
+    return _defaultOriginate;
+  }
+
+  public void setDefaultOriginate(@Nullable AristaBgpDefaultOriginate defaultOriginate) {
+    _defaultOriginate = defaultOriginate;
+  }
+
+  @Nullable
   public Boolean getNextHopUnchanged() {
     return _nextHopUnchanged;
   }
 
   public void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
     _nextHopUnchanged = nextHopUnchanged;
+  }
+
+  @Nullable
+  public String getPrefixListIn() {
+    return _prefixListIn;
+  }
+
+  public void setPrefixListIn(@Nullable String prefixListIn) {
+    _prefixListIn = prefixListIn;
+  }
+
+  @Nullable
+  public String getPrefixListOut() {
+    return _prefixListOut;
+  }
+
+  public void setPrefixListOut(@Nullable String prefixListOut) {
+    _prefixListOut = prefixListOut;
   }
 
   @Nullable
