@@ -11,7 +11,6 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private String _description;
   @Nullable private Boolean _dontCapabilityNegotiate;
   @Nullable private Integer _ebgpMultihop;
-  @Nullable private AristaBgpNeighborEvpnAddressFamily _evpnAf;
   @Nullable private Boolean _enforceFirstAs;
   @Nullable private Long _localAs;
   @Nullable private Boolean _nextHopSelf;
@@ -21,12 +20,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private String _routeMapOut;
   @Nullable private Boolean _sendCommunity;
   @Nullable private String _updateSource;
-  @Nullable private AristaBgpNeighborIpv4UnicastAddressFamily _v4UnicastAf;
-
-  protected AristaBgpNeighbor() {
-    // By default, all neighbors have IPv4 unicast as their default address family
-    _v4UnicastAf = new AristaBgpNeighborIpv4UnicastAddressFamily();
-  }
+  @Nonnull private AristaBgpNeighborAddressFamily _genericAddressFamily;
 
   @Nullable
   public Integer getAllowAsIn() {
@@ -82,21 +76,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _enforceFirstAs = enforceFirstAs;
   }
 
-  @Nullable
-  public AristaBgpNeighborEvpnAddressFamily getEvpnAf() {
-    return _evpnAf;
-  }
-
   @Nonnull
-  public AristaBgpNeighborEvpnAddressFamily getOrCreateEvpnAf() {
-    if (_evpnAf == null) {
-      _evpnAf = new AristaBgpNeighborEvpnAddressFamily();
-    }
-    return _evpnAf;
-  }
-
-  public void setEvpnAf(@Nullable AristaBgpNeighborEvpnAddressFamily evpnAf) {
-    _evpnAf = evpnAf;
+  public AristaBgpNeighborAddressFamily getGenericAddressFamily() {
+    return _genericAddressFamily;
   }
 
   @Nullable
@@ -171,20 +153,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _updateSource = updateSource;
   }
 
-  @Nullable
-  public AristaBgpNeighborIpv4UnicastAddressFamily getV4UnicastAf() {
-    return _v4UnicastAf;
-  }
-
-  @Nonnull
-  public AristaBgpNeighborIpv4UnicastAddressFamily getOrCreateV4UnicastAf() {
-    if (_v4UnicastAf == null) {
-      _v4UnicastAf = new AristaBgpNeighborIpv4UnicastAddressFamily();
-    }
-    return _v4UnicastAf;
-  }
-
-  public void setV4UnicastAf(@Nullable AristaBgpNeighborIpv4UnicastAddressFamily v4UnicastAf) {
-    _v4UnicastAf = v4UnicastAf;
+  protected AristaBgpNeighbor() {
+    _genericAddressFamily = new AristaBgpNeighborAddressFamily();
   }
 }

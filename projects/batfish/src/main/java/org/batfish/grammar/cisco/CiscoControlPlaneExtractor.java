@@ -1459,6 +1459,7 @@ import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.cisco.eos.AristaBgpVlanBase;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
+import org.batfish.representation.cisco.eos.AristaBgpVrfAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.eos.AristaRedistributeType;
@@ -1629,6 +1630,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private AristaBgpProcess _currentAristaBgpProcess;
   private AristaBgpVlanBase _currentAristaBgpVlan;
   private AristaBgpVrf _currentAristaBgpVrf;
+  private AristaBgpVrfAddressFamily _currentAristaBgpVrfAf;
 
   @Nullable private CiscoAsaNat _currentAsaNat;
 
@@ -2544,30 +2546,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_rb_af_evpn(Eos_rb_af_evpnContext ctx) {
-    _currentAristaBgpVrf.getOrCreateEvpnAf();
+    _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateEvpnAf();
+  }
+
+  @Override
+  public void exitEos_rb_af_evpn(Eos_rb_af_evpnContext ctx) {
+    _currentAristaBgpVrfAf = null;
   }
 
   @Override
   public void enterEos_rb_af_evpn_neighbor(Eos_rb_af_evpn_neighborContext ctx) {
-    AristaBgpNeighbor neighbor;
     if (ctx.v4 != null) {
-      neighbor =
-          _currentAristaBgpVrf
-              .getV4neighbors()
-              .computeIfAbsent(toIp(ctx.v4), AristaBgpV4Neighbor::new);
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp(ctx.v4));
     } else if (ctx.pg != null) {
-      neighbor =
-          _currentAristaBgpProcess
-              .getPeerGroups()
-              .computeIfAbsent(ctx.pg.getText(), AristaBgpPeerGroupNeighbor::new);
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreatePeerGroup(ctx.pg.getText());
     } else if (ctx.v6 != null) {
-      todo(ctx);
-      neighbor = new AristaBgpPeerGroupNeighbor("dummy");
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
     }
-    _currentAristaBgpNeighborAddressFamily = neighbor.getOrCreateEvpnAf();
   }
 
   @Override
@@ -2577,25 +2578,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_rb_af_evpn_no_neighbor(Eos_rb_af_evpn_no_neighborContext ctx) {
-    AristaBgpNeighbor neighbor;
     if (ctx.v4 != null) {
-      neighbor =
-          _currentAristaBgpVrf
-              .getV4neighbors()
-              .computeIfAbsent(toIp(ctx.v4), AristaBgpV4Neighbor::new);
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp(ctx.v4));
     } else if (ctx.pg != null) {
-      neighbor =
-          _currentAristaBgpProcess
-              .getPeerGroups()
-              .computeIfAbsent(ctx.pg.getText(), AristaBgpPeerGroupNeighbor::new);
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreatePeerGroup(ctx.pg.getText());
     } else if (ctx.v6 != null) {
-      todo(ctx);
-      neighbor = new AristaBgpPeerGroupNeighbor("dummy");
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
     }
-    _currentAristaBgpNeighborAddressFamily = neighbor.getOrCreateV4UnicastAf();
   }
 
   @Override
@@ -2605,30 +2600,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
-    _currentAristaBgpVrf.getOrCreateV4UnicastAf();
+    _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateV4UnicastAf();
+  }
+
+  @Override
+  public void exitEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
+    _currentAristaBgpVrfAf = null;
   }
 
   @Override
   public void enterEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
-    AristaBgpNeighbor neighbor;
     if (ctx.v4 != null) {
-      neighbor =
-          _currentAristaBgpVrf
-              .getV4neighbors()
-              .computeIfAbsent(toIp(ctx.v4), AristaBgpV4Neighbor::new);
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp(ctx.v4));
     } else if (ctx.pg != null) {
-      neighbor =
-          _currentAristaBgpProcess
-              .getPeerGroups()
-              .computeIfAbsent(ctx.pg.getText(), AristaBgpPeerGroupNeighbor::new);
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreatePeerGroup(ctx.pg.getText());
     } else if (ctx.v6 != null) {
-      todo(ctx);
-      neighbor = new AristaBgpPeerGroupNeighbor("dummy");
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
     }
-    _currentAristaBgpNeighborAddressFamily = neighbor.getOrCreateV4UnicastAf();
   }
 
   @Override
@@ -2648,25 +2642,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_rbafipv4_no_neighbor(Eos_rbafipv4_no_neighborContext ctx) {
-    AristaBgpNeighbor neighbor;
     if (ctx.v4 != null) {
-      neighbor =
-          _currentAristaBgpVrf
-              .getV4neighbors()
-              .computeIfAbsent(toIp(ctx.v4), AristaBgpV4Neighbor::new);
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp(ctx.v4));
     } else if (ctx.pg != null) {
-      neighbor =
-          _currentAristaBgpProcess
-              .getPeerGroups()
-              .computeIfAbsent(ctx.pg.getText(), AristaBgpPeerGroupNeighbor::new);
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreatePeerGroup(ctx.pg.getText());
     } else if (ctx.v6 != null) {
-      todo(ctx);
-      neighbor = new AristaBgpPeerGroupNeighbor("dummy");
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
     }
-    _currentAristaBgpNeighborAddressFamily = neighbor.getOrCreateV4UnicastAf();
   }
 
   @Override

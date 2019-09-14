@@ -1,14 +1,28 @@
 package org.batfish.representation.cisco.eos;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 
 /**
  * Address family settings that are common to all address families and can be set at the VRF level
  */
 public abstract class AristaBgpVrfAddressFamily implements Serializable {
   @Nullable protected AristaBgpAdditionalPathsConfig _additionalPaths;
+  @Nonnull private final Map<String, AristaBgpNeighborAddressFamily> _peerGroups;
+  @Nonnull private final Map<Ip, AristaBgpNeighborAddressFamily> _v4Neighbors;
+  @Nonnull private final Map<Ip6, AristaBgpNeighborAddressFamily> _v6Neighbors;
   @Nullable protected Boolean _nextHopUnchanged;
+
+  public AristaBgpVrfAddressFamily() {
+    _peerGroups = new HashMap<>();
+    _v4Neighbors = new HashMap<>();
+    _v6Neighbors = new HashMap<>();
+  }
 
   @Nullable
   public AristaBgpAdditionalPathsConfig getAdditionalPaths() {
@@ -26,5 +40,35 @@ public abstract class AristaBgpVrfAddressFamily implements Serializable {
 
   public void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
     _nextHopUnchanged = nextHopUnchanged;
+  }
+
+  @Nullable
+  public AristaBgpNeighborAddressFamily getNeighbor(Ip neighbor) {
+    return _v4Neighbors.get(neighbor);
+  }
+
+  @Nonnull
+  public AristaBgpNeighborAddressFamily getOrCreateNeighbor(Ip neighbor) {
+    return _v4Neighbors.computeIfAbsent(neighbor, n -> new AristaBgpNeighborAddressFamily());
+  }
+
+  @Nullable
+  public AristaBgpNeighborAddressFamily getNeighbor(Ip6 neighbor) {
+    return _v6Neighbors.get(neighbor);
+  }
+
+  @Nonnull
+  public AristaBgpNeighborAddressFamily getOrCreateNeighbor(Ip6 neighbor) {
+    return _v6Neighbors.computeIfAbsent(neighbor, n -> new AristaBgpNeighborAddressFamily());
+  }
+
+  @Nullable
+  public AristaBgpNeighborAddressFamily getPeerGroup(String peerGroup) {
+    return _peerGroups.get(peerGroup);
+  }
+
+  @Nonnull
+  public AristaBgpNeighborAddressFamily getOrCreatePeerGroup(String peerGroup) {
+    return _peerGroups.computeIfAbsent(peerGroup, n -> new AristaBgpNeighborAddressFamily());
   }
 }
