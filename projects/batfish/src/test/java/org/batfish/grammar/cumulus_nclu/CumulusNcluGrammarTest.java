@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.BgpUnnumberedPeerConfigMatchers.hasPeerInterface;
@@ -100,6 +101,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -309,6 +311,12 @@ public final class CumulusNcluGrammarTest {
         CumulusNcluConfiguration.computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME);
 
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.2")))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasMultipathEquivalentAsPathMatchMode(
+                    MultipathEquivalentAsPathMatchMode.PATH_LENGTH))));
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(peerInterface)))));
 
     BgpUnnumberedPeerConfig pc =
@@ -410,6 +418,10 @@ public final class CumulusNcluGrammarTest {
         "Ensure autonomous-sytem is set",
         proc.getDefaultVrf().getAutonomousSystem(),
         equalTo(65500L));
+
+    // Multipath relax
+    assertTrue(
+        "Ensure as-path multipath-relax is set", proc.getDefaultVrf().getAsPathMultipathRelax());
 
     // ipv4 unicast
     assertThat(

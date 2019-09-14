@@ -448,6 +448,12 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpBestpathAsPathMultipathRelax() {
+    parse("router bgp 1\n bgp bestpath as-path multipath-relax\n");
+    assertTrue(CONFIG.getBgpProcess().getDefaultVrf().getAsPathMultipathRelax());
+  }
+
+  @Test
   public void testBgpRouterId() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(CONFIG.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));

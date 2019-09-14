@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
@@ -1079,6 +1080,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     */
     newProc.setMultipathEbgp(true);
     newProc.setMultipathIbgp(true);
+    if (firstNonNull(bgpVrf.getAsPathMultipathRelax(), Boolean.FALSE)) {
+      newProc.setMultipathEquivalentAsPathMatchMode(PATH_LENGTH);
+    }
 
     BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
     if (ipv4Unicast != null) {

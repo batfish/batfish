@@ -3,6 +3,7 @@ net del all
 net add hostname cumulus_nclu_bgp
 #
 net add bgp autonomous-system 65500
+net add bgp bestpath as-path multipath-relax
 net add bgp ipv4 unicast network 192.0.2.1/32
 net add bgp ipv4 unicast redistribute connected route-map rm1
 net add bgp neighbor swp1 interface remote-as external

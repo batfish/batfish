@@ -19,6 +19,7 @@ b_common
 :
   b_always_compare_med
   | b_autonomous_system
+  | b_bestpath
   | b_ipv4_unicast
   | b_l2vpn
   | b_neighbor
@@ -33,6 +34,17 @@ b_always_compare_med
 b_autonomous_system
 :
   AUTONOMOUS_SYSTEM as = uint32 NEWLINE
+;
+
+b_bestpath
+:
+  BESTPATH
+  bb_aspath_multipath_relax
+;
+
+bb_aspath_multipath_relax
+:
+  AS_PATH MULTIPATH_RELAX NEWLINE
 ;
 
 b_ipv4_unicast
