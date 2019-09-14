@@ -9459,6 +9459,11 @@ PEER_CONFIG_CHECK_BYPASS
    'peer-config-check-bypass'
 ;
 
+PEER_FILTER
+:
+   'peer-filter'
+;
+
 PEER_GROUP
 :
    'peer-group' -> pushMode ( M_NEIGHBOR )

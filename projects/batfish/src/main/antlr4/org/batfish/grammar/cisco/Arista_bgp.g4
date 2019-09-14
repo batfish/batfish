@@ -184,6 +184,7 @@ eos_rbafnonc_activate
 eos_rb_inner
 :
   eos_rbi_aggregate_address
+  | eos_rbi_bgp
   | eos_rbi_default_metric
   | eos_rbi_distance
   | eos_rbi_maximum_paths
@@ -205,6 +206,79 @@ eos_rbi_aggregate_address
     eos_rb_aa_v4
     | eos_rb_aa_v6
   )
+;
+
+eos_rbi_bgp
+:
+  BGP
+  (
+    eos_rbib_additional_paths
+//    | eos_rbib_advertise_inactive
+//    | eos_rbib_allowas_in
+//    | eos_rbib_always_compare_med
+//    | eos_rbib_asn
+//    | eos_rbib_auto_local_addr
+//    | eos_rbib_bestpath
+//    | eos_rbib_client_to_client
+//    | eos_rbib_cluster_id
+//    | eos_rbib_confederation
+//    | eos_rbib_control_plane_filter
+//    | eos_rbib_convergence
+//    | eos_rbib_default
+//    | eos_rbib_enforce_first_as
+//    | eos_rbib_host_routes
+//    | eos_rbib_labeled_unicast
+    | eos_rbib_listen
+//    | eos_rbib_log_neighbor_changes
+//    | eos_rbib_missing_policy
+//    | eos_rbib_monitoring
+//    | eos_rbib_next_hop_unchanged
+//    | eos_rbib_redistribute_internal
+//    | eos_rbib_route
+//    | eos_rbib_route_reflector
+//    | eos_rbib_transport
+  )
+;
+
+eos_rbib_additional_paths
+:
+  ADDITIONAL_PATHS
+  (
+    SEND ANY
+    | RECEIVE
+    | INSTALL
+  )
+  NEWLINE
+;
+
+eos_rbib_listen
+:
+  LISTEN
+  (
+    eos_rbibl_limit
+    | eos_rbibl_range
+  )
+;
+
+eos_rbibl_limit
+:
+  LIMIT num = DEC NEWLINE
+;
+
+eos_rbibl_range
+:
+  RANGE
+  (
+    ip = IP_ADDRESS MASK mask = IP_ADDRESS
+    | prefix = IP_PREFIX
+    | ip6prefix = IPV6_PREFIX
+  )
+  (PEER_GROUP | PEER GROUP) pg = VARIABLE
+  (
+    PEER_FILTER peer_filter = VARIABLE
+    | REMOTE_AS asn = bgp_asn
+  )
+  NEWLINE
 ;
 
 eos_rbi_default_metric
