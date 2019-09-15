@@ -12,14 +12,36 @@ s_bgp
   (
     sb_address_family
   | sb_always_compare_med
+  | sb_bgp
   | sb_neighbor
-  | sb_router_id
   )*
 ;
 
-sb_router_id
+sb_bgp
 :
-  BGP ROUTER_ID IP_ADDRESS NEWLINE
+  BGP
+  (
+    sbb_bestpath
+    | sbb_router_id
+  )
+;
+
+sbb_bestpath
+:
+  BESTPATH
+  (
+    sbbb_aspath_multipath_relax
+  )
+;
+
+sbbb_aspath_multipath_relax
+:
+  AS_PATH MULTIPATH_RELAX NEWLINE
+;
+
+sbb_router_id
+:
+  ROUTER_ID IP_ADDRESS NEWLINE
 ;
 
 sb_neighbor

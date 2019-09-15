@@ -92,6 +92,11 @@ ARP_ND_SUPPRESS
   'arp-nd-suppress'
 ;
 
+AS_PATH
+:
+  'as-path'
+;
+
 AUTO
 :
   'auto'
@@ -105,6 +110,11 @@ AUTONOMOUS_SYSTEM
 BACKUP_IP
 :
   'backup-ip'
+;
+
+BESTPATH
+:
+  'bestpath'
 ;
 
 BGP
@@ -340,6 +350,11 @@ MSEC
 MTU
 :
   'mtu'
+;
+
+MULTIPATH_RELAX
+:
+  'multipath-relax'
 ;
 
 NAMESERVER
