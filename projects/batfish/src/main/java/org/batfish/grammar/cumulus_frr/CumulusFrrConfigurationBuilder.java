@@ -48,7 +48,6 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
@@ -62,6 +61,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_c
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
@@ -392,7 +393,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSb_router_id(Sb_router_idContext ctx) {
+  public void exitSbbb_aspath_multipath_relax(Sbbb_aspath_multipath_relaxContext ctx) {
+    _currentBgpVrf.setAsPathMultipathRelax(true);
+  }
+
+  @Override
+  public void exitSbb_router_id(Sbb_router_idContext ctx) {
     _currentBgpVrf.setRouterId(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 

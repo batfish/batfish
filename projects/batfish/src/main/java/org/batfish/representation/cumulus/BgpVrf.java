@@ -11,6 +11,7 @@ import org.batfish.datamodel.Ip;
 public class BgpVrf implements Serializable {
 
   private @Nullable Long _autonomousSystem;
+  private @Nullable Boolean _asPathMultipathRelax;
   private final @Nonnull Map<String, BgpNeighbor> _neighbors;
   private @Nullable BgpIpv4UnicastAddressFamily _ipv4Unicast;
   private @Nullable BgpL2vpnEvpnAddressFamily _l2VpnEvpn;
@@ -20,6 +21,15 @@ public class BgpVrf implements Serializable {
   public BgpVrf(String vrfName) {
     _vrfName = vrfName;
     _neighbors = new HashMap<>();
+  }
+
+  @Nullable
+  public Boolean getAsPathMultipathRelax() {
+    return _asPathMultipathRelax;
+  }
+
+  public void setAsPathMultipathRelax(@Nullable Boolean asPathMultipathRelax) {
+    _asPathMultipathRelax = asPathMultipathRelax;
   }
 
   public @Nullable Long getAutonomousSystem() {

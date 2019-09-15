@@ -24,6 +24,16 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+AS_PATH
+:
+  'as-path'
+;
+
+BESTPATH
+:
+  'bestpath'
+;
+
 BFD
 :
   'bfd' -> pushMode(M_Words)
@@ -254,6 +264,11 @@ LOG
 LINE
 :
   'line'
+;
+
+MULTIPATH_RELAX
+:
+  'multipath-relax'
 ;
 
 NEIGHBOR

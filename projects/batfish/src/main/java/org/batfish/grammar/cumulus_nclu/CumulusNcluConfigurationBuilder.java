@@ -63,6 +63,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_l2vpnContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_neighborContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_router_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4_neighborContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4_networkContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4_redistribute_connectedContext;
@@ -921,6 +922,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitB_router_id(B_router_idContext ctx) {
     _currentBgpVrf.setRouterId(toIp(ctx.id));
+  }
+
+  @Override
+  public void exitBb_aspath_multipath_relax(Bb_aspath_multipath_relaxContext ctx) {
+    _currentBgpVrf.setAsPathMultipathRelax(true);
   }
 
   @Override
