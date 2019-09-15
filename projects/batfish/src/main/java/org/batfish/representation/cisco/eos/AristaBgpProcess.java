@@ -33,6 +33,11 @@ public final class AristaBgpProcess implements Serializable {
   }
 
   @Nonnull
+  public AristaBgpPeerGroupNeighbor getOrCreatePeerGroup(String name) {
+    return _peerGroups.computeIfAbsent(name, AristaBgpPeerGroupNeighbor::new);
+  }
+
+  @Nonnull
   public Map<String, AristaBgpVlanAwareBundle> getVlanAwareBundles() {
     return _vlanAwareBundles;
   }

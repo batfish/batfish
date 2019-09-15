@@ -235,13 +235,14 @@ public class AristaGrammarTest {
   @Test
   public void testAddressFamilyExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_af");
-    AristaBgpVrfIpv4UnicastAddressFamily ipv4af =
-        config.getAristaBgp().getDefaultVrf().getV4UnicastAf();
+    AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+    AristaBgpVrfIpv4UnicastAddressFamily ipv4af = vrf.getV4UnicastAf();
     assertThat(ipv4af, notNullValue());
     AristaBgpVrfEvpnAddressFamily evpnaf = config.getAristaBgp().getDefaultVrf().getEvpnAf();
     assertThat(evpnaf, notNullValue());
 
     {
+      assertThat(vrf.getV4neighbors(), hasKey(Ip.parse("1.1.1.1")));
       AristaBgpNeighborAddressFamily v4 = ipv4af.getNeighbor(Ip.parse("1.1.1.1"));
       assertThat(v4, notNullValue());
       assertThat(v4.getActivate(), equalTo(Boolean.TRUE));
@@ -250,6 +251,7 @@ public class AristaGrammarTest {
       assertThat(evpn.getActivate(), equalTo(Boolean.TRUE));
     }
     {
+      assertThat(vrf.getV4neighbors(), hasKey(Ip.parse("2.2.2.2")));
       AristaBgpNeighborAddressFamily v4 = ipv4af.getNeighbor(Ip.parse("2.2.2.2"));
       assertThat(v4, notNullValue());
       assertThat(v4.getActivate(), equalTo(Boolean.FALSE));
@@ -257,6 +259,7 @@ public class AristaGrammarTest {
       assertThat(evpn, nullValue());
     }
     {
+      assertThat(config.getAristaBgp().getPeerGroups(), hasKey("PG"));
       AristaBgpNeighborAddressFamily v4 = ipv4af.getPeerGroup("PG");
       assertThat(v4, nullValue());
       AristaBgpNeighborAddressFamily evpn = evpnaf.getPeerGroup("PG");
