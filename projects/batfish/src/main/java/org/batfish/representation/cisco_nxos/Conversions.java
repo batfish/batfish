@@ -705,7 +705,7 @@ final class Conversions {
 
   /** Get address family capabilities for IPv4 and L2VPN address families */
   private static AddressFamilyCapabilities getAddressFamilyCapabilities(
-      BgpVrfNeighborAddressFamilyConfiguration naf, Boolean inheritedSupressInactive) {
+      BgpVrfNeighborAddressFamilyConfiguration naf, boolean inheritedSupressInactive) {
     return AddressFamilyCapabilities.builder()
         .setAdvertiseInactive(!firstNonNull(naf.getSuppressInactive(), inheritedSupressInactive))
         .setAllowLocalAsIn(firstNonNull(naf.getAllowAsIn(), Boolean.FALSE))
