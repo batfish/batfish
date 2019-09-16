@@ -404,8 +404,6 @@ final class AristaConversions {
       newNeighborBuilder.setIpv4UnicastAddressFamily(ipv4FamilyBuilder.build());
     }
 
-    System.err.println("Returning a new neighbor " + newNeighborBuilder.build());
-
     return newNeighborBuilder.build();
   }
 
