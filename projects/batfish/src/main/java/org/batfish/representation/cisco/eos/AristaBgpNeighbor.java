@@ -156,4 +156,43 @@ public abstract class AristaBgpNeighbor implements Serializable {
   protected AristaBgpNeighbor() {
     _genericAddressFamily = new AristaBgpNeighborAddressFamily();
   }
+
+  protected void inheritFrom(AristaBgpNeighbor other) {
+    if (_allowAsIn == null) {
+      _allowAsIn = other._allowAsIn;
+    }
+    if (_autoLocalAddr == null) {
+      _autoLocalAddr = other._autoLocalAddr;
+    }
+    // do not inherit description
+    if (_dontCapabilityNegotiate == null) {
+      _dontCapabilityNegotiate = other._dontCapabilityNegotiate;
+    }
+    if (_ebgpMultihop == null) {
+      _ebgpMultihop = other._ebgpMultihop;
+    }
+    if (_enforceFirstAs == null) {
+      _enforceFirstAs = other._enforceFirstAs;
+    }
+    if (_localAs == null) {
+      _localAs = other._localAs;
+    }
+    if (_nextHopSelf == null) {
+      _nextHopSelf = other._nextHopSelf;
+    }
+    if (_nextHopUnchanged == null) {
+      _nextHopUnchanged = other._nextHopUnchanged;
+    }
+    if (_remoteAs == null) {
+      _remoteAs = other._remoteAs;
+    }
+    if (_sendCommunity == null) {
+      _sendCommunity = other._sendCommunity;
+    }
+    if (_updateSource == null) {
+      _updateSource = other._updateSource;
+    }
+    // DO NOT inherit the generic address family - that needs to be done elsewhere to ensure
+    // ordering is correct.
+  }
 }

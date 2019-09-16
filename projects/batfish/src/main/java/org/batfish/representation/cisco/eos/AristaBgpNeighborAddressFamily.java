@@ -4,7 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nullable;
 
 /** BGP neighbor settings. This class implements the union of all address families. */
-public final class AristaBgpNeighborAddressFamily implements Serializable {
+public class AristaBgpNeighborAddressFamily implements Serializable {
   @Nullable private Boolean _activate;
   @Nullable private AristaBgpAdditionalPathsConfig _additionalPaths;
   private boolean _defaultActivate = false;
@@ -104,5 +104,27 @@ public final class AristaBgpNeighborAddressFamily implements Serializable {
 
   public void setWeight(@Nullable Integer weight) {
     _weight = weight;
+  }
+
+  public void inheritFrom(AristaBgpNeighborAddressFamily other) {
+    if (_activate == null) {
+      _activate = other._activate;
+    }
+    if (_additionalPaths == null) {
+      _additionalPaths = other._additionalPaths;
+    }
+    // how does defaultActivate play in?
+    if (_nextHopUnchanged == null) {
+      _nextHopUnchanged = other._nextHopUnchanged;
+    }
+    if (_routeMapIn == null) {
+      _routeMapIn = other._routeMapIn;
+    }
+    if (_routeMapOut == null) {
+      _routeMapOut = other._routeMapOut;
+    }
+    if (_weight == null) {
+      _weight = other._weight;
+    }
   }
 }

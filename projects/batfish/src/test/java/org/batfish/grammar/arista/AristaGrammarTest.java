@@ -98,7 +98,7 @@ public class AristaGrammarTest {
       assertThat(vrf.getEbgpAdminDistance(), equalTo(333));
       assertThat(vrf.getIbgpAdminDistance(), equalTo(400));
       assertThat(vrf.getLocalAdminDistance(), equalTo(500));
-      assertTrue(vrf.getDefaultIpv4Unicast());
+      assertFalse(vrf.getDefaultIpv4Unicast());
       assertThat(vrf.getMaxPaths(), equalTo(3));
       assertThat(vrf.getMaxPathsEcmp(), equalTo(2));
     }

@@ -1,8 +1,8 @@
 package org.batfish.representation.cisco.eos;
 
-import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Prefix;
 
 /** Config for dynamic BGP neighbors (created using "bgp listen range") */
@@ -31,7 +31,7 @@ public class AristaBgpV4DynamicNeighbor implements AristaBgpHasPeerGroup {
   }
 
   @Override
-  public void inherit(Map<String, AristaBgpPeerGroupNeighbor> peerGroups) {
+  public void inherit(AristaBgpProcess bgpGlobal, AristaBgpVrf bgpVrf, Warnings w) {
     // TODO: inheritance
   }
 }
