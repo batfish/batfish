@@ -197,6 +197,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getRouteMapIn(), equalTo("RM_IN"));
       assertThat(neighbor.getRouteMapOut(), equalTo("RM_OUT"));
       assertTrue(neighbor.getSendCommunity());
+      assertThat(neighbor.getShutdown(), nullValue());
       assertThat(neighbor.getUpdateSource(), equalTo("Loopback0"));
     }
     {
@@ -205,6 +206,7 @@ public class AristaGrammarTest {
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getRemoteAs(), equalTo(36L));
       assertThat(neighbor.getEbgpMultihop(), equalTo(10));
+      assertThat(neighbor.getShutdown(), equalTo(Boolean.TRUE));
       // TODO: default-originate
     }
     {

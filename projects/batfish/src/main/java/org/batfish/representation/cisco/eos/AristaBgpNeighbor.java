@@ -19,6 +19,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private String _routeMapIn;
   @Nullable private String _routeMapOut;
   @Nullable private Boolean _sendCommunity;
+  @Nullable private Boolean _shutdown;
   @Nullable private String _updateSource;
   @Nonnull private AristaBgpNeighborAddressFamily _genericAddressFamily;
 
@@ -145,6 +146,15 @@ public abstract class AristaBgpNeighbor implements Serializable {
   }
 
   @Nullable
+  public Boolean getShutdown() {
+    return _shutdown;
+  }
+
+  public void setShutdown(@Nullable Boolean shutdown) {
+    _shutdown = shutdown;
+  }
+
+  @Nullable
   public String getUpdateSource() {
     return _updateSource;
   }
@@ -188,6 +198,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
     }
     if (_sendCommunity == null) {
       _sendCommunity = other._sendCommunity;
+    }
+    if (_shutdown == null) {
+      _shutdown = other._shutdown;
     }
     if (_updateSource == null) {
       _updateSource = other._updateSource;

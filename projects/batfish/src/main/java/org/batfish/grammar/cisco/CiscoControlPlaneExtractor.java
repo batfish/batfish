@@ -672,6 +672,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_route_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_default_ipv4_unicastContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_neighborContext;
@@ -2807,6 +2808,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // TODO: figure out all the valid modifiers/combos
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitEos_rbinc_shutdown(Eos_rbinc_shutdownContext ctx) {
+    _currentAristaBgpNeighbor.setShutdown(true);
   }
 
   @Override
