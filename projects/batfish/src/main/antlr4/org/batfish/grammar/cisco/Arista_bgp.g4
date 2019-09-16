@@ -364,7 +364,7 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_route_reflector_client
 //    | eos_rbinc_route_to_peer
     | eos_rbinc_send_community
-//    | eos_rbinc_shutdown
+    | eos_rbinc_shutdown
 //    | eos_rbinc_soft_reconfiguration
     | eos_rbinc_timers
 //    | eos_rbinc_transport
@@ -488,6 +488,11 @@ eos_rbinc_send_community
 //      )
   )*
   NEWLINE
+;
+
+eos_rbinc_shutdown
+:
+  SHUTDOWN NEWLINE
 ;
 
 eos_rbinc_timers
