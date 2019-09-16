@@ -676,6 +676,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_default_ipv4_unicastContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinon_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_attached_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_connectedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_dynamicContext;
@@ -687,7 +688,6 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_rninon_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_router_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
@@ -2875,7 +2875,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitEos_rninon_enforce_first_as(Eos_rninon_enforce_first_asContext ctx) {
+  public void exitEos_rbinon_enforce_first_as(Eos_rbinon_enforce_first_asContext ctx) {
     _currentAristaBgpNeighbor.setEnforceFirstAs(false);
   }
 

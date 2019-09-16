@@ -575,10 +575,10 @@ eos_rbino_neighbor
     | v6 = IPV6_ADDRESS
     | pg = VARIABLE
   )
-  eos_rninon_enforce_first_as
+  eos_rbinon_enforce_first_as
 ;
 
-eos_rninon_enforce_first_as
+eos_rbinon_enforce_first_as
 :
   ENFORCE_FIRST_AS NEWLINE
 ;
