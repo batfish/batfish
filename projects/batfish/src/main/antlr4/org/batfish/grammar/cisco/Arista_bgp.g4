@@ -566,6 +566,7 @@ eos_rbi_peer_group
   (
     (PEER_GROUP | PEER GROUP) NEWLINE
     | eos_rbi_neighbor_common
+    | eos_rbin_local_v6_addr
   )
 ;
 
