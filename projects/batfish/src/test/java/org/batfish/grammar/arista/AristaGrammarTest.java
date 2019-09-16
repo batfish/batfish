@@ -41,6 +41,7 @@ import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
 import org.batfish.representation.cisco.eos.AristaBgpVrfEvpnAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
+import org.batfish.representation.cisco.eos.AristaBgpVrfIpv6UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.junit.Test;
 
@@ -239,6 +240,7 @@ public class AristaGrammarTest {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_af");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = vrf.getV4UnicastAf();
+    AristaBgpVrfIpv6UnicastAddressFamily ipv6af = vrf.getV6UnicastAf();
     assertThat(ipv4af, notNullValue());
     AristaBgpVrfEvpnAddressFamily evpnaf = config.getAristaBgp().getDefaultVrf().getEvpnAf();
     assertThat(evpnaf, notNullValue());
@@ -267,6 +269,9 @@ public class AristaGrammarTest {
       AristaBgpNeighborAddressFamily evpn = evpnaf.getPeerGroup("PG");
       assertThat(evpn, notNullValue());
       assertThat(evpn.getActivate(), equalTo(Boolean.TRUE));
+      AristaBgpNeighborAddressFamily v6 = ipv6af.getPeerGroup("PG");
+      assertThat(v6, notNullValue());
+      assertThat(v6.getActivate(), equalTo(Boolean.TRUE));
     }
   }
 

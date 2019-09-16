@@ -11,6 +11,8 @@ router bgp 65104
   address-family ipv4
     neighbor 1.1.1.1 activate
     no neighbor 2.2.2.2 activate
+  address-family ipv6
+      neighbor PG activate
   address-family evpn
     neighbor 1.1.1.1 activate
     neighbor PG activate
