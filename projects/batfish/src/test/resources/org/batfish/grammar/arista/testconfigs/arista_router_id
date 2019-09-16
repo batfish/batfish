@@ -1,0 +1,55 @@
+!RANCID-CONTENT-TYPE: arista
+!
+! Real config from EOS emulator in GNS3, edited heavily to remove unrelated bits.
+! All commands that matter are below, enter them after `configure`.
+! `show ip bgp vrf all` will produce the output that confirms what router IDs are used.
+!
+vrf definition A
+!
+vrf definition B
+!
+ip routing vrf A
+ip routing vrf B
+!
+! In default VRF, highest IP will be used. Not Loopback0, lowest IP, first loopback, last loopback.
+!
+interface Loopback0
+   ip address 4.4.4.4/32
+!
+interface Loopback1
+   ip address 4.4.4.5/32
+!
+interface Loopback2
+   ip address 4.4.4.3/32
+!
+! In VRF A, highest ACTIVE IP will be used.
+!
+interface Loopback100
+   vrf forwarding A
+   ip address 2.2.2.2/32
+!
+interface Loopback101
+   vrf forwarding A
+   ip address 2.2.2.3/32
+   shutdown
+!
+interface Loopback102
+   vrf forwarding A
+   ip address 2.2.2.1/32
+!
+! VRF B will have router-id 0.0.0.0 since it has no active interfaces.
+!
+interface Loopback200
+   vrf forwarding B
+   ip address 8.8.8.8/32
+   shutdown
+!
+router bgp 1
+!
+  vrf A
+    address-family ipv4
+  !
+  vrf B
+    address-family ipv4
+  !
+!
