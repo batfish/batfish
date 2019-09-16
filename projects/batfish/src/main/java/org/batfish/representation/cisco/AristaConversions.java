@@ -294,7 +294,7 @@ final class AristaConversions {
     }
 
     // TODO:
-    //    newNeighborBuilder.setClusterId(
+    newNeighborBuilder.setClusterId(proc.getRouterId().asLong());
     //        firstNonNull(vrfConfig.getClusterId(), proc.getRouterId()).asLong());
 
     newNeighborBuilder.setDescription(neighbor.getDescription());
