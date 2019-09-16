@@ -675,6 +675,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_route_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_default_ipv4_unicastContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_attached_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_connectedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_dynamicContext;
@@ -686,6 +687,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rninon_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_router_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
@@ -2842,6 +2844,35 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitEos_rbino_bgp_default_ipv4_unicast(
       Eos_rbino_bgp_default_ipv4_unicastContext ctx) {
     _currentAristaBgpVrf.setDefaultIpv4Unicast(false);
+  }
+
+  @Override
+  public void enterEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
+    if (ctx.v4 != null) {
+      Ip address = toIp(ctx.v4);
+      _currentAristaBgpNeighbor =
+          _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
+    } else if (ctx.pg != null) {
+      String name = ctx.pg.getText();
+      _currentAristaBgpNeighbor =
+          _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
+    } else if (ctx.v6 != null) {
+      // TODO: v6 neighbors
+      _currentAristaBgpNeighbor = new AristaBgpPeerGroupNeighbor("dummy");
+    } else {
+      throw new IllegalStateException(
+          String.format("Unknown neighbor type in %s", getFullText(ctx)));
+    }
+  }
+
+  @Override
+  public void exitEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
+    _currentAristaBgpNeighbor = null;
+  }
+
+  @Override
+  public void exitEos_rninon_enforce_first_as(Eos_rninon_enforce_first_asContext ctx) {
+    _currentAristaBgpNeighbor.setEnforceFirstAs(false);
   }
 
   @Override
