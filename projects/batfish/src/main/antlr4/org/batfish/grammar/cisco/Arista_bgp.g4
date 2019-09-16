@@ -23,7 +23,7 @@ eos_rb_address_family
   ADDRESS_FAMILY
   (
     eos_rb_af_ipv4
-//  | eos_rb_af_ipv6
+    | eos_rb_af_ipv6
     | eos_rb_af_evpn
 //  | eos_rb_af_vpn_v4
 //  | eos_rb_af_vpn_v6
@@ -94,6 +94,31 @@ eos_rbafipv4_no_neighbor
     | pg = VARIABLE
   )
   eos_rb_af_no_neighbor_common
+;
+
+eos_rb_af_ipv6
+:
+  IPV6
+  eos_rb_af_ipv6_unicast
+//  | eos_rb_af_ipv6_labeled_unicast
+//  | eos_rb_af_ipv6_sr_te
+;
+
+eos_rb_af_ipv6_unicast
+:
+  NEWLINE
+  eos_rbafipv6u_neighbor*
+;
+
+eos_rbafipv6u_neighbor
+:
+  NEIGHBOR
+  (
+    v4 = IP_ADDRESS
+    | v6 = IPV6_ADDRESS
+    | pg = VARIABLE
+  )
+  eos_rb_af_neighbor_common
 ;
 
 eos_rb_af_evpn
@@ -802,7 +827,7 @@ eos_rbv_address_family
 :
   eos_rb_af_ipv4
 //  | eos_rb_af_ipv4_multicast
-//  | eos_rb_af_ipv6
+  | eos_rb_af_ipv6
 ;
 
 eos_rbv_local_as

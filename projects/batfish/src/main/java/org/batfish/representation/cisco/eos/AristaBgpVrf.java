@@ -36,6 +36,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nonnull private final Map<Prefix, AristaBgpAggregateNetwork> _v4aggregates;
   @Nonnull private final Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4UnicastAf;
+  @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
   @Nullable private AristaBgpVrfEvpnAddressFamily _evpnAf;
 
   public AristaBgpVrf(String name) {
@@ -244,5 +245,18 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setV4UnicastAf(@Nullable AristaBgpVrfIpv4UnicastAddressFamily v4UnicastAf) {
     _v4UnicastAf = v4UnicastAf;
+  }
+
+  @Nullable
+  public AristaBgpVrfIpv6UnicastAddressFamily getV6UnicastAf() {
+    return _v6UnicastAf;
+  }
+
+  @Nonnull
+  public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6UnicastAf() {
+    if (_v6UnicastAf == null) {
+      _v6UnicastAf = new AristaBgpVrfIpv6UnicastAddressFamily();
+    }
+    return _v6UnicastAf;
   }
 }
