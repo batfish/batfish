@@ -21,6 +21,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -196,6 +197,8 @@ public final class BgpProtocolHelper {
 
     if (peerInterface != null) {
       builder.setNextHopInterface(peerInterface);
+    } else {
+      builder.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE);
     }
     builder.setAdmin(toProcess.getAdminCost(targetProtocol));
     builder.setProtocol(targetProtocol);
