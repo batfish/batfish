@@ -4,7 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nullable;
 
 /** BGP neighbor settings. This class implements the union of all address families. */
-public final class AristaBgpNeighborAddressFamily implements Serializable {
+public class AristaBgpNeighborAddressFamily implements Serializable {
   @Nullable private Boolean _activate;
   @Nullable private AristaBgpAdditionalPathsConfig _additionalPaths;
   private boolean _defaultActivate = false;
@@ -17,29 +17,29 @@ public final class AristaBgpNeighborAddressFamily implements Serializable {
   @Nullable private Integer _weight;
 
   @Nullable
-  public final Boolean getActivate() {
+  public Boolean getActivate() {
     return _activate;
   }
 
-  public final void setActivate(@Nullable Boolean activate) {
+  public void setActivate(@Nullable Boolean activate) {
     _activate = activate;
   }
 
   @Nullable
-  public final AristaBgpAdditionalPathsConfig getAdditionalPaths() {
+  public AristaBgpAdditionalPathsConfig getAdditionalPaths() {
     return _additionalPaths;
   }
 
-  public final void setAdditionalPaths(@Nullable AristaBgpAdditionalPathsConfig additionalPaths) {
+  public void setAdditionalPaths(@Nullable AristaBgpAdditionalPathsConfig additionalPaths) {
     _additionalPaths = additionalPaths;
   }
 
   /** Whether the neighbors by default are activated in this address family */
-  public final boolean isDefaultActivate() {
+  public boolean isDefaultActivate() {
     return _defaultActivate;
   }
 
-  public final void setDefaultActivate(boolean defaultActivate) {
+  public void setDefaultActivate(boolean defaultActivate) {
     _defaultActivate = defaultActivate;
   }
 
@@ -57,7 +57,7 @@ public final class AristaBgpNeighborAddressFamily implements Serializable {
     return _nextHopUnchanged;
   }
 
-  public final void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
+  public void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
     _nextHopUnchanged = nextHopUnchanged;
   }
 
@@ -84,25 +84,25 @@ public final class AristaBgpNeighborAddressFamily implements Serializable {
     return _routeMapIn;
   }
 
-  public final void setRouteMapIn(@Nullable String routeMapIn) {
+  public void setRouteMapIn(@Nullable String routeMapIn) {
     _routeMapIn = routeMapIn;
   }
 
   @Nullable
-  public final String getRouteMapOut() {
+  public String getRouteMapOut() {
     return _routeMapOut;
   }
 
-  public final void setRouteMapOut(@Nullable String routeMapOut) {
+  public void setRouteMapOut(@Nullable String routeMapOut) {
     _routeMapOut = routeMapOut;
   }
 
   @Nullable
-  public final Integer getWeight() {
+  public Integer getWeight() {
     return _weight;
   }
 
-  public final void setWeight(@Nullable Integer weight) {
+  public void setWeight(@Nullable Integer weight) {
     _weight = weight;
   }
 
