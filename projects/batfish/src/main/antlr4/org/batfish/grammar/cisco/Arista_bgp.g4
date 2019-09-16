@@ -312,7 +312,7 @@ eos_rbi_neighbor4
   name = IP_ADDRESS
   (
     eos_rbi_neighbor_common
-    //| eos_rbin_local_v6_addr
+    | eos_rbin_local_v6_addr
     // Assigning a peer group
     | eos_rbin_peer_group
   )
@@ -498,6 +498,11 @@ eos_rbinc_timers
 eos_rbinc_update_source
 :
   UPDATE_SOURCE iface = interface_name NEWLINE
+;
+
+eos_rbin_local_v6_addr
+:
+  LOCAL_V6_ADDR IPV6_ADDRESS NEWLINE
 ;
 
 // Assigning a peer group to a neighbor
