@@ -63,8 +63,7 @@ import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily
  */
 @ParametersAreNonnullByDefault
 final class AristaConversions {
-  /** Computes the router ID on Cisco NX-OS. */
-  // See CiscoNxosTest#testRouterId for a test that is verifiable using GNS3.
+  /** Computes the router ID. */
   @Nonnull
   static Ip getBgpRouterId(AristaBgpVrf vrfConfig, Vrf vrf, Warnings w) {
     // If Router ID is configured in the VRF-Specific BGP config, it always wins.
