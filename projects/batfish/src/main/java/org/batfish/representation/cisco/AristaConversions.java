@@ -71,18 +71,15 @@ final class AristaConversions {
       return vrfConfig.getRouterId();
     }
 
-    //////////////////////
-    // TODO below here.
-    //////////////////////
-
     String messageBase =
         String.format(
             "Router-id is not manually configured for BGP process in VRF %s", vrf.getName());
 
     // Otherwise, Router ID is defined based on the interfaces in the VRF that have IP addresses.
-    // NX-OS does use shutdown interfaces to configure router-id.
+    // EOS does NOT use shutdown interfaces to configure router-id.
     Map<String, Interface> interfaceMap =
         vrf.getInterfaces().entrySet().stream()
+            .filter(e -> e.getValue().getActive())
             .filter(e -> e.getValue().getConcreteAddress() != null)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     if (interfaceMap.isEmpty()) {
@@ -95,42 +92,26 @@ final class AristaConversions {
       return Ip.ZERO;
     }
 
-    // Next, NX-OS prefers the IP of Loopback0 if one exists.
-    Interface loopback0 = interfaceMap.get("Loopback0");
-    if (loopback0 != null) {
-      w.redFlag(String.format("%s. Using the IP address of Loopback0", messageBase));
-      return loopback0.getConcreteAddress().getIp();
-    }
-
-    // Next, NX-OS prefers "first" loopback interface. NX-OS is non-deterministic, but we will
-    // enforce determinism by always choosing the smallest loopback IP.
+    // Next, EOS prefers highest loopback IP.
     Collection<Interface> interfaces = interfaceMap.values();
-    Optional<Ip> lowestLoopback =
+    Optional<Ip> highestLoopback =
         interfaces.stream()
             .filter(i -> i.getName().startsWith("Loopback"))
             .map(Interface::getConcreteAddress)
             .map(ConcreteInterfaceAddress::getIp)
-            .min(Comparator.naturalOrder());
-    if (lowestLoopback.isPresent()) {
-      w.redFlag(
-          String.format(
-              "%s. Making a non-deterministic choice from associated loopbacks", messageBase));
-      return lowestLoopback.get();
+            .max(Comparator.naturalOrder());
+    if (highestLoopback.isPresent()) {
+      return highestLoopback.get();
     }
 
-    // Finally, NX uses the first non-loopback interface defined in the vrf, assuming no loopback
-    // addresses with IP address are present in the vrf. NX-OS is non-deterministic, by we will
-    // enforce determinism by always choosing the smallest interface IP.
-    Optional<Ip> lowestIp =
+    // Finally, EOS uses the highest non-loopback interface IP defined in the vrf.
+    Optional<Ip> highestIp =
         interfaces.stream()
             .map(Interface::getConcreteAddress)
             .map(ConcreteInterfaceAddress::getIp)
-            .min(Comparator.naturalOrder());
-    w.redFlag(
-        String.format(
-            "%s. Making a non-deterministic choice from associated interfaces", messageBase));
-    assert lowestIp.isPresent(); // This cannot happen if interfaces is non-empty.
-    return lowestIp.get();
+            .max(Comparator.naturalOrder());
+    assert highestIp.isPresent(); // This cannot happen if interfaces is non-empty.
+    return highestIp.get();
   }
 
   private static boolean isActive(
