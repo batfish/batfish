@@ -8,12 +8,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.EnumSet;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties.Builder;
+import org.batfish.datamodel.BgpSessionProperties.RouteExchange;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
@@ -64,10 +66,12 @@ public class BgpSessionPropertiesTest {
     BgpSessionProperties bsp = builder.setTailIp(tailIp).setHeadIp(headIp).build();
     new EqualsTester()
         .addEqualityGroup(bsp, bsp, builder.build())
-        .addEqualityGroup(builder.setAdditionalPaths(true).build())
+        .addEqualityGroup(
+            builder
+                .setRouteExchangeSettings(
+                    ImmutableMap.of(Type.IPV4_UNICAST, new RouteExchange(true, false, true)))
+                .build())
         .addEqualityGroup(builder.setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST)).build())
-        .addEqualityGroup(builder.setAdvertiseExternal(true).build())
-        .addEqualityGroup(builder.setAdvertiseInactive(true).build())
         // note the head/tail swap
         .addEqualityGroup(builder.setHeadIp(tailIp).build())
         .addEqualityGroup(builder.setTailIp(headIp).build())
@@ -82,10 +86,9 @@ public class BgpSessionPropertiesTest {
     Ip tailIp = Ip.parse("2.2.2.2");
     BgpSessionProperties bsp =
         BgpSessionProperties.builder()
-            .setAdditionalPaths(true)
             .setAddressFamilies(EnumSet.allOf(Type.class))
-            .setAdvertiseExternal(true)
-            .setAdvertiseInactive(true)
+            .setRouteExchangeSettings(
+                ImmutableMap.of(Type.IPV4_UNICAST, new RouteExchange(true, false, true)))
             .setTailIp(tailIp)
             .setHeadIp(headIp)
             .setSessionType(SessionType.EBGP_MULTIHOP)
