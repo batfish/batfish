@@ -135,6 +135,10 @@ final class AristaConversions {
 
   private static boolean isActive(
       String name, AristaBgpVrf vrf, AristaBgpV4Neighbor neighbor, Warnings w) {
+    if (firstNonNull(neighbor.getShutdown(), Boolean.FALSE)) {
+      return false;
+    }
+
     // No active address family that we support.
     boolean v4 =
         Optional.ofNullable(vrf.getV4UnicastAf())
