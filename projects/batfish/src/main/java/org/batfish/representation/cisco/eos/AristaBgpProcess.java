@@ -61,8 +61,9 @@ public final class AristaBgpProcess implements Serializable {
     return _vrfs;
   }
 
-  @Nullable
+  @Nonnull
   public AristaBgpVrf getDefaultVrf() {
+    assert _vrfs.containsKey(DEFAULT_VRF); // populated in constructor
     return _vrfs.get(DEFAULT_VRF);
   }
 }

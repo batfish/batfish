@@ -2493,6 +2493,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentAristaBgpProcess = new AristaBgpProcess(asn);
       _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
     }
+    _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
   }
 
   @Override
