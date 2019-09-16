@@ -539,7 +539,10 @@ eos_rbi_network6
 eos_rbi_no
 :
   NO
-  eos_rbino_bgp
+  (
+    eos_rbino_bgp
+    | eos_rbino_neighbor
+  )
 ;
 
 eos_rbino_bgp
@@ -557,6 +560,22 @@ eos_rbino_bgp_default
 eos_rbino_bgp_default_ipv4_unicast
 :
   IPV4_UNICAST NEWLINE
+;
+
+eos_rbino_neighbor
+:
+  NEIGHBOR
+  (
+    v4 = IP_ADDRESS
+    | v6 = IPV6_ADDRESS
+    | pg = VARIABLE
+  )
+  eos_rninon_enforce_first_as
+;
+
+eos_rninon_enforce_first_as
+:
+  ENFORCE_FIRST_AS NEWLINE
 ;
 
 // Defining a peer group
