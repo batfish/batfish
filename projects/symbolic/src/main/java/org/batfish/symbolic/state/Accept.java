@@ -6,6 +6,7 @@ public final class Accept implements StateExpr {
 
   @Override
   public <R> R accept(StateExprVisitor<R> visitor) {
+    int x = 3;
     return visitor.visitAccept();
   }
 }

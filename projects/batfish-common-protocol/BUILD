@@ -1,6 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 filegroup(
     name = "parser_files",
@@ -212,4 +213,9 @@ genrule(
 BATFISH_VERSION="$$(grep -1 batfish-parent $(location //projects:pom.xml) | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
 sed s/\$${project.version}/$${BATFISH_VERSION}/ $(location src/main/resources/org/batfish/common/common.properties) > "$@"
 """,
+)
+
+pmd_test(
+    name="pmd",
+    lib=":common",
 )
