@@ -89,6 +89,42 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
+  public void testTransformOnImportClearsNextHop() {
+    assertThat(
+        "NextHopInterface should be cleared even if peerInterface is null",
+        transformBgpRouteOnImport(
+                _baseBgpRouteBuilder
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setNextHopInterface("foobar")
+                    .build(),
+                2L,
+                false,
+                true,
+                _process,
+                null)
+            .getNextHopInterface(),
+        equalTo(Route.UNSET_NEXT_HOP_INTERFACE));
+  }
+
+  @Test
+  public void testTransformOnImportWithPeerInterface() {
+    assertThat(
+        "NextHopInterface should be set to peerInterface",
+        transformBgpRouteOnImport(
+                _baseBgpRouteBuilder
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setNextHopInterface("foobar")
+                    .build(),
+                2L,
+                false,
+                true,
+                _process,
+                "baz")
+            .getNextHopInterface(),
+        equalTo("baz"));
+  }
+
+  @Test
   public void testTransformOnImportIbgp() {
     assertThat(
         "No AS path loop, iBGP",
