@@ -1963,6 +1963,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // https://www.arista.com/en/um-eos/eos-section-33-1-bgp-conceptual-overview#ww1296175 step 8
     //    newBgpProcess.setMultipathEquivalentAsPathMatchMode(PATH_LENGTH);
     // TODO: parse the disabling command
+    // TODO: correct meaning of Arista multipath policy.
 
     // Process vrf-level address family configuration, such as export policy.
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = bgpVrf.getV4UnicastAf();
