@@ -305,7 +305,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
-import static org.batfish.representation.cisco.eos.AristaBgpProcess.DEFAULT_VRF;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -2494,8 +2493,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentAristaBgpProcess = new AristaBgpProcess(asn);
       _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
     }
-    _currentAristaBgpVrf =
-        _currentAristaBgpProcess.getVrfs().computeIfAbsent(DEFAULT_VRF, AristaBgpVrf::new);
   }
 
   @Override
