@@ -2840,7 +2840,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinc_send_community(Eos_rbinc_send_communityContext ctx) {
     _currentAristaBgpNeighbor.setSendCommunity(true);
-    if (ctx.ADD() != null || ctx.EXTENDED() != null || ctx.REMOVE() != null) {
+    if (ctx.ADD() != null || !ctx.EXTENDED().isEmpty() || ctx.REMOVE() != null) {
       // TODO: figure out all the valid modifiers/combos
       todo(ctx);
     }
