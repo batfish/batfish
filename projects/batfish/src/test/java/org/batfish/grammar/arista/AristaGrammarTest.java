@@ -52,7 +52,6 @@ import org.batfish.representation.cisco.eos.AristaBgpVrfEvpnAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv6UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaRedistributeType;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -96,8 +95,7 @@ public class AristaGrammarTest {
   private @Nonnull Configuration parseConfig(String hostname) throws IOException {
     Map<String, Configuration> configs = parseTextConfigs(hostname);
     String canonicalHostname = hostname.toLowerCase();
-    Assert.assertThat(
-        configs, hasEntry(equalTo(canonicalHostname), hasHostname(canonicalHostname)));
+    assertThat(configs, hasEntry(equalTo(canonicalHostname), hasHostname(canonicalHostname)));
     return configs.get(canonicalHostname);
   }
 
