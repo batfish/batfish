@@ -37,6 +37,7 @@ router bgp 1
   ! "peer group" is new syntax for EOS 4.23 and on
   neighbor 3.3.3.3 peer group PEER_G2
 !
+  neighbor PARSE_ONLY bfd
   neighbor PARSE_ONLY maximum-routes 2222
   neighbor PARSE_ONLY maximum-routes 3333 warning-limit 3000
   neighbor PARSE_ONLY maximum-routes 3333 warning-limit 75 percent
