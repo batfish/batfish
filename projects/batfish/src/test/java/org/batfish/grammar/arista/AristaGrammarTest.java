@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
@@ -27,11 +28,13 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
@@ -338,6 +341,16 @@ public class AristaGrammarTest {
   public void testVxlanExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_vxlan");
     assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
+    assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(1, 10001));
+  }
+
+  @Test
+  public void testVxlanConversion() throws IOException {
+    Configuration config = parseConfig("arista_vxlan");
+    VniSettings vniSettings = config.getDefaultVrf().getVniSettings().get(10001);
+    assertThat(
+        vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
+    assertThat(vniSettings.getBumTransportIps(), empty());
   }
 
   @Test
