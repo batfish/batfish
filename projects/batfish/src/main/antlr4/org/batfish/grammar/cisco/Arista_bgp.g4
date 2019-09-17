@@ -365,6 +365,7 @@ eos_rbi_neighbor_common
     eos_rbinc_additional_paths
     | eos_rbinc_allowas_in
     | eos_rbinc_auto_local_addr
+    | eos_rbinc_bfd
     | eos_rbinc_default_originate
     | eos_rbinc_description
     | eos_rbinc_dont_capability_negotiate
@@ -417,6 +418,11 @@ eos_rbinc_allowas_in
 eos_rbinc_auto_local_addr
 :
   AUTO_LOCAL_ADDR NEWLINE
+;
+
+eos_rbinc_bfd
+:
+  BFD NEWLINE
 ;
 
 eos_rbinc_default_originate
