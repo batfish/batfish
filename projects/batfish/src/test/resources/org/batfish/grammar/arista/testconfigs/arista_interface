@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_interface
+!
+interface Ethernet1
+  !! New syntax, EOS 4.23 and later
+  vrf VRF_1
+  ip address 1.1.1.1/31
+!
+interface Ethernet2
+  !! Old syntax, before EOS 4.23
+  vrf forwarding VRF_2
+  ip address 1.1.1.2/31
