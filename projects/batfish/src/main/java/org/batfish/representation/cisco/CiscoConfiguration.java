@@ -4369,15 +4369,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Prefer VLAN-specific or general flood address (in that order) over multicast address
     SortedSet<Ip> bumTransportIps =
         firstNonNull(vxlan.getVlanFloodAddresses().get(vlan), vxlan.getFloodAddresses());
+
+    // default to unicast flooding unless specified otherwise
     BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
 
-    if (bumTransportIps.isEmpty()) {
-      Ip multicastAddress = vxlan.getMulticastGroup();
-      bumTransportIps =
-          multicastAddress == null
-              ? ImmutableSortedSet.of()
-              : ImmutableSortedSet.of(multicastAddress);
+    // Check if multicast is enabled
+    Ip multicastAddress = vxlan.getMulticastGroup();
+    if (bumTransportIps.isEmpty() && multicastAddress != null) {
       bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
+      bumTransportIps = ImmutableSortedSet.of(multicastAddress);
     }
 
     return VniSettings.builder()
