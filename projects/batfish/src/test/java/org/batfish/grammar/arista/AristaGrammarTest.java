@@ -1,5 +1,10 @@
 package org.batfish.grammar.arista;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
+import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -11,6 +16,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,6 +27,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
@@ -29,6 +37,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
@@ -43,17 +52,21 @@ import org.batfish.representation.cisco.eos.AristaBgpVrfEvpnAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv6UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaRedistributeType;
+import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
 public class AristaGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/arista/testconfigs/";
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private @Nonnull CiscoConfiguration parseVendorConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    settings.setDebugFlags(ImmutableList.of(CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP));
+    settings.setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_ARISTA_BGP));
     CiscoCombinedParser ciscoParser =
         new CiscoCombinedParser(src, settings, ConfigurationFormat.ARISTA);
     CiscoControlPlaneExtractor extractor =
@@ -69,6 +82,28 @@ public class AristaGrammarTest {
     // crash if not serializable
     SerializationUtils.clone(vendorConfiguration);
     return vendorConfiguration;
+  }
+
+  private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
+      throws IOException {
+    String[] names =
+        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
+    Batfish batfish = BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+    batfish.getSettings().setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_ARISTA_BGP));
+    return batfish;
+  }
+
+  private @Nonnull Configuration parseConfig(String hostname) throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs(hostname);
+    String canonicalHostname = hostname.toLowerCase();
+    Assert.assertThat(
+        configs, hasEntry(equalTo(canonicalHostname), hasHostname(canonicalHostname)));
+    return configs.get(canonicalHostname);
+  }
+
+  private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
+      throws IOException {
+    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
   }
 
   @Test
@@ -328,5 +363,12 @@ public class AristaGrammarTest {
               AristaRedistributeType.STATIC,
               new AristaBgpRedistributionPolicy(AristaRedistributeType.STATIC, "RM2")));
     }
+  }
+
+  @Test
+  public void testInterfaceConversion() throws IOException {
+    Configuration c = parseConfig("arista_interface");
+    assertThat(c, hasInterface("Ethernet1", hasVrf(hasName(equalTo("VRF_1")))));
+    assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
   }
 }

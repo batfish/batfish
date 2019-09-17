@@ -773,6 +773,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_encapsulationCo
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_group_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vlanContext;
+import org.batfish.grammar.cisco.CiscoParser.If_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_zone_memberContext;
@@ -7481,6 +7482,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_vlan(If_vlanContext ctx) {
     int vlan = toInteger(ctx.vlan);
     _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan));
+  }
+
+  @Override
+  public void exitIf_vrf(If_vrfContext ctx) {
+    String name = ctx.name.getText();
+    for (Interface currentInterface : _currentInterfaces) {
+      currentInterface.setVrf(name);
+      initVrf(name);
+    }
   }
 
   @Override
