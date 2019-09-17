@@ -646,6 +646,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4_no_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4u_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv6u_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_activateContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_route_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnonc_activateContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_distanceContext;
@@ -672,7 +673,6 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_route_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
@@ -2684,6 +2684,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rbafnc_route_map(Eos_rbafnc_route_mapContext ctx) {
+    if (ctx.IN() != null) {
+      _currentAristaBgpNeighborAddressFamily.setRouteMapIn(ctx.name.getText());
+    } else if (ctx.OUT() != null) {
+      _currentAristaBgpNeighborAddressFamily.setRouteMapOut(ctx.name.getText());
+    } else {
+      throw new IllegalStateException("Invalid route map direction for neighbor");
+    }
+  }
+
+  @Override
   public void enterEos_rbafipv4_no_neighbor(Eos_rbafipv4_no_neighborContext ctx) {
     if (ctx.v4 != null) {
       Ip address = toIp(ctx.v4);
@@ -2741,11 +2752,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip ip = toIp(ctx.name);
     _currentAristaBgpNeighbor =
         _currentAristaBgpVrf.getV4neighbors().computeIfAbsent(ip, AristaBgpV4Neighbor::new);
+    _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
   }
 
   @Override
   public void exitEos_rbi_neighbor4(Eos_rbi_neighbor4Context ctx) {
     _currentAristaBgpNeighbor = null;
+    _currentAristaBgpNeighborAddressFamily = null;
   }
 
   @Override
@@ -2824,17 +2837,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinc_remote_as(Eos_rbinc_remote_asContext ctx) {
     _currentAristaBgpNeighbor.setRemoteAs(toAsNum(ctx.asn));
-  }
-
-  @Override
-  public void exitEos_rbinc_route_map(Eos_rbinc_route_mapContext ctx) {
-    if (ctx.IN() != null) {
-      _currentAristaBgpNeighbor.setRouteMapIn(ctx.name.getText());
-    } else if (ctx.OUT() != null) {
-      _currentAristaBgpNeighbor.setRouteMapOut(ctx.name.getText());
-    } else {
-      throw new IllegalStateException("Invalid route map direction for neighbor");
-    }
   }
 
   @Override
@@ -2931,12 +2933,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _currentAristaBgpProcess
             .getPeerGroups()
             .computeIfAbsent(peerGroupName, AristaBgpPeerGroupNeighbor::new);
+    _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
     _configuration.defineStructure(BGP_PEER_GROUP, peerGroupName, ctx);
   }
 
   @Override
   public void exitEos_rbi_peer_group(Eos_rbi_peer_groupContext ctx) {
     _currentAristaBgpNeighbor = null;
+    _currentAristaBgpNeighborAddressFamily = null;
   }
 
   @Override

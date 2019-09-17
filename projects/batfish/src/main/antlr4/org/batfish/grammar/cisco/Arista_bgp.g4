@@ -176,8 +176,8 @@ eos_rb_af_neighbor_common
 //    | eos_rbafnc_additional_paths
 //    | eos_rbafnc_graceful_restart
 //    | eos_rbafnc_next_hop_unchanged
-//    | oes_rbafnc_route_map
-//    | oes_rbafnc_weight
+    | eos_rbafnc_route_map
+//    | eos_rbafnc_weight
   )
 ;
 
@@ -194,6 +194,11 @@ eos_rbafeb_next_hop_unchanged
 eos_rbafnc_activate
 :
   ACTIVATE NEWLINE
+;
+
+eos_rbafnc_route_map
+:
+  ROUTE_MAP name = VARIABLE (IN | OUT) NEWLINE
 ;
 
 eos_rb_af_no_neighbor_common
@@ -385,7 +390,7 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_prefix_list
     | eos_rbinc_remote_as
 //    | eos_rbinc_remove_private_as
-    | eos_rbinc_route_map
+    | eos_rbafnc_route_map
 //    | eos_rbinc_route_reflector_client
 //    | eos_rbinc_route_to_peer
     | eos_rbinc_send_community
@@ -491,11 +496,6 @@ eos_rbinc_password
 eos_rbinc_remote_as
 :
   REMOTE_AS asn = bgp_asn NEWLINE
-;
-
-eos_rbinc_route_map
-:
-  ROUTE_MAP name = VARIABLE (IN | OUT) NEWLINE
 ;
 
 eos_rbinc_send_community
