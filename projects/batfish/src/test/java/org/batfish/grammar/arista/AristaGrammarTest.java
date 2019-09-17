@@ -195,8 +195,8 @@ public class AristaGrammarTest {
       assertTrue(neighbor.getNextHopUnchanged());
       assertThat(neighbor.getPeerGroup(), equalTo("PEER_G"));
       assertThat(neighbor.getRemoteAs(), equalTo(35L));
-      assertThat(neighbor.getRouteMapIn(), equalTo("RM_IN"));
-      assertThat(neighbor.getRouteMapOut(), equalTo("RM_OUT"));
+      assertThat(neighbor.getGenericAddressFamily().getRouteMapIn(), equalTo("RM_IN"));
+      assertThat(neighbor.getGenericAddressFamily().getRouteMapOut(), equalTo("RM_OUT"));
       assertTrue(neighbor.getSendCommunity());
       assertThat(neighbor.getShutdown(), nullValue());
       assertThat(neighbor.getUpdateSource(), equalTo("Loopback0"));
