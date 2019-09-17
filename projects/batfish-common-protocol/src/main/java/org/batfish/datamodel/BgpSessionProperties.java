@@ -7,11 +7,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,6 +24,7 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 
 /**
  * Represents properties of a peering session between two {@link BgpPeerConfig}s (usually associated
@@ -43,25 +48,23 @@ public final class BgpSessionProperties {
   private static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
   private static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
   private static final String PROP_HEAD_IP = "headIp";
+  private static final String PROP_ROUTE_EXCHANGE = "routeExchange";
   private static final String PROP_SESSION_TYPE = "sessionType";
   private static final String PROP_TAIL_IP = "tailIp";
 
   @JsonCreator
   private static @Nonnull BgpSessionProperties create(
-      @JsonProperty(PROP_ADDITIONAL_PATHS) boolean additionalPaths,
       @JsonProperty(PROP_ADDRESS_FAMILIES) @Nullable Collection<Type> addressFamilies,
-      @JsonProperty(PROP_ADVERTISE_EXTERNAL) boolean advertiseExternal,
-      @JsonProperty(PROP_ADVERTISE_INACTIVE) boolean advertiseInactive,
       @JsonProperty(PROP_HEAD_IP) @Nullable Ip headIp,
+      @JsonProperty(PROP_ROUTE_EXCHANGE) @Nullable
+          Map<AddressFamily.Type, RouteExchange> routeExchange,
       @JsonProperty(PROP_SESSION_TYPE) @Nullable SessionType sessionType,
       @JsonProperty(PROP_TAIL_IP) @Nullable Ip tailIp) {
     checkArgument(headIp != null, "Missing %s", PROP_HEAD_IP);
     checkArgument(tailIp != null, "Missing %s", PROP_TAIL_IP);
     return new BgpSessionProperties(
-        additionalPaths,
         firstNonNull(addressFamilies, ImmutableSet.of()),
-        advertiseExternal,
-        advertiseInactive,
+        firstNonNull(routeExchange, ImmutableMap.of()),
         tailIp,
         headIp,
         firstNonNull(sessionType, SessionType.UNSET));
@@ -69,15 +72,14 @@ public final class BgpSessionProperties {
 
   public static final class Builder {
 
-    private boolean _additionalPaths;
     @Nullable private Collection<EvpnAddressFamily.Type> _addressFamilies;
-    private boolean _advertiseExternal;
-    private boolean _advertiseInactive;
     private @Nullable Ip _tailIp;
     private @Nullable Ip _headIp;
+    private @Nonnull Map<AddressFamily.Type, RouteExchange> _routeExchangeSettings;
     private @Nonnull SessionType _sessionType;
 
     private Builder() {
+      _routeExchangeSettings = new HashMap<>(1);
       _sessionType = SessionType.UNSET;
     }
 
@@ -85,33 +87,16 @@ public final class BgpSessionProperties {
       checkArgument(_headIp != null, "Missing %s", PROP_HEAD_IP);
       checkArgument(_tailIp != null, "Missing %s", PROP_TAIL_IP);
       return new BgpSessionProperties(
-          _additionalPaths,
           firstNonNull(_addressFamilies, ImmutableSet.of()),
-          _advertiseExternal,
-          _advertiseInactive,
+          _routeExchangeSettings,
           _tailIp,
           _headIp,
           _sessionType);
     }
 
-    public @Nonnull Builder setAdditionalPaths(boolean additionalPaths) {
-      _additionalPaths = additionalPaths;
-      return this;
-    }
-
     @Nonnull
     public Builder setAddressFamilies(Collection<Type> addressFamilies) {
       _addressFamilies = addressFamilies;
-      return this;
-    }
-
-    public @Nonnull Builder setAdvertiseExternal(boolean advertiseExternal) {
-      _advertiseExternal = advertiseExternal;
-      return this;
-    }
-
-    public @Nonnull Builder setAdvertiseInactive(boolean advertiseInactive) {
-      _advertiseInactive = advertiseInactive;
       return this;
     }
 
@@ -125,6 +110,11 @@ public final class BgpSessionProperties {
       return this;
     }
 
+    public Builder setRouteExchangeSettings(Map<Type, RouteExchange> routeExchangeSettings) {
+      _routeExchangeSettings = routeExchangeSettings;
+      return this;
+    }
+
     public @Nonnull Builder setSessionType(SessionType sessionType) {
       _sessionType = sessionType;
       return this;
@@ -135,53 +125,53 @@ public final class BgpSessionProperties {
     return new Builder();
   }
 
-  private final boolean _additionalPaths;
-  @Nonnull private final Set<EvpnAddressFamily.Type> _addressFamilies;
-  private final boolean _advertiseExternal;
-  private final boolean _advertiseInactive;
+  @Nonnull private final Set<AddressFamily.Type> _addressFamilies;
   @Nonnull private final Ip _tailIp;
   @Nonnull private final Ip _headIp;
   private final SessionType _sessionType;
+  @Nonnull private final Map<Type, RouteExchange> _routeExchangeSettings;
 
   private BgpSessionProperties(
-      boolean additionalPaths,
-      Collection<AddressFamily.Type> addressFamilies,
-      boolean advertiseExternal,
-      boolean advertiseInactive,
+      Collection<Type> addressFamilies,
+      Map<Type, RouteExchange> routeExchangeSettings,
       Ip tailIp,
       Ip headIp,
       SessionType sessionType) {
-    _additionalPaths = additionalPaths;
     _addressFamilies = Sets.immutableEnumSet(addressFamilies);
-    _advertiseExternal = advertiseExternal;
-    _advertiseInactive = advertiseInactive;
+    _routeExchangeSettings = ImmutableMap.copyOf(routeExchangeSettings);
     _tailIp = tailIp;
     _headIp = headIp;
     _sessionType = sessionType;
   }
 
   /**
-   * When this is set, add best eBGP path independently of whether it is preempted by an iBGP or IGP
-   * route. Only applicable to iBGP sessions.
+   * When this is set for Ipv4 unicast, add best eBGP path independently of whether it is preempted
+   * by an iBGP or IGP route. Only applicable to iBGP sessions.
    */
-  @JsonProperty(PROP_ADVERTISE_EXTERNAL)
+  @JsonIgnore
   public boolean getAdvertiseExternal() {
-    return _advertiseExternal;
+    return Optional.ofNullable(_routeExchangeSettings.get(Type.IPV4_UNICAST))
+        .map(RouteExchange::getAdvertiseExternal)
+        .orElse(Boolean.FALSE);
   }
 
   /**
-   * When this is true, add best BGP path independently of whether it is preempted by an IGP route.
-   * Only applicable to eBGP sessions.
+   * When this is true for Ipv4 unicast, add best BGP path independently of whether it is preempted
+   * by an IGP route. Only applicable to eBGP sessions.
    */
-  @JsonProperty(PROP_ADVERTISE_INACTIVE)
+  @JsonIgnore
   public boolean getAdvertiseInactive() {
-    return _advertiseInactive;
+    return Optional.ofNullable(_routeExchangeSettings.get(Type.IPV4_UNICAST))
+        .map(RouteExchange::getAdvertiseInactive)
+        .orElse(Boolean.FALSE);
   }
 
-  /** When this is true, advertise all paths from the multipath RIB */
-  @JsonProperty(PROP_ADDITIONAL_PATHS)
+  /** When this is true for Ipv4 unicast, advertise all paths from the multipath RIB */
+  @JsonIgnore
   public boolean getAdditionalPaths() {
-    return _additionalPaths;
+    return Optional.ofNullable(_routeExchangeSettings.get(Type.IPV4_UNICAST))
+        .map(RouteExchange::getAdditionalPaths)
+        .orElse(Boolean.FALSE);
   }
 
   /** Whether this session is eBGP. */
@@ -220,6 +210,13 @@ public final class BgpSessionProperties {
     return _addressFamilies;
   }
 
+  /** Get the route exchange settings, keyed by address family type */
+  @JsonProperty(PROP_ROUTE_EXCHANGE)
+  @Nonnull
+  public Map<Type, RouteExchange> getRouteExchangeSettings() {
+    return _routeExchangeSettings;
+  }
+
   /**
    * Create a set of new parameters based on session initiator and listener. This assumes that
    * provided {@link BgpPeerConfig configs} are compatible.
@@ -250,21 +247,25 @@ public final class BgpSessionProperties {
 
     SessionType sessionType = getSessionType(initiator);
 
-    assert listener.getIpv4UnicastAddressFamily() != null;
-    assert initiator.getIpv4UnicastAddressFamily() != null;
+    EnumSet<Type> addressFamilyIntersection = getAddressFamilyIntersection(initiator, listener);
     return new BgpSessionProperties(
-        computeAdditionalPaths(initiator, listener, sessionType),
-        getAddressFamilyIntersection(initiator, listener),
-        !SessionType.isEbgp(sessionType)
-            && initiator
-                .getIpv4UnicastAddressFamily()
-                .getAddressFamilyCapabilities()
-                .getAdvertiseExternal(),
-        SessionType.isEbgp(sessionType)
-            && initiator
-                .getIpv4UnicastAddressFamily()
-                .getAddressFamilyCapabilities()
-                .getAdvertiseInactive(),
+        addressFamilyIntersection,
+        addressFamilyIntersection.contains(Type.IPV4_UNICAST)
+            ? ImmutableMap.of(
+                Type.IPV4_UNICAST,
+                new RouteExchange(
+                    computeAdditionalPaths(initiator, listener, sessionType),
+                    !SessionType.isEbgp(sessionType)
+                        && initiator
+                            .getIpv4UnicastAddressFamily()
+                            .getAddressFamilyCapabilities()
+                            .getAdvertiseExternal(),
+                    SessionType.isEbgp(sessionType)
+                        && initiator
+                            .getIpv4UnicastAddressFamily()
+                            .getAddressFamilyCapabilities()
+                            .getAdvertiseInactive()))
+            : ImmutableMap.of(),
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType);
@@ -274,13 +275,14 @@ public final class BgpSessionProperties {
   private static boolean computeAdditionalPaths(
       BgpPeerConfig initiator, BgpPeerConfig listener, SessionType sessionType) {
     // TODO: support address families other than IPv4 unicast
-    AddressFamilyCapabilities initiatorCapabilities =
-        initiator.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities();
+    Ipv4UnicastAddressFamily initiatorAF = initiator.getIpv4UnicastAddressFamily();
+    Ipv4UnicastAddressFamily listenerAF = listener.getIpv4UnicastAddressFamily();
+    if (initiatorAF == null || listenerAF == null) {
+      return false;
+    }
+    AddressFamilyCapabilities initiatorCapabilities = initiatorAF.getAddressFamilyCapabilities();
     return !SessionType.isEbgp(sessionType)
-        && listener
-            .getIpv4UnicastAddressFamily()
-            .getAddressFamilyCapabilities()
-            .getAdditionalPathsReceive()
+        && listenerAF.getAddressFamilyCapabilities().getAdditionalPathsReceive()
         && initiatorCapabilities.getAdditionalPathsSend()
         && initiatorCapabilities.getAdditionalPathsSelectAll();
   }
@@ -332,22 +334,14 @@ public final class BgpSessionProperties {
     return _headIp.equals(that._headIp)
         && _tailIp.equals(that._tailIp)
         && _sessionType == that._sessionType
-        && _additionalPaths == that._additionalPaths
-        && _addressFamilies.equals(that._addressFamilies)
-        && _advertiseExternal == that._advertiseExternal
-        && _advertiseInactive == that._advertiseInactive;
+        && _routeExchangeSettings.equals(that._routeExchangeSettings)
+        && _addressFamilies.equals(that._addressFamilies);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _additionalPaths,
-        _addressFamilies,
-        _advertiseExternal,
-        _advertiseInactive,
-        _headIp,
-        _tailIp,
-        _sessionType.ordinal());
+        _addressFamilies, _routeExchangeSettings, _headIp, _tailIp, _sessionType.ordinal());
   }
 
   /** Different types of BGP sessions */
@@ -368,6 +362,66 @@ public final class BgpSessionProperties {
 
     public static SessionType parse(String sessionType) {
       return Enum.valueOf(SessionType.class, sessionType.toUpperCase());
+    }
+  }
+
+  public static final class RouteExchange {
+    private final boolean _additionalPaths;
+    private final boolean _advertiseExternal;
+    private final boolean _advertiseInactive;
+
+    @JsonCreator
+    @VisibleForTesting
+    RouteExchange(
+        @JsonProperty(PROP_ADDITIONAL_PATHS) boolean additionalPaths,
+        @JsonProperty(PROP_ADVERTISE_EXTERNAL) boolean advertiseExternal,
+        @JsonProperty(PROP_ADVERTISE_INACTIVE) boolean advertiseInactive) {
+      _additionalPaths = additionalPaths;
+      _advertiseExternal = advertiseExternal;
+      _advertiseInactive = advertiseInactive;
+    }
+
+    /**
+     * When this is set, add best eBGP path independently of whether it is preempted by an iBGP or
+     * IGP route. Only applicable to iBGP sessions.
+     */
+    @JsonProperty(PROP_ADVERTISE_EXTERNAL)
+    public boolean getAdvertiseExternal() {
+      return _advertiseExternal;
+    }
+
+    /**
+     * When this is true, add best BGP path independently of whether it is preempted by an IGP
+     * route. Only applicable to eBGP sessions.
+     */
+    @JsonProperty(BgpSessionProperties.PROP_ADVERTISE_INACTIVE)
+    public boolean getAdvertiseInactive() {
+      return _advertiseInactive;
+    }
+
+    /** When this is true, advertise all paths from the multipath RIB */
+    @JsonProperty(BgpSessionProperties.PROP_ADDITIONAL_PATHS)
+    public boolean getAdditionalPaths() {
+      return _additionalPaths;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof RouteExchange)) {
+        return false;
+      }
+      RouteExchange that = (RouteExchange) o;
+      return _additionalPaths == that._additionalPaths
+          && _advertiseExternal == that._advertiseExternal
+          && _advertiseInactive == that._advertiseInactive;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_additionalPaths, _advertiseExternal, _advertiseInactive);
     }
   }
 }
