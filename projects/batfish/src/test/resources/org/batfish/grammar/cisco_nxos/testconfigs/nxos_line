@@ -10,3 +10,7 @@ line console
 line vty
   exec-timeout 15
   access-class VTY_ACL in
+!
+line console
+line vty
+
