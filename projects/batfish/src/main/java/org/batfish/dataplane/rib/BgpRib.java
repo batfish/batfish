@@ -190,7 +190,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         AsSet rhsFirstAsSet = rhs.getAsSets().isEmpty() ? AsSet.empty() : rhs.getAsSets().get(0);
         return lhsFirstAsSet.equals(rhsFirstAsSet) ? 0 : -1;
       case PATH_LENGTH:
-        return Integer.compare(lhs.size(), rhs.size());
+        assert lhs.size() == rhs.size();
+        return 0;
       default:
         throw new IllegalStateException(
             String.format(

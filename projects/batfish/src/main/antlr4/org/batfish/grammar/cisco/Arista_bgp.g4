@@ -248,7 +248,7 @@ eos_rbi_bgp
 //    | eos_rbib_always_compare_med
 //    | eos_rbib_asn
 //    | eos_rbib_auto_local_addr
-//    | eos_rbib_bestpath
+    | eos_rbib_bestpath
 //    | eos_rbib_client_to_client
 //    | eos_rbib_cluster_id
 //    | eos_rbib_confederation
@@ -279,6 +279,32 @@ eos_rbib_additional_paths
     | INSTALL
   )
   NEWLINE
+;
+
+eos_rbib_bestpath
+:
+  BESTPATH
+  (
+    eos_rbibbp_as_path
+    // eos_rbibbp_ecmp_fast
+    // eos_rbibbp_med
+    // eos_rbibbp_skip
+    // eos_rbibbp_tie_break
+  )
+;
+
+eos_rbibbp_as_path
+:
+  AS_PATH
+  (
+    // eos_rbibbpa_ignore |
+    eos_rbibbpa_multipath_relax
+  )
+;
+
+eos_rbibbpa_multipath_relax
+:
+  MULTIPATH_RELAX NEWLINE
 ;
 
 eos_rbib_listen
@@ -584,7 +610,36 @@ eos_rbi_no
 eos_rbino_bgp
 :
   BGP
-  eos_rbino_bgp_default
+  (
+    eos_rbino_bgp_bestpath
+    | eos_rbino_bgp_default
+  )
+;
+
+eos_rbino_bgp_bestpath
+:
+  BESTPATH
+  (
+    eos_rbino_bgp_bp_as_path
+    // eos_rbino_bgp_bp_ecmp_fast
+    // eos_rbino_bgp_bp_med
+    // eos_rbino_bgp_bp_skip
+    // eos_rbino_bgp_bp_tie_break
+  )
+;
+
+eos_rbino_bgp_bp_as_path
+:
+  AS_PATH
+  (
+    // eos_rbino_bgp_bpa_ignore |
+    eos_rbino_bgp_bpa_multipath_relax
+  )
+;
+
+eos_rbino_bgp_bpa_multipath_relax
+:
+  MULTIPATH_RELAX NEWLINE
 ;
 
 eos_rbino_bgp_default

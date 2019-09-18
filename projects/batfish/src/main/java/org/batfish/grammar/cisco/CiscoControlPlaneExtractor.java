@@ -658,6 +658,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_timersContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbin_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_additional_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_allowas_inContext;
@@ -676,6 +677,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_default_ipv4_unicastContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinon_enforce_first_asContext;
@@ -2725,6 +2727,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rbibbpa_multipath_relax(Eos_rbibbpa_multipath_relaxContext ctx) {
+    _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(true);
+  }
+
+  @Override
   public void exitEos_rbi_default_metric(Eos_rbi_default_metricContext ctx) {
     _currentAristaBgpVrf.setDefaultMetric(toLong(ctx.metric));
   }
@@ -2881,6 +2888,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, ctx.rm.getText(), BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.getStart().getLine());
     }
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_bpa_multipath_relax(Eos_rbino_bgp_bpa_multipath_relaxContext ctx) {
+    _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(false);
   }
 
   @Override
