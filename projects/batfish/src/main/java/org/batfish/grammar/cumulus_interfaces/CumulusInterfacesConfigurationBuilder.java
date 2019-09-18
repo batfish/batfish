@@ -115,7 +115,7 @@ public final class CumulusInterfacesConfigurationBuilder
   public void enterS_iface(S_ifaceContext ctx) {
     String name = ctx.interface_name().getText();
     if (ctx.LOOPBACK() != null) {
-      if (!name.equals("lo")) {
+      if (!name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
         _w.addWarning(
             ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
       }
@@ -179,7 +179,7 @@ public final class CumulusInterfacesConfigurationBuilder
     interfaceNameCtxs.forEach(
         ifaceNameCtx ->
             _config.referenceStructure(
-                CumulusStructureType.INTERFACE,
+                CumulusStructureType.ABSTRACT_INTERFACE,
                 ifaceNameCtx.getText(),
                 CumulusStructureUsage.BRIDGE_PORT,
                 ifaceNameCtx.getStart().getLine()));

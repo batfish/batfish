@@ -627,7 +627,9 @@ public class CumulusFrrGrammarTest {
 
     assertThat(
         getStructureReferences(
-            CumulusStructureType.INTERFACE, "lo", CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE),
+            CumulusStructureType.ABSTRACT_INTERFACE,
+            "lo",
+            CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE),
         equalTo(ImmutableSet.of(2)));
   }
 
