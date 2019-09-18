@@ -990,6 +990,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   // so just convert them to type 5s and send to all neighbors
                   bgpv4RouteToType5Route(ebgpAll, ibgpAll, ourConfig, ra, route, srcVrf);
                 } else if (!(route instanceof BgpRoute)) {
+                  if (ourConfig.getIpv4UnicastAddressFamily() == null) {
+                    return;
+                  }
                   /*
                    * This is crap.
                    *
