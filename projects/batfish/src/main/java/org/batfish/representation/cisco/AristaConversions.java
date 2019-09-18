@@ -286,8 +286,7 @@ final class AristaConversions {
 
     newNeighborBuilder.setEbgpMultihop(firstNonNull(neighbor.getEbgpMultihop(), 0) > 1);
 
-    // todo
-    newNeighborBuilder.setEnforceFirstAs(firstNonNull(neighbor.getEnforceFirstAs(), Boolean.FALSE));
+    newNeighborBuilder.setEnforceFirstAs(firstNonNull(neighbor.getEnforceFirstAs(), Boolean.TRUE));
 
     if (neighbor.getPeerGroup() != null) {
       newNeighborBuilder.setGroup(neighbor.getPeerGroup());
