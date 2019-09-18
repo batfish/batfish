@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -36,6 +37,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -50,6 +52,7 @@ import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
+import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
@@ -296,12 +299,54 @@ public class AristaGrammarTest {
   @Test
   public void testVrfExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_vrf");
-    AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
-    assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("123:123")));
-    assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
-    assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
-    assertThat(vrf.getLocalAs(), equalTo(65000L));
-    assertThat(config.getVrfs(), hasKey("FOO"));
+    assertThat(config.getAristaBgp(), notNullValue());
+    assertThat(
+        config.getAristaBgp().getVrfs().keySet(),
+        containsInAnyOrder(AristaBgpProcess.DEFAULT_VRF, "FOO", "BAR"));
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+      assertThat(vrf.getBestpathAsPathMultipathRelax(), nullValue());
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
+      assertThat(vrf.getBestpathAsPathMultipathRelax(), equalTo(Boolean.TRUE));
+      assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("123:123")));
+      assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
+      assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
+      assertThat(vrf.getLocalAs(), equalTo(65000L));
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("BAR");
+      assertThat(vrf.getBestpathAsPathMultipathRelax(), equalTo(Boolean.FALSE));
+    }
+  }
+
+  @Test
+  public void testVrfConversion() throws IOException {
+    Configuration c = parseConfig("arista_bgp_vrf");
+    assertThat(
+        c.getVrfs().keySet(), containsInAnyOrder(AristaBgpProcess.DEFAULT_VRF, "FOO", "BAR"));
+    {
+      BgpProcess proc = c.getDefaultVrf().getBgpProcess();
+      assertThat(proc, notNullValue());
+      assertThat(
+          proc.getMultipathEquivalentAsPathMatchMode(),
+          equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    }
+    {
+      BgpProcess proc = c.getVrfs().get("FOO").getBgpProcess();
+      assertThat(proc, notNullValue());
+      assertThat(
+          proc.getMultipathEquivalentAsPathMatchMode(),
+          equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    }
+    {
+      BgpProcess proc = c.getVrfs().get("BAR").getBgpProcess();
+      assertThat(proc, notNullValue());
+      assertThat(
+          proc.getMultipathEquivalentAsPathMatchMode(),
+          equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    }
   }
 
   @Test
