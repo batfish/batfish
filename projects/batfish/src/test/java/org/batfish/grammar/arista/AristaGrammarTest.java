@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -269,12 +270,26 @@ public class AristaGrammarTest {
     assertThat(c.getDefaultVrf(), notNullValue());
     BgpProcess proc = c.getDefaultVrf().getBgpProcess();
     assertThat(proc, notNullValue());
-    Prefix neighborPrefix = Prefix.parse("1.1.1.1/32");
-    assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
-    BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
-    assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
-    Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
-    assertThat(af.getAddressFamilyCapabilities().getAllowLocalAsIn(), equalTo(true));
+    {
+      Prefix neighborPrefix = Prefix.parse("1.1.1.1/32");
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(neighbor.getEnforceFirstAs(), equalTo(true));
+      assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
+      Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
+      assertThat(af.getAddressFamilyCapabilities().getAllowLocalAsIn(), equalTo(true));
+    }
+    {
+      Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
+      // shutdown neighbor is not converted
+      assertThat(proc.getActiveNeighbors(), not(hasKey(neighborPrefix)));
+    }
+    {
+      Prefix neighborPrefix = Prefix.parse("3.3.3.3/32");
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(neighbor.getEnforceFirstAs(), equalTo(false));
+    }
   }
 
   @Test
