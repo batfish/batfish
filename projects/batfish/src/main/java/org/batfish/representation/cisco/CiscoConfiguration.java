@@ -1917,6 +1917,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setAdvertiseInactive(
                   _vendor.equals(ConfigurationFormat.ARISTA) ? lpg.getAdvertiseInactive() : true)
               .setSendCommunity(lpg.getSendCommunity())
+              .setSendExtendedCommunity(lpg.getSendExtendedCommunity())
               .build();
       newNeighborBuilder.setIpv4UnicastAddressFamily(
           Ipv4UnicastAddressFamily.builder()
