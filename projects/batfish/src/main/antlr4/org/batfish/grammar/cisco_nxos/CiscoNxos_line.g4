@@ -24,7 +24,7 @@ s_line
 line_console
 :
   CONSOLE NEWLINE
-  lc_exec_timeout
+  lc_exec_timeout?
 ;
 
 lc_exec_timeout
