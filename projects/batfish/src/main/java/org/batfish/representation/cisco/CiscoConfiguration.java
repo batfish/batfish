@@ -3980,10 +3980,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .getVlanVnis()
           .forEach(
               (vlan, vni) -> {
-                org.batfish.datamodel.Vrf vrf =
-                    getVrfForVlan(c, vlan)
-                        .map(name -> c.getVrfs().get(name))
-                        .orElse(c.getDefaultVrf());
+                org.batfish.datamodel.Vrf vrf = getVrfForVlan(c, vlan).orElse(c.getDefaultVrf());
                 vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface));
               });
     }

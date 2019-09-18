@@ -23,7 +23,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -417,10 +416,9 @@ final class AristaConversions {
   }
 
   @Nonnull
-  static Optional<String> getVrfForVlan(Configuration c, int vlan) {
+  static Optional<Vrf> getVrfForVlan(Configuration c, int vlan) {
     return c.getVrfs().values().stream()
         .filter(vrf -> vrf.getInterfaceNames().contains(String.format("Vlan%d", vlan)))
-        .map(ComparableStructure::getName)
         .findFirst();
   }
 
