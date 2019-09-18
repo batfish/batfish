@@ -839,4 +839,19 @@ public class VirtualRouterTest {
                 .setTag(7L)
                 .build()));
   }
+
+  @Test
+  public void testGenerateLocalRouteWith32() {
+    String nextHopInterface = "Eth0";
+    ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/32");
+
+    assertThat(
+        generateLocalRoute(address, nextHopInterface, null),
+        equalTo(
+            LocalRoute.builder()
+                .setNetwork(address.getPrefix())
+                .setSourcePrefixLength(32)
+                .setNextHopInterface(nextHopInterface)
+                .build()));
+  }
 }

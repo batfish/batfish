@@ -861,7 +861,6 @@ public class VirtualRouter implements Serializable {
       return Stream.empty();
     }
     return iface.getAllConcreteAddresses().stream()
-        .filter(addr -> addr.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH)
         .map(
             addr ->
                 generateLocalRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));
