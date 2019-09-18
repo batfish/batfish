@@ -278,6 +278,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
       Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
       assertThat(af.getAddressFamilyCapabilities().getAllowLocalAsIn(), equalTo(true));
+      assertThat(af.getAddressFamilyCapabilities().getAllowRemoteAsOut(), equalTo(true));
     }
     {
       Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
