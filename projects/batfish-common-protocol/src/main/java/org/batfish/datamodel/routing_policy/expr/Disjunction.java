@@ -36,6 +36,11 @@ public final class Disjunction extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitDisjunction(this, arg);
+  }
+
+  @Override
   public Set<String> collectSources(
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     ImmutableSet.Builder<String> childSources = ImmutableSet.builder();

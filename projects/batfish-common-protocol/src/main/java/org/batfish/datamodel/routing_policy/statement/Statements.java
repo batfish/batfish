@@ -40,6 +40,11 @@ public enum Statements {
     }
 
     @Override
+    public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+      return visitor.visitStaticStatement(this, arg);
+    }
+
+    @Override
     public boolean equals(Object rhs) {
       if (rhs instanceof StaticStatement) {
         return _type.equals(((StaticStatement) rhs)._type);

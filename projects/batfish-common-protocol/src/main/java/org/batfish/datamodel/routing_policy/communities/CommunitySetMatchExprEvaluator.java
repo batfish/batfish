@@ -6,7 +6,7 @@ import org.batfish.datamodel.LineAction;
 
 /** A visitor for evaluating a {@link CommunitySetMatchExpr} under a {@link CommunityContext}. */
 public final class CommunitySetMatchExprEvaluator
-    implements CommunitySetMatchExprVisitor<Boolean, CommunitySet> {
+    implements CommunitySetMatchExpr1ArgVisitor<Boolean, CommunitySet> {
 
   public CommunitySetMatchExprEvaluator(CommunityContext ctx) {
     _ctx = ctx;

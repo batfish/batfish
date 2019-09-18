@@ -25,6 +25,11 @@ public final class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchLocalRouteSourcePrefixLength(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     LocalRoute localRoute = (LocalRoute) environment.getOriginalRoute();
     return new Result(_matchLength.includes(localRoute.getSourcePrefixLength()));

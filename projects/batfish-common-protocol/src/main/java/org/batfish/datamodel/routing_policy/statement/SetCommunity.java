@@ -34,6 +34,11 @@ public final class SetCommunity extends Statement {
   }
 
   @Override
+  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitSetCommunity(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

@@ -69,6 +69,11 @@ public final class BooleanExprs {
     }
 
     @Override
+    public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+      return visitor.visitBooleanExprs(this, arg);
+    }
+
+    @Override
     public Result evaluate(Environment environment) {
       switch (_type) {
         case CallExprContext:

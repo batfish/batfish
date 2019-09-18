@@ -37,6 +37,11 @@ public final class PassesThroughAsPath extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitPassesThroughAsPath(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     throw new BatfishException("No implementation for PassesThroughAsPath.evaluate()");
   }

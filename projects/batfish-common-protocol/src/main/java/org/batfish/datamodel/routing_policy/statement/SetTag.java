@@ -28,6 +28,11 @@ public final class SetTag extends Statement {
   }
 
   @Override
+  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitSetTag(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

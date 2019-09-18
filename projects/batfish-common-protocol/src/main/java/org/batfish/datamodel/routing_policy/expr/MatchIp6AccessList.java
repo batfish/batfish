@@ -27,6 +27,11 @@ public final class MatchIp6AccessList extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchIp6AccessList(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     Ip6AccessList list = environment.getIp6AccessLists().get(_list);
     if (list != null) {

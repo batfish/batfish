@@ -37,6 +37,11 @@ public final class OriginatesFromAsPath extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitOriginatesFromAsPath(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     throw new BatfishException("No implementation for OriginatesFromAsPath.evaluate()");
   }

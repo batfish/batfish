@@ -38,6 +38,11 @@ public final class MatchTag extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchTag(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     long lhs;
     if (environment.getReadFromIntermediateBgpAttributes()) {

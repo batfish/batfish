@@ -10,7 +10,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A visitor for evaluating a {@link CommunityMatchExpr} under a {@link CommunityContext}. */
 public final class CommunityMatchExprEvaluator
-    implements CommunityMatchExprVisitor<Boolean, Community> {
+    implements CommunityMatchExpr1ArgVisitor<Boolean, Community> {
 
   public CommunityMatchExprEvaluator(CommunityContext ctx) {
     _ctx = ctx;
@@ -48,7 +48,7 @@ public final class CommunityMatchExprEvaluator
   public @Nonnull Boolean visitCommunityIn(CommunityIn communityIn, Community arg) {
     return communityIn
         .getCommunitySetExpr()
-        .accept(_ctx.getCommunitySetExprEvaluator())
+        .accept(CommunitySetExprEvaluator.instance(), _ctx)
         .getCommunities()
         .contains(arg);
   }

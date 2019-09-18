@@ -15,8 +15,8 @@ public final class CommunitySetExprReference extends CommunitySetExpr {
   }
 
   @Override
-  public <T> T accept(CommunitySetExprVisitor<T> visitor) {
-    return visitor.visitCommunitySetExprReference(this);
+  public <T, U> T accept(CommunitySetExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitCommunitySetExprReference(this, arg);
   }
 
   @JsonProperty(PROP_NAME)

@@ -16,6 +16,11 @@ public class SetVarMetricType extends Statement {
   }
 
   @Override
+  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitSetVarMetricType(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

@@ -29,6 +29,11 @@ public final class SetWeight extends Statement {
   }
 
   @Override
+  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitSetWeight(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

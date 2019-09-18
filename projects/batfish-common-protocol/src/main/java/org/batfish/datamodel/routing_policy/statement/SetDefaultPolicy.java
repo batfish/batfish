@@ -31,6 +31,11 @@ public final class SetDefaultPolicy extends Statement {
   }
 
   @Override
+  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitSetDefaultPolicy(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

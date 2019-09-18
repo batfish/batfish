@@ -23,6 +23,11 @@ public class CallStatement extends Statement {
   }
 
   @Override
+  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitCallStatement(this, arg);
+  }
+
+  @Override
   public Set<String> collectSources(
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     if (parentSources.contains(_calledPolicyName)) {

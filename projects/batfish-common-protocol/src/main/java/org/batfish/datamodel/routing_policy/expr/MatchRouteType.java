@@ -29,6 +29,11 @@ public final class MatchRouteType extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchRouteType(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     RouteType type = _type.evaluate(environment);
     throw new BatfishException("Unimplemented: match route type: " + type.routeTypeName());

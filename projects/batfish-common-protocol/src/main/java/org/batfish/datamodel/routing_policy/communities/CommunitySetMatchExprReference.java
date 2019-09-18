@@ -15,7 +15,7 @@ public final class CommunitySetMatchExprReference extends CommunitySetMatchExpr 
   }
 
   @Override
-  protected <T, U> T accept(CommunitySetMatchExprVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(CommunitySetMatchExpr1ArgVisitor<T, U> visitor, U arg) {
     return visitor.visitCommunitySetMatchExprReference(this, arg);
   }
 

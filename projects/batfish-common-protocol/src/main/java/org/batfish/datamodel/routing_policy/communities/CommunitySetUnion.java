@@ -20,8 +20,8 @@ public final class CommunitySetUnion extends CommunitySetExpr {
   }
 
   @Override
-  public <T> T accept(CommunitySetExprVisitor<T> visitor) {
-    return visitor.visitCommunitySetUnion(this);
+  public <T, U> T accept(CommunitySetExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitCommunitySetUnion(this, arg);
   }
 
   @JsonProperty(PROP_EXPR1)

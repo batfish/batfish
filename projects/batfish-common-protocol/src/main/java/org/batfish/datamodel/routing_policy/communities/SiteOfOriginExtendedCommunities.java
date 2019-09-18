@@ -24,7 +24,7 @@ public final class SiteOfOriginExtendedCommunities extends CommunityMatchExpr {
   }
 
   @Override
-  protected <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(CommunityMatchExpr1ArgVisitor<T, U> visitor, U arg) {
     return visitor.visitSiteOfOriginExtendedCommunities(this, arg);
   }
 

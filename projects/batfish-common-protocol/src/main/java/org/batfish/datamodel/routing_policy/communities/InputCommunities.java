@@ -15,8 +15,8 @@ public final class InputCommunities extends CommunitySetExpr {
   }
 
   @Override
-  public <T> T accept(CommunitySetExprVisitor<T> visitor) {
-    return visitor.visitInputCommunities(this);
+  public <T, U> T accept(CommunitySetExpr1ArgVisitor<T, U> visitor, U arg) {
+    return visitor.visitInputCommunities(this, arg);
   }
 
   @Override
