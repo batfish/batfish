@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.representation.cisco.AristaConversions.getVrfForVlan;
 import static org.batfish.representation.cisco.CiscoConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
@@ -3974,14 +3975,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (_eosVxlan != null) {
       String sourceIfaceName = _eosVxlan.getSourceInterface();
       Interface sourceIface = sourceIfaceName == null ? null : _interfaces.get(sourceIfaceName);
-      org.batfish.datamodel.Vrf vrf =
-          sourceIface != null ? c.getVrfs().get(sourceIface.getVrf()) : c.getDefaultVrf();
 
       _eosVxlan
           .getVlanVnis()
           .forEach(
-              (vlan, vni) ->
-                  vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface)));
+              (vlan, vni) -> {
+                org.batfish.datamodel.Vrf vrf = getVrfForVlan(c, vlan).orElse(c.getDefaultVrf());
+                vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface));
+              });
     }
 
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined

@@ -347,10 +347,18 @@ public class AristaGrammarTest {
   @Test
   public void testVxlanConversion() throws IOException {
     Configuration config = parseConfig("arista_vxlan");
-    VniSettings vniSettings = config.getDefaultVrf().getVniSettings().get(10001);
-    assertThat(
-        vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
-    assertThat(vniSettings.getBumTransportIps(), empty());
+    {
+      VniSettings vniSettings = config.getVrfs().get("VRF_1").getVniSettings().get(10001);
+      assertThat(
+          vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
+      assertThat(vniSettings.getBumTransportIps(), empty());
+    }
+    {
+      VniSettings vniSettings = config.getVrfs().get("VRF_2").getVniSettings().get(10002);
+      assertThat(
+          vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
+      assertThat(vniSettings.getBumTransportIps(), empty());
+    }
   }
 
   @Test
