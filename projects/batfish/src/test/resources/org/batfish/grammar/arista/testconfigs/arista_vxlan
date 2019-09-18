@@ -2,6 +2,16 @@
 !
 hostname arista_vxlan
 !
+vrf instance VRF_1
+vrf instance VRF_2
+!
+interface Vlan1
+  vrf VRF_1
+!
+interface Vlan2
+  vrf VRF_2
+!
 interface Vxlan1
   vxlan vrf TENANT vni 10000
   vxlan vlan 1 vni 10001
+  vxlan vlan 2 vni 10002

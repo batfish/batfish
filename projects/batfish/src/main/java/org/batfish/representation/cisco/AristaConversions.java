@@ -415,6 +415,13 @@ final class AristaConversions {
     }
   }
 
+  @Nonnull
+  static Optional<Vrf> getVrfForVlan(Configuration c, int vlan) {
+    return c.getVrfs().values().stream()
+        .filter(vrf -> vrf.getInterfaceNames().contains(String.format("Vlan%d", vlan)))
+        .findFirst();
+  }
+
   private static String getTextDesc(Ip ip, Vrf v) {
     return String.format("BGP neighbor %s in vrf %s", ip.toString(), v.getName());
   }
