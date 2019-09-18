@@ -28,6 +28,8 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -35,6 +37,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
@@ -258,6 +261,20 @@ public class AristaGrammarTest {
           config.getAristaBgp().getVrfs().get("tenant").getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getRemoteAs(), equalTo(88L));
     }
+  }
+
+  @Test
+  public void testNeighborConversion() throws IOException {
+    Configuration c = parseConfig("arista_bgp_neighbors");
+    assertThat(c.getDefaultVrf(), notNullValue());
+    BgpProcess proc = c.getDefaultVrf().getBgpProcess();
+    assertThat(proc, notNullValue());
+    Prefix neighborPrefix = Prefix.parse("1.1.1.1/32");
+    assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+    BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+    assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
+    Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
+    assertThat(af.getAddressFamilyCapabilities().getAllowLocalAsIn(), equalTo(true));
   }
 
   @Test
