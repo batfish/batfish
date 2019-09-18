@@ -182,13 +182,13 @@ public final class BgpProtocolHelper {
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       B transformBgpRouteOnImport(
           BgpRoute<B, R> route,
-          Long localAs,
+          long localAs,
           boolean allowLocalAsIn,
           boolean isEbgp,
           BgpProcess toProcess,
           @Nullable String peerInterface) {
     // skip routes containing peer's AS unless explicitly allowed
-    if (route.getAsPath().containsAs(localAs) && !allowLocalAsIn) {
+    if (!allowLocalAsIn && route.getAsPath().containsAs(localAs)) {
       return null;
     }
 
