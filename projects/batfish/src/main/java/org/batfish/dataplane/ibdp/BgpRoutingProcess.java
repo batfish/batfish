@@ -104,8 +104,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * Incoming EVPN type 3 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
    */
-  @Nonnull
-  private SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
+  @Nonnull @VisibleForTesting
+  SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
   /**
    * Incoming EVPN type 5 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
@@ -174,7 +174,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private Map<EdgeId, BgpDelta<EvpnType5Route>> _type5RoutesToSendPerNeighbor;
 
   /** Set of edges (sessions) that came up since previous topology update */
-  private Set<EdgeId> _edgesWentUp;
+  private Set<EdgeId> _edgesWentUp = ImmutableSet.of();
   /**
    * Type 3 routes that were created locally (across all VRFs). Save them so that if new sessions
    * come up, we can easily send out the updates
