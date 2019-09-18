@@ -313,7 +313,7 @@ final class AristaConversions {
       ipv4FamilyBuilder.setAddressFamilyCapabilities(
           AddressFamilyCapabilities.builder()
               .setAdvertiseInactive(Boolean.FALSE) // todo
-              .setAllowLocalAsIn(Boolean.FALSE) // todo
+              .setAllowLocalAsIn(firstNonNull(neighbor.getAllowAsIn(), 0) > 0)
               .setAllowRemoteAsOut(Boolean.FALSE) // todo
               .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
               .setSendExtendedCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
