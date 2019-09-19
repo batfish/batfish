@@ -19,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -41,6 +42,8 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
@@ -467,5 +470,57 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("arista_interface");
     assertThat(c, hasInterface("Ethernet1", hasVrf(hasName(equalTo("VRF_1")))));
     assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
+  }
+
+  @Test
+  public void testEvpnConversion() throws IOException {
+    Configuration c = parseConfig("arista_evpn");
+    Ip[] neighborIPs = {Ip.parse("192.168.255.1"), Ip.parse("192.168.255.2")};
+    for (Ip ip : neighborIPs) {
+
+      BgpActivePeerConfig neighbor =
+          c.getDefaultVrf()
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH));
+      assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
+      assertThat(
+          neighbor.getEvpnAddressFamily().getL2VNIs(),
+          equalTo(
+              ImmutableSet.of(
+                  Layer2VniConfig.builder()
+                      .setVrf("Tenant_A_OPZone")
+                      .setVni(10110)
+                      .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:10110"))
+                      .setImportRouteTarget(ExtendedCommunity.target(10110, 10110).matchString())
+                      .setRouteTarget(ExtendedCommunity.target(10110, 10110))
+                      .build(),
+                  Layer2VniConfig.builder()
+                      .setVrf("Tenant_B_OPZone")
+                      .setVni(10210)
+                      .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:10210"))
+                      .setImportRouteTarget(ExtendedCommunity.target(10210, 10210).matchString())
+                      .setRouteTarget(ExtendedCommunity.target(10210, 10210))
+                      .build())));
+
+      assertThat(
+          neighbor.getEvpnAddressFamily().getL3VNIs(),
+          equalTo(
+              ImmutableSet.of(
+                  Layer3VniConfig.builder()
+                      .setVrf("Tenant_A_OPZone")
+                      .setVni(50101)
+                      .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:50101"))
+                      .setImportRouteTarget(ExtendedCommunity.target(50101, 50101).matchString())
+                      .setRouteTarget(ExtendedCommunity.target(50101, 50101))
+                      .build(),
+                  Layer3VniConfig.builder()
+                      .setVrf("Tenant_B_OPZone")
+                      .setVni(50201)
+                      .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:50201"))
+                      .setImportRouteTarget(ExtendedCommunity.target(50201, 50201).matchString())
+                      .setRouteTarget(ExtendedCommunity.target(50201, 50201))
+                      .build())));
+    }
   }
 }
