@@ -600,7 +600,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of(name)));
     _c.referenceStructure(
-        CumulusStructureType.INTERFACE,
+        CumulusStructureType.ABSTRACT_INTERFACE,
         name,
         CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         ctx.getStart().getLine());
