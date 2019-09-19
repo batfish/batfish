@@ -3120,6 +3120,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbv_route_target(Eos_rbv_route_targetContext ctx) {
+    if (ctx.EVPN() == null && ctx.p != null) {
+      warn(ctx, "Only EVPN is supported");
+      return;
+    }
     if (ctx.EXPORT() != null) {
       _currentAristaBgpVrf.setExportRouteTarget(toRouteTarget(ctx.rt));
     }

@@ -905,10 +905,7 @@ eos_rbv_rd
 
 eos_rbv_route_target
 :
-  ROUTE_TARGET
-  ( IMPORT | EXPORT )
-  EVPN?
-  rt = route_target NEWLINE
+  ROUTE_TARGET (IMPORT | EXPORT) p = (EVPN | VPN_IPV4 | VPN_IPV6)? rt = route_target NEWLINE
 ;
 
 eos_rb_vrf
