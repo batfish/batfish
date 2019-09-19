@@ -72,6 +72,7 @@ cat <<EOF
           always-pull: true
   - label: ":mvn: Javadoc"
     command: "mvn -f projects/pom.xml verify -Dmaven.javadoc.skip=false"
+    skip: True
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
