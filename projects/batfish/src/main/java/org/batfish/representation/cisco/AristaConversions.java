@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
@@ -58,6 +59,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
@@ -346,10 +348,11 @@ final class AristaConversions {
     if (firstNonNull(neighbor.getNextHopSelf(), Boolean.FALSE)) {
       exportStatements.add(new SetNextHop(SelfNextHop.getInstance()));
     }
-    //    if (neighbor.getRemovePrivateAs() != null) {
-    //      // TODO(handle different types of RemovePrivateAs)
-    //      exportStatements.add(RemovePrivateAs.toStaticStatement());
-    //    }
+    if (firstNonNull(neighbor.getRemovePrivateAsMode(), RemovePrivateAsMode.NONE)
+        != RemovePrivateAsMode.NONE) {
+      // TODO(handle different types of RemovePrivateAs)
+      exportStatements.add(RemovePrivateAs.toStaticStatement());
+    }
 
     // If defaultOriginate is set, generate route and default route export policy. Default route
     // will match this policy and get exported without going through the rest of the export policy.
