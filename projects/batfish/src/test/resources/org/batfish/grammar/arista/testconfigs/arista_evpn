@@ -117,6 +117,8 @@ router bgp 65101
       ! Alternative (older?) syntax where evpn token appears
       route-target import evpn 50201:50201
       route-target export evpn 50201:50201
+      route-target export vpn-ipv4 11111:11111
+      route-target export vpn-ipv6 11111:11111
       redistribute connected
    !
 !
