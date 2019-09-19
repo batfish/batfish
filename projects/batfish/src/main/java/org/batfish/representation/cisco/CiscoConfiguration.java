@@ -1969,6 +1969,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
             : EXACT_PATH);
 
     // Process vrf-level address family configuration, such as export policy.
+    if (bgpVrf.getDefaultIpv4Unicast()) {
+      // Handle default activation for v4 unicast.
+      bgpVrf.getOrCreateV4UnicastAf();
+    }
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = bgpVrf.getV4UnicastAf();
 
     // Next we build up the BGP common export policy.
@@ -2137,7 +2141,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 RoutingProtocol.IBGP,
                                 RoutingProtocol.AGGREGATE)),
                         bgpRedistributeWithEnvironmentExpr(
-                            _routeMaps.containsKey(networkConf.getRouteMap())
+                            networkConf.getRouteMap() != null
+                                    && _routeMaps.containsKey(networkConf.getRouteMap())
                                 ? new CallExpr(networkConf.getRouteMap())
                                 : BooleanExprs.TRUE,
                             OriginType.IGP));

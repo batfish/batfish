@@ -39,6 +39,8 @@ router bgp 1
   neighbor 3.3.3.3 remote-as 33
   no neighbor 3.3.3.3 enforce-first-as
 !
+  network 1.2.3.4/32
+!
   neighbor PARSE_ONLY bfd
   neighbor PARSE_ONLY maximum-routes 2222
   neighbor PARSE_ONLY maximum-routes 3333 warning-limit 3000
