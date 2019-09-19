@@ -883,8 +883,9 @@ router_bgp_stanza
    (
       procnum = bgp_asn
    )? NEWLINE (
-      {!_nxos}? router_bgp_stanza_tail
-      | {_nxos}? router_bgp_nxos_toplevel
+      {!_aristaBgp && !_nxos}? router_bgp_stanza_tail
+      | {!_aristaBgp && _nxos}? router_bgp_nxos_toplevel
+      | {_aristaBgp && !_nxos}? eos_router_bgp_tail
    )*
 ;
 
