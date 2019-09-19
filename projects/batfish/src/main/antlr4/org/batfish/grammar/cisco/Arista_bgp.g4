@@ -907,6 +907,7 @@ eos_rbv_route_target
 :
   ROUTE_TARGET
   ( IMPORT | EXPORT )
+  EVPN?
   rt = route_target NEWLINE
 ;
 
