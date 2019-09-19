@@ -6,16 +6,13 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-eos_router_bgp
+eos_router_bgp_tail
 :
-  ROUTER BGP asn = bgp_asn NEWLINE
-  (
-    eos_rb_address_family
-    | eos_rb_inner
-    | eos_rb_vlan
-    | eos_rb_vlan_aware_bundle
-    | eos_rb_vrf
-  )*
+  eos_rb_address_family
+  | eos_rb_inner
+  | eos_rb_vlan
+  | eos_rb_vlan_aware_bundle
+  | eos_rb_vrf
 ;
 
 eos_rb_address_family
