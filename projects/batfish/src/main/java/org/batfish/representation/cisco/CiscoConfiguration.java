@@ -2192,7 +2192,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Process active neighbors first.
     Map<Prefix, BgpActivePeerConfig> activeNeighbors =
-        AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _w);
+        AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
     //    // Process passive neighbors next
@@ -3940,6 +3940,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setBgpProcess(newBgpProcess);
           }
         });
+
+    // For EOS, if a VRF has L3 VNI, create dummy BGP processes in VI, if needed
+    if (_eosVxlan != null) {
+      _eosVxlan
+          .getVrfToVni()
+          .forEach(
+              (vrfName, vni) -> {
+                org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(vrfName);
+                if (viVrf != null && viVrf.getBgpProcess() == null) {
+                  viVrf.setBgpProcess(
+                      org.batfish.datamodel.BgpProcess.builder()
+                          .setRouterId(Ip.ZERO)
+                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
+                          .build());
+                }
+              });
+    }
 
     /*
      * Another pass over interfaces to push final settings to VI interfaces and issue final warnings
