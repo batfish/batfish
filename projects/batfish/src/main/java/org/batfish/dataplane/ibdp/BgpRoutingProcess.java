@@ -531,7 +531,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               Vrf vniVrf = _c.getVrfs().get(vniConfig.getVrf());
               assert vniVrf != null; // Invariant guaranteed by proper conversion
               VniSettings vniSettings = vniVrf.getVniSettings().get(vniConfig.getVni());
-              assert vniSettings != null; // Invariant guaranteed by proper conversion
+              // HOTFIX: skip missing L3 vnis (caused by arista)
+              //     assert vniSettings != null; // Invariant guaranteed by proper conversion
+              if (vniSettings == null) {
+                return;
+              }
               if (vniSettings.getSourceAddress() == null) {
                 return;
               }
