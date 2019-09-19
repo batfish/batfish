@@ -6,12 +6,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,6 +45,8 @@ import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,24 +60,25 @@ public class BgpRoutingProcessTest {
   private BgpProcess _bgpProcess;
   private BgpProcess _bgpProcess2;
   private BgpRoutingProcess _routingProcess;
+  private NetworkFactory _nf;
 
   @Before
   public void setup() {
-    NetworkFactory nf = new NetworkFactory();
+    _nf = new NetworkFactory();
     _c =
-        nf.configurationBuilder()
+        _nf.configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname("c1")
             .build();
-    _vrf = nf.vrfBuilder().setOwner(_c).setName(DEFAULT_VRF_NAME).build();
-    _vrf2 = nf.vrfBuilder().setOwner(_c).setName("vrf2").build();
+    _vrf = _nf.vrfBuilder().setOwner(_c).setName(DEFAULT_VRF_NAME).build();
+    _vrf2 = _nf.vrfBuilder().setOwner(_c).setName("vrf2").build();
     _bgpProcess =
-        nf.bgpProcessBuilder()
+        _nf.bgpProcessBuilder()
             .setRouterId(Ip.ZERO)
             .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
     _bgpProcess2 =
-        nf.bgpProcessBuilder()
+        _nf.bgpProcessBuilder()
             .setRouterId(Ip.ZERO)
             .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
@@ -349,5 +354,153 @@ public class BgpRoutingProcessTest {
             .getEdgeIdStream(graph, BgpPeerConfig::getIpv4UnicastAddressFamily, Type.IPV4_UNICAST)
             .collect(Collectors.toSet()),
         contains(new EdgeId(peer2Id, peer1Id)));
+  }
+
+  /** Ensure that we send out EVPN type 3 routes to newly established BGP sessions */
+  @Test
+  public void testResendInitializationOnTopologyUpdate() {
+    // Setup
+    Ip localIp = Ip.parse("2.2.2.2");
+    Ip peerIp = Ip.parse("1.1.1.1");
+    int vni = 10001;
+    int vni2 = 10002;
+    Builder vniConfigBuilder =
+        Layer3VniConfig.builder()
+            .setVni(vni)
+            .setVrf(DEFAULT_VRF_NAME)
+            .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
+            .setRouteTarget(ExtendedCommunity.target(65500, vni))
+            .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(vni))
+            .setAdvertiseV4Unicast(false);
+    Layer3VniConfig vniConfig1 = vniConfigBuilder.build();
+    String policyName = "POL";
+    BgpActivePeerConfig evpnPeer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(peerIp)
+            .setRemoteAs(1L)
+            .setLocalIp(localIp)
+            .setLocalAs(2L)
+            .setEvpnAddressFamily(
+                EvpnAddressFamily.builder()
+                    .setL2Vnis(ImmutableSet.of())
+                    .setL3Vnis(ImmutableSet.of(vniConfig1))
+                    .setPropagateUnmatched(true)
+                    .setExportPolicy(policyName)
+                    .build())
+            .build();
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(policyName)
+        .setStatements(Collections.singletonList(Statements.ExitAccept.toStaticStatement()))
+        .build();
+    _bgpProcess.getActiveNeighbors().put(Prefix.create(peerIp, Prefix.MAX_PREFIX_LENGTH), evpnPeer);
+    _vrf.getVniSettings()
+        .put(
+            vni,
+            VniSettings.builder()
+                .setVni(vni)
+                .setVlan(1)
+                .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                .setSourceAddress(localIp)
+                .build());
+    _vrf2
+        .getVniSettings()
+        .put(
+            vni2,
+            VniSettings.builder()
+                .setVni(vni)
+                .setVlan(2)
+                .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                .setSourceAddress(localIp)
+                .build());
+
+    Node node = new Node(_c);
+    BgpRoutingProcess routingProcNode1 =
+        node.getVirtualRouters().get(DEFAULT_VRF_NAME).getBgpRoutingProcess();
+
+    /////////// Node 2
+
+    Configuration c2 =
+        _nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("c2")
+            .build();
+    Vrf vrf2 = _nf.vrfBuilder().setOwner(c2).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess bgp2 =
+        _nf.bgpProcessBuilder()
+            .setRouterId(Ip.MAX)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
+    vrf2.setBgpProcess(bgp2);
+    BgpActivePeerConfig node2Peer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(localIp)
+            .setRemoteAs(2L)
+            .setLocalIp(peerIp)
+            .setLocalAs(1L)
+            .setEvpnAddressFamily(
+                EvpnAddressFamily.builder()
+                    .setL2Vnis(ImmutableSet.of())
+                    .setL3Vnis(ImmutableSet.of())
+                    .setPropagateUnmatched(true)
+                    .build())
+            .build();
+    bgp2.getActiveNeighbors().put(Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH), node2Peer);
+    Node node2 = new Node(c2);
+    BgpRoutingProcess routingProcNode2 =
+        node2.getVirtualRouters().get(DEFAULT_VRF_NAME).getBgpRoutingProcess();
+    routingProcNode2.initialize(node2);
+
+    /*
+    Test:
+    1. initalize
+    2. execute one iteration/clear initialization state
+    3. Update topology
+    4. Ensure BGP rib state (at least type 3 routes) are sent to new neighbors.
+    */
+    routingProcNode1.initialize(node);
+    routingProcNode1.executeIteration(ImmutableMap.of());
+    // Update topology
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
+        ValueGraphBuilder.directed().build();
+    BgpPeerConfigId peer1Id =
+        new BgpPeerConfigId(
+            _c.getHostname(),
+            DEFAULT_VRF_NAME,
+            Prefix.create(peerIp, Prefix.MAX_PREFIX_LENGTH),
+            false);
+    BgpPeerConfigId peer2Id =
+        new BgpPeerConfigId(
+            "c2", DEFAULT_VRF_NAME, Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpSessionProperties.Builder sessionBuilderForward =
+        BgpSessionProperties.builder()
+            .setHeadIp(localIp)
+            .setTailIp(peerIp)
+            .setAddressFamilies(ImmutableSet.of(Type.EVPN));
+    BgpSessionProperties.Builder sessionBuilderReverse =
+        BgpSessionProperties.builder()
+            .setHeadIp(peerIp)
+            .setTailIp(localIp)
+            .setAddressFamilies(ImmutableSet.of(Type.EVPN));
+    graph.putEdgeValue(
+        peer1Id,
+        peer2Id,
+        sessionBuilderForward.setAddressFamilies(ImmutableSet.of(Type.EVPN)).build());
+    graph.putEdgeValue(
+        peer2Id,
+        peer1Id,
+        sessionBuilderReverse.setAddressFamilies(ImmutableSet.of(Type.EVPN)).build());
+    routingProcNode1.updateTopology(new BgpTopology(graph));
+    routingProcNode2.updateTopology(new BgpTopology(graph));
+    routingProcNode1.executeIteration(
+        ImmutableSortedMap.of(
+            node.getConfiguration().getHostname(),
+            node,
+            node2.getConfiguration().getHostname(),
+            node2));
+
+    assertThat(
+        routingProcNode2._evpnType3IncomingRoutes.get(new BgpTopology.EdgeId(peer1Id, peer2Id)),
+        not(empty()));
   }
 }

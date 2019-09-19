@@ -13,6 +13,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.Collection;
@@ -103,8 +104,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * Incoming EVPN type 3 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
    */
-  @Nonnull
-  private SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
+  @Nonnull @VisibleForTesting
+  SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
   /**
    * Incoming EVPN type 5 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
@@ -171,6 +172,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Nonnull private BgpDelta<EvpnType5Route> _type5RoutesToSendForEveryone;
   @Nonnull private Map<EdgeId, BgpDelta<EvpnType5Route>> _type5RoutesToSendPerNeighbor;
+
+  /** Set of edges (sessions) that came up since previous topology update */
+  private Set<EdgeId> _edgesWentUp = ImmutableSet.of();
+  /**
+   * Type 3 routes that were created locally (across all VRFs). Save them so that if new sessions
+   * come up, we can easily send out the updates
+   */
+  @Nonnull private RibDelta<EvpnType3Route> _localType3Routes = RibDelta.empty();
 
   /**
    * Create a new BGP process
@@ -345,9 +354,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void updateTopology(BgpTopology topology) {
+    BgpTopology oldTopology = _topology;
     _topology = topology;
     initBgpQueues(_topology);
-    // TODO: for any sessions that are brand new, send out the current state of our bgp RIB to them.
+    // New sessions got established
+    _edgesWentUp =
+        Sets.difference(
+            getEdgeIdStream(topology.getGraph(), BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
+                .collect(ImmutableSet.toImmutableSet()),
+            getEdgeIdStream(oldTopology.getGraph(), BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
+                .collect(ImmutableSet.toImmutableSet()));
+    _topology = topology;
+    // TODO: compute edges that went down, remove routes we received from those neighbors
   }
 
   @Override
@@ -374,8 +392,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // If initialization delta has not been sent out, do so now
       sendOutEvpnType3Routes(
           new BgpDelta<>(_evpnInitializationDelta, RibDelta.empty()), nc, allNodes);
+      _localType3Routes = _evpnInitializationDelta;
       _evpnInitializationDelta = RibDelta.empty();
     }
+
+    // If we have any new edges, send out our RIB state to them.
+    sendOutRoutesToNewEdges(_edgesWentUp, allNodes, nc);
+    _edgesWentUp = ImmutableSet.of();
 
     // See computeType5DeltaFromMainRibRoutes for why this madness is needed
     // If we have main RIB routes to process (from any VRF) and we have EVPN neighbors, then
@@ -407,6 +430,30 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _type5RoutesToSendPerNeighbor = new HashMap<>(0);
     }
     processBgpMessages(nc, allNodes);
+  }
+
+  private void sendOutRoutesToNewEdges(
+      Set<EdgeId> edgesWentUp, Map<String, Node> allNodes, NetworkConfigurations nc) {
+    if (edgesWentUp.isEmpty()) {
+      return;
+    }
+    // TODO: _localType3Routes is not enough
+    //    Ideally we need to re-send all EVPN routes we have to new neighbors
+    edgesWentUp.forEach(
+        edge -> {
+          BgpPeerConfigId remoteConfigId = edge.tail();
+          BgpSessionProperties session = getSessionProperties(_topology, edge);
+          getNeighborBgpProcess(remoteConfigId, allNodes)
+              .enqueueEvpnType3Routes(
+                  // Make sure to reverse the edge
+                  edge.reverse(),
+                  getEvpnTransformedRouteStream(
+                      edge,
+                      new BgpDelta<>(_localType3Routes, RibDelta.empty()),
+                      nc,
+                      allNodes,
+                      session));
+        });
   }
 
   @Nonnull
