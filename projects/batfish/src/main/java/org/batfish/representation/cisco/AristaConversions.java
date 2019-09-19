@@ -167,11 +167,6 @@ final class AristaConversions {
       @Nullable AristaEosVxlan vxlan,
       Warnings warnings) {
 
-    // Handle default activation for v4 unicast by auto-populating all PGs and v4 neighbors in it.
-    if (bgpVrf.getDefaultIpv4Unicast()) {
-      bgpVrf.getOrCreateV4UnicastAf();
-    }
-
     return bgpVrf.getV4neighbors().entrySet().stream()
         .peek(e -> e.getValue().inherit(bgpConfig, bgpVrf, warnings))
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), bgpVrf, e.getValue(), warnings))
