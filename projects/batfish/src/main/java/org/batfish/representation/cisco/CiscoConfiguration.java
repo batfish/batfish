@@ -2076,14 +2076,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     AristaBgpRedistributionPolicy staticPolicy =
         ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(STATIC);
     if (staticPolicy != null) {
-      String routeMap = staticPolicy.getRouteMap();
-      RouteMap map = _routeMaps.get(routeMap);
+      BooleanExpr filterByRouteMap =
+          Optional.ofNullable(staticPolicy.getRouteMap())
+              .filter(_routeMaps::containsKey)
+              .<BooleanExpr>map(CallExpr::new)
+              .orElse(BooleanExprs.TRUE);
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.STATIC),
-              // TODO             redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+              // TODO redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
       Conjunction staticRedist = new Conjunction(conditions);
       staticRedist.setComment("Redistribute static routes into BGP");
       exportConditions.add(staticRedist);
@@ -2092,14 +2094,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     AristaBgpRedistributionPolicy connectedPolicy =
         ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(CONNECTED);
     if (connectedPolicy != null) {
-      String routeMap = connectedPolicy.getRouteMap();
-      RouteMap map = _routeMaps.get(routeMap);
+      BooleanExpr filterByRouteMap =
+          Optional.ofNullable(connectedPolicy.getRouteMap())
+              .filter(_routeMaps::containsKey)
+              .<BooleanExpr>map(CallExpr::new)
+              .orElse(BooleanExprs.TRUE);
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.CONNECTED),
-              // TODO             redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+              // TODO redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
       Conjunction connected = new Conjunction(conditions);
       connected.setComment("Redistribute connected routes into BGP");
       exportConditions.add(connected);
