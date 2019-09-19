@@ -6,6 +6,13 @@ import javax.annotation.Nullable;
 
 /** Base class for all Arista BGP neighbors */
 public abstract class AristaBgpNeighbor implements Serializable {
+  public enum RemovePrivateAsMode {
+    NONE,
+    BASIC,
+    ALL,
+    REPLACE_AS,
+  }
+
   @Nullable private Integer _allowAsIn;
   @Nullable private Boolean _autoLocalAddr;
   @Nullable private String _description;
@@ -16,6 +23,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private Boolean _nextHopSelf;
   @Nullable private Boolean _nextHopUnchanged;
   @Nullable private Long _remoteAs;
+  @Nullable private RemovePrivateAsMode _removePrivateAsMode;
   @Nullable private Boolean _sendCommunity;
   @Nullable private Boolean _shutdown;
   @Nullable private String _updateSource;
@@ -117,6 +125,15 @@ public abstract class AristaBgpNeighbor implements Serializable {
   }
 
   @Nullable
+  public RemovePrivateAsMode getRemovePrivateAsMode() {
+    return _removePrivateAsMode;
+  }
+
+  public void setRemovePrivateAsMode(@Nullable RemovePrivateAsMode removePrivateAsMode) {
+    _removePrivateAsMode = removePrivateAsMode;
+  }
+
+  @Nullable
   public Boolean getSendCommunity() {
     return _sendCommunity;
   }
@@ -175,6 +192,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
     }
     if (_remoteAs == null) {
       _remoteAs = other._remoteAs;
+    }
+    if (_removePrivateAsMode == null) {
+      _removePrivateAsMode = other._removePrivateAsMode;
     }
     if (_sendCommunity == null) {
       _sendCommunity = other._sendCommunity;

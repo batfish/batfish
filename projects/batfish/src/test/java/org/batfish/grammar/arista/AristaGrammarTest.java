@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -52,6 +53,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
@@ -221,7 +223,9 @@ public class AristaGrammarTest {
     {
       String peergName = "PEER_G";
       assertThat(config.getAristaBgp().getPeerGroups(), hasKey(peergName));
+      AristaBgpPeerGroupNeighbor neighbor = config.getAristaBgp().getPeerGroups().get(peergName);
       assertThat(config.getAristaBgp().getPeerGroups().get(peergName).getAllowAsIn(), equalTo(3));
+      assertThat(neighbor.getRemovePrivateAsMode(), nullValue());
     }
     {
       AristaBgpPeerGroupNeighbor pg = config.getAristaBgp().getPeerGroups().get("PEER_G2");
@@ -243,6 +247,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getRemoteAs(), equalTo(35L));
       assertThat(neighbor.getGenericAddressFamily().getRouteMapIn(), equalTo("RM_IN"));
       assertThat(neighbor.getGenericAddressFamily().getRouteMapOut(), equalTo("RM_OUT"));
+      assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.BASIC));
       assertTrue(neighbor.getSendCommunity());
       assertThat(neighbor.getShutdown(), nullValue());
       assertThat(neighbor.getUpdateSource(), equalTo("Loopback0"));
@@ -251,8 +256,9 @@ public class AristaGrammarTest {
       Ip neighborAddr = Ip.parse("2.2.2.2");
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
-      assertThat(neighbor.getRemoteAs(), equalTo(36L));
       assertThat(neighbor.getEbgpMultihop(), equalTo(10));
+      assertThat(neighbor.getRemoteAs(), equalTo(36L));
+      assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.ALL));
       assertThat(neighbor.getShutdown(), equalTo(Boolean.TRUE));
       // TODO: default-originate
     }
@@ -261,6 +267,7 @@ public class AristaGrammarTest {
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getPeerGroup(), equalTo("PEER_G2"));
+      assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.REPLACE_AS));
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");

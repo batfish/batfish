@@ -674,6 +674,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
@@ -1474,7 +1475,6 @@ import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfigurati
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration;
-import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
@@ -2823,6 +2823,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinc_remote_as(Eos_rbinc_remote_asContext ctx) {
     _currentAristaBgpNeighbor.setRemoteAs(toAsNum(ctx.asn));
+  }
+
+  @Override
+  public void exitEos_rbinc_remove_private_as(Eos_rbinc_remove_private_asContext ctx) {
+    if (ctx.REPLACE_AS() != null) {
+      _currentAristaBgpNeighbor.setRemovePrivateAsMode(
+          AristaBgpNeighbor.RemovePrivateAsMode.REPLACE_AS);
+    } else if (ctx.ALL() != null) {
+      _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.ALL);
+    } else {
+      _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.BASIC);
+    }
   }
 
   @Override
@@ -4675,9 +4687,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRbnx_n_remove_private_as(Rbnx_n_remove_private_asContext ctx) {
     if (ctx.ALL() != null) {
-      _currentBgpNxVrfNeighbor.setRemovePrivateAs(RemovePrivateAsMode.ALL);
+      _currentBgpNxVrfNeighbor.setRemovePrivateAs(
+          CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode.ALL);
     } else if (ctx.REPLACE_AS() != null) {
-      _currentBgpNxVrfNeighbor.setRemovePrivateAs(RemovePrivateAsMode.REPLACE_AS);
+      _currentBgpNxVrfNeighbor.setRemovePrivateAs(
+          CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode.REPLACE_AS);
     }
   }
 
