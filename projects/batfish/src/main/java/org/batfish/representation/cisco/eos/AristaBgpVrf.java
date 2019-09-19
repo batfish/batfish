@@ -42,6 +42,7 @@ public final class AristaBgpVrf implements Serializable {
 
   public AristaBgpVrf(String name) {
     _name = name;
+    _defaultIpv4Unicast = true;
     _v4aggregates = new HashMap<>(0);
     _v4neighbors = new HashMap<>(0);
     _redistributionPolicies = new HashMap<>(0);
