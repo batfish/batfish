@@ -692,7 +692,6 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_router_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_trunkContext;
@@ -2487,27 +2486,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _configuration.referenceStructure(
         L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void enterEos_router_bgp(Eos_router_bgpContext ctx) {
-    _currentAristaBgpProcess = _configuration.getAristaBgp();
-    long asn = toAsNum(ctx.asn);
-    if (_currentAristaBgpProcess == null) {
-      _currentAristaBgpProcess = new AristaBgpProcess(asn);
-      _configuration.setAristaBgp(_currentAristaBgpProcess);
-    } else if (asn != _currentAristaBgpProcess.getAsn()) {
-      // Create a dummy node
-      _currentAristaBgpProcess = new AristaBgpProcess(asn);
-      _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
-    }
-    _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
-  }
-
-  @Override
-  public void exitEos_router_bgp(Eos_router_bgpContext ctx) {
-    _currentAristaBgpProcess = null;
-    _currentAristaBgpVrf = null;
   }
 
   @Override
@@ -4877,29 +4855,64 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    long procNum = (ctx.bgp_asn() == null) ? 0 : toAsNum(ctx.bgp_asn());
-    Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    if (_parser.getParser().isAristaBgp()) {
+      _currentAristaBgpProcess = _configuration.getAristaBgp();
+      long asn = toAsNum(ctx.bgp_asn());
+      if (_currentAristaBgpProcess == null) {
+        _currentAristaBgpProcess = new AristaBgpProcess(asn);
+        _configuration.setAristaBgp(_currentAristaBgpProcess);
+      } else if (asn != _currentAristaBgpProcess.getAsn()) {
+        // Create a dummy node
+        _currentAristaBgpProcess = new AristaBgpProcess(asn);
+        _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
+      }
+      _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
+      return;
+    }
 
     if (_parser.getParser().isNxos()) {
+      long procNum = toAsNum(ctx.bgp_asn());
+      Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
       _currentBgpNxVrfConfiguration = vrf.getBgpNxConfig();
       if (_currentBgpNxVrfConfiguration == null) {
         _currentBgpNxVrfConfiguration = new CiscoNxBgpVrfConfiguration();
         vrf.setBgpNxConfig(_currentBgpNxVrfConfiguration);
       }
       _configuration.getNxBgpGlobalConfiguration().setLocalAs(procNum);
-    } else {
-      if (vrf.getBgpProcess() == null) {
-        BgpProcess proc = new BgpProcess(_format, procNum);
-        vrf.setBgpProcess(proc);
-        _dummyPeerGroup = new MasterBgpPeerGroup();
-      }
-      BgpProcess proc = vrf.getBgpProcess();
-      if (proc.getProcnum() != procNum && procNum != 0) {
-        warn(ctx, "Cannot have multiple BGP processes with different ASNs");
-        return;
-      }
-      pushPeer(proc.getMasterBgpPeerGroup());
+      return;
     }
+
+    // Cisco hybrid parser
+    long procNum = ctx.bgp_asn() == null ? 0 : toAsNum(ctx.bgp_asn());
+    Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    if (vrf.getBgpProcess() == null) {
+      BgpProcess proc = new BgpProcess(_format, procNum);
+      vrf.setBgpProcess(proc);
+      _dummyPeerGroup = new MasterBgpPeerGroup();
+    }
+    BgpProcess proc = vrf.getBgpProcess();
+    if (proc.getProcnum() != procNum && procNum != 0) {
+      warn(ctx, "Cannot have multiple BGP processes with different ASNs");
+      return;
+    }
+    pushPeer(proc.getMasterBgpPeerGroup());
+  }
+
+  @Override
+  public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
+    if (_parser.getParser().isAristaBgp()) {
+      _currentAristaBgpProcess = null;
+      _currentAristaBgpVrf = null;
+      return;
+    }
+
+    if (_parser.getParser().isNxos()) {
+      _currentBgpNxVrfConfiguration = null;
+      return;
+    }
+
+    // hybrid cisco parser
+    popPeer();
   }
 
   @Override
@@ -10044,15 +10057,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     StaticRoute route =
         new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
     currentVrf().getStaticRoutes().add(route);
-  }
-
-  @Override
-  public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    if (_parser.getParser().isNxos()) {
-      _currentBgpNxVrfConfiguration = null;
-    } else {
-      popPeer();
-    }
   }
 
   @Override
