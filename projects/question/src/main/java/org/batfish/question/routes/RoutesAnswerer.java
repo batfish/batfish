@@ -488,6 +488,20 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
+                COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE,
+                Schema.STRING,
+                "Route's Next Hop Interface",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_NEXT_HOP_INTERFACE,
+                Schema.STRING,
+                "Route's Next Hop Interface",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
                 COL_BASE_PREFIX + COL_METRIC,
                 Schema.INTEGER,
                 "Route's Metric",
