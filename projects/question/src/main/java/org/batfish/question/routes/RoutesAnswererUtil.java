@@ -597,6 +597,7 @@ public class RoutesAnswererUtil {
                                         RouteRowAttribute.builder()
                                             .setNextHop(
                                                 computeNextHopNode(route.getNextHopIp(), ipOwners))
+                                            .setNextHopInterface(route.getNextHopInterface())
                                             .setAdminDistance(route.getAdministrativeCost())
                                             .setMetric(route.getMetric())
                                             .setTag(route.getTag())
