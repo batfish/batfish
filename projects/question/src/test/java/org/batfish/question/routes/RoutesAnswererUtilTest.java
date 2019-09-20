@@ -64,6 +64,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -504,10 +505,18 @@ public class RoutesAnswererUtilTest {
         ImmutableMap.of(
             new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "ospfE2"),
             ImmutableSortedSet.of(
-                RouteRowAttribute.builder().setAdminDistance(10).setMetric(30L).build()),
+                RouteRowAttribute.builder()
+                    .setAdminDistance(10)
+                    .setMetric(30L)
+                    .setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE)
+                    .build()),
             new RouteRowSecondaryKey(Ip.parse("1.1.1.3"), "ospfE2"),
             ImmutableSortedSet.of(
-                RouteRowAttribute.builder().setAdminDistance(10).setMetric(20L).build()));
+                RouteRowAttribute.builder()
+                    .setAdminDistance(10)
+                    .setMetric(20L)
+                    .setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE)
+                    .build()));
     // matching the secondary key
     assertThat(innerGroup, equalTo(expectedInnerMap));
   }
