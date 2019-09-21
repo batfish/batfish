@@ -2,6 +2,7 @@ package org.batfish.question.routes;
 
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
@@ -28,6 +29,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttributes;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -730,5 +732,31 @@ public class RoutesAnswererUtilTest {
                     COL_ROUTE_ENTRY_PRESENCE,
                     equalTo(RouteEntryPresenceStatus.UNCHANGED.routeEntryPresenceName()),
                     Schema.STRING))));
+  }
+
+  @Test
+  public void testpopulateRouteRowAttributes() {
+    RouteRowAttribute routeRowAttribute =
+        RouteRowAttribute.builder()
+            .setNextHopInterface("nhIface1")
+            .setNextHop("nh1")
+            .setMetric(1L)
+            .setAdminDistance(1)
+            .setTag(1L)
+            .build();
+    Row.RowBuilder rowBuilder = Row.builder();
+
+    populateRouteAttributes(rowBuilder, routeRowAttribute, true);
+
+    assertThat(
+        rowBuilder.build(),
+        equalTo(
+            Row.builder()
+                .put(COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE, "nhIface1")
+                .put(COL_BASE_PREFIX + COL_NEXT_HOP, "nh1")
+                .put(COL_BASE_PREFIX + COL_METRIC, 1L)
+                .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1)
+                .put(COL_BASE_PREFIX + COL_TAG, 1L)
+                .build()));
   }
 }
