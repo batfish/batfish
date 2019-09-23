@@ -301,8 +301,7 @@ eos_rbibbp_as_path
 
 eos_rbibbp_tie_break
 :
-  TIE_BREAK
-  (ROUTER_ID | CLUSTER_LIST_LENGTH) NEWLINE
+  TIE_BREAK (ROUTER_ID | CLUSTER_LIST_LENGTH) NEWLINE
 ;
 
 eos_rbibbpa_multipath_relax

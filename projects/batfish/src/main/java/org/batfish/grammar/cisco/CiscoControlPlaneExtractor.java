@@ -2718,7 +2718,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.CLUSTER_LIST_LENGTH() != null) {
       _currentAristaBgpVrf.setBestpathTieBreaker(AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH);
     } else {
-      throw new IllegalStateException("Unrecognized 'bgp bestpath tie-break' value");
+      throw new IllegalStateException(
+          String.format("Unrecognized 'bgp bestpath tie-break' value: %s", getFullText(ctx)));
     }
   }
 
