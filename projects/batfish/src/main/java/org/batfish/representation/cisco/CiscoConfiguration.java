@@ -191,6 +191,7 @@ import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
@@ -1967,6 +1968,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         firstNonNull(bgpVrf.getBestpathAsPathMultipathRelax(), Boolean.TRUE)
             ? PATH_LENGTH
             : EXACT_PATH);
+    BgpTieBreaker tieBreaker = BgpTieBreaker.ROUTER_ID; // default if not specified
+    if (bgpVrf.getBestpathTieBreaker() == AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH) {
+      tieBreaker = BgpTieBreaker.CLUSTER_LIST_LENGTH;
+    }
+    newBgpProcess.setTieBreaker(tieBreaker);
 
     // Process vrf-level address family configuration, such as export policy.
     if (bgpVrf.getDefaultIpv4Unicast()) {

@@ -5,6 +5,7 @@ hostname arista_bgp_vrf
 router bgp 1
   vrf FOO
     bgp bestpath as-path multipath-relax
+    bgp bestpath tie-break router-id
     rd 123:123
     route-target export 1:1
     route-target import 2:2
@@ -12,6 +13,7 @@ router bgp 1
 !
   vrf BAR
     no bgp bestpath as-path multipath-relax
+    bgp bestpath tie-break cluster-list-length
 
 vrf instance FOO
 vrf instance BAR
