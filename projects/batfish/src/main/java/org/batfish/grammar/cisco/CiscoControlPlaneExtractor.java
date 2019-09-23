@@ -1597,10 +1597,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return Prefix.parse(t.getText());
   }
 
-  private static Prefix toPrefix(Token ip, Token mask) {
-    return Prefix.create(toIp(ip), toIp(mask));
-  }
-
   private static List<SubRange> toRange(RangeContext ctx) {
     List<SubRange> range = new ArrayList<>();
     for (SubrangeContext sc : ctx.range_list) {
@@ -2745,7 +2741,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.prefix != null) {
       prefix = toPrefix(ctx.prefix);
     } else if (ctx.ip != null) {
-      prefix = toPrefix(ctx.ip, ctx.mask);
+      prefix = Prefix.create(toIp(ctx.ip), toIp(ctx.mask));
     } else {
       // IPv6, currently ignored.
       return;
