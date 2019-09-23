@@ -59,9 +59,12 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.representation.cisco.eos.AristaBgpHasPeerGroup;
+import org.batfish.representation.cisco.eos.AristaBgpNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
+import org.batfish.representation.cisco.eos.AristaBgpV4DynamicNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
@@ -157,6 +160,36 @@ final class AristaConversions {
     return true;
   }
 
+  private static boolean isActive(
+      String name, AristaBgpVrf vrf, AristaBgpV4DynamicNeighbor neighbor, Warnings w) {
+    if (firstNonNull(neighbor.getShutdown(), Boolean.FALSE)) {
+      return false;
+    }
+
+    // No active address family that we support.
+    boolean v4 =
+        Optional.ofNullable(vrf.getV4UnicastAf())
+            .map(af -> af.getNeighbor(neighbor.getRange()))
+            .map(AristaBgpNeighborAddressFamily::getActivate)
+            .orElse(Boolean.FALSE);
+    boolean evpn =
+        Optional.ofNullable(vrf.getEvpnAf())
+            .map(af -> af.getNeighbor(neighbor.getRange()))
+            .map(AristaBgpNeighborAddressFamily::getActivate)
+            .orElse(Boolean.FALSE);
+    if (!v4 && !evpn) {
+      w.redFlag("No supported address-family configured for " + name);
+      return false;
+    }
+
+    // No remote AS set.
+    if (neighbor.getRemoteAs() == null) {
+      w.redFlag("No remote-as configured for " + name);
+    }
+
+    return true;
+  }
+
   @Nonnull
   static Map<Prefix, BgpActivePeerConfig> getNeighbors(
       Configuration c,
@@ -188,37 +221,39 @@ final class AristaConversions {
                             warnings)));
   }
 
-  //  @Nonnull
-  //  static Map<Prefix, BgpPassivePeerConfig> getPassiveNeighbors(
-  //      Configuration c,
-  //      Vrf vrf,
-  //      BgpProcess proc,
-  //      AristaBgpProcess bgpConfig,
-  //      AristaBgpVrf bgpVrf,
-  //      Warnings warnings) {
-  //    return bgpVrf.getPassiveNeighbors().entrySet().stream()
-  //        .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
-  //        .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
-  //        .collect(
-  //            ImmutableMap.toImmutableMap(
-  //                Entry::getKey,
-  //                e ->
-  //                    (BgpPassivePeerConfig)
-  //                        AristaConversions.toBgpNeighbor(
-  //                            c,
-  //                            vrf,
-  //                            proc,
-  //                            e.getKey(),
-  //                            bgpConfig,
-  //                            b,
-  //                            e.getValue(),
-  //                            true,
-  //                            warnings)));
-  //  }
+  @Nonnull
+  static Map<Prefix, BgpPassivePeerConfig> getPassiveNeighbors(
+      Configuration c,
+      Vrf vrf,
+      BgpProcess proc,
+      AristaBgpProcess bgpConfig,
+      AristaBgpVrf bgpVrf,
+      @Nullable AristaEosVxlan vxlan,
+      Warnings warnings) {
+    return bgpVrf.getV4DynamicNeighbors().entrySet().stream()
+        .peek(e -> e.getValue().inherit(bgpConfig, bgpVrf, warnings))
+        .filter(e -> isActive(getTextDesc(e.getKey(), vrf), bgpVrf, e.getValue(), warnings))
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                e ->
+                    (BgpPassivePeerConfig)
+                        AristaConversions.toBgpNeighbor(
+                            c,
+                            vrf,
+                            proc,
+                            e.getKey(),
+                            bgpConfig,
+                            bgpVrf,
+                            e.getValue(),
+                            true,
+                            vxlan,
+                            warnings)));
+  }
 
   @Nullable
   private static Ip computeUpdateSource(
-      Vrf vrf, Prefix prefix, AristaBgpV4Neighbor neighbor, boolean dynamic, Warnings warnings) {
+      Vrf vrf, Prefix prefix, AristaBgpNeighbor neighbor, boolean dynamic, Warnings warnings) {
     String updateSourceInterface = neighbor.getUpdateSource();
     if (updateSourceInterface != null) {
       Interface iface = vrf.getInterfaces().get(updateSourceInterface);
@@ -268,10 +303,12 @@ final class AristaConversions {
       Prefix prefix,
       AristaBgpProcess bgpConfig,
       AristaBgpVrf vrfConfig,
-      AristaBgpV4Neighbor neighbor,
+      AristaBgpNeighbor neighbor,
       boolean dynamic,
       @Nullable AristaEosVxlan vxlan,
       Warnings warnings) {
+    // We should be convering only concrete (active or dynamic) neighbors
+    assert neighbor instanceof AristaBgpHasPeerGroup;
 
     BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
     if (dynamic) {
@@ -299,8 +336,8 @@ final class AristaConversions {
 
     newNeighborBuilder.setEnforceFirstAs(firstNonNull(neighbor.getEnforceFirstAs(), Boolean.TRUE));
 
-    if (neighbor.getPeerGroup() != null) {
-      newNeighborBuilder.setGroup(neighbor.getPeerGroup());
+    if (((AristaBgpHasPeerGroup) neighbor).getPeerGroup() != null) {
+      newNeighborBuilder.setGroup(((AristaBgpHasPeerGroup) neighbor).getPeerGroup());
     }
 
     if (neighbor.getLocalAs() != null) {
@@ -314,8 +351,15 @@ final class AristaConversions {
     newNeighborBuilder.setLocalIp(computeUpdateSource(vrf, prefix, neighbor, dynamic, warnings));
 
     @Nullable AristaBgpVrfIpv4UnicastAddressFamily af4 = vrfConfig.getV4UnicastAf();
-    @Nullable
-    AristaBgpNeighborAddressFamily naf4 = af4 == null ? null : af4.getNeighbor(neighbor.getIp());
+    @Nullable AristaBgpNeighborAddressFamily naf4;
+    if (neighbor instanceof AristaBgpV4Neighbor) {
+      naf4 = af4 == null ? null : af4.getNeighbor(((AristaBgpV4Neighbor) neighbor).getIp());
+    } else if (neighbor instanceof AristaBgpV4DynamicNeighbor) {
+      naf4 =
+          af4 == null ? null : af4.getNeighbor(((AristaBgpV4DynamicNeighbor) neighbor).getRange());
+    } else {
+      throw new IllegalStateException("Unsupported type of BGP neighbor");
+    }
     Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder = Ipv4UnicastAddressFamily.builder();
     boolean v4Enabled = naf4 != null && firstNonNull(naf4.getActivate(), Boolean.FALSE);
 
@@ -401,9 +445,15 @@ final class AristaConversions {
     }
 
     @Nullable AristaBgpVrfEvpnAddressFamily evpnAf = vrfConfig.getEvpnAf();
-    @Nullable
-    AristaBgpNeighborAddressFamily nEvpn =
-        evpnAf == null ? null : evpnAf.getNeighbor(neighbor.getIp());
+    @Nullable AristaBgpNeighborAddressFamily nEvpn;
+    if (neighbor instanceof AristaBgpV4Neighbor) {
+      nEvpn = evpnAf == null ? null : evpnAf.getNeighbor(((AristaBgpV4Neighbor) neighbor).getIp());
+    } else {
+      nEvpn =
+          evpnAf == null
+              ? null
+              : evpnAf.getNeighbor(((AristaBgpV4DynamicNeighbor) neighbor).getRange());
+    }
     boolean evpnEnabled = nEvpn != null && firstNonNull(nEvpn.getActivate(), Boolean.FALSE);
     if (evpnEnabled) {
       EvpnAddressFamily.Builder evpnFamilyBuilder = EvpnAddressFamily.builder();
@@ -499,8 +549,15 @@ final class AristaConversions {
       }
       evpnFamilyBuilder.setL3Vnis(l3vnis.build());
       // Peer-specific export policy for EVPN
-      String policyName =
-          computeBgpPeerEvpnExportPolicyName(vrfConfig.getName(), neighbor.getIp().toString());
+      String neighborKey;
+      if (neighbor instanceof AristaBgpV4Neighbor) {
+        neighborKey = ((AristaBgpV4Neighbor) neighbor).getIp().toString();
+      } else if (neighbor instanceof AristaBgpV4DynamicNeighbor) {
+        neighborKey = ((AristaBgpV4DynamicNeighbor) neighbor).getRange().toString();
+      } else {
+        throw new IllegalStateException("Unsupported type of BGP neighbor");
+      }
+      String policyName = computeBgpPeerEvpnExportPolicyName(vrfConfig.getName(), neighborKey);
 
       // TODO: handle modifiers (next-hop-unchanged, next-hop-self, etc.) and export route map
       RoutingPolicy.builder()

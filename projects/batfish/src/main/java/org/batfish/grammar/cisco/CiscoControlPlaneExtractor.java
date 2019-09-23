@@ -660,6 +660,8 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_timersContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbibl_limitContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbibl_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbin_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_additional_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_allowas_inContext;
@@ -1463,6 +1465,7 @@ import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
+import org.batfish.representation.cisco.eos.AristaBgpV4DynamicNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
@@ -1588,6 +1591,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static long toLong(Token t) {
     return Long.parseLong(t.getText());
+  }
+
+  private static Prefix toPrefix(Token t) {
+    return Prefix.parse(t.getText());
+  }
+
+  private static Prefix toPrefix(Token ip, Token mask) {
+    return Prefix.create(toIp(ip), toIp(mask));
   }
 
   private static List<SubRange> toRange(RangeContext ctx) {
@@ -2720,6 +2731,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new IllegalStateException(
           String.format("Unrecognized 'bgp bestpath tie-break' value: %s", getFullText(ctx)));
+    }
+  }
+
+  @Override
+  public void exitEos_rbibl_limit(Eos_rbibl_limitContext ctx) {
+    _currentAristaBgpVrf.setListenLimit(toInteger(ctx.num));
+  }
+
+  @Override
+  public void exitEos_rbibl_range(Eos_rbibl_rangeContext ctx) {
+    Prefix prefix;
+    if (ctx.prefix != null) {
+      prefix = toPrefix(ctx.prefix);
+    } else if (ctx.ip != null) {
+      prefix = toPrefix(ctx.ip, ctx.mask);
+    } else {
+      // IPv6, currently ignored.
+      return;
+    }
+    AristaBgpV4DynamicNeighbor neighbor = _currentAristaBgpVrf.getOrCreateV4DynamicNeighbor(prefix);
+    assert ctx.pg != null; // parser guarantee
+    neighbor.setPeerGroup(ctx.pg.getText());
+    if (ctx.asn != null) {
+      neighbor.setRemoteAs(toAsNum(ctx.asn));
+    }
+    if (ctx.peer_filter != null) {
+      warn(ctx, "Peer filters are currently not supported");
     }
   }
 
