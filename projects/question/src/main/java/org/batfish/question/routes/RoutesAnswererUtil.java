@@ -529,12 +529,15 @@ public class RoutesAnswererUtil {
     return rows;
   }
 
-  private static void populateRouteAttributes(
+  static void populateRouteAttributes(
       RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
     rowBuilder
         .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP,
             routeRowAttribute != null ? routeRowAttribute.getNextHop() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP_INTERFACE,
+            routeRowAttribute != null ? routeRowAttribute.getNextHopInterface() : null)
         .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_METRIC,
             routeRowAttribute != null ? routeRowAttribute.getMetric() : null)
@@ -597,6 +600,7 @@ public class RoutesAnswererUtil {
                                         RouteRowAttribute.builder()
                                             .setNextHop(
                                                 computeNextHopNode(route.getNextHopIp(), ipOwners))
+                                            .setNextHopInterface(route.getNextHopInterface())
                                             .setAdminDistance(route.getAdministrativeCost())
                                             .setMetric(route.getMetric())
                                             .setTag(route.getTag())

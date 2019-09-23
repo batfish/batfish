@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.representation.cisco.AristaConversions.getVrfForVlan;
 import static org.batfish.representation.cisco.CiscoConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
@@ -1916,6 +1917,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setAdvertiseInactive(
                   _vendor.equals(ConfigurationFormat.ARISTA) ? lpg.getAdvertiseInactive() : true)
               .setSendCommunity(lpg.getSendCommunity())
+              .setSendExtendedCommunity(lpg.getSendExtendedCommunity())
               .build();
       newNeighborBuilder.setIpv4UnicastAddressFamily(
           Ipv4UnicastAddressFamily.builder()
@@ -1961,11 +1963,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Arista `bestpath as-path multipath-relax` is enabled by default.
     // https://www.arista.com/en/um-eos/eos-section-33-1-bgp-conceptual-overview#ww1296175 step 8
-    //    newBgpProcess.setMultipathEquivalentAsPathMatchMode(PATH_LENGTH);
-    // TODO: parse the disabling command
-    // TODO: correct meaning of Arista multipath policy.
+    newBgpProcess.setMultipathEquivalentAsPathMatchMode(
+        firstNonNull(bgpVrf.getBestpathAsPathMultipathRelax(), Boolean.TRUE)
+            ? PATH_LENGTH
+            : EXACT_PATH);
 
     // Process vrf-level address family configuration, such as export policy.
+    if (bgpVrf.getDefaultIpv4Unicast()) {
+      // Handle default activation for v4 unicast.
+      bgpVrf.getOrCreateV4UnicastAf();
+    }
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = bgpVrf.getV4UnicastAf();
 
     // Next we build up the BGP common export policy.
@@ -2069,14 +2076,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     AristaBgpRedistributionPolicy staticPolicy =
         ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(STATIC);
     if (staticPolicy != null) {
-      String routeMap = staticPolicy.getRouteMap();
-      RouteMap map = _routeMaps.get(routeMap);
+      BooleanExpr filterByRouteMap =
+          Optional.ofNullable(staticPolicy.getRouteMap())
+              .filter(_routeMaps::containsKey)
+              .<BooleanExpr>map(CallExpr::new)
+              .orElse(BooleanExprs.TRUE);
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.STATIC),
-              // TODO             redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+              // TODO redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
       Conjunction staticRedist = new Conjunction(conditions);
       staticRedist.setComment("Redistribute static routes into BGP");
       exportConditions.add(staticRedist);
@@ -2085,14 +2094,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     AristaBgpRedistributionPolicy connectedPolicy =
         ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(CONNECTED);
     if (connectedPolicy != null) {
-      String routeMap = connectedPolicy.getRouteMap();
-      RouteMap map = _routeMaps.get(routeMap);
+      BooleanExpr filterByRouteMap =
+          Optional.ofNullable(connectedPolicy.getRouteMap())
+              .filter(_routeMaps::containsKey)
+              .<BooleanExpr>map(CallExpr::new)
+              .orElse(BooleanExprs.TRUE);
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.CONNECTED),
-              // TODO             redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+              // TODO redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
       Conjunction connected = new Conjunction(conditions);
       connected.setComment("Redistribute connected routes into BGP");
       exportConditions.add(connected);
@@ -2134,7 +2145,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 RoutingProtocol.IBGP,
                                 RoutingProtocol.AGGREGATE)),
                         bgpRedistributeWithEnvironmentExpr(
-                            _routeMaps.containsKey(networkConf.getRouteMap())
+                            networkConf.getRouteMap() != null
+                                    && _routeMaps.containsKey(networkConf.getRouteMap())
                                 ? new CallExpr(networkConf.getRouteMap())
                                 : BooleanExprs.TRUE,
                             OriginType.IGP));
@@ -2189,7 +2201,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Process active neighbors first.
     Map<Prefix, BgpActivePeerConfig> activeNeighbors =
-        AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _w);
+        AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
     //    // Process passive neighbors next
@@ -3938,6 +3950,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         });
 
+    // For EOS, if a VRF has L3 VNI, create dummy BGP processes in VI, if needed
+    if (_eosVxlan != null) {
+      _eosVxlan
+          .getVrfToVni()
+          .forEach(
+              (vrfName, vni) -> {
+                org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(vrfName);
+                if (viVrf != null && viVrf.getBgpProcess() == null) {
+                  viVrf.setBgpProcess(
+                      org.batfish.datamodel.BgpProcess.builder()
+                          .setRouterId(Ip.ZERO)
+                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
+                          .build());
+                }
+              });
+    }
+
     /*
      * Another pass over interfaces to push final settings to VI interfaces and issue final warnings
      * (e.g. has OSPF settings but no associated OSPF process)
@@ -3974,14 +4003,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (_eosVxlan != null) {
       String sourceIfaceName = _eosVxlan.getSourceInterface();
       Interface sourceIface = sourceIfaceName == null ? null : _interfaces.get(sourceIfaceName);
-      org.batfish.datamodel.Vrf vrf =
-          sourceIface != null ? c.getVrfs().get(sourceIface.getVrf()) : c.getDefaultVrf();
 
       _eosVxlan
           .getVlanVnis()
           .forEach(
-              (vlan, vni) ->
-                  vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface)));
+              (vlan, vni) -> {
+                org.batfish.datamodel.Vrf vrf = getVrfForVlan(c, vlan).orElse(c.getDefaultVrf());
+                vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface));
+              });
     }
 
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined

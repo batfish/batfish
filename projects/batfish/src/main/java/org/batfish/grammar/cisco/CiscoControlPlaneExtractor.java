@@ -658,6 +658,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_timersContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbin_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_additional_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_allowas_inContext;
@@ -673,9 +674,11 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_default_ipv4_unicastContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinon_enforce_first_asContext;
@@ -690,7 +693,6 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_router_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_trunkContext;
@@ -1473,7 +1475,6 @@ import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfigurati
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration;
-import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
@@ -2488,27 +2489,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterEos_router_bgp(Eos_router_bgpContext ctx) {
-    _currentAristaBgpProcess = _configuration.getAristaBgp();
-    long asn = toAsNum(ctx.asn);
-    if (_currentAristaBgpProcess == null) {
-      _currentAristaBgpProcess = new AristaBgpProcess(asn);
-      _configuration.setAristaBgp(_currentAristaBgpProcess);
-    } else if (asn != _currentAristaBgpProcess.getAsn()) {
-      // Create a dummy node
-      _currentAristaBgpProcess = new AristaBgpProcess(asn);
-      _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
-    }
-    _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
-  }
-
-  @Override
-  public void exitEos_router_bgp(Eos_router_bgpContext ctx) {
-    _currentAristaBgpProcess = null;
-    _currentAristaBgpVrf = null;
-  }
-
-  @Override
   public void enterEos_rb_aa_v4(Eos_rb_aa_v4Context ctx) {
     Prefix prefix =
         ctx.prefix != null
@@ -2725,6 +2705,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rbibbpa_multipath_relax(Eos_rbibbpa_multipath_relaxContext ctx) {
+    _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(true);
+  }
+
+  @Override
   public void exitEos_rbi_default_metric(Eos_rbi_default_metricContext ctx) {
     _currentAristaBgpVrf.setDefaultMetric(toLong(ctx.metric));
   }
@@ -2841,6 +2826,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rbinc_remove_private_as(Eos_rbinc_remove_private_asContext ctx) {
+    if (ctx.REPLACE_AS() != null) {
+      _currentAristaBgpNeighbor.setRemovePrivateAsMode(
+          AristaBgpNeighbor.RemovePrivateAsMode.REPLACE_AS);
+    } else if (ctx.ALL() != null) {
+      _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.ALL);
+    } else {
+      _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.BASIC);
+    }
+  }
+
+  @Override
   public void exitEos_rbinc_send_community(Eos_rbinc_send_communityContext ctx) {
     _currentAristaBgpNeighbor.setSendCommunity(true);
     if (ctx.ADD() != null || !ctx.EXTENDED().isEmpty() || ctx.REMOVE() != null) {
@@ -2881,6 +2878,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, ctx.rm.getText(), BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.getStart().getLine());
     }
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_bpa_multipath_relax(Eos_rbino_bgp_bpa_multipath_relaxContext ctx) {
+    _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(false);
   }
 
   @Override
@@ -3118,6 +3120,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbv_route_target(Eos_rbv_route_targetContext ctx) {
+    if (ctx.EVPN() == null && ctx.p != null) {
+      warn(ctx, "Only EVPN is supported");
+      return;
+    }
     if (ctx.EXPORT() != null) {
       _currentAristaBgpVrf.setExportRouteTarget(toRouteTarget(ctx.rt));
     }
@@ -4685,9 +4691,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRbnx_n_remove_private_as(Rbnx_n_remove_private_asContext ctx) {
     if (ctx.ALL() != null) {
-      _currentBgpNxVrfNeighbor.setRemovePrivateAs(RemovePrivateAsMode.ALL);
+      _currentBgpNxVrfNeighbor.setRemovePrivateAs(
+          CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode.ALL);
     } else if (ctx.REPLACE_AS() != null) {
-      _currentBgpNxVrfNeighbor.setRemovePrivateAs(RemovePrivateAsMode.REPLACE_AS);
+      _currentBgpNxVrfNeighbor.setRemovePrivateAs(
+          CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode.REPLACE_AS);
     }
   }
 
@@ -4865,29 +4873,64 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    long procNum = (ctx.bgp_asn() == null) ? 0 : toAsNum(ctx.bgp_asn());
-    Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    if (_parser.getParser().isAristaBgp()) {
+      _currentAristaBgpProcess = _configuration.getAristaBgp();
+      long asn = toAsNum(ctx.bgp_asn());
+      if (_currentAristaBgpProcess == null) {
+        _currentAristaBgpProcess = new AristaBgpProcess(asn);
+        _configuration.setAristaBgp(_currentAristaBgpProcess);
+      } else if (asn != _currentAristaBgpProcess.getAsn()) {
+        // Create a dummy node
+        _currentAristaBgpProcess = new AristaBgpProcess(asn);
+        _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
+      }
+      _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
+      return;
+    }
 
     if (_parser.getParser().isNxos()) {
+      long procNum = toAsNum(ctx.bgp_asn());
+      Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
       _currentBgpNxVrfConfiguration = vrf.getBgpNxConfig();
       if (_currentBgpNxVrfConfiguration == null) {
         _currentBgpNxVrfConfiguration = new CiscoNxBgpVrfConfiguration();
         vrf.setBgpNxConfig(_currentBgpNxVrfConfiguration);
       }
       _configuration.getNxBgpGlobalConfiguration().setLocalAs(procNum);
-    } else {
-      if (vrf.getBgpProcess() == null) {
-        BgpProcess proc = new BgpProcess(_format, procNum);
-        vrf.setBgpProcess(proc);
-        _dummyPeerGroup = new MasterBgpPeerGroup();
-      }
-      BgpProcess proc = vrf.getBgpProcess();
-      if (proc.getProcnum() != procNum && procNum != 0) {
-        warn(ctx, "Cannot have multiple BGP processes with different ASNs");
-        return;
-      }
-      pushPeer(proc.getMasterBgpPeerGroup());
+      return;
     }
+
+    // Cisco hybrid parser
+    long procNum = ctx.bgp_asn() == null ? 0 : toAsNum(ctx.bgp_asn());
+    Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    if (vrf.getBgpProcess() == null) {
+      BgpProcess proc = new BgpProcess(_format, procNum);
+      vrf.setBgpProcess(proc);
+      _dummyPeerGroup = new MasterBgpPeerGroup();
+    }
+    BgpProcess proc = vrf.getBgpProcess();
+    if (proc.getProcnum() != procNum && procNum != 0) {
+      warn(ctx, "Cannot have multiple BGP processes with different ASNs");
+      return;
+    }
+    pushPeer(proc.getMasterBgpPeerGroup());
+  }
+
+  @Override
+  public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
+    if (_parser.getParser().isAristaBgp()) {
+      _currentAristaBgpProcess = null;
+      _currentAristaBgpVrf = null;
+      return;
+    }
+
+    if (_parser.getParser().isNxos()) {
+      _currentBgpNxVrfConfiguration = null;
+      return;
+    }
+
+    // hybrid cisco parser
+    popPeer();
   }
 
   @Override
@@ -10032,15 +10075,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     StaticRoute route =
         new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
     currentVrf().getStaticRoutes().add(route);
-  }
-
-  @Override
-  public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    if (_parser.getParser().isNxos()) {
-      _currentBgpNxVrfConfiguration = null;
-    } else {
-      popPeer();
-    }
   }
 
   @Override

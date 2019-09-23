@@ -1,0 +1,125 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_evpn
+!
+vlan 110
+   name Tenant_A_OPZone_1
+!
+vlan 210
+   name Tenant_B_OPZone_1
+!
+vrf definition Tenant_A_OPZone
+!
+vrf definition Tenant_B_OPZone
+!
+interface Loopback0
+   description EVPN_Overlay_Peering
+   ip address 192.168.255.3/32
+!
+interface Loopback1
+   description VTEP_VXLAN_Tunnel_Source
+   ip address 192.168.254.3/32
+!
+interface Loopback101
+   description Tenant_A_OPZone_VTEP_DIAGNOSTICS
+   vrf forwarding Tenant_A_OPZone
+   ip address 10.1.255.3/32
+!
+interface Loopback201
+   description Tenant_B_OPZone_VTEP_DIAGNOSTICS
+   vrf forwarding Tenant_B_OPZone
+   ip address 10.2.255.3/32
+!
+interface Loopback301
+   description Tenant_C_OPZone_VTEP_DIAGNOSTICS
+   vrf forwarding Tenant_C_OPZone
+   ip address 10.3.255.3/32
+!
+interface Management1
+   description oob_management
+   vrf forwarding MGMT
+   ip address 192.168.2.105/24
+!
+interface Vlan110
+   description Tenant_A_OPZone_1
+   vrf forwarding Tenant_A_OPZone
+   ip address virtual 10.1.10.1/24
+!
+interface Vlan210
+   description Tenant_B_OPZone_1
+   vrf forwarding Tenant_B_OPZone
+   ip address virtual 10.2.10.1/24
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 110 vni 10110
+   vxlan vlan 210 vni 10210
+   vxlan vrf Tenant_A_OPZone vni 50101
+   vxlan vrf Tenant_B_OPZone vni 50201
+!
+ip routing vrf Tenant_A_OPZone
+ip routing vrf Tenant_B_OPZone
+!
+ip prefix-list PL-P2P-UNDERLAY seq 10 permit 172.31.255.0/24 le 31
+!
+route-map RM-CONN-2-BGP permit 10
+   match ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
+!
+route-map RM-CONN-2-BGP permit 20
+   match ip address prefix-list PL-P2P-UNDERLAY
+!
+router bgp 65101
+   router-id 192.168.255.3
+   update wait-install
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor EVPN-OVERLAY-PEERS peer-group
+   neighbor EVPN-OVERLAY-PEERS remote-as 65001
+   neighbor EVPN-OVERLAY-PEERS update-source Loopback0
+   neighbor EVPN-OVERLAY-PEERS send-community
+   neighbor IPv4-UNDERLAY-PEERS peer-group
+   neighbor IPv4-UNDERLAY-PEERS remote-as 65001
+   neighbor IPv4-UNDERLAY-PEERS send-community
+   neighbor 172.31.255.0 peer-group IPv4-UNDERLAY-PEERS
+   neighbor 172.31.255.2 peer-group IPv4-UNDERLAY-PEERS
+   neighbor 192.168.255.1 peer-group EVPN-OVERLAY-PEERS
+   neighbor 192.168.255.2 peer-group EVPN-OVERLAY-PEERS
+   redistribute connected route-map RM-CONN-2-BGP
+   !
+   vlan 110
+      rd 192.168.255.3:10110
+      route-target both 10110:10110
+      redistribute learned
+   !
+   vlan 210
+      rd 192.168.255.3:10210
+      route-target both 10210:10210
+      redistribute learned
+   !
+   address-family evpn
+      neighbor EVPN-OVERLAY-PEERS activate
+      no neighbor IPv4-UNDERLAY-PEERS activate
+   !
+   address-family ipv4
+      no neighbor EVPN-OVERLAY-PEERS activate
+      neighbor IPv4-UNDERLAY-PEERS activate
+   !
+   vrf Tenant_A_OPZone
+      rd 192.168.255.3:50101
+      route-target import 50101:50101
+      route-target export 50101:50101
+      redistribute connected
+   !
+   vrf Tenant_B_OPZone
+      rd 192.168.255.3:50201
+      ! Alternative (older?) syntax where evpn token appears
+      route-target import evpn 50201:50201
+      route-target export evpn 50201:50201
+      route-target export vpn-ipv4 11111:11111
+      route-target export vpn-ipv6 11111:11111
+      redistribute connected
+   !
+!
+end

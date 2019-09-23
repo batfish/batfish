@@ -11,6 +11,9 @@ public enum MultipathEquivalentAsPathMatchMode {
   EXACT_PATH,
   /** Relaxed form of {@link #EXACT_PATH} that requires only the first AS to be the same. */
   FIRST_AS,
-  /** Accepts all candidate paths (which have already been filtered to the same length). */
+  /**
+   * Accepts all candidate paths. Since they have already been filtered to the same length, this is
+   * a no-op.
+   */
   PATH_LENGTH
 }

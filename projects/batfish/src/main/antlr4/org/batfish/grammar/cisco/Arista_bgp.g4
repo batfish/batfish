@@ -6,16 +6,13 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-eos_router_bgp
+eos_router_bgp_tail
 :
-  ROUTER BGP asn = bgp_asn NEWLINE
-  (
-    eos_rb_address_family
-    | eos_rb_inner
-    | eos_rb_vlan
-    | eos_rb_vlan_aware_bundle
-    | eos_rb_vrf
-  )*
+  eos_rb_address_family
+  | eos_rb_inner
+  | eos_rb_vlan
+  | eos_rb_vlan_aware_bundle
+  | eos_rb_vrf
 ;
 
 eos_rb_address_family
@@ -72,7 +69,7 @@ eos_rbafipv4u_neighbor
   (
     v4 = IP_ADDRESS
     | v6 = IPV6_ADDRESS
-    | pg = VARIABLE
+    | pg = variable
   )
   eos_rb_af_neighbor_common
 ;
@@ -91,7 +88,7 @@ eos_rbafipv4_no_neighbor
   (
     v4 = IP_ADDRESS
     | v6 = IPV6_ADDRESS
-    | pg = VARIABLE
+    | pg = variable
   )
   eos_rb_af_no_neighbor_common
 ;
@@ -116,7 +113,7 @@ eos_rbafipv6u_neighbor
   (
     v4 = IP_ADDRESS
     | v6 = IPV6_ADDRESS
-    | pg = VARIABLE
+    | pg = variable
   )
   eos_rb_af_neighbor_common
 ;
@@ -148,7 +145,7 @@ eos_rb_af_evpn_neighbor
   (
     v4 = IP_ADDRESS
     | v6 = IPV6_ADDRESS
-    | pg = VARIABLE
+    | pg = variable
   )
   eos_rb_af_neighbor_common
 ;
@@ -164,7 +161,7 @@ eos_rb_af_evpn_no_neighbor
   (
     v4 = IP_ADDRESS
     | v6 = IPV6_ADDRESS
-    | pg = VARIABLE
+    | pg = variable
   )
   eos_rb_af_no_neighbor_common
 ;
@@ -198,7 +195,7 @@ eos_rbafnc_activate
 
 eos_rbafnc_route_map
 :
-  ROUTE_MAP name = VARIABLE (IN | OUT) NEWLINE
+  ROUTE_MAP name = variable (IN | OUT) NEWLINE
 ;
 
 eos_rb_af_no_neighbor_common
@@ -248,7 +245,7 @@ eos_rbi_bgp
 //    | eos_rbib_always_compare_med
 //    | eos_rbib_asn
 //    | eos_rbib_auto_local_addr
-//    | eos_rbib_bestpath
+    | eos_rbib_bestpath
 //    | eos_rbib_client_to_client
 //    | eos_rbib_cluster_id
 //    | eos_rbib_confederation
@@ -281,6 +278,32 @@ eos_rbib_additional_paths
   NEWLINE
 ;
 
+eos_rbib_bestpath
+:
+  BESTPATH
+  (
+    eos_rbibbp_as_path
+    // eos_rbibbp_ecmp_fast
+    // eos_rbibbp_med
+    // eos_rbibbp_skip
+    // eos_rbibbp_tie_break
+  )
+;
+
+eos_rbibbp_as_path
+:
+  AS_PATH
+  (
+    // eos_rbibbpa_ignore |
+    eos_rbibbpa_multipath_relax
+  )
+;
+
+eos_rbibbpa_multipath_relax
+:
+  MULTIPATH_RELAX NEWLINE
+;
+
 eos_rbib_listen
 :
   LISTEN
@@ -303,9 +326,9 @@ eos_rbibl_range
     | prefix = IP_PREFIX
     | ip6prefix = IPV6_PREFIX
   )
-  (PEER_GROUP | PEER GROUP) pg = VARIABLE
+  (PEER_GROUP | PEER GROUP) pg = variable
   (
-    PEER_FILTER peer_filter = VARIABLE
+    PEER_FILTER peer_filter = variable
     | REMOTE_AS asn = bgp_asn
   )
   NEWLINE
@@ -390,7 +413,7 @@ eos_rbi_neighbor_common
     | eos_rbinc_password
 //    | eos_rbinc_prefix_list
     | eos_rbinc_remote_as
-//    | eos_rbinc_remove_private_as
+    | eos_rbinc_remove_private_as
     | eos_rbafnc_route_map
 //    | eos_rbinc_route_reflector_client
 //    | eos_rbinc_route_to_peer
@@ -430,7 +453,7 @@ eos_rbinc_default_originate
   DEFAULT_ORIGINATE
   (
     ALWAYS
-    | ROUTE_MAP rm = VARIABLE
+    | ROUTE_MAP rm = variable
   )* NEWLINE
 ;
 
@@ -496,12 +519,17 @@ eos_rbinc_next_hop_unchanged
 
 eos_rbinc_password
 :
-  PASSWORD (encrypt_level = DEC)? VARIABLE NEWLINE
+  PASSWORD (encrypt_level = DEC)? variable NEWLINE
 ;
 
 eos_rbinc_remote_as
 :
   REMOTE_AS asn = bgp_asn NEWLINE
+;
+
+eos_rbinc_remove_private_as
+:
+  REMOVE_PRIVATE_AS (ALL REPLACE_AS?)? NEWLINE
 ;
 
 eos_rbinc_send_community
@@ -544,8 +572,8 @@ eos_rbin_local_v6_addr
 // Assigning a peer group to a neighbor
 eos_rbin_peer_group
 :
-  PEER_GROUP name = VARIABLE NEWLINE
-  | PEER GROUP name = VARIABLE NEWLINE
+  PEER_GROUP name = variable NEWLINE
+  | PEER GROUP name = variable NEWLINE
 ;
 
 eos_rbi_network
@@ -563,13 +591,13 @@ eos_rbi_network4
     ip = IP_ADDRESS mask = IP_ADDRESS
     | prefix = IP_PREFIX
   )
-  (ROUTE_MAP rm = VARIABLE)?
+  (ROUTE_MAP rm = variable)?
   NEWLINE
 ;
 
 eos_rbi_network6
 :
-  IPV6_PREFIX (ROUTE_MAP rm = VARIABLE)? NEWLINE
+  IPV6_PREFIX (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
 eos_rbi_no
@@ -584,7 +612,36 @@ eos_rbi_no
 eos_rbino_bgp
 :
   BGP
-  eos_rbino_bgp_default
+  (
+    eos_rbino_bgp_bestpath
+    | eos_rbino_bgp_default
+  )
+;
+
+eos_rbino_bgp_bestpath
+:
+  BESTPATH
+  (
+    eos_rbino_bgp_bp_as_path
+    // eos_rbino_bgp_bp_ecmp_fast
+    // eos_rbino_bgp_bp_med
+    // eos_rbino_bgp_bp_skip
+    // eos_rbino_bgp_bp_tie_break
+  )
+;
+
+eos_rbino_bgp_bp_as_path
+:
+  AS_PATH
+  (
+    // eos_rbino_bgp_bpa_ignore |
+    eos_rbino_bgp_bpa_multipath_relax
+  )
+;
+
+eos_rbino_bgp_bpa_multipath_relax
+:
+  MULTIPATH_RELAX NEWLINE
 ;
 
 eos_rbino_bgp_default
@@ -604,7 +661,7 @@ eos_rbino_neighbor
   (
     v4 = IP_ADDRESS
     | v6 = IPV6_ADDRESS
-    | pg = VARIABLE
+    | pg = variable
   )
   eos_rbinon_enforce_first_as
 ;
@@ -617,7 +674,7 @@ eos_rbinon_enforce_first_as
 // Defining a peer group
 eos_rbi_peer_group
 :
-  name = VARIABLE
+  name = variable
   (
     (PEER_GROUP | PEER GROUP) NEWLINE
     | eos_rbi_neighbor_common
@@ -642,24 +699,24 @@ eos_rbi_redistribute
 
 eos_rbir_attached_host
 :
-  ATTACHED_HOST (ROUTE_MAP rm = VARIABLE)? NEWLINE
+  ATTACHED_HOST (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
 eos_rbir_connected
 :
-  CONNECTED (ROUTE_MAP rm = VARIABLE)? NEWLINE
+  CONNECTED (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
 eos_rbir_dynamic
 :
-  DYNAMIC (ROUTE_MAP rm = VARIABLE)? NEWLINE
+  DYNAMIC (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
 eos_rbir_isis
 :
   ISIS
   (LEVEL_1 | LEVEL_2 | LEVEL_1_2)?
-  (ROUTE_MAP rm = VARIABLE)?
+  (ROUTE_MAP rm = variable)?
   NEWLINE
 ;
 
@@ -674,7 +731,7 @@ eos_rbir_ospf
       | (NSSA_EXTERNAL DEC?)
     )
   )?
-  (ROUTE_MAP rm = VARIABLE)?
+  (ROUTE_MAP rm = variable)?
   NEWLINE
 ;
 
@@ -689,18 +746,18 @@ eos_rbir_ospf3
       | (NSSA_EXTERNAL DEC?)
     )
   )?
-  (ROUTE_MAP rm = VARIABLE)?
+  (ROUTE_MAP rm = variable)?
   NEWLINE
 ;
 
 eos_rbir_rip
 :
-  RIP (ROUTE_MAP rm = VARIABLE)? NEWLINE
+  RIP (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
 eos_rbir_static
 :
-  STATIC (ROUTE_MAP rm = VARIABLE)? NEWLINE
+  STATIC (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
 eos_rbi_router_id
@@ -760,8 +817,8 @@ eos_rb_aa_modifiers
 :
   ADVERTISE_ONLY
   | AS_SET
-  | ATTRIBUTE_MAP attr_map = VARIABLE
-  | MATCH_MAP match_map = VARIABLE
+  | ATTRIBUTE_MAP attr_map = variable
+  | MATCH_MAP match_map = variable
   | SUMMARY_ONLY
 ;
 
@@ -787,7 +844,7 @@ eos_rb_vlan
 
 eos_rb_vlan_aware_bundle
 :
-  VLAN_AWARE_BUNDLE name = VARIABLE NEWLINE
+  VLAN_AWARE_BUNDLE name = variable NEWLINE
   (
     eos_rb_vab_vlan
     | eos_rb_vlan_tail
@@ -848,14 +905,12 @@ eos_rbv_rd
 
 eos_rbv_route_target
 :
-  ROUTE_TARGET
-  ( IMPORT | EXPORT )
-  rt = route_target NEWLINE
+  ROUTE_TARGET (IMPORT | EXPORT) p = (EVPN | VPN_IPV4 | VPN_IPV6)? rt = route_target NEWLINE
 ;
 
 eos_rb_vrf
 :
-  VRF name = VARIABLE NEWLINE
+  VRF name = variable NEWLINE
   (
     eos_rbv_address_family
     | eos_rb_inner

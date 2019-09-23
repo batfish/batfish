@@ -7,16 +7,20 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -28,13 +32,19 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
@@ -43,9 +53,11 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
+import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
@@ -135,7 +147,7 @@ public class AristaGrammarTest {
       assertThat(vrf.getEbgpAdminDistance(), equalTo(333));
       assertThat(vrf.getIbgpAdminDistance(), equalTo(400));
       assertThat(vrf.getLocalAdminDistance(), equalTo(500));
-      assertFalse(vrf.getDefaultIpv4Unicast());
+      assertTrue(vrf.getDefaultIpv4Unicast());
       assertThat(vrf.getMaxPaths(), equalTo(3));
       assertThat(vrf.getMaxPathsEcmp(), equalTo(2));
     }
@@ -211,7 +223,9 @@ public class AristaGrammarTest {
     {
       String peergName = "PEER_G";
       assertThat(config.getAristaBgp().getPeerGroups(), hasKey(peergName));
+      AristaBgpPeerGroupNeighbor neighbor = config.getAristaBgp().getPeerGroups().get(peergName);
       assertThat(config.getAristaBgp().getPeerGroups().get(peergName).getAllowAsIn(), equalTo(3));
+      assertThat(neighbor.getRemovePrivateAsMode(), nullValue());
     }
     {
       AristaBgpPeerGroupNeighbor pg = config.getAristaBgp().getPeerGroups().get("PEER_G2");
@@ -233,6 +247,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getRemoteAs(), equalTo(35L));
       assertThat(neighbor.getGenericAddressFamily().getRouteMapIn(), equalTo("RM_IN"));
       assertThat(neighbor.getGenericAddressFamily().getRouteMapOut(), equalTo("RM_OUT"));
+      assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.BASIC));
       assertTrue(neighbor.getSendCommunity());
       assertThat(neighbor.getShutdown(), nullValue());
       assertThat(neighbor.getUpdateSource(), equalTo("Loopback0"));
@@ -241,8 +256,9 @@ public class AristaGrammarTest {
       Ip neighborAddr = Ip.parse("2.2.2.2");
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
-      assertThat(neighbor.getRemoteAs(), equalTo(36L));
       assertThat(neighbor.getEbgpMultihop(), equalTo(10));
+      assertThat(neighbor.getRemoteAs(), equalTo(36L));
+      assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.ALL));
       assertThat(neighbor.getShutdown(), equalTo(Boolean.TRUE));
       // TODO: default-originate
     }
@@ -251,6 +267,7 @@ public class AristaGrammarTest {
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getPeerGroup(), equalTo("PEER_G2"));
+      assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.REPLACE_AS));
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");
@@ -261,14 +278,85 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testNeighborConversion() throws IOException {
+    Configuration c = parseConfig("arista_bgp_neighbors");
+    assertThat(c.getDefaultVrf(), notNullValue());
+    BgpProcess proc = c.getDefaultVrf().getBgpProcess();
+    assertThat(proc, notNullValue());
+    {
+      Prefix neighborPrefix = Prefix.parse("1.1.1.1/32");
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(neighbor.getEnforceFirstAs(), equalTo(true));
+      assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
+      Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
+      assertThat(af.getAddressFamilyCapabilities().getAllowLocalAsIn(), equalTo(true));
+      assertThat(af.getAddressFamilyCapabilities().getAllowRemoteAsOut(), equalTo(true));
+    }
+    {
+      Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
+      // shutdown neighbor is not converted
+      assertThat(proc.getActiveNeighbors(), not(hasKey(neighborPrefix)));
+    }
+    {
+      Prefix neighborPrefix = Prefix.parse("3.3.3.3/32");
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(neighbor.getEnforceFirstAs(), equalTo(false));
+    }
+  }
+
+  @Test
   public void testVrfExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_vrf");
-    AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
-    assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("123:123")));
-    assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
-    assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
-    assertThat(vrf.getLocalAs(), equalTo(65000L));
-    assertThat(config.getVrfs(), hasKey("FOO"));
+    assertThat(config.getAristaBgp(), notNullValue());
+    assertThat(
+        config.getAristaBgp().getVrfs().keySet(),
+        containsInAnyOrder(AristaBgpProcess.DEFAULT_VRF, "FOO", "BAR"));
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+      assertThat(vrf.getBestpathAsPathMultipathRelax(), nullValue());
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
+      assertThat(vrf.getBestpathAsPathMultipathRelax(), equalTo(Boolean.TRUE));
+      assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("123:123")));
+      assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
+      assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
+      assertThat(vrf.getLocalAs(), equalTo(65000L));
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("BAR");
+      assertThat(vrf.getBestpathAsPathMultipathRelax(), equalTo(Boolean.FALSE));
+    }
+  }
+
+  @Test
+  public void testVrfConversion() throws IOException {
+    Configuration c = parseConfig("arista_bgp_vrf");
+    assertThat(
+        c.getVrfs().keySet(), containsInAnyOrder(AristaBgpProcess.DEFAULT_VRF, "FOO", "BAR"));
+    {
+      BgpProcess proc = c.getDefaultVrf().getBgpProcess();
+      assertThat(proc, notNullValue());
+      assertThat(
+          proc.getMultipathEquivalentAsPathMatchMode(),
+          equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    }
+    {
+      BgpProcess proc = c.getVrfs().get("FOO").getBgpProcess();
+      assertThat(proc, notNullValue());
+      assertThat(
+          proc.getMultipathEquivalentAsPathMatchMode(),
+          equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    }
+    {
+      BgpProcess proc = c.getVrfs().get("BAR").getBgpProcess();
+      assertThat(proc, notNullValue());
+      assertThat(
+          proc.getMultipathEquivalentAsPathMatchMode(),
+          equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    }
   }
 
   @Test
@@ -347,10 +435,18 @@ public class AristaGrammarTest {
   @Test
   public void testVxlanConversion() throws IOException {
     Configuration config = parseConfig("arista_vxlan");
-    VniSettings vniSettings = config.getDefaultVrf().getVniSettings().get(10001);
-    assertThat(
-        vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
-    assertThat(vniSettings.getBumTransportIps(), empty());
+    {
+      VniSettings vniSettings = config.getVrfs().get("VRF_1").getVniSettings().get(10001);
+      assertThat(
+          vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
+      assertThat(vniSettings.getBumTransportIps(), empty());
+    }
+    {
+      VniSettings vniSettings = config.getVrfs().get("VRF_2").getVniSettings().get(10002);
+      assertThat(
+          vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
+      assertThat(vniSettings.getBumTransportIps(), empty());
+    }
   }
 
   @Test
@@ -381,5 +477,57 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("arista_interface");
     assertThat(c, hasInterface("Ethernet1", hasVrf(hasName(equalTo("VRF_1")))));
     assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
+  }
+
+  @Test
+  public void testEvpnConversion() throws IOException {
+    Configuration c = parseConfig("arista_evpn");
+    Ip[] neighborIPs = {Ip.parse("192.168.255.1"), Ip.parse("192.168.255.2")};
+    for (Ip ip : neighborIPs) {
+
+      BgpActivePeerConfig neighbor =
+          c.getDefaultVrf()
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH));
+      assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
+      assertThat(
+          neighbor.getEvpnAddressFamily().getL2VNIs(),
+          equalTo(
+              ImmutableSet.of(
+                  Layer2VniConfig.builder()
+                      .setVrf("Tenant_A_OPZone")
+                      .setVni(10110)
+                      .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:10110"))
+                      .setImportRouteTarget(ExtendedCommunity.target(10110, 10110).matchString())
+                      .setRouteTarget(ExtendedCommunity.target(10110, 10110))
+                      .build(),
+                  Layer2VniConfig.builder()
+                      .setVrf("Tenant_B_OPZone")
+                      .setVni(10210)
+                      .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:10210"))
+                      .setImportRouteTarget(ExtendedCommunity.target(10210, 10210).matchString())
+                      .setRouteTarget(ExtendedCommunity.target(10210, 10210))
+                      .build())));
+
+      assertThat(
+          neighbor.getEvpnAddressFamily().getL3VNIs(),
+          equalTo(
+              ImmutableSet.of(
+                  Layer3VniConfig.builder()
+                      .setVrf("Tenant_A_OPZone")
+                      .setVni(50101)
+                      .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:50101"))
+                      .setImportRouteTarget(ExtendedCommunity.target(50101, 50101).matchString())
+                      .setRouteTarget(ExtendedCommunity.target(50101, 50101))
+                      .build(),
+                  Layer3VniConfig.builder()
+                      .setVrf("Tenant_B_OPZone")
+                      .setVni(50201)
+                      .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:50201"))
+                      .setImportRouteTarget(ExtendedCommunity.target(50201, 50201).matchString())
+                      .setRouteTarget(ExtendedCommunity.target(50201, 50201))
+                      .build())));
+    }
   }
 }

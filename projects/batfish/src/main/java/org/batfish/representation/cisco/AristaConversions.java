@@ -2,22 +2,27 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerEvpnExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeNxosBgpDefaultRouteExportPolicyName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,7 +43,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -51,11 +59,16 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
+import org.batfish.representation.cisco.eos.AristaBgpVlan;
+import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
+import org.batfish.representation.cisco.eos.AristaBgpVrfEvpnAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
+import org.batfish.representation.cisco.eos.AristaEosVxlan;
 
 /**
  * A utility class for converting between Arista EOS configurations and the Batfish
@@ -126,11 +139,11 @@ final class AristaConversions {
             .map(af -> af.getNeighbor(neighbor.getIp()))
             .map(AristaBgpNeighborAddressFamily::getActivate)
             .orElse(Boolean.FALSE);
-    boolean evpn = false; // TODO
-    //        Optional.ofNullable(vrf.getEvpnAf())
-    //            .map(af -> af.getNeighbor(neighbor.getIp()))
-    //            .map(AristaBgpNeighborAddressFamily::getActivate)
-    //            .orElse(Boolean.FALSE);
+    boolean evpn =
+        Optional.ofNullable(vrf.getEvpnAf())
+            .map(af -> af.getNeighbor(neighbor.getIp()))
+            .map(AristaBgpNeighborAddressFamily::getActivate)
+            .orElse(Boolean.FALSE);
     if (!v4 && !evpn) {
       w.redFlag("No supported address-family configured for " + name);
       return false;
@@ -151,12 +164,8 @@ final class AristaConversions {
       BgpProcess proc,
       AristaBgpProcess bgpConfig,
       AristaBgpVrf bgpVrf,
+      @Nullable AristaEosVxlan vxlan,
       Warnings warnings) {
-
-    // Handle default activation for v4 unicast by auto-populating all PGs and v4 neighbors in it.
-    if (bgpVrf.getDefaultIpv4Unicast()) {
-      bgpVrf.getOrCreateV4UnicastAf();
-    }
 
     return bgpVrf.getV4neighbors().entrySet().stream()
         .peek(e -> e.getValue().inherit(bgpConfig, bgpVrf, warnings))
@@ -175,6 +184,7 @@ final class AristaConversions {
                             bgpVrf,
                             e.getValue(),
                             false,
+                            vxlan,
                             warnings)));
   }
 
@@ -260,6 +270,7 @@ final class AristaConversions {
       AristaBgpVrf vrfConfig,
       AristaBgpV4Neighbor neighbor,
       boolean dynamic,
+      @Nullable AristaEosVxlan vxlan,
       Warnings warnings) {
 
     BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
@@ -286,8 +297,7 @@ final class AristaConversions {
 
     newNeighborBuilder.setEbgpMultihop(firstNonNull(neighbor.getEbgpMultihop(), 0) > 1);
 
-    // todo
-    newNeighborBuilder.setEnforceFirstAs(firstNonNull(neighbor.getEnforceFirstAs(), Boolean.FALSE));
+    newNeighborBuilder.setEnforceFirstAs(firstNonNull(neighbor.getEnforceFirstAs(), Boolean.TRUE));
 
     if (neighbor.getPeerGroup() != null) {
       newNeighborBuilder.setGroup(neighbor.getPeerGroup());
@@ -313,8 +323,8 @@ final class AristaConversions {
       ipv4FamilyBuilder.setAddressFamilyCapabilities(
           AddressFamilyCapabilities.builder()
               .setAdvertiseInactive(Boolean.FALSE) // todo
-              .setAllowLocalAsIn(Boolean.FALSE) // todo
-              .setAllowRemoteAsOut(Boolean.FALSE) // todo
+              .setAllowLocalAsIn(firstNonNull(neighbor.getAllowAsIn(), 0) > 0)
+              .setAllowRemoteAsOut(true) // this is always true on Arista
               .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
               .setSendExtendedCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
               .build());
@@ -333,10 +343,11 @@ final class AristaConversions {
     if (firstNonNull(neighbor.getNextHopSelf(), Boolean.FALSE)) {
       exportStatements.add(new SetNextHop(SelfNextHop.getInstance()));
     }
-    //    if (neighbor.getRemovePrivateAs() != null) {
-    //      // TODO(handle different types of RemovePrivateAs)
-    //      exportStatements.add(RemovePrivateAs.toStaticStatement());
-    //    }
+    if (firstNonNull(neighbor.getRemovePrivateAsMode(), RemovePrivateAsMode.NONE)
+        != RemovePrivateAsMode.NONE) {
+      // TODO(handle different types of RemovePrivateAs)
+      exportStatements.add(RemovePrivateAs.toStaticStatement());
+    }
 
     // If defaultOriginate is set, generate route and default route export policy. Default route
     // will match this policy and get exported without going through the rest of the export policy.
@@ -389,6 +400,125 @@ final class AristaConversions {
       newNeighborBuilder.setIpv4UnicastAddressFamily(ipv4FamilyBuilder.build());
     }
 
+    @Nullable AristaBgpVrfEvpnAddressFamily evpnAf = vrfConfig.getEvpnAf();
+    @Nullable
+    AristaBgpNeighborAddressFamily nEvpn =
+        evpnAf == null ? null : evpnAf.getNeighbor(neighbor.getIp());
+    boolean evpnEnabled = nEvpn != null && firstNonNull(nEvpn.getActivate(), Boolean.FALSE);
+    if (evpnEnabled) {
+      EvpnAddressFamily.Builder evpnFamilyBuilder = EvpnAddressFamily.builder();
+
+      evpnFamilyBuilder
+          .setPropagateUnmatched(true)
+          .setAddressFamilyCapabilities(
+              AddressFamilyCapabilities.builder()
+                  .setAdvertiseInactive(Boolean.FALSE) // todo
+                  .setAllowLocalAsIn(Boolean.FALSE) // todo
+                  .setAllowRemoteAsOut(Boolean.FALSE) // todo
+                  .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
+                  .setSendExtendedCommunity(
+                      firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
+                  .build());
+
+      ImmutableSet.Builder<Layer2VniConfig> l2vnis = ImmutableSet.builder();
+      SortedMap<Integer, Integer> vlanToVni =
+          vxlan == null ? ImmutableSortedMap.of() : vxlan.getVlanVnis();
+      for (AristaBgpVlan vlanConfig : bgpConfig.getVlans().values()) {
+        if (vlanConfig.getRd() == null
+            || vlanConfig.getRtImport() == null
+            || vlanConfig.getRtExport() == null) {
+          continue;
+        }
+        Vrf vrfForVlan = getVrfForVlan(c, vlanConfig.getVlan()).orElse(null);
+        if (vrfForVlan == null) {
+          continue;
+        }
+        Integer vni = vlanToVni.get(vlanConfig.getVlan());
+        if (vni == null) {
+          continue;
+        }
+        l2vnis.add(
+            Layer2VniConfig.builder()
+                .setVni(vni)
+                .setImportRouteTarget(vlanConfig.getRtImport().matchString())
+                .setRouteTarget(vlanConfig.getRtExport())
+                .setRouteDistinguisher(vlanConfig.getRd())
+                .setVrf(vrfForVlan.getName())
+                .build());
+      }
+      for (AristaBgpVlanAwareBundle bundle : bgpConfig.getVlanAwareBundles().values()) {
+        if (bundle.getVlans() == null
+            || bundle.getRd() == null
+            || bundle.getRtExport() == null
+            || bundle.getRtImport() == null) {
+          continue;
+        }
+        for (Integer vlan : bundle.getVlans().enumerate()) {
+          Vrf vrfForVlan = getVrfForVlan(c, vlan).orElse(null);
+          if (vrfForVlan == null) {
+            continue;
+          }
+          Integer vni = vlanToVni.get(vlan);
+          if (vni == null) {
+            continue;
+          }
+          l2vnis.add(
+              Layer2VniConfig.builder()
+                  .setVni(vni)
+                  .setImportRouteTarget(bundle.getRtImport().matchString())
+                  .setRouteTarget(bundle.getRtExport())
+                  .setRouteDistinguisher(bundle.getRd())
+                  .setVrf(vrfForVlan.getName())
+                  .build());
+        }
+      }
+      evpnFamilyBuilder.setL2Vnis(l2vnis.build());
+
+      ImmutableSet.Builder<Layer3VniConfig> l3vnis = ImmutableSet.builder();
+      Map<String, Integer> vrfToVni = vxlan == null ? ImmutableMap.of() : vxlan.getVrfToVni();
+      for (Entry<String, Integer> entry : vrfToVni.entrySet()) {
+        String vrfName = entry.getKey();
+        if (!c.getVrfs().containsKey(vrfName) || !bgpConfig.getVrfs().containsKey(vrfName)) {
+          continue;
+        }
+        AristaBgpVrf bgpVrf = bgpConfig.getVrfs().get(vrfName);
+        if (bgpVrf.getRouteDistinguisher() == null
+            || bgpVrf.getImportRouteTarget() == null
+            || bgpVrf.getExportRouteTarget() == null) {
+          continue;
+        }
+        l3vnis.add(
+            Layer3VniConfig.builder()
+                .setAdvertiseV4Unicast(false) // todo
+                .setVni(entry.getValue())
+                .setImportRouteTarget(bgpVrf.getImportRouteTarget().matchString())
+                .setRouteTarget(bgpVrf.getExportRouteTarget())
+                .setRouteDistinguisher(bgpVrf.getRouteDistinguisher())
+                .setVrf(vrfName)
+                .build());
+      }
+      evpnFamilyBuilder.setL3Vnis(l3vnis.build());
+      // Peer-specific export policy for EVPN
+      String policyName =
+          computeBgpPeerEvpnExportPolicyName(vrfConfig.getName(), neighbor.getIp().toString());
+
+      // TODO: handle modifiers (next-hop-unchanged, next-hop-self, etc.) and export route map
+      RoutingPolicy.builder()
+          .addStatement(
+              new If(
+                  "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                  new Conjunction(
+                      Collections.singletonList(
+                          new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP))),
+                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                  ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+          .setName(policyName)
+          .setOwner(c)
+          .build();
+      evpnFamilyBuilder.setExportPolicy(policyName);
+      newNeighborBuilder.setEvpnAddressFamily(evpnFamilyBuilder.build());
+    }
+
     return newNeighborBuilder.build();
   }
 
@@ -413,6 +543,13 @@ final class AristaConversions {
           .addStatement(Statements.ReturnFalse.toStaticStatement())
           .build();
     }
+  }
+
+  @Nonnull
+  static Optional<Vrf> getVrfForVlan(Configuration c, int vlan) {
+    return c.getVrfs().values().stream()
+        .filter(vrf -> vrf.getInterfaceNames().contains(String.format("Vlan%d", vlan)))
+        .findFirst();
   }
 
   private static String getTextDesc(Ip ip, Vrf v) {

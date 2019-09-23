@@ -24,6 +24,8 @@ import org.batfish.datamodel.Route;
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Nullable private final String _nextHop;
 
+  @Nullable private final String _nextHopInterface;
+
   @Nullable private final AsPath _asPath;
 
   @Nullable private final Integer _adminDistance;
@@ -40,6 +42,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   private RouteRowAttribute(
       String nextHop,
+      String nextHopInterface,
       Integer adminDistance,
       Long metric,
       AsPath asPath,
@@ -48,6 +51,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       String originalProtocol,
       Long tag) {
     _nextHop = nextHop;
+    _nextHopInterface = nextHopInterface;
     _adminDistance = adminDistance;
     _metric = metric;
     _asPath = asPath;
@@ -88,6 +92,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nullable
+  public String getNextHopInterface() {
+    return _nextHopInterface;
+  }
+
+  @Nullable
   public String getOriginProtocol() {
     return _originProtocol;
   }
@@ -103,6 +112,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   private static final Comparator<RouteRowAttribute> COMPARATOR =
       comparing(RouteRowAttribute::getNextHop, nullsLast(String::compareTo))
+          .thenComparing(RouteRowAttribute::getNextHopInterface, nullsLast(String::compareTo))
           .thenComparing(RouteRowAttribute::getAdminDistance, nullsLast(Integer::compareTo))
           .thenComparing(RouteRowAttribute::getMetric, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
@@ -128,6 +138,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     }
     RouteRowAttribute that = (RouteRowAttribute) o;
     return Objects.equals(_nextHop, that._nextHop)
+        && Objects.equals(_nextHopInterface, that._nextHopInterface)
         && Objects.equals(_adminDistance, that._adminDistance)
         && Objects.equals(_metric, that._metric)
         && Objects.equals(_asPath, that._asPath)
@@ -141,6 +152,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   public int hashCode() {
     return Objects.hash(
         _nextHop,
+        _nextHopInterface,
         _adminDistance,
         _metric,
         _asPath,
@@ -153,6 +165,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   /** Builder for {@link RouteRowAttribute} */
   public static final class Builder {
     @Nullable private String _nextHop;
+
+    @Nullable private String _nextHopInterface;
 
     @Nullable private Integer _adminDistance;
 
@@ -174,6 +188,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       }
       return new RouteRowAttribute(
           _nextHop,
+          _nextHopInterface,
           _adminDistance,
           _metric,
           _asPath,
@@ -215,6 +230,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setNextHop(String nextHop) {
       _nextHop = nextHop;
+      return this;
+    }
+
+    public Builder setNextHopInterface(String nextHopInterface) {
+      _nextHopInterface = nextHopInterface;
       return this;
     }
 

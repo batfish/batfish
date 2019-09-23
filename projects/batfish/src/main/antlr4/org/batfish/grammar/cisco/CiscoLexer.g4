@@ -14058,6 +14058,16 @@ VPN_IDLE_TIMEOUT
    'vpn-idle-timeout'
 ;
 
+VPN_IPV4
+:
+   'vpn-ipv4'
+;
+
+VPN_IPV6
+:
+   'vpn-ipv6'
+;
+
 VPN_SESSION_TIMEOUT
 :
    'vpn-session-timeout'

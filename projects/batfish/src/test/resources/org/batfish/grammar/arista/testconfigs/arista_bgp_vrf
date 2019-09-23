@@ -4,10 +4,14 @@ hostname arista_bgp_vrf
 !
 router bgp 1
   vrf FOO
+    bgp bestpath as-path multipath-relax
     rd 123:123
     route-target export 1:1
     route-target import 2:2
     local-as 65000
-
+!
+  vrf BAR
+    no bgp bestpath as-path multipath-relax
 
 vrf instance FOO
+vrf instance BAR

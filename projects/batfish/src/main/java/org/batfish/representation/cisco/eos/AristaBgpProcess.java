@@ -21,10 +21,8 @@ public final class AristaBgpProcess implements Serializable {
     _vlanAwareBundles = new HashMap<>(0);
     _vlans = new HashMap<>(0);
     _vrfs = new HashMap<>(1);
-    // Create the default VRF automatically, with default v4 activate set to true.
-    AristaBgpVrf defaultVrf = new AristaBgpVrf(DEFAULT_VRF);
-    defaultVrf.setDefaultIpv4Unicast(true);
-    _vrfs.put(DEFAULT_VRF, defaultVrf);
+    // Create the default VRF automatically.
+    _vrfs.put(DEFAULT_VRF, new AristaBgpVrf(DEFAULT_VRF));
   }
 
   public long getAsn() {

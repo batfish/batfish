@@ -14,6 +14,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 public final class AristaBgpVrf implements Serializable {
 
   private boolean _defaultIpv4Unicast;
+  @Nullable private Boolean _bestpathAsPathMultipathRelax;
   @Nullable private Long _defaultMetric;
   @Nullable private Integer _ebgpAdminDistance;
   @Nullable private ExtendedCommunity _exportRouteTarget;
@@ -41,6 +42,7 @@ public final class AristaBgpVrf implements Serializable {
 
   public AristaBgpVrf(String name) {
     _name = name;
+    _defaultIpv4Unicast = true;
     _v4aggregates = new HashMap<>(0);
     _v4neighbors = new HashMap<>(0);
     _redistributionPolicies = new HashMap<>(0);
@@ -52,6 +54,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setDefaultIpv4Unicast(boolean defaultIpv4Unicast) {
     _defaultIpv4Unicast = defaultIpv4Unicast;
+  }
+
+  @Nullable
+  public Boolean getBestpathAsPathMultipathRelax() {
+    return _bestpathAsPathMultipathRelax;
+  }
+
+  public void setBestpathAsPathMultipathRelax(@Nullable Boolean bestpathAsPathMultipathRelax) {
+    _bestpathAsPathMultipathRelax = bestpathAsPathMultipathRelax;
   }
 
   @Nullable
