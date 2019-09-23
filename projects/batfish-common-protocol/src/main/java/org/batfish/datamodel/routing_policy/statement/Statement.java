@@ -44,7 +44,7 @@ public abstract class Statement implements Serializable {
 
   protected transient List<Statement> _simplified;
 
-  public abstract <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg);
+  public abstract <T, U> T accept(StatementVisitor<T, U> visitor, U arg);
 
   /**
    * Get all the routing-policies referenced by this statement.

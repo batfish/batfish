@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CommunitySetMatchExpr implements Serializable {
 
-  public abstract <T, U> T accept(CommunitySetMatchExpr1ArgVisitor<T, U> visitor, U arg);
+  public abstract <T, U> T accept(CommunitySetMatchExprVisitor<T, U> visitor, U arg);
 
   @Override
   public abstract boolean equals(@Nullable Object obj);

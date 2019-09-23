@@ -34,7 +34,7 @@ public final class SetCommunity extends Statement {
   }
 
   @Override
-  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
     return visitor.visitSetCommunity(this, arg);
   }
 

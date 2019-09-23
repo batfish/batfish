@@ -42,7 +42,7 @@ public final class CommunitySetMatchAll extends CommunitySetMatchExpr {
   }
 
   @Override
-  public <T, U> T accept(CommunitySetMatchExpr1ArgVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(CommunitySetMatchExprVisitor<T, U> visitor, U arg) {
     return visitor.visitCommunitySetMatchAll(this, arg);
   }
 

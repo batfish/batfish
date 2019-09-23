@@ -10,7 +10,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A visitor for evaluating a {@link CommunityMatchExpr} under a {@link CommunityContext}. */
 public final class CommunityMatchExprEvaluator
-    implements CommunityMatchExpr1ArgVisitor<Boolean, Community> {
+    implements CommunityMatchExprVisitor<Boolean, Community> {
 
   public CommunityMatchExprEvaluator(CommunityContext ctx) {
     _ctx = ctx;

@@ -20,7 +20,7 @@ public final class CommunitySetDifference extends CommunitySetExpr {
   }
 
   @Override
-  public <T, U> T accept(CommunitySetExpr1ArgVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(CommunitySetExprVisitor<T, U> visitor, U arg) {
     return visitor.visitCommunitySetDifference(this, arg);
   }
 

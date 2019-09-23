@@ -6,7 +6,7 @@ import org.batfish.datamodel.bgp.community.Community;
 
 /** Visitor for evaluating a {@link CommunitySetExpr} under a {@link CommunityContext}. */
 public final class CommunitySetExprEvaluator
-    implements CommunitySetExpr1ArgVisitor<CommunitySet, CommunityContext> {
+    implements CommunitySetExprVisitor<CommunitySet, CommunityContext> {
 
   public static @Nonnull CommunitySetExprEvaluator instance() {
     return INSTANCE;

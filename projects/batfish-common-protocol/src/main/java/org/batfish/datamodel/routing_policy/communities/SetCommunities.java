@@ -12,7 +12,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.datamodel.routing_policy.statement.Statement1ArgVisitor;
+import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 
 /** A {@link Statement} that overwrites the communities of a route. */
 public final class SetCommunities extends Statement {
@@ -22,7 +22,7 @@ public final class SetCommunities extends Statement {
   }
 
   @Override
-  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
     return visitor.visitSetCommunities(this, arg);
   }
 

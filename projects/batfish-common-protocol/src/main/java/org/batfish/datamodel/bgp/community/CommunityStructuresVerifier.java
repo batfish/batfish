@@ -19,8 +19,8 @@ import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr1ArgVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
@@ -28,13 +28,13 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr1ArgVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExprVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr1ArgVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
@@ -101,7 +101,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
-import org.batfish.datamodel.routing_policy.statement.Statement1ArgVisitor;
+import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 
 /**
@@ -126,7 +126,7 @@ public final class CommunityStructuresVerifier {
     new CommunityStructuresVerifier(configuration).verify();
   }
 
-  private static final class BooleanExprVerifier
+  private static final class CommunityStructuresBooleanExprVerifier
       implements BooleanExpr1ArgVisitor<Void, CommunityStructuresVerifierContext> {
     @Override
     public Void visitBooleanExprs(
@@ -136,6 +136,8 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitCallExpr(CallExpr callExpr, CommunityStructuresVerifierContext arg) {
+      // No need to dereference and recurse, since all named routing policies will be visited
+      // anyway.
       return null;
     }
 
@@ -326,7 +328,7 @@ public final class CommunityStructuresVerifier {
   }
 
   private static final class CommunityMatchExprVerifier
-      implements CommunityMatchExpr1ArgVisitor<Void, CommunityStructuresVerifierContext> {
+      implements CommunityMatchExprVisitor<Void, CommunityStructuresVerifierContext> {
 
     @Override
     public Void visitAllExtendedCommunities(
@@ -442,7 +444,7 @@ public final class CommunityStructuresVerifier {
   }
 
   private static final class CommunitySetMatchExprVerifier
-      implements CommunitySetMatchExpr1ArgVisitor<Void, CommunityStructuresVerifierContext> {
+      implements CommunitySetMatchExprVisitor<Void, CommunityStructuresVerifierContext> {
 
     @Override
     public Void visitCommunitySetAcl(
@@ -519,7 +521,7 @@ public final class CommunityStructuresVerifier {
   }
 
   private static final class CommunitySetExprVerifier
-      implements CommunitySetExpr1ArgVisitor<Void, CommunityStructuresVerifierContext> {
+      implements CommunitySetExprVisitor<Void, CommunityStructuresVerifierContext> {
 
     @Override
     public Void visitCommunitySetDifference(
@@ -588,8 +590,8 @@ public final class CommunityStructuresVerifier {
     }
   }
 
-  private static final class StatementVerifier
-      implements Statement1ArgVisitor<Void, CommunityStructuresVerifierContext> {
+  private static final class CommunityStructuresStatementVerifier
+      implements StatementVisitor<Void, CommunityStructuresVerifierContext> {
     @Override
     public Void visitAddCommunity(
         AddCommunity addCommunity, CommunityStructuresVerifierContext arg) {
@@ -606,6 +608,8 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitCallStatement(
         CallStatement callStatement, CommunityStructuresVerifierContext arg) {
+      // No need to dereference and recurse, since all named routing policies will be visited
+      // anyway.
       return null;
     }
 
@@ -841,7 +845,8 @@ public final class CommunityStructuresVerifier {
   }
 
   @VisibleForTesting
-  static final BooleanExprVerifier BOOLEAN_EXPR_VERIFIER = new BooleanExprVerifier();
+  static final CommunityStructuresBooleanExprVerifier BOOLEAN_EXPR_VERIFIER =
+      new CommunityStructuresBooleanExprVerifier();
 
   @VisibleForTesting
   static final CommunityMatchExprVerifier COMMUNITY_MATCH_EXPR_VERIFIER =
@@ -855,7 +860,9 @@ public final class CommunityStructuresVerifier {
   static final CommunitySetExprVerifier COMMUNITY_SET_EXPR_VERIFIER =
       new CommunitySetExprVerifier();
 
-  @VisibleForTesting static final StatementVerifier STATEMENT_VERIFIER = new StatementVerifier();
+  @VisibleForTesting
+  static final CommunityStructuresStatementVerifier STATEMENT_VERIFIER =
+      new CommunityStructuresStatementVerifier();
 
   private final CommunityStructuresVerifierContext _ctx;
 

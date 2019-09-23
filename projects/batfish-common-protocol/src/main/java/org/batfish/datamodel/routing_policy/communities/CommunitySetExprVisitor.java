@@ -1,7 +1,9 @@
 package org.batfish.datamodel.routing_policy.communities;
 
-/** A visitor of {@link CommunitySetExpr} that takes 1 argument. */
-public interface CommunitySetExpr1ArgVisitor<T, U> {
+/**
+ * A visitor of {@link CommunitySetExpr} that takes 1 generic argument and returns a generic value.
+ */
+public interface CommunitySetExprVisitor<T, U> {
 
   T visitCommunitySetDifference(CommunitySetDifference communitySetDifference, U arg);
 

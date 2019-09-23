@@ -37,7 +37,7 @@ public final class SetEigrpMetric extends Statement {
   }
 
   @Override
-  public <T, U> T accept(Statement1ArgVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
     return visitor.visitSetEigrpMetric(this, arg);
   }
 

@@ -1,7 +1,10 @@
 package org.batfish.datamodel.routing_policy.communities;
 
-/** A visitor of {@link CommunityMatchExpr}. */
-public interface CommunityMatchExpr1ArgVisitor<T, U> {
+/**
+ * A visitor of {@link CommunityMatchExpr} that takes 1 generic argument and returns a generic
+ * value.
+ */
+public interface CommunityMatchExprVisitor<T, U> {
 
   T visitAllExtendedCommunities(AllExtendedCommunities allExtendedCommunities, U arg);
 

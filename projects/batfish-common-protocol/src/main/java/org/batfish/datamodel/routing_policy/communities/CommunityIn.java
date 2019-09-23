@@ -40,7 +40,7 @@ public final class CommunityIn extends CommunityMatchExpr {
   }
 
   @Override
-  public <T, U> T accept(CommunityMatchExpr1ArgVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
     return visitor.visitCommunityIn(this, arg);
   }
 

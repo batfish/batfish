@@ -3,8 +3,8 @@ package org.batfish.datamodel.routing_policy.statement;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 
-/** A visitor of {@link Statement} that takes 1 argument. */
-public interface Statement1ArgVisitor<T, U> {
+/** A visitor of {@link Statement} that takes 1 generic argument and returns a generic value. */
+public interface StatementVisitor<T, U> {
 
   T visitAddCommunity(AddCommunity addCommunity, U arg);
 
