@@ -30,6 +30,11 @@ public final class BufferedStatement extends Statement {
   }
 
   @Override
+  public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
+    return visitor.visitBufferedStatement(this, arg);
+  }
+
+  @Override
   public Set<String> collectSources(
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     return _statement.collectSources(parentSources, routingPolicies, w);

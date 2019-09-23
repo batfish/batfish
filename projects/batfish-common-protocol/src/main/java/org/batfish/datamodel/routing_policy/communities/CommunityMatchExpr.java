@@ -11,11 +11,11 @@ import javax.annotation.Nullable;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CommunityMatchExpr implements Serializable {
 
+  public abstract <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg);
+
   @Override
   public abstract boolean equals(@Nullable Object obj);
 
   @Override
   public abstract int hashCode();
-
-  protected abstract <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg);
 }

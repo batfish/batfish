@@ -44,6 +44,11 @@ public final class MatchProtocol extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchProtocol(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     return new Result(_protocols.contains(environment.getOriginalRoute().getProtocol()));
   }

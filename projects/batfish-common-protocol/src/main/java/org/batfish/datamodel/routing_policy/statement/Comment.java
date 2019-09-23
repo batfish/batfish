@@ -14,6 +14,11 @@ public class Comment extends Statement {
   }
 
   @Override
+  public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
+    return visitor.visitComment(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (obj == null) {
       return false;

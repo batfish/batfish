@@ -150,7 +150,7 @@ public final class CommunityContext {
 
     // instantiate evaluators
     _communityMatchExprEvaluator = new CommunityMatchExprEvaluator(this);
-    _communitySetExprEvaluator = new CommunitySetExprEvaluator(this);
+    _communitySetExprEvaluator = new CommunitySetExprEvaluator();
     _communitySetMatchExprEvaluator = new CommunitySetMatchExprEvaluator(this);
   }
 }

@@ -33,6 +33,11 @@ public final class AddCommunity extends Statement {
   }
 
   @Override
+  public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
+    return visitor.visitAddCommunity(this, arg);
+  }
+
+  @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;

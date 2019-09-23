@@ -5,60 +5,64 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.Community;
 
 /** Visitor for evaluating a {@link CommunitySetExpr} under a {@link CommunityContext}. */
-public final class CommunitySetExprEvaluator implements CommunitySetExprVisitor<CommunitySet> {
+public final class CommunitySetExprEvaluator
+    implements CommunitySetExprVisitor<CommunitySet, CommunityContext> {
 
-  public CommunitySetExprEvaluator(CommunityContext ctx) {
-    _ctx = ctx;
+  public static @Nonnull CommunitySetExprEvaluator instance() {
+    return INSTANCE;
   }
 
   @Override
-  public @Nonnull CommunitySet visitInputCommunities(InputCommunities inputCommunities) {
-    return _ctx.getInputCommunitySet();
+  public @Nonnull CommunitySet visitInputCommunities(
+      InputCommunities inputCommunities, CommunityContext arg) {
+    return arg.getInputCommunitySet();
   }
 
   @Override
   public @Nonnull CommunitySet visitCommunitySetDifference(
-      CommunitySetDifference communitySetDifference) {
-    CommunitySet initial = communitySetDifference.getInitial().accept(this);
+      CommunitySetDifference communitySetDifference, CommunityContext arg) {
+    CommunitySet initial = communitySetDifference.getInitial().accept(this, arg);
     CommunityMatchExpr removalCriterion = communitySetDifference.getRemovalCriterion();
     return CommunitySet.of(
         initial.getCommunities().stream()
-            .filter(c -> removalCriterion.accept(_ctx.getCommunityMatchExprEvaluator(), c))
+            .filter(c -> removalCriterion.accept(arg.getCommunityMatchExprEvaluator(), c))
             .collect(ImmutableSet.toImmutableSet()));
   }
 
   @Override
   public @Nonnull CommunitySet visitCommunitySetExprReference(
-      CommunitySetExprReference communitySetExprReference) {
+      CommunitySetExprReference communitySetExprReference, CommunityContext arg) {
     CommunitySetExpr communitySetExpr =
-        _ctx.getCommunitySetExprs().get(communitySetExprReference.getName());
+        arg.getCommunitySetExprs().get(communitySetExprReference.getName());
     // conversion to VI should guarantee communitySetExpr is not null
     assert communitySetExpr != null;
-    return communitySetExpr.accept(this);
+    return communitySetExpr.accept(this, arg);
   }
 
   @Override
   public @Nonnull CommunitySet visitCommunitySetReference(
-      CommunitySetReference communitySetReference) {
-    CommunitySet communitySet = _ctx.getCommunitySets().get(communitySetReference.getName());
+      CommunitySetReference communitySetReference, CommunityContext arg) {
+    CommunitySet communitySet = arg.getCommunitySets().get(communitySetReference.getName());
     // conversion to VI should guarantee communitySet is not null
     assert communitySet != null;
     return communitySet;
   }
 
   @Override
-  public @Nonnull CommunitySet visitCommunitySetUnion(CommunitySetUnion communitySetUnion) {
+  public @Nonnull CommunitySet visitCommunitySetUnion(
+      CommunitySetUnion communitySetUnion, CommunityContext arg) {
     return CommunitySet.of(
         ImmutableSet.<Community>builder()
-            .addAll(communitySetUnion.getExpr1().accept(this).getCommunities())
-            .addAll(communitySetUnion.getExpr2().accept(this).getCommunities())
+            .addAll(communitySetUnion.getExpr1().accept(this, arg).getCommunities())
+            .addAll(communitySetUnion.getExpr2().accept(this, arg).getCommunities())
             .build());
   }
 
   @Override
-  public @Nonnull CommunitySet visitLiteralCommunitySet(LiteralCommunitySet literalCommunitySet) {
+  public @Nonnull CommunitySet visitLiteralCommunitySet(
+      LiteralCommunitySet literalCommunitySet, CommunityContext arg) {
     return literalCommunitySet.getCommunitySet();
   }
 
-  private final @Nonnull CommunityContext _ctx;
+  private static final CommunitySetExprEvaluator INSTANCE = new CommunitySetExprEvaluator();
 }

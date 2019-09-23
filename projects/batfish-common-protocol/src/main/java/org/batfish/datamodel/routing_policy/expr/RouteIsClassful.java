@@ -21,6 +21,11 @@ public final class RouteIsClassful extends BooleanExpr {
     return INSTANCE;
   }
 
+  @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitRouteIsClassful(this, arg);
+  }
+
   /**
    * Returns {@code true} iff the IPv4 route is classful, i.e. the distributed prefix is exactly an
    * entire subnet in its IPv4 address class.

@@ -28,6 +28,11 @@ public final class MatchAsPath extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchAsPath(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     return new Result(_expr.matches(environment));
   }

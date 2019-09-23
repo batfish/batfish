@@ -32,6 +32,11 @@ public final class Not extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitNot(this, arg);
+  }
+
+  @Override
   public Set<String> collectSources(
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     return _expr.collectSources(parentSources, routingPolicies, w);
