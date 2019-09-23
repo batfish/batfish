@@ -25,7 +25,7 @@ public final class CommunitySetExprEvaluator
     CommunityMatchExpr removalCriterion = communitySetDifference.getRemovalCriterion();
     return CommunitySet.of(
         initial.getCommunities().stream()
-            .filter(c -> removalCriterion.accept(arg.getCommunityMatchExprEvaluator(), c))
+            .filter(c -> !removalCriterion.accept(arg.getCommunityMatchExprEvaluator(), c))
             .collect(ImmutableSet.toImmutableSet()));
   }
 

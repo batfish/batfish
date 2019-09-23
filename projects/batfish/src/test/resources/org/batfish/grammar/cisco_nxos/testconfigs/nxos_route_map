@@ -12,6 +12,7 @@ ipv6 access-list ipv6_access_list1
 ip as-path access-list as_path_access_list1 seq 1 permit "_1_"
 ip community-list expanded community_list_expanded seq 1 permit "_64512:3[0-9][0-9][0-9][0-9]_"
 ip community-list standard community_list_standard seq 1 permit 1:1 2:2
+ip community-list standard community_list_standard_single seq 1 permit 1:1
 ip prefix-list prefix_list1 seq 10 permit 192.168.1.0/24
 ipv6 prefix-list ipv6_prefix_list1 seq 10 permit dead:beef::1/128
 interface loopback0
@@ -84,8 +85,14 @@ route-map set_as_path_prepend_last_as permit 10
 route-map set_as_path_prepend_literal_as permit 10
   set as-path prepend 65000 65100
 
-route-map set_comm_list permit 10
+route-map set_comm_list_expanded permit 10
+  set comm-list community_list_expanded delete
+
+route-map set_comm_list_standard permit 10
   set comm-list community_list_standard delete
+
+route-map set_comm_list_standard_single permit 10
+  set comm-list community_list_standard_single delete
 
 route-map set_community permit 10
   set community 1:1 1:2
