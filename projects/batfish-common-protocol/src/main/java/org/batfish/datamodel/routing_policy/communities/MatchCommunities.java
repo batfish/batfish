@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr1ArgVisitor;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
 
 /** A {@link BooleanExpr} representing a condition on the communities of a route. */
 public final class MatchCommunities extends BooleanExpr {
@@ -22,7 +22,7 @@ public final class MatchCommunities extends BooleanExpr {
   }
 
   @Override
-  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
     return visitor.visitMatchCommunities(this, arg);
   }
 

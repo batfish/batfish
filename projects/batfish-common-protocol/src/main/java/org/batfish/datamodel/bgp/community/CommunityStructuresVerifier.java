@@ -47,7 +47,7 @@ import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommu
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr1ArgVisitor;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -127,7 +127,7 @@ public final class CommunityStructuresVerifier {
   }
 
   private static final class CommunityStructuresBooleanExprVerifier
-      implements BooleanExpr1ArgVisitor<Void, CommunityStructuresVerifierContext> {
+      implements BooleanExprVisitor<Void, CommunityStructuresVerifierContext> {
     @Override
     public Void visitBooleanExprs(
         StaticBooleanExpr staticBooleanExpr, CommunityStructuresVerifierContext arg) {

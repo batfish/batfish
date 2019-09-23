@@ -3,8 +3,8 @@ package org.batfish.datamodel.routing_policy.expr;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
 
-/** A visitor of {@link BooleanExpr} that takes 1 argument. */
-public interface BooleanExpr1ArgVisitor<T, U> {
+/** A visitor of {@link BooleanExpr} that takes 1 generic argument and returns a generic value. */
+public interface BooleanExprVisitor<T, U> {
 
   T visitBooleanExprs(StaticBooleanExpr staticBooleanExpr, U arg);
 

@@ -32,7 +32,7 @@ public final class Not extends BooleanExpr {
   }
 
   @Override
-  public <T, U> T accept(BooleanExpr1ArgVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
     return visitor.visitNot(this, arg);
   }
 
