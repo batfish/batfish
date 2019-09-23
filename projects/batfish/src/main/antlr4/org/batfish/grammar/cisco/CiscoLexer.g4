@@ -2196,6 +2196,11 @@ CLUSTER_ID
    'cluster-id'
 ;
 
+CLUSTER_LIST_LENGTH
+:
+   'cluster-list-length'
+;
+
 CMD
 :
    'cmd'
@@ -13011,6 +13016,11 @@ THU
 TID
 :
    'tid'
+;
+
+TIE_BREAK
+:
+   'tie-break'
 ;
 
 TIME

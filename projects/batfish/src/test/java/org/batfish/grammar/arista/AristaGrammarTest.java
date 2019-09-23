@@ -34,6 +34,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -53,6 +54,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
@@ -316,6 +318,7 @@ public class AristaGrammarTest {
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
       assertThat(vrf.getBestpathAsPathMultipathRelax(), nullValue());
+      assertThat(vrf.getBestpathTieBreaker(), nullValue());
     }
     {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
@@ -324,10 +327,13 @@ public class AristaGrammarTest {
       assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
       assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
       assertThat(vrf.getLocalAs(), equalTo(65000L));
+      assertThat(vrf.getBestpathTieBreaker(), equalTo(AristaBgpBestpathTieBreaker.ROUTER_ID));
     }
     {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("BAR");
       assertThat(vrf.getBestpathAsPathMultipathRelax(), equalTo(Boolean.FALSE));
+      assertThat(
+          vrf.getBestpathTieBreaker(), equalTo(AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH));
     }
   }
 
@@ -342,6 +348,7 @@ public class AristaGrammarTest {
       assertThat(
           proc.getMultipathEquivalentAsPathMatchMode(),
           equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+      assertThat(proc.getTieBreaker(), equalTo(BgpTieBreaker.ROUTER_ID));
     }
     {
       BgpProcess proc = c.getVrfs().get("FOO").getBgpProcess();
@@ -349,6 +356,7 @@ public class AristaGrammarTest {
       assertThat(
           proc.getMultipathEquivalentAsPathMatchMode(),
           equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+      assertThat(proc.getTieBreaker(), equalTo(BgpTieBreaker.ROUTER_ID));
     }
     {
       BgpProcess proc = c.getVrfs().get("BAR").getBgpProcess();
@@ -356,6 +364,7 @@ public class AristaGrammarTest {
       assertThat(
           proc.getMultipathEquivalentAsPathMatchMode(),
           equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+      assertThat(proc.getTieBreaker(), equalTo(BgpTieBreaker.CLUSTER_LIST_LENGTH));
     }
   }
 

@@ -286,7 +286,7 @@ eos_rbib_bestpath
     // eos_rbibbp_ecmp_fast
     // eos_rbibbp_med
     // eos_rbibbp_skip
-    // eos_rbibbp_tie_break
+    | eos_rbibbp_tie_break
   )
 ;
 
@@ -297,6 +297,12 @@ eos_rbibbp_as_path
     // eos_rbibbpa_ignore |
     eos_rbibbpa_multipath_relax
   )
+;
+
+eos_rbibbp_tie_break
+:
+  TIE_BREAK
+  (ROUTER_ID | CLUSTER_LIST_LENGTH) NEWLINE
 ;
 
 eos_rbibbpa_multipath_relax
