@@ -26,11 +26,11 @@ public final class CommunitySet implements Serializable {
     return of(Arrays.asList(communities));
   }
 
-  public static @Nonnull CommunitySet of(Iterable<Community> communities) {
+  public static @Nonnull CommunitySet of(Iterable<? extends Community> communities) {
     return of(ImmutableSet.copyOf(communities));
   }
 
-  public static @Nonnull CommunitySet of(Set<Community> communities) {
+  public static @Nonnull CommunitySet of(Set<? extends Community> communities) {
     if (communities.isEmpty()) {
       return empty();
     }

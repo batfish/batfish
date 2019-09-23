@@ -5458,7 +5458,9 @@ public final class CiscoNxosGrammarTest {
             "match_vlan",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
-            "set_comm_list",
+            "set_comm_list_expanded",
+            "set_comm_list_standard",
+            "set_comm_list_standard_single",
             "set_community",
             "set_community_additive",
             "set_ip_next_hop_literal",
@@ -5649,16 +5651,38 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getAsPath(), equalTo(AsPath.ofSingletonAsSets(65000L, 65100L, 2L)));
     }
     {
-      RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list");
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list_expanded");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(64512, 30000)))
+              .build();
+
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(route.getCommunities(), contains(StandardCommunity.of(1, 1)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list_standard");
       Bgpv4Route inRoute =
           base.toBuilder()
               .setCommunities(
                   ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
               .build();
+
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
           route.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
-      // TODO: test where communities actually are deleted once we refactor community matching
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list_standard_single");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(route.getCommunities(), contains(StandardCommunity.of(2, 2)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
@@ -5811,7 +5835,9 @@ public final class CiscoNxosGrammarTest {
             "match_vlan",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
-            "set_comm_list",
+            "set_comm_list_expanded",
+            "set_comm_list_standard",
+            "set_comm_list_standard_single",
             "set_community",
             "set_community_additive",
             "set_ip_next_hop_literal",
@@ -6009,7 +6035,17 @@ public final class CiscoNxosGrammarTest {
       assertThat(set.getAsNumbers(), contains(65000L, 65100L));
     }
     {
-      RouteMap rm = vc.getRouteMaps().get("set_comm_list");
+      RouteMap rm = vc.getRouteMaps().get("set_comm_list_expanded");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetCommListDelete set = entry.getSetCommListDelete();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getName(), equalTo("community_list_expanded"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_comm_list_standard");
       assertThat(rm.getEntries().keySet(), contains(10));
       RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
       assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
@@ -6017,6 +6053,16 @@ public final class CiscoNxosGrammarTest {
       RouteMapSetCommListDelete set = entry.getSetCommListDelete();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getName(), equalTo("community_list_standard"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_comm_list_standard_single");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetCommListDelete set = entry.getSetCommListDelete();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getName(), equalTo("community_list_standard_single"));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_community");

@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
@@ -47,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -108,6 +110,7 @@ import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
@@ -127,11 +130,34 @@ import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunityIn;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
@@ -143,12 +169,10 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -156,16 +180,12 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.AddCommunity;
-import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -899,6 +919,119 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                             return toCommunityList(ipCommunityListStandard);
                           }
                         })));
+    // create CommunitySetMatchExpr for route-map match community
+    _ipCommunityLists.forEach(
+        (name, list) ->
+            _c.getCommunitySetMatchExprs()
+                .put(
+                    name,
+                    list.accept(
+                        new IpCommunityListVisitor<CommunitySetMatchExpr>() {
+                          @Override
+                          public CommunitySetMatchExpr visitIpCommunityListExpanded(
+                              IpCommunityListExpanded ipCommunityListExpanded) {
+                            return toCommunitySetMatchExpr(ipCommunityListExpanded);
+                          }
+
+                          @Override
+                          public CommunitySetMatchExpr visitIpCommunityListStandard(
+                              IpCommunityListStandard ipCommunityListStandard) {
+                            return toCommunitySetMatchExpr(ipCommunityListStandard);
+                          }
+                        })));
+
+    // create CommunityMatchExpr for route-map set comm-list delete
+    _ipCommunityLists.forEach(
+        (name, list) ->
+            _c.getCommunityMatchExprs()
+                .put(
+                    name,
+                    list.accept(
+                        new IpCommunityListVisitor<CommunityMatchExpr>() {
+                          @Override
+                          public CommunityMatchExpr visitIpCommunityListExpanded(
+                              IpCommunityListExpanded ipCommunityListExpanded) {
+                            return toCommunityMatchExpr(ipCommunityListExpanded);
+                          }
+
+                          @Override
+                          public CommunityMatchExpr visitIpCommunityListStandard(
+                              IpCommunityListStandard ipCommunityListStandard) {
+                            return toCommunityMatchExpr(ipCommunityListStandard);
+                          }
+                        })));
+  }
+
+  private static CommunitySetMatchExpr toCommunitySetMatchExpr(
+      IpCommunityListExpanded ipCommunityListExpanded) {
+    return new CommunitySetAcl(
+        ipCommunityListExpanded.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      IpCommunityListExpandedLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            toJavaRegex(line.getRegex())));
+  }
+
+  private static CommunitySetMatchExpr toCommunitySetMatchExpr(
+      IpCommunityListStandard ipCommunityListStandard) {
+    return new CommunitySetAcl(
+        ipCommunityListStandard.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      IpCommunityListStandardLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchAll(
+            line.getCommunities().stream()
+                .map(community -> new HasCommunity(new CommunityIs(community)))
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      IpCommunityListExpanded ipCommunityListExpanded) {
+    return new CommunityAcl(
+        ipCommunityListExpanded.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunityAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunityAclLine toCommunityAclLine(IpCommunityListExpandedLine line) {
+    return new CommunityAclLine(
+        line.getAction(),
+        new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
+  }
+
+  private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      IpCommunityListStandard ipCommunityListStandard) {
+    Set<Community> whitelist = new HashSet<>();
+    Set<Community> blacklist = new HashSet<>();
+    for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines().values()) {
+      if (line.getCommunities().size() != 1) {
+        continue;
+      }
+      Community community = Iterables.getOnlyElement(line.getCommunities());
+      if (line.getAction() == LineAction.PERMIT) {
+        if (!blacklist.contains(community)) {
+          whitelist.add(community);
+        }
+      } else {
+        // DENY
+        if (!whitelist.contains(community)) {
+          blacklist.add(community);
+        }
+      }
+    }
+    return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
   }
 
   private static @Nonnull CommunityList toCommunityList(IpCommunityListExpanded list) {
@@ -914,7 +1047,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getRegex()));
   }
 
-  private static @Nonnull CommunitySetExpr toCommunitySetExpr(String regex) {
+  private static @Nonnull org.batfish.datamodel.routing_policy.expr.CommunitySetExpr
+      toCommunitySetExpr(String regex) {
     return new RegexCommunitySet(toJavaRegex(regex));
   }
 
@@ -931,7 +1065,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getCommunities()));
   }
 
-  private static @Nonnull CommunitySetExpr toCommunitySetExpr(Set<StandardCommunity> communities) {
+  private static @Nonnull org.batfish.datamodel.routing_policy.expr.CommunitySetExpr
+      toCommunitySetExpr(Set<StandardCommunity> communities) {
     return new LiteralCommunityConjunction(communities);
   }
 
@@ -2763,8 +2898,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             // TODO: test behavior for undefined reference
             return new Disjunction(
                 routeMapMatchCommunity.getNames().stream()
-                    .filter(_ipCommunityLists::containsKey)
-                    .map(name -> new MatchEntireCommunitySet(new NamedCommunitySet(name)))
+                    .filter(_c.getCommunitySetMatchExprs()::containsKey)
+                    .map(
+                        name ->
+                            new MatchCommunities(
+                                InputCommunities.instance(),
+                                new CommunitySetMatchExprReference(name)))
                     .collect(ImmutableList.toImmutableList()));
           }
 
@@ -2901,21 +3040,25 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           public Stream<Statement> visitRouteMapSetCommListDelete(
               RouteMapSetCommListDelete routeMapSetCommListDelete) {
             String name = routeMapSetCommListDelete.getName();
-            if (!_ipCommunityLists.containsKey(name)) {
+            if (!_c.getCommunityMatchExprs().containsKey(name)) {
               return Stream.of();
             }
-            return Stream.of(new DeleteCommunity(new NamedCommunitySet(name)));
+            return Stream.of(
+                new SetCommunities(
+                    new CommunitySetDifference(
+                        InputCommunities.instance(), new CommunityMatchExprReference(name))));
           }
 
           @Override
           public Stream<Statement> visitRouteMapSetCommunity(
               RouteMapSetCommunity routeMapSetCommunity) {
             CommunitySetExpr communities =
-                new LiteralCommunitySet(routeMapSetCommunity.getCommunities());
+                new LiteralCommunitySet(CommunitySet.of(routeMapSetCommunity.getCommunities()));
             return Stream.of(
-                routeMapSetCommunity.getAdditive()
-                    ? new AddCommunity(communities)
-                    : new SetCommunity(communities));
+                new SetCommunities(
+                    routeMapSetCommunity.getAdditive()
+                        ? new CommunitySetUnion(InputCommunities.instance(), communities)
+                        : communities));
           }
 
           @Override

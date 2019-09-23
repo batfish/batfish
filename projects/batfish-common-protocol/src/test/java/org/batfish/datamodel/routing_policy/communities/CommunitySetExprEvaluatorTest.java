@@ -34,7 +34,7 @@ public final class CommunitySetExprEvaluatorTest {
         eval(
             new CommunitySetDifference(
                 new LiteralCommunitySet(cs), new CommunityIs(StandardCommunity.of(1L)))),
-        equalTo(CommunitySet.of(StandardCommunity.of(1L))));
+        equalTo(CommunitySet.of(StandardCommunity.of(2L))));
   }
 
   @Test
