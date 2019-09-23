@@ -47,7 +47,7 @@ public final class CommunityMatchRegex extends CommunityMatchExpr {
   }
 
   @Override
-  protected <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(CommunityMatchExprVisitor<T, U> visitor, U arg) {
     return visitor.visitCommunityMatchRegex(this, arg);
   }
 

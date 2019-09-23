@@ -36,6 +36,8 @@ public abstract class BooleanExpr implements Serializable {
     return Collections.emptySet();
   }
 
+  public abstract <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg);
+
   @Override
   public abstract boolean equals(Object obj);
 

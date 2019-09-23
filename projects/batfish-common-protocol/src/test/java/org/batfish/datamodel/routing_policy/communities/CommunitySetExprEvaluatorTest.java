@@ -11,11 +11,10 @@ import org.junit.Test;
 /** Test of {@link CommunitySetExprEvaluator}. */
 public final class CommunitySetExprEvaluatorTest {
 
-  private static final CommunitySetExprEvaluator EVALUATOR =
-      new CommunitySetExprEvaluator(CommunityContext.builder().build());
+  private static final CommunityContext CTX = CommunityContext.builder().build();
 
   private static @Nonnull CommunitySet eval(CommunitySetExpr communitySetExpr) {
-    return communitySetExpr.accept(EVALUATOR);
+    return communitySetExpr.accept(CommunitySetExprEvaluator.instance(), CTX);
   }
 
   @Test
@@ -23,7 +22,8 @@ public final class CommunitySetExprEvaluatorTest {
     CommunitySet cs = CommunitySet.of(StandardCommunity.of(1L));
     CommunityContext ctx = CommunityContext.builder().setInputCommunitySet(cs).build();
 
-    assertThat(InputCommunities.instance().accept(new CommunitySetExprEvaluator(ctx)), equalTo(cs));
+    assertThat(
+        InputCommunities.instance().accept(CommunitySetExprEvaluator.instance(), ctx), equalTo(cs));
   }
 
   @Test
@@ -46,7 +46,7 @@ public final class CommunitySetExprEvaluatorTest {
             .build();
 
     assertThat(
-        new CommunitySetExprReference("defined").accept(new CommunitySetExprEvaluator(ctx)),
+        new CommunitySetExprReference("defined").accept(CommunitySetExprEvaluator.instance(), ctx),
         equalTo(cs));
   }
 
@@ -57,7 +57,7 @@ public final class CommunitySetExprEvaluatorTest {
         CommunityContext.builder().setCommunitySets(ImmutableMap.of("defined", cs)).build();
 
     assertThat(
-        new CommunitySetReference("defined").accept(new CommunitySetExprEvaluator(ctx)),
+        new CommunitySetReference("defined").accept(CommunitySetExprEvaluator.instance(), ctx),
         equalTo(cs));
   }
 

@@ -29,6 +29,11 @@ public final class HasRoute extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitHasRoute(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     throw new BatfishException("No implementation for HasRoute.evaluate()");
   }

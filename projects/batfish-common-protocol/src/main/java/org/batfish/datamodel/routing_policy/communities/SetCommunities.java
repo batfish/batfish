@@ -12,6 +12,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 
 /** A {@link Statement} that overwrites the communities of a route. */
 public final class SetCommunities extends Statement {
@@ -21,9 +22,14 @@ public final class SetCommunities extends Statement {
   }
 
   @Override
+  public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
+    return visitor.visitSetCommunities(this, arg);
+  }
+
+  @Override
   public @Nonnull Result execute(Environment environment) {
     CommunityContext ctx = CommunityContext.fromEnvironment(environment);
-    CommunitySet communitySet = _communitySetExpr.accept(new CommunitySetExprEvaluator(ctx));
+    CommunitySet communitySet = _communitySetExpr.accept(CommunitySetExprEvaluator.instance(), ctx);
     BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     Set<Community> communities = communitySet.getCommunities();
     bgpRoute.setCommunities(communities);

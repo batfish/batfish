@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import java.util.Comparator;
@@ -20,6 +21,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.representation.aws.AwsConfiguration;
@@ -90,7 +92,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    *
    * <p>Finishing touches such as converting structures to their immutable forms.
    */
-  private static void finalizeConfiguration(Configuration c, Warnings w) {
+  @VisibleForTesting
+  static void finalizeConfiguration(Configuration c, Warnings w) {
     String hostname = c.getHostname();
     if (c.getDefaultCrossZoneAction() == null) {
       throw new BatfishException(
@@ -118,12 +121,13 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
     c.setRoutingPolicies(
         verifyAndToImmutableMap(c.getRoutingPolicies(), RoutingPolicy::getName, w));
-    verifyCommunityStructures();
+    verifyCommunityStructures(c);
     removeInvalidAcls(c, w);
   }
 
-  private static void verifyCommunityStructures() {
+  private static void verifyCommunityStructures(Configuration c) {
     // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
+    CommunityStructuresVerifier.verify(c);
   }
 
   /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */

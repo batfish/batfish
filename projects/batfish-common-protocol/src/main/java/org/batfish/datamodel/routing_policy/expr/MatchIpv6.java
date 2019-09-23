@@ -17,6 +17,11 @@ public final class MatchIpv6 extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchIpv6(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     return new Result(environment.getOriginalRoute6() != null);
   }

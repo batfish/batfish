@@ -35,6 +35,11 @@ public final class MatchMetric extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchMetric(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     return _comparator.apply(
         Math.toIntExact(environment.getOriginalRoute().getMetric()), _metric.evaluate(environment));

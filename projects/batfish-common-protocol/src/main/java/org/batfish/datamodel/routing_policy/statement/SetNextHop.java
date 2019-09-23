@@ -31,6 +31,11 @@ public final class SetNextHop extends Statement {
   }
 
   @Override
+  public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
+    return visitor.visitSetNextHop(this, arg);
+  }
+
+  @Override
   public Result execute(Environment environment) {
     Result result = new Result();
     // Do nothing for a route that is not BGP.

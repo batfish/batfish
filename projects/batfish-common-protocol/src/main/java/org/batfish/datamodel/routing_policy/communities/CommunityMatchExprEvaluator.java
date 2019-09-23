@@ -48,7 +48,7 @@ public final class CommunityMatchExprEvaluator
   public @Nonnull Boolean visitCommunityIn(CommunityIn communityIn, Community arg) {
     return communityIn
         .getCommunitySetExpr()
-        .accept(_ctx.getCommunitySetExprEvaluator())
+        .accept(CommunitySetExprEvaluator.instance(), _ctx)
         .getCommunities()
         .contains(arg);
   }

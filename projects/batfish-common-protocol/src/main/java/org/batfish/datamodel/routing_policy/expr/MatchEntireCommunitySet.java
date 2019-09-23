@@ -28,6 +28,11 @@ public final class MatchEntireCommunitySet extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchEntireCommunitySet(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     SortedSet<Community> inputCommunities = null;
     if (environment.getUseOutputAttributes()

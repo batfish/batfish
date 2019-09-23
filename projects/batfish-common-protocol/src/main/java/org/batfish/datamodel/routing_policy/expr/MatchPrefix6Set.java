@@ -39,6 +39,11 @@ public final class MatchPrefix6Set extends BooleanExpr {
   }
 
   @Override
+  public <T, U> T accept(BooleanExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitMatchPrefix6Set(this, arg);
+  }
+
+  @Override
   public Result evaluate(Environment environment) {
     Prefix6 prefix = _prefix.evaluate(environment);
     return new Result(prefix != null && _prefixSet.matches(prefix, environment));
