@@ -658,6 +658,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_timersContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbin_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_additional_pathsContext;
@@ -1455,6 +1456,7 @@ import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.cisco.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.cisco.eos.AristaBgpNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
@@ -2707,6 +2709,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbibbpa_multipath_relax(Eos_rbibbpa_multipath_relaxContext ctx) {
     _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(true);
+  }
+
+  @Override
+  public void exitEos_rbibbp_tie_break(Eos_rbibbp_tie_breakContext ctx) {
+    if (ctx.ROUTER_ID() != null) {
+      _currentAristaBgpVrf.setBestpathTieBreaker(AristaBgpBestpathTieBreaker.ROUTER_ID);
+    } else if (ctx.CLUSTER_LIST_LENGTH() != null) {
+      _currentAristaBgpVrf.setBestpathTieBreaker(AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH);
+    } else {
+      throw new IllegalStateException(
+          String.format("Unrecognized 'bgp bestpath tie-break' value: %s", getFullText(ctx)));
+    }
   }
 
   @Override
