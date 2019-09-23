@@ -10,6 +10,7 @@ eos_router_bgp_tail
 :
   eos_rb_address_family
   | eos_rb_inner
+  | eos_rb_monitoring
   | eos_rb_vlan
   | eos_rb_vlan_aware_bundle
   | eos_rb_vrf
@@ -214,6 +215,10 @@ eos_rb_inner
   | eos_rbi_bgp
   | eos_rbi_default_metric
   | eos_rbi_distance
+  | eos_rbi_graceful_restart
+  | eos_rbi_graceful_restart_helper
+  | eos_rbi_ip
+  | eos_rbi_ipv6
   | eos_rbi_maximum_paths
   | eos_rbi_neighbor
   | eos_rbi_network
@@ -342,6 +347,30 @@ eos_rbi_default_metric
 eos_rbi_distance
 :
   DISTANCE BGP external = DEC (internal = DEC local = DEC)? NEWLINE
+;
+
+eos_rbi_ip
+:
+  IP ACCESS_GROUP name = variable IN? NEWLINE
+;
+
+eos_rbi_ipv6
+:
+  IPV6 ACCESS_GROUP name = variable IN? NEWLINE
+;
+
+eos_rbi_graceful_restart
+:
+  GRACEFUL_RESTART
+  (
+    RESTART_TIME DEC
+    | STALEPATH_TIME DEC
+  )* NEWLINE
+;
+
+eos_rbi_graceful_restart_helper
+:
+  GRACEFUL_RESTART_HELPER NEWLINE
 ;
 
 eos_rbi_maximum_paths
@@ -834,6 +863,37 @@ eos_rb_aa_v4
 eos_rb_aa_v6
 :
   prefix = IPV6_PREFIX eos_rb_aa_modifiers* NEWLINE
+;
+
+eos_rb_monitoring
+:
+  MONITORING
+  (
+    eos_rbm_port
+    | eos_rbm_received
+    | eos_rbm_station
+    | eos_rbm_timestamp
+  )
+;
+
+eos_rbm_port
+:
+  PORT num = DEC NEWLINE
+;
+
+eos_rbm_received
+:
+  RECEIVED ROUTES ( POST_POLICY | PRE_POLICY ) NEWLINE
+;
+
+eos_rbm_station
+:
+  STATION name = variable NEWLINE
+;
+
+eos_rbm_timestamp
+:
+  TIMESTAMP ( NONE | SEND_TIME ) NEWLINE
 ;
 
 eos_rb_vlan

@@ -9,11 +9,26 @@ router bgp 1
   bgp listen limit 10
   bgp listen range 1.1.1.0/24 peer-group DYNAMIC remote-as 4000
   bgp listen range 1.1.1.0/24 peer-group DYNAMIC peer-filter PF
-  timers bgp 3 9
+  graceful-restart
+  graceful-restart restart-time 3600
+  graceful-restart stalepath-time 3600
+  graceful-restart-helper
+  ip access-group ACL_NAME
+  ip access-group ACL_NAME in
+  ipv6 access-group ACL_NAME
+  ipv6 access-group ACL_NAME in
   default-metric 100
   distance bgp 300
   maximum-paths 2
+  monitoring port 23
+  monitoring received routes post-policy
+  monitoring received routes pre-policy
+  monitoring station NAME
+  monitoring timestamp none
+  monitoring timestamp send-time
   shutdown
+  timers bgp 3 9
+  update wait-install batch-size 20
   ucmp fec threshold trigger 10 clear 20 warning-only
   ucmp link-bandwidth encoding-weighted
   ucmp link-bandwidth recursive
@@ -23,7 +38,6 @@ router bgp 1
   ucmp mode 1 3 11.7
   update wait-for-convergence
   update wait-install
-  update wait-install batch-size 20
   no bgp default ipv4-unicast
   vrf tenant_vrf
     router-id 5.6.7.8
