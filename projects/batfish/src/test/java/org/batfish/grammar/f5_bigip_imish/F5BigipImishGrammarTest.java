@@ -310,6 +310,12 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpConfederationExtraction() {
+    // TODO: test extraction
+    assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_confederation"));
+  }
+
+  @Test
   public void testBgpDeterministicMedExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_deterministic_med");
 
