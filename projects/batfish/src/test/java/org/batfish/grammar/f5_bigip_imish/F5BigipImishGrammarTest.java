@@ -38,6 +38,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -640,6 +641,12 @@ public final class F5BigipImishGrammarTest {
 
     // BGP Router-ID manually set
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testOspfExtraction() {
+    // TODO: test extraction
+    assertNotNull((parseVendorConfig("f5_bigip_imish_ospf")));
   }
 
   @Test

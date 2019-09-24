@@ -118,9 +118,9 @@ rb_redistribute_kernel
   )? NEWLINE
 ;
 
-s_router_bgp
+router_bgp
 :
-  ROUTER BGP localas = uint32 NEWLINE
+  BGP localas = uint32 NEWLINE
   (
     rb_bgp_always_compare_med
     | rb_bgp_deterministic_med
