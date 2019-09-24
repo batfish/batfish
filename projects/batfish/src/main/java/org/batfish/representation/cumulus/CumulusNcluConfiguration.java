@@ -1040,7 +1040,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(@Nullable String hostname) {
-    _hostname = hostname;
+    _hostname = hostname == null ? null : hostname.toLowerCase();
   }
 
   @Override
