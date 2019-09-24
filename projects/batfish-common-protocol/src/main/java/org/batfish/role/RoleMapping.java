@@ -22,7 +22,7 @@ import org.batfish.common.BatfishException;
 public class RoleMapping {
 
   private static final String PROP_REGEX = "regex";
-  private static final String PROP_ROLE_DIMENSIONS_GROUPS = "roleDimensionsGroups";
+  private static final String PROP_ROLE_DIMENSION_GROUPS = "roleDimensionGroups";
   private static final String PROP_CANONICAL_ROLE_NAMES = "canonicalRoleNames";
   private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
@@ -30,7 +30,7 @@ public class RoleMapping {
   @Nonnull private String _regex;
   /* a map from each role dimension name to the list of regex groups
   that signify the role name for that dimension */
-  @Nonnull private Map<String, List<Integer>> _roleDimensionsGroups;
+  @Nonnull private Map<String, List<Integer>> _roleDimensionGroups;
   /* for each role dimension, a map from the default role name that was
   obtained from the node name to a canonical role name */
   @Nonnull private Map<String, Map<String, String>> _canonicalRoleNames;
@@ -40,12 +40,12 @@ public class RoleMapping {
   @JsonCreator
   public RoleMapping(
       @JsonProperty(PROP_REGEX) String regex,
-      @JsonProperty(PROP_ROLE_DIMENSIONS_GROUPS) Map<String, List<Integer>> roleDimensionsGroups,
+      @JsonProperty(PROP_ROLE_DIMENSION_GROUPS) Map<String, List<Integer>> roleDimensionGroups,
       @JsonProperty(PROP_CANONICAL_ROLE_NAMES) Map<String, Map<String, String>> canonicalRoleNames,
       @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
     checkArgument(regex != null, "The regex cannot be null");
     _regex = regex;
-    _roleDimensionsGroups = firstNonNull(roleDimensionsGroups, ImmutableMap.of());
+    _roleDimensionGroups = firstNonNull(roleDimensionGroups, ImmutableMap.of());
     _canonicalRoleNames = firstNonNull(canonicalRoleNames, ImmutableMap.of());
     _caseSensitive = caseSensitive;
     try {
@@ -61,10 +61,10 @@ public class RoleMapping {
     return _canonicalRoleNames;
   }
 
-  @JsonProperty(PROP_ROLE_DIMENSIONS_GROUPS)
+  @JsonProperty(PROP_ROLE_DIMENSION_GROUPS)
   @Nonnull
   public Map<String, List<Integer>> getRoleDimensionsGroups() {
-    return _roleDimensionsGroups;
+    return _roleDimensionGroups;
   }
 
   @JsonProperty(PROP_REGEX)

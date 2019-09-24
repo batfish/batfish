@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,13 +18,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class NodeRolesSpecification {
 
-  private static final String PROP_ROLE_DIMENSION_NAMES = "roleDimensionNames";
+  private static final String PROP_ROLE_DIMENSION_ORDER = "roleDimensionOrder";
   private static final String PROP_ROLE_MAPPINGS = "roleMappings";
 
   /* the role dimensions used by this network, ordered for hierarchical
   visualization/exploration, i.e., if D1 comes before D2 then nodes will be
   first partitioned via dimension D1 and then D2. */
-  @Nullable private List<String> _roleDimensionNames;
+  @Nullable private List<String> _roleDimensionOrder;
   /* the role mappings used to determine the role dimensions of each node
   and the corresponding role names for each dimension */
   @Nonnull private List<RoleMapping> _roleMappings;
@@ -33,15 +32,15 @@ public class NodeRolesSpecification {
   @JsonCreator
   public NodeRolesSpecification(
       @JsonProperty(PROP_ROLE_MAPPINGS) List<RoleMapping> roleMappings,
-      @JsonProperty(PROP_ROLE_DIMENSION_NAMES) @Nullable List<String> roleDimensionNames) {
+      @JsonProperty(PROP_ROLE_DIMENSION_ORDER) @Nullable List<String> roleDimensionOrder) {
     _roleMappings = firstNonNull(roleMappings, ImmutableList.of());
-    _roleDimensionNames = roleDimensionNames;
+    _roleDimensionOrder = roleDimensionOrder;
   }
 
-  @JsonProperty(PROP_ROLE_DIMENSION_NAMES)
-  @Nonnull
-  public Optional<List<String>> getRoleDimensionNames() {
-    return Optional.ofNullable(_roleDimensionNames);
+  @JsonProperty(PROP_ROLE_DIMENSION_ORDER)
+  @Nullable
+  public List<String> getRoleDimensionOrder() {
+    return _roleDimensionOrder;
   }
 
   @JsonProperty(PROP_ROLE_MAPPINGS)
@@ -80,6 +79,13 @@ public class NodeRolesSpecification {
       nodeRoleDimensions.add(
           NodeRoleDimension.builder(dim).setRoleDimensionMappings(rdmaps).build());
     }
-    return NodeRolesData.builder().setRoleDimensions(nodeRoleDimensions).build();
+    return NodeRolesData.builder()
+        .setRoleDimensions(nodeRoleDimensions)
+        .setRoleDimensionOrder(_roleDimensionOrder)
+        .setDefaultDimension(
+            _roleDimensionOrder != null && _roleDimensionOrder.size() > 0
+                ? _roleDimensionOrder.get(0)
+                : null)
+        .build();
   }
 }

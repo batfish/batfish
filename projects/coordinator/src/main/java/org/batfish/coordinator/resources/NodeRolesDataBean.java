@@ -4,8 +4,8 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,7 +15,8 @@ import org.batfish.role.NodeRolesData;
 public class NodeRolesDataBean {
 
   public String defaultDimension;
-  public Set<NodeRoleDimensionBean> roleDimensions;
+  public List<NodeRoleDimensionBean> roleDimensions;
+  public List<String> roleDimensionOrder;
 
   @JsonCreator
   private NodeRolesDataBean() {}
@@ -25,7 +26,8 @@ public class NodeRolesDataBean {
     roleDimensions =
         nodeRolesData.getNodeRoleDimensions().stream()
             .map(dim -> new NodeRoleDimensionBean(dim, snapshot))
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
+    roleDimensionOrder = nodeRolesData.getRoleDimensionOrder().orElse(null);
   }
 
   @Override
@@ -35,13 +37,14 @@ public class NodeRolesDataBean {
     }
     // ignore lastModifiedTime for equality checking
     return Objects.equals(defaultDimension, ((NodeRolesDataBean) o).defaultDimension)
-        && Objects.equals(roleDimensions, ((NodeRolesDataBean) o).roleDimensions);
+        && Objects.equals(roleDimensions, ((NodeRolesDataBean) o).roleDimensions)
+        && Objects.equals(roleDimensionOrder, ((NodeRolesDataBean) o).roleDimensionOrder);
   }
 
   @Override
   public int hashCode() {
     // ignore lastModifiedTime
-    return Objects.hash(defaultDimension, roleDimensions);
+    return Objects.hash(defaultDimension, roleDimensions, roleDimensionOrder);
   }
 
   public @Nonnull NodeRolesData toNodeRolesData() {
@@ -51,6 +54,7 @@ public class NodeRolesDataBean {
             roleDimensions.stream()
                 .map(NodeRoleDimensionBean::toNodeRoleDimension)
                 .collect(ImmutableList.toImmutableList()))
+        .setRoleDimensionOrder(roleDimensionOrder)
         .build();
   }
 
@@ -59,6 +63,7 @@ public class NodeRolesDataBean {
     return toStringHelper(getClass())
         .add("defaultDimension", defaultDimension)
         .add("roleDimensions", roleDimensions)
+        .add("roleDimensionOrder", roleDimensionOrder)
         .toString();
   }
 }

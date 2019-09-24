@@ -3,6 +3,7 @@ package org.batfish.role;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableList.copyOf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,54 +23,82 @@ import org.batfish.datamodel.Names.Type;
 public class NodeRolesData {
 
   public static final class Builder {
-    private String _defaultDimension;
-    private List<NodeRoleDimension> _roleDimensions;
+    @Nullable private String _defaultDimension;
+    @Nullable private List<String> _roleDimensionOrder;
+    @Nonnull private List<NodeRoleDimension> _roleDimensions;
 
     private Builder() {
       _roleDimensions = ImmutableList.of();
     }
 
     public @Nonnull NodeRolesData build() {
-      return new NodeRolesData(_defaultDimension, _roleDimensions);
+      return new NodeRolesData(_defaultDimension, _roleDimensions, _roleDimensionOrder);
     }
 
-    public @Nonnull Builder setDefaultDimension(String defaultDimension) {
+    public @Nonnull Builder addRoleDimensions(List<NodeRoleDimension> addedRoleDimensions) {
+      _roleDimensions =
+          ImmutableList.<NodeRoleDimension>builder()
+              .addAll(_roleDimensions)
+              .addAll(addedRoleDimensions)
+              .build();
+      return this;
+    }
+
+    public @Nonnull Builder setDefaultDimension(@Nullable String defaultDimension) {
       _defaultDimension = defaultDimension;
       return this;
     }
 
+    public @Nonnull Builder setRoleDimensionOrder(@Nullable List<String> roleDimensionOrder) {
+      _roleDimensionOrder = roleDimensionOrder == null ? null : copyOf(roleDimensionOrder);
+      return this;
+    }
+
     public @Nonnull Builder setRoleDimensions(List<NodeRoleDimension> roleDimensions) {
-      _roleDimensions = ImmutableList.copyOf(roleDimensions);
+      _roleDimensions = copyOf(roleDimensions);
       return this;
     }
   }
 
   private static final String PROP_DEFAULT_DIMENSION = "defaultDimension";
   private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
+  private static final String PROP_ROLE_DIMENSION_ORDER = "roleDimensionOrder";
 
   @Nullable private String _defaultDimension;
 
-  @Nonnull List<NodeRoleDimension> _roleDimensions;
+  @Nonnull private List<NodeRoleDimension> _roleDimensions;
+
+  /* the list of role dimensions (or a subset of them), ordered for hierarchical
+    visualization / exploration
+  */
+  @Nullable private List<String> _roleDimensionOrder;
 
   public static @Nonnull Builder builder() {
     return new Builder();
   }
 
-  private NodeRolesData(@Nullable String defaultDimension, List<NodeRoleDimension> roleDimensions) {
+  private NodeRolesData(
+      @Nullable String defaultDimension,
+      List<NodeRoleDimension> roleDimensions,
+      @Nullable List<String> roleDimensionOrder) {
     checkNotNull(roleDimensions);
     if (defaultDimension != null) {
       Names.checkName(defaultDimension, "role dimension", Type.REFERENCE_OBJECT);
     }
     _defaultDimension = defaultDimension;
     _roleDimensions = roleDimensions;
+    _roleDimensionOrder = roleDimensionOrder;
   }
 
   @JsonCreator
   private static @Nonnull NodeRolesData create(
       @JsonProperty(PROP_DEFAULT_DIMENSION) @Nullable String defaultDimension,
-      @JsonProperty(PROP_ROLE_DIMENSIONS) @Nullable List<NodeRoleDimension> roleDimensions) {
+      @JsonProperty(PROP_ROLE_DIMENSIONS) @Nullable List<NodeRoleDimension> roleDimensions,
+      @JsonProperty(PROP_ROLE_DIMENSION_ORDER) @Nullable List<String> roleDimensionOrder) {
     return new NodeRolesData(
-        defaultDimension, ImmutableList.copyOf(firstNonNull(roleDimensions, ImmutableList.of())));
+        defaultDimension,
+        copyOf(firstNonNull(roleDimensions, ImmutableList.of())),
+        roleDimensionOrder);
   }
 
   @Override
@@ -81,7 +110,8 @@ public class NodeRolesData {
       return false;
     }
     return Objects.equals(_defaultDimension, ((NodeRolesData) o)._defaultDimension)
-        && Objects.equals(_roleDimensions, ((NodeRolesData) o)._roleDimensions);
+        && Objects.equals(_roleDimensions, ((NodeRolesData) o)._roleDimensions)
+        && Objects.equals(_roleDimensionOrder, ((NodeRolesData) o)._roleDimensionOrder);
   }
 
   @JsonProperty(PROP_DEFAULT_DIMENSION)
@@ -134,9 +164,14 @@ public class NodeRolesData {
     return _roleDimensions;
   }
 
+  @JsonProperty(PROP_ROLE_DIMENSION_ORDER)
+  public Optional<List<String>> getRoleDimensionOrder() {
+    return Optional.ofNullable(_roleDimensionOrder);
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(_defaultDimension, _roleDimensions);
+    return Objects.hash(_defaultDimension, _roleDimensions, _roleDimensionOrder);
   }
 
   @Override
@@ -145,6 +180,7 @@ public class NodeRolesData {
         .omitNullValues()
         .add(PROP_DEFAULT_DIMENSION, _defaultDimension)
         .add(PROP_ROLE_DIMENSIONS, _roleDimensions)
+        .add(PROP_ROLE_DIMENSION_ORDER, _roleDimensionOrder)
         .toString();
   }
 }

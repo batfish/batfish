@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import java.util.Optional;
 import org.junit.Test;
 
 public class NodeRolesSpecificationTest {
@@ -33,10 +34,11 @@ public class NodeRolesSpecificationTest {
                 ImmutableMap.of(
                     "dim2", ImmutableMap.of("foo", "bar"), "dim1", ImmutableMap.of("abc", "def")),
                 true));
-    NodeRolesSpecification spec = new NodeRolesSpecification(rMaps, null);
+    NodeRolesSpecification spec =
+        new NodeRolesSpecification(rMaps, ImmutableList.of("dim1", "dim2", "dim3"));
     NodeRolesData data = spec.toNodeRolesData();
 
-    assertThat(data.getDefaultDimension(), equalTo(null));
+    assertThat(data.getDefaultDimension(), equalTo("dim1"));
     assertThat(
         data.getNodeRoleDimensions(),
         equalTo(
@@ -62,5 +64,8 @@ public class NodeRolesSpecificationTest {
                         ImmutableList.of(
                             new RoleDimensionMapping("2", ImmutableList.of(1), null, true)))
                     .build())));
+    assertThat(
+        data.getRoleDimensionOrder(),
+        equalTo(Optional.of(ImmutableList.of("dim1", "dim2", "dim3"))));
   }
 }
