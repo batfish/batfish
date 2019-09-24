@@ -73,7 +73,7 @@ public class EvpnType5CumulusTest {
             ImmutableSet.of("swp4", "swp14"));
 
     for (String leaf : leafs) {
-      Set<AbstractRoute> routes = ribs.get(leaf.toLowerCase()).get(vrf1).getRoutes();
+      Set<AbstractRoute> routes = ribs.get(leaf).get(vrf1).getRoutes();
       for (Prefix prefix : prefixes) {
         for (String nextHopIface : nextHopInterfaces.get(leaf)) {
           assertThat(
