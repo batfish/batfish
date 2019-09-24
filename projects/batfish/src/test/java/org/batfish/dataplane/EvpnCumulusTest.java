@@ -46,10 +46,10 @@ public class EvpnCumulusTest {
         dp.getRibs();
 
     assertThat(
-        ribs.get(leaf1).get(DEFAULT_VRF_NAME).getRoutes(),
+        ribs.get(leaf1.toLowerCase()).get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("3.3.3.3/32")))));
     assertThat(
-        ribs.get(leaf2).get(DEFAULT_VRF_NAME).getRoutes(),
+        ribs.get(leaf2.toLowerCase()).get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("1.1.1.1/32")))));
   }
 }
