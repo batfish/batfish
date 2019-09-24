@@ -75,6 +75,11 @@ CON
   'con'
 ;
 
+CONFEDERATION
+:
+  'confederation'
+;
+
 DENY
 :
   'deny'
@@ -118,6 +123,11 @@ GE
 GRACEFUL_RESTART
 :
   'graceful-restart'
+;
+
+IDENTIFIER
+:
+  'identifier'
 ;
 
 IGP
@@ -233,6 +243,11 @@ PASSIVE_INTERFACE
 PEER_GROUP
 :
   'peer-group'
+;
+
+PEERS
+:
+  'peers'
 ;
 
 PERMIT

@@ -8,17 +8,17 @@ options {
 
 rb_bgp_always_compare_med
 :
-  BGP ALWAYS_COMPARE_MED NEWLINE
+  ALWAYS_COMPARE_MED NEWLINE
 ;
 
 rb_bgp_deterministic_med
 :
-  BGP DETERMINISTIC_MED NEWLINE
+  DETERMINISTIC_MED NEWLINE
 ;
 
 rb_bgp_router_id
 :
-  BGP ROUTER_ID id = IP_ADDRESS NEWLINE
+  ROUTER_ID id = IP_ADDRESS NEWLINE
 ;
 
 rb_neighbor_ipv4
@@ -122,9 +122,7 @@ router_bgp
 :
   BGP localas = uint32 NEWLINE
   (
-    rb_bgp_always_compare_med
-    | rb_bgp_deterministic_med
-    | rb_bgp_router_id
+    rb_bgp
     | rb_neighbor_ipv4
     | rb_neighbor_ipv6
     | rb_neighbor_peer_group
@@ -136,4 +134,34 @@ router_bgp
 peer_group_name
 :
   ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+;
+
+rb_bgp
+:
+  BGP
+  (
+    rb_bgp_always_compare_med
+    | rb_bgp_confederation
+    | rb_bgp_deterministic_med
+    | rb_bgp_router_id
+  )
+;
+
+rb_bgp_confederation
+:
+  CONFEDERATION
+  (
+    rbbc_identifier
+    | rbbc_peers
+  )
+;
+
+rbbc_identifier
+:
+  IDENTIFIER id = uint32 NEWLINE
+;
+
+rbbc_peers
+:
+  PEERS peers += uint32+ NEWLINE
 ;
