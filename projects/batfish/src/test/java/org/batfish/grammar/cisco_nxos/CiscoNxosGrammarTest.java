@@ -152,8 +152,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
@@ -180,7 +178,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -219,10 +216,15 @@ import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityContext;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprEvaluator;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -3355,53 +3357,84 @@ public final class CiscoNxosGrammarTest {
   public void testIpCommunityListExpandedConversion() throws IOException {
     String hostname = "nxos_ip_community_list_expanded";
     Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
 
-    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_test"));
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
     {
-      CommunityList cl = c.getCommunityLists().get("cl_seq");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
+      // Test CommunityMatchExpr conversion
+      assertThat(c.getCommunityMatchExprs(), hasKeys("cl_seq", "cl_test"));
+      CommunityMatchExprEvaluator eval = ctx.getCommunityMatchExprEvaluator();
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_seq");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("1:1")));
+        // permit regex 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        assertTrue(expr.accept(eval, StandardCommunity.of(91, 19)));
+        // permit regex 5:5
+        assertTrue(expr.accept(eval, StandardCommunity.of(5, 5)));
+        // permit regex 10:10
+        assertTrue(expr.accept(eval, StandardCommunity.of(10, 10)));
+        // permit regex 11:11
+        assertTrue(expr.accept(eval, StandardCommunity.of(11, 11)));
+      }
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("5:5")));
+        // no single community matched by regex _1:1.*2:2_, so deny line is NOP
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("10:10")));
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        assertFalse(expr.accept(eval, StandardCommunity.of(11, 11)));
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("11:11")));
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, StandardCommunity.of(2, 2)));
+      }
     }
     {
-      CommunityList cl = c.getCommunityLists().get("cl_test");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_seq", "cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_seq");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.DENY));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(),
-          equalTo(toJavaRegex("_1:1.*2:2_")));
+        // permit regex 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(91, 19))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        // permit regex 5:5
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(5, 5))));
+        // permit regex 10:10
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(10, 10))));
+        // permit regex 11:11
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_1:1_")));
+        // deny regex _1:1.*2:2_
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_2:2_")));
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+        assertFalse(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
+
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
     }
   }
 
@@ -3460,94 +3493,114 @@ public final class CiscoNxosGrammarTest {
   public void testIpCommunityListStandardConversion() throws IOException {
     String hostname = "nxos_ip_community_list_standard";
     Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
 
-    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_values", "cl_test"));
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
     {
-      CommunityList cl = c.getCommunityLists().get("cl_seq");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
+      // Test CommunityMatchExpr conversion
+      assertThat(c.getCommunityMatchExprs(), hasKeys("cl_seq", "cl_values", "cl_test"));
+      CommunityMatchExprEvaluator eval = ctx.getCommunityMatchExprEvaluator();
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_seq");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(1, 1)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit 5:5
+        assertTrue(expr.accept(eval, StandardCommunity.of(5, 5)));
+        // permit 10:10
+        assertTrue(expr.accept(eval, StandardCommunity.of(10, 10)));
+        // permit 11:11
+        assertTrue(expr.accept(eval, StandardCommunity.of(11, 11)));
+      }
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_values");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(5, 5)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit internet
+        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.INTERNET)));
+        // permit local-AS
+        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+        // permit no-advertise
+        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+        // permit no-export
+        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+      }
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(10, 10)));
+        // no single community matched by 1:1 2:2, so deny line is NOP
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(11, 11)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit 2:2
+        assertTrue(expr.accept(eval, StandardCommunity.of(2, 2)));
+      }
     }
     {
-      CommunityList cl = c.getCommunityLists().get("cl_values");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_seq", "cl_values", "cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_seq");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(1, 1)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        // permit 5:5
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(5, 5))));
+        // permit 10:10
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(10, 10))));
+        // permit 11:11
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_values");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(WellKnownCommunity.INTERNET)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        // permit internet
+        assertTrue(
+            expr.accept(eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.INTERNET))));
+        // permit local-AS
+        assertTrue(
+            expr.accept(
+                eval,
+                CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED))));
+        // permit no-advertise
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))));
+        // permit no-export
+        assertTrue(
+            expr.accept(eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT))));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+        // deny 1:1 2:2
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
-    }
-    {
-      CommunityList cl = c.getCommunityLists().get("cl_test");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.DENY));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          containsInAnyOrder(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          containsInAnyOrder(StandardCommunity.of(1, 1)));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          containsInAnyOrder(StandardCommunity.of(2, 2)));
+        // permit 2:2
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
     }
   }
 
