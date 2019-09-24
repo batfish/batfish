@@ -839,4 +839,10 @@ public class CumulusFrrGrammarTest {
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
   }
+
+  @Test
+  public void testRouterOspf() {
+    parse("router ospf\n log-adjacency-changes detail\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+  }
 }
