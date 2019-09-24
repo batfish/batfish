@@ -45,6 +45,11 @@ ANY
   'any'
 ;
 
+AREA
+:
+  'area'
+;
+
 BFD
 :
   'bfd'
@@ -185,6 +190,11 @@ NEIGHBOR
   'neighbor'
 ;
 
+NETWORK
+:
+  'network'
+;
+
 NEXT_HOP_SELF
 :
   'next-hop-self'
@@ -195,14 +205,29 @@ NO
   'no'
 ;
 
+NON_BROADCAST
+:
+  'non-broadcast'
+;
+
 ORIGIN
 :
   'origin'
 ;
 
+OSPF
+:
+  'ospf'
+;
+
 OUT
 :
   'out'
+;
+
+PASSIVE_INTERFACE
+:
+  'passive-interface'
 ;
 
 PEER_GROUP

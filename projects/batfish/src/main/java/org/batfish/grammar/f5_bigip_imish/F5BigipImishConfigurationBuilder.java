@@ -18,6 +18,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_configurationContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Iipo_networkContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_prefixContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_prefix_lengthContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
@@ -41,10 +42,11 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_address_pref
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_metricContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_originContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Router_bgpContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Router_ospfContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_access_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_ip_prefix_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_route_mapContext;
-import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_router_bgpContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Standard_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Uint32Context;
 import org.batfish.representation.f5_bigip.AbstractBgpNeighbor;
@@ -148,6 +150,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitIipo_network(Iipo_networkContext ctx) {
+    todo(ctx.getParent().getParent());
+  }
+
+  @Override
   public void enterRb_neighbor_ipv4(Rb_neighbor_ipv4Context ctx) {
     _no = ctx.NO() != null;
     _currentNeighborName = ctx.ip.getText();
@@ -172,6 +179,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void enterRouter_ospf(Router_ospfContext ctx) {
+    todo(ctx.getParent());
+  }
+
+  @Override
   public void enterS_route_map(S_route_mapContext ctx) {
     String name = ctx.name.getText();
     _c.defineStructure(F5BigipStructureType.ROUTE_MAP, name, ctx);
@@ -184,7 +196,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
-  public void enterS_router_bgp(S_router_bgpContext ctx) {
+  public void enterRouter_bgp(Router_bgpContext ctx) {
     String name = ctx.localas.getText();
     _currentBgpProcess = _c.getBgpProcesses().computeIfAbsent(name, BgpProcess::new);
     _currentBgpProcess.setLocalAs(toLong(ctx.localas));
@@ -522,7 +534,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
-  public void exitS_router_bgp(S_router_bgpContext ctx) {
+  public void exitRouter_bgp(Router_bgpContext ctx) {
     _currentBgpProcess = null;
   }
 
@@ -549,6 +561,10 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     } else {
       return convProblem(Prefix.class, ctx, null);
     }
+  }
+
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, getFullText(ctx).split("\\n", -1)[0], _parser);
   }
 
   @Override

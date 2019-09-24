@@ -2,7 +2,12 @@ parser grammar F5BigipImishParser;
 
 /* This is only needed if parser grammar is spread across files */
 import
-F5BigipImish_common, F5BigipImish_access_list, F5BigipImish_bgp, F5BigipImish_route_map;
+  F5BigipImish_common,
+  F5BigipImish_access_list,
+  F5BigipImish_bgp,
+  F5BigipImish_interface,
+  F5BigipImish_ospf,
+  F5BigipImish_route_map;
 
 options {
   superClass =
@@ -63,7 +68,6 @@ s_null
   NO?
   (
     BFD
-    | INTERFACE
     | SERVICE
   ) null_rest_of_line
 ;
@@ -71,10 +75,20 @@ s_null
 statement
 :
   s_access_list
+  | s_interface
   | s_line
   | s_null
   | s_ip_prefix_list
   | s_route_map
-  | s_router_bgp
+  | s_router
   | s_end
+;
+
+s_router
+:
+  ROUTER
+  (
+    router_bgp
+    | router_ospf
+  )
 ;
