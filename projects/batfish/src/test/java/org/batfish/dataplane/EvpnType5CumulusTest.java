@@ -39,7 +39,7 @@ public class EvpnType5CumulusTest {
     String snapshotName = "evpn-type5-routes";
     List<String> configurationNames =
         ImmutableList.of(
-            "leaf1", "leaf2", "leaf3", "leaf4", "spine1", "spine2", "exitgateway", "Internet");
+            "Leaf1", "Leaf2", "Leaf3", "Leaf4", "Spine1", "Spine2", "exitgateway", "Internet");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -54,7 +54,7 @@ public class EvpnType5CumulusTest {
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp.getRibs();
     String vrf1 = "vrf1";
-    final ImmutableList<String> leafs = ImmutableList.of("leaf1", "leaf2", "leaf3", "leaf4");
+    final ImmutableList<String> leafs = ImmutableList.of("Leaf1", "Leaf2", "Leaf3", "Leaf4");
 
     ImmutableSet<Prefix> prefixes =
         ImmutableSet.of(
@@ -63,13 +63,13 @@ public class EvpnType5CumulusTest {
 
     Map<String, Set<String>> nextHopInterfaces =
         ImmutableMap.of(
-            "leaf1",
+            "Leaf1",
             ImmutableSet.of("swp1", "swp11"),
-            "leaf2",
+            "Leaf2",
             ImmutableSet.of("swp2", "swp12"),
-            "leaf3",
+            "Leaf3",
             ImmutableSet.of("swp3", "swp13"),
-            "leaf4",
+            "Leaf4",
             ImmutableSet.of("swp4", "swp14"));
 
     for (String leaf : leafs) {
