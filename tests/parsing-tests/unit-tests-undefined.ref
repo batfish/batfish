@@ -2234,240 +2234,240 @@
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_imish_malformed",
+        "File_Name" : "configs/f5_bigip/f5_bigip_imish_malformed",
         "Struct_Type" : "route-map",
         "Ref_Name" : "rm1",
         "Context" : "bgp neighbor address-family ipv6 route-map out",
         "Lines" : {
-          "filename" : "configs/f5_bigip_imish_malformed",
+          "filename" : "configs/f5_bigip/f5_bigip_imish_malformed",
           "lines" : [
             21
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_imish_malformed",
+        "File_Name" : "configs/f5_bigip/f5_bigip_imish_malformed",
         "Struct_Type" : "route-map",
         "Ref_Name" : "rm1",
         "Context" : "neighbor peer-group route-map out",
         "Lines" : {
-          "filename" : "configs/f5_bigip_imish_malformed",
+          "filename" : "configs/f5_bigip/f5_bigip_imish_malformed",
           "lines" : [
             22
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "monitor",
         "Ref_Name" : "/Common/SOME_MONITOR",
         "Context" : "pool monitor",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             33
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "node",
         "Ref_Name" : "/Common/bar",
         "Context" : "pool member",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             28
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "node",
         "Ref_Name" : "/Common/foo",
         "Context" : "pool member",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             23
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "persistence",
         "Ref_Name" : "/Common/SOME_PROFILE",
         "Context" : "virtual persist persistence",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             97
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "pool",
         "Ref_Name" : "/Common/SOME_POOL",
         "Context" : "virtual pool",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             101
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "profile",
         "Ref_Name" : "/Common/P1",
         "Context" : "virtual profile",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             103
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "profile",
         "Ref_Name" : "/Common/P2",
         "Context" : "virtual profile",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             104
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "profile",
         "Ref_Name" : "/Common/P3",
         "Context" : "virtual profile",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             105
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "profile server-ssl",
         "Ref_Name" : "/Common/SOME_SSL_PROFILE",
         "Context" : "monitor https ssl-profile",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             166
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "snat-translation",
         "Ref_Name" : "/Common/192.0.2.5",
         "Context" : "snatpool members member",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             85
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "snat-translation",
         "Ref_Name" : "/Common/192.0.2.6",
         "Context" : "snatpool members member",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             86
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "virtual-address",
         "Ref_Name" : "/Common/192.0.2.7",
         "Context" : "virtual destination",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             90
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "vlan",
         "Ref_Name" : "/Common/MY_VLAN",
         "Context" : "virtual vlans vlan",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             120
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Struct_Type" : "vlan",
         "Ref_Name" : "/Common/SOME_VLAN",
         "Context" : "snat vlans vlan",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             74
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_net_routing_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "/Common/MY_IPV4_OUT",
         "Context" : "bgp neighbor address-family ipv6 route-map out",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_bgp",
           "lines" : [
             52
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_net_routing_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "/Common/MY_IPV6_OUT",
         "Context" : "bgp neighbor address-family ipv6 route-map out",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_bgp",
           "lines" : [
             33
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_net_routing_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "/Common/MY_KERNEL_OUT",
         "Context" : "bgp address-family redistribute kernel route-map",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_bgp",
           "lines" : [
             12
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_net_routing_bgp",
         "Struct_Type" : "vlan",
         "Ref_Name" : "SOME_VLAN",
         "Context" : "bgp neighbor update-source",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_bgp",
           "lines" : [
             40,
             63
@@ -2475,24 +2475,24 @@
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_net_routing_route_map",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_net_routing_route_map",
         "Struct_Type" : "prefix-list",
         "Ref_Name" : "/Common/MY_PREFIX_LIST",
         "Context" : "route-map match ipv4 address prefix-list",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_route_map",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_route_map",
           "lines" : [
             14
           ]
         }
       },
       {
-        "File_Name" : "configs/f5_bigip_structured_net_routing_route_map",
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_net_routing_route_map",
         "Struct_Type" : "prefix-list",
         "Ref_Name" : "/Common/MY_PREFIX_LIST2",
         "Context" : "route-map match ipv4 address prefix-list",
         "Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_route_map",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_route_map",
           "lines" : [
             29
           ]
