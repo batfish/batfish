@@ -844,5 +844,6 @@ public class CumulusFrrGrammarTest {
   public void testRouterOspf() {
     parse("router ospf\n log-adjacency-changes detail\n");
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertNotNull(CONFIG.getOspfProcess());
   }
 }

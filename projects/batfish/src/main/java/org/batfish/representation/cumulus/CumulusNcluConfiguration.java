@@ -154,6 +154,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull Bridge _bridge;
   private transient Configuration _c;
   private @Nullable String _hostname;
+  private @Nullable OspfProcess _ospfProcess;
   private @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
@@ -935,6 +936,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _loopback;
   }
 
+  public @Nullable OspfProcess getOspfProcess() {
+    return _ospfProcess;
+  }
+
   public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
   }
@@ -1041,6 +1046,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @Override
   public void setHostname(@Nullable String hostname) {
     _hostname = hostname;
+  }
+
+  public void setOspfProcess(@Nullable OspfProcess ospfProcess) {
+    _ospfProcess = ospfProcess;
   }
 
   @Override
