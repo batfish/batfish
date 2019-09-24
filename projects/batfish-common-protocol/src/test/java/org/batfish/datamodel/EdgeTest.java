@@ -50,9 +50,6 @@ public class EdgeTest {
                 NodeInterfacePair.of("tail", "tailint"), NodeInterfacePair.of("head", "headInt")))
         .addEqualityGroup(
             new Edge(
-                NodeInterfacePair.of("tail", "tailInt"), NodeInterfacePair.of("hEad", "headInt")))
-        .addEqualityGroup(
-            new Edge(
                 NodeInterfacePair.of("tail", "tailInt"),
                 NodeInterfacePair.of("head", "headIntOther")))
         .testEquals();

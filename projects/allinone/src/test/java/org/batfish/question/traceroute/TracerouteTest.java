@@ -445,7 +445,7 @@ public class TracerouteTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasLastHop(hasNodeName("~Configuration_1~"))),
+                everyItem(hasLastHop(hasNodeName("~configuration_1~"))),
                 Schema.set(Schema.TRACE))));
 
     assertThat(
@@ -710,7 +710,7 @@ public class TracerouteTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasNthHop(3, hasNodeName("~Configuration_1~"))),
+                everyItem(hasNthHop(3, hasNodeName("~configuration_1~"))),
                 Schema.set(Schema.TRACE))));
 
     // check disposition
