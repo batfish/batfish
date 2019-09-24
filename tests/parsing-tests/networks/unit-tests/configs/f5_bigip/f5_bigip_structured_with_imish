@@ -31,6 +31,8 @@ router ospf 65001
 !
 router bgp 65500
  bgp always-compare-med
+ bgp confederation identifier 65001
+ bgp confederation peers 65002 65003
  bgp deterministic-med
  bgp graceful-restart restart-time 123
  bgp router-id 192.0.2.100

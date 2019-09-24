@@ -1,0 +1,49 @@
+#TMSH-VERSION: 12.1.4
+
+sys global-settings {
+    hostname f5_bigip_imish_bgp_confederation
+}
+
+net route-domain /Common/0 {
+    id 0
+    routing-protocol {
+        BGP
+    }
+    vlans {
+        /Common/vlan1
+    }
+}
+
+net self /Common/10.0.1.1/24 {
+    address 10.0.1.1/24
+    allow-service {
+        default
+    }
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/vlan1
+}
+
+net self-allow {
+    defaults {
+        bgp:0
+    }
+}
+
+net vlan /Common/vlan1 {
+    interfaces {
+        1.1 { }
+    }
+}
+
+!
+interface vlan1
+!
+router bgp 65001
+ bgp router-id 10.0.1.1
+ bgp confederation identifier 65010
+ bgp confederation peers 65012 65013
+ neighbor 10.0.1.10 remote-as 65001
+ neighbor 10.0.1.10 update-source 10.0.1.1
+ neighbor 10.0.1.2 remote-as 65012
+ neighbor 10.0.1.3 remote-as 65013
+!
