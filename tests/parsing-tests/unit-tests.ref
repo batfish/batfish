@@ -493,31 +493,31 @@
           "configs/eos_trunk_group"
         ],
         "f5_bigip_imish_malformed" : [
-          "configs/f5_bigip_imish_malformed"
+          "configs/f5_bigip/f5_bigip_imish_malformed"
         ],
         "f5_bigip_structured_ltm" : [
-          "configs/f5_bigip_structured_ltm"
+          "configs/f5_bigip/f5_bigip_structured_ltm"
         ],
         "f5_bigip_structured_malformed" : [
-          "configs/f5_bigip_structured_malformed"
+          "configs/f5_bigip/f5_bigip_structured_malformed"
         ],
         "f5_bigip_structured_net" : [
-          "configs/f5_bigip_structured_net"
+          "configs/f5_bigip/f5_bigip_structured_net"
         ],
         "f5_bigip_structured_net_routing_bgp" : [
-          "configs/f5_bigip_structured_net_routing_bgp"
+          "configs/f5_bigip/f5_bigip_structured_net_routing_bgp"
         ],
         "f5_bigip_structured_net_routing_prefix_list" : [
-          "configs/f5_bigip_structured_net_routing_prefix_list"
+          "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list"
         ],
         "f5_bigip_structured_net_routing_route_map" : [
-          "configs/f5_bigip_structured_net_routing_route_map"
+          "configs/f5_bigip/f5_bigip_structured_net_routing_route_map"
         ],
         "f5_bigip_structured_sys" : [
-          "configs/f5_bigip_structured_sys"
+          "configs/f5_bigip/f5_bigip_structured_sys"
         ],
         "f5_bigip_structured_with_imish" : [
-          "configs/f5_bigip_structured_with_imish"
+          "configs/f5_bigip/f5_bigip_structured_with_imish"
         ],
         "foundry_access_list" : [
           "configs/foundry_access_list"
@@ -1069,15 +1069,15 @@
         "configs/cumulus_nclu_stp" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
-        "configs/f5_bigip_imish_malformed" : "PASSED",
-        "configs/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_malformed" : "PASSED",
-        "configs/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_prefix_list" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
-        "configs/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_with_imish" : "PASSED",
+        "configs/f5_bigip/f5_bigip_imish_malformed" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_malformed" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
@@ -43063,7 +43063,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -43218,7 +43218,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -45331,7 +45331,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_malformed" : {
+        "configs/f5_bigip/f5_bigip_structured_malformed" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -45474,7 +45474,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_net" : {
+        "configs/f5_bigip/f5_bigip_structured_net" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -45985,7 +45985,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -46319,7 +46319,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_net_routing_prefix_list" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -46491,7 +46491,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -46665,7 +46665,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_sys" : {
+        "configs/f5_bigip/f5_bigip_structured_sys" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -47555,7 +47555,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_with_imish" : {
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -75222,7 +75222,7 @@
             }
           ]
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
@@ -75254,7 +75254,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76146,7 +76146,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_malformed" : {
+        "configs/f5_bigip/f5_bigip_structured_malformed" : {
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
@@ -76172,7 +76172,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_net" : {
+        "configs/f5_bigip/f5_bigip_structured_net" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76272,7 +76272,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76336,7 +76336,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_net_routing_prefix_list" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76352,7 +76352,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
@@ -76362,7 +76362,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_sys" : {
+        "configs/f5_bigip/f5_bigip_structured_sys" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -80150,7 +80150,7 @@
             }
           }
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "bgp neighbor" : {
             "2::2" : {
               "definitionLines" : [
@@ -80189,7 +80189,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "monitor http" : {
             "/Common/SOME_MONITOR1" : {
               "definitionLines" : [
@@ -80594,7 +80594,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_malformed" : {
+        "configs/f5_bigip/f5_bigip_structured_malformed" : {
           "route" : {
             "/Common/bad_gw" : {
               "definitionLines" : [
@@ -80651,7 +80651,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net" : {
+        "configs/f5_bigip/f5_bigip_structured_net" : {
           "interface" : {
             "1.0" : {
               "definitionLines" : [
@@ -80741,7 +80741,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "bgp neighbor" : {
             "192.0.2.1" : {
               "definitionLines" : [
@@ -80872,7 +80872,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_prefix_list" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : {
           "prefix-list" : {
             "/Common/MY_IPV4_PREFIX_LIST" : {
               "definitionLines" : [
@@ -80916,7 +80916,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "route-map" : {
             "/Common/MY_ROUTE_MAP" : {
               "definitionLines" : [
@@ -80963,8 +80963,8 @@
             }
           }
         },
-        "configs/f5_bigip_structured_sys" : { },
-        "configs/f5_bigip_structured_with_imish" : {
+        "configs/f5_bigip/f5_bigip_structured_sys" : { },
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
           "access-list" : {
             "acl1" : {
               "definitionLines" : [
@@ -85333,31 +85333,31 @@
         "configs/eos_trunk_group" : [
           "eos_trunk_group"
         ],
-        "configs/f5_bigip_imish_malformed" : [
+        "configs/f5_bigip/f5_bigip_imish_malformed" : [
           "f5_bigip_imish_malformed"
         ],
-        "configs/f5_bigip_structured_ltm" : [
+        "configs/f5_bigip/f5_bigip_structured_ltm" : [
           "f5_bigip_structured_ltm"
         ],
-        "configs/f5_bigip_structured_malformed" : [
+        "configs/f5_bigip/f5_bigip_structured_malformed" : [
           "f5_bigip_structured_malformed"
         ],
-        "configs/f5_bigip_structured_net" : [
+        "configs/f5_bigip/f5_bigip_structured_net" : [
           "f5_bigip_structured_net"
         ],
-        "configs/f5_bigip_structured_net_routing_bgp" : [
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : [
           "f5_bigip_structured_net_routing_bgp"
         ],
-        "configs/f5_bigip_structured_net_routing_prefix_list" : [
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : [
           "f5_bigip_structured_net_routing_prefix_list"
         ],
-        "configs/f5_bigip_structured_net_routing_route_map" : [
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : [
           "f5_bigip_structured_net_routing_route_map"
         ],
-        "configs/f5_bigip_structured_sys" : [
+        "configs/f5_bigip/f5_bigip_structured_sys" : [
           "f5_bigip_structured_sys"
         ],
-        "configs/f5_bigip_structured_with_imish" : [
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : [
           "f5_bigip_structured_with_imish"
         ],
         "configs/foundry_access_list" : [
@@ -88166,7 +88166,7 @@
             }
           }
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "bgp neighbor" : {
             "2::2" : {
               "bgp neighbor self-reference" : [
@@ -88204,7 +88204,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "monitor" : {
             "/Common/SOME_MONITOR" : {
               "pool monitor" : [
@@ -88325,7 +88325,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_malformed" : {
+        "configs/f5_bigip/f5_bigip_structured_malformed" : {
           "route" : {
             "/Common/bad_gw" : {
               "route self-reference" : [
@@ -88361,7 +88361,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net" : {
+        "configs/f5_bigip/f5_bigip_structured_net" : {
           "interface" : {
             "1.0" : {
               "interface self-reference" : [
@@ -88414,7 +88414,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "bgp neighbor" : {
             "192.0.2.1" : {
               "bgp neighbor self-reference" : [
@@ -88460,7 +88460,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "prefix-list" : {
             "/Common/MY_PREFIX_LIST" : {
               "route-map match ipv4 address prefix-list" : [
@@ -88474,7 +88474,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_with_imish" : {
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
           "access-list" : {
             "acl1" : {
               "route-map match ip address" : [
@@ -92202,7 +92202,7 @@
             }
           }
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "route-map" : {
             "rm1" : {
               "bgp neighbor address-family ipv6 route-map out" : [
@@ -92214,7 +92214,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "monitor" : {
             "/Common/SOME_MONITOR" : {
               "pool monitor" : [
@@ -92304,7 +92304,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "route-map" : {
             "/Common/MY_IPV4_OUT" : {
               "bgp neighbor address-family ipv6 route-map out" : [
@@ -92331,7 +92331,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "prefix-list" : {
             "/Common/MY_PREFIX_LIST" : {
               "route-map match ipv4 address prefix-list" : [
@@ -93899,15 +93899,15 @@
         "configs/cumulus_nclu_stp" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
-        "configs/f5_bigip_imish_malformed" : "PASSED",
-        "configs/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_malformed" : "PASSED",
-        "configs/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_prefix_list" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
-        "configs/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_with_imish" : "PASSED",
+        "configs/f5_bigip/f5_bigip_imish_malformed" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_malformed" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
