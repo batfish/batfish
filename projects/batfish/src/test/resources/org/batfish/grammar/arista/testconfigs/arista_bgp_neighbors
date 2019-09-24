@@ -56,6 +56,11 @@ router bgp 1
   neighbor PARSE_ONLY timers 3 9
   neighbor PARSE_ONLY local-v6-addr 2001:db8:0:0:0:ff00:42:8329
 !
+  neighbor DYNAMIC peer-group
+  neighbor DYNAMIC send-community
+  bgp listen limit 10
+  bgp listen range 4.4.4.0/24 peer-group DYNAMIC remote-as 4000
+!
 !
   vrf tenant
     neighbor 2.2.2.2 remote-as 88

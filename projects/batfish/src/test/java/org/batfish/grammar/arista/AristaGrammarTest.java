@@ -33,6 +33,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
@@ -40,6 +41,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VniSettings;
@@ -61,6 +63,7 @@ import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
+import org.batfish.representation.cisco.eos.AristaBgpV4DynamicNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
 import org.batfish.representation.cisco.eos.AristaBgpVlan;
 import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
@@ -277,6 +280,15 @@ public class AristaGrammarTest {
           config.getAristaBgp().getVrfs().get("tenant").getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getRemoteAs(), equalTo(88L));
     }
+    {
+      assertThat(config.getAristaBgp().getDefaultVrf().getListenLimit(), equalTo(10));
+      Prefix neighborAddr = Prefix.parse("4.4.4.0/24");
+      AristaBgpV4DynamicNeighbor neighbor =
+          config.getAristaBgp().getDefaultVrf().getV4DynamicNeighbors().get(neighborAddr);
+      assertThat(config.getAristaBgp().getPeerGroups(), hasKey("DYNAMIC"));
+      assertThat(neighbor.getPeerGroup(), equalTo("DYNAMIC"));
+      assertThat(neighbor.getRange(), equalTo(neighborAddr));
+    }
   }
 
   @Test
@@ -305,6 +317,14 @@ public class AristaGrammarTest {
       assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
       BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
       assertThat(neighbor.getEnforceFirstAs(), equalTo(false));
+    }
+    {
+      Prefix neighborPrefix = Prefix.parse("4.4.4.0/24");
+      assertThat(proc.getPassiveNeighbors(), hasKey(neighborPrefix));
+      BgpPassivePeerConfig neighbor = proc.getPassiveNeighbors().get(neighborPrefix);
+      assertTrue(
+          neighbor.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getSendCommunity());
+      assertThat(neighbor.getRemoteAsns(), equalTo(LongSpace.of(4000L)));
     }
   }
 
