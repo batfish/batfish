@@ -1,6 +1,6 @@
 parser grammar CumulusFrrParser;
 
-import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_ip_community_list, CumulusFrr_ip_prefix_list, CumulusFrr_routemap, CumulusFrr_vrf;
+import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_interface, CumulusFrr_ip_community_list, CumulusFrr_ip_prefix_list, CumulusFrr_routemap, CumulusFrr_vrf;
 
 options {
   superClass =
@@ -49,10 +49,21 @@ s_ip
 s_interface
 :
   INTERFACE name = word (VRF vrf = word)? NEWLINE
-  si_description*
+  (
+    si_description
+    | si_ospf
+  )*
 ;
 
 si_description
 :
   DESCRIPTION description = REMARK_TEXT NEWLINE
+;
+
+si_ospf
+:
+  IP OSPF
+  (
+    sio_area
+  )
 ;

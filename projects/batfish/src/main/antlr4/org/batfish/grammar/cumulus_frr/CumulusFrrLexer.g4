@@ -24,6 +24,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+AREA
+:
+  'area'
+;
+
 AS_PATH
 :
   'as-path'
@@ -284,6 +289,11 @@ NETWORK
 NEXT_HOP_SELF
 :
   'next-hop-self'
+;
+
+OSPF
+:
+  'ospf'
 ;
 
 OUT

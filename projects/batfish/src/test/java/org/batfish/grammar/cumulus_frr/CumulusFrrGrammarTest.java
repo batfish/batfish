@@ -839,4 +839,13 @@ public class CumulusFrrGrammarTest {
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
   }
+
+  @Test
+  public void testInterface_ospf_area() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    i1.setVrf("VRF");
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+  }
 }
