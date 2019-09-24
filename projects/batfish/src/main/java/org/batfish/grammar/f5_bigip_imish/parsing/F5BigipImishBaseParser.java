@@ -21,6 +21,15 @@ public abstract class F5BigipImishBaseParser extends BatfishParser {
   }
 
   /**
+   * Returns {@code true} iff {@code t}'s text represents a valid unsigned 16-bit integer in base
+   * 10.
+   */
+  protected static boolean isUint16(Token t) {
+    Integer val = Ints.tryParse(t.getText());
+    return val != null && val == (val & 0xFFFFL);
+  }
+
+  /**
    * Returns {@code true} iff {@code t}'s text represents a valid unsigned 32-bit integer in base
    * 10.
    */

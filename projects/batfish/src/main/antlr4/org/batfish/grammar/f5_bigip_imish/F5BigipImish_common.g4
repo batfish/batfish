@@ -4,6 +4,11 @@ options {
   tokenVocab = F5BigipImishLexer;
 }
 
+ip_address
+:
+  IP_ADDRESS
+;
+
 ip_prefix
 :
   IP_PREFIX
@@ -25,6 +30,13 @@ line_action
 null_rest_of_line
 :
   ~NEWLINE* NEWLINE
+;
+
+uint16
+:
+  d = DEC
+  {isUint16($d)}?
+
 ;
 
 uint32
