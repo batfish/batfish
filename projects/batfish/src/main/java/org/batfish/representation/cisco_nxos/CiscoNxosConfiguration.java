@@ -72,8 +72,6 @@ import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -97,7 +95,6 @@ import org.batfish.datamodel.Prefix6Range;
 import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -111,7 +108,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisMetricType;
@@ -168,7 +164,6 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
@@ -900,25 +895,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertIpCommunityLists() {
-    _ipCommunityLists.forEach(
-        (name, list) ->
-            _c.getCommunityLists()
-                .put(
-                    name,
-                    list.accept(
-                        new IpCommunityListVisitor<CommunityList>() {
-                          @Override
-                          public CommunityList visitIpCommunityListExpanded(
-                              IpCommunityListExpanded ipCommunityListExpanded) {
-                            return toCommunityList(ipCommunityListExpanded);
-                          }
-
-                          @Override
-                          public CommunityList visitIpCommunityListStandard(
-                              IpCommunityListStandard ipCommunityListStandard) {
-                            return toCommunityList(ipCommunityListStandard);
-                          }
-                        })));
     // create CommunitySetMatchExpr for route-map match community
     _ipCommunityLists.forEach(
         (name, list) ->
@@ -1032,42 +1008,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       }
     }
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
-  }
-
-  private static @Nonnull CommunityList toCommunityList(IpCommunityListExpanded list) {
-    return new CommunityList(
-        list.getName(),
-        list.getLines().values().stream()
-            .map(CiscoNxosConfiguration::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList()),
-        false);
-  }
-
-  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListExpandedLine line) {
-    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getRegex()));
-  }
-
-  private static @Nonnull org.batfish.datamodel.routing_policy.expr.CommunitySetExpr
-      toCommunitySetExpr(String regex) {
-    return new RegexCommunitySet(toJavaRegex(regex));
-  }
-
-  private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {
-    return new CommunityList(
-        list.getName(),
-        list.getLines().values().stream()
-            .map(CiscoNxosConfiguration::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList()),
-        false);
-  }
-
-  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListStandardLine line) {
-    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getCommunities()));
-  }
-
-  private static @Nonnull org.batfish.datamodel.routing_policy.expr.CommunitySetExpr
-      toCommunitySetExpr(Set<StandardCommunity> communities) {
-    return new LiteralCommunityConjunction(communities);
   }
 
   private void convertIpNameServers() {
