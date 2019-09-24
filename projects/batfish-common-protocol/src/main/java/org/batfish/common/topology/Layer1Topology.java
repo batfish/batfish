@@ -32,19 +32,11 @@ public final class Layer1Topology {
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
     edges.forEach(
         edge -> {
-          // Canonicalize hostnames to lowercase
-          Layer1Edge canonicalEdge =
-              new Layer1Edge(
-                  edge.getNode1().getHostname().toLowerCase(),
-                  edge.getNode1().getInterfaceName(),
-                  edge.getNode2().getHostname().toLowerCase(),
-                  edge.getNode2().getInterfaceName());
-          if (canonicalEdge.getNode1().equals(canonicalEdge.getNode2())
-              || graph.edges().contains(canonicalEdge)) {
+          if (edge.getNode1().equals(edge.getNode2()) || graph.edges().contains(edge)) {
             // Ignore self-loops and parallel edges
             return;
           }
-          graph.addEdge(canonicalEdge.getNode1(), canonicalEdge.getNode2(), canonicalEdge);
+          graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
         });
     _graph = ImmutableNetwork.copyOf(graph);
   }
