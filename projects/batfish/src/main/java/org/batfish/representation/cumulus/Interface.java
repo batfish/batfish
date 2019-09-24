@@ -24,6 +24,8 @@ public class Interface implements Serializable {
   private final @Nonnull CumulusInterfaceType _type;
   private @Nullable String _vrf;
 
+  private @Nullable Long _ospfArea;
+
   /**
    * Construct an Interface
    *
@@ -127,5 +129,14 @@ public class Interface implements Serializable {
 
   public void setVrf(@Nullable String vrf) {
     _vrf = vrf;
+  }
+
+  @Nullable
+  public Long getOspfArea() {
+    return _ospfArea;
+  }
+
+  public void setOspfArea(@Nullable Long ospfArea) {
+    _ospfArea = ospfArea;
   }
 }

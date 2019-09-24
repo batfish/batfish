@@ -847,5 +847,6 @@ public class CumulusFrrGrammarTest {
     CONFIG.getInterfaces().put("swp1", i1);
     parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0");
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().get("swp1").getOspfArea(), equalTo(0L));
   }
 }

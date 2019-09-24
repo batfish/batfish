@@ -72,6 +72,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sio_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -349,6 +350,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (_currentInterface.getAlias() == null) {
       _currentInterface.setAlias(ctx.description.getText());
     }
+  }
+
+  @Override
+  public void exitSio_area(Sio_areaContext ctx) {
+    if (_currentInterface == null) {
+      return;
+    }
+
+    _currentInterface.setOspfArea(Ip.parse(ctx.ip.getText()).asLong());
   }
 
   @Override
