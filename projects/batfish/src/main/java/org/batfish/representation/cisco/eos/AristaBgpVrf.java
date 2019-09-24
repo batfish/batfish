@@ -23,6 +23,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private ExtendedCommunity _importRouteTarget;
   @Nullable private Integer _holdTimer;
   @Nullable private Integer _keepAliveTimer;
+  @Nullable private Integer _listenLimit;
   @Nullable private Integer _localAdminDistance;
   @Nullable private Long _localAs;
   @Nullable private Integer _maxPaths;
@@ -37,6 +38,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Boolean _shutdown;
   @Nonnull private final Map<Prefix, AristaBgpAggregateNetwork> _v4aggregates;
   @Nonnull private final Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
+  @Nonnull private final Map<Prefix, AristaBgpV4DynamicNeighbor> _v4DynamicNeighbors;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4UnicastAf;
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
   @Nullable private AristaBgpVrfEvpnAddressFamily _evpnAf;
@@ -45,6 +47,7 @@ public final class AristaBgpVrf implements Serializable {
     _name = name;
     _defaultIpv4Unicast = true;
     _v4aggregates = new HashMap<>(0);
+    _v4DynamicNeighbors = new HashMap<>(0);
     _v4neighbors = new HashMap<>(0);
     _redistributionPolicies = new HashMap<>(0);
   }
@@ -173,6 +176,17 @@ public final class AristaBgpVrf implements Serializable {
     _keepAliveTimer = keepAliveTimer;
   }
 
+  /** Maximum number of dynamic/passive connections */
+  @Nullable
+  public Integer getListenLimit() {
+    return _listenLimit;
+  }
+
+  public AristaBgpVrf setListenLimit(@Nullable Integer listenLimit) {
+    _listenLimit = listenLimit;
+    return this;
+  }
+
   @Nullable
   public Long getLocalAs() {
     return _localAs;
@@ -239,6 +253,16 @@ public final class AristaBgpVrf implements Serializable {
   @Nonnull
   public Map<Prefix, AristaBgpAggregateNetwork> getV4aggregates() {
     return _v4aggregates;
+  }
+
+  @Nonnull
+  public Map<Prefix, AristaBgpV4DynamicNeighbor> getV4DynamicNeighbors() {
+    return _v4DynamicNeighbors;
+  }
+
+  @Nonnull
+  public AristaBgpV4DynamicNeighbor getOrCreateV4DynamicNeighbor(Prefix prefix) {
+    return _v4DynamicNeighbors.computeIfAbsent(prefix, AristaBgpV4DynamicNeighbor::new);
   }
 
   @Nonnull

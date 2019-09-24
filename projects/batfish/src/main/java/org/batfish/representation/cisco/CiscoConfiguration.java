@@ -2209,6 +2209,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Map<Prefix, BgpActivePeerConfig> activeNeighbors =
         AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
+    Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
+        AristaConversions.getPassiveNeighbors(
+            c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
+    newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     //    // Process passive neighbors next
     //    Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =

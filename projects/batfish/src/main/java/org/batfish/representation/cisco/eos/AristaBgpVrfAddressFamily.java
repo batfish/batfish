@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Prefix;
 
 /**
  * Address family settings that are common to all address families and can be set at the VRF level
@@ -15,11 +16,13 @@ public abstract class AristaBgpVrfAddressFamily implements Serializable {
   @Nullable protected AristaBgpAdditionalPathsConfig _additionalPaths;
   @Nonnull private final Map<String, AristaBgpNeighborAddressFamily> _peerGroups;
   @Nonnull private final Map<Ip, AristaBgpNeighborAddressFamily> _v4Neighbors;
+  @Nonnull private final Map<Prefix, AristaBgpNeighborAddressFamily> _v4DynamicNeighbors;
   @Nonnull private final Map<Ip6, AristaBgpNeighborAddressFamily> _v6Neighbors;
   @Nullable protected Boolean _nextHopUnchanged;
 
   public AristaBgpVrfAddressFamily() {
     _peerGroups = new HashMap<>();
+    _v4DynamicNeighbors = new HashMap<>();
     _v4Neighbors = new HashMap<>();
     _v6Neighbors = new HashMap<>();
   }
@@ -50,6 +53,16 @@ public abstract class AristaBgpVrfAddressFamily implements Serializable {
   @Nonnull
   public AristaBgpNeighborAddressFamily getOrCreateNeighbor(Ip neighbor) {
     return _v4Neighbors.computeIfAbsent(neighbor, n -> new AristaBgpNeighborAddressFamily());
+  }
+
+  @Nullable
+  public AristaBgpNeighborAddressFamily getNeighbor(Prefix neighbor) {
+    return _v4DynamicNeighbors.get(neighbor);
+  }
+
+  @Nonnull
+  public AristaBgpNeighborAddressFamily getOrCreateNeighbor(Prefix neighbor) {
+    return _v4DynamicNeighbors.computeIfAbsent(neighbor, n -> new AristaBgpNeighborAddressFamily());
   }
 
   @Nullable
