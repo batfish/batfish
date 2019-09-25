@@ -10,11 +10,11 @@ s_router_ospf
 :
   ROUTER OSPF NEWLINE
   (
-    ro_null
+    ro_log_adj_changes
   )*
 ;
 
-ro_null
+ro_log_adj_changes
 :
-  LOG_ADJACENCY_CHANGES null_rest_of_line
+  LOG_ADJACENCY_CHANGES DETAIL? NEWLINE
 ;

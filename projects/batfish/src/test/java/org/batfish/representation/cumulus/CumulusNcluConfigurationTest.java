@@ -551,4 +551,13 @@ public class CumulusNcluConfigurationTest {
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
   }
+
+  @Test
+  public void testInferRouterID() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Loopback lo = ncluConfiguration.getLoopback();
+    lo.setConfigured(true);
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
+    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("1.1.1.1")));
+  }
 }

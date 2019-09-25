@@ -706,13 +706,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                       : _c.getVrfs().get(ospfVrf.getVrfName());
 
               if (vrf == null) {
+                _w.redFlag(String.format("Vrf %s is not found.", ospfVrf.getVrfName()));
                 return;
               }
 
               org.batfish.datamodel.ospf.OspfProcess ospfProcess = toOspfProcess(ospfVrf);
-              if (ospfProcess != null) {
-                vrf.addOspfProcess(ospfProcess);
-              }
+              vrf.addOspfProcess(ospfProcess);
             });
   }
 
@@ -1134,15 +1133,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  @Nullable
   org.batfish.datamodel.ospf.OspfProcess toOspfProcess(OspfVrf ospfVrf) {
     Ip routerId = ospfVrf.getRouterId();
     if (routerId == null) {
-      if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
-        routerId = _loopback.getAddresses().get(0).getIp();
-      } else {
-        routerId = Ip.parse("0.0.0.0");
-      }
+      routerId = inferRouteId();
     }
 
     org.batfish.datamodel.ospf.OspfProcess.Builder builder =
@@ -1154,6 +1148,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
 
     return builder.build();
+  }
+
+  @VisibleForTesting
+  Ip inferRouteId() {
+    // https://github.com/coreswitch/zebra/blob/master/docs/router-id.md
+    if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
+      return _loopback.getAddresses().get(0).getIp();
+    }
+    return Ip.parse("0.0.0.0");
   }
 
   /**
