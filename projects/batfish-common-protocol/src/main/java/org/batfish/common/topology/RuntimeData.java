@@ -92,4 +92,20 @@ public final class RuntimeData {
   public Map<String, Map<String, InterfaceRuntimeData>> getInterfaceRuntimeData() {
     return _interfaceRuntimeData;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof RuntimeData)) {
+      return false;
+    }
+    RuntimeData o = (RuntimeData) obj;
+    return _interfaceRuntimeData.equals(o._interfaceRuntimeData);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_interfaceRuntimeData);
+  }
 }
