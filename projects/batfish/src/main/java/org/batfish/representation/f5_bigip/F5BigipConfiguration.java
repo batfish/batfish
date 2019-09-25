@@ -194,11 +194,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private ConfigurationFormat _format;
   private String _hostname;
   private boolean _imish;
+  private final Map<String, ImishInterface> _imishInterfaces;
   private transient Map<String, ImmutableList.Builder<IpAccessListLine>>
       _interfaceIncomingFilterLines;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Node> _nodes;
   private @Nonnull List<String> _ntpServers;
+  private final @Nonnull Map<String, OspfProcess> _ospfProcesses;
   private final @Nonnull Map<String, Pool> _pools;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
@@ -223,9 +225,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
   public F5BigipConfiguration() {
     _accessLists = new HashMap<>();
     _bgpProcesses = new HashMap<>();
+    _imishInterfaces = new HashMap<>();
     _interfaces = new HashMap<>();
     _nodes = new HashMap<>();
     _ntpServers = ImmutableList.of();
+    _ospfProcesses = new HashMap<>();
     _pools = new HashMap<>();
     _prefixLists = new HashMap<>();
     _routeMaps = new HashMap<>();
@@ -729,12 +733,20 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _imish;
   }
 
+  public @Nonnull Map<String, ImishInterface> getImishInterfaces() {
+    return _imishInterfaces;
+  }
+
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
 
   public @Nonnull Map<String, Node> getNodes() {
     return _nodes;
+  }
+
+  public @Nonnull Map<String, OspfProcess> getOspfProcesses() {
+    return _ospfProcesses;
   }
 
   public @Nonnull Map<String, Pool> getPools() {
