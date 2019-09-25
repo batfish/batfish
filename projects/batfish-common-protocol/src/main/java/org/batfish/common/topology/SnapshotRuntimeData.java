@@ -3,6 +3,7 @@ package org.batfish.common.topology;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -129,9 +130,17 @@ public final class SnapshotRuntimeData {
 
   /** Map of hostname to {@link RuntimeData} for that device. */
   @JsonProperty(PROP_RUNTIME_DATA)
+  @VisibleForTesting
   @Nonnull
-  public Map<String, RuntimeData> getRuntimeData() {
+  Map<String, RuntimeData> getRuntimeData() {
     return _runtimeData;
+  }
+
+  @JsonIgnore
+  @Nonnull
+  public RuntimeData getRuntimeData(String hostname) {
+    assert hostname.equals(hostname.toLowerCase());
+    return _runtimeData.getOrDefault(hostname, RuntimeData.EMPTY_RUNTIME_DATA);
   }
 
   @Override

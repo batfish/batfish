@@ -13,10 +13,13 @@ import java.util.TreeMap;
 import org.batfish.common.topology.SnapshotRuntimeData.InterfaceRuntimeData;
 import org.batfish.common.topology.SnapshotRuntimeData.RuntimeData;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests of {@link SnapshotRuntimeData} */
 public class SnapshotRuntimeDataTest {
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static final String NODE = "NODE";
   private static final String IFACE = "IFACE";
@@ -27,6 +30,8 @@ public class SnapshotRuntimeDataTest {
       new InterfaceRuntimeData(BANDWIDTH, SPEED);
   private static final RuntimeData RUNTIME_DATA =
       new RuntimeData(ImmutableMap.of(IFACE, INTERFACE_RUNTIME_DATA));
+  private static final SnapshotRuntimeData SNAPSHOT_RUNTIME_DATA =
+      new SnapshotRuntimeData(ImmutableMap.of(NODE, RUNTIME_DATA));
 
   @Test
   public void testInterfaceRuntimeDataEquals() {
@@ -57,8 +62,9 @@ public class SnapshotRuntimeDataTest {
 
   @Test
   public void testSnapshotRuntimeDataJsonSerialization() throws IOException {
-    SnapshotRuntimeData srd = new SnapshotRuntimeData(ImmutableMap.of(NODE, RUNTIME_DATA));
-    assertThat(BatfishObjectMapper.clone(srd, SnapshotRuntimeData.class), equalTo(srd));
+    assertThat(
+        BatfishObjectMapper.clone(SNAPSHOT_RUNTIME_DATA, SnapshotRuntimeData.class),
+        equalTo(SNAPSHOT_RUNTIME_DATA));
   }
 
   @Test
@@ -86,5 +92,19 @@ public class SnapshotRuntimeDataTest {
     assertThat(snapshotRuntimeData.keySet(), contains(NODE.toLowerCase()));
     assertThat(snapshotRuntimeData.values(), contains(RUNTIME_DATA));
     assertTrue(snapshotRuntimeData instanceof ImmutableMap);
+  }
+
+  @Test
+  public void testSnapshotRuntimeData_getRuntimeDataForNode() {
+    // Existing hostname: should find data
+    assertThat(SNAPSHOT_RUNTIME_DATA.getRuntimeData(NODE.toLowerCase()), equalTo(RUNTIME_DATA));
+
+    // Non-existent hostname: should return empty runtime data
+    assertThat(
+        SNAPSHOT_RUNTIME_DATA.getRuntimeData("other"), equalTo(RuntimeData.EMPTY_RUNTIME_DATA));
+
+    // Non-canonical hostname: should throw
+    _thrown.expect(AssertionError.class);
+    SNAPSHOT_RUNTIME_DATA.getRuntimeData(NODE);
   }
 }
