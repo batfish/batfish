@@ -9,7 +9,8 @@ final class IpProtocolIpProtocolAstNode implements IpProtocolAstNode {
   private final IpProtocol _ipProtocol;
 
   static boolean isValidName(String name) {
-    return Arrays.stream(IpProtocol.values()).anyMatch(p -> p.toString().equalsIgnoreCase(name));
+    return Arrays.stream(IpProtocol.values())
+        .anyMatch(p -> p != IpProtocol.IP && p.toString().equalsIgnoreCase(name));
   }
 
   IpProtocolIpProtocolAstNode(String nameOrNum) {

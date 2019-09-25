@@ -320,6 +320,7 @@ public final class ParboiledAutoComplete {
         AutoCompleteUtils.stringAutoComplete(
             pm.getMatchPrefix(),
             Arrays.stream(IpProtocol.values())
+                .filter(p -> p != IpProtocol.IP)
                 .map(Object::toString)
                 .collect(ImmutableSet.toImmutableSet())),
         false,

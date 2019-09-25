@@ -168,6 +168,13 @@ public class ParserIpProtocolTest {
   }
 
   @Test
+  public void testParseIpProtocolIgnoreIp() {
+    String query = "IP";
+    _thrown.expect(IllegalArgumentException.class);
+    ParserUtils.getAst(getRunner().run(query));
+  }
+
+  @Test
   public void testParseFilterUnion() {
     UnionIpProtocolAstNode expectedNode =
         new UnionIpProtocolAstNode(
@@ -197,6 +204,34 @@ public class ParserIpProtocolTest {
         pac.run(),
         equalTo(
             Arrays.stream(IpProtocol.values())
+                .filter(p -> p.toString().toLowerCase().contains(query))
+                .map(
+                    p ->
+                        new ParboiledAutoCompleteSuggestion(p.toString(), 0, Type.IP_PROTOCOL_NAME))
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  /** IP should not be a valid suggestion */
+  @Test
+  public void testAutoCompleteIgnoreIp() {
+    String query = "i";
+    ParboiledAutoComplete pac =
+        new ParboiledAutoComplete(
+            Grammar.IP_PROTOCOL_SPECIFIER,
+            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
+            Parser.ANCHORS,
+            "network",
+            "snapshot",
+            query,
+            Integer.MAX_VALUE,
+            CompletionMetadata.EMPTY,
+            NodeRolesData.builder().build(),
+            new ReferenceLibrary(null));
+    assertThat(
+        pac.run(),
+        equalTo(
+            Arrays.stream(IpProtocol.values())
+                .filter(p -> p != IpProtocol.IP)
                 .filter(p -> p.toString().toLowerCase().contains(query))
                 .map(
                     p ->
