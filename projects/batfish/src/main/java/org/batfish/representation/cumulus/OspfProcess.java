@@ -11,6 +11,8 @@ public class OspfProcess implements Serializable {
 
   private final @Nonnull OspfVrf _defaultVrf;
   private final @Nonnull Map<String, OspfVrf> _vrfs;
+  public static final double DEFAULT_REFERENCE_BANDWIDTH =
+      100E9D; // https://docs.cumulusnetworks.com/cumulus-linux/Layer-3/Open-Shortest-Path-First-OSPF/#auto-cost-reference-bandwidth
 
   public OspfProcess() {
     _defaultVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);

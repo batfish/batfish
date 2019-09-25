@@ -690,6 +690,32 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             });
   }
 
+  void convertOspfProcess() {
+    if (_ospfProcess == null) {
+      return;
+    }
+
+    _ospfProcess
+        .getVrfs()
+        .values()
+        .forEach(
+            ospfVrf -> {
+              org.batfish.datamodel.Vrf vrf =
+                  ospfVrf.getVrfName().equals(Configuration.DEFAULT_VRF_NAME)
+                      ? _c.getDefaultVrf()
+                      : _c.getVrfs().get(ospfVrf.getVrfName());
+
+              if (vrf == null) {
+                return;
+              }
+
+              org.batfish.datamodel.ospf.OspfProcess ospfProcess = toOspfProcess(ospfVrf);
+              if (ospfProcess != null) {
+                vrf.addOspfProcess(ospfProcess);
+              }
+            });
+  }
+
   private void convertBondInterfaces() {
     _bonds.forEach((name, bond) -> _c.getAllInterfaces().put(name, toInterface(bond)));
   }
@@ -1107,6 +1133,29 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return newProc;
   }
 
+  @VisibleForTesting
+  @Nullable
+  org.batfish.datamodel.ospf.OspfProcess toOspfProcess(OspfVrf ospfVrf) {
+    Ip routerId = ospfVrf.getRouterId();
+    if (routerId == null) {
+      if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
+        routerId = _loopback.getAddresses().get(0).getIp();
+      } else {
+        routerId = Ip.parse("0.0.0.0");
+      }
+    }
+
+    org.batfish.datamodel.ospf.OspfProcess.Builder builder =
+        org.batfish.datamodel.ospf.OspfProcess.builder();
+
+    builder
+        .setRouterId(routerId)
+        .setProcessId("1")
+        .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
+
+    return builder.build();
+  }
+
   /**
    * Create common BGP export policy. This policy permits:
    *
@@ -1411,6 +1460,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertDnsServers();
     convertClags();
     convertVxlans();
+    convertOspfProcess();
     convertBgpProcess();
 
     initVendorFamily();
