@@ -64,6 +64,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.topology.RuntimeData.InterfaceRuntimeData;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -1758,10 +1759,23 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     CiscoNxosInterfaceType type = iface.getType();
     newIfaceBuilder.setType(toInterfaceType(type, parent != null));
 
+    Optional<InterfaceRuntimeData> runtimeData =
+        Optional.ofNullable(_interfaceRuntimeData.get(ifaceName));
+    Double runtimeBandwidth = runtimeData.map(InterfaceRuntimeData::getBandwidth).orElse(null);
+    Double runtimeSpeed = runtimeData.map(InterfaceRuntimeData::getSpeed).orElse(null);
+
     Double speed;
     @Nullable Integer speedMbps = iface.getSpeedMbps();
     if (speedMbps != null) {
       speed = speedMbps * SPEED_CONVERSION_FACTOR;
+      if (runtimeSpeed != null && !speed.equals(runtimeSpeed)) {
+        _w.redFlag(
+            String.format(
+                "Interface %s:%s has configured speed %.0f bps but runtime data shows speed %.0f bps. Configured value will be used.",
+                getHostname(), ifaceName, speed, runtimeSpeed));
+      }
+    } else if (runtimeSpeed != null) {
+      speed = runtimeSpeed;
     } else {
       speed = getDefaultSpeed(type);
     }
@@ -1770,6 +1784,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     Double finalBandwidth;
     if (nxosBandwidth != null) {
       finalBandwidth = nxosBandwidth * BANDWIDTH_CONVERSION_FACTOR;
+      if (runtimeBandwidth != null && !finalBandwidth.equals(runtimeBandwidth)) {
+        _w.redFlag(
+            String.format(
+                "Interface %s:%s has configured bandwidth %.0f bps but runtime data shows bandwidth %.0f bps. Configured value will be used.",
+                getHostname(), ifaceName, finalBandwidth, runtimeBandwidth));
+      }
+    } else if (speedMbps != null) {
+      // Prefer explicitly configured speed over runtime bandwidth
+      finalBandwidth = speed;
+    } else if (runtimeBandwidth != null) {
+      finalBandwidth = runtimeBandwidth;
     } else if (speed != null) {
       finalBandwidth = speed;
     } else {
