@@ -1,0 +1,40 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname c1
+!
+
+interface Ethernet1/0
+  ! Mbps
+  speed 100
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/1
+  ! Mbps
+  speed 100
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/2
+  ! Mbps
+  speed 100
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/3
+  ! Mbps
+  speed 100
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/4
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/5
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/6
+  duplex full
+  no negotiate auto
