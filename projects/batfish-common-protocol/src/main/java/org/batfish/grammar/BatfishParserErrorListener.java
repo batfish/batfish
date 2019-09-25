@@ -53,8 +53,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
     BatfishParser parser = _combinedParser.getParser();
     List<String> ruleNames = Arrays.asList(parser.getRuleNames());
     String ruleStack = ctx.toString(ruleNames);
-    String text = _combinedParser.getInput();
-    String[] lines = text.split("\n", -1);
+    String[] lines = _combinedParser.getInputLines();
     Token offendingToken = (Token) offendingSymbol;
     int errorLineIndex = offendingToken.getLine() - 1;
     if (!_settings.getDisableUnrecognized()) {
