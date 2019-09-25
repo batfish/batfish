@@ -37,7 +37,10 @@ ss_log_settings
 
 ss_null
 :
-    BOTNET
+    (
+        BOTNET
+        | CONTENT_PREVIEW
+    )
     null_rest_of_line
 ;
 
