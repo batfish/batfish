@@ -167,6 +167,7 @@ public class BatfishTestUtils {
     Map<String, String> hostsText = testrigText.getHostsText();
     Map<String, String> iptablesFilesText = testrigText.getIptablesFilesText();
     String layer1TopologyText = testrigText.getLayer1TopologyText();
+    String runtimeDataText = testrigText.getRuntimeDataText();
 
     Settings settings = new Settings(new String[] {});
     configureBatfishTestSettings(settings);
@@ -188,6 +189,10 @@ public class BatfishTestUtils {
     if (layer1TopologyText != null) {
       writeTemporaryTestrigFiles(
           ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyText), testrigPath);
+    }
+    if (runtimeDataText != null) {
+      writeTemporaryTestrigFiles(
+          ImmutableMap.of(BfConsts.RELPATH_RUNTIME_DATA_FILE, runtimeDataText), testrigPath);
     }
     Batfish batfish =
         new Batfish(
