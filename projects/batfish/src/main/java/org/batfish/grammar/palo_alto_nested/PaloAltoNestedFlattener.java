@@ -2,6 +2,7 @@ package org.batfish.grammar.palo_alto_nested;
 
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,7 +27,6 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
   private String _flattenedConfigurationText;
   private final String _header;
   private final Integer _headerLineCount;
-  private StatementContext _inactiveStatement;
   private boolean _inBrackets;
   private FlattenerLineMap _lineMap;
   private SetStatementTree _root;
@@ -44,10 +44,8 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
 
   @Override
   public void enterBracketed_clause(Bracketed_clauseContext ctx) {
-    if (_inactiveStatement == null) {
-      _currentBracketedWords = new ArrayList<>();
-      _inBrackets = true;
-    }
+    _currentBracketedWords = new ArrayList<>();
+    _inBrackets = true;
   }
 
   @Override
@@ -57,31 +55,17 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
 
   @Override
   public void enterStatement(StatementContext ctx) {
-    if (_inactiveStatement == null) {
-      if (ctx.INACTIVE() != null) {
-        _inactiveStatement = ctx;
-      } else {
-        String statementTextAtCurrentDepth =
-            ctx.words.stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
-        if (ctx.REPLACE() != null) {
-          // Since the statement begins with 'replace:', all previous lines for this key should be
-          // removed.
-          _currentTree = _currentTree.replaceSubtree(statementTextAtCurrentDepth);
-        } else {
-          // Grab or add child at the current tree node for the node key for this statement
-          _currentTree = _currentTree.getOrAddSubtree(statementTextAtCurrentDepth);
-        }
-        _currentStatement = new ArrayList<>();
-        _stack.add(_currentStatement);
-      }
-    }
+    String statementTextAtCurrentDepth =
+        ctx.words.stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
+    // Grab or add child at the current tree node for the node key for this statement
+    _currentTree = _currentTree.getOrAddSubtree(statementTextAtCurrentDepth);
+    _currentStatement = new LinkedList<>();
+    _stack.add(_currentStatement);
   }
 
   @Override
   public void exitBracketed_clause(Bracketed_clauseContext ctx) {
-    if (_inactiveStatement == null) {
-      _inBrackets = false;
-    }
+    _inBrackets = false;
   }
 
   @Override
@@ -102,13 +86,9 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
 
   @Override
   public void exitStatement(StatementContext ctx) {
-    if (_inactiveStatement == null) {
-      _stack.remove(_stack.size() - 1);
-      // Finished recording set lines for this node key, so pop up
-      _currentTree = _currentTree.getParent();
-    } else if (_inactiveStatement == ctx) {
-      _inactiveStatement = null;
-    }
+    _stack.remove(_stack.size() - 1);
+    // Finished recording set lines for this node key, so pop up
+    _currentTree = _currentTree.getParent();
   }
 
   /** Helper method to construct and save set-line and line-mapping */
@@ -134,29 +114,25 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
 
   @Override
   public void exitTerminator(TerminatorContext ctx) {
-    if (_inactiveStatement == null) {
-      if (_currentBracketedWords != null) {
-        // Make a separate set-line for each of the bracketed words
-        for (WordContext bracketedWordCtx : _currentBracketedWords) {
-          _stack.add(ImmutableList.of(bracketedWordCtx));
-          constructSetLine();
-          _stack.remove(_stack.size() - 1);
-        }
-        _currentBracketedWords = null;
-      } else {
+    if (_currentBracketedWords != null) {
+      // Make a separate set-line for each of the bracketed words
+      for (WordContext bracketedWordCtx : _currentBracketedWords) {
+        _stack.add(ImmutableList.of(bracketedWordCtx));
         constructSetLine();
+        _stack.remove(_stack.size() - 1);
       }
+      _currentBracketedWords = null;
+    } else {
+      constructSetLine();
     }
   }
 
   @Override
   public void exitWord(WordContext ctx) {
-    if (_inactiveStatement == null) {
-      if (_inBrackets) {
-        _currentBracketedWords.add(ctx);
-      } else {
-        _currentStatement.add(ctx);
-      }
+    if (_inBrackets) {
+      _currentBracketedWords.add(ctx);
+    } else {
+      _currentStatement.add(ctx);
     }
   }
 

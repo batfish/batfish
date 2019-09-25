@@ -20,11 +20,6 @@ public String printStateVariables() {
 
 }
 
-REPLACE
-:
-  'replace:'
-;
-
 CLOSE_BRACE
 :
    '}'
@@ -38,11 +33,6 @@ CLOSE_BRACKET
 CLOSE_PAREN
 :
    ')'
-;
-
-INACTIVE
-:
-   'inactive:'
 ;
 
 // Handle Palo Alto-style and RANCID-header-style line comments

@@ -22,10 +22,7 @@ palo_alto_nested_configuration
 
 statement
 :
-  (
-    INACTIVE
-    | REPLACE
-  )? words += word+
+  words += word+
   (
     braced_clause
     |
