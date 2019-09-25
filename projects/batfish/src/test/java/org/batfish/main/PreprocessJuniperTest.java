@@ -18,8 +18,6 @@ public final class PreprocessJuniperTest {
 
   private static final String JUNIPER_TESTCONFIGS_PREFIX =
       "org/batfish/grammar/juniper/testconfigs/";
-  private static final String PALO_ALTO_TESTCONFIGS_PREFIX =
-      "org/batfish/grammar/palo_alto/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -69,6 +67,6 @@ public final class PreprocessJuniperTest {
 
   @Test
   public void testNonJuniper() {
-    assertValidPair(PALO_ALTO_TESTCONFIGS_PREFIX, "basic-parsing", "basic-parsing");
+    assertValidPair(JUNIPER_TESTCONFIGS_PREFIX, "non-juniper", "non-juniper");
   }
 }
