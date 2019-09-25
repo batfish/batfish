@@ -71,6 +71,11 @@ APPLICATION
     'application'
 ;
 
+APPLICATION_FILTER
+:
+    'application-filter'
+;
+
 APPLICATION_GROUP
 :
     'application-group'
@@ -79,6 +84,11 @@ APPLICATION_GROUP
 AUTHENTICATION
 :
     'authentication'
+;
+
+AUTHENTICATION_PROFILE
+:
+    'authentication-profile'
 ;
 
 AUTHENTICATION_TYPE
@@ -104,6 +114,16 @@ BOTNET
 CATEGORY
 :
     'category'
+;
+
+CERTIFICATE
+:
+    'certificate'
+;
+
+CERTIFICATE_PROFILE
+:
+    'certificate-profile'
 ;
 
 CLOSE_BRACKET
@@ -231,6 +251,16 @@ ESP
     'esp'
 ;
 
+EVASIVE
+:
+    'evasive'
+;
+
+EXCESSIVE_BANDWIDTH_USE
+:
+    'excessive-bandwidth-use'
+;
+
 EXTERNAL
 :
     'external'
@@ -289,6 +319,11 @@ GROUP19
 GROUP20
 :
     'group20'
+;
+
+HAS_KNOWN_VULNERABILITIES
+:
+    'has-known-vulnerabilities'
 ;
 
 HASH
@@ -506,6 +541,11 @@ PANORAMA_SERVER
     'panorama-server'
 ;
 
+PERVASIVE
+:
+    'pervasive'
+;
+
 POLICY
 :
     'policy'
@@ -541,6 +581,11 @@ PROFILES
     'profiles'
 ;
 
+PRONE_TO_MISUSE
+:
+    'prone-to-misuse'
+;
+
 PROTOCOL
 :
     'protocol'
@@ -564,6 +609,11 @@ RESET_CLIENT
 RESET_SERVER
 :
     'reset-server'
+;
+
+RISK
+:
+    'risk'
 ;
 
 ROUTING_TABLE
@@ -609,6 +659,11 @@ SECURITY
 SERVER
 :
     'server'
+;
+
+SERVER_PROFILE
+:
+    'server-profile'
 ;
 
 SERVERS
@@ -691,6 +746,11 @@ STATIC_ROUTE
     'static-route'
 ;
 
+SUBCATEGORY
+:
+    'subcategory'
+;
+
 SYSLOG
 :
     'syslog'
@@ -716,6 +776,16 @@ TCP
     'tcp'
 ;
 
+TECHNOLOGY
+:
+    'technology'
+;
+
+TEMPLATE
+:
+    'template'
+;
+
 THREE_DES
 :
     '3des'
@@ -731,9 +801,19 @@ TO
     'to'
 ;
 
+TRANSFERS_FILES
+:
+    'transfers-files'
+;
+
 TUNNEL
 :
     'tunnel'
+;
+
+TUNNELS_OTHER_APPS
+:
+    'tunnels-other-apps'
 ;
 
 TYPE
@@ -764,6 +844,11 @@ UPDATE_SCHEDULE
 UPDATE_SERVER
 :
     'update-server'
+;
+
+USED_BY_MALWARE
+:
+    'used-by-malware'
 ;
 
 VIRTUAL_ROUTER
