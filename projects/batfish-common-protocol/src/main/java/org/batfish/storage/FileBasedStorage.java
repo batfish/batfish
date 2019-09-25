@@ -53,7 +53,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.topology.RuntimeData;
+import org.batfish.common.topology.SnapshotRuntimeData;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
@@ -337,7 +337,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable RuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
+  public @Nullable SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)
             .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE));
@@ -347,7 +347,7 @@ public final class FileBasedStorage implements StorageProvider {
     AtomicInteger counter = _newBatch.apply("Reading runtime data", 1);
     String runtimeDataFileText = CommonUtil.readFile(path);
     try {
-      return BatfishObjectMapper.mapper().readValue(runtimeDataFileText, RuntimeData.class);
+      return BatfishObjectMapper.mapper().readValue(runtimeDataFileText, SnapshotRuntimeData.class);
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading runtime data for snapshot %s: %s",

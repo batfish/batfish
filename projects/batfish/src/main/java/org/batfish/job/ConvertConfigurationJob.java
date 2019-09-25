@@ -1,5 +1,7 @@
 package org.batfish.job;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
@@ -12,7 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.common.topology.RuntimeData.InterfaceRuntimeData;
+import org.batfish.common.topology.SnapshotRuntimeData.RuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
@@ -34,17 +36,14 @@ import org.batfish.vendor.VendorConfiguration;
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
   private Object _configObject;
-  @Nonnull private final Map<String, InterfaceRuntimeData> _interfaceRuntimeData;
+  @Nonnull private final RuntimeData _runtimeData;
   private String _name;
 
   public ConvertConfigurationJob(
-      Settings settings,
-      @Nonnull Map<String, InterfaceRuntimeData> runtimeData,
-      Object configObject,
-      String name) {
+      Settings settings, @Nullable RuntimeData runtimeData, Object configObject, String name) {
     super(settings);
     _configObject = configObject;
-    _interfaceRuntimeData = ImmutableMap.copyOf(runtimeData);
+    _runtimeData = firstNonNull(runtimeData, RuntimeData.EMPTY_RUNTIME_DATA);
     _name = name;
   }
 
@@ -196,7 +195,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         String filename = vendorConfiguration.getFilename();
         vendorConfiguration.setWarnings(warnings);
         vendorConfiguration.setAnswerElement(answerElement);
-        vendorConfiguration.setInterfaceRuntimeData(_interfaceRuntimeData);
+        vendorConfiguration.setRuntimeData(_runtimeData);
         for (Configuration configuration :
             vendorConfiguration.toVendorIndependentConfigurations()) {
 

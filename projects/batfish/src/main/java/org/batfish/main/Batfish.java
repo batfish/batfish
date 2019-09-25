@@ -8,7 +8,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
-import static org.batfish.common.topology.RuntimeData.EMPTY_RUNTIME_DATA;
+import static org.batfish.common.topology.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CommonUtil.detectCharset;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
@@ -111,7 +111,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
-import org.batfish.common.topology.RuntimeData;
+import org.batfish.common.topology.SnapshotRuntimeData;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -773,7 +773,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Map<String, Configuration> convertConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
-      RuntimeData runtimeData,
+      SnapshotRuntimeData runtimeData,
       ConvertConfigurationAnswerElement answerElement) {
     _logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
     _logger.resetTimer();
@@ -783,12 +783,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       GenericConfigObject vc = config.getValue();
       ConvertConfigurationJob job =
           new ConvertConfigurationJob(
-              _settings,
-              runtimeData
-                  .getInterfaceRuntimeData()
-                  .getOrDefault(config.getKey(), ImmutableMap.of()),
-              vc,
-              config.getKey());
+              _settings, runtimeData.getRuntimeData().get(config.getKey()), vc, config.getKey());
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -1014,7 +1009,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /** Returns a map of hostname to VI {@link Configuration} */
   public Map<String, Configuration> getConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
-      RuntimeData runtimeData,
+      SnapshotRuntimeData runtimeData,
       ConvertConfigurationAnswerElement answerElement) {
     Map<String, Configuration> configurations =
         convertConfigurations(vendorConfigurations, runtimeData, answerElement);
@@ -2357,10 +2352,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
 
       NetworkSnapshot networkSnapshot = getNetworkSnapshot();
-      RuntimeData runtimeData =
+      SnapshotRuntimeData runtimeData =
           firstNonNull(
               _storage.loadRuntimeData(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()),
-              EMPTY_RUNTIME_DATA);
+              EMPTY_SNAPSHOT_RUNTIME_DATA);
       Map<String, GenericConfigObject> vendorConfigs;
       Map<String, Configuration> configurations;
       try (ActiveSpan convertSpan =

@@ -13,7 +13,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.topology.RuntimeData;
+import org.batfish.common.topology.SnapshotRuntimeData;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -82,7 +82,7 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nullable
   @Override
-  public RuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
+  public SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
