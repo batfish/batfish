@@ -122,7 +122,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
   private @Nullable Interface _currentInterface;
-  private @Nullable OspfVrf _currentOspfVrf;
 
   public CumulusFrrConfigurationBuilder(
       CumulusNcluConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
@@ -350,13 +349,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (_c.getOspfProcess() == null) {
       _c.setOspfProcess(new OspfProcess());
     }
-
-    _currentOspfVrf = _c.getOspfProcess().getDefaultVrf();
-  }
-
-  @Override
-  public void exitS_router_ospf(S_router_ospfContext ctx) {
-    _currentOspfVrf = null;
   }
 
   @Override
