@@ -58,7 +58,7 @@ interface vlan_passive
 !
 router ospf 1
  ospf router-id 10.0.1.1
- passive-interface vlan_failover
+ passive-interface vlan_passive
  network 10.0.1.0/30 area 0
  neighbor 10.0.1.2
 !

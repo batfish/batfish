@@ -23,5 +23,10 @@ iip_ospf
 
 iipo_network
 :
-  NETWORK NON_BROADCAST NEWLINE
+  NETWORK type = ospf_network_type NEWLINE
+;
+
+ospf_network_type
+:
+  NON_BROADCAST
 ;
