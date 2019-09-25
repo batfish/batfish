@@ -11,6 +11,10 @@ public final class ImishInterface implements Serializable {
     _name = name;
   }
 
+  public @Nonnull String getName() {
+    return _name;
+  }
+
   public @Nullable OspfInterface getOspf() {
     return _ospf;
   }

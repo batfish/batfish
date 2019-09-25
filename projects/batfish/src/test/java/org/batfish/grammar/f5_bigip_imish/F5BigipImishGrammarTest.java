@@ -665,6 +665,7 @@ public final class F5BigipImishGrammarTest {
     assertThat(vc.getImishInterfaces(), hasKeys("vlan_active", "vlan_passive"));
     {
       ImishInterface iface = vc.getImishInterfaces().get("vlan_active");
+      assertThat(iface.getName(), equalTo("vlan_active"));
       OspfInterface ospf = iface.getOspf();
       assertNotNull(ospf);
       assertThat(ospf.getNetwork(), equalTo(OspfNetworkType.NON_BROADCAST));
@@ -677,6 +678,7 @@ public final class F5BigipImishGrammarTest {
     assertThat(vc.getOspfProcesses(), hasKeys("1"));
     {
       OspfProcess proc = vc.getOspfProcesses().get("1");
+      assertThat(proc.getName(), equalTo("1"));
       assertThat(proc.getRouterId(), equalTo(Ip.parse("10.0.1.1")));
       assertThat(proc.getPassiveInterfaces(), contains("vlan_passive"));
       assertThat(proc.getNetworks(), hasKeys(Prefix.strict("10.0.1.0/30")));
