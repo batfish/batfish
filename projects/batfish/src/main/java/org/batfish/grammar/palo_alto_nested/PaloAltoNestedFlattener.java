@@ -30,14 +30,14 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
   private boolean _inBrackets;
   private FlattenerLineMap _lineMap;
   private SetStatementTree _root;
-  private List<List<WordContext>> _stack;
+  private LinkedList<List<WordContext>> _stack;
 
   public PaloAltoNestedFlattener(String header) {
     _header = header;
     // Determine length of header to offset subsequent line numbers for original line mapping
     _headerLineCount = header.split("\n", -1).length;
     _lineMap = new FlattenerLineMap();
-    _stack = new ArrayList<>();
+    _stack = new LinkedList<>();
     _root = new SetStatementTree();
     _allSetStatements = new ArrayList<>();
   }
@@ -86,7 +86,7 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
 
   @Override
   public void exitStatement(StatementContext ctx) {
-    _stack.remove(_stack.size() - 1);
+    _stack.removeLast();
     // Finished recording set lines for this node key, so pop up
     _currentTree = _currentTree.getParent();
   }
@@ -119,7 +119,7 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
       for (WordContext bracketedWordCtx : _currentBracketedWords) {
         _stack.add(ImmutableList.of(bracketedWordCtx));
         constructSetLine();
-        _stack.remove(_stack.size() - 1);
+        _stack.removeLast();
       }
       _currentBracketedWords = null;
     } else {
