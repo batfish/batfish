@@ -52,8 +52,8 @@ public class IpsecSessionStatusAnswererTest {
   private static final String INITIATOR_IPSEC_PEER_CONFIG = "initiatorIpsecPeerConfig";
   private static final String RESPONDER_IPSEC_PEER_CONFIG = "responderIpsecPeerConfig";
 
-  private static final String INITIATOR_HOST_NAME = "initiatorHostName";
-  private static final String RESPONDER_HOST_NAME = "responderHostName";
+  private static final String INITIATOR_HOST_NAME = "initiator_host_name";
+  private static final String RESPONDER_HOST_NAME = "responder_host_name";
 
   private IpsecStaticPeerConfig.Builder _ipsecStaticPeerConfigBuilder =
       IpsecStaticPeerConfig.builder();

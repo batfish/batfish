@@ -329,10 +329,10 @@ public class BatfishCompressionTest {
     assertThat(
         origArpTrueEdge,
         hasEntry(
-            equalTo("A"),
+            equalTo("a"),
             hasEntry(
                 equalTo(Configuration.DEFAULT_VRF_NAME),
-                hasKey(hasTail(isNeighborOfNode(origTopology, "C"))))));
+                hasKey(hasTail(isNeighborOfNode(origTopology, "c"))))));
 
     // compress a new copy since it will get mutated.
     SortedMap<String, Configuration> compressedConfigs =
@@ -362,10 +362,10 @@ public class BatfishCompressionTest {
                 }));
 
     /* Compression removed B or C entirely (but not both) */
-    assertThat(compressedRibs, either(not(hasKey("B"))).or(not(hasKey("C"))));
-    assertThat(compressedRibs, either(hasKey("B")).or(hasKey("C")));
+    assertThat(compressedRibs, either(not(hasKey("b"))).or(not(hasKey("c"))));
+    assertThat(compressedRibs, either(hasKey("b")).or(hasKey("c")));
 
-    String remains = compressedConfigs.containsKey("B") ? "B" : "C";
+    String remains = compressedConfigs.containsKey("b") ? "b" : "c";
 
     /* The remaining node is unchanged. */
     assertThat(
