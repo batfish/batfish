@@ -125,5 +125,5 @@ F_WordInteriorChar
 fragment
 F_WordStart
 :
-   [a-zA-Z0-9]
+   ~[ \t\u000C\r\n[\](){};]
 ;
