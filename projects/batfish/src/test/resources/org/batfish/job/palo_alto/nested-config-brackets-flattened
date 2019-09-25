@@ -2,4 +2,5 @@
 set deviceconfig system hostname nested-config-brackets
 set mgt-config access-domain All vsys VSYSNAME1
 set mgt-config access-domain All vsys VSYSNAME2
+set mgt-config access-domain All vsys ...
 set shared log-settings syslog SYSLOGNAME server SERVERNAME server 1.1.1.1
