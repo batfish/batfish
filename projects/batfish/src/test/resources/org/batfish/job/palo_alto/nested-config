@@ -1,0 +1,5 @@
+deviceconfig {
+    system {
+        hostname nested-config;
+    }
+}
