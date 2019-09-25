@@ -72,7 +72,7 @@ import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
 import org.batfish.representation.f5_bigip.ImishInterface;
 import org.batfish.representation.f5_bigip.MatchAccessList;
-import org.batfish.representation.f5_bigip.OspfNetwork;
+import org.batfish.representation.f5_bigip.OspfArea;
 import org.batfish.representation.f5_bigip.OspfNetworkType;
 import org.batfish.representation.f5_bigip.OspfProcess;
 import org.batfish.representation.f5_bigip.PrefixList;
@@ -236,8 +236,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRo_network(Ro_networkContext ctx) {
-    Prefix prefix = toPrefix(ctx.prefix);
-    _currentOspfProcess.getNetworks().put(prefix, new OspfNetwork(toLong(ctx.area), prefix));
+    long areaId = toLong(ctx.area);
+    _currentOspfProcess.getAreas().computeIfAbsent(areaId, OspfArea::new);
+    _currentOspfProcess.getNetworks().put(toPrefix(ctx.prefix), areaId);
   }
 
   @Override

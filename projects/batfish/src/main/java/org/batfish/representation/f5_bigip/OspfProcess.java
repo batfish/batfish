@@ -13,11 +13,24 @@ import org.batfish.datamodel.Prefix;
 /** Configuration for an OSPF routing process */
 public final class OspfProcess implements Serializable {
 
+  // https://www.nongnu.org/quagga/docs/quagga.html#ospf-router_002did
+  public static final int DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS = 100; // Mbps
+
   public OspfProcess(String name) {
+    _areas = new HashMap<>();
+    _autoCostReferenceBandwidthMbps = DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS;
     _name = name;
     _neighbors = new HashSet<>();
     _networks = new HashMap<>();
     _passiveInterfaces = new HashSet<>();
+  }
+
+  public @Nonnull Map<Long, OspfArea> getAreas() {
+    return _areas;
+  }
+
+  public int getAutoCostReferenceBandwidthMbps() {
+    return _autoCostReferenceBandwidthMbps;
   }
 
   public @Nonnull String getName() {
@@ -28,7 +41,7 @@ public final class OspfProcess implements Serializable {
     return _neighbors;
   }
 
-  public @Nonnull Map<Prefix, OspfNetwork> getNetworks() {
+  public @Nonnull Map<Prefix, Long> getNetworks() {
     return _networks;
   }
 
@@ -44,9 +57,11 @@ public final class OspfProcess implements Serializable {
     _routerId = routerId;
   }
 
+  private int _autoCostReferenceBandwidthMbps;
+  private final @Nonnull Map<Long, OspfArea> _areas;
   private final @Nonnull String _name;
   private final @Nonnull Set<Ip> _neighbors;
-  private final @Nonnull Map<Prefix, OspfNetwork> _networks;
+  private final @Nonnull Map<Prefix, Long> _networks;
   private final @Nonnull Set<String> _passiveInterfaces;
   private @Nullable Ip _routerId;
 }
