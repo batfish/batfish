@@ -1,9 +1,11 @@
 package org.batfish.datamodel.pojo;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.DeviceType;
@@ -16,29 +18,32 @@ public class Node extends BfObject {
 
   @Nullable private DeviceType _type;
 
-  @JsonCreator
-  public Node(
-      @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_ID) String id,
-      @JsonProperty(PROP_TYPE) DeviceType type) {
+  @VisibleForTesting
+  Node(@Nonnull String name, @Nullable String id, @Nullable DeviceType type) {
     super(firstNonNull(id, makeId(name)));
-    _name = name;
+    _name = name.toLowerCase();
     _type = type;
-    if (name == null) {
-      throw new IllegalArgumentException("Cannot build Node: name is null");
-    }
+  }
+
+  @JsonCreator
+  private static Node jsonCreator(
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_ID) String id,
+      @Nullable @JsonProperty(PROP_TYPE) DeviceType type) {
+    checkArgument(name != null, "Missing: %s", PROP_NAME);
+    return new Node(name, id, type);
   }
 
   public Node(String name) {
-    this(name, makeId(name), null);
+    this(name, null, null);
   }
 
   public Node(String name, DeviceType type) {
-    this(name, makeId(name), type);
+    this(name, null, type);
   }
 
   public static String makeId(String name) {
-    return "node-" + name;
+    return "node-" + name.toLowerCase();
   }
 
   @JsonProperty(PROP_NAME)

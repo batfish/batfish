@@ -29,9 +29,9 @@ public class EvpnCumulusTest {
 
   @Test
   public void testRoutePresence() throws IOException {
-    final String leaf1 = "Leaf1";
-    final String leaf2 = "Leaf2";
-    final String spine = "Spine";
+    final String leaf1 = "leaf1";
+    final String leaf2 = "leaf2";
+    final String spine = "spine";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -46,10 +46,10 @@ public class EvpnCumulusTest {
         dp.getRibs();
 
     assertThat(
-        ribs.get(leaf1.toLowerCase()).get(DEFAULT_VRF_NAME).getRoutes(),
+        ribs.get(leaf1).get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("3.3.3.3/32")))));
     assertThat(
-        ribs.get(leaf2.toLowerCase()).get(DEFAULT_VRF_NAME).getRoutes(),
+        ribs.get(leaf2).get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("1.1.1.1/32")))));
   }
 }

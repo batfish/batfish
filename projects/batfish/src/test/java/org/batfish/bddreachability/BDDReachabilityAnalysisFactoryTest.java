@@ -140,6 +140,11 @@ public final class BDDReachabilityAnalysisFactoryTest {
       new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
   private static final BDD ONE = PKT.getFactory().one();
 
+  private static final String INGRESS_NODE = "ingress_node";
+  private static final String INGRESS_IFACE = "ingressIface";
+  private static final String INGRESS_VRF = "ingressVrf";
+  private static final String NEXT_VRF = "nextVrf";
+
   private static final Set<FlowDisposition> ALL_DISPOSITIONS =
       ImmutableSet.of(
           ACCEPTED,
@@ -1321,7 +1326,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
     Interface ingressIface =
-        ib.setName("ingressIface").setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24")).build();
+        ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24")).build();
     ingressIface.setRoutingPolicy(packetPolicyName);
     Interface i1 =
         ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24")).build();
@@ -1362,7 +1367,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
     ImmutableSortedMap<String, Configuration> configurations = makePBRNetwork(false);
 
     String hostname = "c1";
-    String ingressIface = "ingressIface";
 
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
@@ -1375,7 +1379,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             IpSpaceAssignment.builder()
-                .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
+                .assign(
+                    new InterfaceLinkLocation(hostname, INGRESS_IFACE), UniverseIpSpace.INSTANCE)
                 .build(),
             matchDst(dstIp),
             ImmutableSet.of(),
@@ -1387,7 +1392,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PreInInterface(hostname, ingressIface)),
+            equalTo(new PreInInterface(hostname, INGRESS_IFACE)),
             hasKey(equalTo(new PostInVrf(hostname, "vrf2")))));
     assertThat(
         analysis.getForwardEdgeMap(),
@@ -1400,7 +1405,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertEquals(
         bdds,
         ImmutableMap.of(
-            IngressLocation.interfaceLink(hostname, ingressIface),
+            IngressLocation.interfaceLink(hostname, INGRESS_IFACE),
             PKT.getDstIp().value(dstIp.asLong())));
   }
 
@@ -1414,7 +1419,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
     ImmutableSortedMap<String, Configuration> configurations = makePBRNetwork(true);
 
     String hostname = "c1";
-    String ingressIface = "ingressIface";
     String neighborHostname = "c2";
     String neighborIface = "i1";
 
@@ -1429,7 +1433,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             IpSpaceAssignment.builder()
-                .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
+                .assign(
+                    new InterfaceLinkLocation(hostname, INGRESS_IFACE), UniverseIpSpace.INSTANCE)
                 .build(),
             matchDst(dstIp),
             ImmutableSet.of(),
@@ -1441,7 +1446,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PreInInterface(hostname, ingressIface)),
+            equalTo(new PreInInterface(hostname, INGRESS_IFACE)),
             hasKey(equalTo(new PostInVrf(hostname, "vrf2")))));
     assertThat(
         analysis.getForwardEdgeMap(),
@@ -1454,21 +1459,20 @@ public final class BDDReachabilityAnalysisFactoryTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration ingressNode = cb.setHostname("ingressNode").build();
-    String nextVrfName = "nextVrf";
+    Configuration ingressNode = cb.setHostname(INGRESS_NODE).build();
 
-    Vrf ingressVrf = nf.vrfBuilder().setName("ingressVrf").setOwner(ingressNode).build();
-    Vrf nextVrf = nf.vrfBuilder().setName(nextVrfName).setOwner(ingressNode).build();
+    Vrf ingressVrf = nf.vrfBuilder().setName(INGRESS_VRF).setOwner(ingressNode).build();
+    Vrf nextVrf = nf.vrfBuilder().setName(NEXT_VRF).setOwner(ingressNode).build();
     StaticRoute ingressVrfNextVrfRoute =
         StaticRoute.builder()
             .setAdministrativeCost(1)
             .setNetwork(Prefix.ZERO)
-            .setNextVrf(nextVrfName)
+            .setNextVrf(NEXT_VRF)
             .build();
     ingressVrf.setStaticRoutes(ImmutableSortedSet.of(ingressVrfNextVrfRoute));
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(ingressNode).setActive(true);
-    ib.setName("ingressIface")
+    ib.setName(INGRESS_IFACE)
         .setVrf(ingressVrf)
         .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
         .build();
@@ -1499,10 +1503,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // with neighbor, expect accepted disposition
     ImmutableSortedMap<String, Configuration> configurations = makeNextVrfNetwork(true);
 
-    String hostname = "ingressNode";
-    String ingressIface = "ingressIface";
-    String ingressVrf = "ingressVrf";
-    String nextVrf = "nextVrf";
     String neighborHostname = "neighbor";
 
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
@@ -1516,7 +1516,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             IpSpaceAssignment.builder()
-                .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
+                .assign(
+                    new InterfaceLinkLocation(INGRESS_NODE, INGRESS_IFACE),
+                    UniverseIpSpace.INSTANCE)
                 .build(),
             matchDst(dstIp),
             ImmutableSet.of(),
@@ -1528,14 +1530,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PostInVrf(hostname, ingressVrf)),
-            hasKey(new PostInVrf(hostname, nextVrf))));
+            equalTo(new PostInVrf(INGRESS_NODE, INGRESS_VRF)),
+            hasKey(new PostInVrf(INGRESS_NODE, NEXT_VRF))));
 
     BDD nextVrfDstIpsBDD =
         analysis
             .getForwardEdgeMap()
-            .get(new PostInVrf(hostname, ingressVrf))
-            .get(new PostInVrf(hostname, nextVrf))
+            .get(new PostInVrf(INGRESS_NODE, INGRESS_VRF))
+            .get(new PostInVrf(INGRESS_NODE, NEXT_VRF))
             .transitForward(ONE);
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
 
@@ -1548,7 +1550,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD acceptedEndToEndBDD =
         analysis
             .getIngressLocationReachableBDDs()
-            .get(IngressLocation.interfaceLink(hostname, ingressIface));
+            .get(IngressLocation.interfaceLink(INGRESS_NODE, INGRESS_IFACE));
 
     // Any packet with destination IP 10.0.12.2 (that of neighbor interface) entering ingressIface
     // should be delivered and accepted
@@ -1560,11 +1562,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
   public void testNextVrfWithoutNeighbor() throws IOException {
     // with neighbor, expect accepted disposition
     ImmutableSortedMap<String, Configuration> configurations = makeNextVrfNetwork(false);
-
-    String hostname = "ingressNode";
-    String ingressIface = "ingressIface";
-    String ingressVrf = "ingressVrf";
-    String nextVrf = "nextVrf";
 
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
@@ -1579,7 +1576,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             IpSpaceAssignment.builder()
-                .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
+                .assign(
+                    new InterfaceLinkLocation(INGRESS_NODE, INGRESS_IFACE),
+                    UniverseIpSpace.INSTANCE)
                 .build(),
             matchDst(dstIpSpaceOfInterest),
             ImmutableSet.of(),
@@ -1591,14 +1590,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PostInVrf(hostname, ingressVrf)),
-            hasKey(new PostInVrf(hostname, nextVrf))));
+            equalTo(new PostInVrf(INGRESS_NODE, INGRESS_VRF)),
+            hasKey(new PostInVrf(INGRESS_NODE, NEXT_VRF))));
 
     BDD nextVrfDstIpsBDD =
         analysis
             .getForwardEdgeMap()
-            .get(new PostInVrf(hostname, ingressVrf))
-            .get(new PostInVrf(hostname, nextVrf))
+            .get(new PostInVrf(INGRESS_NODE, INGRESS_VRF))
+            .get(new PostInVrf(INGRESS_NODE, NEXT_VRF))
             .transitForward(ONE);
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
 
@@ -1611,7 +1610,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD deliveredToSubnetEndToEndBDD =
         analysis
             .getIngressLocationReachableBDDs()
-            .get(IngressLocation.interfaceLink(hostname, ingressIface));
+            .get(IngressLocation.interfaceLink(INGRESS_NODE, INGRESS_IFACE));
 
     // Any packet with destination IP 10.0.12.0/24 \ 10.0.12.1 (egressInterface network minus its
     // IP) entering ingressIface should be delivered to subnet of egressInterface

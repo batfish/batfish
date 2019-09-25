@@ -29,8 +29,8 @@ public class NodeTest {
     String nodeStr = "{\"name\" : \"nodeName\"}";
     Node node = BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
 
-    assertThat(node.getId(), equalTo("node-nodeName"));
-    assertThat(node.getName(), equalTo("nodeName"));
+    assertThat(node.getId(), equalTo("node-nodename"));
+    assertThat(node.getName(), equalTo("nodename"));
   }
 
   @Test
@@ -38,8 +38,8 @@ public class NodeTest {
     String nodeStr = "{\"name\" : \"nodeName\", \"properties\" : { \"key\": \"value\"}}";
     Node node = BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
 
-    assertThat(node.getId(), equalTo("node-nodeName"));
-    assertThat(node.getName(), equalTo("nodeName"));
+    assertThat(node.getId(), equalTo("node-nodename"));
+    assertThat(node.getName(), equalTo("nodename"));
     assertThat(node.getProperties().size(), equalTo(1));
     assertThat(node.getProperties().get("key"), equalTo("value"));
   }

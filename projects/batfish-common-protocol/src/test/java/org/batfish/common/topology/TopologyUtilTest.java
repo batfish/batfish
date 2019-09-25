@@ -213,8 +213,8 @@ public final class TopologyUtilTest {
      *
      * Then SWP1 and SWP2 should be in same broadcast domain
      */
-    String s1Name = "S1";
-    String s2Name = "S2";
+    String s1Name = "s1";
+    String s2Name = "s2";
     String swp1Name = "SWP1";
     String swp2Name = "SWP2";
     int vlanId = 2;
