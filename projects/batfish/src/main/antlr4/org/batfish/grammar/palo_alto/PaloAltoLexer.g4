@@ -1,7 +1,11 @@
 lexer grammar PaloAltoLexer;
 
 options {
-   superClass = 'org.batfish.grammar.BatfishLexer';
+  superClass = 'org.batfish.grammar.BatfishLexer';
+}
+
+tokens {
+  WORD
 }
 
 @members {
@@ -9,7 +13,6 @@ options {
 }
 
 // Keywords
-
 
 ACTION
 :
@@ -379,6 +382,11 @@ LAYER3
 LIFETIME
 :
     'lifetime'
+;
+
+LINK
+:
+    'link' -> pushMode ( M_Url )
 ;
 
 LINK_STATE
@@ -917,15 +925,48 @@ F_Newline
 ;
 
 fragment
+F_NonNewlineChar
+:
+    ~[\r\n] // carriage return or line feed
+;
+
+fragment
 F_PositiveDigit
 :
   [1-9]
 ;
 
 fragment
-F_NonNewlineChar
+F_Url
 :
-    ~[\r\n] // carriage return or line feed
+  F_UrlStart F_UrlInner+
+;
+
+F_UrlStart
+:
+  [a-zA-Z]
+;
+
+F_UrlInner
+:
+  F_UrlInnerAlphaNum
+  | F_UrlInnerReserved
+  | F_UrlInnerUnreserved
+;
+
+F_UrlInnerAlphaNum
+:
+  [a-zA-Z0-9]
+;
+
+F_UrlInnerReserved
+:
+  [!*'();:@&=+$,/?%#[\]]
+;
+
+F_UrlInnerUnreserved
+:
+  [-_.~]
 ;
 
 fragment
@@ -941,4 +982,20 @@ F_Variable_VarChar
 ;
 
 // Modes
-// Blank for now, not all lexers will require modes
+
+mode M_Url;
+
+M_Url_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Url_WORD
+:
+  F_Url -> type ( WORD ) , popMode
+;
+
+M_Url_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
