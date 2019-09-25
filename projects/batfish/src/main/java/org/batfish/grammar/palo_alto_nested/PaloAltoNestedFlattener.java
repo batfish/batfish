@@ -39,7 +39,7 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
     _lineMap = new FlattenerLineMap();
     _stack = new LinkedList<>();
     _root = new SetStatementTree();
-    _allSetStatements = new ArrayList<>();
+    _allSetStatements = new LinkedList<>();
   }
 
   @Override
