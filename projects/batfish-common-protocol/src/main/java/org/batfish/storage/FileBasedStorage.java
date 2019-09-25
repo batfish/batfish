@@ -53,6 +53,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.RuntimeData;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
@@ -333,6 +334,28 @@ public final class FileBasedStorage implements StorageProvider {
     return _d.getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
         .resolve(String.format("%s.json", questionSettingsId.getId()));
+  }
+
+  @Override
+  public @Nullable RuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
+    Path path =
+        _d.getSnapshotDir(network, snapshot)
+            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    AtomicInteger counter = _newBatch.apply("Reading runtime data", 1);
+    String runtimeDataFileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper().readValue(runtimeDataFileText, RuntimeData.class);
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading runtime data for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
+    } finally {
+      counter.incrementAndGet();
+    }
   }
 
   /**

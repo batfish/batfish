@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
@@ -17,12 +18,14 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
+import org.batfish.common.topology.RuntimeData.InterfaceRuntimeData;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -35,6 +38,8 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   private transient ConvertConfigurationAnswerElement _answerElement;
 
   protected String _filename;
+
+  @Nonnull protected transient Map<String, InterfaceRuntimeData> _interfaceRuntimeData;
 
   private VendorConfiguration _overlayConfiguration;
 
@@ -49,6 +54,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   protected transient Warnings _w;
 
   public VendorConfiguration() {
+    _interfaceRuntimeData = ImmutableMap.of();
     _structureDefinitions = new TreeMap<>();
     _structureReferences = new TreeMap<>();
   }
@@ -186,6 +192,12 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   public abstract void setHostname(String hostname);
+
+  @JsonIgnore
+  public void setInterfaceRuntimeData(
+      @Nonnull Map<String, InterfaceRuntimeData> interfaceRuntimeData) {
+    _interfaceRuntimeData = interfaceRuntimeData;
+  }
 
   public void setOverlayConfiguration(VendorConfiguration overlayConfiguration) {
     _overlayConfiguration = overlayConfiguration;

@@ -8,9 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.topology.RuntimeData.InterfaceRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
@@ -32,12 +34,17 @@ import org.batfish.vendor.VendorConfiguration;
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
   private Object _configObject;
-
+  @Nonnull private final Map<String, InterfaceRuntimeData> _interfaceRuntimeData;
   private String _name;
 
-  public ConvertConfigurationJob(Settings settings, Object configObject, String name) {
+  public ConvertConfigurationJob(
+      Settings settings,
+      @Nonnull Map<String, InterfaceRuntimeData> runtimeData,
+      Object configObject,
+      String name) {
     super(settings);
     _configObject = configObject;
+    _interfaceRuntimeData = ImmutableMap.copyOf(runtimeData);
     _name = name;
   }
 
@@ -189,6 +196,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         String filename = vendorConfiguration.getFilename();
         vendorConfiguration.setWarnings(warnings);
         vendorConfiguration.setAnswerElement(answerElement);
+        vendorConfiguration.setInterfaceRuntimeData(_interfaceRuntimeData);
         for (Configuration configuration :
             vendorConfiguration.toVendorIndependentConfigurations()) {
 
