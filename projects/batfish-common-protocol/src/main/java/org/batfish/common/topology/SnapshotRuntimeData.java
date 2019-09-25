@@ -84,9 +84,16 @@ public final class SnapshotRuntimeData {
     }
 
     @JsonProperty(PROP_INTERFACES)
+    @VisibleForTesting
     @Nonnull
-    public Map<String, InterfaceRuntimeData> getInterfaces() {
+    Map<String, InterfaceRuntimeData> getInterfaces() {
       return _interfaces;
+    }
+
+    @JsonIgnore
+    @Nullable
+    public InterfaceRuntimeData getInterface(String ifaceName) {
+      return _interfaces.get(ifaceName);
     }
 
     @Override

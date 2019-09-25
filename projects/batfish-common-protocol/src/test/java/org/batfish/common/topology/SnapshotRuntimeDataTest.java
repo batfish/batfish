@@ -3,6 +3,7 @@ package org.batfish.common.topology;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
@@ -106,5 +107,14 @@ public class SnapshotRuntimeDataTest {
     // Non-canonical hostname: should throw
     _thrown.expect(AssertionError.class);
     SNAPSHOT_RUNTIME_DATA.getRuntimeData(NODE);
+  }
+
+  @Test
+  public void testRuntimeData_getInterface() {
+    // Existing interface: should find data
+    assertThat(RUNTIME_DATA.getInterface(IFACE), equalTo(INTERFACE_RUNTIME_DATA));
+
+    // Non-existent interface: should return null
+    assertNull(RUNTIME_DATA.getInterface("other"));
   }
 }
