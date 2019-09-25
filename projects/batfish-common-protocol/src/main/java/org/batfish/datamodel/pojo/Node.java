@@ -20,7 +20,7 @@ public class Node extends BfObject {
 
   @VisibleForTesting
   Node(@Nonnull String name, @Nullable String id, @Nullable DeviceType type) {
-    super(firstNonNull(id, makeId(name.toLowerCase())));
+    super(firstNonNull(id, makeId(name)));
     _name = name.toLowerCase();
     _type = type;
   }

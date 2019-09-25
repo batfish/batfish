@@ -16,9 +16,12 @@ public class NodeInterfacePairTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            NodeInterfacePair.of("host", "iface"), NodeInterfacePair.of("host", "iface"))
+            NodeInterfacePair.of("host", "iface"),
+            NodeInterfacePair.of("host", "iface"),
+            NodeInterfacePair.of("HOST", "iface"))
         .addEqualityGroup(NodeInterfacePair.of("otherHost", "iface"))
         .addEqualityGroup(NodeInterfacePair.of("host", "otherIface"))
+        .addEqualityGroup(NodeInterfacePair.of("host", "IFACE"))
         .addEqualityGroup(new Object())
         .testEquals();
   }

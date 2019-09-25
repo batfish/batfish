@@ -52,11 +52,6 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
     _interfaceName = interfaceName;
   }
 
-  @Deprecated
-  public NodeInterfacePair(Interface iface) {
-    this(iface.getOwner().getHostname(), iface.getName());
-  }
-
   /** Return node name */
   @JsonProperty(PROP_HOSTNAME)
   @Nonnull

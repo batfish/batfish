@@ -13,13 +13,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class EdgeTest {
 
-  private static Edge EDGE =
+  private static final Edge EDGE =
       new Edge(NodeInterfacePair.of("tail", "tailInt"), NodeInterfacePair.of("head", "headInt"));
-
-  @Test
-  public void testFactory() {
-    assertThat(Edge.of("tail", "tailInt", "head", "headInt"), equalTo(EDGE));
-  }
 
   @Test
   public void testGetterEquivalence() {
@@ -39,19 +34,17 @@ public class EdgeTest {
     new EqualsTester()
         .addEqualityGroup(
             EDGE,
-            new Edge(
-                NodeInterfacePair.of("tail", "tailInt"), NodeInterfacePair.of("head", "headInt")))
-        .addEqualityGroup(EDGE.reverse())
+            Edge.of(EDGE.getNode1(), EDGE.getInt1(), EDGE.getNode2(), EDGE.getInt2()),
+            new Edge(EDGE.getTail(), EDGE.getHead()))
+        .addEqualityGroup(EDGE.reverse(), new Edge(EDGE.getHead(), EDGE.getTail()))
         .addEqualityGroup(
-            new Edge(
-                NodeInterfacePair.of("tail1", "tailInt"), NodeInterfacePair.of("head", "headInt")))
+            Edge.of(EDGE.getNode1() + '1', EDGE.getInt1(), EDGE.getNode2(), EDGE.getInt2()))
         .addEqualityGroup(
-            new Edge(
-                NodeInterfacePair.of("tail", "tailint"), NodeInterfacePair.of("head", "headInt")))
+            Edge.of(EDGE.getNode1(), EDGE.getInt1() + '1', EDGE.getNode2(), EDGE.getInt2()))
         .addEqualityGroup(
-            new Edge(
-                NodeInterfacePair.of("tail", "tailInt"),
-                NodeInterfacePair.of("head", "headIntOther")))
+            Edge.of(EDGE.getNode1(), EDGE.getInt1(), EDGE.getNode2() + '1', EDGE.getInt2()))
+        .addEqualityGroup(
+            Edge.of(EDGE.getNode1(), EDGE.getInt1(), EDGE.getNode2(), EDGE.getInt2() + '1'))
         .testEquals();
   }
 
