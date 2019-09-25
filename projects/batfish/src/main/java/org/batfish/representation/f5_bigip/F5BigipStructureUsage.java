@@ -22,6 +22,7 @@ public enum F5BigipStructureUsage implements StructureUsage {
   MONITOR_HTTPS_DEFAULTS_FROM("monitor https defaults-from"),
   MONITOR_HTTPS_SSL_PROFILE("monitor https ssl-profile"),
   BGP_PEER_GROUP_ROUTE_MAP_OUT("neighbor peer-group route-map out"),
+  OSPF_PASSIVE_INTERFACE("router ospf passive-interface"),
   OSPF_PROCESS_SELF_REFERENCE("router ospf self-reference"),
   PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM("persistence source-addr defaults-from"),
   PERSISTENCE_SSL_DEFAULTS_FROM("persistence ssl defaults-from"),

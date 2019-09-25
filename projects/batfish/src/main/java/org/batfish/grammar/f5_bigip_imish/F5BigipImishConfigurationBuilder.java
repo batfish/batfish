@@ -245,6 +245,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     // TODO: canonicalize?
     String name = ctx.name.getText();
     _currentOspfProcess.getPassiveInterfaces().add(name);
+    _c.referenceStructure(
+        F5BigipStructureType.IMISH_INTERFACE,
+        name,
+        F5BigipStructureUsage.OSPF_PASSIVE_INTERFACE,
+        ctx.getStart().getLine());
   }
 
   @Override

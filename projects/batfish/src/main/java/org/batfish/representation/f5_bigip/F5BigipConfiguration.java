@@ -964,6 +964,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(
         F5BigipStructureType.BGP_PROCESS, F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE);
     markConcreteStructure(
+        F5BigipStructureType.IMISH_INTERFACE,
+        F5BigipStructureUsage.IMISH_INTERFACE_SELF_REFERENCE,
+        F5BigipStructureUsage.OSPF_PASSIVE_INTERFACE);
+    markConcreteStructure(
         F5BigipStructureType.INTERFACE,
         F5BigipStructureUsage.INTERFACE_SELF_REFERENCE,
         F5BigipStructureUsage.TRUNK_INTERFACE);
@@ -976,6 +980,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(
         F5BigipStructureType.MONITOR_HTTPS, F5BigipStructureUsage.MONITOR_HTTPS_DEFAULTS_FROM);
     markConcreteStructure(F5BigipStructureType.NODE, F5BigipStructureUsage.POOL_MEMBER);
+    markConcreteStructure(
+        F5BigipStructureType.OSPF_PROCESS, F5BigipStructureUsage.OSPF_PROCESS_SELF_REFERENCE);
     markAbstractStructure(
         F5BigipStructureType.PERSISTENCE,
         F5BigipStructureUsage.VIRTUAL_PERSIST_PERSISTENCE,
