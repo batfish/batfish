@@ -64,7 +64,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.topology.RuntimeData.InterfaceRuntimeData;
+import org.batfish.common.topology.SnapshotRuntimeData.InterfaceRuntimeData;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -1760,7 +1760,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setType(toInterfaceType(type, parent != null));
 
     Optional<InterfaceRuntimeData> runtimeData =
-        Optional.ofNullable(_interfaceRuntimeData.get(ifaceName));
+        Optional.ofNullable(_runtimeData.getInterfaces().get(ifaceName));
     Double runtimeBandwidth = runtimeData.map(InterfaceRuntimeData::getBandwidth).orElse(null);
     Double runtimeSpeed = runtimeData.map(InterfaceRuntimeData::getSpeed).orElse(null);
 
