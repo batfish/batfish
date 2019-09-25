@@ -173,6 +173,8 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
+import org.batfish.grammar.palo_alto_nested.PaloAltoNestedCombinedParser;
+import org.batfish.grammar.palo_alto_nested.PaloAltoNestedFlattener;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.identifiers.AnalysisId;
@@ -283,9 +285,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ConfigurationFormat format,
       String header) {
     switch (format) {
-      case JUNIPER:
-        // Just use the Juniper flattener for PaloAlto for now since the process is identical
       case PALO_ALTO_NESTED:
+        {
+          PaloAltoNestedCombinedParser parser = new PaloAltoNestedCombinedParser(input, settings);
+          ParserRuleContext tree = parse(parser, logger, settings);
+          PaloAltoNestedFlattener flattener = new PaloAltoNestedFlattener(header);
+          ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
+          try {
+            walker.walk(flattener, tree);
+          } catch (BatfishParseException e) {
+            warnings.setErrorDetails(e.getErrorDetails());
+            throw new BatfishException(
+                String.format("Error flattening %s config", format.getVendorString()), e);
+          }
+          return flattener;
+        }
+
+      case JUNIPER:
         {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
