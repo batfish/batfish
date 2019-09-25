@@ -1153,6 +1153,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @VisibleForTesting
   Ip inferRouteId() {
     // https://github.com/coreswitch/zebra/blob/master/docs/router-id.md
+    // TODO: checking physical interfaces and largest lo IP
     if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
       return _loopback.getAddresses().get(0).getIp();
     }
