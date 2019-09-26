@@ -62,8 +62,6 @@ public enum IpProtocol {
   IGMP(2),
   IGP(9),
   IL(40),
-  /** Denotes any IP protocol, not a value defined by IANA */
-  IP(256),
   IPCOMP(108),
   IPCU(71),
   IPINIP(4),
