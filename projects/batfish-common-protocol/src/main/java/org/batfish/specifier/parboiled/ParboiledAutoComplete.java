@@ -19,11 +19,11 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_RE
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.toAutoCompleteSuggestions;
+import static org.batfish.specifier.parboiled.Parser.VALID_IP_PROTOCOLS;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,6 @@ import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -319,8 +318,7 @@ public final class ParboiledAutoComplete {
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
             pm.getMatchPrefix(),
-            Arrays.stream(IpProtocol.values())
-                .filter(p -> p != IpProtocol.IP)
+            VALID_IP_PROTOCOLS.stream()
                 .map(Object::toString)
                 .collect(ImmutableSet.toImmutableSet())),
         false,

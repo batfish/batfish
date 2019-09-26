@@ -1,10 +1,10 @@
 package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.specifier.parboiled.Parser.VALID_IP_PROTOCOLS;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -54,11 +54,6 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
           Sets.union(sets1._excluding, sets2._excluding));
     }
   }
-
-  static Set<IpProtocol> VALID_IP_PROTOCOLS =
-      Arrays.stream(IpProtocol.values())
-          .filter(v -> v.number() >= 0 && v.number() < 256)
-          .collect(ImmutableSet.toImmutableSet());
 
   @ParametersAreNonnullByDefault
   private final class IpProtocolAstNodeToIpProtocols

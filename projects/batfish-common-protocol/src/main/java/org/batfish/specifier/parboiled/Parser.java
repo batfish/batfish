@@ -63,11 +63,14 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.VRF_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.IpProtocol;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;
@@ -681,6 +684,12 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
+  /** The set of protocols that users can enter. Basically, excludes {@link IpProtocol#IP} */
+  static Set<IpProtocol> VALID_IP_PROTOCOLS =
+      Arrays.stream(IpProtocol.values())
+          .filter(v -> v.number() >= 0 && v.number() < 256)
+          .collect(ImmutableSet.toImmutableSet());
+
   /** A IP protocol expression is one or more terms separated by */
   @Anchor(IP_PROTOCOL_SET_OP)
   public Rule IpProtocolSpec() {
@@ -714,7 +723,10 @@ public class Parser extends CommonParser {
 
   @Anchor(IP_PROTOCOL_NUMBER)
   public Rule IpProtocolNumber() {
-    return Sequence(Number(), push(new IpProtocolIpProtocolAstNode(match())));
+    return Sequence(
+        Number(),
+        ACTION(IpProtocolIpProtocolAstNode.isValidNumber(Integer.parseInt(match()))),
+        push(new IpProtocolIpProtocolAstNode(match())));
   }
 
   /**

@@ -1,6 +1,6 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifier.VALID_IP_PROTOCOLS;
+import static org.batfish.specifier.parboiled.Parser.VALID_IP_PROTOCOLS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 

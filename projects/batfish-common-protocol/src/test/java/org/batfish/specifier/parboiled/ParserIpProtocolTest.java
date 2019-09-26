@@ -1,5 +1,6 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Parser.VALID_IP_PROTOCOLS;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -17,7 +18,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.parboiled.errors.InvalidInputError;
-import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
@@ -62,8 +62,7 @@ public class ParserIpProtocolTest {
 
     Set<ParboiledAutoCompleteSuggestion> expected =
         Stream.concat(
-                Arrays.stream(IpProtocol.values())
-                    .filter(p -> p != IpProtocol.IP)
+                VALID_IP_PROTOCOLS.stream()
                     .map(Object::toString)
                     .map(
                         val ->
@@ -154,7 +153,7 @@ public class ParserIpProtocolTest {
   @Test
   public void testParseIpProtocolBadNumber() {
     String query = "2555";
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     ParserUtils.getAst(getRunner().run(query));
   }
 
