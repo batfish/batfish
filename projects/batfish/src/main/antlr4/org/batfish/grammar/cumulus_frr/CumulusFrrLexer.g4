@@ -286,6 +286,16 @@ MESSAGE_DIGEST
   'message-digest'
 ;
 
+MESSAGE_DIGEST_KEY
+:
+  'message-digest-key'
+;
+
+MD5
+:
+  'md5' -> pushMode(M_Remark)
+;
+
 MULTIPATH_RELAX
 :
   'multipath-relax'

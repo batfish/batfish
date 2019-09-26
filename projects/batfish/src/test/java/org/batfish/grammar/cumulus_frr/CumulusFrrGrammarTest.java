@@ -860,8 +860,14 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testInterface_ospf_authentication() {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
-    i1.setVrf("VRF");
     CONFIG.getInterfaces().put("swp1", i1);
     parse("interface swp1\n ip ospf authentication message-digest\n");
+  }
+
+  @Test
+  public void testInterface_ospf_authentication_key() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1\n ip ospf message-digest-key 1 md5 <SCRUBBED>\n");
   }
 }

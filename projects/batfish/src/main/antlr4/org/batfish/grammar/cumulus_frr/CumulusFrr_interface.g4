@@ -26,6 +26,7 @@ si_ospf
   (
     sio_area
     | sio_authentication
+    | sio_message_digest_key
   )
   NEWLINE
 ;
@@ -38,4 +39,9 @@ sio_area
 sio_authentication
 :
   AUTHENTICATION MESSAGE_DIGEST
+;
+
+sio_message_digest_key
+:
+  MESSAGE_DIGEST_KEY uint32 MD5 REMARK_TEXT
 ;
