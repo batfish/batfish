@@ -27,6 +27,7 @@ si_ospf
     sio_area
     | sio_authentication
     | sio_message_digest_key
+    | sio_network_p2p
   )
   NEWLINE
 ;
@@ -44,4 +45,9 @@ sio_authentication
 sio_message_digest_key
 :
   MESSAGE_DIGEST_KEY uint32 MD5 REMARK_TEXT
+;
+
+sio_network_p2p
+:
+  NETWORK POINT_TO_POINT
 ;

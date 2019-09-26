@@ -341,6 +341,11 @@ PERMIT
   'permit'
 ;
 
+POINT_TO_POINT
+:
+  'point-to-point'
+;
+
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
