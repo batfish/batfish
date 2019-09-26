@@ -63,6 +63,7 @@ public class ParserIpProtocolTest {
     Set<ParboiledAutoCompleteSuggestion> expected =
         Stream.concat(
                 Arrays.stream(IpProtocol.values())
+                    .filter(p -> p != IpProtocol.IP)
                     .map(Object::toString)
                     .map(
                         val ->
