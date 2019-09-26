@@ -6374,6 +6374,11 @@ IPV6_ADDRESS_POOL
    'ipv6-address-pool'
 ;
 
+IPV6IP
+:
+  'ipv6ip'
+;
+
 IPX
 :
    'ipx'

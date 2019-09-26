@@ -76,8 +76,6 @@ public class PacketHeaderConstraintsTest {
     // No conflicts with unset values
     assertThat(areProtocolsAndPortsCompatible(null, null, null), equalTo(true));
     assertThat(
-        areProtocolsAndPortsCompatible(ImmutableSet.of(IpProtocol.IP), null, null), equalTo(true));
-    assertThat(
         areProtocolsAndPortsCompatible(null, IntegerSpace.of(new SubRange(1, 1024)), null),
         equalTo(true));
     assertThat(areProtocolsAndPortsCompatible(null, null, ImmutableSet.of(SSH)), equalTo(true));
@@ -97,23 +95,21 @@ public class PacketHeaderConstraintsTest {
   public void testAreProtocolsAndPortsIncompatibleNoTCP() {
     thrown.expect(IllegalArgumentException.class); // Not TCP and SSH
     areProtocolsAndPortsCompatible(
-        ImmutableSet.of(IpProtocol.IP), IntegerSpace.of(new SubRange(22)), ImmutableSet.of(SSH));
+        ImmutableSet.of(UDP), IntegerSpace.of(new SubRange(22)), ImmutableSet.of(SSH));
   }
 
   @Test
   public void testAreProtocolsAndPortsIncompatibleEmptyPortRange() {
     thrown.expect(IllegalArgumentException.class); // empty port subrange
     areProtocolsAndPortsCompatible(
-        ImmutableSet.of(IpProtocol.IP), IntegerSpace.of(new SubRange(20, 1)), ImmutableSet.of(SSH));
+        ImmutableSet.of(TCP), IntegerSpace.of(new SubRange(20, 1)), ImmutableSet.of(SSH));
   }
 
   @Test
   public void testAreProtocolsAndPortsIncompatibleWrongPorts() {
     thrown.expect(IllegalArgumentException.class); // wrong port subrange and application protocols
     areProtocolsAndPortsCompatible(
-        ImmutableSet.of(IpProtocol.IP),
-        IntegerSpace.of(new SubRange(30, 40)),
-        ImmutableSet.of(SSH, HTTP));
+        ImmutableSet.of(TCP), IntegerSpace.of(new SubRange(30, 40)), ImmutableSet.of(SSH, HTTP));
   }
 
   @Test
@@ -430,8 +426,7 @@ public class PacketHeaderConstraintsTest {
         ipProtocols,
         equalTo(
             Sets.difference(
-                ImmutableSet.copyOf(IpProtocol.values()),
-                ImmutableSet.of(IpProtocol.IP, IpProtocol.ICMP))));
+                ImmutableSet.copyOf(IpProtocol.values()), ImmutableSet.of(IpProtocol.ICMP))));
   }
 
   @Test

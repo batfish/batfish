@@ -256,7 +256,7 @@ public class TestFiltersAnswerer extends Answerer {
     setDstIp(constraints, builder);
 
     // Set defaults for protocol, and ports and packet lengths:
-    if (builder.getIpProtocol() == null || builder.getIpProtocol() == IpProtocol.IP) {
+    if (builder.getIpProtocol() == null) {
       builder.setIpProtocol(IpProtocol.TCP);
     }
     if (builder.getDstPort() == null) {
