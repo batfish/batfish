@@ -139,13 +139,12 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
   @Override
   public String toString() {
-    String protocolName = _protocol.name();
     return "[Name:\""
         + _name
         + "\", Action:"
         + _action
         + ", Protocol:"
-        + protocolName
+        + (_protocol == null ? "any" : _protocol)
         + ", SourceIpWildcard:"
         + _srcIpWildcard
         + ", DestinationIpWildcard:"
