@@ -2,9 +2,11 @@ package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -110,9 +112,23 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
   private final Collection<T> _allValues;
 
+  private final Map<T, T> _groupValues;
+
   ParboiledEnumSetSpecifier(EnumSetAstNode ast, Collection<T> allValues) {
+    this(ast, allValues, ImmutableMap.of());
+  }
+
+  @SuppressWarnings("unchecked")
+  ParboiledEnumSetSpecifier(EnumSetAstNode ast, Grammar grammar) {
+    _ast = ast;
+    _allValues = (Collection<T>) Grammar.getEnumValues(grammar);
+    _groupValues = (Map<T, T>) Grammar.getGroupValues(grammar);
+  }
+
+  ParboiledEnumSetSpecifier(EnumSetAstNode ast, Collection<T> allValues, Map<T, T> groupValues) {
     _ast = ast;
     _allValues = allValues;
+    _groupValues = groupValues;
   }
 
   /**
@@ -121,7 +137,6 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
    *
    * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
    */
-  @SuppressWarnings("unchecked")
   public static <T> ParboiledEnumSetSpecifier<T> parse(String input, Grammar grammar) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(Parser.instance().getInputRule(grammar)).run(input);
@@ -139,8 +154,7 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
         input,
         ast);
 
-    return new ParboiledEnumSetSpecifier<>(
-        (EnumSetAstNode) ast, (Collection<T>) Grammar.getEnumValues(grammar));
+    return new ParboiledEnumSetSpecifier<>((EnumSetAstNode) ast, grammar);
   }
 
   @Override

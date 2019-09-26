@@ -1,10 +1,16 @@
 package org.batfish.specifier;
 
+import static org.batfish.specifier.RoutingProtocolSpecifier.getContainedAtoms;
+import static org.batfish.specifier.RoutingProtocolSpecifier.getGroupings;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.RoutingProtocol;
@@ -221,5 +227,53 @@ public final class RoutingProtocolSpecifierTest {
     assertThat(
         BatfishObjectMapper.mapper().readValue(serialized, RoutingProtocolSpecifier.class),
         equalTo(RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER));
+  }
+
+  /**
+   * Test that all expected groups show up here. The correctness of the corresponding atomic values
+   * is tested in tests for {@link RoutingProtocolSpecifier#getContainedAtoms(java.lang.String)}.
+   */
+  @Test
+  public void testGetAllProtocolGroups() {
+    Map<String, Set<String>> groups = getGroupings();
+    assertThat(
+        groups.keySet(),
+        equalTo(
+            ImmutableSet.of(
+                RoutingProtocolSpecifier.ALL,
+                RoutingProtocolSpecifier.BGP,
+                RoutingProtocolSpecifier.EIGRP,
+                RoutingProtocolSpecifier.IGP,
+                RoutingProtocolSpecifier.ISIS,
+                RoutingProtocolSpecifier.OSPF,
+                RoutingProtocolSpecifier.OSPF_EXT,
+                RoutingProtocolSpecifier.OSPF_INT)));
+  }
+
+  @Test
+  public void testGetContainedAtomsOnlyAtomicValues() {
+    assertThat(
+        getContainedAtoms(RoutingProtocolSpecifier.ALL),
+        not(contains(RoutingProtocolSpecifier.BGP)));
+    assertThat(
+        getContainedAtoms(RoutingProtocolSpecifier.OSPF),
+        not(contains(RoutingProtocolSpecifier.OSPF_EXT)));
+  }
+
+  @Test
+  public void testGetContainedAtomsAllAtomicValues() {
+    assertThat(
+        getContainedAtoms(RoutingProtocolSpecifier.OSPF_INT),
+        equalTo(
+            ImmutableSet.of(
+                RoutingProtocolSpecifier.OSPF_INTER, RoutingProtocolSpecifier.OSPF_INTRA)));
+    assertThat(
+        getContainedAtoms(RoutingProtocolSpecifier.OSPF),
+        equalTo(
+            ImmutableSet.of(
+                RoutingProtocolSpecifier.OSPF_EXT1,
+                RoutingProtocolSpecifier.OSPF_EXT2,
+                RoutingProtocolSpecifier.OSPF_INTER,
+                RoutingProtocolSpecifier.OSPF_INTRA)));
   }
 }

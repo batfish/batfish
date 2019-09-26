@@ -1,8 +1,10 @@
 package org.batfish.specifier.parboiled;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
@@ -82,6 +84,7 @@ public enum Grammar {
     return _friendlyName;
   }
 
+  /** Returns all values in the enum set for {@code grammar} */
   public static Collection<?> getEnumValues(Grammar grammar) {
     switch (grammar) {
       case APPLICATION_SPECIFIER:
@@ -116,6 +119,20 @@ public enum Grammar {
         return VxlanVniPropertySpecifier.ALL.getMatchingProperties();
       default:
         throw new IllegalArgumentException(grammar + " is not an enum grammar");
+    }
+  }
+
+  /**
+   * Returns a mapping from group values in the enum set (which represent multiple atomic values) to
+   * their atomic values.
+   */
+  // TODO: fix type signature
+  public static Map<?, ?> getGroupValues(Grammar grammar) {
+    switch (grammar) {
+      case ROUTING_PROTOCOL_SPECIFIER:
+        return RoutingProtocolSpecifier.getGroupings();
+      default:
+        return ImmutableMap.of();
     }
   }
 
