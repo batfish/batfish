@@ -1153,19 +1153,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
             .build();
 
-    addOspfAreas(proc, vrf);
+    addOspfInterfaces(proc, vrf);
     return proc;
   }
 
   @VisibleForTesting
-  void addOspfAreas(org.batfish.datamodel.ospf.OspfProcess proc, org.batfish.datamodel.Vrf vrf) {
+  void addOspfInterfaces(
+      org.batfish.datamodel.ospf.OspfProcess proc, org.batfish.datamodel.Vrf vrf) {
     Map<Long, OspfArea.Builder> areas = new HashMap<>();
     vrf.getInterfaces()
         .forEach(
             (ifaceName, iface) -> {
               Interface vsIface = _interfaces.get(iface.getName());
               OspfInterface ospfInterface = vsIface.getOspf();
-              if (ospfInterface == null) {
+              if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
                 // no ospf running on this interface
                 return;
               }
@@ -1178,10 +1179,33 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               areaBuilder.addInterface(ifaceName);
 
               iface.setOspfSettings(
-                  OspfInterfaceSettings.builder().setPassive(false).setAreaName(areaNum).build());
+                  OspfInterfaceSettings.builder()
+                      .setPassive(false)
+                      .setAreaName(areaNum)
+                      .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
+                      .build());
             });
 
     proc.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
+  }
+
+  private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      @Nullable OspfNetworkType type) {
+    if (type == null) {
+      return null;
+    }
+    switch (type) {
+      case BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.",
+                type.toString()));
+        return null;
+    }
   }
 
   @VisibleForTesting
