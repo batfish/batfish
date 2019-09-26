@@ -12,6 +12,7 @@ public class IpsecPeerConfigId {
   @Nonnull private String _hostName;
 
   public IpsecPeerConfigId(@Nonnull String ipsecPeerConfigName, @Nonnull String hostName) {
+    assert hostName.equals(hostName.toLowerCase());
     _ipsecPeerConfigName = ipsecPeerConfigName;
     _hostName = hostName;
   }

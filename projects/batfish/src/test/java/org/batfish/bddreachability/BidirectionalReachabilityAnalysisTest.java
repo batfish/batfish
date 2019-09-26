@@ -116,7 +116,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
   //// Common static fields for session fiblookup tests
   // nodes
-  private static final String SFL_INGRESS_NODE = "ingressNode";
+  private static final String SFL_INGRESS_NODE = "ingress_node";
   private static final String SFL_NEIGHBOR = "neighbor";
 
   // vrfs
@@ -145,8 +145,8 @@ public final class BidirectionalReachabilityAnalysisTest {
 
   //// Common static fields for ForwardPassFinalNodes tests
   // nodes
-  private static final String FPFN_START_NODE = "startNode";
-  private static final String FPFN_END_NODE = "endNode";
+  private static final String FPFN_START_NODE = "start_node";
+  private static final String FPFN_END_NODE = "end_node";
 
   // interfaces
   private static final String FPFN_INGRESS_IFACE = "ingressIface";

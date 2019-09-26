@@ -841,6 +841,13 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testRouterOspf() {
+    parse("router ospf\n log-adjacency-changes detail\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertNotNull(CONFIG.getOspfProcess());
+  }
+
+  @Test
   public void testInterface_ospf_area() {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     i1.setVrf("VRF");

@@ -1,6 +1,7 @@
 package org.batfish.common.topology;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -104,5 +105,17 @@ public final class Layer1NodeTest {
     // If node is not member of an aggregate, the resulting logical node should reference the
     // physical interface name.
     assertThat(node.toLogicalNode(networkConfigurations), equalTo(node));
+  }
+
+  @Test
+  public void testHostnameIsCanonicalized() {
+    Layer1Node node = new Layer1Node("NODE", "iface");
+    assertThat(node.getHostname(), equalTo("node"));
+
+    // Should be equivalent to a node initialized with lowercase hostname
+    assertThat(node, equalTo(new Layer1Node("node", "iface")));
+
+    // Interface names should be case sensitive
+    assertThat(node, not(equalTo(new Layer1Node("node", "IFACE"))));
   }
 }

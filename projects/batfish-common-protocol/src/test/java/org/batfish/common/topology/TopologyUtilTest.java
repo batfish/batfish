@@ -213,8 +213,8 @@ public final class TopologyUtilTest {
      *
      * Then SWP1 and SWP2 should be in same broadcast domain
      */
-    String s1Name = "S1";
-    String s2Name = "S2";
+    String s1Name = "s1";
+    String s2Name = "s2";
     String swp1Name = "SWP1";
     String swp2Name = "SWP2";
     int vlanId = 2;
@@ -1081,12 +1081,12 @@ public final class TopologyUtilTest {
   public void testIncompleteLayer1TopologyHandlingOneSided() {
     /*
      * One-sided Layer-1 edges
-     * Expected L1: N1 <=> N2
-     * Provided L1: N1 => N2
-     * Use case: L1 input is missing info from N2 due to snapshot preparation problem
+     * Expected L1: n1 <=> n2
+     * Provided L1: n1 => n2
+     * Use case: L1 input is missing info from n2 due to snapshot preparation problem
      */
-    String n1Name = "N1";
-    String n2Name = "N2";
+    String n1Name = "n1";
+    String n2Name = "n2";
     String iName = "i1";
 
     Layer1Node n1 = new Layer1Node(n1Name, iName);
@@ -1117,15 +1117,15 @@ public final class TopologyUtilTest {
   public void testIncompleteLayer1TopologyHandlingInconsistentAvailability() {
     /*
      * Inconsistent availability of Layer-1 information
-     * Expected L1: N1 <=> N2 <=> N3 <=> N4
-     *          L3: N2 <=> N3 <=> N4
-     * Provided L1: N1 <=> N2
-     * Use case: L1 information is unavailable for N3 and N4
+     * Expected L1: n1 <=> n2 <=> n3 <=> n4
+     *          L3: n2 <=> n3 <=> n4
+     * Provided L1: n1 <=> n2
+     * Use case: L1 information is unavailable for n3 and n4
      */
-    String n1Name = "N1";
-    String n2Name = "N2";
-    String n3Name = "N3";
-    String n4Name = "N4";
+    String n1Name = "n1";
+    String n2Name = "n2";
+    String n3Name = "n3";
+    String n4Name = "n4";
     String i1Name = "i1";
     String i2Name = "i2";
 
@@ -1150,17 +1150,17 @@ public final class TopologyUtilTest {
 
     Configuration c2 = _cb.setHostname(n2Name).build();
     Vrf v2 = _vb.setOwner(c2).build();
-    _ib.setOwner(c2).setVrf(v2).build(); // N2=>N1
-    _ib.setName(i2Name).setAddress(n2n3Address).build(); // N2=>N3
+    _ib.setOwner(c2).setVrf(v2).build(); // n2=>n1
+    _ib.setName(i2Name).setAddress(n2n3Address).build(); // n2=>n3
 
     Configuration c3 = _cb.setHostname(n3Name).build();
     Vrf v3 = _vb.setOwner(c3).build();
-    _ib.setOwner(c3).setVrf(v3).setName(i1Name).setAddress(n3n2Address).build(); // N3=>N2
-    _ib.setName(i2Name).setAddress(n3n4Address).build(); // N3=>N4
+    _ib.setOwner(c3).setVrf(v3).setName(i1Name).setAddress(n3n2Address).build(); // n3=>n2
+    _ib.setName(i2Name).setAddress(n3n4Address).build(); // n3=>n4
 
     Configuration c4 = _cb.setHostname(n4Name).build();
     Vrf v4 = _vb.setOwner(c4).build();
-    _ib.setOwner(c4).setVrf(v4).setName(i1Name).setAddress(n4n3Address).build(); // N4=>N3
+    _ib.setOwner(c4).setVrf(v4).setName(i1Name).setAddress(n4n3Address).build(); // n4=>n3
 
     Layer1Topology rawLayer1Topology =
         new Layer1Topology(
@@ -1199,13 +1199,13 @@ public final class TopologyUtilTest {
   public void testIncompleteLayer1TopologyHandlingUnusable() {
     /*
      * Incorrect/Unusable Layer-1 information
-     * Expected L1: N1 <=> N2
-     * Provided L1: N1 => N2, N2 => NCorrupt
-     * Use case: L1 input has corrupt (e.g. truncated) info from N2 due to snapshot preparation problem
+     * Expected L1: n1 <=> n2
+     * Provided L1: n1 => n2, n2 => nCorrupt
+     * Use case: L1 input has corrupt (e.g. truncated) info from n2 due to snapshot preparation problem
      */
-    String n1Name = "N1";
-    String n2Name = "N2";
-    String nCorruptName = "N";
+    String n1Name = "n1";
+    String n2Name = "n2";
+    String nCorruptName = "n";
     String iName = "i1";
 
     Layer1Node n1 = new Layer1Node(n1Name, iName);
@@ -1355,8 +1355,8 @@ public final class TopologyUtilTest {
   @Test
   public void testComputeLayer3Topology_linkLocalAddresses() {
     _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration c1 = _cb.build();
-    Configuration c2 = _cb.build();
+    Configuration c1 = _cb.setHostname("c1").build();
+    Configuration c2 = _cb.setHostname("c2").build();
     Ip ip = Ip.parse("169.254.0.1");
     Interface i1 = _ib.setOwner(c1).setAddress(LinkLocalAddress.of(ip)).build();
     Interface i2 = _ib.setOwner(c2).setAddress(LinkLocalAddress.of(ip)).build();

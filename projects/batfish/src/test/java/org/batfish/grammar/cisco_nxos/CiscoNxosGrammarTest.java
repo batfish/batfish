@@ -89,6 +89,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAG
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
+import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.POINT_TO_POINT;
@@ -127,6 +129,7 @@ import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -236,6 +239,7 @@ import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.ParserBatfishException;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
@@ -350,6 +354,7 @@ public final class CiscoNxosGrammarTest {
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_nxos/testconfigs/";
+  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/cisco_nxos/snapshots/";
 
   static {
     DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
@@ -1718,17 +1723,146 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceSpeedConversion() throws IOException {
-    String hostname = "nxos_interface_speed";
-    Configuration c = parseConfig(hostname);
+  public void testInterfaceRuntimeSpeedConversion() throws IOException {
+    String snapshotName = "runtime_data";
+    String hostname = "c1";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    Map<String, org.batfish.datamodel.Interface> interfaces = c.getAllInterfaces();
 
-    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "port-channel1"));
-    {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
-      assertThat(iface, hasSpeed(100E9D));
-      assertThat(iface, hasBandwidth(100E9D));
+    // Get name-based default guess for speed and ensure it does not match configured/runtime values
+    double defaultSpeed = getDefaultSpeed(CiscoNxosInterfaceType.ETHERNET);
+    assertTrue(defaultSpeed != 1E8 && defaultSpeed != 2E8);
+
+    List<Double> expectedSpeeds =
+        ImmutableList.of(
+            // Ethernet1/0 has both configured and runtime speed 1E8
+            1E8,
+            // Ethernet1/1 has configured speed 1E8 but runtime speed 2E8; configured should win
+            1E8,
+            // Ethernet1/2 has configured speed 1E8 and null runtime speed
+            1E8,
+            // Ethernet1/3 has configured speed 1E8 and no runtime data
+            1E8,
+            // Ethernet1/4 has no configured speed and runtime speed 2E8
+            2E8,
+            // Ethernet1/5 has no configured speed and null runtime speed
+            defaultSpeed,
+            // Ethernet1/6 has no configured speed and no runtime data
+            defaultSpeed);
+
+    for (int i = 0; i < expectedSpeeds.size(); i++) {
+      String ifaceName = "Ethernet1/" + i;
+      Double expectedSpeed = expectedSpeeds.get(i);
+
+      // Assert on both speed and bandwidth, which should equal speed since no bandwidths are set
+      assertThat(
+          String.format("Unexpected value for %s", ifaceName),
+          interfaces.get(ifaceName),
+          allOf(hasSpeed(expectedSpeed), hasBandwidth(expectedSpeed)));
     }
-    // TODO: assert inferred speed for Ethernet1/2 maybe
+
+    // Should see a single conversion warning for Ethernet1/1's conflicting speeds
+    Warnings warnings =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname);
+    assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
+    assertThat(
+        warnings.getRedFlagWarnings().get(0).getText(),
+        equalTo(
+            "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data shows speed 200000000 bps. Configured value will be used."));
+  }
+
+  @Test
+  public void testInterfaceRuntimeBandwidthConversion() throws IOException {
+    String snapshotName = "runtime_data";
+    String hostname = "c2";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+    Map<String, org.batfish.datamodel.Interface> interfaces =
+        batfish.loadConfigurations().get(hostname).getAllInterfaces();
+
+    // Get name-based default guess for bw and ensure it does not match configured/runtime values
+    double defaultBandwidth = getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET);
+    assertTrue(defaultBandwidth != 1E8 && defaultBandwidth != 2E8);
+
+    List<Double> expectedBandwidths =
+        ImmutableList.of(
+            // Ethernet1/0 has both configured and runtime bw 1E8
+            1E8,
+            // Ethernet1/1 has configured bw 1E8 but runtime bw 2E8; configured should win
+            1E8,
+            // Ethernet1/2 has configured bw 1E8 and null runtime bw
+            1E8,
+            // Ethernet1/3 has configured bw 1E8 and no runtime data
+            1E8,
+            // Ethernet1/4 has no configured bw and runtime bw 2E8
+            2E8,
+            // Ethernet1/5 has no configured bw and null runtime vw
+            defaultBandwidth,
+            // Ethernet1/6 has no configured bw and no runtime data
+            defaultBandwidth);
+
+    for (int i = 0; i < expectedBandwidths.size(); i++) {
+      String ifaceName = "Ethernet1/" + i;
+      Double expectedBandwidth = expectedBandwidths.get(i);
+      assertThat(
+          String.format("Unexpected value for %s", ifaceName),
+          interfaces.get(ifaceName),
+          hasBandwidth(expectedBandwidth));
+    }
+
+    // Should see a single conversion warning for Ethernet1/1's conflicting bandwidths
+    Warnings warnings =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname);
+    assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
+    assertThat(
+        warnings.getRedFlagWarnings().get(0).getText(),
+        equalTo(
+            "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime data shows bandwidth 200000000 bps. Configured value will be used."));
+  }
+
+  @Test
+  public void testInterfaceRuntimeBandwidthAndSpeedConversion() throws IOException {
+    // For testing interaction between configured and runtime speeds and bandwidths
+    String snapshotName = "runtime_data";
+    String hostname = "c3";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+    Map<String, org.batfish.datamodel.Interface> interfaces =
+        batfish.loadConfigurations().get(hostname).getAllInterfaces();
+
+    // Ethernet1/0 has configured & runtime bw 2E8, configured & runtime speed 1E8.
+    assertThat(interfaces.get("Ethernet1/0"), allOf(hasBandwidth(2E8), hasSpeed(1E8)));
+
+    // Ethernet1/1 has configured speed 1E8 and runtime bw 2E8. Speed should be 1E8, and bandwidth
+    // should also be 1E8 because configured speed takes precedence over runtime bw.
+    assertThat(interfaces.get("Ethernet1/1"), allOf(hasBandwidth(1E8), hasSpeed(1E8)));
+
+    // Ethernet1/2 has configured bw 1E8 and runtime speed 2E8. Runtime speed should not affect bw.
+    assertThat(interfaces.get("Ethernet1/2"), allOf(hasBandwidth(1E8), hasSpeed(2E8)));
+
+    // Ethernet1/3 has runtime bw 2E8 and runtime speed 1E8. Neither should affect the other.
+    assertThat(interfaces.get("Ethernet1/3"), allOf(hasBandwidth(2E8), hasSpeed(1E8)));
+
+    // No warnings
+    assertNull(
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname));
   }
 
   @Test

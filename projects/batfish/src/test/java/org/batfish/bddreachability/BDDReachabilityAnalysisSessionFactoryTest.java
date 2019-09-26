@@ -53,13 +53,13 @@ import org.junit.Test;
 /** Tests for {@link BDDReachabilityAnalysisSessionFactory}. */
 @SuppressWarnings("unchecked")
 public class BDDReachabilityAnalysisSessionFactoryTest {
-  private static final String FW = "FW";
-  private static final String R1 = "R1";
-  private static final String R2 = "R2";
-  private static final String R3 = "R3";
+  private static final String FW = "fw";
+  private static final String R1 = "r1";
+  private static final String R2 = "r2";
+  private static final String R3 = "r3";
 
   // Just used for PreOutEdgePostNat on FW
-  private static final String BORDER = "BORDER";
+  private static final String BORDER = "border";
   private static final String BORDER_IFACE = "BORDER_IFACE";
 
   // interface names

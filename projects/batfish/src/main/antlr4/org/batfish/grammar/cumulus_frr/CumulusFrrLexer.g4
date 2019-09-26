@@ -266,6 +266,11 @@ LOG
   'log'
 ;
 
+LOG_ADJACENCY_CHANGES
+:
+  'log-adjacency-changes'
+;
+
 LINE
 :
   'line'
@@ -449,6 +454,11 @@ UNICAST
 DEC
 :
   F_Digit+
+;
+
+DETAIL
+:
+   'detail'
 ;
 
 VERSION

@@ -45,6 +45,11 @@ ANY
   'any'
 ;
 
+AREA
+:
+  'area'
+;
+
 BFD
 :
   'bfd'
@@ -68,6 +73,11 @@ COMMUNITY
 CON
 :
   'con'
+;
+
+CONFEDERATION
+:
+  'confederation'
 ;
 
 DENY
@@ -113,6 +123,11 @@ GE
 GRACEFUL_RESTART
 :
   'graceful-restart'
+;
+
+IDENTIFIER
+:
+  'identifier'
 ;
 
 IGP
@@ -185,6 +200,11 @@ NEIGHBOR
   'neighbor'
 ;
 
+NETWORK
+:
+  'network'
+;
+
 NEXT_HOP_SELF
 :
   'next-hop-self'
@@ -195,9 +215,19 @@ NO
   'no'
 ;
 
+NON_BROADCAST
+:
+  'non-broadcast'
+;
+
 ORIGIN
 :
   'origin'
+;
+
+OSPF
+:
+  'ospf'
 ;
 
 OUT
@@ -205,9 +235,19 @@ OUT
   'out'
 ;
 
+PASSIVE_INTERFACE
+:
+  'passive-interface'
+;
+
 PEER_GROUP
 :
   'peer-group'
+;
+
+PEERS
+:
+  'peers'
 ;
 
 PERMIT

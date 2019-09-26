@@ -1299,7 +1299,7 @@
         "Structure_Type" : "prefix-list",
         "Structure_Name" : "pl1",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_imish_malformed",
+          "filename" : "configs/f5_bigip/f5_bigip_imish_malformed",
           "lines" : [
             9
           ]
@@ -1309,7 +1309,7 @@
         "Structure_Type" : "monitor http",
         "Structure_Name" : "/Common/SOME_MONITOR1",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             135,
             136,
@@ -1334,7 +1334,7 @@
         "Structure_Type" : "monitor https",
         "Structure_Name" : "/Common/SOME_MONITOR2",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             151,
             152,
@@ -1362,7 +1362,7 @@
         "Structure_Type" : "node",
         "Structure_Name" : "/Common/SOME_LTM_NODE",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             16,
             17,
@@ -1374,7 +1374,7 @@
         "Structure_Type" : "persistence source-addr",
         "Structure_Name" : "/Common/SOME_PERSISTENCE_SOURCE_ADDR",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             170,
             171,
@@ -1388,7 +1388,7 @@
         "Structure_Type" : "persistence ssl",
         "Structure_Name" : "/Common/SOME_PERSISTENCE_SSL",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             175,
             176,
@@ -1406,7 +1406,7 @@
         "Structure_Type" : "pool",
         "Structure_Name" : "/Common/SOME_LTM_POOL",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             19,
             20,
@@ -1433,7 +1433,7 @@
         "Structure_Type" : "profile client-ssl",
         "Structure_Name" : "/Common/SOME_PROFILE_CLIENT_SSL",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             184,
             185,
@@ -1500,7 +1500,7 @@
         "Structure_Type" : "profile ocsp-stapling-params",
         "Structure_Name" : "/Common/SOME_PROFILE_OCSP_STAPLING_PARAMS",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             242,
             243,
@@ -1516,7 +1516,7 @@
         "Structure_Type" : "profile one-connect",
         "Structure_Name" : "/Common/oneconnect",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             249,
             250,
@@ -1534,7 +1534,7 @@
         "Structure_Type" : "profile server-ssl",
         "Structure_Name" : "/Common/SOME_PROFILE_SERVER_SSL",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             258,
             259,
@@ -1577,7 +1577,7 @@
         "Structure_Type" : "rule",
         "Structure_Name" : "/Common/SOME_RULE2",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             43,
             44,
@@ -1592,7 +1592,7 @@
         "Structure_Type" : "rule",
         "Structure_Name" : "/Common/SOME_RULE3",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             49,
             50,
@@ -1608,7 +1608,7 @@
         "Structure_Type" : "rule",
         "Structure_Name" : "/Common/SOME_RULE4",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             56,
             57,
@@ -1628,7 +1628,7 @@
         "Structure_Type" : "snat-translation",
         "Structure_Name" : "/Common/192.0.2.4",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             79,
             80,
@@ -1641,7 +1641,7 @@
         "Structure_Type" : "virtual-address",
         "Structure_Name" : "/Common/192.0.2.8",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
           "lines" : [
             125,
             126,
@@ -1660,7 +1660,7 @@
         "Structure_Type" : "trunk",
         "Structure_Name" : "trunk1",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_net",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net",
           "lines" : [
             64,
             65,
@@ -1676,7 +1676,7 @@
         "Structure_Type" : "prefix-list",
         "Structure_Name" : "/Common/MY_IPV4_PREFIX_LIST",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_prefix_list",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list",
           "lines" : [
             7,
             8,
@@ -1700,7 +1700,7 @@
         "Structure_Type" : "prefix-list",
         "Structure_Name" : "/Common/MY_IPV6_PREFIX_LIST",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_prefix_list",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list",
           "lines" : [
             22,
             23,
@@ -1724,7 +1724,7 @@
         "Structure_Type" : "route-map",
         "Structure_Name" : "/Common/MY_ROUTE_MAP",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_net_routing_route_map",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_route_map",
           "lines" : [
             7,
             8,
@@ -1771,7 +1771,7 @@
         "Structure_Type" : "access-list",
         "Structure_Name" : "acl2",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_with_imish",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_with_imish",
           "lines" : [
             9
           ]
@@ -1781,9 +1781,9 @@
         "Structure_Type" : "peer-group",
         "Structure_Name" : "pg1",
         "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_with_imish",
+          "filename" : "configs/f5_bigip/f5_bigip_structured_with_imish",
           "lines" : [
-            29
+            40
           ]
         }
       },

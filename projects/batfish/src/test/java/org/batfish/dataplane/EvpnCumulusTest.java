@@ -29,9 +29,9 @@ public class EvpnCumulusTest {
 
   @Test
   public void testRoutePresence() throws IOException {
-    final String leaf1 = "Leaf1";
-    final String leaf2 = "Leaf2";
-    final String spine = "Spine";
+    final String leaf1 = "leaf1";
+    final String leaf2 = "leaf2";
+    final String spine = "spine";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()

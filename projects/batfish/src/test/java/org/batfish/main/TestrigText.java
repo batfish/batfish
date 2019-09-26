@@ -42,18 +42,13 @@ public class TestrigText {
     }
 
     private Map<String, String> _awsText;
-
     private Map<String, String> _bgpTablesText;
-
     private Map<String, String> _configurationText;
-
     private Map<String, String> _hostsText;
-
     private Map<String, String> _iptablesFilesText;
-
     private String _layer1TopologyText;
-
     private Map<String, String> _routingTablesText;
+    private String _runtimeDataText;
 
     public TestrigText build() {
       TestrigText testrigText = new TestrigText();
@@ -64,6 +59,7 @@ public class TestrigText {
       testrigText.setIptablesFilesText(_iptablesFilesText);
       testrigText.setLayer1TopologyText(_layer1TopologyText);
       testrigText.setRoutingTablesText(_routingTablesText);
+      testrigText.setRuntimeDataText(_runtimeDataText);
       return testrigText;
     }
 
@@ -140,6 +136,16 @@ public class TestrigText {
               .next();
       return this;
     }
+
+    public @Nonnull Builder setRuntimeDataText(@Nonnull String testrigResourcePrefix) {
+      _runtimeDataText =
+          readTestrigResources(
+                  testrigResourcePrefix, null, ImmutableList.of(BfConsts.RELPATH_RUNTIME_DATA_FILE))
+              .values()
+              .iterator()
+              .next();
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -147,18 +153,13 @@ public class TestrigText {
   }
 
   private Map<String, String> _awsText;
-
   private Map<String, String> _bgpTablesText;
-
   private Map<String, String> _configurationText;
-
   private Map<String, String> _hostsText;
-
   private Map<String, String> _iptablesFilesText;
-
   private String _layer1TopologyText;
-
   private Map<String, String> _routingTablesText;
+  private String _runtimeDataText;
 
   public Map<String, String> getAwsText() {
     return _awsText;
@@ -188,6 +189,10 @@ public class TestrigText {
     return _routingTablesText;
   }
 
+  public String getRuntimeDataText() {
+    return _runtimeDataText;
+  }
+
   public void setAwsText(Map<String, String> awsText) {
     _awsText = awsText;
   }
@@ -214,5 +219,9 @@ public class TestrigText {
 
   public void setRoutingTablesText(Map<String, String> routingTablesText) {
     _routingTablesText = routingTablesText;
+  }
+
+  public void setRuntimeDataText(String runtimeDataText) {
+    _runtimeDataText = runtimeDataText;
   }
 }

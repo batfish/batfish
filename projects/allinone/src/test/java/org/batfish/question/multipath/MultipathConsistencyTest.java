@@ -72,7 +72,7 @@ public class MultipathConsistencyTest {
                     hasDstPort(1234),
                     hasIcmpCode(0),
                     hasIcmpType(8),
-                    hasIngressNode("~Configuration_0~"),
+                    hasIngressNode("~configuration_0~"),
                     hasIngressVrf("default"),
                     hasIpProtocol(IpProtocol.ICMP),
                     hasSrcIp(oneOf(Ip.parse("2.0.0.0"), Ip.parse("1.0.0.0"))),

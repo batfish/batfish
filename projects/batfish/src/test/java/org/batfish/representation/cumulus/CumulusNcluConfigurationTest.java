@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -39,6 +40,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -503,5 +506,106 @@ public class CumulusNcluConfigurationTest {
       Result result = importPolicy.call(envIpv4);
       assertFalse(result.getBooleanValue());
     }
+  }
+
+  @Test
+  public void testToOspfProcess_NoRouterId() {
+    OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, vrf);
+    assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
+    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(
+        ospfProcess.getReferenceBandwidth(),
+        equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testToOspfProcess_InferRouterId() {
+    OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Loopback lo = ncluConfiguration.getLoopback();
+    lo.setConfigured(true);
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
+    OspfProcess ospfProcess =
+        ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
+    assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(
+        ospfProcess.getReferenceBandwidth(),
+        equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testToOspfProcess_ConfigedRouterId() {
+    OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+    ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
+
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+
+    OspfProcess ospfProcess =
+        ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
+    assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(
+        ospfProcess.getReferenceBandwidth(),
+        equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testInferRouterID() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Loopback lo = ncluConfiguration.getLoopback();
+    lo.setConfigured(true);
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
+    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("1.1.1.1")));
+  }
+
+  @Test
+  public void testAddOspfArea_HasArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    vsIface.setOspfArea(1L);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    org.batfish.datamodel.ospf.OspfProcess proc =
+        org.batfish.datamodel.ospf.OspfProcess.builder()
+            .setRouterId(Ip.parse("1.1.1.1"))
+            .setProcessId("1")
+            .setReferenceBandwidth(
+                org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
+            .build();
+    ncluConfiguration.addOspfAreas(proc, vrf);
+    assertThat(
+        proc.getAreas(),
+        equalTo(
+            ImmutableSortedMap.of(
+                1L, OspfArea.builder().addInterface("iface").setNumber(1L).build())));
+  }
+
+  @Test
+  public void testAddOspfArea_NoArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    org.batfish.datamodel.ospf.OspfProcess proc =
+        org.batfish.datamodel.ospf.OspfProcess.builder()
+            .setRouterId(Ip.parse("1.1.1.1"))
+            .setProcessId("1")
+            .setReferenceBandwidth(
+                org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
+            .build();
+    ncluConfiguration.addOspfAreas(proc, vrf);
+    assertThat(proc.getAreas(), equalTo(ImmutableSortedMap.of()));
   }
 }

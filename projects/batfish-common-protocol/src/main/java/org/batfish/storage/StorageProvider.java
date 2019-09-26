@@ -16,6 +16,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.SnapshotRuntimeData;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -103,6 +104,15 @@ public interface StorageProvider {
    */
   @Nullable
   MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType);
+
+  /**
+   * Returns the {@link SnapshotRuntimeData} of the network provided in the given snapshot
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot);
 
   /**
    * Load the log file for a given work item ID.

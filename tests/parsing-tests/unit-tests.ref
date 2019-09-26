@@ -493,31 +493,31 @@
           "configs/eos_trunk_group"
         ],
         "f5_bigip_imish_malformed" : [
-          "configs/f5_bigip_imish_malformed"
+          "configs/f5_bigip/f5_bigip_imish_malformed"
         ],
         "f5_bigip_structured_ltm" : [
-          "configs/f5_bigip_structured_ltm"
+          "configs/f5_bigip/f5_bigip_structured_ltm"
         ],
         "f5_bigip_structured_malformed" : [
-          "configs/f5_bigip_structured_malformed"
+          "configs/f5_bigip/f5_bigip_structured_malformed"
         ],
         "f5_bigip_structured_net" : [
-          "configs/f5_bigip_structured_net"
+          "configs/f5_bigip/f5_bigip_structured_net"
         ],
         "f5_bigip_structured_net_routing_bgp" : [
-          "configs/f5_bigip_structured_net_routing_bgp"
+          "configs/f5_bigip/f5_bigip_structured_net_routing_bgp"
         ],
         "f5_bigip_structured_net_routing_prefix_list" : [
-          "configs/f5_bigip_structured_net_routing_prefix_list"
+          "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list"
         ],
         "f5_bigip_structured_net_routing_route_map" : [
-          "configs/f5_bigip_structured_net_routing_route_map"
+          "configs/f5_bigip/f5_bigip_structured_net_routing_route_map"
         ],
         "f5_bigip_structured_sys" : [
-          "configs/f5_bigip_structured_sys"
+          "configs/f5_bigip/f5_bigip_structured_sys"
         ],
         "f5_bigip_structured_with_imish" : [
-          "configs/f5_bigip_structured_with_imish"
+          "configs/f5_bigip/f5_bigip_structured_with_imish"
         ],
         "foundry_access_list" : [
           "configs/foundry_access_list"
@@ -1069,15 +1069,15 @@
         "configs/cumulus_nclu_stp" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
-        "configs/f5_bigip_imish_malformed" : "PASSED",
-        "configs/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_malformed" : "PASSED",
-        "configs/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_prefix_list" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
-        "configs/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_with_imish" : "PASSED",
+        "configs/f5_bigip/f5_bigip_imish_malformed" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_malformed" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
@@ -43063,7 +43063,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -43139,78 +43139,79 @@
             "        d = DEC:'26')",
             "      NEWLINE:'\\n\\n'))",
             "  (statement",
-            "    (s_router_bgp",
+            "    (s_router",
             "      ROUTER:'router'",
-            "      BGP:'bgp'",
-            "      localas = (uint32",
-            "        d = DEC:'1')",
-            "      NEWLINE:'\\n'",
-            "      (rb_neighbor_peer_group",
-            "        NEIGHBOR:'neighbor'",
-            "        name = (peer_group_name",
-            "          WORD:'undeclared')",
-            "        (rbn_common",
-            "          (rbn_description",
-            "            DESCRIPTION:'description'",
-            "            text = DESCRIPTION_LINE:'hello'  <== mode:M_Description",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv4",
-            "        NEIGHBOR:'neighbor'",
-            "        ip = IP_ADDRESS:'3.3.3.3'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'2')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv4",
-            "        NEIGHBOR:'neighbor'",
-            "        ip = IP_ADDRESS:'3.3.3.3'",
-            "        (rbn_peer_group_assign",
-            "          PEER_GROUP:'peer-group'",
+            "      (router_bgp",
+            "        BGP:'bgp'",
+            "        localas = (uint32",
+            "          d = DEC:'1')",
+            "        NEWLINE:'\\n'",
+            "        (rb_neighbor_peer_group",
+            "          NEIGHBOR:'neighbor'",
             "          name = (peer_group_name",
-            "            WORD:'undefined-peer-group')",
-            "          NEWLINE:'\\n'))",
-            "      (rb_neighbor_peer_group",
-            "        NEIGHBOR:'neighbor'",
-            "        name = (peer_group_name",
-            "          WORD:'undeclared-peer-group')",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'3')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'2::2'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'4')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'2::2'",
-            "        (rbn_common",
-            "          (rbn_route_map_out",
-            "            ROUTE_MAP:'route-map'",
-            "            name = (word",
-            "              WORD:'rm1')",
-            "            OUT:'out'",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_peer_group",
-            "        NEIGHBOR:'neighbor'",
-            "        name = (peer_group_name",
-            "          WORD:'undeclared-peer-group')",
-            "        (rbn_common",
-            "          (rbn_route_map_out",
-            "            ROUTE_MAP:'route-map'",
-            "            name = (word",
-            "              WORD:'rm1')",
-            "            OUT:'out'",
-            "            NEWLINE:'\\n')))))",
+            "            WORD:'undeclared')",
+            "          (rbn_common",
+            "            (rbn_description",
+            "              DESCRIPTION:'description'",
+            "              text = DESCRIPTION_LINE:'hello'  <== mode:M_Description",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv4",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'3.3.3.3'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'2')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv4",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'3.3.3.3'",
+            "          (rbn_peer_group_assign",
+            "            PEER_GROUP:'peer-group'",
+            "            name = (peer_group_name",
+            "              WORD:'undefined-peer-group')",
+            "            NEWLINE:'\\n'))",
+            "        (rb_neighbor_peer_group",
+            "          NEIGHBOR:'neighbor'",
+            "          name = (peer_group_name",
+            "            WORD:'undeclared-peer-group')",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'3')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'2::2'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'4')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'2::2'",
+            "          (rbn_common",
+            "            (rbn_route_map_out",
+            "              ROUTE_MAP:'route-map'",
+            "              name = (word",
+            "                WORD:'rm1')",
+            "              OUT:'out'",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_peer_group",
+            "          NEIGHBOR:'neighbor'",
+            "          name = (peer_group_name",
+            "            WORD:'undeclared-peer-group')",
+            "          (rbn_common",
+            "            (rbn_route_map_out",
+            "              ROUTE_MAP:'route-map'",
+            "              name = (word",
+            "                WORD:'rm1')",
+            "              OUT:'out'",
+            "              NEWLINE:'\\n'))))))",
             "  (statement",
             "    (s_end",
             "      END:'end'",
@@ -43218,7 +43219,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -45331,7 +45332,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_malformed" : {
+        "configs/f5_bigip/f5_bigip_structured_malformed" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -45474,7 +45475,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_net" : {
+        "configs/f5_bigip/f5_bigip_structured_net" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -45985,7 +45986,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -46319,7 +46320,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_net_routing_prefix_list" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -46491,7 +46492,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -46665,7 +46666,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_sys" : {
+        "configs/f5_bigip/f5_bigip_structured_sys" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -47555,7 +47556,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/f5_bigip_structured_with_imish" : {
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
             "  (statement",
@@ -47573,7 +47574,7 @@
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n\\n')))",
             "  (imish_chunk",
-            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nip prefix-list pl1 seq 10 permit 192.0.2.0/24\\nip prefix-list pl1 seq 20 permit 172.16.0.0/24 le 26\\nip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 26 le 28\\n!\\nrouter bgp 65500\\n bgp always-compare-med\\n bgp deterministic-med\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor pg1 next-hop-self\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 next-hop-self\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n match ip address prefix-list pl1\\n set community 1:2 3:4\\n set metric 50\\n set origin egp\\n set origin igp\\n set origin incomplete\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
+            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan_active\\n  ip ospf network non-broadcast\\n!\\ninterface vlan_passive\\n!\\nip prefix-list pl1 seq 10 permit 192.0.2.0/24\\nip prefix-list pl1 seq 20 permit 172.16.0.0/24 le 26\\nip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 26 le 28\\n!\\nrouter ospf 65001\\n ospf router-id 10.0.1.1\\n passive-interface vlan_passive\\n network 10.0.1.0/30 area 0\\n neighbor 10.0.1.2\\n!\\nrouter bgp 65500\\n bgp always-compare-med\\n bgp confederation identifier 65001\\n bgp confederation peers 65002 65003\\n bgp deterministic-med\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor pg1 next-hop-self\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 next-hop-self\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n match ip address prefix-list pl1\\n set community 1:2 3:4\\n set metric 50\\n set origin egp\\n set origin igp\\n set origin incomplete\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
             "  EOF:<EOF>)",
             "(f5_bigip_imish_configuration",
             "  (statement",
@@ -47605,23 +47606,38 @@
             "        WORD:'enable'",
             "        NEWLINE:'\\n')))",
             "  (statement",
-            "    (s_null",
+            "    (s_interface",
             "      INTERFACE:'interface'",
-            "      (null_rest_of_line",
-            "        WORD:'lo'",
-            "        NEWLINE:'\\n')))",
+            "      name = (word",
+            "        WORD:'lo')",
+            "      NEWLINE:'\\n'))",
             "  (statement",
-            "    (s_null",
+            "    (s_interface",
             "      INTERFACE:'interface'",
-            "      (null_rest_of_line",
-            "        WORD:'tmm'",
-            "        NEWLINE:'\\n')))",
+            "      name = (word",
+            "        WORD:'tmm')",
+            "      NEWLINE:'\\n'))",
             "  (statement",
-            "    (s_null",
+            "    (s_interface",
             "      INTERFACE:'interface'",
-            "      (null_rest_of_line",
-            "        WORD:'vlan1'",
-            "        NEWLINE:'\\n')))",
+            "      name = (word",
+            "        WORD:'vlan_active')",
+            "      NEWLINE:'\\n'",
+            "      (i_ip",
+            "        IP:'ip'",
+            "        (iip_ospf",
+            "          OSPF:'ospf'",
+            "          (iipo_network",
+            "            NETWORK:'network'",
+            "            type = (ospf_network_type",
+            "              NON_BROADCAST:'non-broadcast')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      name = (word",
+            "        WORD:'vlan_passive')",
+            "      NEWLINE:'\\n'))",
             "  (statement",
             "    (s_ip_prefix_list",
             "      IP:'ip'",
@@ -47674,199 +47690,256 @@
             "        d = DEC:'28')",
             "      NEWLINE:'\\n'))",
             "  (statement",
-            "    (s_router_bgp",
+            "    (s_router",
             "      ROUTER:'router'",
-            "      BGP:'bgp'",
-            "      localas = (uint32",
-            "        d = DEC:'65500')",
-            "      NEWLINE:'\\n'",
-            "      (rb_bgp_always_compare_med",
+            "      (router_ospf",
+            "        OSPF:'ospf'",
+            "        num = (uint16",
+            "          d = DEC:'65001')",
+            "        NEWLINE:'\\n'",
+            "        (ro_ospf",
+            "          OSPF:'ospf'",
+            "          (roo_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (ip_address",
+            "              IP_ADDRESS:'10.0.1.1')",
+            "            NEWLINE:'\\n'))",
+            "        (ro_passive_interface",
+            "          PASSIVE_INTERFACE:'passive-interface'",
+            "          name = (word",
+            "            WORD:'vlan_passive')",
+            "          NEWLINE:'\\n')",
+            "        (ro_network",
+            "          NETWORK:'network'",
+            "          prefix = (ip_prefix",
+            "            IP_PREFIX:'10.0.1.0/30')",
+            "          AREA:'area'",
+            "          area = (uint32",
+            "            d = DEC:'0')",
+            "          NEWLINE:'\\n')",
+            "        (ro_neighbor",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = (ip_address",
+            "            IP_ADDRESS:'10.0.1.2')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_router",
+            "      ROUTER:'router'",
+            "      (router_bgp",
             "        BGP:'bgp'",
-            "        ALWAYS_COMPARE_MED:'always-compare-med'",
-            "        NEWLINE:'\\n')",
-            "      (rb_bgp_deterministic_med",
-            "        BGP:'bgp'",
-            "        DETERMINISTIC_MED:'deterministic-med'",
-            "        NEWLINE:'\\n')",
-            "      (rb_null",
-            "        BGP:'bgp'",
-            "        GRACEFUL_RESTART:'graceful-restart'",
-            "        (null_rest_of_line",
-            "          WORD:'restart-time'",
-            "          DEC:'123'",
-            "          NEWLINE:'\\n'))",
-            "      (rb_bgp_router_id",
-            "        BGP:'bgp'",
-            "        ROUTER_ID:'router-id'",
-            "        id = IP_ADDRESS:'192.0.2.100'",
-            "        NEWLINE:'\\n')",
-            "      (rb_null",
-            "        MAX_PATHS:'max-paths'",
-            "        (null_rest_of_line",
-            "          EBGP:'ebgp'",
-            "          DEC:'12'",
-            "          NEWLINE:'\\n'))",
-            "      (rb_neighbor_peer_group",
-            "        NEIGHBOR:'neighbor'",
-            "        name = (peer_group_name",
-            "          WORD:'pg1')",
-            "        (rbn_peer_group",
-            "          PEER_GROUP:'peer-group'",
-            "          NEWLINE:'\\n'))",
-            "      (rb_neighbor_peer_group",
-            "        NO:'no'",
-            "        NEIGHBOR:'neighbor'",
-            "        name = (peer_group_name",
-            "          WORD:'pg1')",
-            "        (rbn_common",
-            "          (rbn_null",
-            "            CAPABILITY:'capability'",
-            "            (null_rest_of_line",
-            "              GRACEFUL_RESTART:'graceful-restart'",
-            "              NEWLINE:'\\n'))))",
-            "      (rb_neighbor_peer_group",
-            "        NEIGHBOR:'neighbor'",
-            "        name = (peer_group_name",
-            "          WORD:'pg1')",
-            "        (rbn_common",
-            "          (rbn_null",
-            "            FALL_OVER:'fall-over'",
-            "            (null_rest_of_line",
-            "              WORD:'pfd'",
-            "              NEWLINE:'\\n'))))",
-            "      (rb_neighbor_peer_group",
-            "        NEIGHBOR:'neighbor'",
-            "        name = (peer_group_name",
-            "          WORD:'pg1')",
-            "        (rbn_common",
-            "          (rbn_null",
-            "            MAXIMUM_PREFIX:'maximum-prefix'",
-            "            (null_rest_of_line",
-            "              DEC:'12345'",
-            "              NEWLINE:'\\n'))))",
-            "      (rb_neighbor_peer_group",
-            "        NEIGHBOR:'neighbor'",
-            "        name = (peer_group_name",
-            "          WORD:'pg1')",
-            "        (rbn_common",
-            "          (rbn_next_hop_self",
-            "            NEXT_HOP_SELF:'next-hop-self'",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'1:2:3::'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'555')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'1:2:3::4:5:6'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'555')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'1:2:3:4:5:6:7::'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'555')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'::1:2:3:4:5:6'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'555')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'::1:2:3:4:5:6:7'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'555')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'1:2::3:4.5.6.7'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'555')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv6",
-            "        NEIGHBOR:'neighbor'",
-            "        ip6 = IPV6_ADDRESS:'1:2:3:4:5:6:9.8.7.6'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'555')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv4",
-            "        NEIGHBOR:'neighbor'",
-            "        ip = IP_ADDRESS:'10.0.0.1'",
-            "        (rbn_common",
-            "          (rbn_remote_as",
-            "            REMOTE_AS:'remote-as'",
-            "            remoteas = (uint32",
-            "              d = DEC:'65501')",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv4",
-            "        NEIGHBOR:'neighbor'",
-            "        ip = IP_ADDRESS:'10.0.0.1'",
-            "        (rbn_common",
-            "          (rbn_description",
-            "            DESCRIPTION:'description'",
-            "            text = DESCRIPTION_LINE:'desc1'  <== mode:M_Description",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv4",
-            "        NEIGHBOR:'neighbor'",
-            "        ip = IP_ADDRESS:'10.0.0.1'",
-            "        (rbn_common",
-            "          (rbn_next_hop_self",
-            "            NEXT_HOP_SELF:'next-hop-self'",
-            "            NEWLINE:'\\n')))",
-            "      (rb_neighbor_ipv4",
-            "        NEIGHBOR:'neighbor'",
-            "        ip = IP_ADDRESS:'10.0.0.1'",
-            "        (rbn_peer_group_assign",
-            "          PEER_GROUP:'peer-group'",
+            "        localas = (uint32",
+            "          d = DEC:'65500')",
+            "        NEWLINE:'\\n'",
+            "        (rb_bgp",
+            "          BGP:'bgp'",
+            "          (rb_bgp_always_compare_med",
+            "            ALWAYS_COMPARE_MED:'always-compare-med'",
+            "            NEWLINE:'\\n'))",
+            "        (rb_bgp",
+            "          BGP:'bgp'",
+            "          (rb_bgp_confederation",
+            "            CONFEDERATION:'confederation'",
+            "            (rbbc_identifier",
+            "              IDENTIFIER:'identifier'",
+            "              id = (uint32",
+            "                d = DEC:'65001')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_bgp",
+            "          BGP:'bgp'",
+            "          (rb_bgp_confederation",
+            "            CONFEDERATION:'confederation'",
+            "            (rbbc_peers",
+            "              PEERS:'peers'",
+            "              (uint32",
+            "                d = DEC:'65002')",
+            "              (uint32",
+            "                d = DEC:'65003')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_bgp",
+            "          BGP:'bgp'",
+            "          (rb_bgp_deterministic_med",
+            "            DETERMINISTIC_MED:'deterministic-med'",
+            "            NEWLINE:'\\n'))",
+            "        (rb_null",
+            "          BGP:'bgp'",
+            "          GRACEFUL_RESTART:'graceful-restart'",
+            "          (null_rest_of_line",
+            "            WORD:'restart-time'",
+            "            DEC:'123'",
+            "            NEWLINE:'\\n'))",
+            "        (rb_bgp",
+            "          BGP:'bgp'",
+            "          (rb_bgp_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = IP_ADDRESS:'192.0.2.100'",
+            "            NEWLINE:'\\n'))",
+            "        (rb_null",
+            "          MAX_PATHS:'max-paths'",
+            "          (null_rest_of_line",
+            "            EBGP:'ebgp'",
+            "            DEC:'12'",
+            "            NEWLINE:'\\n'))",
+            "        (rb_neighbor_peer_group",
+            "          NEIGHBOR:'neighbor'",
             "          name = (peer_group_name",
             "            WORD:'pg1')",
-            "          NEWLINE:'\\n'))",
-            "      (rb_neighbor_ipv4",
-            "        NEIGHBOR:'neighbor'",
-            "        ip = IP_ADDRESS:'10.0.0.1'",
-            "        (rbn_common",
-            "          (rbn_null",
-            "            UPDATE_SOURCE:'update-source'",
-            "            (null_rest_of_line",
-            "              WORD:'us1'",
-            "              NEWLINE:'\\n'))))",
-            "      (rb_redistribute_kernel",
-            "        REDISTRIBUTE:'redistribute'",
-            "        KERNEL:'kernel'",
-            "        NEWLINE:'\\n')",
-            "      (rb_redistribute_kernel",
-            "        REDISTRIBUTE:'redistribute'",
-            "        KERNEL:'kernel'",
-            "        ROUTE_MAP:'route-map'",
-            "        rm = (word",
-            "          WORD:'rm1')",
-            "        NEWLINE:'\\n')))",
+            "          (rbn_peer_group",
+            "            PEER_GROUP:'peer-group'",
+            "            NEWLINE:'\\n'))",
+            "        (rb_neighbor_peer_group",
+            "          NO:'no'",
+            "          NEIGHBOR:'neighbor'",
+            "          name = (peer_group_name",
+            "            WORD:'pg1')",
+            "          (rbn_common",
+            "            (rbn_null",
+            "              CAPABILITY:'capability'",
+            "              (null_rest_of_line",
+            "                GRACEFUL_RESTART:'graceful-restart'",
+            "                NEWLINE:'\\n'))))",
+            "        (rb_neighbor_peer_group",
+            "          NEIGHBOR:'neighbor'",
+            "          name = (peer_group_name",
+            "            WORD:'pg1')",
+            "          (rbn_common",
+            "            (rbn_null",
+            "              FALL_OVER:'fall-over'",
+            "              (null_rest_of_line",
+            "                WORD:'pfd'",
+            "                NEWLINE:'\\n'))))",
+            "        (rb_neighbor_peer_group",
+            "          NEIGHBOR:'neighbor'",
+            "          name = (peer_group_name",
+            "            WORD:'pg1')",
+            "          (rbn_common",
+            "            (rbn_null",
+            "              MAXIMUM_PREFIX:'maximum-prefix'",
+            "              (null_rest_of_line",
+            "                DEC:'12345'",
+            "                NEWLINE:'\\n'))))",
+            "        (rb_neighbor_peer_group",
+            "          NEIGHBOR:'neighbor'",
+            "          name = (peer_group_name",
+            "            WORD:'pg1')",
+            "          (rbn_common",
+            "            (rbn_next_hop_self",
+            "              NEXT_HOP_SELF:'next-hop-self'",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'1:2:3::'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'555')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'1:2:3::4:5:6'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'555')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'1:2:3:4:5:6:7::'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'555')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'::1:2:3:4:5:6'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'555')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'::1:2:3:4:5:6:7'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'555')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'1:2::3:4.5.6.7'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'555')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv6",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'1:2:3:4:5:6:9.8.7.6'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'555')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv4",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'",
+            "          (rbn_common",
+            "            (rbn_remote_as",
+            "              REMOTE_AS:'remote-as'",
+            "              remoteas = (uint32",
+            "                d = DEC:'65501')",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv4",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'",
+            "          (rbn_common",
+            "            (rbn_description",
+            "              DESCRIPTION:'description'",
+            "              text = DESCRIPTION_LINE:'desc1'  <== mode:M_Description",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv4",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'",
+            "          (rbn_common",
+            "            (rbn_next_hop_self",
+            "              NEXT_HOP_SELF:'next-hop-self'",
+            "              NEWLINE:'\\n')))",
+            "        (rb_neighbor_ipv4",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'",
+            "          (rbn_peer_group_assign",
+            "            PEER_GROUP:'peer-group'",
+            "            name = (peer_group_name",
+            "              WORD:'pg1')",
+            "            NEWLINE:'\\n'))",
+            "        (rb_neighbor_ipv4",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'",
+            "          (rbn_common",
+            "            (rbn_null",
+            "              UPDATE_SOURCE:'update-source'",
+            "              (null_rest_of_line",
+            "                WORD:'us1'",
+            "                NEWLINE:'\\n'))))",
+            "        (rb_redistribute_kernel",
+            "          REDISTRIBUTE:'redistribute'",
+            "          KERNEL:'kernel'",
+            "          NEWLINE:'\\n')",
+            "        (rb_redistribute_kernel",
+            "          REDISTRIBUTE:'redistribute'",
+            "          KERNEL:'kernel'",
+            "          ROUTE_MAP:'route-map'",
+            "          rm = (word",
+            "            WORD:'rm1')",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_null",
             "      NO:'no'",
@@ -75222,7 +75295,7 @@
             }
           ]
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
@@ -75254,7 +75327,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76146,7 +76219,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_malformed" : {
+        "configs/f5_bigip/f5_bigip_structured_malformed" : {
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
@@ -76172,7 +76245,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_net" : {
+        "configs/f5_bigip/f5_bigip_structured_net" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76272,7 +76345,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76336,7 +76409,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_net_routing_prefix_list" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76352,7 +76425,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
@@ -76362,7 +76435,7 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_sys" : {
+        "configs/f5_bigip/f5_bigip_structured_sys" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
@@ -76483,6 +76556,22 @@
               "Line" : 109,
               "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
               "Text" : "turboflex profile-config"
+            }
+          ]
+        },
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 34,
+              "Parser_Context" : "[rb_bgp router_bgp s_router statement f5_bigip_imish_configuration]",
+              "Text" : "bgp confederation identifier 65001"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 35,
+              "Parser_Context" : "[rb_bgp router_bgp s_router statement f5_bigip_imish_configuration]",
+              "Text" : "bgp confederation peers 65002 65003"
             }
           ]
         },
@@ -80150,7 +80239,7 @@
             }
           }
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "bgp neighbor" : {
             "2::2" : {
               "definitionLines" : [
@@ -80189,7 +80278,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "monitor http" : {
             "/Common/SOME_MONITOR1" : {
               "definitionLines" : [
@@ -80594,7 +80683,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_malformed" : {
+        "configs/f5_bigip/f5_bigip_structured_malformed" : {
           "route" : {
             "/Common/bad_gw" : {
               "definitionLines" : [
@@ -80651,7 +80740,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net" : {
+        "configs/f5_bigip/f5_bigip_structured_net" : {
           "interface" : {
             "1.0" : {
               "definitionLines" : [
@@ -80741,7 +80830,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "bgp neighbor" : {
             "192.0.2.1" : {
               "definitionLines" : [
@@ -80872,7 +80961,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_prefix_list" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : {
           "prefix-list" : {
             "/Common/MY_IPV4_PREFIX_LIST" : {
               "definitionLines" : [
@@ -80916,7 +81005,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "route-map" : {
             "/Common/MY_ROUTE_MAP" : {
               "definitionLines" : [
@@ -80963,8 +81052,35 @@
             }
           }
         },
-        "configs/f5_bigip_structured_sys" : { },
-        "configs/f5_bigip_structured_with_imish" : {
+        "configs/f5_bigip/f5_bigip_structured_sys" : { },
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
+          "IMISH interface" : {
+            "lo" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 1
+            },
+            "tmm" : {
+              "definitionLines" : [
+                15
+              ],
+              "numReferrers" : 1
+            },
+            "vlan_active" : {
+              "definitionLines" : [
+                17,
+                18
+              ],
+              "numReferrers" : 1
+            },
+            "vlan_passive" : {
+              "definitionLines" : [
+                20
+              ],
+              "numReferrers" : 2
+            }
+          },
           "access-list" : {
             "acl1" : {
               "definitionLines" : [
@@ -80982,49 +81098,49 @@
           "bgp neighbor" : {
             "10.0.0.1" : {
               "definitionLines" : [
-                41
+                52
               ],
               "numReferrers" : 1
             },
             "1:2:3:4:5:6:7::" : {
               "definitionLines" : [
-                36
+                47
               ],
               "numReferrers" : 1
             },
             "1:2:3:4:5:6:9.8.7.6" : {
               "definitionLines" : [
-                40
+                51
               ],
               "numReferrers" : 1
             },
             "1:2:3::" : {
               "definitionLines" : [
-                34
+                45
               ],
               "numReferrers" : 1
             },
             "1:2:3::4:5:6" : {
               "definitionLines" : [
-                35
+                46
               ],
               "numReferrers" : 1
             },
             "1:2::3:4.5.6.7" : {
               "definitionLines" : [
-                39
+                50
               ],
               "numReferrers" : 1
             },
             "::1:2:3:4:5:6" : {
               "definitionLines" : [
-                37
+                48
               ],
               "numReferrers" : 1
             },
             "::1:2:3:4:5:6:7" : {
               "definitionLines" : [
-                38
+                49
               ],
               "numReferrers" : 1
             }
@@ -81032,15 +81148,6 @@
           "bgp process" : {
             "65500" : {
               "definitionLines" : [
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
                 32,
                 33,
                 34,
@@ -81056,32 +81163,10 @@
                 44,
                 45,
                 46,
-                47
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "peer-group" : {
-            "pg1" : {
-              "definitionLines" : [
-                29
-              ],
-              "numReferrers" : 0
-            }
-          },
-          "prefix-list" : {
-            "pl1" : {
-              "definitionLines" : [
-                19,
-                20,
-                21
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "route-map" : {
-            "rm1" : {
-              "definitionLines" : [
+                47,
+                48,
+                49,
+                50,
                 51,
                 52,
                 53,
@@ -81089,8 +81174,53 @@
                 55,
                 56,
                 57,
-                58,
-                60
+                58
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "peer-group" : {
+            "pg1" : {
+              "definitionLines" : [
+                40
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "prefix-list" : {
+            "pl1" : {
+              "definitionLines" : [
+                22,
+                23,
+                24
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "route-map" : {
+            "rm1" : {
+              "definitionLines" : [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                71
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "router ospf" : {
+            "65001" : {
+              "definitionLines" : [
+                26,
+                27,
+                28,
+                29,
+                30
               ],
               "numReferrers" : 1
             }
@@ -85333,31 +85463,31 @@
         "configs/eos_trunk_group" : [
           "eos_trunk_group"
         ],
-        "configs/f5_bigip_imish_malformed" : [
+        "configs/f5_bigip/f5_bigip_imish_malformed" : [
           "f5_bigip_imish_malformed"
         ],
-        "configs/f5_bigip_structured_ltm" : [
+        "configs/f5_bigip/f5_bigip_structured_ltm" : [
           "f5_bigip_structured_ltm"
         ],
-        "configs/f5_bigip_structured_malformed" : [
+        "configs/f5_bigip/f5_bigip_structured_malformed" : [
           "f5_bigip_structured_malformed"
         ],
-        "configs/f5_bigip_structured_net" : [
+        "configs/f5_bigip/f5_bigip_structured_net" : [
           "f5_bigip_structured_net"
         ],
-        "configs/f5_bigip_structured_net_routing_bgp" : [
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : [
           "f5_bigip_structured_net_routing_bgp"
         ],
-        "configs/f5_bigip_structured_net_routing_prefix_list" : [
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : [
           "f5_bigip_structured_net_routing_prefix_list"
         ],
-        "configs/f5_bigip_structured_net_routing_route_map" : [
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : [
           "f5_bigip_structured_net_routing_route_map"
         ],
-        "configs/f5_bigip_structured_sys" : [
+        "configs/f5_bigip/f5_bigip_structured_sys" : [
           "f5_bigip_structured_sys"
         ],
-        "configs/f5_bigip_structured_with_imish" : [
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : [
           "f5_bigip_structured_with_imish"
         ],
         "configs/foundry_access_list" : [
@@ -88166,7 +88296,7 @@
             }
           }
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "bgp neighbor" : {
             "2::2" : {
               "bgp neighbor self-reference" : [
@@ -88204,7 +88334,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "monitor" : {
             "/Common/SOME_MONITOR" : {
               "pool monitor" : [
@@ -88325,7 +88455,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_malformed" : {
+        "configs/f5_bigip/f5_bigip_structured_malformed" : {
           "route" : {
             "/Common/bad_gw" : {
               "route self-reference" : [
@@ -88361,7 +88491,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net" : {
+        "configs/f5_bigip/f5_bigip_structured_net" : {
           "interface" : {
             "1.0" : {
               "interface self-reference" : [
@@ -88414,7 +88544,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "bgp neighbor" : {
             "192.0.2.1" : {
               "bgp neighbor self-reference" : [
@@ -88460,7 +88590,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "prefix-list" : {
             "/Common/MY_PREFIX_LIST" : {
               "route-map match ipv4 address prefix-list" : [
@@ -88474,81 +88604,113 @@
             }
           }
         },
-        "configs/f5_bigip_structured_with_imish" : {
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
+          "IMISH interface" : {
+            "lo" : {
+              "IMISH interface self-reference" : [
+                13
+              ]
+            },
+            "tmm" : {
+              "IMISH interface self-reference" : [
+                15
+              ]
+            },
+            "vlan_active" : {
+              "IMISH interface self-reference" : [
+                17
+              ]
+            },
+            "vlan_passive" : {
+              "IMISH interface self-reference" : [
+                20
+              ],
+              "router ospf passive-interface" : [
+                28
+              ]
+            }
+          },
           "access-list" : {
             "acl1" : {
               "route-map match ip address" : [
-                52
+                63
               ]
             }
           },
           "bgp neighbor" : {
             "10.0.0.1" : {
               "bgp neighbor self-reference" : [
-                41
+                52
               ]
             },
             "1:2:3:4:5:6:7::" : {
               "bgp neighbor self-reference" : [
-                36
+                47
               ]
             },
             "1:2:3:4:5:6:9.8.7.6" : {
               "bgp neighbor self-reference" : [
-                40
+                51
               ]
             },
             "1:2:3::" : {
               "bgp neighbor self-reference" : [
-                34
+                45
               ]
             },
             "1:2:3::4:5:6" : {
               "bgp neighbor self-reference" : [
-                35
+                46
               ]
             },
             "1:2::3:4.5.6.7" : {
               "bgp neighbor self-reference" : [
-                39
+                50
               ]
             },
             "::1:2:3:4:5:6" : {
               "bgp neighbor self-reference" : [
-                37
+                48
               ]
             },
             "::1:2:3:4:5:6:7" : {
               "bgp neighbor self-reference" : [
-                38
+                49
               ]
             }
           },
           "bgp process" : {
             "65500" : {
               "bgp process self-reference" : [
-                23
+                32
               ]
             }
           },
           "peer-group" : {
             "pg1" : {
               "neighbor peer-group" : [
-                44
+                55
               ]
             }
           },
           "prefix-list" : {
             "pl1" : {
               "route-map match ipv4 address prefix-list" : [
-                53
+                64
               ]
             }
           },
           "route-map" : {
             "rm1" : {
               "router bgp redistribute kernel route-map" : [
-                47
+                58
+              ]
+            }
+          },
+          "router ospf" : {
+            "65001" : {
+              "router ospf self-reference" : [
+                26
               ]
             }
           }
@@ -92202,7 +92364,7 @@
             }
           }
         },
-        "configs/f5_bigip_imish_malformed" : {
+        "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "route-map" : {
             "rm1" : {
               "bgp neighbor address-family ipv6 route-map out" : [
@@ -92214,7 +92376,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_ltm" : {
+        "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "monitor" : {
             "/Common/SOME_MONITOR" : {
               "pool monitor" : [
@@ -92304,7 +92466,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_bgp" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "route-map" : {
             "/Common/MY_IPV4_OUT" : {
               "bgp neighbor address-family ipv6 route-map out" : [
@@ -92331,7 +92493,7 @@
             }
           }
         },
-        "configs/f5_bigip_structured_net_routing_route_map" : {
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "prefix-list" : {
             "/Common/MY_PREFIX_LIST" : {
               "route-map match ipv4 address prefix-list" : [
@@ -93899,15 +94061,15 @@
         "configs/cumulus_nclu_stp" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
-        "configs/f5_bigip_imish_malformed" : "PASSED",
-        "configs/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_malformed" : "PASSED",
-        "configs/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_prefix_list" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
-        "configs/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
-        "configs/f5_bigip_structured_with_imish" : "PASSED",
+        "configs/f5_bigip/f5_bigip_imish_malformed" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_malformed" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
