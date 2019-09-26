@@ -852,7 +852,7 @@ public class CumulusFrrGrammarTest {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     i1.setVrf("VRF");
     CONFIG.getInterfaces().put("swp1", i1);
-    parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0");
+    parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0\n");
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
     assertThat(CONFIG.getInterfaces().get("swp1").getOspfArea(), equalTo(0L));
   }

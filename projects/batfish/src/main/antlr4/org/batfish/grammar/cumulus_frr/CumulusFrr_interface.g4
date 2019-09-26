@@ -25,10 +25,10 @@ si_ospf
   IP OSPF
   (
     sio_area
-  )
+  )*
 ;
 
 sio_area
 :
-  AREA ip = IP_ADDRESS
+  AREA ip = IP_ADDRESS NEWLINE
 ;
