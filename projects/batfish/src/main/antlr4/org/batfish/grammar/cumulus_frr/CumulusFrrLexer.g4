@@ -83,6 +83,11 @@ ALWAYS_COMPARE_MED
   'always-compare-med'
 ;
 
+AUTHENTICATION
+:
+  'authentication'
+;
+
 BGP
 :
   'bgp'
@@ -274,6 +279,11 @@ LOG_ADJACENCY_CHANGES
 LINE
 :
   'line'
+;
+
+MESSAGE_DIGEST
+:
+  'message-digest'
 ;
 
 MULTIPATH_RELAX

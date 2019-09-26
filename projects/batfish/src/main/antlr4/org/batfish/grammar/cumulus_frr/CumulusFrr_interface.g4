@@ -25,10 +25,17 @@ si_ospf
   IP OSPF
   (
     sio_area
-  )*
+    | sio_authentication
+  )
+  NEWLINE
 ;
 
 sio_area
 :
-  AREA ip = IP_ADDRESS NEWLINE
+  AREA ip = IP_ADDRESS
+;
+
+sio_authentication
+:
+  AUTHENTICATION MESSAGE_DIGEST
 ;
