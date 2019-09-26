@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -45,7 +44,7 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
     }
 
     Set<IpProtocol> toIpProtocols() {
-      return Sets.difference(_including.isEmpty() ? VALID_IP_PROTOCOLS : _including, _excluding);
+      return Sets.difference(_including.isEmpty() ? IP_PROTOCOLS_SET : _including, _excluding);
     }
 
     static IpProtocolSets union(IpProtocolSets sets1, IpProtocolSets sets2) {
@@ -55,10 +54,7 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
     }
   }
 
-  static Set<IpProtocol> VALID_IP_PROTOCOLS =
-      Arrays.stream(IpProtocol.values())
-          .filter(v -> v.number() >= 0 && v.number() < 256)
-          .collect(ImmutableSet.toImmutableSet());
+  static final Set<IpProtocol> IP_PROTOCOLS_SET = ImmutableSet.copyOf(IpProtocol.values());
 
   @ParametersAreNonnullByDefault
   private final class IpProtocolAstNodeToIpProtocols
