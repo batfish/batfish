@@ -175,6 +175,8 @@ public class PacketHeaderConstraintsUtil {
         "Cannot construct flow with multiple IP protocols");
     if (ipProtocols != null) {
       builder.setIpProtocol(ipProtocols.iterator().next());
+    } else {
+      builder.setIpProtocol(IpProtocol.UDP);
     }
   }
 

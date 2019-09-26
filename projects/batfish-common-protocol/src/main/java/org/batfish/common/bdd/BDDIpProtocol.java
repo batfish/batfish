@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IpProtocol;
 
@@ -15,9 +16,9 @@ public final class BDDIpProtocol {
   }
 
   /** @return a constraint that the IpProtocol have the specified value. */
-  public BDD value(IpProtocol v) {
-    // IP is a special case, meaning "any protocol". It's also an invalid value for _var
-    return v == IpProtocol.IP ? _var.getFactory().one() : _var.value(v.number());
+  public BDD value(@Nullable IpProtocol v) {
+    // null means any protocol
+    return v == null ? _var.getFactory().one() : _var.value(v.number());
   }
 
   /**

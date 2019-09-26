@@ -47,7 +47,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _dstIp = Ip.ZERO;
       _ecn = 0;
       _fragmentOffset = 0;
-      _ipProtocol = IpProtocol.IP;
+      _ipProtocol = IpProtocol.fromNumber(0);
       _srcIp = Ip.ZERO;
       _ingressVrf = Configuration.DEFAULT_VRF_NAME;
       _packetLength = 0;

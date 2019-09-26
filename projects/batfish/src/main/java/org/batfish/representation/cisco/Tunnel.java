@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
 
 @ParametersAreNonnullByDefault
 public final class Tunnel implements Serializable {
@@ -18,13 +17,18 @@ public final class Tunnel implements Serializable {
     IPSEC
   }
 
+  public enum TunnelVersion {
+    IPv4,
+    IPv6
+  }
+
   @Nullable private Ip _destination;
 
   @Nullable private String _ipsecProfileName;
 
   @Nonnull private TunnelMode _mode;
 
-  @Nonnull private IpProtocol _protocol;
+  @Nullable private TunnelVersion _version;
 
   @Nullable private Ip _sourceAddress;
 
@@ -50,11 +54,6 @@ public final class Tunnel implements Serializable {
     return _mode;
   }
 
-  @Nonnull
-  public IpProtocol getProtocol() {
-    return _protocol;
-  }
-
   @Nullable
   public Ip getSourceAddress() {
     return _sourceAddress;
@@ -77,15 +76,19 @@ public final class Tunnel implements Serializable {
     _mode = mode;
   }
 
-  public void setProtocol(IpProtocol protocol) {
-    _protocol = protocol;
-  }
-
   public void setSourceAddress(@Nullable Ip source) {
     _sourceAddress = source;
   }
 
   public void setSourceInterfaceName(@Nullable String sourceInterfaceName) {
     _sourceInterfaceName = firstNonNull(sourceInterfaceName, UNSET_LOCAL_INTERFACE);
+  }
+
+  public @Nullable TunnelVersion getVersion() {
+    return _version;
+  }
+
+  public void setVersion(TunnelVersion version) {
+    _version = version;
   }
 }

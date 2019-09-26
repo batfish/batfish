@@ -1449,6 +1449,7 @@ import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
+import org.batfish.representation.cisco.Tunnel.TunnelVersion;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.UnimplementedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.VarCommunitySetElemHalf;
@@ -7661,9 +7662,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         todo(ctx);
       }
       if (ctx.IPV4() != null) {
-        tunnel.setProtocol(IpProtocol.IP);
+        tunnel.setVersion(TunnelVersion.IPv4);
       } else if (ctx.IPV6() != null) {
-        tunnel.setProtocol(IpProtocol.IPV6);
+        tunnel.setVersion(TunnelVersion.IPv6);
       } else {
         todo(ctx);
       }
@@ -11865,11 +11866,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.IGMP() != null) {
       return IpProtocol.IGMP;
     } else if (ctx.IP() != null) {
-      return IpProtocol.IP;
+      return null;
     } else if (ctx.IPINIP() != null) {
       return IpProtocol.IPINIP;
     } else if (ctx.IPV4() != null) {
-      return IpProtocol.IP;
+      return null;
     } else if (ctx.IPV6() != null) {
       return IpProtocol.IPV6;
     } else if (ctx.ND() != null) {
