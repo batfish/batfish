@@ -120,12 +120,14 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
   @SuppressWarnings("unchecked")
   ParboiledEnumSetSpecifier(EnumSetAstNode ast, Grammar grammar) {
-    _ast = ast;
-    _allValues = (Collection<T>) Grammar.getEnumValues(grammar);
-    _groupValues = (Map<T, T>) Grammar.getGroupValues(grammar);
+    this(
+        ast,
+        (Collection<T>) Grammar.getEnumValues(grammar),
+        (Map<T, T>) Grammar.getGroupValues(grammar));
   }
 
-  ParboiledEnumSetSpecifier(EnumSetAstNode ast, Collection<T> allValues, Map<T, T> groupValues) {
+  private ParboiledEnumSetSpecifier(
+      EnumSetAstNode ast, Collection<T> allValues, Map<T, T> groupValues) {
     _ast = ast;
     _allValues = allValues;
     _groupValues = groupValues;
