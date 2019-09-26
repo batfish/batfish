@@ -120,10 +120,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
   static final String REFBOOK_SOURCE_POOLS = "pools";
   static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
 
-  // https://www.nongnu.org/quagga/docs/quagga.html#ospf-router_002did
+  // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
   private static final int DEFAULT_DEAD_INTERVAL_S = 40;
 
-  // https://www.nongnu.org/quagga/docs/quagga.html#ospf-router_002did
+  // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
   private static final int DEFAULT_HELLO_INTERVAL_S = 10;
 
   private static final double OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR = 1E6D; // bps per Mbps
@@ -716,6 +716,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .map(this::computeSnatPoolIps)
         .orElse(Stream.of())
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  private void convertOspfProcesses() {
+    _c.getDefaultVrf()
+        .setOspfProcesses(
+            _ospfProcesses.entrySet().stream()
+                .collect(
+                    ImmutableSortedMap.toImmutableSortedMap(
+                        Comparator.naturalOrder(),
+                        Entry::getKey,
+                        e -> toOspfProcess(e.getValue()))));
   }
 
   public Map<String, AccessList> getAccessLists() {
@@ -1494,21 +1505,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       _c.getDefaultVrf().setBgpProcess(toBgpProcess(proc));
     }
 
-    if (!_ospfProcesses.isEmpty()) {
-      OspfProcess proc =
-          _ospfProcesses.values().stream()
-              .sorted(Comparator.comparing(OspfProcess::getName))
-              .findFirst()
-              .get();
-      if (_ospfProcesses.size() > 1) {
-        _w.redFlag(
-            String.format(
-                "Multiple OSPF processes not supported. Only using first process alphabetically: '%s'",
-                proc.getName()));
-      }
-      _c.getDefaultVrf()
-          .setOspfProcesses(ImmutableSortedMap.of(proc.getName(), toOspfProcess(proc)));
-    }
+    convertOspfProcesses();
 
     // Add kernel routes for each virtual-address if applicable
     _c.getDefaultVrf()
@@ -1660,40 +1657,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     ospfSettings.setProcess(processName);
     ospfSettings.setPassive(passive);
     ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
-    ospfSettings.setDeadInterval(toOspfDeadInterval(ospf));
-    ospfSettings.setHelloInterval(toOspfHelloInterval(ospf));
+    ospfSettings.setDeadInterval(firstNonNull(ospf.getDeadIntervalS(), DEFAULT_DEAD_INTERVAL_S));
+    ospfSettings.setHelloInterval(firstNonNull(ospf.getHelloIntervalS(), DEFAULT_HELLO_INTERVAL_S));
 
     newIface.setOspfSettings(ospfSettings.build());
-  }
-
-  /**
-   * Helper to infer dead interval from configured OSPF settings on an interface. Check explicitly
-   * set dead interval, infer from hello interval, or use default, in that order. See
-   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
-   * more details.
-   */
-  @VisibleForTesting
-  static int toOspfDeadInterval(OspfInterface ospf) {
-    Integer deadInterval = ospf.getDeadIntervalS();
-    if (deadInterval != null) {
-      return deadInterval;
-    }
-    return DEFAULT_DEAD_INTERVAL_S;
-  }
-
-  /**
-   * Helper to infer hello interval from configured OSPF settings on an interface. Check explicitly
-   * set hello interval or use default, in that order. See
-   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
-   * more details.
-   */
-  @VisibleForTesting
-  static int toOspfHelloInterval(OspfInterface ospf) {
-    Integer helloInterval = ospf.getHelloIntervalS();
-    if (helloInterval != null) {
-      return helloInterval;
-    }
-    return DEFAULT_HELLO_INTERVAL_S;
   }
 
   private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
