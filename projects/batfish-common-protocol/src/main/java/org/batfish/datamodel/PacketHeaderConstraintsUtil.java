@@ -166,17 +166,14 @@ public class PacketHeaderConstraintsUtil {
     }
   }
 
-  @VisibleForTesting
-  static void setIpProtocol(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    // IP protocol (default to UDP)
+  private static void setIpProtocol(PacketHeaderConstraints constraints, Flow.Builder builder) {
+    // IP protocol if constrained, else unset and constrained later.
     Set<IpProtocol> ipProtocols = constraints.resolveIpProtocols();
     checkArgument(
         ipProtocols == null || ipProtocols.size() == 1,
         "Cannot construct flow with multiple IP protocols");
     if (ipProtocols != null) {
       builder.setIpProtocol(ipProtocols.iterator().next());
-    } else {
-      builder.setIpProtocol(IpProtocol.UDP);
     }
   }
 

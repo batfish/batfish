@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
@@ -26,7 +27,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
     // Nullable because no sensible default. User is required to specify.
     private @Nullable String _ingressNode;
     private @Nullable String _ingressVrf;
-    private @Nonnull IpProtocol _ipProtocol;
+    private @Nullable IpProtocol _ipProtocol;
     private int _packetLength;
     private @Nonnull Ip _srcIp;
     @Nullable private Integer _srcPort;
@@ -47,7 +48,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _dstIp = Ip.ZERO;
       _ecn = 0;
       _fragmentOffset = 0;
-      _ipProtocol = IpProtocol.fromNumber(0);
+      _ipProtocol = null;
       _srcIp = Ip.ZERO;
       _ingressVrf = Configuration.DEFAULT_VRF_NAME;
       _packetLength = 0;
@@ -110,7 +111,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
           _dstIp,
           _srcPort,
           _dstPort,
-          _ipProtocol,
+          firstNonNull(_ipProtocol, IpProtocol.fromNumber(0)),
           _dscp,
           _ecn,
           _fragmentOffset,
@@ -153,19 +154,19 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return _icmpType;
     }
 
-    public String getIngressInterface() {
+    public @Nullable String getIngressInterface() {
       return _ingressInterface;
     }
 
-    public String getIngressNode() {
+    public @Nullable String getIngressNode() {
       return _ingressNode;
     }
 
-    public String getIngressVrf() {
+    public @Nullable String getIngressVrf() {
       return _ingressVrf;
     }
 
-    public IpProtocol getIpProtocol() {
+    public @Nullable IpProtocol getIpProtocol() {
       return _ipProtocol;
     }
 
