@@ -1449,7 +1449,6 @@ import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
-import org.batfish.representation.cisco.Tunnel.TunnelVersion;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.UnimplementedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.VarCommunitySetElemHalf;
@@ -6423,7 +6422,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
       Extended_access_list_tailContext ctx) {
     if (ctx.prot != null) {
-      IpProtocol protocol = toIpProtocol(ctx.prot);
+      @Nullable IpProtocol protocol = toIpProtocol(ctx.prot);
       List<SubRange> srcPortRanges =
           ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.emptyList();
       List<SubRange> dstPortRanges =
@@ -7654,17 +7653,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIftunnel_mode(Iftunnel_modeContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Tunnel tunnel = iface.getTunnelInitIfNull();
-      if (ctx.GRE() != null) {
-        tunnel.setMode(TunnelMode.GRE);
-      } else if (ctx.IPSEC() != null) {
-        tunnel.setMode(TunnelMode.IPSEC);
-      } else {
+      if (ctx.gre_id != null) {
+        tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
         todo(ctx);
-      }
-      if (ctx.IPV4() != null) {
-        tunnel.setVersion(TunnelVersion.IPv4);
-      } else if (ctx.IPV6() != null) {
-        tunnel.setVersion(TunnelVersion.IPv6);
+      } else if (ctx.gre_ipv4 != null) {
+        tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
+        todo(ctx);
+      } else if (ctx.gre_multipoint != null) {
+        tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
+        todo(ctx);
+      } else if (ctx.ipsec_ipv4 != null) {
+        tunnel.setMode(TunnelMode.IPSEC_IPV4);
+      } else if (ctx.ipv6ip != null) {
+        tunnel.setMode(TunnelMode.IPV6_IP);
+        todo(ctx);
       } else {
         todo(ctx);
       }
@@ -7679,7 +7681,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Interface iface : _currentInterfaces) {
       Tunnel tunnel = iface.getTunnelInitIfNull();
       tunnel.setIpsecProfileName(name);
-      tunnel.setMode(TunnelMode.IPSEC);
+      tunnel.setMode(TunnelMode.IPSEC_IPV4);
     }
   }
 
@@ -11846,9 +11848,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private IpProtocol toIpProtocol(ProtocolContext ctx) {
+  /** Returns the given IPv4 protocol, or {@code null} if none is specified. */
+  private @Nullable IpProtocol toIpProtocol(ProtocolContext ctx) {
     if (ctx.DEC() != null) {
       int num = toInteger(ctx.DEC());
+      if (num < 0 || num > 255) {
+        return convProblem(IpProtocol.class, ctx, null);
+      }
       return IpProtocol.fromNumber(num);
     } else if (ctx.AH() != null || ctx.AHP() != null) {
       // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication header protocol

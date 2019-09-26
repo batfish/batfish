@@ -13,13 +13,9 @@ import org.batfish.datamodel.Ip;
 public final class Tunnel implements Serializable {
 
   public enum TunnelMode {
-    GRE,
-    IPSEC
-  }
-
-  public enum TunnelVersion {
-    IPv4,
-    IPv6
+    GRE_MULTIPOINT,
+    IPSEC_IPV4,
+    IPV6_IP,
   }
 
   @Nullable private Ip _destination;
@@ -28,15 +24,13 @@ public final class Tunnel implements Serializable {
 
   @Nonnull private TunnelMode _mode;
 
-  @Nullable private TunnelVersion _version;
-
   @Nullable private Ip _sourceAddress;
 
   @Nonnull private String _sourceInterfaceName;
 
   public Tunnel() {
     _sourceInterfaceName = UNSET_LOCAL_INTERFACE;
-    _mode = TunnelMode.GRE;
+    _mode = TunnelMode.GRE_MULTIPOINT;
   }
 
   @Nullable
@@ -82,13 +76,5 @@ public final class Tunnel implements Serializable {
 
   public void setSourceInterfaceName(@Nullable String sourceInterfaceName) {
     _sourceInterfaceName = firstNonNull(sourceInterfaceName, UNSET_LOCAL_INTERFACE);
-  }
-
-  public @Nullable TunnelVersion getVersion() {
-    return _version;
-  }
-
-  public void setVersion(TunnelVersion version) {
-    _version = version;
   }
 }
