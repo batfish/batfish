@@ -714,7 +714,10 @@ public class Parser extends CommonParser {
 
   @Anchor(IP_PROTOCOL_NUMBER)
   public Rule IpProtocolNumber() {
-    return Sequence(Number(), push(new IpProtocolIpProtocolAstNode(match())));
+    return Sequence(
+        Number(),
+        ACTION(IpProtocolIpProtocolAstNode.isValidNumber(Integer.parseInt(match()))),
+        push(new IpProtocolIpProtocolAstNode(match())));
   }
 
   /**
