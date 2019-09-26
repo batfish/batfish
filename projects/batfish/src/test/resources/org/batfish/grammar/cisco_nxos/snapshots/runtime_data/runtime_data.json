@@ -1,0 +1,52 @@
+{
+    "runtimeData": {
+        "c1": {
+            "interfaces": {
+                "Ethernet1/0": {
+                    "speed": 100000000
+                },
+                "Ethernet1/1": {
+                    "speed": 200000000
+                },
+                "Ethernet1/2": {},
+                "Ethernet1/4": {
+                    "speed": 200000000
+                },
+                "Ethernet1/5": {}
+            }
+        },
+        "c2": {
+            "interfaces": {
+                "Ethernet1/0": {
+                    "bandwidth": 100000000
+                },
+                "Ethernet1/1": {
+                    "bandwidth": 200000000
+                },
+                "Ethernet1/2": {},
+                "Ethernet1/4": {
+                    "bandwidth": 200000000
+                },
+                "Ethernet1/5": {}
+            }
+        },
+        "c3": {
+            "interfaces": {
+                "Ethernet1/0": {
+                    "bandwidth": 200000000,
+                    "speed": 100000000
+                },
+                "Ethernet1/1": {
+                    "bandwidth": 200000000
+                },
+                "Ethernet1/2": {
+                    "speed": 200000000
+                },
+                "Ethernet1/3": {
+                    "bandwidth": 200000000,
+                    "speed": 100000000
+                }
+            }
+        }
+    }
+}

@@ -261,6 +261,11 @@ LOG
   'log'
 ;
 
+LOG_ADJACENCY_CHANGES
+:
+  'log-adjacency-changes'
+;
+
 LINE
 :
   'line'
@@ -284,6 +289,11 @@ NETWORK
 NEXT_HOP_SELF
 :
   'next-hop-self'
+;
+
+OSPF
+:
+  'ospf'
 ;
 
 OUT
@@ -439,6 +449,11 @@ UNICAST
 DEC
 :
   F_Digit+
+;
+
+DETAIL
+:
+   'detail'
 ;
 
 VERSION

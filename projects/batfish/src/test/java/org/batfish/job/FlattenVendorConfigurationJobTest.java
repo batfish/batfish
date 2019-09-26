@@ -13,7 +13,7 @@ import org.junit.Test;
 public class FlattenVendorConfigurationJobTest {
   private static final String JUNIPER_TESTCONFIGS_PREFIX =
       "org/batfish/grammar/juniper/testconfigs/";
-  private static final String PAN_TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
+  private static final String PAN_TESTCONFIGS_PREFIX = "org/batfish/job/palo_alto/";
   private static final String VYOS_TESTCONFIGS_PREFIX = "org/batfish/grammar/vyos/testconfigs/";
 
   private static String getFlattenedText(String resourcePath) {

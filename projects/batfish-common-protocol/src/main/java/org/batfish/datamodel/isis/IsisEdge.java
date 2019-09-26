@@ -39,8 +39,11 @@ public final class IsisEdge implements Comparable<IsisEdge>, Serializable {
       Edge edge, Map<String, Configuration> configurations) {
     // vertex1
     Configuration c1 = configurations.get(edge.getNode1());
+    assert c1 != null;
     Interface iface1 = c1.getAllInterfaces().get(edge.getInt1());
+    assert iface1 != null;
     Vrf vrf1 = iface1.getVrf();
+    assert vrf1 != null;
     IsisProcess proc1 = vrf1.getIsisProcess();
     if (proc1 == null) {
       return empty();
@@ -52,8 +55,11 @@ public final class IsisEdge implements Comparable<IsisEdge>, Serializable {
 
     // vertex2
     Configuration c2 = configurations.get(edge.getNode2());
+    assert c2 != null;
     Interface iface2 = c2.getAllInterfaces().get(edge.getInt2());
+    assert iface2 != null;
     Vrf vrf2 = iface2.getVrf();
+    assert vrf2 != null;
     IsisProcess proc2 = vrf2.getIsisProcess();
     if (proc2 == null) {
       return empty();

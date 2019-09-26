@@ -38,6 +38,8 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -50,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
@@ -92,6 +95,11 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
+import org.batfish.representation.f5_bigip.ImishInterface;
+import org.batfish.representation.f5_bigip.OspfInterface;
+import org.batfish.representation.f5_bigip.OspfNetwork;
+import org.batfish.representation.f5_bigip.OspfNetworkType;
+import org.batfish.representation.f5_bigip.OspfProcess;
 import org.batfish.representation.f5_bigip.PrefixList;
 import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
@@ -204,6 +212,8 @@ public final class F5BigipImishGrammarTest {
         notNullValue());
     VendorConfiguration vc = extractor.getVendorConfiguration();
     assertThat(vc, instanceOf(F5BigipConfiguration.class));
+    // crash if not serializable
+    SerializationUtils.clone(vc);
     return (F5BigipConfiguration) vc;
   }
 
@@ -306,6 +316,12 @@ public final class F5BigipImishGrammarTest {
     assertTrue(
         "Ensure always-compare-med is extracted",
         vc.getBgpProcesses().get("123").getAlwaysCompareMed());
+  }
+
+  @Test
+  public void testBgpConfederationExtraction() {
+    // TODO: test extraction
+    assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_confederation"));
   }
 
   @Test
@@ -640,6 +656,39 @@ public final class F5BigipImishGrammarTest {
 
     // BGP Router-ID manually set
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testOspfExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_ospf");
+
+    assertThat(vc.getImishInterfaces(), hasKeys("vlan_active", "vlan_passive"));
+    {
+      ImishInterface iface = vc.getImishInterfaces().get("vlan_active");
+      assertThat(iface.getName(), equalTo("vlan_active"));
+      OspfInterface ospf = iface.getOspf();
+      assertNotNull(ospf);
+      assertThat(ospf.getNetwork(), equalTo(OspfNetworkType.NON_BROADCAST));
+    }
+    {
+      ImishInterface iface = vc.getImishInterfaces().get("vlan_passive");
+      assertNull(iface.getOspf());
+    }
+
+    assertThat(vc.getOspfProcesses(), hasKeys("1"));
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("1");
+      assertThat(proc.getName(), equalTo("1"));
+      assertThat(proc.getRouterId(), equalTo(Ip.parse("10.0.1.1")));
+      assertThat(proc.getPassiveInterfaces(), contains("vlan_passive"));
+      assertThat(proc.getNetworks(), hasKeys(Prefix.strict("10.0.1.0/30")));
+      {
+        OspfNetwork network = proc.getNetworks().get(Prefix.strict("10.0.1.0/30"));
+        assertThat(network.getArea(), equalTo(0L));
+        assertThat(network.getPrefix(), equalTo(Prefix.strict("10.0.1.0/30")));
+      }
+      assertThat(proc.getNeighbors(), contains(Ip.parse("10.0.1.2")));
+    }
   }
 
   @Test

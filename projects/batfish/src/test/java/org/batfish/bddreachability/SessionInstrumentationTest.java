@@ -56,26 +56,26 @@ public final class SessionInstrumentationTest {
   private static final String LAST_HOP_VAR_NAME = "lastHop";
 
   // hostnames
-  private static String FW = "FW";
-  private static String SOURCE1 = "SOURCE1";
-  private static String SOURCE2 = "SOURCE2";
+  private static final String FW = "fw";
+  private static final String SOURCE1 = "source1";
+  private static final String SOURCE2 = "source2";
 
   // vrf names
-  private static String FW_VRF = "FW:VRF";
+  private static final String FW_VRF = FW + ":VRF";
 
   // interface names
-  private static String FW_I1 = "FW:I1";
-  private static String SOURCE1_IFACE = "SOURCE1:IFACE";
-  private static String SOURCE2_IFACE = "SOURCE2:IFACE";
-  private static String FAKE_IFACE = "FAKE_IFACE";
+  private static final String FW_I1 = "FW:I1";
+  private static final String SOURCE1_IFACE = "SOURCE1:IFACE";
+  private static final String SOURCE2_IFACE = "SOURCE2:IFACE";
+  private static final String FAKE_IFACE = "FAKE_IFACE";
 
   // ACLs
-  private static String PERMIT_TCP = "permit tcp";
+  private static final String PERMIT_TCP = "permit tcp";
 
   // BDD stuff
-  private static BDDPacket PKT = new BDDPacket();
-  private static BDD ONE = PKT.getFactory().one();
-  private static BDD ZERO = PKT.getFactory().zero();
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final BDD ONE = PKT.getFactory().one();
+  private static final BDD ZERO = PKT.getFactory().zero();
 
   @Rule public ExpectedException _exception = ExpectedException.none();
 

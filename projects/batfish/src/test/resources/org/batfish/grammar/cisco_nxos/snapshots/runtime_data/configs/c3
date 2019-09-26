@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname c3
+!
+
+interface Ethernet1/0
+  ! Mbps
+  speed 100
+  ! Kbps
+  bandwidth 200000
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/1
+  ! Mbps
+  speed 100
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/2
+  ! Kbps
+ bandwidth 100000
+  duplex full
+  no negotiate auto
+
+interface Ethernet1/3
+  duplex full
+  no negotiate auto
