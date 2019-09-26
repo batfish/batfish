@@ -1,6 +1,6 @@
 parser grammar CumulusFrrParser;
 
-import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_ip_community_list, CumulusFrr_ip_prefix_list, CumulusFrr_routemap, CumulusFrr_vrf;
+import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_ip_community_list, CumulusFrr_ip_prefix_list, CumulusFrr_ospf, CumulusFrr_routemap, CumulusFrr_vrf;
 
 options {
   superClass =
@@ -30,6 +30,7 @@ statement
   | LINE VTY NEWLINE
   | LOG SYSLOG INFORMATIONAL NEWLINE
   | s_interface
+  | s_router_ospf
 ;
 
 s_agentx

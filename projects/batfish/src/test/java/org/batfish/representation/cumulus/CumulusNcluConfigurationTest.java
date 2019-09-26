@@ -39,6 +39,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -503,5 +504,58 @@ public class CumulusNcluConfigurationTest {
       Result result = importPolicy.call(envIpv4);
       assertFalse(result.getBooleanValue());
     }
+  }
+
+  @Test
+  public void testToOspfProcess_NoRouterId() {
+    OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
+    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(
+        ospfProcess.getReferenceBandwidth(),
+        equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testToOspfProcess_InferRouterId() {
+    OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Loopback lo = ncluConfiguration.getLoopback();
+    lo.setConfigured(true);
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(
+        ospfProcess.getReferenceBandwidth(),
+        equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testToOspfProcess_ConfigedRouterId() {
+    OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+    ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
+
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(
+        ospfProcess.getReferenceBandwidth(),
+        equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testInferRouterID() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Loopback lo = ncluConfiguration.getLoopback();
+    lo.setConfigured(true);
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
+    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("1.1.1.1")));
   }
 }
