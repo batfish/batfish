@@ -23,6 +23,15 @@ net self /Common/10.0.1.1/30 {
     traffic-group /Common/traffic-group-local-only
     vlan /Common/vlan_active
 }
+net self /Common/10.0.2.1/30 {
+    address 10.0.2.1/30
+    allow-service {
+        default
+    }
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/vlan_passive
+}
+
 
 net self-allow {
     defaults {
@@ -60,5 +69,6 @@ router ospf 1
  ospf router-id 10.0.1.1
  passive-interface vlan_passive
  network 10.0.1.0/30 area 0
+ network 10.0.2.0/30 area 0
  neighbor 10.0.1.2
 !

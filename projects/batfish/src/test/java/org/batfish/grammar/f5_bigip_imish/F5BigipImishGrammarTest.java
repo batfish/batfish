@@ -30,6 +30,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGH
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -85,6 +86,8 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -97,7 +100,6 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.ImishInterface;
 import org.batfish.representation.f5_bigip.OspfInterface;
-import org.batfish.representation.f5_bigip.OspfNetwork;
 import org.batfish.representation.f5_bigip.OspfNetworkType;
 import org.batfish.representation.f5_bigip.OspfProcess;
 import org.batfish.representation.f5_bigip.PrefixList;
@@ -681,13 +683,50 @@ public final class F5BigipImishGrammarTest {
       assertThat(proc.getName(), equalTo("1"));
       assertThat(proc.getRouterId(), equalTo(Ip.parse("10.0.1.1")));
       assertThat(proc.getPassiveInterfaces(), contains("vlan_passive"));
-      assertThat(proc.getNetworks(), hasKeys(Prefix.strict("10.0.1.0/30")));
-      {
-        OspfNetwork network = proc.getNetworks().get(Prefix.strict("10.0.1.0/30"));
-        assertThat(network.getArea(), equalTo(0L));
-        assertThat(network.getPrefix(), equalTo(Prefix.strict("10.0.1.0/30")));
-      }
+      assertThat(
+          proc.getNetworks(),
+          equalTo(
+              ImmutableMap.of(Prefix.strict("10.0.1.0/30"), 0L, Prefix.strict("10.0.2.0/30"), 0L)));
       assertThat(proc.getNeighbors(), contains(Ip.parse("10.0.1.2")));
+    }
+  }
+
+  @Test
+  public void testOspfConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_ospf");
+
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1"));
+
+    org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("1");
+    assertNotNull(proc);
+    assertThat(proc.getRouterId(), equalTo(Ip.parse("10.0.1.1")));
+    assertThat(proc.getAreas(), hasKeys(0L));
+    {
+      OspfArea area = proc.getAreas().get(0L);
+      assertThat(
+          area.getInterfaces(), containsInAnyOrder("/Common/vlan_active", "/Common/vlan_passive"));
+    }
+
+    assertThat(c.getAllInterfaces(), hasKeys("/Common/vlan_active", "/Common/vlan_passive"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_active");
+      OspfInterfaceSettings ospf = iface.getOspfSettings();
+      assertNotNull(ospf);
+      assertTrue(ospf.getEnabled());
+      assertThat(ospf.getAreaName(), equalTo(0L));
+      assertThat(
+          ospf.getNetworkType(),
+          equalTo(org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS));
+      assertFalse(ospf.getPassive());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_passive");
+      OspfInterfaceSettings ospf = iface.getOspfSettings();
+      assertNotNull(ospf);
+      assertTrue(ospf.getEnabled());
+      assertThat(ospf.getAreaName(), equalTo(0L));
+      // network type does not matter
+      assertTrue(ospf.getPassive());
     }
   }
 
