@@ -568,7 +568,7 @@ public class CumulusNcluConfigurationTest {
   public void testAddOspfArea_HasArea() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
-    vsIface.setOspfArea(1L);
+    vsIface.getOrCreateOspf().setOspfArea(1L);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
 
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);

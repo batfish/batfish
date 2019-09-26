@@ -1164,11 +1164,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .forEach(
             (ifaceName, iface) -> {
               Interface vsIface = _interfaces.get(iface.getName());
-              Long areaNum = vsIface.getOspfArea();
-              if (areaNum == null) {
+              OspfInterface ospfInterface = vsIface.getOspf();
+              if (ospfInterface == null) {
                 // no ospf running on this interface
                 return;
               }
+
+              Long areaNum = ospfInterface.getOspfArea();
 
               OspfArea.Builder areaBuilder =
                   areas.computeIfAbsent(

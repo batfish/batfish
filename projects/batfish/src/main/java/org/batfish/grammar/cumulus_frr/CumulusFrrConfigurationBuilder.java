@@ -367,7 +367,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
 
-    _currentInterface.setOspfArea(Ip.parse(ctx.ip.getText()).asLong());
+    _currentInterface.getOrCreateOspf().setOspfArea(Ip.parse(ctx.ip.getText()).asLong());
   }
 
   @Override

@@ -854,7 +854,7 @@ public class CumulusFrrGrammarTest {
     CONFIG.getInterfaces().put("swp1", i1);
     parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0\n");
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
-    assertThat(CONFIG.getInterfaces().get("swp1").getOspfArea(), equalTo(0L));
+    assertThat(CONFIG.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
   }
 
   @Test
@@ -869,5 +869,12 @@ public class CumulusFrrGrammarTest {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     CONFIG.getInterfaces().put("swp1", i1);
     parse("interface swp1\n ip ospf message-digest-key 1 md5 <SCRUBBED>\n");
+  }
+
+  @Test
+  public void testInterface_ospf_p2p() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1\n ip ospf network point-to-point\n");
   }
 }
