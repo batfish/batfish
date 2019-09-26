@@ -154,6 +154,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull Bridge _bridge;
   private transient Configuration _c;
   private @Nullable String _hostname;
+  private @Nullable OspfProcess _ospfProcess;
   private @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
@@ -689,6 +690,31 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             });
   }
 
+  void convertOspfProcess() {
+    if (_ospfProcess == null) {
+      return;
+    }
+
+    _ospfProcess
+        .getVrfs()
+        .values()
+        .forEach(
+            ospfVrf -> {
+              org.batfish.datamodel.Vrf vrf =
+                  ospfVrf.getVrfName().equals(Configuration.DEFAULT_VRF_NAME)
+                      ? _c.getDefaultVrf()
+                      : _c.getVrfs().get(ospfVrf.getVrfName());
+
+              if (vrf == null) {
+                _w.redFlag(String.format("Vrf %s is not found.", ospfVrf.getVrfName()));
+                return;
+              }
+
+              org.batfish.datamodel.ospf.OspfProcess ospfProcess = toOspfProcess(ospfVrf);
+              vrf.addOspfProcess(ospfProcess);
+            });
+  }
+
   private void convertBondInterfaces() {
     _bonds.forEach((name, bond) -> _c.getAllInterfaces().put(name, toInterface(bond)));
   }
@@ -935,6 +961,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _loopback;
   }
 
+  public @Nullable OspfProcess getOspfProcess() {
+    return _ospfProcess;
+  }
+
   public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
   }
@@ -1043,6 +1073,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _hostname = hostname == null ? null : hostname.toLowerCase();
   }
 
+  public void setOspfProcess(@Nullable OspfProcess ospfProcess) {
+    _ospfProcess = ospfProcess;
+  }
+
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
@@ -1096,6 +1130,34 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     generateBgpCommonExportPolicy(vrfName, bgpVrf);
 
     return newProc;
+  }
+
+  @VisibleForTesting
+  org.batfish.datamodel.ospf.OspfProcess toOspfProcess(OspfVrf ospfVrf) {
+    Ip routerId = ospfVrf.getRouterId();
+    if (routerId == null) {
+      routerId = inferRouteId();
+    }
+
+    org.batfish.datamodel.ospf.OspfProcess.Builder builder =
+        org.batfish.datamodel.ospf.OspfProcess.builder();
+
+    builder
+        .setRouterId(routerId)
+        .setProcessId("1")
+        .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
+
+    return builder.build();
+  }
+
+  @VisibleForTesting
+  Ip inferRouteId() {
+    // https://github.com/coreswitch/zebra/blob/master/docs/router-id.md
+    // TODO: checking physical interfaces and largest lo IP
+    if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
+      return _loopback.getAddresses().get(0).getIp();
+    }
+    return Ip.parse("0.0.0.0");
   }
 
   /**
@@ -1402,6 +1464,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertDnsServers();
     convertClags();
     convertVxlans();
+    convertOspfProcess();
     convertBgpProcess();
 
     initVendorFamily();

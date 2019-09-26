@@ -47629,7 +47629,8 @@
             "          OSPF:'ospf'",
             "          (iipo_network",
             "            NETWORK:'network'",
-            "            NON_BROADCAST:'non-broadcast'",
+            "            type = (ospf_network_type",
+            "              NON_BROADCAST:'non-broadcast')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_interface",
@@ -76568,18 +76569,6 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 18,
-              "Parser_Context" : "[i_ip s_interface statement f5_bigip_imish_configuration]",
-              "Text" : "ip ospf network non-broadcast"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 26,
-              "Parser_Context" : "[s_router statement f5_bigip_imish_configuration]",
-              "Text" : "router ospf 65001"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 34,
               "Parser_Context" : "[rb_bgp router_bgp s_router statement f5_bigip_imish_configuration]",
               "Text" : "bgp confederation identifier 65001"
@@ -81071,6 +81060,33 @@
         },
         "configs/f5_bigip/f5_bigip_structured_sys" : { },
         "configs/f5_bigip/f5_bigip_structured_with_imish" : {
+          "IMISH interface" : {
+            "lo" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 1
+            },
+            "tmm" : {
+              "definitionLines" : [
+                15
+              ],
+              "numReferrers" : 1
+            },
+            "vlan_active" : {
+              "definitionLines" : [
+                17,
+                18
+              ],
+              "numReferrers" : 1
+            },
+            "vlan_passive" : {
+              "definitionLines" : [
+                20
+              ],
+              "numReferrers" : 2
+            }
+          },
           "access-list" : {
             "acl1" : {
               "definitionLines" : [
@@ -81199,6 +81215,18 @@
                 68,
                 69,
                 71
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "router ospf" : {
+            "65001" : {
+              "definitionLines" : [
+                26,
+                27,
+                28,
+                29,
+                30
               ],
               "numReferrers" : 1
             }
@@ -88583,6 +88611,31 @@
           }
         },
         "configs/f5_bigip/f5_bigip_structured_with_imish" : {
+          "IMISH interface" : {
+            "lo" : {
+              "IMISH interface self-reference" : [
+                13
+              ]
+            },
+            "tmm" : {
+              "IMISH interface self-reference" : [
+                15
+              ]
+            },
+            "vlan_active" : {
+              "IMISH interface self-reference" : [
+                17
+              ]
+            },
+            "vlan_passive" : {
+              "IMISH interface self-reference" : [
+                20
+              ],
+              "router ospf passive-interface" : [
+                28
+              ]
+            }
+          },
           "access-list" : {
             "acl1" : {
               "route-map match ip address" : [
@@ -88657,6 +88710,13 @@
             "rm1" : {
               "router bgp redistribute kernel route-map" : [
                 58
+              ]
+            }
+          },
+          "router ospf" : {
+            "65001" : {
+              "router ospf self-reference" : [
+                26
               ]
             }
           }

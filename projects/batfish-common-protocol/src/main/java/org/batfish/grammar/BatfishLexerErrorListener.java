@@ -30,8 +30,7 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
     List<String> ruleNames = Arrays.asList(parser.getRuleNames());
     ParserRuleContext ctx = parser.getContext();
     String ruleStack = ctx.toString(ruleNames);
-    String text = _combinedParser.getInput();
-    String[] lines = text.split("\n", -1);
+    String[] lines = _combinedParser.getInputLines();
     int errorLineIndex = line - 1;
     if (!_settings.getDisableUnrecognized()) {
       // no recovery, so have to store error node for parse tree listener to process later

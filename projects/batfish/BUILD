@@ -38,6 +38,7 @@ java_library(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/juniper",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/mrv",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto_nested",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/eos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/ios",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/nxos",
@@ -104,9 +105,9 @@ junit_tests(
     srcs = glob([
         "src/test/**/*Test.java",
     ]),
-    resources = glob([
-        "src/test/resources/**",
-    ]),
+    resources = [
+        "//projects/batfish/src/test/resources",
+    ],
     deps = [
         ":batfish",
         ":batfish_testlib",

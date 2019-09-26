@@ -8,6 +8,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.topology.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CommonUtil.detectCharset;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
@@ -110,6 +111,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.topology.SnapshotRuntimeData;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -173,6 +175,8 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
+import org.batfish.grammar.palo_alto_nested.PaloAltoNestedCombinedParser;
+import org.batfish.grammar.palo_alto_nested.PaloAltoNestedFlattener;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.identifiers.AnalysisId;
@@ -283,9 +287,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ConfigurationFormat format,
       String header) {
     switch (format) {
-      case JUNIPER:
-        // Just use the Juniper flattener for PaloAlto for now since the process is identical
       case PALO_ALTO_NESTED:
+        {
+          PaloAltoNestedCombinedParser parser = new PaloAltoNestedCombinedParser(input, settings);
+          ParserRuleContext tree = parse(parser, logger, settings);
+          PaloAltoNestedFlattener flattener = new PaloAltoNestedFlattener(header);
+          ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
+          try {
+            walker.walk(flattener, tree);
+          } catch (BatfishParseException e) {
+            warnings.setErrorDetails(e.getErrorDetails());
+            throw new BatfishException(
+                String.format("Error flattening %s config", format.getVendorString()), e);
+          }
+          return flattener;
+        }
+
+      case JUNIPER:
         {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
@@ -771,6 +789,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Map<String, Configuration> convertConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
+      SnapshotRuntimeData runtimeData,
       ConvertConfigurationAnswerElement answerElement) {
     _logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
     _logger.resetTimer();
@@ -778,7 +797,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<ConvertConfigurationJob> jobs = new ArrayList<>();
     for (Entry<String, GenericConfigObject> config : vendorConfigurations.entrySet()) {
       GenericConfigObject vc = config.getValue();
-      ConvertConfigurationJob job = new ConvertConfigurationJob(_settings, vc, config.getKey());
+      ConvertConfigurationJob job =
+          new ConvertConfigurationJob(
+              _settings, runtimeData.getRuntimeData(config.getKey()), vc, config.getKey());
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -1001,11 +1022,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /** Returns a map of hostname to VI {@link Configuration} */
   public Map<String, Configuration> getConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
+      SnapshotRuntimeData runtimeData,
       ConvertConfigurationAnswerElement answerElement) {
     Map<String, Configuration> configurations =
-        convertConfigurations(vendorConfigurations, answerElement);
+        convertConfigurations(vendorConfigurations, runtimeData, answerElement);
 
     identifyDeviceTypes(configurations.values());
     return configurations;
@@ -2343,6 +2366,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (_settings.getVerboseParse()) {
         answer.addAnswerElement(answerElement);
       }
+
+      NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+      SnapshotRuntimeData runtimeData =
+          firstNonNull(
+              _storage.loadRuntimeData(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()),
+              EMPTY_SNAPSHOT_RUNTIME_DATA);
       Map<String, GenericConfigObject> vendorConfigs;
       Map<String, Configuration> configurations;
       try (ActiveSpan convertSpan =
@@ -2351,7 +2380,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .startActive()) {
         assert convertSpan != null; // avoid unused warning
         vendorConfigs = deserializeVendorConfigurations(vendorConfigPath);
-        configurations = getConfigurations(vendorConfigs, answerElement);
+        configurations = getConfigurations(vendorConfigs, runtimeData, answerElement);
       }
 
       addInternetAndIspNodes(configurations, vendorConfigs, answerElement.getWarnings());
