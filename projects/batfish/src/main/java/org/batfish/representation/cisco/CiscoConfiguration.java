@@ -3767,7 +3767,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .map(ConcreteInterfaceAddress::getIp)
                         .orElse(null);
                 // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
-                if (tunnel.getMode() != TunnelMode.IPSEC) {
+                if (tunnel.getMode() != TunnelMode.IPSEC_IPV4) {
                   // Ensure we have both src and dst IPs, otherwise don't convert
                   if (tunnel.getDestination() != null
                       && (tunnel.getSourceAddress() != null || parentIp != null)) {
@@ -3881,7 +3881,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String name = e.getKey();
       Interface iface = e.getValue();
       Tunnel tunnel = iface.getTunnel();
-      if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
+      if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
           _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
           continue;

@@ -66,7 +66,6 @@ import org.batfish.datamodel.Ip6AccessListLine;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
@@ -787,10 +786,7 @@ public class CiscoConversions {
         newLine.getDstIps().add(dstIpWildcard);
       }
       // TODO: src/dst address group
-      IpProtocol protocol = fromLine.getProtocol();
-      if (protocol != IpProtocol.IP) {
-        newLine.getIpProtocols().add(protocol);
-      }
+      fromLine.getProtocol().ifPresent(p -> newLine.getIpProtocols().add(p));
       newLine.getDstPorts().addAll(fromLine.getDstPorts());
       newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
       Integer icmpType = fromLine.getIcmpType();
@@ -1394,7 +1390,7 @@ public class CiscoConversions {
 
   /**
    * Populates the {@link RoutingPolicy}s for inbound {@link DistributeList}s which use {@link
-   * PrefixList} as the {@link DistributeList#_filterType}. {@link
+   * PrefixList} as the {@link DistributeList#getFilterType()}. {@link
    * DistributeListFilterType#ROUTE_MAP} and {@link DistributeListFilterType#ACCESS_LIST} are not
    * supported currently.
    *

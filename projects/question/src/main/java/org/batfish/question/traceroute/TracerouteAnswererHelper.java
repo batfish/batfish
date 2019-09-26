@@ -182,7 +182,7 @@ public final class TracerouteAnswererHelper {
     setDstIp(constraints, builder);
 
     // Set defaults for protocol, and ports and packet lengths:
-    if (builder.getIpProtocol() == null || builder.getIpProtocol() == IpProtocol.IP) {
+    if (builder.getIpProtocol() == null) {
       builder.setIpProtocol(IpProtocol.UDP);
     }
     // set SYN if the user didn't specify any TCP flags

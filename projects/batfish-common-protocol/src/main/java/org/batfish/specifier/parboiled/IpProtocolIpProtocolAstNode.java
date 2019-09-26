@@ -1,8 +1,7 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Parser.VALID_IP_PROTOCOLS;
-
 import com.google.common.base.MoreObjects;
+import java.util.Arrays;
 import java.util.Objects;
 import org.batfish.datamodel.IpProtocol;
 
@@ -10,11 +9,11 @@ final class IpProtocolIpProtocolAstNode implements IpProtocolAstNode {
   private final IpProtocol _ipProtocol;
 
   static boolean isValidName(String name) {
-    return VALID_IP_PROTOCOLS.stream().anyMatch(p -> p.toString().equalsIgnoreCase(name));
+    return Arrays.stream(IpProtocol.values()).anyMatch(p -> p.toString().equalsIgnoreCase(name));
   }
 
   static boolean isValidNumber(int number) {
-    return VALID_IP_PROTOCOLS.stream().anyMatch(p -> p.number() == number);
+    return number >= 0 && number < 256;
   }
 
   IpProtocolIpProtocolAstNode(String nameOrNum) {

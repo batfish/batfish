@@ -1,7 +1,6 @@
 package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.specifier.parboiled.Parser.VALID_IP_PROTOCOLS;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -45,7 +44,7 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
     }
 
     Set<IpProtocol> toIpProtocols() {
-      return Sets.difference(_including.isEmpty() ? VALID_IP_PROTOCOLS : _including, _excluding);
+      return Sets.difference(_including.isEmpty() ? IP_PROTOCOLS_SET : _including, _excluding);
     }
 
     static IpProtocolSets union(IpProtocolSets sets1, IpProtocolSets sets2) {
@@ -54,6 +53,8 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
           Sets.union(sets1._excluding, sets2._excluding));
     }
   }
+
+  static final Set<IpProtocol> IP_PROTOCOLS_SET = ImmutableSet.copyOf(IpProtocol.values());
 
   @ParametersAreNonnullByDefault
   private final class IpProtocolAstNodeToIpProtocols

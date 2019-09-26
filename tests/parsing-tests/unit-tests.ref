@@ -24802,7 +24802,7 @@
             "          TUNNEL:'tunnel'",
             "          (iftunnel_mode",
             "            MODE:'mode'",
-            "            GRE:'gre'",
+            "            gre_ipv4 = GRE:'gre'",
             "            IPV4:'ipv4'",
             "            NEWLINE:'\\n')))",
             "      (if_inner",
@@ -24810,7 +24810,7 @@
             "          TUNNEL:'tunnel'",
             "          (iftunnel_mode",
             "            MODE:'mode'",
-            "            GRE:'gre'",
+            "            gre_multipoint = GRE:'gre'",
             "            MULTIPOINT:'multipoint'",
             "            NEWLINE:'\\n')))",
             "      (if_inner",
@@ -74652,6 +74652,12 @@
               "Line" : 281,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
               "Text" : "zone-member t1"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 316,
+              "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
+              "Text" : "mode gre ipv4"
             },
             {
               "Comment" : "This feature is not currently supported",
