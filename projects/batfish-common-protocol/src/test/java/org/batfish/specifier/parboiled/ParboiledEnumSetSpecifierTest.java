@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Set;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.junit.Test;
 
 /** Tests for {@link ParboiledEnumSetSpecifier} */
@@ -145,5 +146,24 @@ public class ParboiledEnumSetSpecifierTest {
                 ImmutableSet.of(
                     NamedStructurePropertySpecifier.IP_ACCESS_LIST,
                     NamedStructurePropertySpecifier.IP_6_ACCESS_LIST))));
+  }
+
+  @Test
+  public void testResolveGroups() {
+    assertThat(
+        // ! bgp
+        new ParboiledEnumSetSpecifier<>(
+                new NotEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        "bgp", Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER))),
+                Grammar.ROUTING_PROTOCOL_SPECIFIER)
+            .resolve(),
+        equalTo(
+            Sets.difference(
+                RoutingProtocolSpecifier.getAllProtocolKeys(),
+                ImmutableSet.builder()
+                    .addAll(RoutingProtocolSpecifier.getGroupings().get("bgp"))
+                    .add("bgp")
+                    .build())));
   }
 }
