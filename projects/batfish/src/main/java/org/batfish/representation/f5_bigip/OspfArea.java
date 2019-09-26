@@ -9,7 +9,7 @@ public final class OspfArea implements Serializable {
   private static final int DEFAULT_DEFAULT_COST = 1;
 
   /**
-   * Cost for a default summary route sent into a stub or NSSA area
+   * Default cost for a default summary route sent into a stub or NSSA area.
    *
    * @see <a
    *     href="https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf">F5
@@ -23,6 +23,7 @@ public final class OspfArea implements Serializable {
     _id = id;
   }
 
+  /** Cost for a default summary route sent into a stub or NSSA area. */
   public int getDefaultCost() {
     return _defaultCost;
   }
