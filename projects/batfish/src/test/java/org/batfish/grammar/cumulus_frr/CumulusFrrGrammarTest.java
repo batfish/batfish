@@ -54,6 +54,7 @@ import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -876,5 +877,6 @@ public class CumulusFrrGrammarTest {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     CONFIG.getInterfaces().put("swp1", i1);
     parse("interface swp1\n ip ospf network point-to-point\n");
+    assertThat(i1.getOspf().getNetwork(), equalTo(OspfNetworkType.POINT_TO_POINT));
   }
 }

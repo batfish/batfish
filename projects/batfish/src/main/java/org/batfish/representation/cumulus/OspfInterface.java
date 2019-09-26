@@ -6,6 +6,15 @@ import javax.annotation.Nullable;
 /** Interface Ospf data */
 public class OspfInterface implements Serializable {
   private @Nullable Long _ospfArea;
+  private @Nullable OspfNetworkType _network;
+
+  public @Nullable OspfNetworkType getNetwork() {
+    return _network;
+  }
+
+  public void setNetwork(@Nullable OspfNetworkType network) {
+    _network = network;
+  }
 
   @Nullable
   public Long getOspfArea() {
