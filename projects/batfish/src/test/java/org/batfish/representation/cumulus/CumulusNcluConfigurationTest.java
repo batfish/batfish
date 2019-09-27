@@ -597,7 +597,7 @@ public class CumulusNcluConfigurationTest {
   @Test
   public void testAddOspfInterfaces_NoNetworkType() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
     vsIface.getOrCreateOspf().setOspfArea(0L);
 
@@ -610,9 +610,41 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
+  public void testAddOspfInterfaces_NoPassiveInterface() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf();
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf);
+    assertFalse(viIface.getOspfPassive());
+  }
+
+  @Test
+  public void testAddOspfInterfaces_PassiveInterface() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    OspfInterface ospf = vsIface.getOrCreateOspf();
+    ospf.setOspfArea(0L);
+    ospf.setPassive(true);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf);
+    assertTrue(viIface.getOspfPassive());
+  }
+
+  @Test
   public void testAddOspfInterfaces_NetworkTypeP2P() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
     vsIface.getOrCreateOspf().setOspfArea(0L);
     vsIface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
