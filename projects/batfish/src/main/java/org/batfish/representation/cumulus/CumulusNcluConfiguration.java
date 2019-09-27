@@ -1177,7 +1177,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
               iface.setOspfSettings(
                   OspfInterfaceSettings.builder()
-                      .setPassive(false)
+                      .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
                       .setAreaName(ospfInterface.getOspfArea())
                       .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
                       .build());
