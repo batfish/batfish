@@ -2080,8 +2080,9 @@
             "cost" : 1,
             "deadInterval" : 120,
             "enabled" : true,
-            "helloInterval" : 30,
+            "helloInterval" : 10,
             "helloMultiplier" : 0,
+            "networkType" : "BROADCAST",
             "passive" : false,
             "process" : "1"
           },
@@ -2186,8 +2187,9 @@
             "cost" : 1,
             "deadInterval" : 120,
             "enabled" : true,
-            "helloInterval" : 30,
+            "helloInterval" : 10,
             "helloMultiplier" : 0,
+            "networkType" : "BROADCAST",
             "passive" : false,
             "process" : "1"
           },
@@ -2296,8 +2298,9 @@
             "cost" : 1,
             "deadInterval" : 120,
             "enabled" : true,
-            "helloInterval" : 30,
+            "helloInterval" : 10,
             "helloMultiplier" : 0,
+            "networkType" : "BROADCAST",
             "passive" : true,
             "process" : "1"
           },

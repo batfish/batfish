@@ -2512,8 +2512,9 @@
               "cost" : 10,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -8178,6 +8179,7 @@
               "enabled" : false,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "outgoingTransformation" : {
@@ -8638,8 +8640,9 @@
               "cost" : 60,
               "deadInterval" : 120,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "outgoingFilter" : "~COMBINED_OUTGOING_ACL~inside~",
@@ -10497,8 +10500,9 @@
               "cost" : 4000,
               "deadInterval" : 120,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -10533,8 +10537,9 @@
             "ospfSettings" : {
               "deadInterval" : 120,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "prefix" : "4.4.4.0/24",
@@ -10869,8 +10874,9 @@
             "ospfSettings" : {
               "deadInterval" : 120,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "prefix" : "2.2.2.0/24",
@@ -10931,8 +10937,9 @@
               "cost" : 10,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -10969,8 +10976,9 @@
               "cost" : 10,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "ignored"
             },
@@ -11230,8 +11238,9 @@
             "ospfSettings" : {
               "deadInterval" : 120,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "prefix" : "2.2.2.0/24",
@@ -17257,8 +17266,9 @@
               "cost" : 10,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -17296,8 +17306,9 @@
               "cost" : 10,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -19493,8 +19504,9 @@
               "area" : 0,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19525,8 +19537,9 @@
               "area" : 0,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19558,8 +19571,9 @@
               "cost" : 1,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : true,
               "process" : "2"
             },
@@ -19591,8 +19605,9 @@
               "cost" : 1,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19624,8 +19639,9 @@
               "cost" : 1,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19657,8 +19673,9 @@
               "cost" : 1,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : true,
               "process" : "2"
             },
@@ -19690,8 +19707,9 @@
               "cost" : 1,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19724,8 +19742,9 @@
               "cost" : 1,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : true,
               "process" : "2"
             },
@@ -19758,8 +19777,9 @@
               "cost" : 1,
               "deadInterval" : 120,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : true,
               "process" : "2"
             },
