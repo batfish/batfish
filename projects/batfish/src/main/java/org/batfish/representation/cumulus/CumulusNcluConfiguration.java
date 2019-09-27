@@ -1184,7 +1184,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             });
   }
 
-  private SortedMap<Long, OspfArea> computeOspfAreas(Collection<String> interfaces) {
+  @VisibleForTesting
+  SortedMap<Long, OspfArea> computeOspfAreas(Collection<String> interfaces) {
     Map<Long, List<String>> areaInterfaces =
         interfaces.stream()
             .map(_interfaces::get)

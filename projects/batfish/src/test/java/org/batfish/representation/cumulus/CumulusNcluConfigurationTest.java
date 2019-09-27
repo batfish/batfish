@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.SortedMap;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -580,27 +581,6 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
-  public void testToOspfProcess_HasArea() {
-    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
-    vsIface.getOrCreateOspf().setOspfArea(1L);
-    ncluConfiguration.getInterfaces().put("iface", vsIface);
-
-    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
-    org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
-
-    OspfProcess proc =
-        ncluConfiguration.toOspfProcess(new OspfVrf(Configuration.DEFAULT_VRF_NAME), vrf);
-    assertThat(viIface.getOspfAreaName(), equalTo(1L));
-    assertThat(
-        proc.getAreas(),
-        equalTo(
-            ImmutableSortedMap.of(
-                1L, OspfArea.builder().addInterface("iface").setNumber(1L).build())));
-  }
-
-  @Test
   public void testAddOspfInterfaces_NoArea() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
@@ -612,21 +592,6 @@ public class CumulusNcluConfigurationTest {
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
     assertNull(viIface.getOspfAreaName());
-  }
-
-  @Test
-  public void testToOspfProcess_NoArea() {
-    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
-    ncluConfiguration.getInterfaces().put("iface", vsIface);
-    vsIface.getOrCreateOspf();
-
-    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
-    org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
-
-    org.batfish.datamodel.ospf.OspfProcess proc =
-        ncluConfiguration.toOspfProcess(new OspfVrf(Configuration.DEFAULT_VRF_NAME), vrf);
-    assertThat(proc.getAreas(), equalTo(ImmutableSortedMap.of()));
   }
 
   @Test
@@ -660,5 +625,31 @@ public class CumulusNcluConfigurationTest {
     assertThat(
         viIface.getOspfNetworkType(),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Test
+  public void testComputeOspfProcess_HasArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    vsIface.getOrCreateOspf().setOspfArea(1L);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+
+    SortedMap<Long, OspfArea> areas = ncluConfiguration.computeOspfAreas(ImmutableList.of("iface"));
+    assertThat(
+        areas,
+        equalTo(
+            ImmutableSortedMap.of(
+                1L, OspfArea.builder().addInterface("iface").setNumber(1L).build())));
+  }
+
+  @Test
+  public void testComputeOspfProcess_NoArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf();
+
+    SortedMap<Long, OspfArea> areas = ncluConfiguration.computeOspfAreas(ImmutableList.of("iface"));
+    assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 }
