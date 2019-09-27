@@ -2,6 +2,8 @@ package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -23,6 +25,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,8 +36,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -1153,14 +1158,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
             .build();
 
-    addOspfInterfaces(proc, vrf);
+    addOspfInterfaces(vrf);
+    proc.setAreas(computeOspfAreas(vrf.getInterfaceNames()));
     return proc;
   }
 
   @VisibleForTesting
-  void addOspfInterfaces(
-      org.batfish.datamodel.ospf.OspfProcess proc, org.batfish.datamodel.Vrf vrf) {
-    Map<Long, OspfArea.Builder> areas = new HashMap<>();
+  void addOspfInterfaces(org.batfish.datamodel.Vrf vrf) {
     vrf.getInterfaces()
         .forEach(
             (ifaceName, iface) -> {
@@ -1171,22 +1175,29 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 return;
               }
 
-              Long areaNum = ospfInterface.getOspfArea();
-
-              OspfArea.Builder areaBuilder =
-                  areas.computeIfAbsent(
-                      areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
-              areaBuilder.addInterface(ifaceName);
-
               iface.setOspfSettings(
                   OspfInterfaceSettings.builder()
                       .setPassive(false)
-                      .setAreaName(areaNum)
+                      .setAreaName(ospfInterface.getOspfArea())
                       .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
                       .build());
             });
+  }
 
-    proc.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
+  private SortedMap<Long, OspfArea> computeOspfAreas(Collection<String> interfaces) {
+    Map<Long, List<String>> areaInterfaces =
+        interfaces.stream()
+            .map(_interfaces::get)
+            .filter(vsIface -> vsIface.getOspf() != null && vsIface.getOspf().getOspfArea() != null)
+            .collect(
+                groupingBy(
+                    vsIface -> vsIface.getOspf().getOspfArea(),
+                    mapping(Interface::getName, Collectors.toList())));
+
+    return toImmutableSortedMap(
+        areaInterfaces,
+        Entry::getKey,
+        e -> OspfArea.builder().setNumber(e.getKey()).addInterfaces(e.getValue()).build());
   }
 
   private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
