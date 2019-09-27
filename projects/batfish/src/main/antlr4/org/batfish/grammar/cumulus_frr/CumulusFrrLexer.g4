@@ -178,6 +178,16 @@ EBGP_MULTIHOP
   'ebgp-multihop'
 ;
 
+FILE
+:
+  'file' -> pushMode(M_Remark)
+;
+
+FORWARDING
+:
+  'forwarding'
+;
+
 FRR
 :
   'frr'
@@ -244,6 +254,11 @@ IP
 IPV4
 :
   'ipv4'
+;
+
+IPV6
+:
+  'ipv6'
 ;
 
 IP_ADDRESS
@@ -316,6 +331,11 @@ NEXT_HOP_SELF
   'next-hop-self'
 ;
 
+NO
+:
+  'no'
+;
+
 OSPF
 :
   'ospf'
@@ -334,6 +354,11 @@ PASSIVE_INTERFACE
 PASSWORD
 :
   'password' -> pushMode(M_Remark)
+;
+
+PASSWORD_ENCRYPTION
+:
+  'password-encryption'
 ;
 
 PEER_GROUP
@@ -429,6 +454,11 @@ SUBNET_MASK
 SYSLOG
 :
   'syslog'
+;
+
+TRADITIONAL
+:
+  'traditional'
 ;
 
 MATCH
