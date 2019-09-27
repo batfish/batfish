@@ -71,7 +71,7 @@ final class NodeNoMatchMessages implements NoMatchMessages {
     @Override
     public List<String> visitRoleNodeAstNode(RoleNodeAstNode roleNodeAstNode) {
       Optional<NodeRoleDimension> refBook =
-          _nodeRolesData.getNodeRoleDimension(roleNodeAstNode.getDimensionName());
+          _nodeRolesData.nodeRoleDimensionFor(roleNodeAstNode.getDimensionName());
       if (refBook.isPresent()) {
         if (refBook.get().roleNamesFor(_completionMetadata.getNodes()).stream()
             .anyMatch(r -> r.equalsIgnoreCase(roleNodeAstNode.getRoleName()))) {

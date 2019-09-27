@@ -18,8 +18,7 @@
           ],
           "regex" : "(.*).+"
         }
-      ],
-      "type" : "CUSTOM"
+      ]
     },
     "roleMap" : {
       "border" : [

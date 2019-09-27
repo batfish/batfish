@@ -63,6 +63,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
+import org.batfish.role.RoleMapping;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1091,11 +1092,17 @@ public class AutoCompleteUtilsTest {
   public void testNodeRoleDimensionAutocomplete() {
     String network = "network";
 
-    NodeRoleDimension suggested = NodeRoleDimension.builder().setName("someDimension").build();
-    NodeRoleDimension notSuggested = NodeRoleDimension.builder().setName("blah").build();
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
-            .setRoleDimensions(ImmutableList.of(suggested, notSuggested))
+            .setRoleMappings(
+                ImmutableList.of(
+                    new RoleMapping(
+                        null,
+                        "(.*)",
+                        ImmutableMap.of(
+                            "someDimension", ImmutableList.of(1), "blah", ImmutableList.of(1)),
+                        null,
+                        false)))
             .build();
 
     assertThat(
@@ -1111,7 +1118,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(suggested.getName())));
+        equalTo(ImmutableSet.of("someDimension")));
   }
 
   @Test
@@ -1133,7 +1140,7 @@ public class AutoCompleteUtilsTest {
                                     false)))
                         .build(),
                     NodeRoleDimension.builder()
-                        .setName("someDimension")
+                        .setName("someOtherDimension")
                         .setRoleDimensionMappings(
                             ImmutableList.of(
                                 new RoleDimensionMapping(

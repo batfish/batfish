@@ -58,7 +58,7 @@ public final class SnapshotNodeRolesResource {
         _inferred
             ? Main.getWorkMgr().getSnapshotNodeRoles(_network, _snapshot)
             : Main.getWorkMgr().getNetworkNodeRoles(_network);
-    Optional<NodeRoleDimension> nodeRolesDimension = data.getNodeRoleDimension(dimension);
+    Optional<NodeRoleDimension> nodeRolesDimension = data.nodeRoleDimensionFor(dimension);
     if (!nodeRolesDimension.isPresent()) {
       return Response.status(Status.NOT_FOUND).build();
     }

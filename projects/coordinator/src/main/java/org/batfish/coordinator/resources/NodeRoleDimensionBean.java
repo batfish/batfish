@@ -18,7 +18,6 @@ public class NodeRoleDimensionBean {
   public List<NodeRoleBean> roles;
   public List<RoleDimensionMappingBean> roleDimensionMappings;
   public String snapshot;
-  public NodeRoleDimension.Type type;
 
   @JsonCreator
   private NodeRoleDimensionBean() {
@@ -35,7 +34,6 @@ public class NodeRoleDimensionBean {
             .map(RoleDimensionMappingBean::new)
             .collect(Collectors.toList());
     this.snapshot = snapshot;
-    this.type = nrDim.getType();
   }
 
   @Override
@@ -46,13 +44,12 @@ public class NodeRoleDimensionBean {
     return Objects.equals(name, ((NodeRoleDimensionBean) o).name)
         && Objects.equals(roles, ((NodeRoleDimensionBean) o).roles)
         && Objects.equals(roleDimensionMappings, ((NodeRoleDimensionBean) o).roleDimensionMappings)
-        && Objects.equals(snapshot, ((NodeRoleDimensionBean) o).snapshot)
-        && Objects.equals(type, ((NodeRoleDimensionBean) o).type);
+        && Objects.equals(snapshot, ((NodeRoleDimensionBean) o).snapshot);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, roles, roleDimensionMappings, snapshot, type);
+    return Objects.hash(name, roles, roleDimensionMappings, snapshot);
   }
 
   /** Returns a {@link NodeRoleDimension} object corresponding to this bean */
@@ -67,11 +64,7 @@ public class NodeRoleDimensionBean {
             .map(NodeRoleBean::toNodeRole)
             .map(RoleDimensionMapping::new)
             .collect(ImmutableList.toImmutableList()));
-    return NodeRoleDimension.builder()
-        .setName(name)
-        .setRoleDimensionMappings(rdMappings)
-        .setType(type)
-        .build();
+    return NodeRoleDimension.builder().setName(name).setRoleDimensionMappings(rdMappings).build();
   }
 
   @Override
@@ -81,7 +74,6 @@ public class NodeRoleDimensionBean {
         .add("roles", roles)
         .add("mappings", roleDimensionMappings)
         .add("snapshot", snapshot)
-        .add("type", type)
         .toString();
   }
 }

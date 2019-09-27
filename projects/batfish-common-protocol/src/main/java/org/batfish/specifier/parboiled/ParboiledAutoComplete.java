@@ -514,7 +514,7 @@ public final class ParboiledAutoComplete {
       PotentialMatch pm, String roleDimensionInput) {
     NodeRoleDimension nodeRoleDimension =
         _nodeRolesData
-            .getNodeRoleDimension(extractGroupingName(pm, roleDimensionInput))
+            .nodeRoleDimensionFor(extractGroupingName(pm, roleDimensionInput))
             .orElse(NodeRoleDimension.builder("dummy").build());
 
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());

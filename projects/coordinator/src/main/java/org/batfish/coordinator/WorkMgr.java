@@ -2787,6 +2787,7 @@ public class WorkMgr extends AbstractCoordinator {
   private @Nonnull NodeRolesData getSnapshotNodeRoles(
       @Nonnull NetworkId networkId, @Nonnull SnapshotId snapshotId) throws IOException {
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
+    String s = _storage.loadNodeRoles(snapshotNodeRolesId);
     return BatfishObjectMapper.mapper()
         .readValue(_storage.loadNodeRoles(snapshotNodeRolesId), NodeRolesData.class);
   }

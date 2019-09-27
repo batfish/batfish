@@ -3,7 +3,7 @@ package org.batfish.coordinator.resources;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.batfish.coordinator.resources.NetworkNodeRolesResource.noDuplicateDimensions;
+import static org.batfish.coordinator.resources.NetworkNodeRolesResource.noDuplicateRoleMappings;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -21,6 +21,7 @@ import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
+import org.batfish.role.RoleMapping;
 import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,13 +53,17 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     Main.getWorkMgr().initNetwork(container, null);
 
     NodeRoleDimensionBean dimBean =
-        new NodeRoleDimensionBean(NodeRoleDimension.builder("dimension1").build(), null);
+        new NodeRoleDimensionBean(
+            NodeRoleDimension.builder("dimension1")
+                .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
+                .build(),
+            null);
     Response response =
         getNodeRolesTarget(container).post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     NodeRolesData nrData = Main.getWorkMgr().getNetworkNodeRoles(container);
-    assertThat(nrData.getNodeRoleDimension("dimension1").isPresent(), equalTo(true));
+    assertThat(nrData.nodeRoleDimensionFor("dimension1").isPresent(), equalTo(true));
 
     Response response2 =
         getNodeRolesTarget(container).post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
@@ -103,75 +108,67 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testNoDuplicateDimensionsSameName() {
+  public void testNoDuplicateRoleMappingsSameName() {
     String name = "auto0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
             NodeRolesData.builder()
-                .setRoleDimensions(
+                .setRoleMappings(
                     ImmutableList.of(
-                        NodeRoleDimension.builder()
-                            .setName(name)
-                            .setRoleDimensionMappings(
-                                ImmutableList.of(new RoleDimensionMapping("(.*)")))
-                            .build(),
-                        NodeRoleDimension.builder().setName(name).build()))
+                        new RoleMapping(name, "", null, null, false),
+                        new RoleMapping(name, "", null, null, false)))
                 .build(),
             null);
 
-    assertThat(noDuplicateDimensions(nodeRolesDataBean), equalTo(false));
+    assertThat(noDuplicateRoleMappings(nodeRolesDataBean), equalTo(false));
   }
 
   @Test
-  public void testNoDuplicateDimensionsSameNameDifferentCase() {
+  public void testNoDuplicateRoleMappingsSameNameDifferentCase() {
     String name1 = "auto0";
     String name2 = "AuTo0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
             NodeRolesData.builder()
-                .setRoleDimensions(
+                .setRoleMappings(
                     ImmutableList.of(
-                        NodeRoleDimension.builder().setName(name1).build(),
-                        NodeRoleDimension.builder().setName(name2).build()))
+                        new RoleMapping(name1, "", null, null, false),
+                        new RoleMapping(name2, "", null, null, false)))
                 .build(),
             null);
 
-    assertThat(noDuplicateDimensions(nodeRolesDataBean), equalTo(false));
+    assertThat(noDuplicateRoleMappings(nodeRolesDataBean), equalTo(false));
   }
 
   @Test
-  public void testNoDuplicateDimensionsValid() {
+  public void testNoDuplicateRoleMappingsValid() {
     String name1 = "auto0";
     String name2 = "manual0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
             NodeRolesData.builder()
-                .setRoleDimensions(
+                .setRoleMappings(
                     ImmutableList.of(
-                        NodeRoleDimension.builder().setName(name1).build(),
-                        NodeRoleDimension.builder().setName(name2).build()))
+                        new RoleMapping(name1, "", null, null, false),
+                        new RoleMapping(name2, "", null, null, false)))
                 .build(),
             null);
 
-    assertThat(noDuplicateDimensions(nodeRolesDataBean), equalTo(true));
+    assertThat(noDuplicateRoleMappings(nodeRolesDataBean), equalTo(true));
   }
 
   @Test
-  public void testPutNodeRolesDuplicateDimensions() {
+  public void testPutNodeRolesDuplicateRoleMappings() {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     String name = "auto0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
             NodeRolesData.builder()
-                .setRoleDimensions(
+                .setRoleMappings(
                     ImmutableList.of(
-                        NodeRoleDimension.builder()
-                            .setName(name)
-                            .setRoleDimensionMappings(
-                                ImmutableList.of(new RoleDimensionMapping("(.*)")))
-                            .build(),
-                        NodeRoleDimension.builder().setName(name).build()))
+                        new RoleMapping(name, "", null, null, false),
+                        new RoleMapping(name, "", null, null, false)))
                 .build(),
             null);
     Response response =

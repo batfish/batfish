@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleMapping;
 
 /**
  * The {@link NetworkNodeRolesResource} is a resource for servicing client API calls for
@@ -30,17 +31,17 @@ import org.batfish.role.NodeRolesData;
 public final class NetworkNodeRolesResource {
 
   @VisibleForTesting
-  static boolean noDuplicateDimensions(NodeRolesDataBean nodeRolesDataBean) {
-    if (nodeRolesDataBean.roleDimensions == null) {
+  static boolean noDuplicateRoleMappings(NodeRolesDataBean nodeRolesDataBean) {
+    if (nodeRolesDataBean.roleMappings == null) {
       return false;
     }
     long uniqueSize =
-        nodeRolesDataBean.roleDimensions.stream()
+        nodeRolesDataBean.roleMappings.stream()
             .map(bean -> bean.name)
             .map(String::toLowerCase)
             .distinct()
             .count();
-    return uniqueSize == nodeRolesDataBean.roleDimensions.size();
+    return uniqueSize == nodeRolesDataBean.roleMappings.size();
   }
 
   private String _network;
@@ -61,17 +62,19 @@ public final class NetworkNodeRolesResource {
     if (nodeRolesData == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    Optional<NodeRoleDimension> dimension = nodeRolesData.getNodeRoleDimension(dimBean.name);
+    Optional<NodeRoleDimension> dimension = nodeRolesData.nodeRoleDimensionFor(dimBean.name);
     checkClientArgument(!dimension.isPresent(), "Duplicate dimension specified: %s", dimBean.name);
     if (!Main.getWorkMgr()
         .putNetworkNodeRoles(
             NodeRolesData.builder()
                 .setDefaultDimension(nodeRolesData.getDefaultDimension())
-                .setRoleDimensions(
-                    ImmutableList.<NodeRoleDimension>builder()
-                        .addAll(nodeRolesData.getNodeRoleDimensions())
-                        .add(dimBean.toNodeRoleDimension())
+                .setRoleMappings(
+                    ImmutableList.<RoleMapping>builder()
+                        .addAll(nodeRolesData.getRoleMappings())
+                        .addAll(dimBean.toNodeRoleDimension().toRoleMappings())
                         .build())
+                .setRoleDimensionOrder(nodeRolesData.getRoleDimensionOrder().orElse(null))
+                .setType(nodeRolesData.getType())
                 .build(),
             _network)) {
       // if network was deleted while we were working
@@ -102,8 +105,8 @@ public final class NetworkNodeRolesResource {
   public Response putNodeRoles(NodeRolesDataBean nodeRolesDataBean) throws IOException {
     checkClientArgument(nodeRolesDataBean != null, "Node roles must not be null");
     checkClientArgument(
-        noDuplicateDimensions(nodeRolesDataBean),
-        "Supplied node roles contains duplicate dimensions");
+        noDuplicateRoleMappings(nodeRolesDataBean),
+        "Supplied node roles contains duplicate role mappings");
     if (!Main.getWorkMgr().putNetworkNodeRoles(nodeRolesDataBean.toNodeRolesData(), _network)) {
       return Response.status(Status.NOT_FOUND).build();
     }
