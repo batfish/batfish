@@ -24,6 +24,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+AREA
+:
+  'area'
+;
+
 AS_PATH
 :
   'as-path'
@@ -76,6 +81,11 @@ ADVERTISE_ALL_VNI
 ALWAYS_COMPARE_MED
 :
   'always-compare-med'
+;
+
+AUTHENTICATION
+:
+  'authentication'
 ;
 
 BGP
@@ -271,6 +281,21 @@ LINE
   'line'
 ;
 
+MESSAGE_DIGEST
+:
+  'message-digest'
+;
+
+MESSAGE_DIGEST_KEY
+:
+  'message-digest-key'
+;
+
+MD5
+:
+  'md5' -> pushMode(M_Remark)
+;
+
 MULTIPATH_RELAX
 :
   'multipath-relax'
@@ -314,6 +339,11 @@ PEER_GROUP
 PERMIT
 :
   'permit'
+;
+
+POINT_TO_POINT
+:
+  'point-to-point'
 ;
 
 PREFIX_LIST

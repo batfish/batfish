@@ -2,6 +2,9 @@ package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
@@ -22,6 +25,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,8 +36,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,6 +82,8 @@ import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -710,7 +718,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 return;
               }
 
-              org.batfish.datamodel.ospf.OspfProcess ospfProcess = toOspfProcess(ospfVrf);
+              org.batfish.datamodel.ospf.OspfProcess ospfProcess = toOspfProcess(ospfVrf, vrf);
               vrf.addOspfProcess(ospfProcess);
             });
   }
@@ -1133,7 +1141,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  org.batfish.datamodel.ospf.OspfProcess toOspfProcess(OspfVrf ospfVrf) {
+  org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
+      OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
     Ip routerId = ospfVrf.getRouterId();
     if (routerId == null) {
       routerId = inferRouteId();
@@ -1142,12 +1151,73 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     org.batfish.datamodel.ospf.OspfProcess.Builder builder =
         org.batfish.datamodel.ospf.OspfProcess.builder();
 
-    builder
-        .setRouterId(routerId)
-        .setProcessId("1")
-        .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
+    org.batfish.datamodel.ospf.OspfProcess proc =
+        builder
+            .setRouterId(routerId)
+            .setProcessId("1")
+            .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
+            .build();
 
-    return builder.build();
+    addOspfInterfaces(vrf);
+    proc.setAreas(computeOspfAreas(vrf.getInterfaceNames()));
+    return proc;
+  }
+
+  @VisibleForTesting
+  void addOspfInterfaces(org.batfish.datamodel.Vrf vrf) {
+    vrf.getInterfaces()
+        .forEach(
+            (ifaceName, iface) -> {
+              Interface vsIface = _interfaces.get(iface.getName());
+              OspfInterface ospfInterface = vsIface.getOspf();
+              if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
+                // no ospf running on this interface
+                return;
+              }
+
+              iface.setOspfSettings(
+                  OspfInterfaceSettings.builder()
+                      .setPassive(false)
+                      .setAreaName(ospfInterface.getOspfArea())
+                      .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
+                      .build());
+            });
+  }
+
+  @VisibleForTesting
+  SortedMap<Long, OspfArea> computeOspfAreas(Collection<String> interfaces) {
+    Map<Long, List<String>> areaInterfaces =
+        interfaces.stream()
+            .map(_interfaces::get)
+            .filter(vsIface -> vsIface.getOspf() != null && vsIface.getOspf().getOspfArea() != null)
+            .collect(
+                groupingBy(
+                    vsIface -> vsIface.getOspf().getOspfArea(),
+                    mapping(Interface::getName, Collectors.toList())));
+
+    return toImmutableSortedMap(
+        areaInterfaces,
+        Entry::getKey,
+        e -> OspfArea.builder().setNumber(e.getKey()).addInterfaces(e.getValue()).build());
+  }
+
+  private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      @Nullable OspfNetworkType type) {
+    if (type == null) {
+      return null;
+    }
+    switch (type) {
+      case BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.",
+                type.toString()));
+        return null;
+    }
   }
 
   @VisibleForTesting
