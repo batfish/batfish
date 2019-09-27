@@ -881,8 +881,19 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfPassiveInterface() {
+  public void testRouterOspfPassiveInterface_NoInterface() {
     parse("router ospf\n passive-interface lo\n");
-    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("interface lo is not defined"));
+  }
+
+  @Test
+  public void testRouterOspfPassiveInterface() {
+    Interface iface = new Interface("lo", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("lo", iface);
+    parse("router ospf\n passive-interface lo\n");
+    assertTrue(iface.getOspf().getPassive());
   }
 }

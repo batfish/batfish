@@ -43,6 +43,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
@@ -590,6 +591,18 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .computeIfAbsent(
                 sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
     _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx);
+  }
+
+  @Override
+  public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
+    String ifaceName = ctx.name.getText();
+    Interface iface = _c.getInterfaces().get(ifaceName);
+    if (iface == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", ifaceName));
+      return;
+    }
+    iface.getOrCreateOspf().setPassive(true);
   }
 
   @Override
