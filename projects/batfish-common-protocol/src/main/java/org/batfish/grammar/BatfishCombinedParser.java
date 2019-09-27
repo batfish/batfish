@@ -23,6 +23,8 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
   private String _input;
 
+  private String[] _inputLines;
+
   protected L _lexer;
 
   private BatfishLexerErrorListener _lexerErrorListener;
@@ -139,6 +141,13 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
   public int getLine(@Nonnull Token t) {
     int line = t.getLine();
     return (_lineMap == null) ? line : _lineMap.getOriginalLine(line, t.getCharPositionInLine());
+  }
+
+  public String[] getInputLines() {
+    if (_inputLines == null) {
+      _inputLines = _input.split("\n", -1);
+    }
+    return _inputLines;
   }
 
   public P getParser() {

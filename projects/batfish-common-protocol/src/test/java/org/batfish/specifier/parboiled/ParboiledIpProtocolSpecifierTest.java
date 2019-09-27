@@ -1,6 +1,6 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifier.VALID_IP_PROTOCOLS;
+import static org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifier.IP_PROTOCOLS_SET;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -25,7 +25,7 @@ public class ParboiledIpProtocolSpecifierTest {
   public void testResolveNotIpProtocol() {
     assertThat(
         new ParboiledIpProtocolSpecifier(new NotIpProtocolAstNode("tcp")).resolve(),
-        equalTo(Sets.difference(VALID_IP_PROTOCOLS, ImmutableSet.of(IpProtocol.TCP))));
+        equalTo(Sets.difference(IP_PROTOCOLS_SET, ImmutableSet.of(IpProtocol.TCP))));
   }
 
   @Test
@@ -36,7 +36,7 @@ public class ParboiledIpProtocolSpecifierTest {
                     new NotIpProtocolAstNode("tcp"), new NotIpProtocolAstNode("udp")))
             .resolve(),
         equalTo(
-            Sets.difference(VALID_IP_PROTOCOLS, ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP))));
+            Sets.difference(IP_PROTOCOLS_SET, ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP))));
   }
 
   @Test

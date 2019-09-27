@@ -16584,6 +16584,28 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "65001" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "stubType" : "NONE"
+                  }
+                },
+                "processId" : "65001",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "10.0.1.1",
+                "summaryAdminCost" : 254
+              }
+            },
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,

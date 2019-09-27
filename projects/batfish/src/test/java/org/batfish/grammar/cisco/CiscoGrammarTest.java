@@ -1056,7 +1056,7 @@ public class CiscoGrammarTest {
 
     Flow flowPass = createFlow(IpProtocol.TCP, 1, 123);
     Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
-    Flow anyFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
+    Flow anyFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
 
     // Confirm access list permits only traffic matching both ACL and security level restrictions
     // highIface1 has inbound filter permitting all IP traffic
@@ -4061,9 +4061,12 @@ public class CiscoGrammarTest {
   public void testTunnelMode() {
     CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
 
-    assertThat(c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-    assertThat(c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-    assertThat(c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC));
+    assertThat(
+        c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE_MULTIPOINT));
+    assertThat(
+        c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE_MULTIPOINT));
+    assertThat(
+        c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC_IPV4));
   }
 
   @Test
@@ -5486,8 +5489,8 @@ public class CiscoGrammarTest {
     String explicit45Interface = "some-trust";
     String outsideInterface = "outside";
 
-    Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
-    Flow establishedFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.ESTABLISHED);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow establishedFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.ESTABLISHED);
 
     // Confirm zones are created for each level
     assertThat(c, hasZone(computeSecurityLevelZoneName(100), hasMemberInterfaces(hasSize(2))));
@@ -5592,7 +5595,7 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-both");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
 
     // Allow traffic in and out of the same interface
     assertThat(
@@ -5620,7 +5623,7 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-inter");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
 
     // No traffic in and out of the same interface
     assertThat(
@@ -5648,7 +5651,7 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-intra");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
 
     // Allow traffic in and out of the same interface
     assertThat(

@@ -121,6 +121,11 @@ CONFIG
     'config'
 ;
 
+CONTENT_PREVIEW
+:
+    'content-preview'
+;
+
 CRYPTO_PROFILES
 :
     'crypto-profiles'

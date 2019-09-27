@@ -32,7 +32,8 @@ public final class Layer1Node implements Comparable<Layer1Node> {
   private final String _interfaceName;
 
   public Layer1Node(String hostname, String interfaceName) {
-    _hostname = hostname;
+    // Guarantee hostname is canonical (lowercase)
+    _hostname = hostname.toLowerCase();
     _interfaceName = interfaceName;
   }
 

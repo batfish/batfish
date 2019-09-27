@@ -6,7 +6,8 @@ deviceconfig {
 mgt-config {
     access-domain {
         All {
-            vsys [ VSYSNAME1 VSYSNAME2];
+            # The ... can happen if the pager is left on.
+            vsys [ VSYSNAME1 VSYSNAME2 ... ];
         }
     }
 }

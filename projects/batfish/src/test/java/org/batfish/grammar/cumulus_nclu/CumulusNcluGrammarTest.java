@@ -260,17 +260,16 @@ public final class CumulusNcluGrammarTest {
                     hasEntry(
                         equalTo(iface),
                         allOf(
-                            ImmutableSet.of(
-                                hasPeerInterface(iface),
-                                hasLocalAs(65100L),
-                                hasRemoteAs(
-                                    BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65100L))),
-                                hasIpv4UnicastAddressFamily(
-                                    allOf(
-                                        hasAddressFamilyCapabilites(hasSendCommunity(true)),
-                                        hasExportPolicy(
-                                            computeBgpPeerExportPolicyName(
-                                                DEFAULT_VRF_NAME, iface)))))))))));
+                            hasPeerInterface(iface),
+                            hasLocalAs(65100L),
+                            hasRemoteAs(
+                                BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65100L))),
+                            hasIpv4UnicastAddressFamily(
+                                allOf(
+                                    hasAddressFamilyCapabilites(hasSendCommunity(true)),
+                                    hasExportPolicy(
+                                        computeBgpPeerExportPolicyName(
+                                            DEFAULT_VRF_NAME, iface))))))))));
     assertThat(
         configs.get(node2),
         hasVrf(
@@ -280,17 +279,16 @@ public final class CumulusNcluGrammarTest {
                     hasEntry(
                         equalTo(iface),
                         allOf(
-                            ImmutableSet.of(
-                                hasPeerInterface(iface),
-                                hasLocalAs(65101L),
-                                hasRemoteAs(
-                                    BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L))),
-                                hasIpv4UnicastAddressFamily(
-                                    allOf(
-                                        hasAddressFamilyCapabilites(hasSendCommunity(true)),
-                                        hasExportPolicy(
-                                            computeBgpPeerExportPolicyName(
-                                                DEFAULT_VRF_NAME, iface)))))))))));
+                            hasPeerInterface(iface),
+                            hasLocalAs(65101L),
+                            hasRemoteAs(
+                                BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L))),
+                            hasIpv4UnicastAddressFamily(
+                                allOf(
+                                    hasAddressFamilyCapabilites(hasSendCommunity(true)),
+                                    hasExportPolicy(
+                                        computeBgpPeerExportPolicyName(
+                                            DEFAULT_VRF_NAME, iface))))))))));
 
     // Ensure reachability between nodes
     batfish.computeDataPlane();

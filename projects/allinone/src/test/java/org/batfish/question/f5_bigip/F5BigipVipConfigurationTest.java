@@ -57,7 +57,7 @@ public final class F5BigipVipConfigurationTest {
         hasRows(
             containsInAnyOrder(
                 allOf(
-                    hasColumn(COL_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE),
+                    hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
                     hasColumn(COL_VIRTUAL_NAME, equalTo("/Common/virtual1"), Schema.STRING),
                     hasColumn(COL_VIRTUAL_ENDPOINT, equalTo("10.0.0.1:80 TCP"), Schema.STRING),
                     hasColumn(
@@ -66,7 +66,7 @@ public final class F5BigipVipConfigurationTest {
                         Schema.set(Schema.STRING)),
                     hasColumn(COL_DESCRIPTION, equalTo("virtual1 is cool"), Schema.STRING)),
                 allOf(
-                    hasColumn(COL_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE),
+                    hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
                     hasColumn(COL_VIRTUAL_NAME, equalTo("/Common/virtual2"), Schema.STRING),
                     hasColumn(COL_VIRTUAL_ENDPOINT, equalTo("192.0.2.2:80 TCP"), Schema.STRING),
                     hasColumn(
@@ -75,7 +75,7 @@ public final class F5BigipVipConfigurationTest {
                         Schema.set(Schema.STRING)),
                     hasColumn(COL_DESCRIPTION, equalTo("pool2 is lame"), Schema.STRING)),
                 allOf(
-                    hasColumn(COL_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE),
+                    hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
                     hasColumn(COL_VIRTUAL_NAME, equalTo("/Common/virtual3"), Schema.STRING),
                     hasColumn(COL_VIRTUAL_ENDPOINT, equalTo("192.0.2.3:80 TCP"), Schema.STRING),
                     hasColumn(

@@ -89,6 +89,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAG
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
+import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.POINT_TO_POINT;
@@ -127,6 +129,7 @@ import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -152,8 +155,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
@@ -180,7 +181,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -219,10 +219,15 @@ import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityContext;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprEvaluator;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -234,6 +239,7 @@ import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.ParserBatfishException;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
@@ -348,6 +354,7 @@ public final class CiscoNxosGrammarTest {
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_nxos/testconfigs/";
+  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/cisco_nxos/snapshots/";
 
   static {
     DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
@@ -1716,17 +1723,146 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceSpeedConversion() throws IOException {
-    String hostname = "nxos_interface_speed";
-    Configuration c = parseConfig(hostname);
+  public void testInterfaceRuntimeSpeedConversion() throws IOException {
+    String snapshotName = "runtime_data";
+    String hostname = "c1";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    Map<String, org.batfish.datamodel.Interface> interfaces = c.getAllInterfaces();
 
-    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "port-channel1"));
-    {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
-      assertThat(iface, hasSpeed(100E9D));
-      assertThat(iface, hasBandwidth(100E9D));
+    // Get name-based default guess for speed and ensure it does not match configured/runtime values
+    double defaultSpeed = getDefaultSpeed(CiscoNxosInterfaceType.ETHERNET);
+    assertTrue(defaultSpeed != 1E8 && defaultSpeed != 2E8);
+
+    List<Double> expectedSpeeds =
+        ImmutableList.of(
+            // Ethernet1/0 has both configured and runtime speed 1E8
+            1E8,
+            // Ethernet1/1 has configured speed 1E8 but runtime speed 2E8; configured should win
+            1E8,
+            // Ethernet1/2 has configured speed 1E8 and null runtime speed
+            1E8,
+            // Ethernet1/3 has configured speed 1E8 and no runtime data
+            1E8,
+            // Ethernet1/4 has no configured speed and runtime speed 2E8
+            2E8,
+            // Ethernet1/5 has no configured speed and null runtime speed
+            defaultSpeed,
+            // Ethernet1/6 has no configured speed and no runtime data
+            defaultSpeed);
+
+    for (int i = 0; i < expectedSpeeds.size(); i++) {
+      String ifaceName = "Ethernet1/" + i;
+      Double expectedSpeed = expectedSpeeds.get(i);
+
+      // Assert on both speed and bandwidth, which should equal speed since no bandwidths are set
+      assertThat(
+          String.format("Unexpected value for %s", ifaceName),
+          interfaces.get(ifaceName),
+          allOf(hasSpeed(expectedSpeed), hasBandwidth(expectedSpeed)));
     }
-    // TODO: assert inferred speed for Ethernet1/2 maybe
+
+    // Should see a single conversion warning for Ethernet1/1's conflicting speeds
+    Warnings warnings =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname);
+    assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
+    assertThat(
+        warnings.getRedFlagWarnings().get(0).getText(),
+        equalTo(
+            "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data shows speed 200000000 bps. Configured value will be used."));
+  }
+
+  @Test
+  public void testInterfaceRuntimeBandwidthConversion() throws IOException {
+    String snapshotName = "runtime_data";
+    String hostname = "c2";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+    Map<String, org.batfish.datamodel.Interface> interfaces =
+        batfish.loadConfigurations().get(hostname).getAllInterfaces();
+
+    // Get name-based default guess for bw and ensure it does not match configured/runtime values
+    double defaultBandwidth = getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET);
+    assertTrue(defaultBandwidth != 1E8 && defaultBandwidth != 2E8);
+
+    List<Double> expectedBandwidths =
+        ImmutableList.of(
+            // Ethernet1/0 has both configured and runtime bw 1E8
+            1E8,
+            // Ethernet1/1 has configured bw 1E8 but runtime bw 2E8; configured should win
+            1E8,
+            // Ethernet1/2 has configured bw 1E8 and null runtime bw
+            1E8,
+            // Ethernet1/3 has configured bw 1E8 and no runtime data
+            1E8,
+            // Ethernet1/4 has no configured bw and runtime bw 2E8
+            2E8,
+            // Ethernet1/5 has no configured bw and null runtime vw
+            defaultBandwidth,
+            // Ethernet1/6 has no configured bw and no runtime data
+            defaultBandwidth);
+
+    for (int i = 0; i < expectedBandwidths.size(); i++) {
+      String ifaceName = "Ethernet1/" + i;
+      Double expectedBandwidth = expectedBandwidths.get(i);
+      assertThat(
+          String.format("Unexpected value for %s", ifaceName),
+          interfaces.get(ifaceName),
+          hasBandwidth(expectedBandwidth));
+    }
+
+    // Should see a single conversion warning for Ethernet1/1's conflicting bandwidths
+    Warnings warnings =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname);
+    assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
+    assertThat(
+        warnings.getRedFlagWarnings().get(0).getText(),
+        equalTo(
+            "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime data shows bandwidth 200000000 bps. Configured value will be used."));
+  }
+
+  @Test
+  public void testInterfaceRuntimeBandwidthAndSpeedConversion() throws IOException {
+    // For testing interaction between configured and runtime speeds and bandwidths
+    String snapshotName = "runtime_data";
+    String hostname = "c3";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+    Map<String, org.batfish.datamodel.Interface> interfaces =
+        batfish.loadConfigurations().get(hostname).getAllInterfaces();
+
+    // Ethernet1/0 has configured & runtime bw 2E8, configured & runtime speed 1E8.
+    assertThat(interfaces.get("Ethernet1/0"), allOf(hasBandwidth(2E8), hasSpeed(1E8)));
+
+    // Ethernet1/1 has configured speed 1E8 and runtime bw 2E8. Speed should be 1E8, and bandwidth
+    // should also be 1E8 because configured speed takes precedence over runtime bw.
+    assertThat(interfaces.get("Ethernet1/1"), allOf(hasBandwidth(1E8), hasSpeed(1E8)));
+
+    // Ethernet1/2 has configured bw 1E8 and runtime speed 2E8. Runtime speed should not affect bw.
+    assertThat(interfaces.get("Ethernet1/2"), allOf(hasBandwidth(1E8), hasSpeed(2E8)));
+
+    // Ethernet1/3 has runtime bw 2E8 and runtime speed 1E8. Neither should affect the other.
+    assertThat(interfaces.get("Ethernet1/3"), allOf(hasBandwidth(2E8), hasSpeed(1E8)));
+
+    // No warnings
+    assertNull(
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname));
   }
 
   @Test
@@ -3355,53 +3491,84 @@ public final class CiscoNxosGrammarTest {
   public void testIpCommunityListExpandedConversion() throws IOException {
     String hostname = "nxos_ip_community_list_expanded";
     Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
 
-    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_test"));
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
     {
-      CommunityList cl = c.getCommunityLists().get("cl_seq");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
+      // Test CommunityMatchExpr conversion
+      assertThat(c.getCommunityMatchExprs(), hasKeys("cl_seq", "cl_test"));
+      CommunityMatchExprEvaluator eval = ctx.getCommunityMatchExprEvaluator();
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_seq");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("1:1")));
+        // permit regex 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        assertTrue(expr.accept(eval, StandardCommunity.of(91, 19)));
+        // permit regex 5:5
+        assertTrue(expr.accept(eval, StandardCommunity.of(5, 5)));
+        // permit regex 10:10
+        assertTrue(expr.accept(eval, StandardCommunity.of(10, 10)));
+        // permit regex 11:11
+        assertTrue(expr.accept(eval, StandardCommunity.of(11, 11)));
+      }
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("5:5")));
+        // no single community matched by regex _1:1.*2:2_, so deny line is NOP
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("10:10")));
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        assertFalse(expr.accept(eval, StandardCommunity.of(11, 11)));
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("11:11")));
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, StandardCommunity.of(2, 2)));
+      }
     }
     {
-      CommunityList cl = c.getCommunityLists().get("cl_test");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_seq", "cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_seq");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.DENY));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(),
-          equalTo(toJavaRegex("_1:1.*2:2_")));
+        // permit regex 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(91, 19))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        // permit regex 5:5
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(5, 5))));
+        // permit regex 10:10
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(10, 10))));
+        // permit regex 11:11
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_1:1_")));
+        // deny regex _1:1.*2:2_
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_2:2_")));
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+        assertFalse(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
+
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
     }
   }
 
@@ -3460,94 +3627,114 @@ public final class CiscoNxosGrammarTest {
   public void testIpCommunityListStandardConversion() throws IOException {
     String hostname = "nxos_ip_community_list_standard";
     Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
 
-    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_values", "cl_test"));
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
     {
-      CommunityList cl = c.getCommunityLists().get("cl_seq");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
+      // Test CommunityMatchExpr conversion
+      assertThat(c.getCommunityMatchExprs(), hasKeys("cl_seq", "cl_values", "cl_test"));
+      CommunityMatchExprEvaluator eval = ctx.getCommunityMatchExprEvaluator();
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_seq");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(1, 1)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit 5:5
+        assertTrue(expr.accept(eval, StandardCommunity.of(5, 5)));
+        // permit 10:10
+        assertTrue(expr.accept(eval, StandardCommunity.of(10, 10)));
+        // permit 11:11
+        assertTrue(expr.accept(eval, StandardCommunity.of(11, 11)));
+      }
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_values");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(5, 5)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit internet
+        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.INTERNET)));
+        // permit local-AS
+        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+        // permit no-advertise
+        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+        // permit no-export
+        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+      }
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(10, 10)));
+        // no single community matched by 1:1 2:2, so deny line is NOP
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(11, 11)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit 2:2
+        assertTrue(expr.accept(eval, StandardCommunity.of(2, 2)));
+      }
     }
     {
-      CommunityList cl = c.getCommunityLists().get("cl_values");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_seq", "cl_values", "cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_seq");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(1, 1)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        // permit 5:5
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(5, 5))));
+        // permit 10:10
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(10, 10))));
+        // permit 11:11
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_values");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(WellKnownCommunity.INTERNET)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        // permit internet
+        assertTrue(
+            expr.accept(eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.INTERNET))));
+        // permit local-AS
+        assertTrue(
+            expr.accept(
+                eval,
+                CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED))));
+        // permit no-advertise
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))));
+        // permit no-export
+        assertTrue(
+            expr.accept(eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT))));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+        // deny 1:1 2:2
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
 
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
-    }
-    {
-      CommunityList cl = c.getCommunityLists().get("cl_test");
-      Iterator<CommunityListLine> lines = cl.getLines().iterator();
-      CommunityListLine line;
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.DENY));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          containsInAnyOrder(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          containsInAnyOrder(StandardCommunity.of(1, 1)));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(
-          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
-          containsInAnyOrder(StandardCommunity.of(2, 2)));
+        // permit 2:2
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
     }
   }
 

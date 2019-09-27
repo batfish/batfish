@@ -6,7 +6,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip6Wildcard;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 
 public class StandardIpv6AccessListLine implements Serializable {
@@ -50,7 +49,7 @@ public class StandardIpv6AccessListLine implements Serializable {
     return new ExtendedIpv6AccessListLine(
         _name,
         _action,
-        IpProtocol.IP,
+        null,
         _ipWildcard,
         null,
         Ip6Wildcard.ANY,

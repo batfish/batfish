@@ -69,7 +69,8 @@ statement_config_devices
  */
 statement_config_general
 :
-    s_shared
+    s_null
+    | s_shared
 ;
 
 set_line
