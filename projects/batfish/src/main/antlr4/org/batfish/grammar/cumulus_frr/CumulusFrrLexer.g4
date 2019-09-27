@@ -44,6 +44,11 @@ BFD
   'bfd' -> pushMode(M_Words)
 ;
 
+COMMANDS
+:
+  'commands'
+;
+
 COMMENT_LINE
 :
   (

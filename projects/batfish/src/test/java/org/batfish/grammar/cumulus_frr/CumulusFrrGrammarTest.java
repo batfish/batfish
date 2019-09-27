@@ -913,7 +913,8 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testLogFile() {
+  public void testLog() {
     parse("log file /var/log/frr/frr.log\n");
+    parse("log commands\n");
   }
 }
