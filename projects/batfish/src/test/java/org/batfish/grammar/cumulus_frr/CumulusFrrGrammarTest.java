@@ -846,4 +846,10 @@ public class CumulusFrrGrammarTest {
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
     assertNotNull(CONFIG.getOspfProcess());
   }
+
+  @Test
+  public void testRouterOspfPassiveInterface() {
+    parse("router ospf\n passive-interface lo\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+  }
 }

@@ -301,6 +301,11 @@ OUT
   'out'
 ;
 
+PASSIVE_INTERFACE
+:
+  'passive-interface' -> pushMode(M_Word)
+;
+
 PASSWORD
 :
   'password' -> pushMode(M_Remark)
