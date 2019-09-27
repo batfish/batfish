@@ -149,21 +149,145 @@ public class ParboiledEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveGroups() {
+  public void testResolveGroupsSimpleNegation() {
+    Set<String> expectedSet =
+        Sets.difference(
+            RoutingProtocolSpecifier.getAtomicProtocols(),
+            ImmutableSet.builder()
+                .add(RoutingProtocolSpecifier.EBGP)
+                .add(RoutingProtocolSpecifier.IBGP)
+                .build());
+
     assertThat(
         // ! bgp
         new ParboiledEnumSetSpecifier<>(
                 new NotEnumSetAstNode(
                     new ValueEnumSetAstNode<>(
-                        "bgp", Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER))),
+                        RoutingProtocolSpecifier.BGP,
+                        Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER))),
+                Grammar.ROUTING_PROTOCOL_SPECIFIER)
+            .resolve(),
+        equalTo(expectedSet));
+
+    assertThat(
+        // ! /bgp/
+        new ParboiledEnumSetSpecifier<>(
+                new NotEnumSetAstNode(new RegexEnumSetAstNode("bgp")),
+                Grammar.ROUTING_PROTOCOL_SPECIFIER)
+            .resolve(),
+        equalTo(expectedSet));
+  }
+
+  @Test
+  public void testResolveGroupsNegateAll() {
+    assertThat(
+        // ! all
+        new ParboiledEnumSetSpecifier<>(
+                new NotEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        RoutingProtocolSpecifier.ALL,
+                        Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER))),
+                Grammar.ROUTING_PROTOCOL_SPECIFIER)
+            .resolve(),
+        equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testResolveGroupsNegateSubset() {
+    assertThat(
+        // bgp, !ebgp
+        new ParboiledEnumSetSpecifier<>(
+                new UnionEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        RoutingProtocolSpecifier.BGP,
+                        Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)),
+                    new NotEnumSetAstNode(
+                        new ValueEnumSetAstNode<>(
+                            RoutingProtocolSpecifier.EBGP,
+                            Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)))),
+                Grammar.ROUTING_PROTOCOL_SPECIFIER)
+            .resolve(),
+        equalTo(ImmutableSet.of(RoutingProtocolSpecifier.IBGP)));
+  }
+
+  @Test
+  public void testResolveGroupsNegateSuperset() {
+    assertThat(
+        // ebgp, !bgp
+        new ParboiledEnumSetSpecifier<>(
+                new UnionEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        RoutingProtocolSpecifier.EBGP,
+                        Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)),
+                    new NotEnumSetAstNode(
+                        new ValueEnumSetAstNode<>(
+                            RoutingProtocolSpecifier.BGP,
+                            Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)))),
+                Grammar.ROUTING_PROTOCOL_SPECIFIER)
+            .resolve(),
+        equalTo(ImmutableSet.of(RoutingProtocolSpecifier.EBGP)));
+  }
+
+  @Test
+  public void testResolveGroupsNegateSame() {
+    assertThat(
+        // bgp, !bgp
+        new ParboiledEnumSetSpecifier<>(
+                new UnionEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        RoutingProtocolSpecifier.BGP,
+                        Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)),
+                    new NotEnumSetAstNode(
+                        new ValueEnumSetAstNode<>(
+                            RoutingProtocolSpecifier.BGP,
+                            Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)))),
+                Grammar.ROUTING_PROTOCOL_SPECIFIER)
+            .resolve(),
+        equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testResolveGroupsNegateUnion() {
+    assertThat(
+        // bgp, !ibgp, !ebgp
+        new ParboiledEnumSetSpecifier<>(
+                new UnionEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        RoutingProtocolSpecifier.BGP,
+                        Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)),
+                    new UnionEnumSetAstNode(
+                        new NotEnumSetAstNode(
+                            new ValueEnumSetAstNode<>(
+                                RoutingProtocolSpecifier.IBGP,
+                                Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER))),
+                        new NotEnumSetAstNode(
+                            new ValueEnumSetAstNode<>(
+                                RoutingProtocolSpecifier.EBGP,
+                                Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER))))),
+                Grammar.ROUTING_PROTOCOL_SPECIFIER)
+            .resolve(),
+        equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testResolveGroupsNegateTwoLevels() {
+    assertThat(
+        // ospf, !ospf-ext1
+        new ParboiledEnumSetSpecifier<>(
+                new UnionEnumSetAstNode(
+                    new ValueEnumSetAstNode<>(
+                        RoutingProtocolSpecifier.OSPF,
+                        Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)),
+                    new NotEnumSetAstNode(
+                        new ValueEnumSetAstNode<>(
+                            RoutingProtocolSpecifier.OSPF_EXT1,
+                            Grammar.getEnumValues(Grammar.ROUTING_PROTOCOL_SPECIFIER)))),
                 Grammar.ROUTING_PROTOCOL_SPECIFIER)
             .resolve(),
         equalTo(
-            Sets.difference(
-                RoutingProtocolSpecifier.getAllProtocolKeys(),
-                ImmutableSet.builder()
-                    .addAll(RoutingProtocolSpecifier.getGroupings().get("bgp"))
-                    .add("bgp")
-                    .build())));
+            ImmutableSet.of(
+                RoutingProtocolSpecifier.OSPF_INTER,
+                RoutingProtocolSpecifier.OSPF_INTRA,
+                RoutingProtocolSpecifier.OSPF_EXT2)));
   }
 }

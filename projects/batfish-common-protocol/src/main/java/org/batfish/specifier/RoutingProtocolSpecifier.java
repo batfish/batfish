@@ -51,28 +51,28 @@ public class RoutingProtocolSpecifier {
 
   public static final String ALL = "all";
 
-  private static final String AGGREGATE = "aggregate";
-  @VisibleForTesting static final String BGP = "bgp";
-  private static final String CONNECTED = "connected";
-  @VisibleForTesting static final String EBGP = "ebgp";
-  @VisibleForTesting static final String EIGRP = "eigrp";
-  private static final String EIGRP_EXT = "eigrp-ext";
-  private static final String EIGRP_INT = "eigrp-int";
-  @VisibleForTesting static final String IBGP = "ibgp";
-  @VisibleForTesting static final String IGP = "igp";
-  @VisibleForTesting static final String ISIS = "isis";
-  private static final String ISIS_L1 = "isis-l1";
-  private static final String ISIS_L2 = "isis-l2";
-  private static final String LOCAL = "local";
-  @VisibleForTesting static final String OSPF = "ospf";
-  @VisibleForTesting static final String OSPF_EXT = "ospf-ext";
-  @VisibleForTesting static final String OSPF_EXT1 = "ospf-ext1";
-  @VisibleForTesting static final String OSPF_EXT2 = "ospf-ext2";
-  @VisibleForTesting static final String OSPF_INT = "ospf-int";
-  @VisibleForTesting static final String OSPF_INTER = "ospf-inter";
-  @VisibleForTesting static final String OSPF_INTRA = "ospf-intra";
-  private static final String RIP = "rip";
-  private static final String STATIC = "static";
+  public static final String AGGREGATE = "aggregate";
+  public static final String BGP = "bgp";
+  public static final String CONNECTED = "connected";
+  public static final String EBGP = "ebgp";
+  public static final String EIGRP = "eigrp";
+  public static final String EIGRP_EXT = "eigrp-ext";
+  public static final String EIGRP_INT = "eigrp-int";
+  public static final String IBGP = "ibgp";
+  public static final String IGP = "igp";
+  public static final String ISIS = "isis";
+  public static final String ISIS_L1 = "isis-l1";
+  public static final String ISIS_L2 = "isis-l2";
+  public static final String LOCAL = "local";
+  public static final String OSPF = "ospf";
+  public static final String OSPF_EXT = "ospf-ext";
+  public static final String OSPF_EXT1 = "ospf-ext1";
+  public static final String OSPF_EXT2 = "ospf-ext2";
+  public static final String OSPF_INT = "ospf-int";
+  public static final String OSPF_INTER = "ospf-inter";
+  public static final String OSPF_INTRA = "ospf-intra";
+  public static final String RIP = "rip";
+  public static final String STATIC = "static";
 
   private static final RoutingProtocol AGGREGATE_PROTOCOL = RoutingProtocol.AGGREGATE;
   private static final RoutingProtocol CONNECTED_PROTOCOL = RoutingProtocol.CONNECTED;
@@ -222,6 +222,12 @@ public class RoutingProtocolSpecifier {
   @JsonIgnore
   public static Set<String> getAllProtocolKeys() {
     return MAP.keySet();
+  }
+
+  /** Returns the set of atomic routing protocol strings. */
+  @JsonIgnore
+  public static Set<String> getAtomicProtocols() {
+    return ATOMIC_VALUES;
   }
 
   /** Returns a mapping from (only) group protocol to their atomic values. */

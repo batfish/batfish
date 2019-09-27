@@ -55,6 +55,12 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
           _groupValues);
     }
 
+    /**
+     * Returns the list of values after subtracting excluded values from included values.
+     *
+     * <p>In the presence of groups, when overlapping values are presents in include and exclude
+     * sets, the semantics is that the most specific wins. E.g., (bgp, !ebgp) = (ibgp).
+     */
     Set<T> toValues() {
       Set<T> including = _including.isEmpty() ? ImmutableSet.copyOf(_allValues) : _including;
 
@@ -64,12 +70,12 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
       return Sets.difference(leftOverIncluding, leftOverExcluding);
     }
 
-    Set<T> computeLeftoverValues(Set<T> set1, Set<T> set2) {
+    private Set<T> computeLeftoverValues(Set<T> set1, Set<T> set2) {
 
       ImmutableSet.Builder<T> leftOverSet = ImmutableSet.builder();
 
       for (T value1 : set1) {
-        if (_groupValues.containsKey(value1)) {
+        if (_groupValues.containsKey(value1) && !set2.isEmpty()) {
           Set<T> atoms1 = _groupValues.get(value1);
           for (T value2 : set2) {
             Set<T> atoms2 =
