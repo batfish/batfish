@@ -73,6 +73,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sio_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sio_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -97,6 +99,7 @@ import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
@@ -361,6 +364,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSio_area(Sio_areaContext ctx) {
+    if (_currentInterface == null) {
+      return;
+    }
+
+    _currentInterface.getOrCreateOspf().setOspfArea(Ip.parse(ctx.ip.getText()).asLong());
+  }
+
+  @Override
   public void exitSbafin_activate(Sbafin_activateContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
@@ -399,6 +411,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       }
       addressFamily.setActivated(true);
     }
+  }
+
+  @Override
+  public void exitSio_network_p2p(Sio_network_p2pContext ctx) {
+    _currentInterface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
   }
 
   @Override

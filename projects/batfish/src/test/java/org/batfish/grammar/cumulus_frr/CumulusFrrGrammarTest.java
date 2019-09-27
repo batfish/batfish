@@ -54,6 +54,7 @@ import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -845,5 +846,37 @@ public class CumulusFrrGrammarTest {
     parse("router ospf\n log-adjacency-changes detail\n");
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
     assertNotNull(CONFIG.getOspfProcess());
+  }
+
+  @Test
+  public void testInterface_ospf_area() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    i1.setVrf("VRF");
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
+  }
+
+  @Test
+  public void testInterface_ospf_authentication() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1\n ip ospf authentication message-digest\n");
+  }
+
+  @Test
+  public void testInterface_ospf_authentication_key() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1\n ip ospf message-digest-key 1 md5 <SCRUBBED>\n");
+  }
+
+  @Test
+  public void testInterface_ospf_p2p() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1\n ip ospf network point-to-point\n");
+    assertThat(i1.getOspf().getNetwork(), equalTo(OspfNetworkType.POINT_TO_POINT));
   }
 }

@@ -18,6 +18,8 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.SortedMap;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -39,6 +41,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -509,9 +512,10 @@ public class CumulusNcluConfigurationTest {
   @Test
   public void testToOspfProcess_NoRouterId() {
     OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, vrf);
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
     assertThat(ospfProcess.getProcessId(), equalTo("1"));
     assertThat(
@@ -527,7 +531,8 @@ public class CumulusNcluConfigurationTest {
     Loopback lo = ncluConfiguration.getLoopback();
     lo.setConfigured(true);
     lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
-    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    OspfProcess ospfProcess =
+        ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(ospfProcess.getProcessId(), equalTo("1"));
     assertThat(
@@ -542,7 +547,8 @@ public class CumulusNcluConfigurationTest {
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
 
-    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    OspfProcess ospfProcess =
+        ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(ospfProcess.getProcessId(), equalTo("1"));
     assertThat(
@@ -557,5 +563,93 @@ public class CumulusNcluConfigurationTest {
     lo.setConfigured(true);
     lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
     assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("1.1.1.1")));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_HasArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    vsIface.getOrCreateOspf().setOspfArea(1L);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf);
+    assertThat(viIface.getOspfAreaName(), equalTo(1L));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NoArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf();
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    assertNull(viIface.getOspfAreaName());
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NoNetworkType() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf);
+    assertNull(viIface.getOspfNetworkType());
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NetworkTypeP2P() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+    vsIface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf);
+    assertThat(
+        viIface.getOspfNetworkType(),
+        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Test
+  public void testComputeOspfProcess_HasArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    vsIface.getOrCreateOspf().setOspfArea(1L);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+
+    SortedMap<Long, OspfArea> areas = ncluConfiguration.computeOspfAreas(ImmutableList.of("iface"));
+    assertThat(
+        areas,
+        equalTo(
+            ImmutableSortedMap.of(
+                1L, OspfArea.builder().addInterface("iface").setNumber(1L).build())));
+  }
+
+  @Test
+  public void testComputeOspfProcess_NoArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf();
+
+    SortedMap<Long, OspfArea> areas = ncluConfiguration.computeOspfAreas(ImmutableList.of("iface"));
+    assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 }

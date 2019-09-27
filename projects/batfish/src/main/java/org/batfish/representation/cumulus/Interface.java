@@ -24,6 +24,8 @@ public class Interface implements Serializable {
   private final @Nonnull CumulusInterfaceType _type;
   private @Nullable String _vrf;
 
+  private @Nullable OspfInterface _ospf;
+
   /**
    * Construct an Interface
    *
@@ -127,5 +129,21 @@ public class Interface implements Serializable {
 
   public void setVrf(@Nullable String vrf) {
     _vrf = vrf;
+  }
+
+  @Nullable
+  public OspfInterface getOspf() {
+    return _ospf;
+  }
+
+  public @Nonnull OspfInterface getOrCreateOspf() {
+    if (_ospf == null) {
+      _ospf = new OspfInterface();
+    }
+    return _ospf;
+  }
+
+  public void setOspf(@Nullable OspfInterface ospf) {
+    _ospf = ospf;
   }
 }
