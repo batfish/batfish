@@ -1,7 +1,11 @@
 lexer grammar PaloAltoLexer;
 
 options {
-   superClass = 'org.batfish.grammar.BatfishLexer';
+  superClass = 'org.batfish.grammar.BatfishLexer';
+}
+
+tokens {
+  WORD
 }
 
 @members {
@@ -9,7 +13,6 @@ options {
 }
 
 // Keywords
-
 
 ACTION
 :
@@ -71,6 +74,11 @@ APPLICATION
     'application'
 ;
 
+APPLICATION_FILTER
+:
+    'application-filter'
+;
+
 APPLICATION_GROUP
 :
     'application-group'
@@ -79,6 +87,11 @@ APPLICATION_GROUP
 AUTHENTICATION
 :
     'authentication'
+;
+
+AUTHENTICATION_PROFILE
+:
+    'authentication-profile'
 ;
 
 AUTHENTICATION_TYPE
@@ -104,6 +117,16 @@ BOTNET
 CATEGORY
 :
     'category'
+;
+
+CERTIFICATE
+:
+    'certificate'
+;
+
+CERTIFICATE_PROFILE
+:
+    'certificate-profile'
 ;
 
 CLOSE_BRACKET
@@ -231,6 +254,16 @@ ESP
     'esp'
 ;
 
+EVASIVE
+:
+    'evasive'
+;
+
+EXCESSIVE_BANDWIDTH_USE
+:
+    'excessive-bandwidth-use'
+;
+
 EXTERNAL
 :
     'external'
@@ -289,6 +322,11 @@ GROUP19
 GROUP20
 :
     'group20'
+;
+
+HAS_KNOWN_VULNERABILITIES
+:
+    'has-known-vulnerabilities'
 ;
 
 HASH
@@ -379,6 +417,11 @@ LAYER3
 LIFETIME
 :
     'lifetime'
+;
+
+LINK
+:
+    'link' -> pushMode ( M_Url )
 ;
 
 LINK_STATE
@@ -506,6 +549,11 @@ PANORAMA_SERVER
     'panorama-server'
 ;
 
+PERVASIVE
+:
+    'pervasive'
+;
+
 POLICY
 :
     'policy'
@@ -541,6 +589,11 @@ PROFILES
     'profiles'
 ;
 
+PRONE_TO_MISUSE
+:
+    'prone-to-misuse'
+;
+
 PROTOCOL
 :
     'protocol'
@@ -564,6 +617,11 @@ RESET_CLIENT
 RESET_SERVER
 :
     'reset-server'
+;
+
+RISK
+:
+    'risk'
 ;
 
 ROUTING_TABLE
@@ -609,6 +667,11 @@ SECURITY
 SERVER
 :
     'server'
+;
+
+SERVER_PROFILE
+:
+    'server-profile'
 ;
 
 SERVERS
@@ -691,6 +754,11 @@ STATIC_ROUTE
     'static-route'
 ;
 
+SUBCATEGORY
+:
+    'subcategory'
+;
+
 SYSLOG
 :
     'syslog'
@@ -716,6 +784,16 @@ TCP
     'tcp'
 ;
 
+TECHNOLOGY
+:
+    'technology'
+;
+
+TEMPLATE
+:
+    'template'
+;
+
 THREE_DES
 :
     '3des'
@@ -731,9 +809,19 @@ TO
     'to'
 ;
 
+TRANSFERS_FILES
+:
+    'transfers-files'
+;
+
 TUNNEL
 :
     'tunnel'
+;
+
+TUNNELS_OTHER_APPS
+:
+    'tunnels-other-apps'
 ;
 
 TYPE
@@ -764,6 +852,11 @@ UPDATE_SCHEDULE
 UPDATE_SERVER
 :
     'update-server'
+;
+
+USED_BY_MALWARE
+:
+    'used-by-malware'
 ;
 
 VIRTUAL_ROUTER
@@ -917,15 +1010,48 @@ F_Newline
 ;
 
 fragment
+F_NonNewlineChar
+:
+    ~[\r\n] // carriage return or line feed
+;
+
+fragment
 F_PositiveDigit
 :
   [1-9]
 ;
 
 fragment
-F_NonNewlineChar
+F_Url
 :
-    ~[\r\n] // carriage return or line feed
+  F_UrlStart F_UrlInner+
+;
+
+F_UrlStart
+:
+  [a-zA-Z]
+;
+
+F_UrlInner
+:
+  F_UrlInnerAlphaNum
+  | F_UrlInnerReserved
+  | F_UrlInnerUnreserved
+;
+
+F_UrlInnerAlphaNum
+:
+  [a-zA-Z0-9]
+;
+
+F_UrlInnerReserved
+:
+  [!*'();:@&=+$,/?%#[\]]
+;
+
+F_UrlInnerUnreserved
+:
+  [-_.~]
 ;
 
 fragment
@@ -941,4 +1067,20 @@ F_Variable_VarChar
 ;
 
 // Modes
-// Blank for now, not all lexers will require modes
+
+mode M_Url;
+
+M_Url_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Url_WORD
+:
+  F_Url -> type ( WORD ) , popMode
+;
+
+M_Url_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;

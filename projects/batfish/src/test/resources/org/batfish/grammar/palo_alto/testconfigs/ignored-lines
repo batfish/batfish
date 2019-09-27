@@ -3,6 +3,9 @@ set deviceconfig system hostname ignored-lines
 set config mgt-config users
 set config shared application
 set config shared application-group
+set config shared authentication-profile RADIUS multi-factor-auth mfa-enable no
+set config shared certificate-profile FOO CA FOO-01
+set config shared server-profile tacplus MY_TACACS timeout 5
 set config shared service
 set config shared service-group
 set config shared content-preview application amazon-music-streaming category media
@@ -42,6 +45,19 @@ set network interface ethernet ethernet1/1 layer3 lldp enable no
 #
 set network virtual-router default protocol bgp enable no
 set network virtual-router default protocol bgp dampening-profile default cutoff 1.25
+#
+set policy panorama application-filter SOFTWARE-UPDATES category unknown
+set policy panorama application-filter SOFTWARE-UPDATES evasive yes
+set policy panorama application-filter SOFTWARE-UPDATES excessive-bandwidth-use yes
+set policy panorama application-filter SOFTWARE-UPDATES has-known-vulnerabilities yes
+set policy panorama application-filter SOFTWARE-UPDATES pervasive yes
+set policy panorama application-filter SOFTWARE-UPDATES prone-to-misuse yes
+set policy panorama application-filter SOFTWARE-UPDATES risk 5
+set policy panorama application-filter SOFTWARE-UPDATES transfers-files yes
+set policy panorama application-filter SOFTWARE-UPDATES tunnels-other-apps yes
+set policy panorama application-filter SOFTWARE-UPDATES used-by-malware yes
+set policy panorama application-filter SOFTWARE-UPDATES subcategory software-update
+set policy panorama application-filter SOFTWARE-UPDATES technology client-server
 #
 set shared botnet configuration http dynamic-dns enabled yes
 set shared botnet configuration other-applications irc yes
