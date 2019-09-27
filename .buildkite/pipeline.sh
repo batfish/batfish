@@ -100,7 +100,7 @@ EOF
 # https://buildkite.com/docs/tutorials/parallel-builds#parallel-jobs
 for cmd in $(find tests -name commands); do
   cat <<EOF
-  - label: "${cmd} ref tests"
+  - label: ":batfish: ${cmd} ref tests"
     command: ".buildkite/ref_test.sh ${cmd}"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:

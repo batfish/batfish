@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.parboiled.errors.InvalidInputError;
-import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
@@ -153,7 +152,7 @@ public class ParserIpProtocolTest {
   @Test
   public void testParseIpProtocolBadNumber() {
     String query = "2555";
-    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expect(IllegalArgumentException.class);
     ParserUtils.getAst(getRunner().run(query));
   }
 

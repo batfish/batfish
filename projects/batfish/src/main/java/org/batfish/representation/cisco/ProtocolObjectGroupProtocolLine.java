@@ -1,26 +1,31 @@
 package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableList;
-import javax.annotation.Nonnull;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 
 public class ProtocolObjectGroupProtocolLine implements ProtocolObjectGroupLine {
 
-  private final IpProtocol _protocol;
+  private final @Nullable IpProtocol _protocol;
 
-  public ProtocolObjectGroupProtocolLine(@Nonnull IpProtocol protocol) {
+  public ProtocolObjectGroupProtocolLine(@Nullable IpProtocol protocol) {
     _protocol = protocol;
   }
 
-  public IpProtocol getProtocol() {
-    return _protocol;
+  public Optional<IpProtocol> getProtocol() {
+    return Optional.ofNullable(_protocol);
   }
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr() {
+    if (_protocol == null) {
+      return TrueExpr.INSTANCE;
+    }
     return new MatchHeaderSpace(
         HeaderSpace.builder().setIpProtocols(ImmutableList.of(_protocol)).build());
   }

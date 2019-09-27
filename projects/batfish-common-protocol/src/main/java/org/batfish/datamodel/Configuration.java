@@ -63,7 +63,7 @@ public final class Configuration implements Serializable {
 
     @Override
     public Configuration build() {
-      String name = _hostname != null ? _hostname : generateName();
+      String name = _hostname != null ? _hostname : generateName().toLowerCase();
       Configuration configuration = new Configuration(name, _configurationFormat);
       if (_defaultCrossZoneAction != null) {
         configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
@@ -85,8 +85,12 @@ public final class Configuration implements Serializable {
       return this;
     }
 
-    public Builder setHostname(String hostname) {
-      _hostname = hostname;
+    public Builder setHostname(@Nullable String hostname) {
+      if (hostname != null) {
+        _hostname = hostname.toLowerCase();
+      } else {
+        _hostname = null;
+      }
       return this;
     }
 

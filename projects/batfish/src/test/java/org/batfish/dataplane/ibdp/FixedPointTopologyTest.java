@@ -77,16 +77,16 @@ public final class FixedPointTopologyTest {
   private static final String E21_NAME = "E21";
   private static final ConcreteInterfaceAddress H1_ADDRESS =
       ConcreteInterfaceAddress.parse("172.16.0.1/24");
-  private static final String H1_NAME = "H1";
+  private static final String H1_NAME = "h1";
   private static final ConcreteInterfaceAddress H2_ADDRESS =
       ConcreteInterfaceAddress.parse("172.16.0.2/24");
-  private static final String H2_NAME = "H2";
+  private static final String H2_NAME = "h2";
   private static final ConcreteInterfaceAddress S1_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.0.0/31");
-  private static final String S1_NAME = "S1";
+  private static final String S1_NAME = "s1";
   private static final ConcreteInterfaceAddress S2_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.0.1/31");
-  private static final String S2_NAME = "S2";
+  private static final String S2_NAME = "s2";
   private static final String SWP1_NAME = "SWP1";
   private static final String SWP2_NAME = "SWP2";
   private static final int UDP_PORT = 5555;

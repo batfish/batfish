@@ -9,13 +9,18 @@ import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.Streams;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,6 +36,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -68,6 +74,7 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -112,6 +119,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   static final String REFBOOK_SOURCE_POOLS = "pools";
   static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
+
+  // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
+  private static final int DEFAULT_DEAD_INTERVAL_S = 40;
+
+  // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
+  private static final int DEFAULT_HELLO_INTERVAL_S = 10;
+
+  private static final double OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR = 1E6D; // bps per Mbps
 
   private static boolean appliesToVlan(Snat snat, String vlanName) {
     return !snat.getVlansEnabled()
@@ -194,11 +209,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private ConfigurationFormat _format;
   private String _hostname;
   private boolean _imish;
+  private final Map<String, ImishInterface> _imishInterfaces;
   private transient Map<String, ImmutableList.Builder<IpAccessListLine>>
       _interfaceIncomingFilterLines;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Node> _nodes;
   private @Nonnull List<String> _ntpServers;
+  private final @Nonnull Map<String, OspfProcess> _ospfProcesses;
   private final @Nonnull Map<String, Pool> _pools;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
@@ -223,9 +240,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
   public F5BigipConfiguration() {
     _accessLists = new HashMap<>();
     _bgpProcesses = new HashMap<>();
+    _imishInterfaces = new HashMap<>();
     _interfaces = new HashMap<>();
     _nodes = new HashMap<>();
     _ntpServers = ImmutableList.of();
+    _ospfProcesses = new HashMap<>();
     _pools = new HashMap<>();
     _prefixLists = new HashMap<>();
     _routeMaps = new HashMap<>();
@@ -699,6 +718,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  private void convertOspfProcesses() {
+    _c.getDefaultVrf()
+        .setOspfProcesses(
+            _ospfProcesses.entrySet().stream()
+                .collect(
+                    ImmutableSortedMap.toImmutableSortedMap(
+                        Comparator.naturalOrder(),
+                        Entry::getKey,
+                        e -> toOspfProcess(e.getValue()))));
+  }
+
   public Map<String, AccessList> getAccessLists() {
     return _accessLists;
   }
@@ -729,12 +759,20 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _imish;
   }
 
+  public @Nonnull Map<String, ImishInterface> getImishInterfaces() {
+    return _imishInterfaces;
+  }
+
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
 
   public @Nonnull Map<String, Node> getNodes() {
     return _nodes;
+  }
+
+  public @Nonnull Map<String, OspfProcess> getOspfProcesses() {
+    return _ospfProcesses;
   }
 
   public @Nonnull Map<String, Pool> getPools() {
@@ -952,6 +990,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(
         F5BigipStructureType.BGP_PROCESS, F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE);
     markConcreteStructure(
+        F5BigipStructureType.IMISH_INTERFACE,
+        F5BigipStructureUsage.IMISH_INTERFACE_SELF_REFERENCE,
+        F5BigipStructureUsage.OSPF_PASSIVE_INTERFACE);
+    markConcreteStructure(
         F5BigipStructureType.INTERFACE,
         F5BigipStructureUsage.INTERFACE_SELF_REFERENCE,
         F5BigipStructureUsage.TRUNK_INTERFACE);
@@ -964,6 +1006,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(
         F5BigipStructureType.MONITOR_HTTPS, F5BigipStructureUsage.MONITOR_HTTPS_DEFAULTS_FROM);
     markConcreteStructure(F5BigipStructureType.NODE, F5BigipStructureUsage.POOL_MEMBER);
+    markConcreteStructure(
+        F5BigipStructureType.OSPF_PROCESS, F5BigipStructureUsage.OSPF_PROCESS_SELF_REFERENCE);
     markAbstractStructure(
         F5BigipStructureType.PERSISTENCE,
         F5BigipStructureUsage.VIRTUAL_PERSIST_PERSISTENCE,
@@ -1461,6 +1505,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
       _c.getDefaultVrf().setBgpProcess(toBgpProcess(proc));
     }
 
+    convertOspfProcesses();
+
     // Add kernel routes for each virtual-address if applicable
     _c.getDefaultVrf()
         .setKernelRoutes(
@@ -1496,6 +1542,172 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markStructures();
 
     return _c;
+  }
+
+  private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(OspfProcess proc) {
+    Ip routerId =
+        proc.getRouterId() != null
+            ? proc.getRouterId()
+            : inferRouterId(_c.getDefaultVrf(), _w, "OSPF process " + proc.getName());
+    return toOspfProcessBuilder(proc, proc.getName(), Configuration.DEFAULT_VRF_NAME)
+        .setProcessId(proc.getName())
+        .setRouterId(routerId)
+        .build();
+  }
+
+  private @Nonnull org.batfish.datamodel.ospf.OspfProcess.Builder toOspfProcessBuilder(
+      OspfProcess proc, String processName, String vrfName) {
+    org.batfish.datamodel.ospf.OspfProcess.Builder builder =
+        org.batfish.datamodel.ospf.OspfProcess.builder();
+
+    // convert areas
+    Multimap<Long, Prefix> prefixesByAreaId =
+        ImmutableMultimap.copyOf(
+            proc.getNetworks().entrySet().stream()
+                .map(e -> Maps.immutableEntry(e.getValue(), e.getKey()))
+                .collect(ImmutableList.toImmutableList()));
+    builder
+        .setAreas(
+            proc.getAreas().values().stream()
+                .collect(
+                    ImmutableSortedMap.toImmutableSortedMap(
+                        Comparator.naturalOrder(),
+                        OspfArea::getId,
+                        area ->
+                            toOspfArea(
+                                processName,
+                                vrfName,
+                                proc,
+                                area,
+                                prefixesByAreaId.get(area.getId())))))
+        .setReferenceBandwidth(
+            OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR * proc.getAutoCostReferenceBandwidthMbps());
+
+    return builder;
+  }
+
+  private @Nonnull org.batfish.datamodel.ospf.OspfArea toOspfArea(
+      String processName,
+      String vrfName,
+      OspfProcess proc,
+      OspfArea area,
+      Collection<Prefix> prefixes) {
+    org.batfish.datamodel.ospf.OspfArea.Builder builder =
+        org.batfish.datamodel.ospf.OspfArea.builder().setNumber(area.getId());
+    builder.setInterfaces(computeAreaInterfaces(processName, vrfName, proc, area, prefixes));
+    return builder.build();
+  }
+
+  private @Nonnull Set<String> computeAreaInterfaces(
+      String processName,
+      String vrfName,
+      OspfProcess proc,
+      OspfArea area,
+      Collection<Prefix> prefixes) {
+    org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<String> interfaces = ImmutableSet.builder();
+    long areaId = area.getId();
+    _selves
+        .values()
+        .forEach(
+            self -> {
+              Optional<Prefix> prefixOpt =
+                  Optional.ofNullable(self.getAddress())
+                      .map(ConcreteInterfaceAddress::getPrefix)
+                      .filter(prefixes::contains);
+              if (!prefixOpt.isPresent()) {
+                // no address or prefix not included in area
+                return;
+              }
+              String vlanName = self.getVlan();
+              if (!_vlans.containsKey(vlanName)) {
+                // vlan doesn't exist
+                return;
+              }
+
+              String imishName = computeImishName(vlanName);
+              boolean passive = proc.getPassiveInterfaces().contains(imishName);
+
+              // Add to this area.
+              interfaces.add(vlanName);
+              OspfInterface ospf =
+                  Optional.ofNullable(_imishInterfaces.get(imishName))
+                      .map(ImishInterface::getOspf)
+                      // If interface being added has no explicit OSPF configuration, use defaults
+                      .orElseGet(() -> new OspfInterface());
+              finalizeInterfaceOspfSettings(vlanName, areaId, processName, ospf, passive);
+            });
+    return interfaces.build();
+  }
+
+  private @Nonnull String computeImishName(String name) {
+    return Iterables.getLast(Arrays.asList(name.split("/", -1)));
+  }
+
+  private void finalizeInterfaceOspfSettings(
+      String ifaceName, long areaId, String processName, OspfInterface ospf, boolean passive) {
+    org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
+    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
+    ospfSettings.setCost(ospf.getCost());
+    ospfSettings.setEnabled(true);
+    ospfSettings.setAreaName(areaId);
+    ospfSettings.setProcess(processName);
+    ospfSettings.setPassive(passive);
+    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
+    ospfSettings.setDeadInterval(firstNonNull(ospf.getDeadIntervalS(), DEFAULT_DEAD_INTERVAL_S));
+    ospfSettings.setHelloInterval(firstNonNull(ospf.getHelloIntervalS(), DEFAULT_HELLO_INTERVAL_S));
+
+    newIface.setOspfSettings(ospfSettings.build());
+  }
+
+  private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      OspfNetworkType type) {
+    if (type == null) {
+      return null;
+    }
+    switch (type) {
+      case NON_BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
+
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of F5 BIG-IP OSPF network type '%s' is not handled.", type.toString()));
+        return null;
+    }
+  }
+
+  /**
+   * Infers router ID on F5 BIG-IP when not configured in a routing process.
+   *
+   * <p>From linked documentation, omitting inapplicable text involving loopbacks:
+   *
+   * <p><em>...biggest IP Address among all of the interfaces is used as a Router ID.
+   *
+   * <p>Each VRF has separate Router ID. VRF's Router ID selection does not affect to other
+   * VRF.</em>
+   *
+   * @see <a href="https://github.com/coreswitch/zebra/blob/master/docs/router-id.md">zebra docs</a>
+   */
+  @Nonnull
+  static Ip inferRouterId(Vrf vrf, Warnings w, String processDesc) {
+    Optional<Ip> highestIp =
+        vrf.getInterfaces().values().stream()
+            .map(org.batfish.datamodel.Interface::getConcreteAddress)
+            .filter(Objects::nonNull)
+            .map(ConcreteInterfaceAddress::getIp)
+            .max(Comparator.naturalOrder());
+    if (!highestIp.isPresent()) {
+      w.redFlag(
+          String.format(
+              "Router-id is not manually configured for %s in VRF %s. Unable to infer default router-id as no interfaces have IP addresses",
+              processDesc, vrf.getName()));
+      return Ip.ZERO;
+    }
+    return highestIp.get();
   }
 
   @VisibleForTesting

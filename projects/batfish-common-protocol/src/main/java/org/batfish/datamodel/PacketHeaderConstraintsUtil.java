@@ -166,9 +166,8 @@ public class PacketHeaderConstraintsUtil {
     }
   }
 
-  @VisibleForTesting
-  static void setIpProtocol(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    // IP protocol (default to UDP)
+  private static void setIpProtocol(PacketHeaderConstraints constraints, Flow.Builder builder) {
+    // IP protocol if constrained, else unset and constrained later.
     Set<IpProtocol> ipProtocols = constraints.resolveIpProtocols();
     checkArgument(
         ipProtocols == null || ipProtocols.size() == 1,

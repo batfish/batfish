@@ -12,6 +12,10 @@ final class IpProtocolIpProtocolAstNode implements IpProtocolAstNode {
     return Arrays.stream(IpProtocol.values()).anyMatch(p -> p.toString().equalsIgnoreCase(name));
   }
 
+  static boolean isValidNumber(int number) {
+    return number >= 0 && number < 256;
+  }
+
   IpProtocolIpProtocolAstNode(String nameOrNum) {
     _ipProtocol = IpProtocol.fromString(nameOrNum);
   }

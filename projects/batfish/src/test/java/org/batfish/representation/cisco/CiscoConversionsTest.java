@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -30,7 +29,6 @@ import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -88,7 +86,6 @@ public class CiscoConversionsTest {
                                     .setSrcIps(IpWildcard.parse("1.1.1.1").toIpSpace())
                                     .setDstIps(IpWildcard.parse("2.2.2.2").toIpSpace())
                                     .setNotSrcIps(IpWildcard.parse("3.3.3.3").toIpSpace())
-                                    .setIpProtocols(ImmutableSet.of(IpProtocol.IP))
                                     .build()))
                         .build()))
             .build();

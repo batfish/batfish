@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.FlowState;
@@ -31,7 +32,7 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
   private final String _name;
 
-  private final IpProtocol _protocol;
+  private final @Nullable IpProtocol _protocol;
 
   private final String _srcAddressGroup;
 
@@ -46,7 +47,7 @@ public class ExtendedIpv6AccessListLine implements Serializable {
   public ExtendedIpv6AccessListLine(
       String name,
       LineAction action,
-      IpProtocol protocol,
+      @Nullable IpProtocol protocol,
       Ip6Wildcard srcIpWildcard,
       @Nullable String srcAddressGroup,
       Ip6Wildcard dstIpWildcard,
@@ -112,8 +113,8 @@ public class ExtendedIpv6AccessListLine implements Serializable {
     return _name;
   }
 
-  public IpProtocol getProtocol() {
-    return _protocol;
+  public Optional<IpProtocol> getProtocol() {
+    return Optional.ofNullable(_protocol);
   }
 
   public Ip6Wildcard getSourceIpWildcard() {
@@ -138,16 +139,12 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
   @Override
   public String toString() {
-    String protocolName = _protocol.name();
     return "[Name:\""
         + _name
         + "\", Action:"
         + _action
         + ", Protocol:"
-        + protocolName
-        + "("
-        + _protocol.number()
-        + ")"
+        + (_protocol == null ? "any" : _protocol)
         + ", SourceIpWildcard:"
         + _srcIpWildcard
         + ", DestinationIpWildcard:"
