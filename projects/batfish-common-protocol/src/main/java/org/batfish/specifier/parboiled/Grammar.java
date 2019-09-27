@@ -126,8 +126,7 @@ public enum Grammar {
    * Returns a mapping from group values in the enum set (which represent multiple atomic values) to
    * their atomic values.
    */
-  // TODO: fix type signature
-  public static Map<?, ?> getGroupValues(Grammar grammar) {
+  public static Map<?, ? extends Set<?>> getGroupValues(Grammar grammar) {
     switch (grammar) {
       case ROUTING_PROTOCOL_SPECIFIER:
         return RoutingProtocolSpecifier.getGroupings();
