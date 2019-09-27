@@ -21,6 +21,7 @@ ss_common
     s_address
     | s_address_group
     | s_application
+    | s_application_filter
     | s_application_group
     | s_service
     | s_service_group
@@ -38,8 +39,12 @@ ss_log_settings
 ss_null
 :
     (
-        BOTNET
+        AUTHENTICATION_PROFILE
+        | BOTNET
+        | CERTIFICATE
+        | CERTIFICATE_PROFILE
         | CONTENT_PREVIEW
+        | SERVER_PROFILE
     )
     null_rest_of_line
 ;
