@@ -8,6 +8,8 @@ public class OspfInterface implements Serializable {
   private @Nullable Long _ospfArea;
   private @Nullable OspfNetworkType _network;
 
+  private @Nullable Boolean _passive;
+
   public @Nullable OspfNetworkType getNetwork() {
     return _network;
   }
@@ -23,5 +25,14 @@ public class OspfInterface implements Serializable {
 
   public void setOspfArea(@Nullable Long ospfArea) {
     _ospfArea = ospfArea;
+  }
+
+  @Nullable
+  public Boolean getPassive() {
+    return _passive;
+  }
+
+  public void setPassive(@Nullable Boolean passive) {
+    _passive = passive;
   }
 }

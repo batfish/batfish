@@ -879,4 +879,21 @@ public class CumulusFrrGrammarTest {
     parse("interface swp1\n ip ospf network point-to-point\n");
     assertThat(i1.getOspf().getNetwork(), equalTo(OspfNetworkType.POINT_TO_POINT));
   }
+
+  @Test
+  public void testRouterOspfPassiveInterface_NoInterface() {
+    parse("router ospf\n passive-interface lo\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("interface lo is not defined"));
+  }
+
+  @Test
+  public void testRouterOspfPassiveInterface() {
+    Interface iface = new Interface("lo", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("lo", iface);
+    parse("router ospf\n passive-interface lo\n");
+    assertTrue(iface.getOspf().getPassive());
+  }
 }
