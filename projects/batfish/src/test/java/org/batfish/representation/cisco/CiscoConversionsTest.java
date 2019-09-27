@@ -311,7 +311,9 @@ public class CiscoConversionsTest {
 
     iface.setOspfHelloInterval(7);
     // Explicitly set hello interval should be preferred over inference
-    assertThat(toOspfHelloInterval(iface), equalTo(7));
+    assertThat(
+        toOspfHelloInterval(iface, org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST),
+        equalTo(7));
   }
 
   @Test
@@ -320,9 +322,19 @@ public class CiscoConversionsTest {
     Interface iface = new Interface("FastEthernet0/0", c);
 
     // Since the hello interval is not set, it should be inferred from the network type
-    iface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
-    assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST));
-    iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
-    assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_OSPF_HELLO_INTERVAL));
+    assertThat(
+        toOspfHelloInterval(iface, org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT),
+        equalTo(DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST));
+    assertThat(
+        toOspfHelloInterval(
+            iface, org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS),
+        equalTo(DEFAULT_OSPF_HELLO_INTERVAL));
+  }
+
+  @Test
+  public void testToOspfNetworkType() {
+    assertThat(
+        CiscoConversions.toOspfNetworkType(null, new Warnings()),
+        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
   }
 }
