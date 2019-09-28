@@ -276,7 +276,9 @@ public class CiscoConversionsTest {
     Interface iface = new Interface("FastEthernet0/0", c);
     iface.setOspfDeadInterval(7);
     // Explicitly set dead interval should be preferred over inference
-    assertThat(toOspfDeadInterval(iface), equalTo(7));
+    assertThat(
+        toOspfDeadInterval(iface, org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST),
+        equalTo(7));
   }
 
   @Test
@@ -288,7 +290,8 @@ public class CiscoConversionsTest {
     iface.setOspfHelloInterval(helloInterval);
     // Since the dead interval is not set, it should be inferred as four times the hello interval
     assertThat(
-        toOspfDeadInterval(iface), equalTo(OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval));
+        toOspfDeadInterval(iface, org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST),
+        equalTo(OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval));
   }
 
   @Test
@@ -298,10 +301,13 @@ public class CiscoConversionsTest {
 
     // Since the dead interval and hello interval are not set, it should be inferred from the
     // network type
-    iface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
-    assertThat(toOspfDeadInterval(iface), equalTo(DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST));
-    iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
-    assertThat(toOspfDeadInterval(iface), equalTo(DEFAULT_OSPF_DEAD_INTERVAL));
+    assertThat(
+        toOspfDeadInterval(iface, org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT),
+        equalTo(DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST));
+    assertThat(
+        toOspfDeadInterval(
+            iface, org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS),
+        equalTo(DEFAULT_OSPF_DEAD_INTERVAL));
   }
 
   @Test

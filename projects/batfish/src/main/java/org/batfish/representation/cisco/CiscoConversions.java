@@ -1697,7 +1697,8 @@ public class CiscoConversions {
    * for more details.
    */
   @VisibleForTesting
-  static int toOspfDeadInterval(Interface iface) {
+  static int toOspfDeadInterval(
+      Interface iface, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
     Integer deadInterval = iface.getOspfDeadInterval();
     if (deadInterval != null) {
       return deadInterval;
@@ -1706,8 +1707,7 @@ public class CiscoConversions {
     if (helloInterval != null) {
       return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
-    OspfNetworkType networkType = iface.getOspfNetworkType();
-    if (networkType == OspfNetworkType.POINT_TO_POINT || networkType == OspfNetworkType.BROADCAST) {
+    if (networkType == POINT_TO_POINT || networkType == BROADCAST) {
       return DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
     }
     return DEFAULT_OSPF_DEAD_INTERVAL;

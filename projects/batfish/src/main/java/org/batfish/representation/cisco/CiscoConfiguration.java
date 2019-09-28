@@ -3020,7 +3020,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     ospfSettings.setCost(vsIface.getOspfCost());
-    ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface));
     ospfSettings.setHelloMultiplier(vsIface.getOspfHelloMultiplier());
 
     ospfSettings.setAreaName(areaNum);
@@ -3029,6 +3028,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         toOspfNetworkType(vsIface.getOspfNetworkType(), _w);
     ospfSettings.setNetworkType(networkType);
     ospfSettings.setHelloInterval(toOspfHelloInterval(vsIface, networkType));
+    ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface, networkType));
 
     iface.setOspfSettings(ospfSettings.build());
   }

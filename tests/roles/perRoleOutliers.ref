@@ -33,7 +33,7 @@
           "ospfSettings" : {
             "area" : 1,
             "cost" : 1,
-            "deadInterval" : 120,
+            "deadInterval" : 40,
             "enabled" : true,
             "helloInterval" : 10,
             "helloMultiplier" : 0,
@@ -87,7 +87,7 @@
           "ospfSettings" : {
             "area" : 1,
             "cost" : 1,
-            "deadInterval" : 120,
+            "deadInterval" : 40,
             "enabled" : true,
             "helloInterval" : 10,
             "helloMultiplier" : 0,

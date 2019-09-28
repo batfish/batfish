@@ -2510,7 +2510,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -8638,7 +8638,7 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "cost" : 60,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -10498,7 +10498,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 4000,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -10535,7 +10535,7 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -10872,7 +10872,7 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -10935,7 +10935,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -10974,7 +10974,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -11236,7 +11236,7 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -17264,7 +17264,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -17304,7 +17304,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19502,7 +19502,7 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19535,7 +19535,7 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19569,7 +19569,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19603,7 +19603,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19637,7 +19637,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19671,7 +19671,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19705,7 +19705,7 @@
             "ospfSettings" : {
               "area" : 60,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19740,7 +19740,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
@@ -19775,7 +19775,7 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
