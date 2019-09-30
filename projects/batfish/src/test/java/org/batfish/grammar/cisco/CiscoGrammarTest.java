@@ -3707,8 +3707,7 @@ public class CiscoGrammarTest {
   @Test
   public void testBgpMultipathRelax() throws IOException {
     String testrigName = "bgp-multipath-relax";
-    List<String> configurationNames =
-        ImmutableList.of("arista_disabled", "arista_enabled", "nxos_disabled", "nxos_enabled");
+    List<String> configurationNames = ImmutableList.of("arista_disabled", "arista_enabled");
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -3721,10 +3720,6 @@ public class CiscoGrammarTest {
         configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
     org.batfish.datamodel.BgpProcess aristaEnabled =
         configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
-    org.batfish.datamodel.BgpProcess nxosDisabled =
-        configurations.get("nxos_disabled").getDefaultVrf().getBgpProcess();
-    org.batfish.datamodel.BgpProcess nxosEnabled =
-        configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
     assertThat(
         aristaDisabled,
@@ -3732,17 +3727,9 @@ public class CiscoGrammarTest {
     assertThat(
         aristaEnabled,
         hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(
-        nxosDisabled,
-        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(
-        nxosEnabled,
-        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
 
     assertThat(aristaDisabled, hasMultipathEbgp(false));
     assertThat(aristaEnabled, hasMultipathEbgp(false));
-    assertThat(nxosDisabled, hasMultipathEbgp(false));
-    assertThat(nxosEnabled, hasMultipathEbgp(false));
   }
 
   @Test

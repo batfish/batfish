@@ -1,5 +1,7 @@
 package org.batfish.grammar.cisco_nxos;
 
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
@@ -8,6 +10,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
@@ -84,6 +87,15 @@ public class NxosBgpTest {
         hasVrf("justebgp", hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false)))));
     assertThat(
         c, hasVrf("both", hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(true)))));
+  }
+
+  @Test
+  public void testMultipathAsPathRelax() throws IOException {
+    Configuration c = parseConfig("nxos-bgp-multipath-relax");
+    assertThat(
+        c, hasVrf("default", hasBgpProcess(hasMultipathEquivalentAsPathMatchMode(EXACT_PATH))));
+    assertThat(
+        c, hasVrf("enabled", hasBgpProcess(hasMultipathEquivalentAsPathMatchMode(PATH_LENGTH))));
   }
 
   @Test
