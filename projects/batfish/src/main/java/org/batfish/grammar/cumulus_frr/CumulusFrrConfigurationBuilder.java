@@ -13,6 +13,7 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +93,7 @@ import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
+import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -312,13 +314,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterS_interface(S_interfaceContext ctx) {
     String name = ctx.name.getText();
 
-    Interface iface = _c.getInterfaces().get(name);
-    if (iface == null) {
-      _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", name));
-      return;
-    }
-    _currentInterface = iface;
+    // TODO: need to infer correct interface types
+    _currentInterface =
+        _c.getInterfaces()
+            .computeIfAbsent(
+                name, k -> new Interface(k, CumulusInterfaceType.PHYSICAL, null, null));
 
     if (ctx.VRF() != null) {
       String vrf = ctx.vrf.getText();

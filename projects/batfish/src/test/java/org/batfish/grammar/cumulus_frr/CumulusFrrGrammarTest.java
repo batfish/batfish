@@ -896,4 +896,10 @@ public class CumulusFrrGrammarTest {
     parse("router ospf\n passive-interface lo\n");
     assertTrue(iface.getOspf().getPassive());
   }
+
+  @Test
+  public void testCreateInterfaceInFRR() {
+    parse("interface eth1\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+  }
 }

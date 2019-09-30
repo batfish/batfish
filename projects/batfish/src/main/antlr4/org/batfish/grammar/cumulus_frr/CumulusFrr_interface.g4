@@ -12,6 +12,7 @@ s_interface
   (
     si_description
     | si_ospf
+    | IP ADDRESS IP_PREFIX
   )*
 ;
 
