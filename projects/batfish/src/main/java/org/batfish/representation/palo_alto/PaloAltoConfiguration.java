@@ -1140,11 +1140,37 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       if (iface.getVrf() == null) {
         orphanedInterfaces.put(iface.getName(), iface);
         iface.setVrf(nullVrf);
-        iface.setActive(false);
-        _w.redFlag(
-            String.format(
-                "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
-                iface.getName(), nullVrf.getName()));
+        if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
+          // This is a child interface. Just shut it down.
+          iface.setActive(false);
+          _w.redFlag(
+              String.format(
+                  "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
+                  iface.getName(), nullVrf.getName()));
+        } else {
+          // This is a parent interface. We can't shut it down, so instead we must just clear L2/L3
+          // data.
+          boolean warn = false;
+          if (iface.getAddress() != null) {
+            warn = true;
+            iface.setAddress(null);
+          }
+          if (!iface.getAllAddresses().isEmpty()) {
+            warn = true;
+            iface.setAllAddresses(ImmutableSortedSet.of());
+          }
+          if (iface.getVlan() != null) {
+            warn = true;
+            iface.setVlan(null);
+          }
+          // Only warn if some L2/L3 data actually set.
+          if (warn) {
+            _w.redFlag(
+                String.format(
+                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3 data.",
+                    iface.getName(), nullVrf.getName()));
+          }
+        }
       }
     }
     if (orphanedInterfaces.size() > 0) {

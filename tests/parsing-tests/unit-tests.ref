@@ -77204,7 +77204,7 @@
         "paloalto_applications" : "PASSED",
         "paloalto_interfaces" : "WARNINGS",
         "paloalto_policy" : "PASSED",
-        "paloalto_zones" : "WARNINGS",
+        "paloalto_zones" : "PASSED",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
         "prefix_list_ipv4" : "PASSED",
@@ -93763,10 +93763,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Interface ethernet1/1.4 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
             },
             {
@@ -93775,15 +93771,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface loopback is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Interface loopback.1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface tunnel is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -93791,31 +93779,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface vlan is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Interface vlan.1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            }
-          ]
-        },
-        "paloalto_zones" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/2 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/3 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/4 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
             }
           ]
         },
