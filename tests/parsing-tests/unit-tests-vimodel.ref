@@ -2510,10 +2510,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -8178,6 +8179,7 @@
               "enabled" : false,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "outgoingTransformation" : {
@@ -8636,10 +8638,11 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "cost" : 60,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "outgoingFilter" : "~COMBINED_OUTGOING_ACL~inside~",
@@ -10495,10 +10498,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 4000,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -10531,10 +10535,11 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "prefix" : "4.4.4.0/24",
@@ -10867,10 +10872,11 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "prefix" : "2.2.2.0/24",
@@ -10929,10 +10935,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -10967,10 +10974,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "ignored"
             },
@@ -11228,10 +11236,11 @@
             ],
             "mtu" : 1500,
             "ospfSettings" : {
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : false,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false
             },
             "prefix" : "2.2.2.0/24",
@@ -17255,10 +17264,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -17294,10 +17304,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 10,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "1"
             },
@@ -19491,10 +19502,11 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19523,10 +19535,11 @@
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19556,10 +19569,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : true,
               "process" : "2"
             },
@@ -19589,10 +19603,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19622,10 +19637,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19655,10 +19671,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : true,
               "process" : "2"
             },
@@ -19688,10 +19705,11 @@
             "ospfSettings" : {
               "area" : 60,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : false,
               "process" : "2"
             },
@@ -19722,10 +19740,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : true,
               "process" : "2"
             },
@@ -19756,10 +19775,11 @@
             "ospfSettings" : {
               "area" : 0,
               "cost" : 1,
-              "deadInterval" : 120,
+              "deadInterval" : 40,
               "enabled" : true,
-              "helloInterval" : 30,
+              "helloInterval" : 10,
               "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
               "passive" : true,
               "process" : "2"
             },
