@@ -712,7 +712,7 @@ COMMUNITY
 :
    'community'
    {
-      enableIPV6_ADDRESS = false;
+      _enableIpv6Address = false;
    }
 
 ;
@@ -6182,7 +6182,7 @@ ZONES
 
 STANDARD_COMMUNITY
 :
-  F_StandardCommunity {!enableIPV6_ADDRESS}?
+  F_StandardCommunity {!_enableIpv6Address}?
 ;
 
 VARIABLE
@@ -6191,14 +6191,14 @@ VARIABLE
       (
          (
             F_Variable_RequiredVarChar
-            {!enableIPV6_ADDRESS}?
+            {!_enableIpv6Address}?
 
             F_Variable_VarChar*
          )
          |
          (
             F_Variable_RequiredVarChar_Ipv6
-            {enableIPV6_ADDRESS}?
+            {_enableIpv6Address}?
 
             F_Variable_VarChar_Ipv6*
          )
@@ -6207,14 +6207,14 @@ VARIABLE
       (
          (
             F_Variable_LeadingVarChar
-            {!enableIPV6_ADDRESS}?
+            {!_enableIpv6Address}?
 
             F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
          )
          |
          (
             F_Variable_LeadingVarChar_Ipv6
-            {enableIPV6_ADDRESS}?
+            {_enableIpv6Address}?
 
             F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6
             F_Variable_VarChar_Ipv6*
@@ -6321,22 +6321,22 @@ GREATER_THAN
 
 IP_ADDRESS
 :
-   F_IpAddress{enableIP_ADDRESS}?
+   F_IpAddress{_enableIpAddress}?
 ;
 
 IP_PREFIX
 :
-   F_IpPrefix {enableIP_ADDRESS}? {isPrefix()}?
+   F_IpPrefix {_enableIpAddress}? {isPrefix()}?
 ;
 
 IPV6_ADDRESS
 :
-   F_Ipv6Address {enableIPV6_ADDRESS}?
+   F_Ipv6Address {_enableIpv6Address}?
 ;
 
 IPV6_PREFIX
 :
-   F_Ipv6Prefix {enableIPV6_ADDRESS}?
+   F_Ipv6Prefix {_enableIpv6Address}?
 ;
 
 LINE_COMMENT
@@ -6345,7 +6345,7 @@ LINE_COMMENT
       '#'
       | '!'
    ) F_NonNewlineChar* F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> channel ( HIDDEN )
 ;
@@ -6359,7 +6359,7 @@ NEWLINE
 :
    F_NewlineChar+
    {
-      enableIPV6_ADDRESS = true;
+      _enableIpv6Address = true;
    }
 
 ;
@@ -6814,7 +6814,7 @@ mode M_AsPath;
 M_AsPath_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7011,7 +7011,7 @@ M_AsPathRegex_DOUBLE_QUOTE
 M_AsPathRegex_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7031,7 +7031,7 @@ M_Description_DESCRIPTION
 M_Description_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7051,7 +7051,7 @@ M_DSCP_VARIABLE
 M_DSCP_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7092,7 +7092,7 @@ M_Interface_APPLY_GROUPS_EXCEPT
 M_Interface_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7204,7 +7204,7 @@ M_ISO_MTU
 M_ISO_Newline
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7278,7 +7278,7 @@ M_Members_DOUBLE_QUOTE
 M_Members_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7523,7 +7523,7 @@ M_RouteDistinguisher_DEC
 M_RouteDistinguisher_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7646,7 +7646,7 @@ M_VrfTarget_L
 M_VrfTarget_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
