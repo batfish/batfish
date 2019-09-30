@@ -24,7 +24,7 @@ import org.junit.rules.TemporaryFolder;
 /** Tests of Juniper aggregate-ethernet devices. */
 public class FlatJuniperAggregationTest {
 
-  private static final String SNAPSHOT_PATH = "org/batfish/grammar/juniper/aggregation";
+  private static final String SNAPSHOT_PATH = "org/batfish/grammar/juniper/testrigs/aggregation";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

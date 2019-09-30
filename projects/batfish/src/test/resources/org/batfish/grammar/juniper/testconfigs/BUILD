@@ -4,9 +4,6 @@ package(
 )
 
 filegroup(
-    name = "palo_alto",
-    srcs = glob(
-        ["**"],
-        exclude = ["BUILD"],
-    ),
+    name = "testconfigs",
+    srcs = glob(["**"]),
 )
