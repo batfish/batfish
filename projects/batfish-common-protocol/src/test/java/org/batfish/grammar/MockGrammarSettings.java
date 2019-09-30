@@ -20,7 +20,6 @@ public final class MockGrammarSettings implements GrammarSettings {
     private boolean _printParseTreeLineNums;
     private boolean _throwOnLexerError;
     private boolean _throwOnParserError;
-    private boolean _useNewCiscoNxosParser;
 
     private Builder() {}
 
@@ -33,8 +32,7 @@ public final class MockGrammarSettings implements GrammarSettings {
           _printParseTree,
           _printParseTreeLineNums,
           _throwOnLexerError,
-          _throwOnParserError,
-          _useNewCiscoNxosParser);
+          _throwOnParserError);
     }
 
     public @Nonnull Builder setDisableUnrecognized(boolean disableUnrecognized) {
@@ -76,11 +74,6 @@ public final class MockGrammarSettings implements GrammarSettings {
       _throwOnParserError = throwOnParserError;
       return this;
     }
-
-    public @Nonnull Builder setUseNewCiscoNxosParser(boolean useNewCiscoNxosParser) {
-      _useNewCiscoNxosParser = useNewCiscoNxosParser;
-      return this;
-    }
   }
 
   public static @Nonnull Builder builder() {
@@ -95,7 +88,6 @@ public final class MockGrammarSettings implements GrammarSettings {
   private final boolean _printParseTreeLineNums;
   private final boolean _throwOnLexerError;
   private final boolean _throwOnParserError;
-  private final boolean _useNewCiscoNxosParser;
 
   /**
    * Constructor where all {@link GrammarSettings} settings must be explicitly provided
@@ -107,7 +99,6 @@ public final class MockGrammarSettings implements GrammarSettings {
    * @param printParseTree See {@link GrammarSettings#getPrintParseTree()}
    * @param throwOnLexerError See {@link GrammarSettings#getThrowOnLexerError()}
    * @param throwOnParserError See {@link GrammarSettings#getThrowOnParserError()}
-   * @param useNewCiscoNxosParser See {@link GrammarSettings#getUseNewCiscoNxosParser()}
    */
   private MockGrammarSettings(
       boolean disableUnrecognized,
@@ -117,8 +108,7 @@ public final class MockGrammarSettings implements GrammarSettings {
       boolean printParseTree,
       boolean printParseTreeLineNums,
       boolean throwOnLexerError,
-      boolean throwOnParserError,
-      boolean useNewCiscoNxosParser) {
+      boolean throwOnParserError) {
     _disableUnrecognized = disableUnrecognized;
     _maxParserContextLines = maxParserContextLines;
     _maxParserContextTokens = maxParserContextTokens;
@@ -127,7 +117,6 @@ public final class MockGrammarSettings implements GrammarSettings {
     _printParseTreeLineNums = printParseTreeLineNums;
     _throwOnLexerError = throwOnLexerError;
     _throwOnParserError = throwOnParserError;
-    _useNewCiscoNxosParser = useNewCiscoNxosParser;
   }
 
   @Override
@@ -173,11 +162,6 @@ public final class MockGrammarSettings implements GrammarSettings {
   @Override
   public boolean getUseAristaBgp() {
     return false;
-  }
-
-  @Override
-  public boolean getUseNewCiscoNxosParser() {
-    return _useNewCiscoNxosParser;
   }
 
   @Override

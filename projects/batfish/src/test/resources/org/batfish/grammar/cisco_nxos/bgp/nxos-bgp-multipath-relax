@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos-bgp-multipath-relax
+!
+vrf context enabled
+!
+router bgp 1
+ router-id 1.1.1.1
+ vrf enabled
+   bestpath as-path multipath-relax
+!

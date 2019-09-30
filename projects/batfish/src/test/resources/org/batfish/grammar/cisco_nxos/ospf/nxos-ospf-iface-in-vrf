@@ -1,3 +1,4 @@
+!RANCID-CONTENT-TYPE: cisco-nx
 !
 hostname nxos-ospf-iface-in-vrf
 feature privilege

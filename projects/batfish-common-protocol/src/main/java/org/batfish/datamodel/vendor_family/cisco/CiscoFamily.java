@@ -15,7 +15,6 @@ public class CiscoFamily implements Serializable {
   private static final String PROP_DEPI_CLASSES = "depiClasses";
   private static final String PROP_DEPI_TUNNELS = "depiTunnels";
   private static final String PROP_ENABLE_SECRET = "enableSecret";
-  private static final String PROP_FEATURES = "features";
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_L2TP_CLASSES = "l2tpClasses";
   private static final String PROP_LINES = "lines";
@@ -41,8 +40,6 @@ public class CiscoFamily implements Serializable {
   private SortedMap<String, DepiTunnel> _depiTunnels;
 
   private String _enableSecret;
-
-  private SortedMap<String, Boolean> _features;
 
   private String _hostname;
 
@@ -70,7 +67,6 @@ public class CiscoFamily implements Serializable {
     _banners = new TreeMap<>();
     _depiClasses = new TreeMap<>();
     _depiTunnels = new TreeMap<>();
-    _features = new TreeMap<>();
     _l2tpClasses = new TreeMap<>();
     _lines = new TreeMap<>();
     _services = new TreeMap<>();
@@ -110,11 +106,6 @@ public class CiscoFamily implements Serializable {
   @JsonProperty(PROP_ENABLE_SECRET)
   public String getEnableSecret() {
     return _enableSecret;
-  }
-
-  @JsonProperty(PROP_FEATURES)
-  public SortedMap<String, Boolean> getFeatures() {
-    return _features;
   }
 
   @JsonProperty(PROP_HOSTNAME)
@@ -205,11 +196,6 @@ public class CiscoFamily implements Serializable {
   @JsonProperty(PROP_ENABLE_SECRET)
   public void setEnableSecret(String enableSecret) {
     _enableSecret = enableSecret;
-  }
-
-  @JsonProperty(PROP_FEATURES)
-  public void setFeatures(SortedMap<String, Boolean> features) {
-    _features = features;
   }
 
   @JsonProperty(PROP_HOSTNAME)

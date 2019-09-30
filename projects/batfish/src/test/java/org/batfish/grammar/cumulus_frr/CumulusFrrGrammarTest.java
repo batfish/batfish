@@ -21,7 +21,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
@@ -936,5 +935,26 @@ public class CumulusFrrGrammarTest {
     assertThat(
         CONFIG.getInterfaces().get("eth1").getIpAddresses(),
         equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
+  }
+
+  @Test
+  public void testFRRDefaultTraditional() {
+    parse("frr defaults traditional\n");
+  }
+
+  @Test
+  public void testNoIpv6Forwarding() {
+    parse("no ipv6 forwarding\n");
+  }
+
+  @Test
+  public void testPasswordEncryption() {
+    parse("service password-encryption\n");
+  }
+
+  @Test
+  public void testLog() {
+    parse("log file /var/log/frr/frr.log\n");
+    parse("log commands\n");
   }
 }

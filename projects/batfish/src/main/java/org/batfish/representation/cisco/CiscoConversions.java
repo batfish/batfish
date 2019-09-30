@@ -6,6 +6,8 @@ import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE6;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
@@ -1695,7 +1697,8 @@ public class CiscoConversions {
    * for more details.
    */
   @VisibleForTesting
-  static int toOspfDeadInterval(Interface iface) {
+  static int toOspfDeadInterval(
+      Interface iface, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
     Integer deadInterval = iface.getOspfDeadInterval();
     if (deadInterval != null) {
       return deadInterval;
@@ -1704,8 +1707,7 @@ public class CiscoConversions {
     if (helloInterval != null) {
       return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
-    OspfNetworkType networkType = iface.getOspfNetworkType();
-    if (networkType == OspfNetworkType.POINT_TO_POINT || networkType == OspfNetworkType.BROADCAST) {
+    if (networkType == POINT_TO_POINT || networkType == BROADCAST) {
       return DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
     }
     return DEFAULT_OSPF_DEAD_INTERVAL;
@@ -1718,16 +1720,43 @@ public class CiscoConversions {
    * more details.
    */
   @VisibleForTesting
-  static int toOspfHelloInterval(Interface iface) {
+  static int toOspfHelloInterval(
+      Interface iface, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
     Integer helloInterval = iface.getOspfHelloInterval();
     if (helloInterval != null) {
       return helloInterval;
     }
-    OspfNetworkType networkType = iface.getOspfNetworkType();
-    if (networkType == OspfNetworkType.POINT_TO_POINT || networkType == OspfNetworkType.BROADCAST) {
+    if (networkType == POINT_TO_POINT || networkType == BROADCAST) {
       return DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
     }
     return DEFAULT_OSPF_HELLO_INTERVAL;
+  }
+
+  /** Helper to convert Cisco VS OSPF network type to VI model type. */
+  @VisibleForTesting
+  @Nullable
+  static org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      @Nullable OspfNetworkType type, Warnings warnings) {
+    if (type == null) {
+      // default is broadcast for all Ethernet interfaces
+      // (https://learningnetwork.cisco.com/thread/66827)
+      return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+    }
+    switch (type) {
+      case BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+      case NON_BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
+      case POINT_TO_MULTIPOINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT;
+      default:
+        warnings.redFlag(
+            String.format(
+                "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString()));
+        return null;
+    }
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class

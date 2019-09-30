@@ -199,10 +199,6 @@ ro_max_metric
       )
       |
       (
-         wait_for_bgp_nx = WAIT_FOR BGP bgptag = variable_max_metric
-      )
-      |
-      (
          WAIT_FOR_BGP
       )
    )* NEWLINE

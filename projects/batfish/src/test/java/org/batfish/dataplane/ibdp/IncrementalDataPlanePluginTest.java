@@ -85,7 +85,7 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link IncrementalDataPlanePlugin}. */
 public class IncrementalDataPlanePluginTest {
 
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
+  private static final String TESTRIGS_PREFIX = "org/batfish/dataplane/ibdp/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();

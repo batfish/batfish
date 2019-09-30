@@ -2,9 +2,11 @@ package org.batfish.representation.juniper;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
 /** Represents a "from community" line in a {@link PsTerm} */
 public final class PsFromCommunity extends PsFrom {
@@ -21,6 +23,11 @@ public final class PsFromCommunity extends PsFrom {
 
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
-    return new MatchCommunitySet(new NamedCommunitySet(_name));
+    if (!c.getCommunitySetMatchExprs().containsKey(_name)) {
+      // undefined reference; illegal config, but just treat as unmatchable for best-effort
+      return BooleanExprs.FALSE;
+    }
+    return new MatchCommunities(
+        InputCommunities.instance(), new CommunitySetMatchExprReference(_name));
   }
 }

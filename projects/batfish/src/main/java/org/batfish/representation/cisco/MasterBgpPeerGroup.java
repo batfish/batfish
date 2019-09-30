@@ -16,7 +16,6 @@ public class MasterBgpPeerGroup extends BgpPeerGroup {
     _advertiseInactive = false;
     _allowAsIn = false;
     _defaultOriginate = false;
-    // True for all OS, except NXOS
     _disablePeerAsCheck = true;
     _ebgpMultihop = false;
     _routeReflectorClient = false;

@@ -8,7 +8,6 @@ import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
-import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
 import static org.batfish.representation.cisco.CiscoAsaNat.ANY_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
@@ -18,7 +17,6 @@ import static org.batfish.representation.cisco.CiscoStructureType.BGP_AF_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_PEER_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_SESSION_GROUP;
-import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_UNDECLARED_PEER;
@@ -80,13 +78,10 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_MATCH_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER6_LIST;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
@@ -103,8 +98,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_FILTER6_LIST;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_FILTER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
@@ -113,19 +106,13 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_PEER_GROU
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_LISP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_ATTRIBUTE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_OTHER;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_TABLE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP;
@@ -946,69 +933,6 @@ import org.batfish.grammar.cisco.CiscoParser.Prefix_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Prepend_as_path_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.ProtocolContext;
 import org.batfish.grammar.cisco.CiscoParser.RangeContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_address_familyContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_aa_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_additional_pathsContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_aggregate_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_client_to_clientContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_dampeningContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_default_informationContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_default_metricContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_distanceContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_inject_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_maximum_pathsContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_networkContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_nexthop_route_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_directContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_eigrpContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_isisContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_lispContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ospfContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ospfv3Context;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ripContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_staticContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_suppress_inactiveContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_table_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_bestpathContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_cluster_idContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_confederation_identifierContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_confederation_peersContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_enforce_first_asContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_log_neighbor_changesContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_maxas_limitContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_address_familyContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_advertise_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_allowas_inContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_as_overrideContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_default_originateContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_disable_peer_as_checkContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_filter_listContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_inheritContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_next_hop_selfContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_next_hop_third_partyContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_prefix_listContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_route_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_route_reflector_clientContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_send_communityContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_suppress_inactiveContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_af_unsuppress_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_descriptionContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_ebgp_multihopContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_inheritContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_local_asContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_no_shutdownContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remote_asContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remove_private_asContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_shutdownContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_update_sourceContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_neighborContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_no_enforce_first_asContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_router_idContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peerContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_policyContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_sessionContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_v_local_asContext;
-import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
@@ -1104,7 +1028,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_eos_mlagContext;
 import org.batfish.grammar.cisco.CiscoParser.S_eos_vxlan_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_default_gatewayContext;
@@ -1143,7 +1066,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vlan_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vlan_internal_eosContext;
-import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_definitionContext;
 import org.batfish.grammar.cisco.CiscoParser.S_zoneContext;
 import org.batfish.grammar.cisco.CiscoParser.S_zone_pairContext;
@@ -1475,11 +1397,6 @@ import org.batfish.representation.cisco.eos.AristaBgpVrfAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.eos.AristaRedistributeType;
-import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
-import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
-import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
-import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborAddressFamilyConfiguration;
-import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
@@ -1650,17 +1567,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Nullable private CiscoAsaNat _currentAsaNat;
 
   private IpAsPathAccessList _currentAsPathAcl;
-
-  private CiscoNxBgpVrfAddressFamilyConfiguration _currentBgpNxVrfAddressFamily;
-
-  private CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration
-      _currentBgpNxVrfAddressFamilyAggregateNetwork;
-
-  private CiscoNxBgpVrfConfiguration _currentBgpNxVrfConfiguration;
-
-  private CiscoNxBgpVrfNeighborConfiguration _currentBgpNxVrfNeighbor;
-
-  private CiscoNxBgpVrfNeighborAddressFamilyConfiguration _currentBgpNxVrfNeighborAddressFamily;
 
   private final Set<String> _currentBlockNeighborAddressFamilies;
 
@@ -4236,603 +4142,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterRbnx_address_family(Rbnx_address_familyContext ctx) {
-    String familyStr = ctx.first.getText() + '-' + ctx.second.getText();
-    _currentBgpNxVrfAddressFamily =
-        _currentBgpNxVrfConfiguration.getOrCreateAddressFamily(familyStr);
-  }
-
-  @Override
-  public void exitRbnx_address_family(Rbnx_address_familyContext ctx) {
-    _currentBgpNxVrfAddressFamily = null;
-  }
-
-  @Override
-  public void enterRbnx_af_aggregate_address(Rbnx_af_aggregate_addressContext ctx) {
-    if (ctx.prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      _currentBgpNxVrfAddressFamilyAggregateNetwork =
-          _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
-    } else if (ctx.network != null && ctx.subnet != null) {
-      Prefix prefix = Prefix.create(toIp(ctx.network), toIp(ctx.subnet));
-      _currentBgpNxVrfAddressFamilyAggregateNetwork =
-          _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
-    } else if (ctx.prefix6 != null) {
-      Prefix6 prefix = Prefix6.parse(ctx.prefix6.getText());
-      _currentBgpNxVrfAddressFamilyAggregateNetwork =
-          _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
-    }
-  }
-
-  @Override
-  public void exitRbnx_af_aggregate_address(Rbnx_af_aggregate_addressContext ctx) {
-    _currentBgpNxVrfAddressFamilyAggregateNetwork = null;
-  }
-
-  @Override
-  public void exitRbnx_af_aa_tail(Rbnx_af_aa_tailContext ctx) {
-    int line = ctx.getStart().getLine();
-    if (ctx.ADVERTISE_MAP() != null) {
-      String name = ctx.mapname.getText();
-      _configuration.referenceStructure(ROUTE_MAP, name, BGP_ROUTE_MAP_ADVERTISE, line);
-      _currentBgpNxVrfAddressFamilyAggregateNetwork.setAdvertiseMap(name);
-    } else if (ctx.AS_SET() != null) {
-      _currentBgpNxVrfAddressFamilyAggregateNetwork.setAsSet(true);
-    } else if (ctx.ATTRIBUTE_MAP() != null) {
-      String name = ctx.mapname.getText();
-      _configuration.referenceStructure(ROUTE_MAP, name, BGP_ROUTE_MAP_ATTRIBUTE, line);
-      _currentBgpNxVrfAddressFamilyAggregateNetwork.setAttributeMap(name);
-    } else if (ctx.SUMMARY_ONLY() != null) {
-      _currentBgpNxVrfAddressFamilyAggregateNetwork.setSummaryOnly(true);
-    } else if (ctx.SUPPRESS_MAP() != null) {
-      String name = ctx.mapname.getText();
-      _configuration.referenceStructure(ROUTE_MAP, name, BGP_ROUTE_MAP_SUPPRESS, line);
-      _currentBgpNxVrfAddressFamilyAggregateNetwork.setSuppressMap(name);
-    }
-  }
-
-  @Override
-  public void exitRbnx_af_additional_paths(Rbnx_af_additional_pathsContext ctx) {
-    if (ctx.mapname != null) {
-      String name = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, name, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRbnx_af_client_to_client(Rbnx_af_client_to_clientContext ctx) {
-    _currentBgpNxVrfAddressFamily.setClientToClientReflection(true);
-  }
-
-  @Override
-  public void exitRbnx_af_dampening(Rbnx_af_dampeningContext ctx) {
-    if (ctx.mapname != null) {
-      String name = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, name, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRbnx_af_default_metric(Rbnx_af_default_metricContext ctx) {
-    long metric = toLong(ctx.metric);
-    _currentBgpNxVrfAddressFamily.setDefaultMetric(metric);
-  }
-
-  @Override
-  public void exitRbnx_af_default_information(Rbnx_af_default_informationContext ctx) {
-    _currentBgpNxVrfAddressFamily.setDefaultInformationOriginate(true);
-  }
-
-  @Override
-  public void exitRbnx_af_distance(Rbnx_af_distanceContext ctx) {
-    _currentBgpNxVrfAddressFamily.setDistanceEbgp(toInteger(ctx.ebgp));
-    _currentBgpNxVrfAddressFamily.setDistanceIbgp(toInteger(ctx.ibgp));
-    _currentBgpNxVrfAddressFamily.setDistanceLocal(toInteger(ctx.local));
-  }
-
-  @Override
-  public void exitRbnx_af_inject_map(Rbnx_af_inject_mapContext ctx) {
-    _configuration.referenceStructure(
-        ROUTE_MAP, ctx.injectmap.getText(), BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-
-    _configuration.referenceStructure(
-        ROUTE_MAP, ctx.existmap.getText(), BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_af_maximum_paths(Rbnx_af_maximum_pathsContext ctx) {
-    int limit = toInteger(ctx.numpaths);
-    if (ctx.IBGP() != null) {
-      _currentBgpNxVrfAddressFamily.setMaximumPathsIbgp(limit);
-    } else if (ctx.EIBGP() != null) {
-      _currentBgpNxVrfAddressFamily.setMaximumPathsEbgp(limit);
-      _currentBgpNxVrfAddressFamily.setMaximumPathsIbgp(limit);
-    } else {
-      _currentBgpNxVrfAddressFamily.setMaximumPathsEbgp(limit);
-    }
-  }
-
-  @Override
-  public void exitRbnx_af_network(Rbnx_af_networkContext ctx) {
-    String mapname = "";
-    if (ctx.mapname != null) {
-      mapname = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-    }
-
-    if (ctx.prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
-    } else if (ctx.address != null && ctx.mask != null) {
-      Prefix prefix = Prefix.create(toIp(ctx.address), toIp(ctx.mask));
-      _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
-    } else if (ctx.prefix6 != null) {
-      Prefix6 prefix = Prefix6.parse(ctx.prefix6.getText());
-      _currentBgpNxVrfAddressFamily.addIpv6Network(prefix, mapname);
-    }
-  }
-
-  @Override
-  public void exitRbnx_af_nexthop_route_map(Rbnx_af_nexthop_route_mapContext ctx) {
-    String name = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_af_redistribute_direct(Rbnx_af_redistribute_directContext ctx) {
-    String name = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_CONNECTED_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.CONNECTED, name, null);
-  }
-
-  @Override
-  public void exitRbnx_af_redistribute_eigrp(Rbnx_af_redistribute_eigrpContext ctx) {
-    String name = ctx.mapname.getText();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_EIGRP_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.EIGRP, name, sourceTag);
-  }
-
-  @Override
-  public void exitRbnx_af_redistribute_isis(Rbnx_af_redistribute_isisContext ctx) {
-    String name = ctx.mapname.getText();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_ISIS_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(
-        RoutingProtocol.ISIS_ANY, name, sourceTag);
-  }
-
-  @Override
-  public void exitRbnx_af_redistribute_lisp(Rbnx_af_redistribute_lispContext ctx) {
-    String name = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_LISP_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.LISP, name, null);
-  }
-
-  @Override
-  public void exitRbnx_af_redistribute_ospf(Rbnx_af_redistribute_ospfContext ctx) {
-    String name = ctx.mapname.getText();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
-  }
-
-  @Override
-  public void exitRbnx_af_redistribute_ospfv3(Rbnx_af_redistribute_ospfv3Context ctx) {
-    String name = ctx.mapname.getText();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF3, name, sourceTag);
-  }
-
-  @Override
-  public void exitRbnx_af_redistribute_rip(Rbnx_af_redistribute_ripContext ctx) {
-    String name = ctx.mapname.getText();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_RIP_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.RIP, name, sourceTag);
-  }
-
-  @Override
-  public void exitRbnx_af_redistribute_static(Rbnx_af_redistribute_staticContext ctx) {
-    String name = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_STATIC_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.STATIC, name, null);
-  }
-
-  @Override
-  public void exitRbnx_af_suppress_inactive(Rbnx_af_suppress_inactiveContext ctx) {
-    _currentBgpNxVrfAddressFamily.setSuppressInactive(true);
-  }
-
-  @Override
-  public void exitRbnx_af_table_map(Rbnx_af_table_mapContext ctx) {
-    String name = ctx.mapname.getText();
-    _configuration.referenceStructure(ROUTE_MAP, name, BGP_TABLE_MAP, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_bestpath(Rbnx_bestpathContext ctx) {
-    if (ctx.ALWAYS_COMPARE_MED() != null) {
-      _currentBgpNxVrfConfiguration.setBestpathAlwaysCompareMed(true);
-    } else if (ctx.AS_PATH() != null && ctx.MULTIPATH_RELAX() != null) {
-      _currentBgpNxVrfConfiguration.setBestpathAsPathMultipathRelax(true);
-    } else if (ctx.COMPARE_ROUTERID() != null) {
-      _currentBgpNxVrfConfiguration.setBestpathCompareRouterId(true);
-    } else if (ctx.COST_COMMUNITY() != null && ctx.IGNORE() != null) {
-      _currentBgpNxVrfConfiguration.setBestpathCostCommunityIgnore(true);
-    } else if (ctx.MED() != null && ctx.CONFED() != null) {
-      _currentBgpNxVrfConfiguration.setBestpathMedConfed(true);
-    } else if (ctx.MED() != null && ctx.MISSING_AS_WORST() != null) {
-      _currentBgpNxVrfConfiguration.setBestpathMedMissingAsWorst(true);
-    } else if (ctx.MED() != null && ctx.NON_DETERMINISTIC() != null) {
-      _currentBgpNxVrfConfiguration.setBestpathMedNonDeterministic(true);
-    } else {
-      warn(ctx, "Unsupported BGP bestpath configuration");
-    }
-  }
-
-  @Override
-  public void exitRbnx_cluster_id(Rbnx_cluster_idContext ctx) {
-    if (ctx.ip != null) {
-      _currentBgpNxVrfConfiguration.setClusterId(toIp(ctx.ip));
-    } else {
-      _currentBgpNxVrfConfiguration.setClusterId(Ip.create(toLong(ctx.ip_as_int)));
-    }
-  }
-
-  @Override
-  public void exitRbnx_confederation_identifier(Rbnx_confederation_identifierContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitRbnx_confederation_peers(Rbnx_confederation_peersContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitRbnx_enforce_first_as(Rbnx_enforce_first_asContext ctx) {
-    _configuration.getNxBgpGlobalConfiguration().setEnforceFirstAs(true);
-  }
-
-  @Override
-  public void exitRbnx_log_neighbor_changes(Rbnx_log_neighbor_changesContext ctx) {
-    _currentBgpNxVrfConfiguration.setLogNeighborChanges(true);
-  }
-
-  @Override
-  public void exitRbnx_maxas_limit(Rbnx_maxas_limitContext ctx) {
-    int limit = toInteger(ctx.limit);
-    _currentBgpNxVrfConfiguration.setMaxasLimit(limit);
-  }
-
-  @Override
-  public void enterRbnx_neighbor(Rbnx_neighborContext ctx) {
-    if (ctx.ip != null) {
-      Ip ip = toIp(ctx.ip);
-      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreateNeighbor(ip);
-    } else if (ctx.prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
-    } else if (ctx.ip6 != null) {
-      Ip6 ip = toIp6(ctx.ip6);
-      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreateNeighbor(ip);
-    } else if (ctx.prefix6 != null) {
-      Prefix6 prefix = Prefix6.parse(ctx.prefix6.getText());
-      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
-    } else {
-      throw new BatfishException(
-          "BGP neighbor IP definition not supported in line " + ctx.getText());
-    }
-
-    if (ctx.REMOTE_AS() != null && ctx.bgp_asn() != null) {
-      long asn = toAsNum(ctx.bgp_asn());
-      _currentBgpNxVrfNeighbor.setRemoteAs(asn);
-    }
-
-    if (ctx.REMOTE_AS() != null && ctx.ROUTE_MAP() != null) {
-      String name = ctx.mapname.getText();
-      _currentBgpNxVrfNeighbor.setRemoteAsRouteMap(name);
-      _configuration.referenceStructure(
-          ROUTE_MAP, name, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRbnx_neighbor(Rbnx_neighborContext ctx) {
-    _currentBgpNxVrfNeighbor = null;
-  }
-
-  @Override
-  public void enterRbnx_n_address_family(Rbnx_n_address_familyContext ctx) {
-    String familyStr = ctx.first.getText() + '-' + ctx.second.getText();
-    _currentBgpNxVrfNeighborAddressFamily =
-        _currentBgpNxVrfNeighbor.getOrCreateAddressFamily(familyStr);
-  }
-
-  @Override
-  public void exitRbnx_n_address_family(Rbnx_n_address_familyContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void exitRbnx_n_af_advertise_map(Rbnx_n_af_advertise_mapContext ctx) {
-    _configuration.referenceStructure(
-        ROUTE_MAP, ctx.mapname.getText(), BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-
-    if (ctx.EXIST_MAP() != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, ctx.existmap.getText(), BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-    }
-
-    if (ctx.NON_EXIST_MAP() != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, ctx.nonexistmap.getText(), BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRbnx_n_af_allowas_in(Rbnx_n_af_allowas_inContext ctx) {
-    if (ctx.num != null) {
-      todo(ctx);
-    }
-    _currentBgpNxVrfNeighborAddressFamily.setAllowAsIn(true);
-  }
-
-  @Override
-  public void exitRbnx_n_af_as_override(Rbnx_n_af_as_overrideContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily.setAsOverride(true);
-  }
-
-  @Override
-  public void exitRbnx_n_af_default_originate(Rbnx_n_af_default_originateContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily.setDefaultOriginate(true);
-    if (ctx.ROUTE_MAP() != null) {
-      String name = ctx.mapname.getText();
-      _currentBgpNxVrfNeighborAddressFamily.setDefaultOriginateMap(name);
-      _configuration.referenceStructure(
-          ROUTE_MAP, name, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRbnx_n_af_disable_peer_as_check(Rbnx_n_af_disable_peer_as_checkContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily.setDisablePeerAsCheck(true);
-  }
-
-  @Override
-  public void exitRbnx_n_af_filter_list(Rbnx_n_af_filter_listContext ctx) {
-    String filterList = ctx.name.getText();
-    CiscoStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
-    CiscoStructureUsage usage =
-        _inIpv6BgpPeer
-            ? ((ctx.IN() != null) ? BGP_INBOUND_FILTER6_LIST : BGP_OUTBOUND_FILTER6_LIST)
-            : ((ctx.IN() != null) ? BGP_INBOUND_FILTER_LIST : BGP_OUTBOUND_FILTER_LIST);
-    _configuration.referenceStructure(type, filterList, usage, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_n_af_inherit(Rbnx_n_af_inheritContext ctx) {
-    String name = ctx.template.getText();
-    int sequence = toInteger(ctx.seq);
-    _currentBgpNxVrfNeighborAddressFamily.setInheritPeerPolicy(sequence, name);
-    _configuration.referenceStructure(
-        BGP_TEMPLATE_PEER_POLICY, name, BGP_INHERITED_PEER_POLICY, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_n_af_next_hop_self(Rbnx_n_af_next_hop_selfContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily.setNextHopSelf(true);
-  }
-
-  @Override
-  public void exitRbnx_n_af_next_hop_third_party(Rbnx_n_af_next_hop_third_partyContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily.setNextHopThirdParty(true);
-  }
-
-  @Override
-  public void exitRbnx_n_af_prefix_list(Rbnx_n_af_prefix_listContext ctx) {
-    String prefixList = ctx.listname.getText();
-    CiscoStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
-    CiscoStructureUsage usage =
-        _inIpv6BgpPeer
-            ? ((ctx.IN() != null) ? BGP_INBOUND_PREFIX6_LIST : BGP_OUTBOUND_PREFIX6_LIST)
-            : ((ctx.IN() != null) ? BGP_INBOUND_PREFIX_LIST : BGP_OUTBOUND_PREFIX_LIST);
-    _configuration.referenceStructure(type, prefixList, usage, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_n_af_route_map(Rbnx_n_af_route_mapContext ctx) {
-    String name = ctx.mapname.getText();
-    CiscoStructureUsage usage;
-    if (ctx.IN() != null) {
-      usage = BGP_INBOUND_ROUTE_MAP;
-      _currentBgpNxVrfNeighborAddressFamily.setInboundRouteMap(name);
-    } else {
-      usage = BGP_OUTBOUND_ROUTE_MAP;
-      _currentBgpNxVrfNeighborAddressFamily.setOutboundRouteMap(name);
-    }
-    _configuration.referenceStructure(ROUTE_MAP, name, usage, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_n_af_route_reflector_client(Rbnx_n_af_route_reflector_clientContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily.setRouteReflectorClient(true);
-  }
-
-  @Override
-  public void exitRbnx_n_af_send_community(Rbnx_n_af_send_communityContext ctx) {
-    if (ctx.BOTH() != null || ctx.EXTENDED() != null) {
-      _currentBgpNxVrfNeighborAddressFamily.setSendCommunityExtended(true);
-    }
-    if (ctx.BOTH() != null || ctx.STANDARD() != null || ctx.EXTENDED() == null) {
-      _currentBgpNxVrfNeighborAddressFamily.setSendCommunityStandard(true);
-    }
-  }
-
-  @Override
-  public void exitRbnx_n_af_suppress_inactive(Rbnx_n_af_suppress_inactiveContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily.setSuppressInactive(true);
-  }
-
-  @Override
-  public void exitRbnx_n_af_unsuppress_map(Rbnx_n_af_unsuppress_mapContext ctx) {
-    String name = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_n_description(Rbnx_n_descriptionContext ctx) {
-    _currentBgpNxVrfNeighbor.setDescription(ctx.desc.getText().trim());
-  }
-
-  @Override
-  public void exitRbnx_n_ebgp_multihop(Rbnx_n_ebgp_multihopContext ctx) {
-    _currentBgpNxVrfNeighbor.setEbgpMultihopTtl(toInteger(ctx.ebgp_ttl));
-  }
-
-  @Override
-  public void exitRbnx_n_inherit(Rbnx_n_inheritContext ctx) {
-    String name = ctx.peer.getText();
-    if (ctx.PEER() != null) {
-      _currentBgpNxVrfNeighbor.setInheritPeer(name);
-      _configuration.referenceStructure(
-          BGP_TEMPLATE_PEER, name, BGP_INHERITED_PEER, ctx.getStart().getLine());
-    } else {
-      _currentBgpNxVrfNeighbor.setInheritPeerSession(name);
-      _configuration.referenceStructure(
-          BGP_TEMPLATE_PEER_SESSION, name, BGP_INHERITED_SESSION, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRbnx_n_local_as(Rbnx_n_local_asContext ctx) {
-    long asn = toAsNum(ctx.bgp_asn());
-    _currentBgpNxVrfNeighbor.setLocalAs(asn);
-  }
-
-  @Override
-  public void exitRbnx_n_no_shutdown(Rbnx_n_no_shutdownContext ctx) {
-    _currentBgpNxVrfNeighbor.setShutdown(false);
-  }
-
-  @Override
-  public void exitRbnx_n_remote_as(Rbnx_n_remote_asContext ctx) {
-    long asn = toAsNum(ctx.bgp_asn());
-    _currentBgpNxVrfNeighbor.setRemoteAs(asn);
-  }
-
-  @Override
-  public void exitRbnx_n_remove_private_as(Rbnx_n_remove_private_asContext ctx) {
-    if (ctx.ALL() != null) {
-      _currentBgpNxVrfNeighbor.setRemovePrivateAs(
-          CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode.ALL);
-    } else if (ctx.REPLACE_AS() != null) {
-      _currentBgpNxVrfNeighbor.setRemovePrivateAs(
-          CiscoNxBgpVrfNeighborConfiguration.RemovePrivateAsMode.REPLACE_AS);
-    }
-  }
-
-  @Override
-  public void exitRbnx_n_shutdown(Rbnx_n_shutdownContext ctx) {
-    _currentBgpNxVrfNeighbor.setShutdown(true);
-  }
-
-  @Override
-  public void exitRbnx_n_update_source(Rbnx_n_update_sourceContext ctx) {
-    String name = toInterfaceName(ctx.interface_name());
-    _currentBgpNxVrfNeighbor.setUpdateSource(name);
-    _configuration.referenceStructure(
-        INTERFACE, name, BGP_UPDATE_SOURCE_INTERFACE, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRbnx_no_enforce_first_as(Rbnx_no_enforce_first_asContext ctx) {
-    _configuration.getNxBgpGlobalConfiguration().setEnforceFirstAs(false);
-  }
-
-  @Override
-  public void exitRbnx_router_id(Rbnx_router_idContext ctx) {
-    Ip ip = toIp(ctx.IP_ADDRESS());
-    _currentBgpNxVrfConfiguration.setRouterId(ip);
-  }
-
-  @Override
-  public void enterRbnx_template_peer(Rbnx_template_peerContext ctx) {
-    String name = ctx.peer.getText();
-    _currentBgpNxVrfNeighbor =
-        _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeer(name);
-    _configuration.defineStructure(BGP_TEMPLATE_PEER, name, ctx);
-  }
-
-  @Override
-  public void exitRbnx_template_peer(Rbnx_template_peerContext ctx) {
-    _currentBgpNxVrfNeighbor = null;
-  }
-
-  @Override
-  public void enterRbnx_template_peer_policy(Rbnx_template_peer_policyContext ctx) {
-    String name = ctx.policy.getText();
-    _currentBgpNxVrfNeighborAddressFamily =
-        _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeerPolicy(name);
-    _configuration.defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
-  }
-
-  @Override
-  public void exitRbnx_template_peer_policy(Rbnx_template_peer_policyContext ctx) {
-    _currentBgpNxVrfNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void enterRbnx_template_peer_session(Rbnx_template_peer_sessionContext ctx) {
-    String name = ctx.session.getText();
-    _currentBgpNxVrfNeighbor =
-        _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeerSession(name);
-    _configuration.defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
-  }
-
-  @Override
-  public void exitRbnx_template_peer_session(Rbnx_template_peer_sessionContext ctx) {
-    _currentBgpNxVrfNeighbor = null;
-  }
-
-  @Override
-  public void enterRbnx_vrf(Rbnx_vrfContext ctx) {
-    String vrfName = ctx.name.getText();
-    Vrf vrf = initVrf(vrfName);
-    _currentBgpNxVrfConfiguration = vrf.getBgpNxConfig();
-    if (_currentBgpNxVrfConfiguration == null) {
-      _currentBgpNxVrfConfiguration = new CiscoNxBgpVrfConfiguration();
-      vrf.setBgpNxConfig(_currentBgpNxVrfConfiguration);
-    }
-  }
-
-  @Override
-  public void exitRbnx_vrf(Rbnx_vrfContext ctx) {
-    _currentBgpNxVrfConfiguration = _configuration.getDefaultVrf().getBgpNxConfig();
-  }
-
-  @Override
-  public void exitRbnx_v_local_as(Rbnx_v_local_asContext ctx) {
-    long asNum = toAsNum(ctx.bgp_asn());
-    _currentBgpNxVrfConfiguration.setLocalAs(asNum);
-  }
-
-  @Override
   public void enterRo_area(Ro_areaContext ctx) {
     long area;
     if (ctx.area_int != null) {
@@ -4936,18 +4245,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
 
-    if (_parser.getParser().isNxos()) {
-      long procNum = toAsNum(ctx.bgp_asn());
-      Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
-      _currentBgpNxVrfConfiguration = vrf.getBgpNxConfig();
-      if (_currentBgpNxVrfConfiguration == null) {
-        _currentBgpNxVrfConfiguration = new CiscoNxBgpVrfConfiguration();
-        vrf.setBgpNxConfig(_currentBgpNxVrfConfiguration);
-      }
-      _configuration.getNxBgpGlobalConfiguration().setLocalAs(procNum);
-      return;
-    }
-
     // Cisco hybrid parser
     long procNum = ctx.bgp_asn() == null ? 0 : toAsNum(ctx.bgp_asn());
     Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
@@ -4969,11 +4266,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_parser.getParser().isAristaBgp()) {
       _currentAristaBgpProcess = null;
       _currentAristaBgpVrf = null;
-      return;
-    }
-
-    if (_parser.getParser().isNxos()) {
-      _currentBgpNxVrfConfiguration = null;
       return;
     }
 
@@ -5306,19 +4598,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.GBPS() != null) {
       referenceBandwidth = referenceBandwidthDec * 1_000_000_000;
     } else {
-      /* Different OSes interpret the units on DEC differently. */
-      if (_format == CISCO_NX) {
-        referenceBandwidth = referenceBandwidthDec * 1_000_000_000;
-      } else {
-        referenceBandwidth = referenceBandwidthDec * 1_000_000;
-      }
+      referenceBandwidth = referenceBandwidthDec * 1_000_000;
     }
     _currentOspfProcess.setReferenceBandwidth(referenceBandwidth);
   }
 
   @Override
   public void exitRo_max_metric(Ro_max_metricContext ctx) {
-    if (ctx.on_startup != null || ctx.wait_for_bgp_nx != null || !ctx.WAIT_FOR_BGP().isEmpty()) {
+    if (ctx.on_startup != null || !ctx.WAIT_FOR_BGP().isEmpty()) {
       return;
     }
     _currentOspfProcess.setMaxMetricRouterLsa(true);
@@ -5397,11 +4684,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       username = unquote(ctx.quoted_user.getText());
     }
     _currentUser = _configuration.getCf().getUsers().computeIfAbsent(username, User::new);
-  }
-
-  @Override
-  public void enterS_vrf_context(S_vrf_contextContext ctx) {
-    _currentVrf = ctx.name.getText();
   }
 
   @Override
@@ -6965,7 +6247,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       case ARISTA:
       case FORCE10:
       case CISCO_IOS:
-      case CISCO_NX:
         return String.format("Port-Channel%d", num);
 
       case CISCO_IOS_XR:
@@ -9823,7 +9104,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
     /*
      * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
-     * CISCO_NXOS and ARISTA redistribute all subnets.
+     * ARISTA redistributes all subnets.
      *
      * We assume that others use this sane default too. TODO: verify more vendors.
      */
@@ -10251,14 +9532,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitS_feature(S_featureContext ctx) {
-    List<String> words = ctx.words.stream().map(RuleContext::getText).collect(Collectors.toList());
-    boolean enabled = ctx.NO() == null;
-    String name = String.join(".", words);
-    _configuration.getCf().getFeatures().put(name, enabled);
-  }
-
-  @Override
   public void exitS_hostname(S_hostnameContext ctx) {
     String hostname;
     if (ctx.quoted_name != null) {
@@ -10598,11 +9871,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_vlan_eos(S_vlan_eosContext ctx) {
     _currentVlans = null;
-  }
-
-  @Override
-  public void exitS_vrf_context(S_vrf_contextContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -11320,7 +10588,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String nameAlpha = ctx.name_prefix_alpha.getText();
     String canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     String vrf =
-        canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
+        canonicalNamePrefix.equals(CiscoConfiguration.MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
     int mtu = Interface.getDefaultMtu();

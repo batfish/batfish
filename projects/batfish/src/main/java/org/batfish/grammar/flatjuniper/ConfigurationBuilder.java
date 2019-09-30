@@ -96,6 +96,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -145,7 +146,9 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
@@ -201,7 +204,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
@@ -343,6 +345,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poapg_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_invert_matchContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_membersContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_members_memberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_ip6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
@@ -591,8 +594,7 @@ import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.representation.juniper.CommunityList;
-import org.batfish.representation.juniper.CommunityListLine;
+import org.batfish.representation.juniper.CommunityMember;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.Family;
@@ -661,9 +663,11 @@ import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.JunosApplicationReference;
 import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.JunosApplicationSetReference;
+import org.batfish.representation.juniper.LiteralCommunityMember;
 import org.batfish.representation.juniper.LogicalSystem;
 import org.batfish.representation.juniper.NamedAsPath;
 import org.batfish.representation.juniper.NamedBgpGroup;
+import org.batfish.representation.juniper.NamedCommunity;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.NatPacketLocation;
 import org.batfish.representation.juniper.NatPool;
@@ -724,6 +728,7 @@ import org.batfish.representation.juniper.PsThenNextPolicy;
 import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
+import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.RibGroup;
 import org.batfish.representation.juniper.Route4FilterLine;
 import org.batfish.representation.juniper.Route4FilterLineAddressMask;
@@ -1650,6 +1655,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
+  /** Returns a {@link Community} if {@code text} can be parsed as one, or else {@code null}. */
+  private static @Nullable Community tryParseLiteralCommunity(String text) {
+    Optional<StandardCommunity> standard = StandardCommunity.tryParse(text);
+    if (standard.isPresent()) {
+      return standard.get();
+    }
+    // TODO: decouple extended community parsing for vendors
+    Optional<ExtendedCommunity> extended = ExtendedCommunity.tryParse(text);
+    if (extended.isPresent()) {
+      return extended.get();
+    }
+    Optional<LargeCommunity> large = LargeCommunity.tryParse(text);
+    if (large.isPresent()) {
+      return large.get();
+    }
+    return null;
+  }
+
   @VisibleForTesting
   long sanitizeAsn(long asn, int bytes, ParserRuleContext ctx) {
     long mask;
@@ -1916,7 +1939,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private BgpGroup _currentBgpGroup;
 
-  private CommunityList _currentCommunityList;
+  private NamedCommunity _currentCommunityList;
 
   private DhcpRelayGroup _currentDhcpRelayGroup;
 
@@ -2635,8 +2658,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterPo_community(Po_communityContext ctx) {
     String name = ctx.name.getText();
-    Map<String, CommunityList> communityLists = _currentLogicalSystem.getCommunityLists();
-    _currentCommunityList = communityLists.computeIfAbsent(name, CommunityList::new);
+    Map<String, NamedCommunity> communityLists = _currentLogicalSystem.getNamedCommunities();
+    _currentCommunityList = communityLists.computeIfAbsent(name, NamedCommunity::new);
   }
 
   @Override
@@ -4664,37 +4687,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPoc_members(Poc_membersContext ctx) {
-    if (ctx.community_regex() != null) {
-      String text = ctx.community_regex().getText();
-      _currentCommunityList.getLines().add(new CommunityListLine(text));
-      if (text.matches("[0-9]+:[0-9]+")) {
-        _configuration.getAllStandardCommunities().add(StandardCommunity.parse(text));
+    _currentCommunityList.getMembers().add(toCommunityMember(ctx.member));
+  }
+
+  private @Nonnull CommunityMember toCommunityMember(Poc_members_memberContext ctx) {
+    String text = ctx.getText();
+    if (ctx.literal_or_regex_community() != null) {
+      Community literalCommunity = tryParseLiteralCommunity(text);
+      if (literalCommunity != null) {
+        return new LiteralCommunityMember(literalCommunity);
       }
-    } else if (ctx.extended_community_regex() != null) {
-      String text = ctx.extended_community_regex().getText();
-      _currentCommunityList.getLines().add(new CommunityListLine(text));
-    } else if (ctx.standard_community() != null) {
-      StandardCommunity community = toStandardCommunity(ctx.standard_community());
-      if (community != null) {
-        _configuration
-            .getAllStandardCommunities()
-            .add(toStandardCommunity(ctx.standard_community()));
-        _currentCommunityList.getLines().add(new CommunityListLine(community.toString()));
-      }
-    } else if (ctx.extended_community() != null) {
-      _currentCommunityList
-          .getLines()
-          .add(new CommunityListLine(toExtendedCommunity(ctx.extended_community()).matchString()));
-    } else if (ctx.invalid_community_regex() != null) {
-      String text = ctx.invalid_community_regex().getText();
-      _currentCommunityList.getLines().add(new CommunityListLine(text));
-      _w.redFlag(
-          getLine(ctx.getStart())
-              + ": In community-list '"
-              + _currentCommunityList.getName()
-              + "': Invalid or unsupported community regex: '"
-              + text
-              + "'");
+      return new RegexCommunityMember(text);
+    } else {
+      assert ctx.sc_named() != null;
+      return new LiteralCommunityMember(toStandardCommunity(ctx.sc_named()));
     }
   }
 
@@ -4883,7 +4889,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPopst_community_delete(Popst_community_deleteContext ctx) {
     String name = ctx.name.getText();
-    PsThenCommunityDelete then = new PsThenCommunityDelete(name, _configuration);
+    PsThenCommunityDelete then = new PsThenCommunityDelete(name);
     _currentPsThens.add(then);
   }
 
@@ -5080,7 +5086,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRoa_community(Roa_communityContext ctx) {
     StandardCommunity community = StandardCommunity.parse(ctx.STANDARD_COMMUNITY().getText());
-    _configuration.getAllStandardCommunities().add(community);
     _currentAggregateRoute.getCommunities().add(community);
   }
 
@@ -6193,10 +6198,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     List<AsSet> asPath =
         path.items.stream().map(this::toAsSet).collect(ImmutableList.toImmutableList());
     return AsPath.of(asPath);
-  }
-
-  private ExtendedCommunity toExtendedCommunity(Extended_communityContext ctx) {
-    return ExtendedCommunity.parse(ctx.getText());
   }
 
   private String toComplexPolicyStatement(

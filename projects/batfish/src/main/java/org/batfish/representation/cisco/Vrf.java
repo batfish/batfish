@@ -10,11 +10,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 
 public final class Vrf implements Serializable {
   @Nonnull private final Map<Long, EigrpProcess> _eigrpProcesses;
-  @Nullable private CiscoNxBgpVrfConfiguration _bgpNxConfig;
   @Nullable private BgpProcess _bgpProcess;
   @Nullable private String _description;
   @Nullable private IsisProcess _isisProcess;
@@ -34,11 +32,6 @@ public final class Vrf implements Serializable {
     // Ensure that processes are in insertion order.
     _ospfProcesses = new LinkedHashMap<>(0);
     _staticRoutes = new HashSet<>();
-  }
-
-  @Nullable
-  public CiscoNxBgpVrfConfiguration getBgpNxConfig() {
-    return _bgpNxConfig;
   }
 
   @Nullable
@@ -118,10 +111,6 @@ public final class Vrf implements Serializable {
   @Nonnull
   public Set<StaticRoute> getStaticRoutes() {
     return _staticRoutes;
-  }
-
-  public void setBgpNxConfig(@Nullable CiscoNxBgpVrfConfiguration bgpNxConfig) {
-    _bgpNxConfig = bgpNxConfig;
   }
 
   public void setBgpProcess(@Nullable BgpProcess bgpProcess) {

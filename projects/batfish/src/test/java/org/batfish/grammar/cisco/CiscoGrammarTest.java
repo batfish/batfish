@@ -31,7 +31,6 @@ import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFam
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
@@ -104,7 +103,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkTyp
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
@@ -146,7 +144,6 @@ import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
-import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
 import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.hasRegex;
 import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.isRegexCommunitySet;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
@@ -227,7 +224,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
@@ -246,7 +242,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -369,7 +364,6 @@ import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.datamodel.matchers.MlagMatchers;
-import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
@@ -3709,8 +3703,7 @@ public class CiscoGrammarTest {
   @Test
   public void testBgpMultipathRelax() throws IOException {
     String testrigName = "bgp-multipath-relax";
-    List<String> configurationNames =
-        ImmutableList.of("arista_disabled", "arista_enabled", "nxos_disabled", "nxos_enabled");
+    List<String> configurationNames = ImmutableList.of("arista_disabled", "arista_enabled");
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -3723,10 +3716,6 @@ public class CiscoGrammarTest {
         configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
     org.batfish.datamodel.BgpProcess aristaEnabled =
         configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
-    org.batfish.datamodel.BgpProcess nxosDisabled =
-        configurations.get("nxos_disabled").getDefaultVrf().getBgpProcess();
-    org.batfish.datamodel.BgpProcess nxosEnabled =
-        configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
     assertThat(
         aristaDisabled,
@@ -3734,17 +3723,9 @@ public class CiscoGrammarTest {
     assertThat(
         aristaEnabled,
         hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(
-        nxosDisabled,
-        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(
-        nxosEnabled,
-        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
 
     assertThat(aristaDisabled, hasMultipathEbgp(false));
     assertThat(aristaEnabled, hasMultipathEbgp(false));
-    assertThat(nxosDisabled, hasMultipathEbgp(false));
-    assertThat(nxosEnabled, hasMultipathEbgp(false));
   }
 
   @Test
@@ -4637,64 +4618,6 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testNxosOspfAreaParameters() throws IOException {
-    String testrigName = "nxos-ospf";
-    String hostname = "nxos-ospf-area";
-    String ifaceName = "Ethernet1";
-    long areaNum = 1L;
-    List<String> configurationNames = ImmutableList.of(hostname);
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
-
-    /* Ensure bidirectional references between OSPF area and interface */
-    assertThat(configurations, hasKey(hostname));
-    Configuration c = configurations.get(hostname);
-    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasAreas(hasKey(areaNum)))));
-    OspfArea area = c.getDefaultVrf().getOspfProcesses().get("1").getAreas().get(areaNum);
-    assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
-    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
-    assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
-    assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
-  }
-
-  @Test
-  public void testNxosOspfNonDefaultVrf() throws IOException {
-    String testrigName = "nxos-ospf";
-    String hostname = "nxos-ospf-iface-in-vrf";
-    String ifaceName = "Ethernet1";
-    String vrfName = "OTHER-VRF";
-    long areaNum = 1L;
-    List<String> configurationNames = ImmutableList.of(hostname);
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
-
-    /* Ensure bidirectional references between OSPF area and interface */
-    assertThat(configurations, hasKey(hostname));
-    Configuration c = configurations.get(hostname);
-    assertThat(c, hasVrfs(hasKey(vrfName)));
-    Vrf vrf = c.getVrfs().get(vrfName);
-    assertThat(vrf, hasOspfProcess("1", hasAreas(hasKey(areaNum))));
-    OspfArea area = vrf.getOspfProcesses().get("1").getAreas().get(areaNum);
-    assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
-    assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
-    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
-    assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
-    assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
-  }
-
-  @Test
   public void testOspfMaxMetric() throws IOException {
     String testrigName = "ospf-max-metric";
     String iosMaxMetricName = "ios-max-metric";
@@ -5388,34 +5311,6 @@ public class CiscoGrammarTest {
     assertThat(e6, hasSwitchPortMode(SwitchportMode.TRUNK));
     assertThat(e6, hasSwitchPortEncapsulation(SwitchportEncapsulationType.NEGOTIATE));
     assertThat(e6.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(5, 6))));
-  }
-
-  @Test
-  public void testNxosBgpVrf() throws IOException {
-    Configuration c = parseConfig("nxosBgpVrf");
-    assertThat(c, ConfigurationMatchers.hasVrf("bar", any(Vrf.class)));
-    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(2));
-    assertThat(
-        c,
-        ConfigurationMatchers.hasVrf(
-            "bar",
-            hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"),
-                    allOf(
-                        hasRemoteAs(2L),
-                        hasLocalAs(1L),
-                        hasIpv4UnicastAddressFamily(
-                            hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true))))))));
-    assertThat(
-        c,
-        ConfigurationMatchers.hasVrf(
-            "bar",
-            hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.parse("3.3.3.3/32"),
-                    hasIpv4UnicastAddressFamily(
-                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(false)))))));
   }
 
   @Test

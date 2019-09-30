@@ -469,16 +469,6 @@ AES256
    'aes256'
 ;
 
-AES128_SHA1
-:
-   'aes128-sha1'
-;
-
-AES256_SHA1
-:
-   'aes256-sha1'
-;
-
 AESA
 :
    'aesa'
@@ -1046,11 +1036,6 @@ ASSOCIATION
    'association'
 ;
 
-ASYMMETRIC
-:
-   'asymmetric'
-;
-
 ASYNC
 :
    'async'
@@ -1514,11 +1499,6 @@ BEACON
 BESTPATH
 :
    'bestpath'
-;
-
-BESTPATH_LIMIT
-:
-   'bestpath-limit'
 ;
 
 BEYOND_SCOPE
@@ -2421,11 +2401,6 @@ CONNECTION
    'connection'
 ;
 
-CONNECTION_MODE
-:
-   'connection-mode'
-;
-
 CONNECTION_REUSE
 :
    'connection-reuse'
@@ -2547,11 +2522,6 @@ COPY
    'copy'
 ;
 
-COPY_ATTRIBUTES
-:
-   'copy-attributes'
-;
-
 COS
 :
    'cos'
@@ -2570,11 +2540,6 @@ COS_QUEUE_GROUP
 COST
 :
    'cost'
-;
-
-COST_COMMUNITY
-:
-   'cost-community'
 ;
 
 COUNT
@@ -3090,11 +3055,6 @@ DERIVATION_RULES
 DES
 :
    'des'
-;
-
-DES_SHA1
-:
-   'des-sha1'
 ;
 
 DESCENDING
@@ -3787,11 +3747,6 @@ DUAL_ACTIVE
    'dual-active'
 ;
 
-DUAL_AS
-:
-   'dual-as'
-;
-
 DUAL_MODE_DEFAULT_VLAN
 :
    'dual-mode-default-vlan'
@@ -4463,11 +4418,6 @@ EXECUTE
    'execute' -> pushMode ( M_Execute )
 ;
 
-EXEMPT
-:
-   'exempt'
-;
-
 EXIST_MAP
 :
    'exist-map'
@@ -4725,11 +4675,6 @@ FAX
    'fax'
 ;
 
-FAX_RELAY
-:
-   'fax-relay'
-;
-
 FCOE
 :
    'fcoe'
@@ -4930,11 +4875,6 @@ FLUSH_AT_ACTIVATION
 FLUSH_R1_ON_NEW_R0
 :
    'flush-r1-on-new-r0'
-;
-
-FLUSH_ROUTES
-:
-   'flush-routes'
 ;
 
 FORCE
@@ -5992,11 +5932,6 @@ IKEV2_PROFILE
    'ikev2-profile'
 ;
 
-ILMI_KEEPALIVE
-:
-   'ilmi-keepalive'
-;
-
 IMAP
 :
    'imap'
@@ -6160,11 +6095,6 @@ INIT_TECH_LIST
 INITIAL_ROLE
 :
    'initial-role'
-;
-
-INJECT_MAP
-:
-   'inject-map'
 ;
 
 INPUT
@@ -6719,11 +6649,6 @@ LAPB
    'lapb'
 ;
 
-LARGE
-:
-   'large'
-;
-
 LAST_AS
 :
    'last-as'
@@ -6932,11 +6857,6 @@ LINKSEC
 LINKDEBOUNCE
 :
    'linkdebounce'
-;
-
-LISP
-:
-   'lisp'
 ;
 
 LIST
@@ -7172,11 +7092,6 @@ LOOPGUARD
 LOTUSNOTES
 :
    'lotusnotes'
-;
-
-LOW_MEMORY
-:
-   'low-memory'
 ;
 
 LPD
@@ -7944,11 +7859,6 @@ MISMATCH
    'mismatch'
 ;
 
-MISSING_AS_WORST
-:
-   'missing-as-worst'
-;
-
 MLAG
 :
    'mlag'
@@ -8249,11 +8159,6 @@ MUST_SECURE
     'must-secure'
 ;
 
-MVPN
-:
-   'mvpn'
-;
-
 MVR
 :
    'mvr'
@@ -8327,11 +8232,6 @@ NAT_TRAVERSAL
 NATIVE
 :
    'native'
-;
-
-NATPOOL
-:
-   'natpool'
 ;
 
 NBAR
@@ -8764,24 +8664,9 @@ NON_CLIENT_NRT
    'non-client-nrt'
 ;
 
-NON_CRITICAL
-:
-   'non-critical'
-;
-
-NON_DETERMINISTIC
-:
-   'non-deterministic'
-;
-
 NON_DETERMINISTIC_MED
 :
    'non-deterministic-med'
-;
-
-NON_EXIST_MAP
-:
-   'non-exist-map'
 ;
 
 NON_MLAG
@@ -8902,11 +8787,6 @@ OBJECT
 OBJECT_GROUP
 :
    'object-group' -> pushMode(M_ObjectGroup)
-;
-
-OBJSTORE
-:
-   'objstore'
 ;
 
 ODMR
@@ -9454,11 +9334,6 @@ PEER
    'peer'
 ;
 
-PEERS
-:
-   'peers'
-;
-
 PEER_ADDRESS
 :
    'peer-address'
@@ -9519,6 +9394,11 @@ PEER_TO_PEER
    'peer-to-peer'
 ;
 
+PEERS
+:
+   'peers'
+;
+
 PENALTY_PERIOD
 :
    'penalty-period'
@@ -9542,11 +9422,6 @@ PERIODIC_INVENTORY
 PERIODIC_REFRESH
 :
    'periodic-refresh'
-;
-
-PER_LINK
-:
-   'per-link'
 ;
 
 PERMANENT
@@ -9934,16 +9809,6 @@ PREFIX_LIST
        pushMode(M_Name);
      }
    }
-;
-
-PREFIX_PEER_TIMEOUT
-:
-   'prefix-peer-timeout'
-;
-
-PREFIX_PEER_WAIT
-:
-   'prefix-peer-wait'
 ;
 
 PREFIX_SET
@@ -10399,11 +10264,6 @@ RATE_THRESHOLDS_PROFILE
 RBACL
 :
    'rbacl'
-;
-
-RC4_SHA1
-:
-   'rc4-sha1'
 ;
 
 RCMD
@@ -12061,11 +11921,6 @@ SNTP
    'sntp'
 ;
 
-SOO
-:
-   'soo'
-;
-
 SORT_BY
 :
    'sort-by'
@@ -12363,11 +12218,6 @@ STATE
    'state'
 ;
 
-STATE_REFRESH
-:
-   'state-refresh'
-;
-
 STATIC
 :
    'static'
@@ -12613,19 +12463,9 @@ SUPPRESS_ARP
    'suppress-arp'
 ;
 
-SUPPRESS_INACTIVE
-:
-   'suppress-inactive'
-;
-
 SUPPRESS_FIB_PENDING
 :
    'suppress-fib-pending'
-;
-
-SUPPRESS_MAP
-:
-   'suppress-map'
 ;
 
 SUPPRESSED
@@ -13028,11 +12868,6 @@ THREE_DES
    '3des'
 ;
 
-THREE_DES_SHA1
-:
-   '3des-sha1'
-;
-
 THRESHOLD
 :
    'threshold'
@@ -13326,11 +13161,6 @@ TRAPS
 TRIGGER
 :
    'trigger'
-;
-
-TRIGGER_DELAY
-:
-   'trigger-delay'
 ;
 
 TRIMODE
@@ -14155,11 +13985,6 @@ VRRP
    'vrrp'
 ;
 
-VRRP_GROUP
-:
-   'vrrp-group'
-;
-
 VSERVER
 :
    'vserver'
@@ -14208,11 +14033,6 @@ WAIT_FOR_BGP
 WAIT_FOR_CONVERGENCE
 :
   'wait-for-convergence'
-;
-
-WAIT_IGP_CONVERGENCE
-:
-   'wait-igp-convergence'
 ;
 
 WAIT_INSTALL
@@ -14857,11 +14677,6 @@ FLOAT
 FORWARD_SLASH
 :
    '/'
-;
-
-FOUR_BYTE_AS
-:
-   '4-byte-as'
 ;
 
 IP_ADDRESS

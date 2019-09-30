@@ -1,0 +1,12 @@
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "runtime_data",
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD"],
+    ),
+)

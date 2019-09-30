@@ -18,19 +18,40 @@ cumulus_frr_configuration
 statement
 :
   FRR VERSION REMARK_TEXT? NEWLINE
-  | FRR DEFAULTS DATACENTER NEWLINE
+  | FRR DEFAULTS (DATACENTER | TRADITIONAL) NEWLINE
   | USERNAME word word NEWLINE
   | HOSTNAME word NEWLINE
+  | NO IPV6 FORWARDING NEWLINE
   | s_agentx
   | s_bgp
   | s_vrf
   | s_routemap
   | s_ip
-  | SERVICE INTEGRATED_VTYSH_CONFIG NEWLINE
+  | s_service
   | LINE VTY NEWLINE
-  | LOG SYSLOG INFORMATIONAL NEWLINE
+  | s_log
   | s_interface
   | s_router_ospf
+;
+
+s_service
+:
+  SERVICE
+  (
+    INTEGRATED_VTYSH_CONFIG
+    | PASSWORD_ENCRYPTION
+  )
+  NEWLINE
+;
+
+s_log
+:
+  LOG
+  (
+    SYSLOG INFORMATIONAL
+    | FILE REMARK_TEXT
+    | COMMANDS
+  ) NEWLINE
 ;
 
 s_agentx
