@@ -11,10 +11,12 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoin
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -123,6 +125,18 @@ public final class NxosOspfTest {
     assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
+  }
+
+  @Test
+  public void testOspfPassiveInInterface() throws IOException {
+    Configuration c = parseConfig("nxos-ospf-passive");
+    assertThat(c, hasInterface("Ethernet2/1", allOf(isOspfPassive(), hasOspfAreaName(1L))));
+  }
+
+  @Test
+  public void testOspfAreaInInterface() throws IOException {
+    Configuration c = parseConfig("nxos-ospf-passive");
+    assertThat(c, hasInterface("Ethernet2/2", allOf(not(isOspfPassive()), hasOspfAreaName(3L))));
   }
 
   @Test
