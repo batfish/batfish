@@ -320,7 +320,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   static final int MAX_ADMINISTRATIVE_COST = 32767;
 
-  public static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
+  public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
   public static final String VENDOR_NAME = "cisco";
 
@@ -342,7 +342,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
   }
 
-  public static String computeNxosBgpDefaultRouteExportPolicyName(boolean ipv4) {
+  public static String computeBgpDefaultRouteExportPolicyName(boolean ipv4) {
     return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s~", ipv4 ? "4" : "6");
   }
 
@@ -1614,12 +1614,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
               /*
                * On Arista EOS, advertise-inactive is a command that we parse and extract;
                *
-               * On Cisco IOS & NXOS, advertise-inactive is true by default. This can be modified by
+               * On Cisco IOS, advertise-inactive is true by default. This can be modified by
                * "bgp suppress-inactive" command,
                * which we currently do not parse/extract. So we choose the default value here.
                *
                * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
-               * we assume behavior to be identical to IOS/NXOS family.
+               * we assume behavior to be identical to IOS family.
                */
               .setAdvertiseInactive(
                   _vendor.equals(ConfigurationFormat.ARISTA) ? lpg.getAdvertiseInactive() : true)
@@ -1765,25 +1765,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     //    BooleanExpr redistributeDefaultRoute =
     //        ipv4af == null || !ipv4af.get() ? NOT_DEFAULT_ROUTE : BooleanExprs.TRUE;
 
-    //    // Export RIP routes that should be redistributed.
-    //    CiscoNxBgpRedistributionPolicy ripPolicy =
-    //        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.RIP);
-    //    if (ripPolicy != null) {
-    //      String routeMap = ripPolicy.getRouteMap();
-    //      RouteMap map = _routeMaps.get(routeMap);
-    //      /* TODO: how do we match on source tag (aka RIP process id)? */
-    //      List<BooleanExpr> conditions =
-    //          ImmutableList.of(
-    //              new MatchProtocol(RoutingProtocol.RIP),
-    //              redistributeDefaultRoute,
-    //              bgpRedistributeWithEnvironmentExpr(
-    //                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap),
-    // OriginType.INCOMPLETE));
-    //      Conjunction rip = new Conjunction(conditions);
-    //      rip.setComment("Redistribute RIP routes into BGP");
-    //      exportConditions.add(rip);
-    //    }
-    //
+    // TODO: Export RIP routes that should be redistributed.
+
     // Export static routes that should be redistributed.
     AristaBgpRedistributionPolicy staticPolicy =
         ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(STATIC);
@@ -1820,26 +1803,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       connected.setComment("Redistribute connected routes into BGP");
       exportConditions.add(connected);
     }
-    //
-    //    // Export OSPF routes that should be redistributed.
-    //    CiscoNxBgpRedistributionPolicy ospfPolicy =
-    //        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.OSPF);
-    //    if (ospfPolicy != null) {
-    //      String routeMap = ospfPolicy.getRouteMap();
-    //      RouteMap map = _routeMaps.get(routeMap);
-    //      /* TODO: how do we match on source tag (aka OSPF process)? */
-    //      List<BooleanExpr> conditions =
-    //          ImmutableList.of(
-    //              new MatchProtocol(RoutingProtocol.OSPF),
-    //              redistributeDefaultRoute,
-    //              bgpRedistributeWithEnvironmentExpr(
-    //                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap),
-    // OriginType.INCOMPLETE));
-    //      Conjunction ospf = new Conjunction(conditions);
-    //      ospf.setComment("Redistribute OSPF routes into BGP");
-    //      exportConditions.add(ospf);
-    //    }
-    //
+
+    // TODO: Export OSPF routes that should be redistributed.
+
     // Now we add all the per-network export policies.
     if (ipv4af != null) {
       ipv4af
@@ -1866,32 +1832,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 exportConditions.add(new Conjunction(exportNetworkConditions));
               });
     }
-    //
-    //    CiscoNxBgpVrfAddressFamilyConfiguration ipv6af = nxBgpVrf.getIpv6UnicastAddressFamily();
-    //    if (ipv6af != null) {
-    //      ipv6af
-    //          .getIpv6Networks()
-    //          .forEach(
-    //              (prefix6, routeMapOrEmpty) -> {
-    //                List<BooleanExpr> exportNetworkConditions =
-    //                    ImmutableList.of(
-    //                        new MatchPrefix6Set(
-    //                            new DestinationNetwork6(),
-    //                            new ExplicitPrefix6Set(
-    //                                new Prefix6Space(Prefix6Range.fromPrefix6(prefix6)))),
-    //                        new Not(
-    //                            new MatchProtocol(
-    //                                RoutingProtocol.BGP,
-    //                                RoutingProtocol.IBGP,
-    //                                RoutingProtocol.AGGREGATE)),
-    //                        bgpRedistributeWithEnvironmentExpr(
-    //                            _routeMaps.containsKey(routeMapOrEmpty)
-    //                                ? new CallExpr(routeMapOrEmpty)
-    //                                : BooleanExprs.TRUE,
-    //                            OriginType.IGP));
-    //                exportConditions.add(new Conjunction(exportNetworkConditions));
-    //              });
-    //    }
 
     // Always export BGP or IBGP routes.
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
@@ -1915,16 +1855,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Map<Prefix, BgpActivePeerConfig> activeNeighbors =
         AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
+
+    // Process passive neighbors next
     Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
         AristaConversions.getPassiveNeighbors(
             c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
     newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
-
-    //    // Process passive neighbors next
-    //    Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
-    //        CiscoNxConversions.getPassiveNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf,
-    // _w);
-    //    newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     return newBgpProcess;
   }

@@ -9111,7 +9111,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
     /*
      * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
-     * CISCO_NXOS and ARISTA redistribute all subnets.
+     * ARISTA redistributes all subnets.
      *
      * We assume that others use this sane default too. TODO: verify more vendors.
      */
@@ -10608,7 +10608,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String nameAlpha = ctx.name_prefix_alpha.getText();
     String canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     String vrf =
-        canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
+        canonicalNamePrefix.equals(CiscoConfiguration.MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
     int mtu = Interface.getDefaultMtu();
