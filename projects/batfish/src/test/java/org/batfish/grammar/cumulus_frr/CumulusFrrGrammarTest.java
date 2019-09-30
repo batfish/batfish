@@ -896,4 +896,25 @@ public class CumulusFrrGrammarTest {
     parse("router ospf\n passive-interface lo\n");
     assertTrue(iface.getOspf().getPassive());
   }
+
+  @Test
+  public void testFRRDefaultTraditional() {
+    parse("frr defaults traditional\n");
+  }
+
+  @Test
+  public void testNoIpv6Forwarding() {
+    parse("no ipv6 forwarding\n");
+  }
+
+  @Test
+  public void testPasswordEncryption() {
+    parse("service password-encryption\n");
+  }
+
+  @Test
+  public void testLog() {
+    parse("log file /var/log/frr/frr.log\n");
+    parse("log commands\n");
+  }
 }
