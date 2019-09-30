@@ -9,6 +9,7 @@ import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -82,7 +83,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
@@ -103,7 +103,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
@@ -117,6 +117,15 @@ import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -234,8 +243,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return out;
   }
 
-  private final Set<StandardCommunity> _allStandardCommunities;
-
   Configuration _c;
 
   private transient Interface _lo0;
@@ -244,6 +251,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** Map of policy name to routing instances referenced in the policy, in the order they appear */
   private transient Map<String, List<String>> _vrfReferencesInPolicies;
+
+  private transient Set<String> _namedCommunitiesUsedForSet;
 
   private final Map<String, NodeDevice> _nodeDevices;
 
@@ -254,10 +263,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private LogicalSystem _masterLogicalSystem;
 
   public JuniperConfiguration() {
-    _allStandardCommunities = new HashSet<>();
     _logicalSystems = new TreeMap<>();
     _masterLogicalSystem = new LogicalSystem("");
     _nodeDevices = new TreeMap<>();
+  }
+
+  @Nonnull
+  Set<String> getOrCreateNamedCommunitiesUsedForSet() {
+    if (_namedCommunitiesUsedForSet == null) {
+      _namedCommunitiesUsedForSet = new HashSet<>();
+    }
+    return _namedCommunitiesUsedForSet;
   }
 
   private NavigableMap<String, AuthenticationKeyChain> convertAuthenticationKeyChains(
@@ -634,6 +650,102 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static String computePeerExportPolicyName(Prefix remoteAddress) {
     return "~PEER_EXPORT_POLICY:" + remoteAddress + "~";
+  }
+
+  private void convertNamedCommunities() {
+    /*
+     * Each NamedCommunity is converted into three structures for different usages:
+     * - CommunitySet for setting
+     * - CommunityMatchExpr for deleting
+     * - CommunitySetMatchExpr for matching
+     */
+    _masterLogicalSystem
+        .getNamedCommunities()
+        .forEach(
+            (name, namedCommunity) -> {
+              assert name.equals(namedCommunity.getName());
+              @Nullable CommunitySet communitySet = toCommunitySet(namedCommunity);
+              if (communitySet != null) {
+                _c.getCommunitySets().put(name, communitySet);
+              }
+              _c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(namedCommunity));
+              _c.getCommunitySetMatchExprs().put(name, toCommunitySetMatchExpr(namedCommunity));
+            });
+  }
+
+  /**
+   * Returns a {@link CommunitySet} containing each {@link LiteralCommunityMember} of {@code
+   * namedCommunity}, or {@code null} if {@code namedCommunity} doesn't contain any.
+   */
+  private @Nullable CommunitySet toCommunitySet(NamedCommunity namedCommunity) {
+    Set<Community> communities =
+        namedCommunity.getMembers().stream()
+            .map(
+                member ->
+                    member.accept(
+                        new CommunityMemberVisitor<Community>() {
+                          @Override
+                          public Community visitLiteralCommunityMember(
+                              LiteralCommunityMember literalCommunityMember) {
+                            return literalCommunityMember.getCommunity();
+                          }
+
+                          @Override
+                          public Community visitRegexCommunityMember(
+                              RegexCommunityMember regexCommunityMember) {
+                            return null;
+                          }
+                        }))
+            .filter(Objects::nonNull)
+            .collect(ImmutableSet.toImmutableSet());
+    if (communities.isEmpty()) {
+      return null;
+    }
+    return CommunitySet.of(communities);
+  }
+
+  private static class CommunityMemberToCommunityMatchExpr
+      implements CommunityMemberVisitor<CommunityMatchExpr> {
+    private static final CommunityMemberToCommunityMatchExpr INSTANCE =
+        new CommunityMemberToCommunityMatchExpr();
+
+    @Override
+    public CommunityMatchExpr visitLiteralCommunityMember(
+        LiteralCommunityMember literalCommunityMember) {
+      return new CommunityIs(literalCommunityMember.getCommunity());
+    }
+
+    @Override
+    public CommunityMatchExpr visitRegexCommunityMember(RegexCommunityMember regexCommunityMember) {
+      // TODO: verify regex semantics and rendering
+      return new CommunityMatchRegex(
+          ColonSeparatedRendering.instance(),
+          communityRegexToJavaRegex(regexCommunityMember.getRegex()));
+    }
+  }
+
+  /**
+   * Returns a {@link CommunityMatchExpr} that matches an individual {@link Community} if it is
+   * matched by any {@link CommunityMember} of {@code namedCommunity}.
+   */
+  private @Nonnull CommunityMatchExpr toCommunityMatchExpr(NamedCommunity namedCommunity) {
+    return new CommunityMatchAny(
+        namedCommunity.getMembers().stream()
+            .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  /**
+   * Returns a {@link CommunitySetMatchExpr} that matches a route's {@link CommunitySet} if every
+   * {@link CommunityMember} of {@code namedCommunity} matches at least one {@link Community} of the
+   * {@link CommunitySet}.
+   */
+  private @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(NamedCommunity namedCommunity) {
+    return new CommunitySetMatchAll(
+        namedCommunity.getMembers().stream()
+            .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
+            .map(HasCommunity::new)
+            .collect(ImmutableSet.toImmutableSet()));
   }
 
   private void applyLocalRoutePolicy(RoutingInstance routingInstance, RoutingPolicy targetPolicy) {
@@ -1013,10 +1125,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return "~OSPF_EXPORT_POLICY:" + vrfName + "~";
   }
 
-  public Set<StandardCommunity> getAllStandardCommunities() {
-    return _allStandardCommunities;
-  }
-
   /**
    * Generate a {@link RoutingPolicy} for use when importing routes from pseudo-protocols (direct,
    * static, aggregate, generated)
@@ -1336,22 +1444,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.getRoutingPolicies().put(policyName, routingPolicy);
     _c.getRouteFilterLists().put(rflName, rfList);
     return newRoute.build();
-  }
-
-  private org.batfish.datamodel.CommunityList toCommunityList(CommunityList cl) {
-    String name = cl.getName();
-    List<org.batfish.datamodel.CommunityListLine> newLines = new ArrayList<>();
-    for (CommunityListLine line : cl.getLines()) {
-      String regex = line.getText();
-      String javaRegex = communityRegexToJavaRegex(regex);
-      org.batfish.datamodel.CommunityListLine newLine =
-          new org.batfish.datamodel.CommunityListLine(
-              LineAction.PERMIT, new RegexCommunitySet(javaRegex));
-      newLines.add(newLine);
-    }
-    org.batfish.datamodel.CommunityList newCl =
-        new org.batfish.datamodel.CommunityList(name, newLines, cl.getInvertMatch());
-    return newCl;
   }
 
   /**
@@ -2472,7 +2564,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getAsPathGroups().putAll(ls.getAsPathGroups());
     // inherited?
     _masterLogicalSystem.getAuthenticationKeyChains().putAll(ls.getAuthenticationKeyChains());
-    _masterLogicalSystem.getCommunityLists().putAll(ls.getCommunityLists());
+    _masterLogicalSystem.getNamedCommunities().putAll(ls.getNamedCommunities());
     _masterLogicalSystem.setDefaultAddressSelection(ls.getDefaultAddressSelection());
     if (ls.getDefaultCrossZoneAction() != null) {
       _masterLogicalSystem.setDefaultCrossZoneAction(ls.getDefaultCrossZoneAction());
@@ -2688,13 +2780,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // convert community lists
-    for (Entry<String, CommunityList> e : _masterLogicalSystem.getCommunityLists().entrySet()) {
-      String name = e.getKey();
-      CommunityList cl = e.getValue();
-      org.batfish.datamodel.CommunityList newCl = toCommunityList(cl);
-      _c.getCommunityLists().put(name, newCl);
-    }
+    convertNamedCommunities();
 
     // convert interfaces. Before policies because some policies depend on interfaces
     convertInterfaces();
@@ -3053,10 +3139,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE);
 
     warnEmptyPrefixLists();
+    warnIllegalNamedCommunitiesUsedForSet();
 
     _c.computeRoutingPolicySources(_w);
 
     return _c;
+  }
+
+  private void warnIllegalNamedCommunitiesUsedForSet() {
+    getOrCreateNamedCommunitiesUsedForSet().stream()
+        .filter(Predicates.not(_c.getCommunitySets()::containsKey))
+        .forEach(
+            name ->
+                _w.redFlag(
+                    String.format(
+                        "community '%s' contains no literal communities, but is illegally used in 'then community' statement",
+                        name)));
   }
 
   /** Initialize default protocol-specific import policies */

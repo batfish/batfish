@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 import java.math.BigInteger;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -136,6 +137,15 @@ public final class ExtendedCommunity extends Community {
       }
     }
     return of((int) typeByte << 8 | (int) subTypeByte, gaLong, laLong);
+  }
+
+  @Nonnull
+  public static Optional<ExtendedCommunity> tryParse(String text) {
+    try {
+      return Optional.of(parse(text));
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
+    }
   }
 
   public static ExtendedCommunity of(int type, long globalAdministrator, long localAdministrator) {

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.math.BigInteger;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -53,6 +54,15 @@ public final class StandardCommunity extends Community {
       return of(Integer.parseUnsignedInt(parts[0]), Integer.parseUnsignedInt(parts[1]));
     } else {
       return of(Long.parseUnsignedLong(value));
+    }
+  }
+
+  @Nonnull
+  public static Optional<StandardCommunity> tryParse(String text) {
+    try {
+      return Optional.of(parse(text));
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
     }
   }
 

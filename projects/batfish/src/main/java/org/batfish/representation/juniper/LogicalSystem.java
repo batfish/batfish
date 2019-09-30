@@ -32,7 +32,7 @@ public class LogicalSystem implements Serializable {
 
   private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
 
-  private final Map<String, CommunityList> _communityLists;
+  private final Map<String, NamedCommunity> _namedCommunities;
 
   private boolean _defaultAddressSelection;
 
@@ -106,7 +106,7 @@ public class LogicalSystem implements Serializable {
     _asPaths = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
-    _communityLists = new TreeMap<>();
+    _namedCommunities = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.PERMIT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
@@ -176,8 +176,8 @@ public class LogicalSystem implements Serializable {
     return _authenticationKeyChains;
   }
 
-  public Map<String, CommunityList> getCommunityLists() {
-    return _communityLists;
+  public Map<String, NamedCommunity> getNamedCommunities() {
+    return _namedCommunities;
   }
 
   public boolean getDefaultAddressSelection() {
