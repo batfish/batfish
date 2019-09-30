@@ -1,10 +1,24 @@
 package org.batfish.grammar.cisco_nxos;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -19,6 +33,9 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
@@ -74,6 +91,52 @@ public final class NxosOspfTest {
     // crash if not serializable
     SerializationUtils.clone(vendorConfiguration);
     return vendorConfiguration;
+  }
+
+  @Test
+  public void testNxosOspfAreaParameters() throws IOException {
+    Configuration c = parseConfig("nxos-ospf-area");
+    String ifaceName = "Ethernet1";
+    long areaNum = 1L;
+
+    /* Ensure bidirectional references between OSPF area and interface */ assertThat(
+        c, hasDefaultVrf(hasOspfProcess("1", hasAreas(hasKey(areaNum)))));
+    OspfArea area = c.getDefaultVrf().getOspfProcesses().get("1").getAreas().get(areaNum);
+    assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
+    assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
+    assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
+  }
+
+  @Test
+  public void testNxosOspfNonDefaultVrf() throws IOException {
+    Configuration c = parseConfig("nxos-ospf-iface-in-vrf");
+    String vrfName = "OTHER-VRF";
+    String ifaceName = "Ethernet1";
+    long areaNum = 1;
+
+    /* Ensure bidirectional references between OSPF area and interface */
+    assertThat(c, hasVrfs(hasKey(vrfName)));
+    Vrf vrf = c.getVrfs().get(vrfName);
+    assertThat(vrf, hasOspfProcess("1", hasAreas(hasKey(areaNum))));
+    OspfArea area = vrf.getOspfProcesses().get("1").getAreas().get(areaNum);
+    assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
+    assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
+    assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
+    assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
+  }
+
+  @Test
+  public void testOspfPassiveInInterface() throws IOException {
+    Configuration c = parseConfig("nxos-ospf-passive");
+    assertThat(c, hasInterface("Ethernet2/1", allOf(isOspfPassive(), hasOspfAreaName(1L))));
+  }
+
+  @Test
+  public void testOspfAreaInInterface() throws IOException {
+    Configuration c = parseConfig("nxos-ospf-passive");
+    assertThat(c, hasInterface("Ethernet2/2", allOf(not(isOspfPassive()), hasOspfAreaName(3L))));
   }
 
   @Test
