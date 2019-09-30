@@ -1,13 +1,12 @@
 package org.batfish.grammar.cisco_nxos;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
-import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -42,7 +41,6 @@ public final class NxosOspfTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     Batfish batfish = BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
-    batfish.getSettings().setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));
     return batfish;
   }
 
@@ -62,7 +60,6 @@ public final class NxosOspfTest {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    settings.setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
     NxosControlPlaneExtractor extractor =
         new NxosControlPlaneExtractor(src, ciscoNxosParser, new Warnings());
@@ -72,6 +69,7 @@ public final class NxosOspfTest {
     extractor.processParseTree(tree);
     CiscoNxosConfiguration vendorConfiguration =
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
+    assertThat(vendorConfiguration, notNullValue());
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     SerializationUtils.clone(vendorConfiguration);
@@ -80,7 +78,8 @@ public final class NxosOspfTest {
 
   @Test
   public void testDontCrashMultipleImplicitAs() throws IOException {
-    parseConfig("nxos_ospf_multiple_implicit");
     // Don't crash.
+    parseVendorConfig("nxos_ospf_multiple_implicit");
+    parseConfig("nxos_ospf_multiple_implicit");
   }
 }

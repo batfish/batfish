@@ -31,7 +31,6 @@ import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFam
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
@@ -227,7 +226,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
@@ -5388,34 +5386,6 @@ public class CiscoGrammarTest {
     assertThat(e6, hasSwitchPortMode(SwitchportMode.TRUNK));
     assertThat(e6, hasSwitchPortEncapsulation(SwitchportEncapsulationType.NEGOTIATE));
     assertThat(e6.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(5, 6))));
-  }
-
-  @Test
-  public void testNxosBgpVrf() throws IOException {
-    Configuration c = parseConfig("nxosBgpVrf");
-    assertThat(c, ConfigurationMatchers.hasVrf("bar", any(Vrf.class)));
-    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(2));
-    assertThat(
-        c,
-        ConfigurationMatchers.hasVrf(
-            "bar",
-            hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"),
-                    allOf(
-                        hasRemoteAs(2L),
-                        hasLocalAs(1L),
-                        hasIpv4UnicastAddressFamily(
-                            hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true))))))));
-    assertThat(
-        c,
-        ConfigurationMatchers.hasVrf(
-            "bar",
-            hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.parse("3.3.3.3/32"),
-                    hasIpv4UnicastAddressFamily(
-                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(false)))))));
   }
 
   @Test

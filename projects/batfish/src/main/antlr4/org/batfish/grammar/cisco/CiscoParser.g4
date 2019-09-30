@@ -18,18 +18,12 @@ options {
 
    private boolean _multilineBgpNeighbors;
 
-   private boolean _nxos;
-
    public boolean isAristaBgp() {
       return _aristaBgp;
    }
 
    public boolean isEos() {
       return _eos;
-   }
-
-   public boolean isNxos() {
-      return _nxos;
    }
 
    public void setAristaBgp(boolean b) {
@@ -48,16 +42,11 @@ options {
       _multilineBgpNeighbors = multilineBgpNeighbors;
    }
 
-   public void setNxos(boolean b) {
-      _nxos = b;
-   }
-
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n_eos: %s\n, _aristaBgp: %s\n",
+      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_eos: %s\n, _aristaBgp: %s\n",
          _cadant,
          _multilineBgpNeighbors,
-         _nxos,
          _eos,
          _aristaBgp
       );

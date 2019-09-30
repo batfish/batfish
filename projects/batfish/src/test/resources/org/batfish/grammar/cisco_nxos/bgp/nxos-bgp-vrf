@@ -1,7 +1,8 @@
-!!!!!! trick Batfish into recognizing this as an NXOS device. !!!!!!
+!RANCID-CONTENT-TYPE: cisco-nx
+!
 feature bgp
 !
-hostname nxosBgpVrf
+hostname nxos-bgp-vrf
 !
 vrf context bar
 !

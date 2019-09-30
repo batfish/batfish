@@ -207,28 +207,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
         case CISCO_NX:
           {
-            if (!_settings.getUseNewCiscoNxosParser()) {
-              // legacy code
-              // preprocess and use old Cisco parser
-              String newFileText = _fileText;
-              String fileText;
-              _logger.info("\tPreprocessing...");
-              do {
-                fileText = newFileText;
-                try {
-                  newFileText = preprocessBanner(fileText, format);
-                } catch (BatfishException e) {
-                  throw new BatfishException("Error preprocessing banner", e);
-                }
-              } while (!newFileText.equals(fileText));
-              _logger.info("OK\n");
-              CiscoCombinedParser ciscoParser =
-                  new CiscoCombinedParser(newFileText, _settings, format);
-              combinedParser = ciscoParser;
-              extractor =
-                  new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
-              break;
-            }
             CiscoNxosCombinedParser ciscoNxosParser =
                 new CiscoNxosCombinedParser(_fileText, _settings);
             combinedParser = ciscoNxosParser;

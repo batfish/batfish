@@ -69,9 +69,6 @@ public interface GrammarSettings {
   /** Whether or not to use the separate Arista BGP parse rules */
   boolean getUseAristaBgp();
 
-  /** Whether or not to use the new standalone Cisco NX-OS parser */
-  boolean getUseNewCiscoNxosParser();
-
   /**
    * See {@link GrammarSettings#getDisableUnrecognized()}
    *

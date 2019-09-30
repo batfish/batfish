@@ -6,7 +6,7 @@
 ! `show ip bgp vrf all` will produce the output that confirms what router IDs are used.
 
 license grace-period
-hostname nxosBgpRouterId
+hostname nxos-bgp-router-id
 feature bgp
 
 vrf context vrf1
