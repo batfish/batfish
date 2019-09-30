@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.math.BigInteger;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -45,6 +46,15 @@ public final class LargeCommunity extends Community {
         Long.parseUnsignedLong(parts[1]),
         Long.parseUnsignedLong(parts[2]),
         Long.parseUnsignedLong(parts[3]));
+  }
+
+  @Nonnull
+  public static Optional<LargeCommunity> tryParse(String text) {
+    try {
+      return Optional.of(parse(text));
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
+    }
   }
 
   public static LargeCommunity of(long globalAdministrator, long localData1, long localData2) {

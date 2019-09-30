@@ -6,36 +6,6 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-base_community_regex
-:
-   ~( COLON | NEWLINE )+ COLON ~( COLON | NEWLINE )+
-;
-
-base_extended_community_regex
-:
-   ~( COLON | NEWLINE )+ COLON ~( COLON | NEWLINE )+ COLON ~( COLON | NEWLINE
-   )+
-;
-
-community_regex
-:
-   (
-      base_community_regex PIPE
-   )* base_community_regex
-;
-
-extended_community_regex
-:
-   (
-      base_extended_community_regex PIPE
-   )* base_extended_community_regex
-;
-
-invalid_community_regex
-:
-   ~NEWLINE*
-;
-
 metric_expression
 :
    (
@@ -103,18 +73,18 @@ poc_invert_match
 
 poc_members
 :
-   MEMBERS
-   (
-      extended_community
-      | standard_community
-      // community_regex intentionally on bottom
+   MEMBERS member = poc_members_member
+;
 
-      | community_regex
-      | extended_community_regex
-      // invalid_community_regex MUST BE LAST
+poc_members_member
+:
+  literal_or_regex_community
+  | sc_named
+;
 
-      | invalid_community_regex
-   )
+literal_or_regex_community
+:
+  LITERAL_OR_REGEX_COMMUNITY
 ;
 
 poplt_apply_path
