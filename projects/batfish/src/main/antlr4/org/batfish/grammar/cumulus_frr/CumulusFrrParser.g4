@@ -27,12 +27,21 @@ statement
   | s_vrf
   | s_routemap
   | s_ip
-  | SERVICE INTEGRATED_VTYSH_CONFIG NEWLINE
-  | SERVICE PASSWORD_ENCRYPTION NEWLINE
+  | s_service
   | LINE VTY NEWLINE
   | s_log
   | s_interface
   | s_router_ospf
+;
+
+s_service
+:
+  SERVICE
+  (
+    INTEGRATED_VTYSH_CONFIG
+    | PASSWORD_ENCRYPTION
+  )
+  NEWLINE
 ;
 
 s_log
