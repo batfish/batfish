@@ -1,6 +1,6 @@
 feature bgp
 !
-hostname nxosBgpMaximumPaths
+hostname nxos-bgp-maximum-paths
 !
 !!! Define VRFs so they are converted !!!
 vrf context justebgp

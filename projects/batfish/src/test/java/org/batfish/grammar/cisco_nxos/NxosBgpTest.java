@@ -1,14 +1,25 @@
-package org.batfish.grammar.cisco;
+package org.batfish.grammar.cisco_nxos;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.main.BatfishTestUtils.getBatfishForTextConfigs;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
@@ -17,54 +28,54 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.main.Batfish;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class CiscoNxosTest {
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
-  private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco/testconfigs/";
+public class NxosBgpTest {
+  private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_nxos/bgp/";
+  private static final String TEST_SNAPSHOTS_PREFIX =
+      "org/batfish/grammar/cisco_nxos/bgp/snapshots/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private Configuration parseConfig(String hostname) {
-    try {
-      return parseTextConfigs(hostname).get(hostname.toLowerCase());
-    } catch (IOException e) {
-      throw new AssertionError("Failed to parse config " + hostname, e);
-    }
-  }
-
-  private Map<String, Configuration> parseTextConfigs(String... configurationNames)
+  private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     Batfish batfish = getBatfishForTextConfigs(_folder, names);
-    return batfish.loadConfigurations();
-  }
-
-  private Batfish getBatfishForTestrig(String testrig, String... configurationNames)
-      throws IOException {
-    String[] names =
-        Arrays.stream(configurationNames)
-            .map(s -> Paths.get(TESTRIGS_PREFIX, testrig, "configs", s).toString())
-            .toArray(String[]::new);
-    Batfish batfish = getBatfishForTextConfigs(_folder, names);
     return batfish;
   }
 
+  private @Nonnull Configuration parseConfig(String hostname) throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs(hostname);
+    String canonicalHostname = hostname.toLowerCase();
+    assertThat(configs, hasEntry(equalTo(canonicalHostname), hasHostname(canonicalHostname)));
+    return configs.get(canonicalHostname);
+  }
+
+  private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
+      throws IOException {
+    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+  }
+
   @Test
-  public void testMaximumPaths() {
-    Configuration c = parseConfig("nxosBgpMaximumPaths");
+  public void testMaximumPaths() throws IOException {
+    Configuration c = parseConfig("nxos-bgp-maximum-paths");
     assertThat(
         c,
         hasVrf("justibgp", hasBgpProcess(allOf(hasMultipathEbgp(false), hasMultipathIbgp(true)))));
@@ -76,8 +87,36 @@ public class CiscoNxosTest {
   }
 
   @Test
-  public void testRouterId() {
-    Configuration c = parseConfig("nxosBgpRouterId");
+  public void testNxosBgpVrf() throws IOException {
+    Configuration c = parseConfig("nxos-bgp-vrf");
+    assertThat(c, ConfigurationMatchers.hasVrf("bar", any(Vrf.class)));
+    assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(2));
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "bar",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("2.2.2.2/32"),
+                    allOf(
+                        hasRemoteAs(2L),
+                        hasLocalAs(1L),
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true))))))));
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "bar",
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.parse("3.3.3.3/32"),
+                    hasIpv4UnicastAddressFamily(
+                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(false)))))));
+  }
+
+  @Test
+  public void testRouterId() throws IOException {
+    Configuration c = parseConfig("nxos-bgp-router-id");
     // default VRF has manually set router id.
     assertThat(c, hasVrf("default", hasBgpProcess(hasRouterId(Ip.parse("4.4.4.4")))));
     // vrf1 has manually set router id.
@@ -91,10 +130,20 @@ public class CiscoNxosTest {
     assertThat(c, hasVrf("vrf4", hasBgpProcess(hasRouterId(Ip.parse("1.2.3.4")))));
   }
 
-  private Set<AbstractRoute> parseDpAndGetRib(
-      String testrigName, String hubName, String listenerName) throws IOException {
+  private Batfish getBatfishForSnapshot(String snapshot, String... configurationNames)
+      throws IOException {
+    String[] names =
+        Arrays.stream(configurationNames)
+            .map(s -> Paths.get(TEST_SNAPSHOTS_PREFIX, snapshot, "configs", s).toString())
+            .toArray(String[]::new);
+    Batfish batfish = getBatfishForTextConfigs(_folder, names);
+    return batfish;
+  }
 
-    Batfish batfish = getBatfishForTestrig(testrigName, hubName, listenerName);
+  private Set<AbstractRoute> parseDpAndGetRib(
+      String snapshotName, String hubName, String listenerName) throws IOException {
+
+    Batfish batfish = getBatfishForSnapshot(snapshotName, hubName, listenerName);
     batfish.loadConfigurations();
     batfish.computeDataPlane(); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
