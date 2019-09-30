@@ -872,6 +872,7 @@ dh_group
    | GROUP16
    | GROUP19
    | GROUP2
+   | GROUP20
    | GROUP21
    | GROUP24
    | GROUP5
