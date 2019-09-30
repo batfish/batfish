@@ -34,8 +34,6 @@ public class OspfProcess implements Serializable {
 
   private static final double DEFAULT_REFERENCE_BANDWIDTH_100_MBPS = 100E6D;
 
-  private static final double DEFAULT_REFERENCE_BANDWIDTH_40_GBPS = 40E9D;
-
   public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;
 
   private long _defaultInformationMetric;
@@ -108,9 +106,6 @@ public class OspfProcess implements Serializable {
       case FOUNDRY: // http://www.brocade.com/content/html/en/command-reference-guide/FI_08030_CMDREF/GUID-D7109E43-D368-46FE-95AF-D522B203E501.html
         return DEFAULT_REFERENCE_BANDWIDTH_100_MBPS;
 
-      case CISCO_NX: // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/ospf/auto-cost-ospf.html
-        return DEFAULT_REFERENCE_BANDWIDTH_40_GBPS;
-
       default:
         throw new BatfishException("Unknown default OSPF reference bandwidth for format " + format);
     }
@@ -127,11 +122,10 @@ public class OspfProcess implements Serializable {
         return 10;
 
       case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
-      case CADANT: // Vetted IOS and NXOS; assuming the rest use IOS defaults.
+      case CADANT: // Vetted IOS; assuming the rest use IOS defaults.
       case CISCO_ASA:
       case CISCO_IOS:
       case CISCO_IOS_XR:
-      case CISCO_NX:
       case FORCE10:
       case FOUNDRY:
         // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html

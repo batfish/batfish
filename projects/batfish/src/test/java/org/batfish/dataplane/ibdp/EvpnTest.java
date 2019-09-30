@@ -5,7 +5,6 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isEvpnType3RouteThat;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
-import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -14,7 +13,6 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
@@ -221,7 +219,6 @@ public class EvpnTest {
                 .setConfigurationText(testRigResourcePrefix, exitGw, leaf1, spine)
                 .build(),
             _folder);
-    batfish.getSettings().setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));
     batfish.computeDataPlane();
     IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =

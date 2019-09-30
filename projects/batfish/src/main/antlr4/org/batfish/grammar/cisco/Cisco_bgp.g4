@@ -1,6 +1,6 @@
 parser grammar Cisco_bgp;
 
-import Cisco_bgp_nxos, Cisco_common;
+import Cisco_common;
 
 options {
    tokenVocab = CiscoLexer;
@@ -883,9 +883,8 @@ router_bgp_stanza
    (
       procnum = bgp_asn
    )? NEWLINE (
-      {!_aristaBgp && !_nxos}? router_bgp_stanza_tail
-      | {!_aristaBgp && _nxos}? router_bgp_nxos_toplevel
-      | {_aristaBgp && !_nxos}? eos_router_bgp_tail
+      {!_aristaBgp}? router_bgp_stanza_tail
+      | {_aristaBgp}? eos_router_bgp_tail
    )*
 ;
 

@@ -583,7 +583,7 @@ final class AristaConversions {
    * Initializes export policy for default routes if it doesn't already exist. This policy is the
    * same across BGP processes, so only one is created for each configuration.
    */
-  static void initBgpDefaultRouteExportPolicy(Configuration c) {
+  private static void initBgpDefaultRouteExportPolicy(Configuration c) {
     String defaultRouteExportPolicyName = computeNxosBgpDefaultRouteExportPolicyName(true);
     if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
       RoutingPolicy.builder()
