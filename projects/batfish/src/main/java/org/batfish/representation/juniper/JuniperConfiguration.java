@@ -673,6 +673,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
             });
   }
 
+  private static class CommunityMemberToCommunity implements CommunityMemberVisitor<Community> {
+    @Override
+    public Community visitLiteralCommunityMember(LiteralCommunityMember literalCommunityMember) {
+      return literalCommunityMember.getCommunity();
+    }
+
+    @Override
+    public Community visitRegexCommunityMember(RegexCommunityMember regexCommunityMember) {
+      return null;
+    }
+
+    private static final CommunityMemberToCommunity INSTANCE = new CommunityMemberToCommunity();
+  }
+
   /**
    * Returns a {@link CommunitySet} containing each {@link LiteralCommunityMember} of {@code
    * namedCommunity}, or {@code null} if {@code namedCommunity} doesn't contain any.
@@ -680,22 +694,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private @Nullable CommunitySet toCommunitySet(NamedCommunity namedCommunity) {
     Set<Community> communities =
         namedCommunity.getMembers().stream()
-            .map(
-                member ->
-                    member.accept(
-                        new CommunityMemberVisitor<Community>() {
-                          @Override
-                          public Community visitLiteralCommunityMember(
-                              LiteralCommunityMember literalCommunityMember) {
-                            return literalCommunityMember.getCommunity();
-                          }
-
-                          @Override
-                          public Community visitRegexCommunityMember(
-                              RegexCommunityMember regexCommunityMember) {
-                            return null;
-                          }
-                        }))
+            .map(member -> member.accept(CommunityMemberToCommunity.INSTANCE))
             .filter(Objects::nonNull)
             .collect(ImmutableSet.toImmutableSet());
     if (communities.isEmpty()) {
@@ -706,9 +705,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static class CommunityMemberToCommunityMatchExpr
       implements CommunityMemberVisitor<CommunityMatchExpr> {
-    private static final CommunityMemberToCommunityMatchExpr INSTANCE =
-        new CommunityMemberToCommunityMatchExpr();
-
     @Override
     public CommunityMatchExpr visitLiteralCommunityMember(
         LiteralCommunityMember literalCommunityMember) {
@@ -722,6 +718,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
           ColonSeparatedRendering.instance(),
           communityRegexToJavaRegex(regexCommunityMember.getRegex()));
     }
+
+    private static final CommunityMemberToCommunityMatchExpr INSTANCE =
+        new CommunityMemberToCommunityMatchExpr();
   }
 
   /**
