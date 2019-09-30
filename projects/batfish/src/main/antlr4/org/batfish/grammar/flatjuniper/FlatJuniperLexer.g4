@@ -1,58 +1,13 @@
 lexer grammar FlatJuniperLexer;
 
 options {
-   superClass = 'org.batfish.grammar.BatfishLexer';
-}
-
-@header {
-import static com.google.common.base.MoreObjects.firstNonNull;
+   superClass = 'org.batfish.grammar.flatjuniper.parsing.FlatJuniperBaseLexer';
 }
 
 @members {
-boolean enableIPV6_ADDRESS = true;
-boolean enableIP_ADDRESS = true;
-boolean enableDEC = true;
-boolean _markWildcards = false;
-private Integer _overrideTokenStartLine;
-
-public boolean isPrefix() {
-   char nextChar = (char)this.getInputStream().LA(1);
-   if(Character.isDigit(nextChar) || nextChar == '.'){
-      return false;
-    }
-    return true;
-}
-
-@Override
-public Token emit() {
-  Token t = _factory.create(_tokenFactorySourcePair, _type, _text, _channel, _tokenStartCharIndex, getCharIndex()-1,
-    firstNonNull(_overrideTokenStartLine, _tokenStartLine), _tokenStartCharPositionInLine);
-  emit(t);
-  return t;
-}
-
-@Override
-public String printStateVariables() {
-   StringBuilder sb = new StringBuilder();
-   sb.append("enableIPV6_ADDRESS: " + enableIPV6_ADDRESS + "\n");
-   sb.append("enableIP_ADDRESS: " + enableIP_ADDRESS + "\n");
-   sb.append("enableDEC: " + enableDEC + "\n");
-   sb.append("markWildcards: " + _markWildcards + "\n");
-   return sb.toString();
-}
-
-public void setMarkWildcards(boolean markWildcards) {
-   _markWildcards = markWildcards;
-}
-
-public void setOverrideTokenStartLine(Integer overrideTokenStartLine) {
-  _overrideTokenStartLine = overrideTokenStartLine;
-}
-
-private void setWildcard() {
-  setType(_markWildcards? WILDCARD_ARTIFACT : WILDCARD);
-}
-
+  private void setWildcard() {
+    setType(_markWildcards ? WILDCARD_ARTIFACT : WILDCARD);
+  }
 }
 
 tokens {
@@ -62,6 +17,7 @@ tokens {
    FIN,
    INTERFACE_NAME,
    ISO_ADDRESS,
+   LITERAL_OR_REGEX_COMMUNITY,
    PIPE,
    RST,
    SYN,
@@ -756,7 +712,7 @@ COMMUNITY
 :
    'community'
    {
-      enableIPV6_ADDRESS = false;
+      _enableIpv6Address = false;
    }
 
 ;
@@ -3725,7 +3681,12 @@ MEMBER_RANGE
 
 MEMBERS
 :
-   'members' -> pushMode ( M_Members )
+  'members'
+  {
+    if (secondToLastTokenType() != CONFEDERATION) {
+      pushMode(M_Members);
+    }
+  }
 ;
 
 METRIC
@@ -6221,7 +6182,7 @@ ZONES
 
 STANDARD_COMMUNITY
 :
-  F_StandardCommunity {!enableIPV6_ADDRESS}?
+  F_StandardCommunity {!_enableIpv6Address}?
 ;
 
 VARIABLE
@@ -6230,14 +6191,14 @@ VARIABLE
       (
          (
             F_Variable_RequiredVarChar
-            {!enableIPV6_ADDRESS}?
+            {!_enableIpv6Address}?
 
             F_Variable_VarChar*
          )
          |
          (
             F_Variable_RequiredVarChar_Ipv6
-            {enableIPV6_ADDRESS}?
+            {_enableIpv6Address}?
 
             F_Variable_VarChar_Ipv6*
          )
@@ -6246,14 +6207,14 @@ VARIABLE
       (
          (
             F_Variable_LeadingVarChar
-            {!enableIPV6_ADDRESS}?
+            {!_enableIpv6Address}?
 
             F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
          )
          |
          (
             F_Variable_LeadingVarChar_Ipv6
-            {enableIPV6_ADDRESS}?
+            {_enableIpv6Address}?
 
             F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6
             F_Variable_VarChar_Ipv6*
@@ -6360,22 +6321,22 @@ GREATER_THAN
 
 IP_ADDRESS
 :
-   F_IpAddress{enableIP_ADDRESS}?
+   F_IpAddress{_enableIpAddress}?
 ;
 
 IP_PREFIX
 :
-   F_IpPrefix {enableIP_ADDRESS}? {isPrefix()}?
+   F_IpPrefix {_enableIpAddress}? {isPrefix()}?
 ;
 
 IPV6_ADDRESS
 :
-   F_Ipv6Address {enableIPV6_ADDRESS}?
+   F_Ipv6Address {_enableIpv6Address}?
 ;
 
 IPV6_PREFIX
 :
-   F_Ipv6Prefix {enableIPV6_ADDRESS}?
+   F_Ipv6Prefix {_enableIpv6Address}?
 ;
 
 LINE_COMMENT
@@ -6384,7 +6345,7 @@ LINE_COMMENT
       '#'
       | '!'
    ) F_NonNewlineChar* F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> channel ( HIDDEN )
 ;
@@ -6398,7 +6359,7 @@ NEWLINE
 :
    F_NewlineChar+
    {
-      enableIPV6_ADDRESS = true;
+      _enableIpv6Address = true;
    }
 
 ;
@@ -6853,7 +6814,7 @@ mode M_AsPath;
 M_AsPath_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7050,7 +7011,7 @@ M_AsPathRegex_DOUBLE_QUOTE
 M_AsPathRegex_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7070,7 +7031,7 @@ M_Description_DESCRIPTION
 M_Description_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7090,7 +7051,7 @@ M_DSCP_VARIABLE
 M_DSCP_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7131,7 +7092,7 @@ M_Interface_APPLY_GROUPS_EXCEPT
 M_Interface_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7243,7 +7204,7 @@ M_ISO_MTU
 M_ISO_Newline
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7309,75 +7270,15 @@ M_MemberRange2_TO:
 
 mode M_Members;
 
-M_Members_ASTERISK
-:
-   '*' -> type ( ASTERISK )
-;
-
-M_Members_BACKSLASH
-:
-   '\\' -> type (BACKSLASH)
-;
-
-M_Members_CARAT
-:
-   '^' -> type ( CARAT )
-;
-
-M_Members_CLOSE_BRACE
-:
-   '}' -> type ( CLOSE_BRACE )
-;
-
-M_Members_CLOSE_BRACKET
-:
-   ']' -> type ( CLOSE_BRACKET )
-;
-
-M_Members_CLOSE_PAREN
-:
-   ')' -> type ( CLOSE_PAREN )
-;
-
-M_Members_COLON
-:
-   ':' -> type ( COLON )
-;
-
-M_Members_COMMA
-:
-   ',' -> type ( COMMA )
-;
-
-M_Members_DASH
-:
-   '-' -> type ( DASH )
-;
-
-M_Members_DEC
-:
-   F_Digit+ -> type ( DEC )
-;
-
-M_Members_DOLLAR
-:
-   '$' -> type ( DOLLAR )
-;
-
 M_Members_DOUBLE_QUOTE
 :
    '"' -> channel ( HIDDEN )
 ;
 
-M_Members_L
-:
-   'L' -> type ( L )
-;
-
 M_Members_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7397,54 +7298,9 @@ M_Members_NO_EXPORT_SUBCONFED
    'no-export-subconfed' -> type ( NO_EXPORT_SUBCONFED )
 ;
 
-M_Members_OPEN_BRACE
+M_Members_LITERAL_OR_REGEX_COMMUNITY
 :
-   '{' -> type ( OPEN_BRACE )
-;
-
-M_Members_OPEN_BRACKET
-:
-   '[' -> type ( OPEN_BRACKET )
-;
-
-M_Members_OPEN_PAREN
-:
-   '(' -> type ( OPEN_PAREN )
-;
-
-M_Members_ORIGIN
-:
-   'origin' -> type ( ORIGIN )
-;
-
-M_Members_PERIOD
-:
-   '.' -> type ( PERIOD )
-;
-
-M_Members_PLUS
-:
-   '+' -> type ( PLUS )
-;
-
-M_Members_PIPE
-:
-   '|' -> type ( PIPE )
-;
-
-M_Members_QUESTION_MARK
-:
-   '?' -> type ( QUESTION_MARK )
-;
-
-M_Members_TARGET
-:
-   'target' -> type ( TARGET )
-;
-
-M_Members_UNDERSCORE
-:
-   '_' -> type ( UNDERSCORE )
+  ~[ \t\n\r"]+ -> type(LITERAL_OR_REGEX_COMMUNITY)
 ;
 
 M_Members_WS
@@ -7667,7 +7523,7 @@ M_RouteDistinguisher_DEC
 M_RouteDistinguisher_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
@@ -7790,7 +7646,7 @@ M_VrfTarget_L
 M_VrfTarget_NEWLINE
 :
    F_NewlineChar+
-   {enableIPV6_ADDRESS = true;}
+   {_enableIpv6Address = true;}
 
    -> type ( NEWLINE ) , popMode
 ;
