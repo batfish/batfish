@@ -267,7 +267,7 @@ public class BatfishTest {
 
   @Test
   public void testMultipleBestVrrpCandidates() throws IOException {
-    String testrigResourcePrefix = "org/batfish/grammar/cisco/testrigs/vrrp_multiple_best";
+    String testrigResourcePrefix = "org/batfish/testrigs/vrrp_multiple_best";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
 
     Ip vrrpAddress = Ip.parse("1.0.0.10");

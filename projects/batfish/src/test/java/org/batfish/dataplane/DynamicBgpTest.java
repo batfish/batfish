@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class DynamicBgpTest {
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
+  private static final String TESTRIGS_PREFIX = "org/batfish/dataplane/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
