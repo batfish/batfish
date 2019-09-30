@@ -1355,8 +1355,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   public void setInterfaces(@Nonnull Map<String, Interface> interfaces) {
-    //    _interfaces = ImmutableMap.copyOf(interfaces);
-    _interfaces = new HashMap<>(interfaces);
+    _interfaces = ImmutableMap.copyOf(interfaces);
   }
 
   public void setVlans(@Nonnull Map<String, Vlan> vlans) {

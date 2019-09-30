@@ -12,8 +12,13 @@ s_interface
   (
     si_description
     | si_ospf
-    | IP ADDRESS IP_PREFIX
+    | si_ip_address
   )*
+;
+
+si_ip_address
+:
+  IP ADDRESS ip_prefix = IP_PREFIX NEWLINE
 ;
 
 si_description

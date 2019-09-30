@@ -21,6 +21,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
@@ -31,6 +32,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -898,8 +900,41 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCreateInterfaceInFRR() {
-    parse("interface eth1\n");
+  public void testCreatePhysicalInterfaceInFRR() {
+    String name = "eth1";
+    parse(String.format("interface %s\n", name));
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains(name));
+    Interface i1 = CONFIG.getInterfaces().get(name);
+    assertThat(i1.getType(), equalTo(CumulusInterfaceType.PHYSICAL));
+  }
+
+  @Test
+  public void testCreateLoopbackInterfaceInFRR() {
+    String name = "lo";
+    parse(String.format("interface %s\n", name));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains(name));
+    Interface i1 = CONFIG.getInterfaces().get(name);
+    assertThat(i1.getType(), equalTo(CumulusInterfaceType.LOOPBACK));
+  }
+
+  @Test
+  public void testNoCreateOtherInterfaceInFRR() {
+    String name = "vlan1";
+    parse(String.format("interface %s\n", name));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("cannot recognize interface vlan1. Only support loopback and physical interfaces"));
+    assertThat(CONFIG.getInterfaces().keySet(), empty());
+  }
+
+  @Test
+  public void testSetInterfaceIpAddress() {
+    parseLines("interface eth1", "ip address 1.1.1.1/30");
+    assertThat(
+        CONFIG.getInterfaces().get("eth1").getIpAddresses(),
+        equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
   }
 }
