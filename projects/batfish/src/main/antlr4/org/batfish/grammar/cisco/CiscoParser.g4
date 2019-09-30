@@ -2555,14 +2555,6 @@ s_failover_tail
    | failover_interface
 ;
 
-s_feature
-:
-   NO? FEATURE
-   (
-      words += variable
-   )+ NEWLINE
-;
-
 s_flow
 :
    FLOW
@@ -3730,7 +3722,6 @@ stanza
    | s_flow
    | s_flow_sampler_map
    | s_foundry_mac_access_list
-   | s_feature
    | s_gatekeeper
    | s_global_port_security
    | s_guest_access_email

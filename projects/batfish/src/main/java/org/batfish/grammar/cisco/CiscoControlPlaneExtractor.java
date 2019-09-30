@@ -1028,7 +1028,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_eos_mlagContext;
 import org.batfish.grammar.cisco.CiscoParser.S_eos_vxlan_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_default_gatewayContext;
@@ -9530,14 +9529,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitS_domain_name(S_domain_nameContext ctx) {
     String domainName = ctx.hostname.getText();
     _configuration.setDomainName(domainName);
-  }
-
-  @Override
-  public void exitS_feature(S_featureContext ctx) {
-    List<String> words = ctx.words.stream().map(RuleContext::getText).collect(Collectors.toList());
-    boolean enabled = ctx.NO() == null;
-    String name = String.join(".", words);
-    _configuration.getCf().getFeatures().put(name, enabled);
   }
 
   @Override
