@@ -1067,7 +1067,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vlan_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vlan_internal_eosContext;
-import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_definitionContext;
 import org.batfish.grammar.cisco.CiscoParser.S_zoneContext;
 import org.batfish.grammar.cisco.CiscoParser.S_zone_pairContext;
@@ -4686,11 +4685,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       username = unquote(ctx.quoted_user.getText());
     }
     _currentUser = _configuration.getCf().getUsers().computeIfAbsent(username, User::new);
-  }
-
-  @Override
-  public void enterS_vrf_context(S_vrf_contextContext ctx) {
-    _currentVrf = ctx.name.getText();
   }
 
   @Override
@@ -9886,11 +9880,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_vlan_eos(S_vlan_eosContext ctx) {
     _currentVlans = null;
-  }
-
-  @Override
-  public void exitS_vrf_context(S_vrf_contextContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override

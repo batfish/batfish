@@ -37,7 +37,6 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
         break;
 
       case CISCO_IOS_XR:
-      case CISCO_NX:
         multilineBgpNeighbors = true;
         break;
 

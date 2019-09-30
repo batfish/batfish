@@ -3389,20 +3389,6 @@ s_vpn_dialer
    )*
 ;
 
-// A way to define a VRF on NX-OS (keeping separate from IOS)
-s_vrf_context
-:
-   VRF CONTEXT name = variable NEWLINE
-   (
-      vrfc_address_family
-      | vrfc_ip_route
-      | vrfc_rd
-      | vrfc_shutdown
-      | vrfc_vni
-      | vrfc_null
-   )*
-;
-
 // a way to define a VRF on IOS or EOS
 s_vrf_definition
 :
@@ -3877,7 +3863,6 @@ stanza
    | s_vpdn_group
    | s_vpn
    | s_vpn_dialer
-   | s_vrf_context
    | s_vrf_definition
    | s_web_server
    | s_webvpn
