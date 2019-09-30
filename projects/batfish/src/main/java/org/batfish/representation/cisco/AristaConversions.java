@@ -6,9 +6,9 @@ import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePr
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerEvpnExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeNxosBgpDefaultRouteExportPolicyName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -401,7 +401,7 @@ final class AristaConversions {
       exportStatements.add(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(computeNxosBgpDefaultRouteExportPolicyName(true)),
+              new CallExpr(computeBgpDefaultRouteExportPolicyName(true)),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
 
@@ -584,7 +584,7 @@ final class AristaConversions {
    * same across BGP processes, so only one is created for each configuration.
    */
   private static void initBgpDefaultRouteExportPolicy(Configuration c) {
-    String defaultRouteExportPolicyName = computeNxosBgpDefaultRouteExportPolicyName(true);
+    String defaultRouteExportPolicyName = computeBgpDefaultRouteExportPolicyName(true);
     if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
       RoutingPolicy.builder()
           .setOwner(c)

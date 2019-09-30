@@ -1,5 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco-nx
 !
-hostname cisco-nxos-passive
+hostname nxos-ospf-passive
 feature ospf
 !
 interface Ethernet2/1

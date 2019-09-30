@@ -1028,7 +1028,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_eos_mlagContext;
 import org.batfish.grammar.cisco.CiscoParser.S_eos_vxlan_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_default_gatewayContext;
@@ -1067,7 +1066,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vlan_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vlan_internal_eosContext;
-import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_definitionContext;
 import org.batfish.grammar.cisco.CiscoParser.S_zoneContext;
 import org.batfish.grammar.cisco.CiscoParser.S_zone_pairContext;
@@ -4607,7 +4605,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_max_metric(Ro_max_metricContext ctx) {
-    if (ctx.on_startup != null || ctx.wait_for_bgp_nx != null || !ctx.WAIT_FOR_BGP().isEmpty()) {
+    if (ctx.on_startup != null || !ctx.WAIT_FOR_BGP().isEmpty()) {
       return;
     }
     _currentOspfProcess.setMaxMetricRouterLsa(true);
@@ -4686,11 +4684,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       username = unquote(ctx.quoted_user.getText());
     }
     _currentUser = _configuration.getCf().getUsers().computeIfAbsent(username, User::new);
-  }
-
-  @Override
-  public void enterS_vrf_context(S_vrf_contextContext ctx) {
-    _currentVrf = ctx.name.getText();
   }
 
   @Override
@@ -9111,7 +9104,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
     /*
      * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
-     * CISCO_NXOS and ARISTA redistribute all subnets.
+     * ARISTA redistributes all subnets.
      *
      * We assume that others use this sane default too. TODO: verify more vendors.
      */
@@ -9539,14 +9532,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitS_feature(S_featureContext ctx) {
-    List<String> words = ctx.words.stream().map(RuleContext::getText).collect(Collectors.toList());
-    boolean enabled = ctx.NO() == null;
-    String name = String.join(".", words);
-    _configuration.getCf().getFeatures().put(name, enabled);
-  }
-
-  @Override
   public void exitS_hostname(S_hostnameContext ctx) {
     String hostname;
     if (ctx.quoted_name != null) {
@@ -9886,11 +9871,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_vlan_eos(S_vlan_eosContext ctx) {
     _currentVlans = null;
-  }
-
-  @Override
-  public void exitS_vrf_context(S_vrf_contextContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -10608,7 +10588,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String nameAlpha = ctx.name_prefix_alpha.getText();
     String canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     String vrf =
-        canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
+        canonicalNamePrefix.equals(CiscoConfiguration.MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
     int mtu = Interface.getDefaultMtu();
