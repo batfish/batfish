@@ -15,7 +15,7 @@ import org.junit.Test;
 
 /** Tests of {@link ParseVendorConfigurationJob}. */
 public class ParseVendorConfigurationJobTest {
-  private static final String HOST_TESTCONFIGS_PREFIX = "org/batfish/grammar/host/testconfigs/";
+  private static final String HOST_TESTCONFIGS_PREFIX = "org/batfish/job/host/";
 
   private static ParseVendorConfigurationResult parseHost(String resourcePath) {
     return new ParseVendorConfigurationJob(

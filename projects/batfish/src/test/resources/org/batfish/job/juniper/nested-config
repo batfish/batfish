@@ -1,0 +1,4 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+    host-name nested-config;
+}
