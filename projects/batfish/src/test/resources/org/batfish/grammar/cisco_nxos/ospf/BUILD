@@ -1,0 +1,12 @@
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ospf",
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD"],
+    ),
+)
