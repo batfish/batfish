@@ -136,13 +136,34 @@ public class Warnings implements Serializable {
    * Adds a note that there is work to do to handle the given {@link ParserRuleContext}. The output
    * will include the text of the given {@code line} and, for debugging/implementation, the current
    * parser rule stack, and the given {@code comment} if present.
+   *
+   * <p>This function warns on the line of the first token of {@code ctx}. To override the line
+   * number, use {@link #addWarningOnLine(int, ParserRuleContext, String, BatfishCombinedParser,
+   * String)}.
    */
   public void addWarning(
       @Nonnull ParserRuleContext ctx,
       @Nonnull String line,
       @Nonnull BatfishCombinedParser<?, ?> parser,
       @Nonnull String comment) {
-    int lineNumber = ctx.getStart().getLine();
+    int lineNumber = parser.getLine(ctx.getStart());
+    addWarningOnLine(lineNumber, ctx, line, parser, comment);
+  }
+
+  /**
+   * Adds a note that there is work to do to handle the given {@link ParserRuleContext}. The output
+   * will include the text of the given {@code line} and, for debugging/implementation, the current
+   * parser rule stack, and the given {@code comment} if present.
+   *
+   * <p>This function warns on the given line. To use the line number of the first token
+   * automatically, use {@link #addWarning}.
+   */
+  public void addWarningOnLine(
+      int lineNumber,
+      @Nonnull ParserRuleContext ctx,
+      @Nonnull String line,
+      @Nonnull BatfishCombinedParser<?, ?> parser,
+      @Nonnull String comment) {
     String ruleStack = ctx.toString(Arrays.asList(parser.getParser().getRuleNames()));
     String trimmedLine = line.trim();
     _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, comment));

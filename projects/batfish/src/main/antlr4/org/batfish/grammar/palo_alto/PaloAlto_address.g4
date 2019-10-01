@@ -41,7 +41,6 @@ sa_ip_netmask
         IP_ADDRESS
         | IP_PREFIX
     )
-
 ;
 
 sa_ip_range
