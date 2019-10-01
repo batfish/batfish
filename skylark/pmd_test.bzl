@@ -7,6 +7,7 @@ def _impl(ctx):
         fail("Expecting a single java library")
 
     src_jar = lib.source_jars[0]
+
     # We'd like this to be the compile-time jars only, but Bazel provides only
     # hjar or ijar files, which screw PMD up.
     jar_deps = lib.transitive_runtime_jars

@@ -216,6 +216,6 @@ sed s/\$${project.version}/$${BATFISH_VERSION}/ $(location src/main/resources/or
 )
 
 pmd_test(
-    name="pmd",
-    lib=":common",
+    name = "pmd",
+    lib = ":common",
 )
