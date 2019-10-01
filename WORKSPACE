@@ -1091,18 +1091,19 @@ maven_repository(
         "c4ba5371a29ac9b2ad6129b1d39ea38750043eff:com.google.code.gson:gson:2.8.0",
         "815893df5f31da2ece4040fe0a12fd44b577afaf:commons-io:commons-io:2.6",
         "f19b7d4278b837fe92504946e6860b0bcc180956:net.java.dev.javacc:javacc:5.0",
-        "b128622fc95edae0e166eb69c76727774d1be34d:net.sourceforge.pmd:pmd-core:6.12.0",
-        "9fe0bceb83361d94ab45f2dddda1af3604882369:net.sourceforge.pmd:pmd-java:6.12.0",
+        "8355fc367579dccb59920b816b03bc6b2dc2c8b1:net.sourceforge.pmd:pmd-core:6.14.0",
+        "9f4825307a89ac0af44e6c30f3472b8c27f54e5d:net.sourceforge.pmd:pmd-java:6.14.0",
         "9ffdd08cb74563cbd431c845238b414e933a0483:net.sourceforge.saxon:saxon:9.1.0.8",
         "e27d8ab4f984f9d186f54da984a6ab1cccac755e:org.antlr:antlr4-runtime:4.7.2",
         "6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1",
         "fa29aa438674ff19d5e1386d2c3527a0267f291e:org.ow2.asm:asm:7.1",
     ],
     deps = [
-        "net.sourceforge.pmd:pmd-core:6.12.0",
-        "net.sourceforge.pmd:pmd-java:6.12.0",
+        "net.sourceforge.pmd:pmd-core:6.14.0",
+        "net.sourceforge.pmd:pmd-java:6.14.0",
     ],
 )
+
 
 load("@pmd//:rules.bzl", "pmd_compile")
 
