@@ -48,6 +48,7 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1097,8 +1098,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // IPv6
       return;
     }
-    vlanIface.setAddress(address);
-    vlanIface.setAllAddresses(ImmutableSortedSet.of(address));
+    // keep the first address we encountered as primary
+    if (vlanIface.getAddress() == null) {
+      vlanIface.setAddress(address);
+    }
+    vlanIface.setAllAddresses(
+        new ImmutableSortedSet.Builder<InterfaceAddress>(Comparator.naturalOrder())
+            .addAll(vlanIface.getAllAddresses())
+            .add(address)
+            .build());
   }
 
   private void processVlanSettings(Vlan vlan) {
