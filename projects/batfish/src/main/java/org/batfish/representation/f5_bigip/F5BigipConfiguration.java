@@ -1103,7 +1103,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       vlanIface.setAddress(address);
     }
     vlanIface.setAllAddresses(
-        new ImmutableSortedSet.Builder<InterfaceAddress>(Comparator.naturalOrder())
+        ImmutableSortedSet.<InterfaceAddress>naturalOrder()
             .addAll(vlanIface.getAllAddresses())
             .add(address)
             .build());
