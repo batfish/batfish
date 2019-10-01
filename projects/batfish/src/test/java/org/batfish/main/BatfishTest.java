@@ -37,7 +37,6 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
@@ -218,25 +217,6 @@ public class BatfishTest {
     assertThat(
         batfish.getTopologyProvider().getRawLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
         containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
-  }
-
-  @Test
-  public void testFlatten() throws IOException {
-    Path root = _folder.getRoot().toPath();
-    Path inputDir = root.resolve("input");
-    Path outputDir = root.resolve("output");
-    Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
-    Path outputFile = outputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
-    inputFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(
-        inputFile, CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/hierarchical"));
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder().build(), _folder);
-    batfish.flatten(inputDir, outputDir);
-
-    assertThat(
-        CommonUtil.readFile(outputFile),
-        equalTo(CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/flat")));
   }
 
   @Test

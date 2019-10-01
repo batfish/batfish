@@ -4,7 +4,7 @@ package(
 )
 
 filegroup(
-    name = "palo_alto",
+    name = "vyos",
     srcs = glob(
         ["**"],
         exclude = ["BUILD"],

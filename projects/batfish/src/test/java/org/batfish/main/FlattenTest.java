@@ -22,7 +22,7 @@ public final class FlattenTest {
     Flatten.main(new String[] {});
   }
 
-  private static final String TESTCONFIGS_PATH = "org/batfish/grammar/juniper/testconfigs";
+  private static final String TESTCONFIGS_PATH = "org/batfish/main/testconfigs";
 
   public void assertInputOutputPair(String inputFilename, String outputFilename) {
     Path root = _folder.getRoot().toPath();

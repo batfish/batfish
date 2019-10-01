@@ -1005,7 +1005,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ospfSettings.setEnabled(!firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
     ospfSettings.setPassive(vsIface.getOspfPassive());
     Integer ospfCost = vsIface.getOspfCost();
-    if (ospfCost == null && iface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
+    if (ospfCost == null && iface.isLoopback()) {
       ospfCost = 0;
     }
     ospfSettings.setCost(ospfCost);
