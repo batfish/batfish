@@ -1061,4 +1061,26 @@ public class OspfTest {
     assertNoRoute(routes, "r2", Prefix.parse("192.168.10.0/24"));
     assertNoRoute(routes, "r3", Prefix.parse("2.2.2.0/24"));
   }
+
+  @Test
+  public void testLoopbackRoutes() throws IOException {
+    // we are expecting routes for both /32 of Loopback addresss and also for the actual network
+    // address
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    "org/batfish/dataplane/ibdp/ospf-loopback-routes", "advertiser", "listener")
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
+        IncrementalBdpEngine.getRoutes(dataplane);
+    System.out.println();
+    assertRoute(
+        routes, OSPF, "listener", Prefix.parse("192.168.61.4/32"), 11, Ip.parse("14.2.0.2"));
+    assertRoute(
+        routes, OSPF, "listener", Prefix.parse("192.168.61.0/24"), 11, Ip.parse("14.2.0.2"));
+  }
 }
