@@ -30,7 +30,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -344,10 +343,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         continue;
       }
 
-      // create additional /32 host addresses for this interface if it is a loopback and the network
-      // type is P2P
+      // create a/32 host address for this interface if it is a loopback and the network type is P2P
       ImmutableSet<ConcreteInterfaceAddress> additionalHostAddresses =
-          (iface.getInterfaceType() == InterfaceType.LOOPBACK
+          (iface.isLoopback()
                   && iface.getConcreteAddress() != null
                   && iface.getOspfSettings() != null
                   && iface.getOspfSettings().getNetworkType() != OspfNetworkType.POINT_TO_POINT)
