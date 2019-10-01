@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 
 /** An IPv4 address */
 public class Ip implements Comparable<Ip>, Serializable {
-  private Integer _value = null;
 
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
