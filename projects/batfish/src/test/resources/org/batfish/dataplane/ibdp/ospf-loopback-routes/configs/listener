@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname listener
+!
+interface Ethernet2/0
+ ip address 14.2.0.1 255.255.255.0
+ ip ospf network point-to-point
+ duplex full
+!
+router ospf 1
+ router-id 1.1.1.1
+ network 14.2.0.0 0.0.0.255 area 14
+!

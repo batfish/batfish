@@ -342,9 +342,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
          */
         continue;
       }
+
       // Create a route for each interface address
+      // Only create a /32 host address for this interface if it is a loopback and the network type
+      // is not P2P
       Set<OspfIntraAreaRoute> allRoutes =
-          iface.getAllConcreteAddresses().stream()
+          (isLoopbackNotInP2PMode(iface)
+                  ? Stream.of(
+                      ConcreteInterfaceAddress.create(
+                          iface.getConcreteAddress().getIp(), Prefix.MAX_PREFIX_LENGTH))
+                  : iface.getAllConcreteAddresses().stream())
               .map(
                   ifaceAddr ->
                       computeIntraAreaRouteFromInterface(area.getAreaNumber(), iface, ifaceAddr))
@@ -353,6 +360,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       allRoutes.forEach(r -> deltaBuilder.from(_intraAreaRib.mergeRouteGetDelta(r)));
     }
     return deltaBuilder.build();
+  }
+
+  /**
+   * Utility for checking if interface is a loopback and is not setup in OSPF point to point mode
+   */
+  private static boolean isLoopbackNotInP2PMode(Interface iface) {
+    return iface.isLoopback()
+        && iface.getConcreteAddress() != null
+        && iface.getOspfSettings() != null
+        && iface.getOspfSettings().getNetworkType() != OspfNetworkType.POINT_TO_POINT;
   }
 
   /**
