@@ -1104,7 +1104,6 @@ maven_repository(
     ],
 )
 
-
 load("@pmd//:rules.bzl", "pmd_compile")
 
 pmd_compile()
