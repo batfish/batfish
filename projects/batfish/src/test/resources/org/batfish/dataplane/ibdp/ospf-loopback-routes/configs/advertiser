@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname advertiser
+!
+interface Ethernet2/0
+ ip address 14.2.0.2 255.255.255.0
+ ip ospf network point-to-point
+ duplex full
+!
+interface Loopback61
+ ip address 192.168.61.4 255.255.255.0
+!
+router ospf 4
+ router-id 4.4.4.4
+ network 192.168.61.4 0.0.0.0 area 14
+ network 14.2.0.0 0.0.0.255 area 14
+!
+
