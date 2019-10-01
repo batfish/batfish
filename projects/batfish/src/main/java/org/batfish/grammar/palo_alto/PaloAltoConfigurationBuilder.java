@@ -269,13 +269,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return new BatfishException("Could not convert to " + typeName + ": " + txt);
   }
 
-  private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
-    return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
+  private String convErrorMessage(Class<?> type) {
+    return String.format("Could not convert to %s", type.getSimpleName());
   }
 
   private <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
-    _w.redFlag(convErrorMessage(returnType, ctx));
+    warn(ctx, convErrorMessage(returnType));
     return defaultReturnValue;
   }
 
@@ -444,7 +444,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitCp_authentication(Cp_authenticationContext ctx) {
     if (_currentCrytoProfile.getType() == Type.IKE) {
-      _w.redFlag("'authentication' is illegal for ike-crypto-profile");
+      warn(ctx, "'authentication' is illegal for ike-crypto-profile");
       return;
     }
     IpsecAuthenticationAlgorithm algo = toIpsecAuthenticationAlgorithm(ctx);
@@ -456,7 +456,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitCp_dh_group(Cp_dh_groupContext ctx) {
     if (_currentCrytoProfile.getType() == Type.GLOBAL_PROTECT_APP) {
-      _w.redFlag("'dh-group' is illegal for global-proptect-app-crypto-profile");
+      warn(ctx, "'dh-group' is illegal for global-proptect-app-crypto-profile");
       return;
     }
     DiffieHellmanGroup dhGroup = toDiffieHellmanGroup(ctx);
@@ -475,7 +475,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitCp_hash(Cp_hashContext ctx) {
     if (_currentCrytoProfile.getType() != Type.IKE) {
-      _w.redFlag("'hash' is illegal for non-Ike crypto profiles");
+      warn(ctx, "'hash' is illegal for non-Ike crypto profiles");
       return;
     }
     IkeHashingAlgorithm algo = toIkeHashingAlgorithm(ctx);
@@ -487,7 +487,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitCp_lifetime(Cp_lifetimeContext ctx) {
     if (_currentCrytoProfile.getType() == Type.GLOBAL_PROTECT_APP) {
-      _w.redFlag("'lifetime' is illegal for global-protect-app-crypto profile");
+      warn(ctx, "'lifetime' is illegal for global-protect-app-crypto profile");
       return;
     }
     int val = toInteger(ctx.val);
@@ -542,7 +542,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void enterS_address_definition(S_address_definitionContext ctx) {
     String name = getText(ctx.name);
     if (_currentVsys.getAddressGroups().get(name) != null) {
-      _w.redFlag(
+      warn(
+          ctx,
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the object definition.",
               name));
@@ -565,7 +566,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void enterS_address_group_definition(S_address_group_definitionContext ctx) {
     String name = getText(ctx.name);
     if (_currentVsys.getAddressObjects().get(name) != null) {
-      _w.redFlag(
+      warn(
+          ctx,
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the group definition.",
               name));
@@ -656,7 +658,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_fqdn(Sa_fqdnContext ctx) {
-    _w.redFlag("FQDN in address objects is not currently supported: " + getFullText(ctx));
+    warn(ctx, ctx.FQDN().getSymbol(), "FQDN in address objects is not currently supported");
   }
 
   @Override
@@ -669,7 +671,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     } else if (ctx.IP_PREFIX() != null) {
       _currentAddressObject.setIpSpace(Prefix.parse(getText(ctx.IP_PREFIX())).toIpSpace());
     } else {
-      _w.redFlag("Cannot understand what follows 'ip-netmask' in " + getFullText(ctx));
+      warn(ctx, "Cannot understand what follows 'ip-netmask'");
     }
   }
 
@@ -692,7 +694,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSag_dynamic(Sag_dynamicContext ctx) {
-    _w.redFlag("Dynamic address groups are not currently supported: " + getFullText(ctx));
+    warn(ctx, "Dynamic address groups are not currently supported");
   }
 
   @Override
@@ -703,10 +705,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (VariableContext var : ctx.variable()) {
       String objectName = getText(var);
       if (objectName.equals(_currentAddressGroup.getName())) {
-        _w.redFlag(
-            String.format(
-                "The address group '%s' cannot contain itself: '%s'",
-                objectName, getFullText(ctx)));
+        warn(ctx, String.format("The address group '%s' cannot contain itself", objectName));
       } else {
         _currentAddressGroup.getMembers().add(objectName);
 
@@ -809,7 +808,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       if (_currentVsys.getImportedInterfaces().contains(name)) {
         _currentZone.getInterfaceNames().add(name);
       } else {
-        _w.redFlag("Cannot add an interface to a shared-gateway zone before it is imported");
+        warn(ctx, "Cannot add an interface to a shared-gateway zone before it is imported");
       }
       _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
@@ -823,7 +822,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       if (!_currentDeviceName.equals(deviceName)) {
         /* Do not currently handle multiple device names, which presumably happens only if multiple
          * physical devices are configured from a single config */
-        _w.redFlag("Multiple devices encountered: " + deviceName);
+        warn(ctx, "Multiple devices encountered: " + deviceName);
       }
     }
   }
@@ -1497,5 +1496,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  private void warn(ParserRuleContext ctx, String message) {
+    _w.addWarning(ctx, getFullText(ctx), _parser, message);
+  }
+
+  private void warn(ParserRuleContext ctx, Token warnToken, String message) {
+    _w.addWarningOnLine(_parser.getLine(warnToken), ctx, getFullText(ctx), _parser, message);
   }
 }
