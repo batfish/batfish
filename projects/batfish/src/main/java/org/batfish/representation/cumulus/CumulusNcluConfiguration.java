@@ -1,6 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -794,7 +795,21 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
+  @VisibleForTesting
+  static void populateLoInInterfacesToLoopback(Interface iface, Loopback loopback) {
+    checkArgument(
+        iface.getType() == CumulusInterfaceType.LOOPBACK,
+        String.format(
+            "cannot populate interface with type %s to loopback", iface.getType().name()));
+    loopback.getAddresses().addAll(iface.getIpAddresses());
+  }
+
   private void convertLoopback() {
+    _interfaces.values().stream()
+        .filter(iface -> iface.getType() == CumulusInterfaceType.LOOPBACK)
+        .findAny()
+        .ifPresent(iface -> populateLoInInterfacesToLoopback(iface, _loopback));
+
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(LOOPBACK_INTERFACE_NAME)
@@ -802,6 +817,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setType(InterfaceType.LOOPBACK)
             .build();
     newIface.setActive(true);
+
     if (!_loopback.getAddresses().isEmpty()) {
       newIface.setAddress(_loopback.getAddresses().get(0));
     }
