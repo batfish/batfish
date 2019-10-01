@@ -13,8 +13,6 @@ def _impl(ctx):
     jar_deps = lib.transitive_runtime_jars
     full_transitive_runtime_jars = ":".join([f.short_path for f in jar_deps.to_list()])
 
-    # Presumably this needs to be updated to actually run the resulting shell script.
-
     pmd_exe_file = ctx.attr._pmd[DefaultInfo].files_to_run.executable
     ruleset = ctx.file.ruleset
     pmd_cmd_args = [
