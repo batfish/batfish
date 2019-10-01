@@ -344,7 +344,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       }
 
       // create a/32 host address for this interface if it is a loopback and the network type is P2P
-      ImmutableSet<ConcreteInterfaceAddress> additionalHostAddresses =
+      ImmutableSet<ConcreteInterfaceAddress> hostAddressForLoopbackIface =
           (iface.isLoopback()
                   && iface.getConcreteAddress() != null
                   && iface.getOspfSettings() != null
@@ -356,7 +356,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
       // Create a route for each interface address
       Set<OspfIntraAreaRoute> allRoutes =
-          Streams.concat(iface.getAllConcreteAddresses().stream(), additionalHostAddresses.stream())
+          Streams.concat(
+                  iface.getAllConcreteAddresses().stream(), hostAddressForLoopbackIface.stream())
               .map(
                   ifaceAddr ->
                       computeIntraAreaRouteFromInterface(area.getAreaNumber(), iface, ifaceAddr))
