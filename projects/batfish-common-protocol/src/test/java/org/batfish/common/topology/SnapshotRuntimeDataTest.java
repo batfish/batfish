@@ -25,10 +25,11 @@ public class SnapshotRuntimeDataTest {
   private static final String NODE = "NODE";
   private static final String IFACE = "IFACE";
   private static final double BANDWIDTH = 1;
+  private static final boolean LINE_UP = true;
   private static final double SPEED = 2;
 
   private static final InterfaceRuntimeData INTERFACE_RUNTIME_DATA =
-      new InterfaceRuntimeData(BANDWIDTH, SPEED);
+      new InterfaceRuntimeData(BANDWIDTH, LINE_UP, SPEED);
   private static final RuntimeData RUNTIME_DATA =
       new RuntimeData(ImmutableMap.of(IFACE, INTERFACE_RUNTIME_DATA));
   private static final SnapshotRuntimeData SNAPSHOT_RUNTIME_DATA =
@@ -36,16 +37,17 @@ public class SnapshotRuntimeDataTest {
 
   @Test
   public void testInterfaceRuntimeDataEquals() {
-    InterfaceRuntimeData irdNullBandwidth = new InterfaceRuntimeData(null, SPEED);
-    InterfaceRuntimeData irdNullSpeed = new InterfaceRuntimeData(BANDWIDTH, null);
-    InterfaceRuntimeData irdNullBoth = new InterfaceRuntimeData(null, null);
+    InterfaceRuntimeData empty = new InterfaceRuntimeData(null, null, null);
     new EqualsTester()
-        .addEqualityGroup(INTERFACE_RUNTIME_DATA, new InterfaceRuntimeData(BANDWIDTH, SPEED))
-        .addEqualityGroup(new InterfaceRuntimeData(BANDWIDTH + 1, SPEED))
-        .addEqualityGroup(new InterfaceRuntimeData(BANDWIDTH, SPEED + 1))
-        .addEqualityGroup(irdNullBandwidth, new InterfaceRuntimeData(null, SPEED))
-        .addEqualityGroup(irdNullSpeed, new InterfaceRuntimeData(BANDWIDTH, null))
-        .addEqualityGroup(irdNullBoth, new InterfaceRuntimeData(null, null))
+        .addEqualityGroup(
+            INTERFACE_RUNTIME_DATA, new InterfaceRuntimeData(BANDWIDTH, LINE_UP, SPEED))
+        .addEqualityGroup(new InterfaceRuntimeData(BANDWIDTH + 1, LINE_UP, SPEED))
+        .addEqualityGroup(new InterfaceRuntimeData(null, LINE_UP, SPEED))
+        .addEqualityGroup(new InterfaceRuntimeData(BANDWIDTH, !LINE_UP, SPEED))
+        .addEqualityGroup(new InterfaceRuntimeData(BANDWIDTH, null, SPEED))
+        .addEqualityGroup(new InterfaceRuntimeData(BANDWIDTH, LINE_UP, SPEED + 1))
+        .addEqualityGroup(new InterfaceRuntimeData(BANDWIDTH, LINE_UP, null))
+        .addEqualityGroup(empty, new InterfaceRuntimeData(null, null, null))
         .testEquals();
   }
 

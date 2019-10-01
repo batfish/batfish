@@ -21,17 +21,22 @@ public final class SnapshotRuntimeData {
   /** Represents runtime data for an interface */
   public static final class InterfaceRuntimeData {
     private static final String PROP_BANDWIDTH = "bandwidth";
+    private static final String PROP_LINE_UP = "lineUp";
     private static final String PROP_SPEED = "speed";
 
+    // All properties should be nullable since a given interface may have runtime data for any/all
     @Nullable private final Double _bandwidth;
+    @Nullable private final Boolean _lineUp;
     @Nullable private final Double _speed;
 
     @JsonCreator
     @VisibleForTesting
     InterfaceRuntimeData(
         @Nullable @JsonProperty(PROP_BANDWIDTH) Double bandwidth,
+        @Nullable @JsonProperty(PROP_LINE_UP) Boolean lineUp,
         @Nullable @JsonProperty(PROP_SPEED) Double speed) {
       _bandwidth = bandwidth;
+      _lineUp = lineUp;
       _speed = speed;
     }
 
@@ -39,6 +44,12 @@ public final class SnapshotRuntimeData {
     @Nullable
     public Double getBandwidth() {
       return _bandwidth;
+    }
+
+    @JsonProperty(PROP_LINE_UP)
+    @Nullable
+    public Boolean getLineUp() {
+      return _lineUp;
     }
 
     @JsonProperty(PROP_SPEED)
@@ -55,12 +66,14 @@ public final class SnapshotRuntimeData {
         return false;
       }
       InterfaceRuntimeData o = (InterfaceRuntimeData) obj;
-      return Objects.equals(_bandwidth, o._bandwidth) && Objects.equals(_speed, o._speed);
+      return Objects.equals(_bandwidth, o._bandwidth)
+          && Objects.equals(_lineUp, o._lineUp)
+          && Objects.equals(_speed, o._speed);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_bandwidth, _speed);
+      return Objects.hash(_bandwidth, _lineUp, _speed);
     }
   }
 
