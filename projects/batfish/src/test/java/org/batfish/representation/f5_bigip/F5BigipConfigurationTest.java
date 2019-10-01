@@ -7,9 +7,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
@@ -127,5 +131,35 @@ public class F5BigipConfigurationTest {
             ReferenceBook.builder(refbookName)
                 .setAddressGroups(ImmutableList.of(toAddressGroup(v1)))
                 .build()));
+  }
+
+  /** Test the case of a vlan with multiple selves and addresses */
+  @Test
+  public void testMultipleVlanAddresses() {
+    F5BigipConfiguration f5Config = new F5BigipConfiguration();
+    f5Config.setHostname("node");
+    f5Config.setVendor(ConfigurationFormat.F5_BIGIP_STRUCTURED);
+
+    String vlanName = "vlan10";
+    f5Config.getInterfaces().put("vlan10", new Interface(vlanName));
+
+    Self s1 = new Self("s1");
+    s1.setVlan(vlanName);
+    ConcreteInterfaceAddress a1 = ConcreteInterfaceAddress.parse("1.1.1.1/24");
+    s1.setAddress(a1);
+
+    Self s2 = new Self("s2");
+    s2.setVlan(vlanName);
+    ConcreteInterfaceAddress a2 = ConcreteInterfaceAddress.parse("1.1.1.2/24");
+    s2.setAddress(a2);
+
+    f5Config.getSelves().putAll(ImmutableMap.of(s1.getName(), s1, s2.getName(), s2));
+
+    Configuration configuration =
+        Iterables.getOnlyElement(f5Config.toVendorIndependentConfigurations());
+
+    org.batfish.datamodel.Interface iface = configuration.getAllInterfaces().get(vlanName);
+
+    assertThat(iface.getAllAddresses(), equalTo(ImmutableSet.of(a1, a2)));
   }
 }
