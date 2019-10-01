@@ -1080,7 +1080,6 @@ public class OspfTest {
     // actual mask length
     assertRoute(
         routes, OSPF, "listener", Prefix.parse("192.168.61.4/32"), 11, Ip.parse("14.2.0.2"));
-    assertRoute(
-        routes, OSPF, "listener", Prefix.parse("192.168.61.0/24"), 11, Ip.parse("14.2.0.2"));
+    assertNoRoute(routes, "listener", Prefix.parse("192.168.61.0/24"));
   }
 }
