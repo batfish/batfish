@@ -64,3 +64,10 @@ junit_tests(
         "@junit//:compile",
     ],
 )
+
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+
+pmd_test(
+    name = "pmd",
+    lib = ":minesweeper",
+)
