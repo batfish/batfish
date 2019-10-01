@@ -54,6 +54,7 @@ import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -65,6 +66,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -1140,11 +1142,45 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       if (iface.getVrf() == null) {
         orphanedInterfaces.put(iface.getName(), iface);
         iface.setVrf(nullVrf);
-        iface.setActive(false);
-        _w.redFlag(
-            String.format(
-                "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
-                iface.getName(), nullVrf.getName()));
+        if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
+          // This is a child interface. Just shut it down.
+          iface.setActive(false);
+          _w.redFlag(
+              String.format(
+                  "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
+                  iface.getName(), nullVrf.getName()));
+        } else {
+          // This is a parent interface. We can't shut it down, so instead we must just clear L2/L3
+          // data.
+          boolean warn = false;
+          if (iface.getAccessVlan() != null) {
+            warn = true;
+            iface.setAccessVlan(null);
+          }
+          if (iface.getAddress() != null) {
+            warn = true;
+            iface.setAddress(null);
+          }
+          if (!iface.getAllAddresses().isEmpty()) {
+            warn = true;
+            iface.setAllAddresses(ImmutableSortedSet.of());
+          }
+          if (!iface.getAllowedVlans().isEmpty()) {
+            warn = true;
+            iface.setAllowedVlans(IntegerSpace.EMPTY);
+          }
+          if (iface.getSwitchportMode() != SwitchportMode.NONE) {
+            warn = true;
+            iface.setSwitchportMode(SwitchportMode.NONE);
+          }
+          // Only warn if some L2/L3 data actually set.
+          if (warn) {
+            _w.redFlag(
+                String.format(
+                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3 data.",
+                    iface.getName(), nullVrf.getName()));
+          }
+        }
       }
     }
     if (orphanedInterfaces.size() > 0) {
