@@ -1064,8 +1064,6 @@ public class OspfTest {
 
   @Test
   public void testLoopbackRoutes() throws IOException {
-    // we are expecting routes for both /32 of Loopback addresss and also for the actual network
-    // address
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -1077,7 +1075,9 @@ public class OspfTest {
     IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
-    System.out.println();
+
+    // expecting a /32 route to the loopback's address in addition to route generated using the
+    // actual mask length
     assertRoute(
         routes, OSPF, "listener", Prefix.parse("192.168.61.4/32"), 11, Ip.parse("14.2.0.2"));
     assertRoute(
