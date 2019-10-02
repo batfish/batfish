@@ -30,10 +30,6 @@ public class MockSpecifierContext implements SpecifierContext {
 
     private @Nonnull SortedSet<NodeRoleDimension> _nodeRoleDimensions = ImmutableSortedSet.of();
 
-    private @Nonnull IpSpace _snapshotOwnedIps;
-
-    private @Nonnull Map<String, Map<String, IpSpace>> _vrfOwnedIps = ImmutableMap.of();
-
     private Builder() {}
 
     public Builder setConfigs(Map<String, Configuration> configs) {
@@ -46,8 +42,9 @@ public class MockSpecifierContext implements SpecifierContext {
       return this;
     }
 
-    public Builder setInterfaceLinkOwnedIps(Map<String, Map<String, IpSpace>> interfaceLinkOwnedIps) {
-      _interfaceOwnedIps = interfaceLinkOwnedIps;
+    public Builder setInterfaceLinkOwnedIps(
+        Map<String, Map<String, IpSpace>> interfaceLinkOwnedIps) {
+      _interfaceLinkOwnedIps = interfaceLinkOwnedIps;
       return this;
     }
 
@@ -58,16 +55,6 @@ public class MockSpecifierContext implements SpecifierContext {
 
     public Builder setReferenceBooks(SortedSet<ReferenceBook> referenceBooks) {
       _referenceBooks = ImmutableSortedSet.copyOf(referenceBooks);
-      return this;
-    }
-
-    public Builder setSnapshotOwnedIps(IpSpace snapshotOwnedIps) {
-      _snapshotOwnedIps = snapshotOwnedIps;
-      return this;
-    }
-
-    public Builder setVrfOwnedIps(Map<String, Map<String, IpSpace>> vrfOwnedIps) {
-      _vrfOwnedIps = vrfOwnedIps;
       return this;
     }
 
@@ -89,15 +76,12 @@ public class MockSpecifierContext implements SpecifierContext {
 
   private final @Nonnull SortedSet<ReferenceBook> _referenceBooks;
 
-  private final @Nonnull IpSpace _snapshotOwnedIps;
-
   private MockSpecifierContext(Builder builder) {
     _referenceBooks = builder._referenceBooks;
     _configs = builder._configs;
     _interfaceOwnedIps = builder._interfaceOwnedIps;
     _interfaceLinkOwnedIps = builder._interfaceLinkOwnedIps;
     _nodeRoleDimensions = builder._nodeRoleDimensions;
-    _snapshotOwnedIps = builder._snapshotOwnedIps;
   }
 
   @Override
@@ -116,11 +100,6 @@ public class MockSpecifierContext implements SpecifierContext {
   @Override
   public Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps() {
     return _interfaceLinkOwnedIps;
-  }
-
-  @Override
-  public IpSpace getSnapshotDeviceOwnedIps() {
-    return _snapshotOwnedIps;
   }
 
   @Override

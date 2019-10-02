@@ -51,7 +51,7 @@ public interface SpecifierContext {
 
   /**
    * @return the {@link IpSpace}s owned by the link connected to each interface in the network.
-   * Mapping: hostname -&gt; interface name -&gt; IpSpace.
+   *     Mapping: hostname -&gt; interface name -&gt; IpSpace.
    */
   @Nonnull
   Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps();
@@ -68,7 +68,4 @@ public interface SpecifierContext {
         .getOrDefault(hostname, ImmutableMap.of())
         .getOrDefault(iface, EmptyIpSpace.INSTANCE);
   }
-
-  /** @return the {@link IpSpace} of IP addresses owned any device in the network. */
-  IpSpace getSnapshotDeviceOwnedIps();
 }

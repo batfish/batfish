@@ -35,9 +35,4 @@ public class TestSpecifierContext implements SpecifierContext {
   public Optional<ReferenceBook> getReferenceBook(String bookName) {
     throw new UnsupportedOperationException();
   }
-
-  @Override
-  public IpSpace getSnapshotDeviceOwnedIps() {
-    throw new UnsupportedOperationException();
-  }
 }
