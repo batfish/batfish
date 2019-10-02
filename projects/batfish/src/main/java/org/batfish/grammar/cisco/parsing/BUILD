@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+load("@//skylark:pmd_test.bzl", "pmd_test")
+
 java_library(
     name = "cisco_base_parser",
     srcs = [
@@ -12,4 +14,9 @@ java_library(
         "@com_google_guava_guava//jar",
         "@jsr305//:compile",
     ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":cisco_base_parser",
 )

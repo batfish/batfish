@@ -139,6 +139,7 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
   private int _lastTokenType = -1;
   private int _secondToLastTokenType = -1;
 
+  @Override
   public @Nonnull String printStateVariables() {
     StringBuilder sb = new StringBuilder();
     sb.append("_asa: " + _asa + "\n");
