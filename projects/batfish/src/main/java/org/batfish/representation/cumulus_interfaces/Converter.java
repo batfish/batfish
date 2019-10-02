@@ -142,17 +142,10 @@ public final class Converter {
         .collect(toImmutableMap(Vxlan::getName, Function.identity()));
   }
 
-  public static boolean isPhysicalInterfaceType(String ifaceName) {
-    if (PHYSICAL_INTERFACE_PATTERN.matcher(ifaceName).matches()) {
-      return true;
-    }
-    return false;
-  }
-
   @VisibleForTesting
   CumulusInterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
-    if (isPhysicalInterfaceType(name)) {
+    if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
       return CumulusInterfaceType.PHYSICAL;
     }
 

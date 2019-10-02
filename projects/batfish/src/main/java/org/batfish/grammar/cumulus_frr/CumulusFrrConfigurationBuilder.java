@@ -11,6 +11,7 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
+import static org.batfish.representation.cumulus_interfaces.Interface.isPhysicalInterfaceType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -116,7 +117,6 @@ import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
-import org.batfish.representation.cumulus_interfaces.Converter;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
   private final CumulusNcluConfiguration _c;
@@ -325,7 +325,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       CumulusInterfaceType type = null;
       if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
         type = CumulusInterfaceType.LOOPBACK;
-      } else if (Converter.isPhysicalInterfaceType(name)) {
+      } else if (isPhysicalInterfaceType(name)) {
         type = CumulusInterfaceType.PHYSICAL;
       } else {
         _w.addWarning(
