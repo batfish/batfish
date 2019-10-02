@@ -123,6 +123,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
 
   private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
+  private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
   /**
    * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
    */
@@ -1220,14 +1221,37 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     }
   }
 
+  /**
+   * Logic of inferring router ID for Zebra based system
+   * (https://github.com/coreswitch/zebra/blob/master/docs/router-id.md):
+   *
+   * <p>When IPv4 address is assigned to the loopback interface (other than 127.0.0.1 or IP address
+   * belongs to network 127.0.0.0/8), the biggest IPv4 address is used as a Router ID.
+   *
+   * <p>Otherwise, biggest IP Address among all of the interfaces is used as a Router ID.
+   *
+   * <p>Otherwise, 0.0.0.0 is used (as tested on GNS3).
+   */
   @VisibleForTesting
   Ip inferRouteId() {
-    // https://github.com/coreswitch/zebra/blob/master/docs/router-id.md
-    // TODO: checking physical interfaces and largest lo IP
-    if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
-      return _loopback.getAddresses().get(0).getIp();
+    if (_loopback.getConfigured()) {
+      Optional<ConcreteInterfaceAddress> maxLoIp =
+          _loopback.getAddresses().stream()
+              .filter(addr -> !LOOPBACK_PREFIX.containsIp(addr.getIp()))
+              .max(ConcreteInterfaceAddress::compareTo);
+      if (maxLoIp.isPresent()) {
+        return maxLoIp.get().getIp();
+      }
     }
-    return Ip.parse("0.0.0.0");
+
+    Optional<ConcreteInterfaceAddress> biggestInterfaceIp =
+        _interfaces.values().stream()
+            .flatMap(iface -> iface.getIpAddresses().stream())
+            .max(InterfaceAddress::compareTo);
+
+    return biggestInterfaceIp
+        .map(ConcreteInterfaceAddress::getIp)
+        .orElseGet(() -> Ip.parse("0.0.0.0"));
   }
 
   /**
