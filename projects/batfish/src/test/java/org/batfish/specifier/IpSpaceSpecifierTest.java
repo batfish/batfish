@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
@@ -23,6 +22,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
@@ -40,6 +40,12 @@ public class IpSpaceSpecifierTest {
   private static final Interface _i1;
   private static final Interface _i2;
   private static final Interface _i3;
+
+  private static final Ip I1_OWNED_IP = Ip.parse("8.0.0.1");
+  private static final Ip I2_OWNED_IP = Ip.parse("8.0.0.2");
+
+  private static final Ip I1_LINK_OWNED_IP = Ip.parse("8.0.0.3");
+  private static final Ip I2_LINK_OWNED_IP = Ip.parse("8.0.0.4");
 
   static {
     NetworkFactory nf = new NetworkFactory();
@@ -75,15 +81,21 @@ public class IpSpaceSpecifierTest {
                     _c1.getHostname(),
                     ImmutableMap.of(
                         _i1.getName(),
-                        _i1.getConcreteAddress().getIp().toIpSpace(),
+                        I1_OWNED_IP.toIpSpace(),
                         _i2.getName(),
-                        _i2.getConcreteAddress().getIp().toIpSpace(),
+                        I2_OWNED_IP.toIpSpace(),
                         _i3.getName(),
                         EmptyIpSpace.INSTANCE)))
-            .setSnapshotOwnedIps(
-                AclIpSpace.union(
-                    _i1.getConcreteAddress().getIp().toIpSpace(),
-                    _i2.getConcreteAddress().getIp().toIpSpace()))
+            .setInterfaceLinkOwnedIps(
+                ImmutableMap.of(
+                    _c1.getHostname(),
+                    ImmutableMap.of(
+                        _i1.getName(),
+                        I1_LINK_OWNED_IP.toIpSpace(),
+                        _i2.getName(),
+                        I2_LINK_OWNED_IP.toIpSpace(),
+                        _i3.getName(),
+                        EmptyIpSpace.INSTANCE)))
             .build();
 
     _allLocations =
@@ -115,26 +127,13 @@ public class IpSpaceSpecifierTest {
     assertThat(
         assignment,
         hasEntry(
-            containsIp(Ip.parse("1.0.0.1")),
+            containsIp(I1_OWNED_IP),
             contains(new InterfaceLocation(_i1.getOwner().getHostname(), _i1.getName()))));
 
     assertThat(
         assignment,
         hasEntry(
-            allOf(
-                // contains a host IP
-                containsIp(Ip.parse("1.0.0.3")),
-                // does not contain i1's IP
-                not(containsIp(Ip.parse("1.0.0.1"))),
-                // does not contain i2's IP
-                not(containsIp(Ip.parse("1.0.0.2"))),
-                // does not include any IPs from 2.0.0.0/30 because it's not a host subnet.
-                not(
-                    anyOf(
-                        containsIp(Ip.parse("2.0.0.0")),
-                        containsIp(Ip.parse("2.0.0.1")),
-                        containsIp(Ip.parse("2.0.0.2")),
-                        containsIp(Ip.parse("2.0.0.3"))))),
+            containsIp(I1_LINK_OWNED_IP),
             contains(new InterfaceLinkLocation(_i1.getOwner().getHostname(), _i1.getName()))));
 
     // Locations that don't own any ipspace are assigned EmptyIpSpace.
@@ -155,6 +154,8 @@ public class IpSpaceSpecifierTest {
     IpSpaceAssignment assignment =
         new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
             .resolve(ImmutableSet.of(), _context);
-    assertThat(assignment, hasEntry(containsIp(Ip.parse("1.0.0.1")), equalTo(ImmutableSet.of())));
+    assertThat(assignment, hasEntry(allOf(
+        containsIp(I1_OWNED_IP),
+        containsIp(I2_OWNED_IP)), equalTo(ImmutableSet.of())));
   }
 }
