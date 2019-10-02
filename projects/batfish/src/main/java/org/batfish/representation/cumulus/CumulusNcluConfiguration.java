@@ -1103,14 +1103,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
-      if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
-        routerId = _loopback.getAddresses().get(0).getIp();
-      } else {
-        _w.redFlag(
-            String.format(
-                "Cannot configure BGP session for vrf '%s' because router-id is missing", vrfName));
-        return null;
-      }
+      routerId = inferRouteId();
     }
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
