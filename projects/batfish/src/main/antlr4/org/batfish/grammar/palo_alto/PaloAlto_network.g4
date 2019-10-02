@@ -75,7 +75,7 @@ cp_lifetime
         | MINUTES
         | SECONDS
     )
-    val = DEC
+    val = uint16
 ;
 
 s_network
@@ -264,7 +264,7 @@ snvr_routing_table
 
 snvrrt_admin_dist
 :
-    ADMIN_DIST distance = DEC
+    ADMIN_DIST distance = uint8
 ;
 
 snvrrt_destination
@@ -279,7 +279,7 @@ snvrrt_interface
 
 snvrrt_metric
 :
-    METRIC metric = DEC
+    METRIC metric = uint16
 ;
 
 snvrrt_nexthop
