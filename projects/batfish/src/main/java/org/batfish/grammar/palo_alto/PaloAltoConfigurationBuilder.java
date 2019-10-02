@@ -76,8 +76,15 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_install_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_router_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgproa_aggregate_medContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprog_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprom_always_compare_medContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprom_deterministic_med_comparisonContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_authenticationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryptionContext;
@@ -434,8 +441,44 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitBgp_enable(Bgp_enableContext ctx) {
+    _currentBgpVr.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgp_install_route(Bgp_install_routeContext ctx) {
+    _currentBgpVr.setInstallRoute(toBoolean(ctx.yn));
+  }
+
+  @Override
   public void exitBgp_local_as(Bgp_local_asContext ctx) {
     toLocalAs(ctx, ctx.asn).ifPresent(_currentBgpVr::setLocalAs);
+  }
+
+  @Override
+  public void exitBgp_reject_default_route(Bgp_reject_default_routeContext ctx) {
+    _currentBgpVr.setRejectDefaultRoute(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgproa_aggregate_med(Bgproa_aggregate_medContext ctx) {
+    _currentBgpVr.getRoutingOptions().setAggregateMed(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgprog_enable(Bgprog_enableContext ctx) {
+    _currentBgpVr.getRoutingOptions().setGracefulRestartEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgprom_always_compare_med(Bgprom_always_compare_medContext ctx) {
+    _currentBgpVr.getRoutingOptions().setAlwaysCompareMed(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgprom_deterministic_med_comparison(
+      Bgprom_deterministic_med_comparisonContext ctx) {
+    _currentBgpVr.getRoutingOptions().setDeterministicMedComparison(toBoolean(ctx.yn));
   }
 
   @Override
