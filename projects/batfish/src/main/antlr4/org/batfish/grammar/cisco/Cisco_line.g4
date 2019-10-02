@@ -149,7 +149,7 @@ l_transport
 
 l_vacant_message
 :
-  VACANT_MESSAGE ESCAPE_C ~ESCAPE_C* ESCAPE_C NEWLINE
+  VACANT_MESSAGE message = ios_delimited_banner NEWLINE
 ;
 
 lc_null

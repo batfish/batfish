@@ -3,9 +3,8 @@ hostname "cadant_banner"
 #
 configure
 banner login
-****************************
-* Arris CADANT banner text *
-****************************
+Some text
+Some more text
 /end
 #
 

@@ -9,7 +9,6 @@ import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.nio.file.Paths;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,9 +53,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
 
-  private static final Pattern BANNER_PATTERN =
-      Pattern.compile("(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
-
   private static final Set<ConfigurationFormat> UNIMPLEMENTED_FORMATS =
       ImmutableSet.of(
           ConfigurationFormat.ALCATEL_AOS,
@@ -67,32 +63,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ConfigurationFormat.MRV_COMMANDS,
           ConfigurationFormat.MSS,
           ConfigurationFormat.VXWORKS);
-
-  private static String preprocessBanner(String fileText, ConfigurationFormat format) {
-    if (format == ConfigurationFormat.CADANT) {
-      return fileText;
-    }
-    Matcher matcher = BANNER_PATTERN.matcher(fileText);
-    if (matcher.find()) {
-      int delimiterIndex = matcher.start(1);
-      char delimiter = fileText.charAt(delimiterIndex);
-      String delimiterText = (delimiter == '^' ? "\\^" : ("[" + delimiter + "]"));
-      Pattern finalDelimiterPattern = Pattern.compile("(?m)[" + delimiterText + "][\r\n]");
-      Matcher finalDelimiterMatcher = finalDelimiterPattern.matcher(fileText);
-      if (finalDelimiterMatcher.find(delimiterIndex + 1)) {
-        int finalDelimiterIndex = finalDelimiterMatcher.start();
-        String beforeDelimiter = fileText.substring(0, delimiterIndex);
-        String betweenDelimiters = fileText.substring(delimiterIndex + 1, finalDelimiterIndex);
-        String afterDelimiter = fileText.substring(finalDelimiterIndex + 1);
-        String newFileText = beforeDelimiter + "^C" + betweenDelimiters + "^C" + afterDelimiter;
-        return newFileText;
-      } else {
-        throw new BatfishException("Invalid banner");
-      }
-    } else {
-      return fileText;
-    }
-  }
 
   /** Information about duplicate hostnames is collected here */
   private Multimap<String, String> _duplicateHostnames;
@@ -186,22 +156,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         case FORCE10:
         case FOUNDRY:
           {
-            String newFileText = _fileText;
-            String fileText;
-            _logger.info("\tPreprocessing...");
-            do {
-              fileText = newFileText;
-              try {
-                newFileText = preprocessBanner(fileText, format);
-              } catch (BatfishException e) {
-                throw new BatfishException("Error preprocessing banner", e);
-              }
-            } while (!newFileText.equals(fileText));
-            _logger.info("OK\n");
-            CiscoCombinedParser ciscoParser =
-                new CiscoCombinedParser(newFileText, _settings, format);
+            CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText, _settings, format);
             combinedParser = ciscoParser;
-            extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
+            extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser, format, _warnings);
             break;
           }
 

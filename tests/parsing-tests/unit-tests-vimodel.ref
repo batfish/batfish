@@ -2249,7 +2249,7 @@
         }
       },
       "asa_banner" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_ASA",
         "name" : "asa_banner",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -2257,11 +2257,16 @@
         "vendorFamily" : {
           "cisco" : {
             "banners" : {
-              "login" : "**************************************************\n\nYou are connected to HOSTNAME If you are\n\nexperiencing any problems, please contact XXX at\n\nsomeone@somewhere.com or XXX-XXX-XXX\n\n**************************************************\n"
+              "login" : "**************************************************\nYou are connected to HOSTNAME If you are\nexperiencing any problems, please contact XXX at\nsomeone@somewhere.com or XXX-XXX-XXX\n**************************************************"
             },
             "hostname" : "asa_banner",
-            "logging" : {
-              "on" : true
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
             }
           }
         },
@@ -2669,59 +2674,6 @@
                 "lineType" : "SSH"
               }
             },
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default"
-          }
-        }
-      },
-      "banner" : {
-        "configurationFormat" : "CISCO_IOS_XR",
-        "name" : "banner",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "banners" : {
-              "asdm" : "********************************************************************************\n\n*THIS IS A PRIVATE COMPUTER SYSTEM. SUPER SECRET SAUCE    *\n\n********************************************************************************\n\n",
-              "login" : "\nTHIS IS AN ARISTA STYLE BANNER\n\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n\nEOF\n\n^C\n***************************************************************************\n*                                                                         *\n*  This banner was seen in IOS XR                                         *\n*  It ends with a caret                                                   *\n*                                                                         *\n***************************************************************************\n^C\n\n",
-              "motd" : "^C\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n\nUnauthorized access and/or use prohibited.\nAll access and/or use subject to monitoring.\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n^C\n\n^C\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a^C\n\n^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n\n^=================================================================================                                             \n                       BLAH BLAH\n\n                             BOOP\n=================================================================================^\n\n"
-            },
-            "hostname" : "banner",
-            "logging" : {
-              "on" : true,
-              "trap" : {
-                "severity" : "informational",
-                "severityNum" : 6
-              }
-            }
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default"
-          }
-        }
-      },
-      "banner_dos" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "banner_dos",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "banners" : {
-              "login" : "\nTHIS IS AN ARISTA STYLE BANNER\n\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n\nEOF\n",
-              "motd" : "^C\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n\nUnauthorized access and/or use prohibited.\nAll access and/or use subject to monitoring.\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n^C\n\n^C\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a^C\n\n^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n"
-            },
-            "hostname" : "banner_dos",
             "logging" : {
               "on" : true
             }
@@ -4256,7 +4208,7 @@
         "vendorFamily" : {
           "cisco" : {
             "banners" : {
-              "login" : "\n****************************\n* Arris CADANT banner text *\n****************************\n/end\n"
+              "login" : "Some text\nSome more text\n"
             },
             "hostname" : "cadant_banner"
           }
@@ -18441,6 +18393,54 @@
           }
         }
       },
+      "ios_banner" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_banner",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "banners" : {
+              "login" : "\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a",
+              "motd" : "\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n"
+            },
+            "hostname" : "ios_banner",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "ios_banner_dos" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_banner_dos",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "banners" : {
+              "login" : "\r\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\r\nIt has a has (#) character in it\r\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\r\nUnauthorized a",
+              "motd" : "\r\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\r\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\r\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\r\n"
+            },
+            "hostname" : "ios_banner_dos",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "ios_bfd" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_bfd",
@@ -19439,7 +19439,7 @@
         "vendorFamily" : {
           "cisco" : {
             "banners" : {
-              "login" : "^C\n\n***************************************************************************\n*                                                                         *\n*  This router is : ios_xr_multipart                                      *\n*                                                                         * \n***************************************************************************\n^C\n\n"
+              "login" : "\n\n***************************************************************************\n*                                                                         *\n*  This router is : ios_xr_multipart                                      *\n*                                                                         * \n***************************************************************************\n"
             },
             "hostname" : "ios_xr_multipart"
           }

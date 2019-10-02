@@ -20,45 +20,6 @@ address_family_footer
    )?
 ;
 
-banner
-:
-   (
-      (
-         (
-            ESCAPE_C ~ESCAPE_C* ESCAPE_C
-         )
-         |
-         (
-            POUND ~POUND* POUND
-         )
-         |
-         (
-            NEWLINE ~( EOF_LITERAL | LINE_CADANT )* EOF_LITERAL
-         )
-         |
-         (
-            NEWLINE LINE_CADANT* END_CADANT
-         )
-         |
-         (
-            ASA_BANNER_LINE
-         )
-      )
-   ) NEWLINE?
-;
-
-banner_type
-:
-   ASDM
-   | CONFIG_SAVE
-   | EXEC
-   | INCOMING
-   | LOGIN
-   | MOTD
-   | PROMPT_TIMEOUT
-   | SLIP_PPP
-;
-
 bgp_asn
 :
     asn = DEC
@@ -246,6 +207,11 @@ interface_name
          ) DEC
       )*
    )
+;
+
+ios_delimited_banner
+:
+  BANNER_DELIMITER_IOS body = BANNER_BODY? BANNER_DELIMITER_IOS
 ;
 
 ip_hostname

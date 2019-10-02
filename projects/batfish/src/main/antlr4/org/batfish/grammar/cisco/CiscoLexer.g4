@@ -1,53 +1,7 @@
 lexer grammar CiscoLexer;
 
 options {
-   superClass = 'org.batfish.grammar.BatfishLexer';
-}
-
-@members {
-private int lastTokenType = -1;
-private boolean enableIPV6_ADDRESS = true;
-private boolean enableIP_ADDRESS = true;
-private boolean enableDEC = true;
-private boolean enableACL_NUM = false;
-private boolean enableCOMMUNITY_LIST_NUM = false;
-private boolean enableREGEX = false;
-private boolean _inAccessList = false;
-private boolean inCommunitySet = false;
-private boolean _asa = false;
-private boolean _foundry = false;
-private boolean _cadant = false;
-
-@Override
-public void emit(Token token) {
-    super.emit(token);
-    if (token.getChannel() != HIDDEN) {
-       lastTokenType = token.getType();
-    }
-}
-
-public void setAsa(boolean asa) {
-   _asa = asa;
-}
-
-public void setCadant(boolean cadant) {
-   _cadant = cadant;
-}
-
-public void setFoundry(boolean foundry) {
-   _foundry = foundry;
-}
-
-public String printStateVariables() {
-   StringBuilder sb = new StringBuilder();
-   sb.append("enableIPV6_ADDRESS: " + enableIPV6_ADDRESS + "\n");
-   sb.append("enableIP_ADDRESS: " + enableIP_ADDRESS + "\n");
-   sb.append("enableDEC: " + enableDEC + "\n");
-   sb.append("enableACL_NUM: " + enableACL_NUM+ "\n");
-   sb.append("enableCOMMUNITY_LIST_NUM: " + enableCOMMUNITY_LIST_NUM + "\n");
-   return sb.toString();
-}
-
+   superClass = 'org.batfish.grammar.cisco.parsing.CiscoBaseLexer';
 }
 
 tokens {
@@ -63,7 +17,10 @@ tokens {
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
-   ASA_BANNER_LINE,
+   BANNER_DELIMITER_CADANT,
+   BANNER_DELIMITER_EOS,
+   BANNER_DELIMITER_IOS,
+   BANNER_BODY,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
@@ -73,7 +30,6 @@ tokens {
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
-   LINE_CADANT,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
    PASSWORD_SEED,
@@ -90,7 +46,9 @@ tokens {
    VALUE,
    WIRED,
    WISPR
-} // Cisco Keywords
+} 
+
+// Cisco Keywords
 
 AAA
 :
@@ -165,7 +123,7 @@ ACCESS_GROUP
 ACCESS_LIST
 :
    'access-list'
-   {enableACL_NUM = true; enableDEC = false;_inAccessList = true;}
+   {_enableAclNum = true; _enableDec = false;_inAccessList = true;}
 
 ;
 
@@ -932,7 +890,7 @@ ARM_RF_DOMAIN_PROFILE
 ARP
 :
    'arp'
-   { enableIPV6_ADDRESS = false; }
+   { _enableIpv6Address = false; }
 
 ;
 
@@ -988,7 +946,7 @@ ASCII_AUTHENTICATION
 
 ASDM
 :
-   'asdm'
+  'asdm'
 ;
 
 ASDM_BUFFER_SIZE
@@ -1403,7 +1361,67 @@ BANDWIDTH_PERCENTAGE
 
 BANNER
 :
-   'banner' -> pushMode ( M_Banner )
+  'banner'
+;
+
+BANNER_IOS
+:
+  'banner' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+;
+
+BANNER_ASDM_ASA
+:
+  'banner' F_Whitespace+ 'asdm' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
+;
+
+BANNER_CONFIG_SAVE_IOS
+:
+  'banner' F_Whitespace+ 'config-save' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+;
+
+BANNER_EXEC_ASA
+:
+  'banner' F_Whitespace+ 'exec' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
+;
+
+BANNER_EXEC_IOS
+:
+  'banner' F_Whitespace+ 'exec' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+;
+
+BANNER_INCOMING_IOS
+:
+  'banner' F_Whitespace+ 'incoming' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+;
+
+BANNER_LOGIN_ASA
+:
+  'banner' F_Whitespace+ 'login' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
+;
+
+BANNER_LOGIN_IOS
+:
+  'banner' F_Whitespace+ 'login' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+;
+
+BANNER_MOTD_ASA
+:
+  'banner' F_Whitespace+ 'motd' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
+;
+
+BANNER_MOTD_IOS
+:
+  'banner' F_Whitespace+ 'motd' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+;
+
+BANNER_PROMPT_TIMEOUT_IOS
+:
+  'banner' F_Whitespace+ 'prompt-timeout' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+;
+
+BANNER_SLIP_PPP_IOS
+:
+  'banner' F_Whitespace+ 'slip-ppp' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BASE
@@ -2229,7 +2247,7 @@ COMMAND
 COMMANDER_ADDRESS
 :
    'commander-address'
-   { enableIPV6_ADDRESS = false; }
+   { _enableIpv6Address = false; }
 
 ;
 
@@ -2261,7 +2279,7 @@ COMMON_NAME
 COMMUNITY
 :
    'community'
-   { enableIPV6_ADDRESS = false; }
+   { _enableIpv6Address = false; }
 
 ;
 
@@ -2269,9 +2287,9 @@ COMMUNITY_LIST
 :
    'community-list'
    {
-      enableIPV6_ADDRESS = false;
-      enableCOMMUNITY_LIST_NUM = true;
-      enableDEC = false;
+      _enableIpv6Address = false;
+      _enableCommunityListNum = true;
+      _enableDec = false;
    }
 
 ;
@@ -2285,8 +2303,8 @@ COMMUNITY_SET
 :
    'community-set'
    {
-      inCommunitySet = true;
-      enableIPV6_ADDRESS = false;
+      _inCommunitySet = true;
+      _enableIpv6Address = false;
    }
 
 ;
@@ -4065,7 +4083,7 @@ END_POLICY_MAP
 END_SET
 :
    'end-set'
-   { inCommunitySet = false; }
+   { _inCommunitySet = false; }
 
 ;
 
@@ -4120,11 +4138,6 @@ ENVIRONMENT
 ENVIRONMENT_MONITOR
 :
    'environment-monitor'
-;
-
-EOF_LITERAL
-:
-   'EOF'
 ;
 
 EOU
@@ -4405,7 +4418,7 @@ EXCLUDED_ADDRESS
 
 EXEC
 :
-   'exec'
+  'exec'
 ;
 
 EXEC_TIMEOUT
@@ -4522,7 +4535,7 @@ EXTCOMMUNITY
 :
    'extcommunity'
    {
-     if (lastTokenType == SET) {
+     if (lastTokenType() == SET) {
        pushMode(M_Extcommunity);
      }
    }
@@ -4541,7 +4554,7 @@ EXTEND
 EXTENDED
 :
    'extended'
-   { enableDEC = true; enableACL_NUM = false; }
+   { _enableDec = true; _enableAclNum = false; }
 
 ;
 
@@ -4758,7 +4771,7 @@ FILTER_LIST
 FIREWALL
 :
    'firewall'
-   { enableIPV6_ADDRESS = false; }
+   { _enableIpv6Address = false; }
 
 ;
 
@@ -6150,7 +6163,7 @@ INTERCEPT
 INTERFACE
 :
    'int' 'erface'?
-   { enableIPV6_ADDRESS = false; if (!_asa || lastTokenType == NEWLINE || lastTokenType == -1) {pushMode(M_Interface);}}
+   { _enableIpv6Address = false; if (!isAsa() || lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
 
 ;
 
@@ -7046,7 +7059,14 @@ LOGGING
 
 LOGIN
 :
-   'login'
+  'login'
+  {
+    if (isCadant()) {
+      pushMode(M_BannerCadant);
+    } else if (isEos()) {
+      pushMode(M_BannerEos);
+    }
+  }
 ;
 
 LOGIN_ATTEMPTS
@@ -9803,7 +9823,7 @@ PREFIX_LIST
 :
    'prefix-list'
    {
-     if (lastTokenType == ADDRESS) {
+     if (lastTokenType() == ADDRESS) {
        pushMode(M_Words);
      } else {
        pushMode(M_Name);
@@ -11088,7 +11108,7 @@ RTSP
 
 RULE
 :
-   'rule' {enableREGEX = true;}
+   'rule' {_enableRegex = true;}
 ;
 
 RULE_NAME
@@ -11870,7 +11890,7 @@ SNMP
 SNMP_SERVER_COMMUNITY
 :
    'snmp-server'
-   {(lastTokenType == NEWLINE || lastTokenType == -1)
+   {(lastTokenType() == NEWLINE || lastTokenType() == -1)
      && isWhitespace(_input.LA(1))
      && lookAheadStringSkipWhitespace("community ".length()).equals("community ")}?
    -> type ( SNMP_SERVER ) , pushMode ( M_SnmpServerCommunity )
@@ -12184,7 +12204,7 @@ STALE_ROUTE
 STANDARD
 :
    'standard'
-   { enableDEC = true; enableACL_NUM = false; }
+   { _enableDec = true; _enableAclNum = false; }
 
 ;
 
@@ -13630,7 +13650,17 @@ V6
 
 VACANT_MESSAGE
 :
-   'vacant-message' -> pushMode ( M_VacantMessageText )
+  'vacant-message'
+;
+
+VACANT_MESSAGE_BANNER_IOS
+:
+  'vacant-message' F_Whitespace+
+  {
+    if (lastTokenType() != NO) {
+      pushMode(M_BannerIosDelimiter);
+    }
+  } -> type(VACANT_MESSAGE)
 ;
 
 VACL
@@ -13971,7 +14001,7 @@ VPNV6
 VRF
 :
    'vrf'
-   {enableIPV6_ADDRESS = false;}
+   {_enableIpv6Address = false;}
 
 ;
 
@@ -14391,7 +14421,7 @@ POUND
 
 STANDARD_COMMUNITY
 :
-  F_StandardCommunity {!enableIPV6_ADDRESS}?
+  F_StandardCommunity {!_enableIpv6Address}?
 ;
 
 MAC_ADDRESS_LITERAL
@@ -14412,13 +14442,13 @@ VARIABLE
          F_Variable_RequiredVarChar
          (
             (
-               {!enableIPV6_ADDRESS}?
+               {!_enableIpv6Address}?
 
                F_Variable_VarChar*
             )
             |
             (
-               {enableIPV6_ADDRESS}?
+               {_enableIpv6Address}?
 
                F_Variable_VarChar_Ipv6*
             )
@@ -14428,14 +14458,14 @@ VARIABLE
       (
          (
             F_Variable_VarChar
-            {!enableIPV6_ADDRESS}?
+            {!_enableIpv6Address}?
 
             F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
          )
          |
          (
             F_Variable_VarChar_Ipv6
-            {enableIPV6_ADDRESS}?
+            {_enableIpv6Address}?
 
             F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar
             F_Variable_VarChar_Ipv6*
@@ -14443,13 +14473,13 @@ VARIABLE
       )
    )
    {
-      if (enableACL_NUM) {
-         enableACL_NUM = false;
-         enableDEC = true;
+      if (_enableAclNum) {
+         _enableAclNum = false;
+         _enableDec = true;
       }
-      if (enableCOMMUNITY_LIST_NUM) {
-         enableCOMMUNITY_LIST_NUM = false;
-         enableDEC = true;
+      if (_enableCommunityListNum) {
+         _enableCommunityListNum = false;
+         _enableDec = true;
       }
    }
 
@@ -14458,7 +14488,7 @@ VARIABLE
 ACL_NUM
 :
    F_Digit
-   {enableACL_NUM}?
+   {_enableAclNum}?
 
    F_Digit*
    {
@@ -14472,7 +14502,7 @@ ACL_NUM
 	else if (200 <= val && val <= 299) {
 		_type = ACL_NUM_PROTOCOL_TYPE_CODE;
 	}
-   else if (_foundry && 400 <= val && val <= 1399) {
+   else if (isFoundry() && 400 <= val && val <= 1399) {
       _type = ACL_NUM_FOUNDRY_L2;
    }
 	else if (600 <= val && val <= 699) {
@@ -14496,8 +14526,8 @@ ACL_NUM
 	else {
 		_type = ACL_NUM_OTHER;
 	}
-	enableDEC = true;
-	enableACL_NUM = false;
+	_enableDec = true;
+	_enableAclNum = false;
 }
 
 ;
@@ -14537,7 +14567,7 @@ BLANK_LINE
    (
       F_Whitespace
    )* F_Newline
-   {lastTokenType == NEWLINE}?
+   {lastTokenType() == NEWLINE}?
 
    F_Newline* -> channel ( HIDDEN )
 ;
@@ -14580,7 +14610,7 @@ COMMA
 COMMUNITY_LIST_NUM
 :
    F_Digit
-   {enableCOMMUNITY_LIST_NUM}?
+   {_enableCommunityListNum}?
 
    F_Digit*
    {
@@ -14591,20 +14621,31 @@ COMMUNITY_LIST_NUM
 		else if (100 <= val && val <= 500) {
 			_type = COMMUNITY_LIST_NUM_EXPANDED;
 		}
-		enableCOMMUNITY_LIST_NUM = false;
-		enableDEC = true;
+		_enableCommunityListNum = false;
+		_enableDec = true;
 	}
 
 ;
 
 COMMENT_LINE
 :
-   (
-      F_Whitespace
-   )* [!#]
-   {lastTokenType == NEWLINE || lastTokenType == END_CADANT || lastTokenType == -1}?
-
-   F_NonNewline* F_Newline+ -> channel ( HIDDEN )
+  (
+    F_Whitespace
+  )* [!#]
+  {
+    // TODO: in JDK 12. can use inline switch case
+    ((java.util.function.Supplier<Boolean>)() -> {
+      switch(lastTokenType()) {
+        case -1:
+        case BANNER_DELIMITER_CADANT:
+        case BANNER_DELIMITER_EOS:
+        case NEWLINE:
+          return true;
+        default:
+          return false;
+      }}).get()
+  }?
+  F_NonNewline* F_Newline+ -> channel ( HIDDEN )
 ;
 
 COMMENT_TAIL
@@ -14620,7 +14661,7 @@ ARISTA_PAGINATION_DISABLED
 ARISTA_PROMPT_SHOW_RUN
 :
    F_NonWhitespace+ [>#]
-   {lastTokenType == NEWLINE || lastTokenType == -1}?
+   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
 
    'show' F_Whitespace+ 'run' ( 'n' ( 'i' ( 'n' ( 'g' ( '-' ( 'c' ( 'o' ( 'n' ( 'f' ( 'i' 'g'? )? )? )? )? )? )? )? )? )? )? F_Whitespace* F_Newline+ -> channel ( HIDDEN )
 ;
@@ -14638,7 +14679,7 @@ DOLLAR
 DEC
 :
    F_Digit
-   {enableDEC}?
+   {_enableDec}?
 
    F_Digit*
 ;
@@ -14658,15 +14699,6 @@ EQUALS
    '='
 ;
 
-ESCAPE_C
-:
-   (
-      '^C'
-      | '\u0003'
-      | '#'
-   )
-;
-
 FLOAT
 :
    (
@@ -14681,38 +14713,37 @@ FORWARD_SLASH
 
 IP_ADDRESS
 :
-  F_IpAddress {enableIP_ADDRESS}?
+  F_IpAddress {_enableIpAddress}?
 ;
 
 IP_PREFIX
 :
-  F_IpPrefix {enableIP_ADDRESS}?
+  F_IpPrefix {_enableIpAddress}?
 ;
 
 IPV6_ADDRESS
 :
-  F_Ipv6Address {enableIPV6_ADDRESS}?
+  F_Ipv6Address {_enableIpv6Address}?
 ;
 
 IPV6_PREFIX
 :
-  F_Ipv6Prefix {enableIPV6_ADDRESS}?
+  F_Ipv6Prefix {_enableIpv6Address}?
 ;
 
 NEWLINE
 :
-   F_Newline+
-   {
-      if (!inCommunitySet) {
-   	  enableIPV6_ADDRESS = true;
+  F_Newline+
+  {
+    if (!_inCommunitySet) {
+   	  _enableIpv6Address = true;
    	}
-   	enableIP_ADDRESS = true;
-      enableDEC = true;
-      enableREGEX = false;
-      enableACL_NUM = false;
-      _inAccessList = false;
+   	_enableIpAddress = true;
+    _enableDec = true;
+    _enableRegex = false;
+    _enableAclNum = false;
+    _inAccessList = false;
   }
-
 ;
 
 PAREN_LEFT
@@ -14742,7 +14773,7 @@ PLUS
 
 REGEX
 :
-   '/' {enableREGEX}?
+   '/' {_enableRegex}?
    (
       ~('/' | '\\')
       |
@@ -15029,7 +15060,8 @@ F_LowerCaseLetter
 fragment
 F_Newline
 :
-   [\n\r]
+  '\r' '\n'?
+  | '\n'
 ;
 
 fragment
@@ -15244,7 +15276,12 @@ M_Authentication_DOUBLE_QUOTE
 
 M_Authentication_BANNER
 :
-   'banner' -> type ( BANNER ) , mode ( M_BannerText )
+  'banner' F_Whitespace+
+  {
+    if (isIos()) {
+      mode(M_BannerIosDelimiter);
+    }
+  } -> type ( BANNER )
 ;
 
 M_Authentication_ARAP
@@ -15497,114 +15534,138 @@ M_AuthenticationUsernamePromptText_DOUBLE_QUOTE
    '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
-mode M_Banner;
+mode M_BannerAsa;
+// Initial whitespace character after banner type should have been consumed if present.
+// Further whitespace is part of body.
 
-M_Banner_ASDM
+M_BannerAsa_BANNER_BODY
 :
-   'asdm' -> type ( ASDM ), mode ( M_BannerText )
+  F_NonNewline+ -> type(BANNER_BODY)
 ;
 
-M_Banner_CONFIG_SAVE
+M_BannerAsa_NEWLINE
 :
-   'config-save' -> type ( CONFIG_SAVE ) , mode ( M_BannerText )
-;
-
-M_Banner_EXEC
-:
-   'exec' -> type ( EXEC ) , mode ( M_BannerText )
-;
-
-M_Banner_INCOMING
-:
-   'incoming' -> type ( INCOMING ) , mode ( M_BannerText )
-;
-
-M_Banner_LOGIN
-:
-   'login' -> type ( LOGIN ) , mode ( M_BannerText )
-;
-
-M_Banner_MOTD
-:
-   'motd' -> type ( MOTD ) , mode ( M_BannerText )
-;
-
-M_Banner_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_Banner_NONE
-:
-   'none' -> type ( NONE )
-;
-
-M_Banner_PROMPT_TIMEOUT
-:
-   'prompt-timeout' -> type ( PROMPT_TIMEOUT ) , mode ( M_BannerText )
-;
-
-M_Banner_SLIP_PPP
-:
-   'slip-ppp' -> type ( SLIP_PPP ) , mode ( M_BannerText )
-;
-
-M_Banner_VALUE
-:
-   'value' -> type ( VALUE ) , mode ( M_Description )
-;
-
-M_Banner_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
+  F_Newline+ -> type(NEWLINE), popMode
 ;
 
 mode M_BannerCadant;
 
-M_BannerCadant_END_CADANT
+M_BannerCadant_NEWLINE
 :
-   '/end' F_Newline -> type ( END_CADANT ) , popMode
+  // Consume single newline. Subsequent newlines are part of banner.
+  F_Newline -> type(NEWLINE), mode(M_BannerCadantText)
 ;
 
-M_BannerCadant_LINE_CADANT
+M_BannerCadant_WS
 :
-   F_NonNewline* F_Newline+ -> type ( LINE_CADANT )
+  F_Whitespace+ -> channel(HIDDEN)
 ;
 
-mode M_BannerText;
+mode M_BannerCadantText;
 
-M_BannerText_WS
+M_BannerCadant_BANNER_DELIMITER_CADANT
 :
-   F_Whitespace+ -> channel ( HIDDEN )
+  '/end' F_Newline+ -> type(BANNER_DELIMITER_CADANT), popMode
 ;
 
-M_BannerText_ESCAPE_C
+M_BannerCadant_BODY
 :
-   (
-      '^C'
-      | '^'
-      | '\u0003'
-   ) {!_cadant}? -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
+  F_NonNewline* F_Newline+
+  {
+    if (bannerCadantDelimiterFollows()) {
+      setType(BANNER_BODY);
+    } else {
+      more();
+    }
+  }
 ;
 
-M_BannerText_HASH
+mode M_BannerEos;
+
+M_BannerEos_NEWLINE
 :
-   '#' {!_cadant}? -> type ( POUND ) , mode ( M_MOTD_HASH )
+  // Consume single newline. Subsequent newlines are part of banner.
+  F_Newline -> type(NEWLINE), mode(M_BannerEosText)
 ;
 
-M_BannerText_ASA_BANNER_LINE
+M_BannerEos_WS
 :
-   ~[#^\r\n \t\u000C\u00A0] F_NonNewline* -> type ( ASA_BANNER_LINE ) , popMode
+  F_Whitespace+ -> channel(HIDDEN)
 ;
 
-M_BannerText_NEWLINE
+mode M_BannerEosText;
+
+M_BannerEos_BANNER_DELIMITER_EOS
 :
-   F_Newline {!_cadant}? F_Newline* -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
+  'EOF' F_Newline+ -> type(BANNER_DELIMITER_EOS), popMode
 ;
 
-M_BannerText_NEWLINE_CADANT
+M_BannerEos_BODY
 :
-   F_Newline {_cadant}? F_Newline* -> type ( NEWLINE ) , mode ( M_BannerCadant )
+  F_NonNewline* F_Newline+
+  {
+    if (bannerEosDelimiterFollows()) {
+      setType(BANNER_BODY);
+    } else {
+      more();
+    }
+  }
+;
+
+mode M_BannerIosDelimiter;
+// whitespace should have been consumed before entering this mode
+
+M_BannerIosDelimiter_BANNER_DELIMITER_IOS
+:
+  (
+    '^C'
+    | F_NonWhitespace
+  )
+  {
+    setBannerIosDelimiter();
+  } -> type(BANNER_DELIMITER_IOS), mode(M_BannerIosText)
+;
+
+M_BannerIosDelimiter_NEWLINE
+:
+  // illegal, but pop anyway and let parser deal with it
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+mode M_BannerIosText;
+
+M_BannerIosText_BANNER_DELIMITER_IOS
+:
+  {bannerIosDelimiterFollows()}?
+
+  .
+  {
+    unsetBannerIosDelimiter();
+  } -> type ( BANNER_DELIMITER_IOS ) , mode ( M_BannerIosCleanup )
+;
+
+M_BannerIosText_BODY
+:
+  .
+  {
+    if (bannerIosDelimiterFollows()) {
+      setType(BANNER_BODY);
+    } else {
+      more();
+    }
+  }
+;
+
+mode M_BannerIosCleanup;
+
+M_BannerIosCleanup_IGNORED
+:
+  F_NonNewline+ -> channel ( HIDDEN )
+;
+
+M_BannerIosCleanup_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 mode M_CadantSshKey;
@@ -16029,69 +16090,6 @@ M_ISO_Address_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
-mode M_MOTD_C;
-
-M_MOTD_C_ESCAPE_C
-:
-   (
-      '^C'
-      |
-      (
-         '^' F_Newline
-      )
-      | 'cC'
-      | '\u0003'
-   ) -> type ( ESCAPE_C ) , mode ( DEFAULT_MODE )
-;
-
-M_MOTD_C_MOTD
-:
-   (
-      (
-         '^' ~[^C\u0003\n\r]
-      )
-      |
-      (
-         'c' ~[^C\u0003]
-      )
-      | ~[c^\u0003]
-   )+
-;
-
-mode M_MOTD_EOF;
-
-M_MOTD_EOF_EOF
-:
-   'EOF' -> type ( EOF_LITERAL ) , mode ( DEFAULT_MODE )
-;
-
-M_MOTD_EOF_MOTD
-:
-   (
-      ~'E'
-      |
-      (
-         'E' ~'O'
-      )
-      |
-      (
-         'EO' ~'F'
-      )
-   )+
-;
-
-mode M_MOTD_HASH;
-
-M_MOTD_HASH_HASH
-:
-   '#' -> type ( POUND ) , mode ( DEFAULT_MODE )
-;
-
-M_MOTD_HASH_MOTD
-:
-   ~'#'+
-;
-
 mode M_Name;
 
 M_Name_NAME
@@ -16255,13 +16253,13 @@ M_RouteMap_VARIABLE
 :
    F_NonWhitespace+
    {
-      if (enableACL_NUM) {
-         enableACL_NUM = false;
-         enableDEC = true;
+      if (_enableAclNum) {
+         _enableAclNum = false;
+         _enableDec = true;
       }
-      if (enableCOMMUNITY_LIST_NUM) {
-         enableCOMMUNITY_LIST_NUM = false;
-         enableDEC = true;
+      if (_enableCommunityListNum) {
+         _enableCommunityListNum = false;
+         _enableDec = true;
       }
    }
    -> type ( VARIABLE ) , popMode
@@ -16340,26 +16338,6 @@ M_SshKey_NEWLINE
 M_SshKey_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_VacantMessageText;
-
-M_VacantMessage_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
-M_VacantMessage_ESCAPE_C
-:
-   (
-      '^C'
-      | '\u0003'
-   ) -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
-;
-
-M_VacantMessage_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 mode M_Words;
