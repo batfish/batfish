@@ -805,9 +805,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void convertLoopback() {
-    _interfaces.values().stream()
-        .filter(iface -> iface.getType() == CumulusInterfaceType.LOOPBACK)
-        .findAny()
+    Optional.ofNullable(_interfaces.get(LOOPBACK_INTERFACE_NAME))
         .ifPresent(iface -> populateLoInInterfacesToLoopback(iface, _loopback));
 
     org.batfish.datamodel.Interface newIface =
