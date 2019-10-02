@@ -6,6 +6,12 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
+bgp_local_pref
+:
+// 0-4294967295
+   uint32
+;
+
 vrp_bgp
 :
     BGP
@@ -76,8 +82,11 @@ bgp_routing_options
     ROUTING_OPTIONS
     (
         bgpro_aggregate
+        | bgpro_as_format
+        | bgpro_default_local_preference
         | bgpro_graceful_restart
         | bgpro_med
+        | bgpro_reflector_cluster_id
     )
 ;
 
@@ -92,6 +101,16 @@ bgpro_aggregate
 bgproa_aggregate_med
 :
     AGGREGATE_MED yn = yes_or_no
+;
+
+bgpro_as_format
+:
+    AS_FORMAT (TWO_BYTE | FOUR_BYTE)
+;
+
+bgpro_default_local_preference
+:
+    DEFAULT_LOCAL_PREFERENCE pref = bgp_local_pref
 ;
 
 bgpro_graceful_restart
@@ -124,4 +143,9 @@ bgprom_always_compare_med
 bgprom_deterministic_med_comparison
 :
     DETERMINISTIC_MED_COMPARISON yn = yes_or_no
+;
+
+bgpro_reflector_cluster_id
+:
+    REFLECTOR_CLUSTER_ID id = ip_address
 ;

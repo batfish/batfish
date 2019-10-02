@@ -48,6 +48,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -1004,6 +1005,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return newIface;
   }
 
+  private Optional<BgpProcess> toBgpProcess(VirtualRouter vr) {
+    BgpVr bgp = vr.getBgp();
+    if (bgp == null || !firstNonNull(bgp.getEnable(), Boolean.FALSE)) {
+      return Optional.empty();
+    }
+
+    Ip routerId = firstNonNull(bgp.getRouterId(), Ip.ZERO);
+    BgpProcess proc =
+        new BgpProcess(routerId, vr.getAdminDists().getEbgp(), vr.getAdminDists().getIbgp());
+    return Optional.of(proc);
+  }
+
   /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
   private Vrf toVrf(VirtualRouter vr) {
     String vrfName = vr.getName();
@@ -1059,6 +1072,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
     }
     vrf.setInterfaces(map);
+
+    // BGP
+    toBgpProcess(vr).ifPresent(vrf::setBgpProcess);
 
     return vrf;
   }

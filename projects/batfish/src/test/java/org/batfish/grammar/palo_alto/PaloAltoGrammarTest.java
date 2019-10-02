@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasM
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -30,6 +31,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasNextVrf;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -83,6 +85,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -113,6 +116,7 @@ import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.BgpVr;
+import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -142,9 +146,11 @@ public final class PaloAltoGrammarTest {
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
-  private Configuration parseConfig(String hostname) {
+  private @Nonnull Configuration parseConfig(String hostname) {
     try {
-      return parseTextConfigs(hostname).get(hostname.toLowerCase());
+      Map<String, Configuration> configs = parseTextConfigs(hostname);
+      assertThat(configs, hasKey(hostname));
+      return configs.get(hostname);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -477,14 +483,19 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(bgp.getRoutingOptions().getAggregateMed(), equalTo(Boolean.FALSE));
     assertThat(bgp.getRoutingOptions().getAlwaysCompareMed(), equalTo(Boolean.TRUE));
+    assertThat(bgp.getRoutingOptions().getAsFormat(), equalTo(AsFormat.FOUR_BYTE_AS));
+    assertThat(bgp.getRoutingOptions().getDefaultLocalPreference(), equalTo(103L));
     assertThat(bgp.getRoutingOptions().getDeterministicMedComparison(), equalTo(Boolean.FALSE));
     assertThat(bgp.getRoutingOptions().getGracefulRestartEnable(), equalTo(Boolean.FALSE));
+    assertThat(bgp.getRoutingOptions().getReflectorClusterId(), equalTo(Ip.parse("1.2.3.5")));
   }
 
   @Test
   public void testBgpConversion() {
-    parseConfig("bgp");
-    // TODO: convert and test
+    Configuration c = parseConfig("bgp");
+    assertThat(c, hasVrf("BGP", hasBgpProcess(any(BgpProcess.class))));
+    BgpProcess proc = c.getVrfs().get("BGP").getBgpProcess();
+    assertThat(proc, hasRouterId(Ip.parse("1.2.3.4")));
   }
 
   @Test
