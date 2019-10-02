@@ -95,6 +95,12 @@ public final class ParboiledInputValidator {
       return ImmutableMap.of();
     }
 
+    @Nonnull
+    @Override
+    public Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps() {
+      return ImmutableMap.of();
+    }
+
     @Override
     public IpSpace getSnapshotDeviceOwnedIps() {
       return EmptyIpSpace.INSTANCE;

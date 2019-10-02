@@ -19,17 +19,14 @@ public class MockSpecifierContext implements SpecifierContext {
     return new Builder();
   }
 
-  @Nonnull
-  public Map<String, Map<String, IpSpace>> get_interfaceOwnedIps() {
-    return _interfaceOwnedIps;
-  }
-
   public static final class Builder {
     private @Nonnull SortedSet<ReferenceBook> _referenceBooks = ImmutableSortedSet.of();
 
     private @Nonnull Map<String, Configuration> _configs = ImmutableMap.of();
 
     private @Nonnull Map<String, Map<String, IpSpace>> _interfaceOwnedIps = ImmutableMap.of();
+
+    private @Nonnull Map<String, Map<String, IpSpace>> _interfaceLinkOwnedIps = ImmutableMap.of();
 
     private @Nonnull SortedSet<NodeRoleDimension> _nodeRoleDimensions = ImmutableSortedSet.of();
 
@@ -46,6 +43,11 @@ public class MockSpecifierContext implements SpecifierContext {
 
     public Builder setInterfaceOwnedIps(Map<String, Map<String, IpSpace>> interfaceOwnedIps) {
       _interfaceOwnedIps = interfaceOwnedIps;
+      return this;
+    }
+
+    public Builder setInterfaceLinkOwnedIps(Map<String, Map<String, IpSpace>> interfaceLinkOwnedIps) {
+      _interfaceOwnedIps = interfaceLinkOwnedIps;
       return this;
     }
 
@@ -81,6 +83,8 @@ public class MockSpecifierContext implements SpecifierContext {
 
   private final @Nonnull Map<String, Map<String, IpSpace>> _interfaceOwnedIps;
 
+  private final @Nonnull Map<String, Map<String, IpSpace>> _interfaceLinkOwnedIps;
+
   private final @Nonnull SortedSet<NodeRoleDimension> _nodeRoleDimensions;
 
   private final @Nonnull SortedSet<ReferenceBook> _referenceBooks;
@@ -91,6 +95,7 @@ public class MockSpecifierContext implements SpecifierContext {
     _referenceBooks = builder._referenceBooks;
     _configs = builder._configs;
     _interfaceOwnedIps = builder._interfaceOwnedIps;
+    _interfaceLinkOwnedIps = builder._interfaceLinkOwnedIps;
     _nodeRoleDimensions = builder._nodeRoleDimensions;
     _snapshotOwnedIps = builder._snapshotOwnedIps;
   }
@@ -105,6 +110,12 @@ public class MockSpecifierContext implements SpecifierContext {
   @Nonnull
   public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
     return _interfaceOwnedIps;
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps() {
+    return _interfaceLinkOwnedIps;
   }
 
   @Override

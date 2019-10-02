@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -16,6 +17,12 @@ public class TestSpecifierContext implements SpecifierContext {
 
   @Override
   public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps() {
     throw new UnsupportedOperationException();
   }
 

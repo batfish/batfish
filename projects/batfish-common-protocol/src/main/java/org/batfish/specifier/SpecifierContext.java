@@ -49,6 +49,26 @@ public interface SpecifierContext {
         .getOrDefault(iface, EmptyIpSpace.INSTANCE);
   }
 
+  /**
+   * @return the {@link IpSpace}s owned by the link connected to each interface in the network.
+   * Mapping: hostname -&gt; interface name -&gt; IpSpace.
+   */
+  @Nonnull
+  Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps();
+
+  /**
+   * Get the {@link IpSpace} owned by the input interface.
+   *
+   * @param hostname The node the interface belongs to.
+   * @param iface The name of the interface.
+   * @return The {@link IpSpace} owned by the interface.
+   */
+  default IpSpace getInterfaceLinkOwnedIps(String hostname, String iface) {
+    return getInterfaceLinkOwnedIps()
+        .getOrDefault(hostname, ImmutableMap.of())
+        .getOrDefault(iface, EmptyIpSpace.INSTANCE);
+  }
+
   /** @return the {@link IpSpace} of IP addresses owned any device in the network. */
   IpSpace getSnapshotDeviceOwnedIps();
 }
