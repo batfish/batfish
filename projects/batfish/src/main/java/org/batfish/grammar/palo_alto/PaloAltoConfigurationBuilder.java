@@ -66,6 +66,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
@@ -98,6 +99,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Port_numberContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_group_definitionContext;
@@ -185,9 +187,13 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer2Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_tapContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_virtual_wireContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Uint16Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Uint32Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Uint8Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vlan_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Yes_or_noContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
@@ -379,10 +385,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return convProblem(IkeHashingAlgorithm.class, ctx, null);
   }
 
-  private int toInteger(Token t) {
-    return Integer.parseInt(getText(t));
-  }
-
   private IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
       Cp_authenticationContext ctx) {
     if (ctx.MD5() != null) {
@@ -558,7 +560,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitIf_tag(If_tagContext ctx) {
-    _currentInterface.setTag(toInteger(ctx.tag));
+    toInteger(ctx, ctx.tag).ifPresent(_currentInterface::setTag);
   }
 
   @Override
@@ -1556,10 +1558,55 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return Ip.parse(ctx.getText());
   }
 
+  /////////////////////////////////////////
+  ///// Range-aware type conversions. /////
+  /////////////////////////////////////////
+
+  private int toInteger(Port_numberContext ctx) {
+    return toInteger(ctx.uint16());
+  }
+
+  private int toInteger(Uint8Context t) {
+    return Integer.parseInt(getText(t));
+  }
+
+  private int toInteger(Uint16Context t) {
+    return Integer.parseInt(getText(t));
+  }
+
+  private static final IntegerSpace VLAN_TAG_SPACE = IntegerSpace.of(Range.closed(1, 4094));
+
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Vlan_tagContext vlan) {
+    return toIntegerInSpace(ctx, vlan, VLAN_TAG_SPACE, "vlan/tag");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      _w.addWarning(
+          messageCtx,
+          getFullText(messageCtx),
+          _parser,
+          String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
   private static final LongSpace BGP_ASN_SPACE = LongSpace.of(Range.closed(1L, 4294967295L));
 
   private Optional<Long> toLocalAs(ParserRuleContext ctx, Bgp_asnContext asn) {
     return toLongInSpace(ctx, asn, BGP_ASN_SPACE, "BGP AS number");
+  }
+
+  private long toLong(Uint32Context t) {
+    return Long.parseLong(getText(t));
   }
 
   /**
