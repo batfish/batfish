@@ -38,7 +38,7 @@ sa_ip_netmask
 :
     IP_NETMASK
     (
-        IP_ADDRESS
+        ip_address
         | IP_PREFIX
     )
 ;
