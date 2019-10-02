@@ -3,6 +3,7 @@ package(default_visibility = ["//visibility:public"])
 java_library(
     name = "cisco_base_parser",
     srcs = [
+        ":CiscoBaseLexer.java",
         ":CiscoBaseParser.java",
     ],
     deps = [

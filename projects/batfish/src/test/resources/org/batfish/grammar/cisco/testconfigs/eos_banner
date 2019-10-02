@@ -1,0 +1,9 @@
+!
+hostname eos_banner
+boot system flash fake.swi
+!
+banner login
+Some text
+EOF not alone
+EOF
+!

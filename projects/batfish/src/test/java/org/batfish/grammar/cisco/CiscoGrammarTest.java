@@ -728,6 +728,14 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAristaBanner() throws IOException {
+    Configuration c = parseConfig("eos_banner");
+    assertThat(
+        c.getVendorFamily().getCisco().getBanners().get("login"),
+        equalTo("Some text\nEOF not alone\n"));
+  }
+
+  @Test
   public void testAristaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("aristaOspfCost");
     assertThat(
@@ -928,6 +936,14 @@ public class CiscoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, NETWORK_OBJECT, "onfake1", EXTENDED_ACCESS_LIST_NETWORK_OBJECT));
+  }
+
+  @Test
+  public void testAsaBanner() throws IOException {
+    Configuration c = parseConfig("asa_banner");
+    assertThat(
+        c.getVendorFamily().getCisco().getBanners().get("exec"),
+        equalTo("^C\nAbove not actually a delimiter. This text is added."));
   }
 
   @Test
@@ -1309,6 +1325,14 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testCadantBanner() throws IOException {
+    Configuration c = parseConfig("cadant_banner");
+    assertThat(
+        c.getVendorFamily().getCisco().getBanners().get("login"),
+        equalTo("Some text\nSome more text\n"));
+  }
+
+  @Test
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
@@ -1364,6 +1388,19 @@ public class CiscoGrammarTest {
         c,
         hasRoute6FilterList(
             "v6list", Route6FilterListMatchers.rejects(Prefix6.parse("::FFFF:10.0.0.0/103"))));
+  }
+
+  @Test
+  public void testIosBanner() throws IOException {
+    Configuration c = parseConfig("ios_banner");
+    assertThat(
+        c.getVendorFamily().getCisco().getBanners(),
+        equalTo(
+            ImmutableMap.of(
+                "exec",
+                "First line.\nSecond line, with no ignored text.",
+                "login",
+                "First line.\nSecond line.")));
   }
 
   @Test
@@ -3278,6 +3315,19 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, INSPECT_CLASS_MAP, "cmundefined"));
     assertThat(ccae, not(hasUndefinedReference(filename, INSPECT_POLICY_MAP, "pmidefined")));
     assertThat(ccae, hasUndefinedReference(filename, INSPECT_POLICY_MAP, "pmiundefined"));
+  }
+
+  @Test
+  public void testIosXrBanner() throws IOException {
+    Configuration c = parseConfig("ios_xr_banner");
+    assertThat(
+        c.getVendorFamily().getCisco().getBanners(),
+        equalTo(
+            ImmutableMap.of(
+                "exec",
+                "First line.\nSecond line, with no ignored text.",
+                "login",
+                "First line.\nSecond line.")));
   }
 
   @Test
