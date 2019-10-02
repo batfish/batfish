@@ -298,11 +298,6 @@ av_null
    ) null_rest_of_line
 ;
 
-banner_stanza
-:
-   BANNER banner_type banner
-;
-
 bfd_null
 :
    NO?
@@ -2305,6 +2300,58 @@ s_asa_twice_nat
    )
 ;
 
+s_banner_asa
+:
+  banner_header = asa_banner_header body = BANNER_BODY? NEWLINE
+;
+
+asa_banner_header
+:
+  BANNER_ASDM_ASA
+  | BANNER_EXEC_ASA
+  | BANNER_LOGIN_ASA
+  | BANNER_MOTD_ASA
+;
+
+s_banner_cadant
+:
+  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
+;
+
+cadant_banner_type
+:
+  LOGIN
+  | MOTD
+;
+
+s_banner_eos
+:
+  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_EOS // delimiter includes newline
+;
+
+eos_banner_type
+:
+  LOGIN
+  | MOTD
+;
+
+s_banner_ios
+:
+  banner_header = ios_banner_header banner = ios_delimited_banner NEWLINE
+;
+
+ios_banner_header
+:
+  BANNER_IOS
+  | BANNER_CONFIG_SAVE_IOS
+  | BANNER_EXEC_IOS
+  | BANNER_INCOMING_IOS
+  | BANNER_LOGIN_IOS
+  | BANNER_MOTD_IOS
+  | BANNER_PROMPT_TIMEOUT_IOS
+  | BANNER_SLIP_PPP_IOS
+;
+
 s_bfd
 :
    BFD null_rest_of_line
@@ -3643,7 +3690,6 @@ stanza
    | asa_comment_stanza
    | asa_access_group
    | as_path_set_stanza
-   | banner_stanza
    | community_set_stanza
    | del_stanza
    | extended_access_list_stanza
@@ -3683,6 +3729,10 @@ stanza
    | s_arp_access_list_extended
    | s_asa_twice_nat
    | s_authentication
+   | s_banner_asa
+   | s_banner_cadant
+   | s_banner_eos
+   | s_banner_ios
    | s_bfd
    | s_bfd_template
    | s_cable

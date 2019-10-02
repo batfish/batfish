@@ -330,7 +330,7 @@ aaa_authentication_asa_console
 
 aaa_authentication_banner
 :
-   BANNER banner
+   BANNER banner = ios_delimited_banner NEWLINE
 ;
 
 aaa_authentication_captive_portal

@@ -2,8 +2,8 @@
 hostname cisco_webvpn
 !
 group-policy GroupPolicy_NOC-VPN attributes
- banner value ** AUTHORIZED ACCESS ONLY **
- banner none
+!COMMENTED BECAUSE UNKNOWN VENDOR banner value ** AUTHORIZED ACCESS ONLY **
+!COMMENTED BECAUSE UNKNOWN VENDOR banner none
  wins-server none
  dns-server value 1.2.3.4 2.3.4.5
  vpn-simultaneous-logins 2
