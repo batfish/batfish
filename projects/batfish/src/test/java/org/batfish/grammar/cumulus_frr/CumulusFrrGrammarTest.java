@@ -31,6 +31,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -797,10 +798,9 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testInterface_NoInterface() {
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
-    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
-    assertThat(
-        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
-        equalTo("interface swp1 is not defined"));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains("swp1"));
+    assertThat(CONFIG.getInterfaces().get("swp1").getVrf(), equalTo("VRF"));
   }
 
   @Test
@@ -895,6 +895,45 @@ public class CumulusFrrGrammarTest {
     CONFIG.getInterfaces().put("lo", iface);
     parse("router ospf\n passive-interface lo\n");
     assertTrue(iface.getOspf().getPassive());
+  }
+
+  @Test
+  public void testCreatePhysicalInterfaceInFRR() {
+    String name = "eth1";
+    parse(String.format("interface %s\n", name));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains(name));
+    Interface i1 = CONFIG.getInterfaces().get(name);
+    assertThat(i1.getType(), equalTo(CumulusInterfaceType.PHYSICAL));
+  }
+
+  @Test
+  public void testCreateLoopbackInterfaceInFRR() {
+    String name = "lo";
+    parse(String.format("interface %s\n", name));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains(name));
+    Interface i1 = CONFIG.getInterfaces().get(name);
+    assertThat(i1.getType(), equalTo(CumulusInterfaceType.LOOPBACK));
+  }
+
+  @Test
+  public void testNoCreateOtherInterfaceInFRR() {
+    String name = "vlan1";
+    parse(String.format("interface %s\n", name));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("cannot recognize interface vlan1. Only support loopback and physical interfaces"));
+    assertThat(CONFIG.getInterfaces().keySet(), empty());
+  }
+
+  @Test
+  public void testSetInterfaceIpAddress() {
+    parseLines("interface eth1", "ip address 1.1.1.1/30");
+    assertThat(
+        CONFIG.getInterfaces().get("eth1").getIpAddresses(),
+        equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
   }
 
   @Test
