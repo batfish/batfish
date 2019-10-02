@@ -689,7 +689,6 @@ public class CumulusNcluConfigurationTest {
   public void testPopulateLoopback() {
     Interface iface = new Interface("lo", CumulusInterfaceType.LOOPBACK, null, null);
     iface.getIpAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/30"));
-    iface.getOrCreateOspf();
     Loopback loopback = new Loopback();
 
     CumulusNcluConfiguration.populateLoInInterfacesToLoopback(iface, loopback);
