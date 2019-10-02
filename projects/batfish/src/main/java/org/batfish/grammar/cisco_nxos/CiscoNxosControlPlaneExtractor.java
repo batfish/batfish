@@ -6100,14 +6100,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return toIntegerInSpace(messageCtx, ctx, TCP_FLAGS_MASK_RANGE, "tcp-flags-mask");
   }
 
-  private @Nonnull Optional<Integer> toInteger(
-      ParserRuleContext messageCtx, Tcp_port_numberContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx, TCP_PORT_RANGE, "TCP port");
+  private int toInteger(Tcp_port_numberContext ctx) {
+    return toInteger(ctx.uint16());
   }
 
-  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Tcp_portContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(Tcp_portContext ctx) {
     if (ctx.num != null) {
-      return toInteger(messageCtx, ctx.num);
+      return Optional.of(toInteger(ctx.num));
     } else if (ctx.BGP() != null) {
       return Optional.of(NamedPort.BGP.number());
     } else if (ctx.CHARGEN() != null) {
@@ -6181,14 +6180,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
   }
 
-  private @Nonnull Optional<Integer> toInteger(
-      ParserRuleContext messageCtx, Udp_port_numberContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx, UDP_PORT_RANGE, "UDP port");
+  private int toInteger(Udp_port_numberContext ctx) {
+    return toInteger(ctx.uint16());
   }
 
-  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Udp_portContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(Udp_portContext ctx) {
     if (ctx.num != null) {
-      return toInteger(messageCtx, ctx.num);
+      return Optional.of(toInteger(ctx.num));
     } else if (ctx.BIFF() != null) {
       return Optional.of(NamedPort.BIFFudp_OR_EXECtcp.number());
     } else if (ctx.BOOTPC() != null) {
@@ -6302,13 +6300,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<IntegerSpace> toIntegerSpace(
       ParserRuleContext messageCtx, Acllal4tcp_port_spec_literalContext ctx) {
     boolean range = ctx.range != null;
-    return toInteger(messageCtx, ctx.arg1)
+    return toInteger(ctx.arg1)
         .map(
             arg1 ->
                 toIntegerSpace(
                         messageCtx,
                         arg1,
-                        range ? toInteger(messageCtx, ctx.arg2) : Optional.empty(),
+                        range ? toInteger(ctx.arg2) : Optional.empty(),
                         ctx.eq != null,
                         ctx.lt != null,
                         ctx.gt != null,
@@ -6321,13 +6319,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<IntegerSpace> toIntegerSpace(
       ParserRuleContext messageCtx, Acllal4udp_port_spec_literalContext ctx) {
     boolean range = ctx.range != null;
-    return toInteger(messageCtx, ctx.arg1)
+    return toInteger(ctx.arg1)
         .map(
             arg1 ->
                 toIntegerSpace(
                         messageCtx,
                         arg1,
-                        range ? toInteger(messageCtx, ctx.arg2) : Optional.empty(),
+                        range ? toInteger(ctx.arg2) : Optional.empty(),
                         ctx.eq != null,
                         ctx.lt != null,
                         ctx.gt != null,
