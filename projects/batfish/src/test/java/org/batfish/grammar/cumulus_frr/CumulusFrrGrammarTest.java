@@ -798,10 +798,9 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testInterface_NoInterface() {
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
-    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
-    assertThat(
-        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
-        equalTo("interface swp1 is not defined"));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains("swp1"));
+    assertThat(CONFIG.getInterfaces().get("swp1").getVrf(), equalTo("VRF"));
   }
 
   @Test

@@ -351,7 +351,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
     if (ctx.VRF() != null) {
       String vrf = ctx.vrf.getText();
-      if (!vrf.equals(_currentInterface.getVrf())) {
+      if (_currentInterface.getVrf() == null) {
+        _currentInterface.setVrf(vrf);
+      } else if (!vrf.equals(_currentInterface.getVrf())) {
         _w.addWarning(
             ctx,
             ctx.getText(),
