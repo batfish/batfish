@@ -39,8 +39,7 @@ public final class Converter {
   @VisibleForTesting static final String BRIDGE_NAME = "bridge";
 
   private static final Pattern ENCAPSULATION_VLAN_PATTERN = Pattern.compile("^.*\\.([0-9]+)$");
-  private static final Pattern PHYSICAL_INTERFACE_PATTERN =
-      Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
+
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
 
   private static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
@@ -145,7 +144,7 @@ public final class Converter {
   @VisibleForTesting
   CumulusInterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
-    if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
+    if (Interface.isPhysicalInterfaceType(name)) {
       return CumulusInterfaceType.PHYSICAL;
     }
 
