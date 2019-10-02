@@ -684,4 +684,16 @@ public class CumulusNcluConfigurationTest {
     SortedMap<Long, OspfArea> areas = ncluConfiguration.computeOspfAreas(ImmutableList.of("iface"));
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
+
+  @Test
+  public void testPopulateLoopback() {
+    Interface iface = new Interface("lo", CumulusInterfaceType.LOOPBACK, null, null);
+    iface.getIpAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/30"));
+    Loopback loopback = new Loopback();
+
+    CumulusNcluConfiguration.populateLoInInterfacesToLoopback(iface, loopback);
+    assertThat(
+        loopback.getAddresses(),
+        equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
+  }
 }
