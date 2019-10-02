@@ -230,15 +230,6 @@ public class WorkMgr extends AbstractCoordinator {
   private static final Set<String> WELL_KNOWN_NETWORK_FILENAMES =
       ImmutableSet.of(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
 
-  private static final Set<String> ENV_FILENAMES =
-      ImmutableSet.of(
-          BfConsts.RELPATH_NODE_BLACKLIST_FILE,
-          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE,
-          BfConsts.RELPATH_EDGE_BLACKLIST_FILE,
-          BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES,
-          BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES,
-          BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
-
   private static final int MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES = 10;
 
   private static final String SNAPSHOT_PACKAGING_INSTRUCTIONS_URL =
@@ -1664,11 +1655,8 @@ public class WorkMgr extends AbstractCoordinator {
     boolean referenceLibraryData = false;
     for (Path subFile : subFileList) {
       String name = subFile.getFileName().toString();
-      if (isEnvFile(subFile)) {
-        // copy environment level files to the environment directory
-        if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
-          bgpTables = true;
-        }
+      if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
+        bgpTables = true;
       } else if (isWellKnownNetworkFile(subFile)) {
         if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
           referenceLibraryData = true;
@@ -1939,10 +1927,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static boolean isWellKnownNetworkFile(Path path) {
     return WELL_KNOWN_NETWORK_FILENAMES.contains(path.getFileName().toString());
-  }
-
-  private static boolean isEnvFile(Path path) {
-    return ENV_FILENAMES.contains(path.getFileName().toString());
   }
 
   public boolean killWork(QueuedWork work) {
