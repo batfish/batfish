@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@//skylark:pmd_test.bzl", "pmd_test")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 java_library(
     name = "cisco_base_parser",
