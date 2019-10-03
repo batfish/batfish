@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-ospf-cost-loopback
+!
+interface Loopback61
+ ip address 192.168.61.4 255.255.255.0
+!
+router ospf 4
+ router-id 4.4.4.4
+ network 192.168.61.4 0.0.0.0 area 14
+!
