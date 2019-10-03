@@ -956,4 +956,9 @@ public class CumulusFrrGrammarTest {
     parse("log file /var/log/frr/frr.log\n");
     parse("log commands\n");
   }
+
+  @Test
+  public void testEnd() {
+    parseLines("frr version", "end\n");
+  }
 }

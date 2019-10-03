@@ -32,6 +32,7 @@ statement
   | s_log
   | s_interface
   | s_router_ospf
+  | s_end
 ;
 
 s_service
@@ -71,4 +72,9 @@ s_ip
 si_description
 :
   DESCRIPTION description = REMARK_TEXT NEWLINE
+;
+
+s_end
+:
+  END NEWLINE
 ;

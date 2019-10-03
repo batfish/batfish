@@ -148,6 +148,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+END
+:
+  'end'
+;
+
 EVPN
 :
   'evpn'
