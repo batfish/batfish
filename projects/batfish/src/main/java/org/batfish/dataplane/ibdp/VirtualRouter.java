@@ -855,22 +855,30 @@ public class VirtualRouter implements Serializable {
    * active or has no valid IP addresses (only addresses with network length of < /32 are
    * considered).
    */
-  @VisibleForTesting
   @Nonnull
-  static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
+  private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
     if (!iface.getActive()) {
       return Stream.empty();
     }
     return iface.getAllConcreteAddresses().stream()
         .filter(
             addr ->
-                addr.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH
-                    || (iface.getAddressMetadata().get(addr) != null
-                        && Boolean.TRUE.equals(
-                            iface.getAddressMetadata().get(addr).getGenerateLocalRoutes())))
+                alwaysGenerateLocalRoutes(iface.getAddressMetadata().get(addr))
+                    || addr.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH)
         .map(
             addr ->
                 generateLocalRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));
+  }
+
+  /**
+   * Returns true if local routes should always be generated for the provided {@link
+   * ConnectedRouteMetadata}
+   */
+  @VisibleForTesting
+  static boolean alwaysGenerateLocalRoutes(
+      @Nullable ConnectedRouteMetadata connectedRouteMetadata) {
+    return connectedRouteMetadata != null
+        && Boolean.TRUE.equals(connectedRouteMetadata.getGenerateLocalRoutes());
   }
 
   /** Generate a connected route for a given address (and associated metadata). */

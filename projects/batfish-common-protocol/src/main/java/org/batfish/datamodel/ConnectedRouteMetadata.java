@@ -19,7 +19,8 @@ public final class ConnectedRouteMetadata implements Serializable {
 
   @Nullable private final Integer _admin;
 
-  // if set to true then it can enable generation of local routes even of prefix lengths < 32
+  // If set, controls whether a local route is generated for this connected route. If unset, the
+  // default behavior is to generate local routes for /31 networks or larger
   @Nullable private final Boolean _generateLocalRoutes;
 
   @Nullable private final Long _tag;
