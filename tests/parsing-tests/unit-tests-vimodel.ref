@@ -14081,6 +14081,33 @@
               }
             ]
           },
+          "~BGP_COMMON_EXPORT_POLICY:vrf1~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:vrf1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
           "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~" : {
             "name" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
             "statements" : [
@@ -14184,6 +14211,40 @@
           },
           "vrf1" : {
             "name" : "vrf1",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "0.0.0.0",
+              "multipathEbgp" : true,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : true,
+              "neighbors" : {
+                "1.1.1.2/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
+                    },
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:vrf1:1.1.1.2~",
+                    "routeReflectorClient" : false
+                  },
+                  "peerAddress" : "1.1.1.2",
+                  "remoteAsns" : "2"
+                }
+              },
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
             "interfaces" : [
               "vrf1"
             ]
@@ -14345,6 +14406,33 @@
                 ]
               }
             ]
+          },
+          "~BGP_COMMON_EXPORT_POLICY:vrf1~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:vrf1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -14373,6 +14461,15 @@
           },
           "vrf1" : {
             "name" : "vrf1",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "0.0.0.0",
+              "multipathEbgp" : true,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : true,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
             "interfaces" : [
               "vrf1"
             ]
@@ -14470,7 +14567,7 @@
         "name" : "cumulus_nclu_bgp_no_router_id_or_loopback_ip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
+        "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
             "name" : "lo",
@@ -14492,6 +14589,35 @@
             "vrf" : "default"
           }
         },
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "cumulus" : {
             "bridge" : {
@@ -14503,6 +14629,15 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "0.0.0.0",
+              "multipathEbgp" : true,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : true,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
             "interfaces" : [
               "lo"
             ]
