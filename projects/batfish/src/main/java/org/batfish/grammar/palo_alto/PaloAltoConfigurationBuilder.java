@@ -130,7 +130,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_router_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_tunnelContext;
@@ -150,15 +149,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_display_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgi_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrp_bgpContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrtn_ipContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrtn_next_vrContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
@@ -194,6 +184,16 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vlan_tagContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_routing_tableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrp_bgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_admin_distContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_metricContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_next_vrContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Yes_or_noContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
@@ -894,7 +894,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSn_virtual_router_definition(Sn_virtual_router_definitionContext ctx) {
+  public void enterVr_definition(Vr_definitionContext ctx) {
     String name = getText(ctx.name);
     _currentVirtualRouter =
         _configuration.getVirtualRouters().computeIfAbsent(name, VirtualRouter::new);
@@ -904,7 +904,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSn_virtual_router_definition(Sn_virtual_router_definitionContext ctx) {
+  public void exitVr_definition(Vr_definitionContext ctx) {
     _currentVirtualRouter = null;
   }
 
@@ -1107,7 +1107,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSnvr_routing_table(Snvr_routing_tableContext ctx) {
+  public void enterVr_routing_table(Vr_routing_tableContext ctx) {
     _currentStaticRoute =
         _currentVirtualRouter
             .getStaticRoutes()
@@ -1115,7 +1115,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnvr_interface(Snvr_interfaceContext ctx) {
+  public void exitVr_interface(Vr_interfaceContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String name = getText(var);
       _currentVirtualRouter.getInterfaceNames().add(name);
@@ -1125,32 +1125,32 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnvr_routing_table(Snvr_routing_tableContext ctx) {
+  public void exitVr_routing_table(Vr_routing_tableContext ctx) {
     _currentStaticRoute = null;
   }
 
   @Override
-  public void enterSnvrp_bgp(Snvrp_bgpContext ctx) {
+  public void enterVrp_bgp(Vrp_bgpContext ctx) {
     _currentBgpVr = _currentVirtualRouter.getOrCreateBgp();
   }
 
   @Override
-  public void exitSnvrp_bgp(Snvrp_bgpContext ctx) {
+  public void exitVrp_bgp(Vrp_bgpContext ctx) {
     _currentBgpVr = null;
   }
 
   @Override
-  public void exitSnvrrt_admin_dist(Snvrrt_admin_distContext ctx) {
+  public void exitVrrt_admin_dist(Vrrt_admin_distContext ctx) {
     _currentStaticRoute.setAdminDistance(Integer.parseInt(getText(ctx.distance)));
   }
 
   @Override
-  public void exitSnvrrt_destination(Snvrrt_destinationContext ctx) {
+  public void exitVrrt_destination(Vrrt_destinationContext ctx) {
     _currentStaticRoute.setDestination(Prefix.parse(getText(ctx.destination)));
   }
 
   @Override
-  public void exitSnvrrt_interface(Snvrrt_interfaceContext ctx) {
+  public void exitVrrt_interface(Vrrt_interfaceContext ctx) {
     String name = getText(ctx.iface);
     _currentStaticRoute.setNextHopInterface(name);
     _configuration.referenceStructure(
@@ -1158,17 +1158,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnvrrt_metric(Snvrrt_metricContext ctx) {
+  public void exitVrrt_metric(Vrrt_metricContext ctx) {
     _currentStaticRoute.setMetric(Integer.parseInt(getText(ctx.metric)));
   }
 
   @Override
-  public void exitSnvrrtn_ip(Snvrrtn_ipContext ctx) {
+  public void exitVrrtn_ip(Vrrtn_ipContext ctx) {
     _currentStaticRoute.setNextHopIp(Ip.parse(getText(ctx.address)));
   }
 
   @Override
-  public void exitSnvrrtn_next_vr(Snvrrtn_next_vrContext ctx) {
+  public void exitVrrtn_next_vr(Vrrtn_next_vrContext ctx) {
     String name = getText(ctx.name);
     _currentStaticRoute.setNextVr(name);
     _configuration.referenceStructure(

@@ -6,7 +6,7 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
-snvrp_ospf
+vrp_ospf
 :
     OSPF
 ;

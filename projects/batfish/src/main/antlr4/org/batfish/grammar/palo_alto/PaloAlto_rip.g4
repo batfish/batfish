@@ -6,7 +6,7 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
-snvrp_rip
+vrp_rip
 :
     RIP
 ;
