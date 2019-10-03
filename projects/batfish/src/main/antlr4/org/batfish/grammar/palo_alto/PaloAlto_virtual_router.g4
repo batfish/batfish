@@ -6,6 +6,12 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
+protocol_ad
+:
+// 10-240
+    uint8
+;
+
 sn_virtual_router
 :
     VIRTUAL_ROUTER vr_definition?
@@ -15,10 +21,71 @@ vr_definition
 :
     name = variable
     (
-        vr_interface
+        vr_admin_dists
+        | vr_interface
         | vr_protocol
         | vr_routing_table
     )?
+;
+
+vr_admin_dists
+:
+    ADMIN_DISTS
+    (
+        vrad_ebgp
+        | vrad_ibgp
+        | vrad_ospf_int
+        | vrad_ospf_ext
+        | vrad_ospfv3_int
+        | vrad_ospfv3_ext
+        | vrad_rip
+        | vrad_static
+        | vrad_static_ipv6
+    )?
+;
+
+vrad_ebgp
+:
+    EBGP ad = protocol_ad
+;
+
+vrad_ibgp
+:
+    IBGP ad = protocol_ad
+;
+
+vrad_ospf_int
+:
+    OSPF_INT ad = protocol_ad
+;
+
+vrad_ospf_ext
+:
+    OSPF_EXT ad = protocol_ad
+;
+
+vrad_ospfv3_int
+:
+    OSPFV3_INT ad = protocol_ad
+;
+
+vrad_ospfv3_ext
+:
+    OSPFV3_EXT ad = protocol_ad
+;
+vrad_rip
+:
+    RIP ad = protocol_ad
+;
+
+vrad_static
+:
+    STATIC ad = protocol_ad
+;
+
+vrad_static_ipv6
+:
+    STATIC_IPV6 ad = protocol_ad
 ;
 
 vr_interface
@@ -50,7 +117,7 @@ vr_routing_table
 
 vrrt_admin_dist
 :
-    ADMIN_DIST distance = uint8
+    ADMIN_DIST distance = protocol_ad
 ;
 
 vrrt_destination
