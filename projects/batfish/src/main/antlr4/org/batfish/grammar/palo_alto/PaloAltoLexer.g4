@@ -59,9 +59,24 @@ AES_256_GCM
     'aes-256-gcm'
 ;
 
+AGGREGATE
+:
+    'aggregate'
+;
+
+AGGREGATE_MED
+:
+    'aggregate-med'
+;
+
 ALLOW
 :
     'allow'
+;
+
+ALWAYS_COMPARE_MED
+:
+    'always-compare-med'
 ;
 
 ANY
@@ -189,6 +204,11 @@ DESTINATION
     'destination'
 ;
 
+DETERMINISTIC_MED_COMPARISON
+:
+    'deterministic-med-comparison'
+;
+
 DEVICES
 :
     'devices'
@@ -264,6 +284,11 @@ EXCESSIVE_BANDWIDTH_USE
     'excessive-bandwidth-use'
 ;
 
+EXPORT
+:
+    'export'
+;
+
 EXTERNAL
 :
     'external'
@@ -292,6 +317,11 @@ GATEWAY
 GLOBAL_PROTECT_APP_CRYPTO_PROFILES
 :
     'global-protect-app-crypto-profiles'
+;
+
+GRACEFUL_RESTART
+:
+    'graceful-restart'
 ;
 
 GROUP1
@@ -369,6 +399,11 @@ IMPORT
     'import'
 ;
 
+INSTALL_ROUTE
+:
+    'install-route'
+;
+
 INTERFACE
 :
     'interface'
@@ -434,6 +469,11 @@ LLDP
     'lldp'
 ;
 
+LOCAL_AS
+:
+    'local-as'
+;
+
 LOG_SETTINGS
 :
     'log-settings'
@@ -447,6 +487,11 @@ LOOPBACK
 MD5
 :
     'md5'
+;
+
+MED
+:
+    'med'
 ;
 
 MINUTES
@@ -539,6 +584,11 @@ OPEN_BRACKET
     '['
 ;
 
+OSPF
+:
+    'ospf'
+;
+
 PANORAMA
 :
     'panorama'
@@ -604,6 +654,11 @@ QOS
     'qos'
 ;
 
+REJECT_DEFAULT_ROUTE
+:
+    'reject-default-route'
+;
+
 RESET_BOTH
 :
     'reset-both'
@@ -619,9 +674,24 @@ RESET_SERVER
     'reset-server'
 ;
 
+RIP
+:
+    'rip'
+;
+
 RISK
 :
     'risk'
+;
+
+ROUTER_ID
+:
+    'router-id'
+;
+
+ROUTING_OPTIONS
+:
+    'routing-options'
 ;
 
 ROUTING_TABLE

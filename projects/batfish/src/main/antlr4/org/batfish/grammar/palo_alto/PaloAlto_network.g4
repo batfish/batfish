@@ -243,7 +243,11 @@ snvr_interface
 snvr_protocol
 :
     PROTOCOL
-    snvrp_bgp
+    (
+        snvrp_bgp
+        | snvrp_ospf
+        | snvrp_rip
+    )?
 ;
 
 snvr_routing_table
@@ -256,27 +260,6 @@ snvr_routing_table
         | snvrrt_metric
         | snvrrt_nexthop
     )
-;
-
-snvrp_bgp
-:
-    BGP
-    (
-        snvrp_bgp_enable
-        | snvrp_bgp_null
-    )
-;
-
-snvrp_bgp_enable
-:
-    ENABLE NO  // parse and ignore NO
-;
-
-
-snvrp_bgp_null
-:
-    DAMPENING_PROFILE
-    null_rest_of_line
 ;
 
 snvrrt_admin_dist
@@ -310,7 +293,7 @@ snvrrt_nexthop
 
 snvrrtn_ip
 :
-  IP_ADDRESS_LITERAL address = IP_ADDRESS
+  IP_ADDRESS_LITERAL address = ip_address
 ;
 
 snvrrtn_next_vr
