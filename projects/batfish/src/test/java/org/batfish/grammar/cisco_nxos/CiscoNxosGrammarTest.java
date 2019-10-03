@@ -4499,6 +4499,14 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testNxosOspfCostLoopback() throws IOException {
+    Configuration c = parseConfig("nxos-ospf-cost-loopback");
+
+    assertThat(c.getAllInterfaces().get("loopback61").getOspfSettings(), not(nullValue()));
+    assertThat(c.getAllInterfaces().get("loopback61").getOspfSettings().getCost(), equalTo(1));
+  }
+
+  @Test
   public void testOspfConversion() throws IOException {
     String hostname = "nxos_ospf";
     Configuration c = parseConfig(hostname);

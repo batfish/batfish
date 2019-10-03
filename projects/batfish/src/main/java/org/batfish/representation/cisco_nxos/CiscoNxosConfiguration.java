@@ -16,6 +16,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpComm
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
+import static org.batfish.representation.cisco.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
@@ -2409,7 +2410,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ospf.getPassive() != null
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
-    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
+    org.batfish.datamodel.ospf.OspfNetworkType networkType = toOspfNetworkType(ospf.getNetwork());
+    ospfSettings.setNetworkType(networkType);
+    if (ospf.getCost() == null
+        && newIface.isLoopback()
+        && networkType != org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT) {
+      ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
+    } else {
+      ospfSettings.setCost(ospf.getCost());
+    }
     ospfSettings.setDeadInterval(toOspfDeadInterval(ospf));
     ospfSettings.setHelloInterval(toOspfHelloInterval(ospf));
 

@@ -30,6 +30,10 @@ public class OspfProcess implements Serializable {
 
   public static final long DEFAULT_MAX_METRIC_SUMMARY_LSA = 0xFF0000L;
 
+  // Although not clearly documented; from GNS3 emulation and Cisco forum
+  // (https://community.cisco.com/t5/switching/ospf-cost-calculation/td-p/2917356)
+  public static final int DEFAULT_LOOPBACK_OSPF_COST = 1;
+
   private static final double DEFAULT_REFERENCE_BANDWIDTH_10_MBPS = 10E6D;
 
   private static final double DEFAULT_REFERENCE_BANDWIDTH_100_MBPS = 100E6D;
