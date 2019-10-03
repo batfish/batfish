@@ -77,9 +77,9 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_ip_addressContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sio_areaContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sio_network_p2pContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -379,7 +379,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSi_ip_address(Si_ip_addressContext ctx) {
+  public void exitSiip_address(Siip_addressContext ctx) {
     if (_currentInterface == null) {
       _w.addWarning(ctx, ctx.getText(), _parser, "no interfaces found for %s");
     }
@@ -405,7 +405,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSio_area(Sio_areaContext ctx) {
+  public void exitSiipo_area(Siipo_areaContext ctx) {
     if (_currentInterface == null) {
       return;
     }
@@ -455,7 +455,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSio_network_p2p(Sio_network_p2pContext ctx) {
+  public void exitSiipo_network_p2p(Siipo_network_p2pContext ctx) {
     _currentInterface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
   }
 
