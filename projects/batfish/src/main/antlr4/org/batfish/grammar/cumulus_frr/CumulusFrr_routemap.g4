@@ -35,6 +35,7 @@ rm_match
     rmm_community
     | rmm_interface
     | rmm_ip
+    | rmm_tag
   )
 ;
 
@@ -67,6 +68,11 @@ rms_metric
 rmm_ip
 :
   IP rmmip_address
+;
+
+rmm_tag
+:
+  TAG tag = uint32 NEWLINE
 ;
 
 rmmip_address
