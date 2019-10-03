@@ -34,6 +34,11 @@ ADMIN_DIST
     'admin-dist'
 ;
 
+ADMIN_DISTS
+:
+    'admin-dists'
+;
+
 AES_128_CBC
 :
     'aes-128-cbc'
@@ -259,6 +264,11 @@ DYNAMIC
     'dynamic'
 ;
 
+EBGP
+:
+    'ebgp'
+;
+
 ENABLE
 :
     'enable'
@@ -377,6 +387,11 @@ HOSTNAME
 HOURS
 :
     'hours'
+;
+
+IBGP
+:
+    'ibgp'
 ;
 
 ICMP
@@ -587,6 +602,31 @@ OPEN_BRACKET
 OSPF
 :
     'ospf'
+;
+
+OSPF_EXT
+:
+    'ospf-ext'
+;
+
+OSPF_INT
+:
+    'ospf-int'
+;
+
+OSPFV3
+:
+    'ospfv3'
+;
+
+OSPFV3_EXT
+:
+    'ospfv3-ext'
+;
+
+OSPFV3_INT
+:
+    'ospfv3-int'
 ;
 
 PANORAMA
@@ -817,6 +857,11 @@ SOURCE_USER
 STATIC
 :
     'static'
+;
+
+STATIC_IPV6
+:
+    'static-ipv6'
 ;
 
 STATIC_ROUTE

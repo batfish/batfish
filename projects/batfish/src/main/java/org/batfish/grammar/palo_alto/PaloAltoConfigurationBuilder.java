@@ -101,6 +101,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContex
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_numberContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Protocol_adContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_group_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_application_definitionContext;
@@ -187,6 +188,15 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Vlan_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_routing_tableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ebgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ibgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ospf_extContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ospf_intContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ospfv3_extContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ospfv3_intContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ripContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_staticContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_static_ipv6Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrp_bgpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_admin_distContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_destinationContext;
@@ -1107,6 +1117,51 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitVrad_ebgp(Vrad_ebgpContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setEbgp);
+  }
+
+  @Override
+  public void exitVrad_ibgp(Vrad_ibgpContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setIbgp);
+  }
+
+  @Override
+  public void exitVrad_ospf_ext(Vrad_ospf_extContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfExt);
+  }
+
+  @Override
+  public void exitVrad_ospf_int(Vrad_ospf_intContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfInt);
+  }
+
+  @Override
+  public void exitVrad_ospfv3_ext(Vrad_ospfv3_extContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfV3Ext);
+  }
+
+  @Override
+  public void exitVrad_ospfv3_int(Vrad_ospfv3_intContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfV3Int);
+  }
+
+  @Override
+  public void exitVrad_rip(Vrad_ripContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setRip);
+  }
+
+  @Override
+  public void exitVrad_static(Vrad_staticContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setStatic);
+  }
+
+  @Override
+  public void exitVrad_static_ipv6(Vrad_static_ipv6Context ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setStaticv6);
+  }
+
+  @Override
   public void enterVr_routing_table(Vr_routing_tableContext ctx) {
     _currentStaticRoute =
         _currentVirtualRouter
@@ -1141,7 +1196,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitVrrt_admin_dist(Vrrt_admin_distContext ctx) {
-    _currentStaticRoute.setAdminDistance(Integer.parseInt(getText(ctx.distance)));
+    toInteger(ctx, ctx.distance).ifPresent(_currentStaticRoute::setAdminDistance);
   }
 
   @Override
@@ -1572,6 +1627,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private int toInteger(Uint16Context t) {
     return Integer.parseInt(getText(t));
+  }
+
+  private static final IntegerSpace PROTOCOL_ADMIN_DISTANCE_SPACE =
+      IntegerSpace.of(Range.closed(10, 240));
+
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Protocol_adContext ad) {
+    return toIntegerInSpace(ctx, ad, PROTOCOL_ADMIN_DISTANCE_SPACE, "admin-dist");
   }
 
   private static final IntegerSpace VLAN_TAG_SPACE = IntegerSpace.of(Range.closed(1, 4094));
