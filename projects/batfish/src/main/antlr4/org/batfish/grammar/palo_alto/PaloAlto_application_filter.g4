@@ -58,7 +58,7 @@ saf_prone_to_misuse
 saf_risk
 :
 // 1-5
-  RISK DEC
+  RISK uint8
 ;
 
 saf_subcategory
