@@ -83,11 +83,7 @@ srs_destination
 
 srs_disabled
 :
-    DISABLED
-    (
-        NO
-        | YES
-    )
+    DISABLED yn = yes_or_no
 ;
 
 srs_from
@@ -102,12 +98,12 @@ srs_hip_profiles
 
 srs_negate_destination
 :
-    NEGATE_DESTINATION (YES | NO)
+    NEGATE_DESTINATION yn = yes_or_no
 ;
 
 srs_negate_source
 :
-    NEGATE_SOURCE (YES | NO)
+    NEGATE_SOURCE yn = yes_or_no
 ;
 
 srs_service

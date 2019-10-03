@@ -141,11 +141,7 @@ sniel3_common
 
 sniel3_ip
 :
-    IP address =
-    (
-        IP_PREFIX
-        | IP_ADDRESS
-    )
+    IP address = interface_address
 ;
 
 sniel3_mtu

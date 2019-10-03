@@ -4,9 +4,26 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
+bgp_asn
+:
+// 1-4294967295
+    DEC
+;
+
 null_rest_of_line
 :
     ~NEWLINE*
+;
+
+interface_address
+:
+    IP_ADDRESS
+    | IP_PREFIX
+;
+
+ip_address
+:
+    IP_ADDRESS
 ;
 
 src_or_dst_list
@@ -27,10 +44,10 @@ src_or_dst_list
 src_or_dst_list_item
 :
     (
-        ANY
-        | IP_ADDRESS
-        | IP_PREFIX
-        | IP_RANGE
+        any = ANY
+        | address = ip_address
+        | prefix = IP_PREFIX
+        | range = IP_RANGE
         | name = variable
     )
 ;
@@ -75,4 +92,9 @@ variable_list_item
 variable
 :
     ~NEWLINE
+;
+
+yes_or_no
+:
+    YES | NO
 ;
