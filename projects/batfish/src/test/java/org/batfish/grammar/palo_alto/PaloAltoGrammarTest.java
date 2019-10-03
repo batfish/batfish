@@ -53,6 +53,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -74,6 +75,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -99,6 +101,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.grammar.flattener.Flattener;
@@ -107,6 +110,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
+import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.CryptoProfile;
@@ -164,7 +168,7 @@ public final class PaloAltoGrammarTest {
     return pac;
   }
 
-  private PaloAltoConfiguration parseNestedConfig(String hostname) {
+  private @Nonnull PaloAltoConfiguration parseNestedConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
@@ -462,7 +466,6 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testBgpExtraction() {
     PaloAltoConfiguration c = parseNestedConfig("bgp");
-    assertThat(c, notNullValue());
     VirtualRouter vr = c.getVirtualRouters().get("BGP");
     assertThat(vr, notNullValue());
     BgpVr bgp = vr.getBgp();
@@ -1416,6 +1419,30 @@ public final class PaloAltoGrammarTest {
 
     // Confirm the undefined interface is properly detected as an undefined reference
     assertThat(ccae, hasUndefinedReference(filename, INTERFACE, "ethernet1/3", IMPORT_INTERFACE));
+  }
+
+  @Test
+  public void testVirtualRouterExtraction() {
+    PaloAltoConfiguration c = parseNestedConfig("virtual-router");
+    VirtualRouter vr = c.getVirtualRouters().get("VR");
+    assertThat(vr, notNullValue());
+    AdminDistances ads = vr.getAdminDists();
+    assertThat(ads.getEbgp(), equalTo(21));
+    assertThat(ads.getIbgp(), equalTo(201));
+    assertThat(ads.getOspfExt(), equalTo(111));
+    assertThat(ads.getOspfInt(), equalTo(31));
+    assertThat(ads.getOspfV3Ext(), equalTo(112));
+    assertThat(ads.getOspfV3Int(), equalTo(32));
+    assertThat(ads.getRip(), equalTo(121));
+    assertThat(ads.getStatic(), equalTo(11));
+    assertThat(ads.getStaticv6(), equalTo(12));
+  }
+
+  @Test
+  public void testVirtualRouterConversion() {
+    Configuration c = parseConfig("virtual-router");
+    assertThat(c, hasVrf("VR", any(Vrf.class)));
+    // TODO: proper conversion test.
   }
 
   @Test
