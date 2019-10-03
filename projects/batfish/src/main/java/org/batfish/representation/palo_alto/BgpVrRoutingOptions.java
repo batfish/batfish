@@ -11,9 +11,9 @@ import org.batfish.datamodel.Ip;
  */
 public class BgpVrRoutingOptions implements Serializable {
   /** From PAN admin UI and verified. */
-  private final Long DEFAULT_DEFAULT_LOCAL_PREFERENCE = 100L;
+  private static final Long DEFAULT_DEFAULT_LOCAL_PREFERENCE = 100L;
   /** From PAN admin UI and verified. */
-  private final AsFormat DEFAULT_AS_FORMAT = AsFormat.TWO_BYTE_AS;
+  private static final AsFormat DEFAULT_AS_FORMAT = AsFormat.TWO_BYTE_AS;
 
   /** What size ASNs this VR supports. */
   public enum AsFormat {
