@@ -3,11 +3,9 @@ package org.batfish.specifier;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.specifier.IpSpaceAssignmentMatchers.hasEntry;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -22,7 +20,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
@@ -154,8 +151,9 @@ public class IpSpaceSpecifierTest {
     IpSpaceAssignment assignment =
         new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
             .resolve(ImmutableSet.of(), _context);
-    assertThat(assignment, hasEntry(allOf(
-        containsIp(I1_OWNED_IP),
-        containsIp(I2_OWNED_IP)), equalTo(ImmutableSet.of())));
+    assertThat(
+        assignment,
+        hasEntry(
+            allOf(containsIp(I1_OWNED_IP), containsIp(I2_OWNED_IP)), equalTo(ImmutableSet.of())));
   }
 }
