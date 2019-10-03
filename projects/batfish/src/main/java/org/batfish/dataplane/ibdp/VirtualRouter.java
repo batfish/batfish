@@ -855,13 +855,19 @@ public class VirtualRouter implements Serializable {
    * active or has no valid IP addresses (only addresses with network length of < /32 are
    * considered).
    */
+  @VisibleForTesting
   @Nonnull
-  private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
+  static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
     if (!iface.getActive()) {
       return Stream.empty();
     }
     return iface.getAllConcreteAddresses().stream()
-        .filter(addr -> addr.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH)
+        .filter(
+            addr ->
+                addr.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH
+                    || (iface.getAddressMetadata().get(addr) != null
+                        && Boolean.TRUE.equals(
+                            iface.getAddressMetadata().get(addr).getGenerateLocalRoutes())))
         .map(
             addr ->
                 generateLocalRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));

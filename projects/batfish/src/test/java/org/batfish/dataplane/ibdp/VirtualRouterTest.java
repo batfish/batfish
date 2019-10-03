@@ -7,6 +7,7 @@ import static org.batfish.datamodel.eigrp.EigrpTopologyUtils.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateConnectedRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalRoute;
+import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalRoutes;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -838,5 +839,42 @@ public class VirtualRouterTest {
                 .setNextHopInterface(nextHopInterface)
                 .setTag(7L)
                 .build()));
+  }
+
+  @Test
+  public void testGenerateLocalRoutes() {
+    ConcreteInterfaceAddress addr1 =
+        ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
+    ConcreteInterfaceAddress addr2 = ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24);
+    ConcreteInterfaceAddress addr3 =
+        ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), Prefix.MAX_PREFIX_LENGTH);
+    Interface iface =
+        new NetworkFactory()
+            .interfaceBuilder()
+            .setAddresses(addr1, addr2, addr3)
+            .setAddressMetadata(
+                ImmutableMap.of(
+                    addr3, ConnectedRouteMetadata.builder().setGenerateLocalRoutes(true).build()))
+            .build();
+
+    List<LocalRoute> routes = generateLocalRoutes(iface).collect(ImmutableList.toImmutableList());
+
+    // addr1 will not generate any local route because of missing ConnectedRouteMetadata, addr2 will
+    // generate a local route because of < 32 prefix length and add3 will generate a local route
+    // because of setting in ConnectedRouteMetadata
+    assertThat(
+        routes,
+        equalTo(
+            ImmutableList.of(
+                LocalRoute.builder()
+                    .setNextHopInterface(iface.getName())
+                    .setNetwork(Prefix.create(addr2.getIp(), Prefix.MAX_PREFIX_LENGTH))
+                    .setSourcePrefixLength(24)
+                    .build(),
+                LocalRoute.builder()
+                    .setNextHopInterface(iface.getName())
+                    .setNetwork(Prefix.create(addr3.getIp(), Prefix.MAX_PREFIX_LENGTH))
+                    .setSourcePrefixLength(Prefix.MAX_PREFIX_LENGTH)
+                    .build())));
   }
 }

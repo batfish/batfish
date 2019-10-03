@@ -1455,13 +1455,25 @@ public final class CiscoNxosGrammarTest {
           allOf(
               hasEntry(
                   ConcreteInterfaceAddress.parse("10.0.0.1/24"),
-                  ConnectedRouteMetadata.builder().setAdmin(0).setTag(0).build()),
+                  ConnectedRouteMetadata.builder()
+                      .setAdmin(0)
+                      .setTag(0)
+                      .setGenerateLocalRoutes(true)
+                      .build()),
               hasEntry(
                   ConcreteInterfaceAddress.parse("10.0.0.2/24"),
-                  ConnectedRouteMetadata.builder().setAdmin(0).setTag(0).build()),
+                  ConnectedRouteMetadata.builder()
+                      .setAdmin(0)
+                      .setTag(0)
+                      .setGenerateLocalRoutes(true)
+                      .build()),
               hasEntry(
                   ConcreteInterfaceAddress.parse("10.0.0.3/24"),
-                  ConnectedRouteMetadata.builder().setAdmin(5).setTag(3).build())));
+                  ConnectedRouteMetadata.builder()
+                      .setAdmin(5)
+                      .setTag(3)
+                      .setGenerateLocalRoutes(true)
+                      .build())));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
