@@ -92,20 +92,18 @@ public class MockSpecifierContext implements SpecifierContext {
 
   @Override
   @Nonnull
-  public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
-    return _interfaceOwnedIps;
-  }
-
-  @Nonnull
-  @Override
-  public Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps() {
-    return _interfaceLinkOwnedIps;
-  }
-
-  @Override
-  @Nonnull
   public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
     return _nodeRoleDimensions.stream().filter(dim -> dim.getName().equals(dimension)).findAny();
+  }
+
+  @Override
+  public IpSpace getInterfaceOwnedIps(String hostname, String iface) {
+    return _interfaceOwnedIps.get(hostname).get(iface);
+  }
+
+  @Override
+  public IpSpace getInterfaceLinkOwnedIps(String hostname, String iface) {
+    return _interfaceLinkOwnedIps.get(hostname).get(iface);
   }
 
   @Override

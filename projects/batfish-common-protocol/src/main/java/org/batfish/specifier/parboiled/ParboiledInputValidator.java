@@ -15,6 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
@@ -90,14 +91,13 @@ public final class ParboiledInputValidator {
     }
 
     @Override
-    public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
-      return ImmutableMap.of();
+    public IpSpace getInterfaceOwnedIps(String hostname, String iface) {
+      return EmptyIpSpace.INSTANCE;
     }
 
-    @Nonnull
     @Override
-    public Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps() {
-      return ImmutableMap.of();
+    public IpSpace getInterfaceLinkOwnedIps(String hostname, String iface) {
+      return EmptyIpSpace.INSTANCE;
     }
   }
 

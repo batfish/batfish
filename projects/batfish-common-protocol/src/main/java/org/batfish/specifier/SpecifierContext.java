@@ -1,12 +1,10 @@
 package org.batfish.specifier;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.role.NodeRoleDimension;
@@ -31,10 +29,13 @@ public interface SpecifierContext {
   Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension);
 
   /**
-   * @return the {@link IpSpace}s owned by each interface in the network. Mapping: hostname -&gt;
-   *     interface name -&gt; IpSpace.
+   * Get the {@link IpSpace} owned by the input interface.
+   *
+   * @param hostname The node the interface belongs to.
+   * @param iface The name of the interface.
+   * @return The {@link IpSpace} owned by the interface.
    */
-  Map<String, Map<String, IpSpace>> getInterfaceOwnedIps();
+  IpSpace getInterfaceOwnedIps(String hostname, String iface);
 
   /**
    * Get the {@link IpSpace} owned by the input interface.
@@ -43,29 +44,5 @@ public interface SpecifierContext {
    * @param iface The name of the interface.
    * @return The {@link IpSpace} owned by the interface.
    */
-  default IpSpace getInterfaceOwnedIps(String hostname, String iface) {
-    return getInterfaceOwnedIps()
-        .getOrDefault(hostname, ImmutableMap.of())
-        .getOrDefault(iface, EmptyIpSpace.INSTANCE);
-  }
-
-  /**
-   * @return the {@link IpSpace}s owned by the link connected to each interface in the network.
-   *     Mapping: hostname -&gt; interface name -&gt; IpSpace.
-   */
-  @Nonnull
-  Map<String, Map<String, IpSpace>> getInterfaceLinkOwnedIps();
-
-  /**
-   * Get the {@link IpSpace} owned by the input interface.
-   *
-   * @param hostname The node the interface belongs to.
-   * @param iface The name of the interface.
-   * @return The {@link IpSpace} owned by the interface.
-   */
-  default IpSpace getInterfaceLinkOwnedIps(String hostname, String iface) {
-    return getInterfaceLinkOwnedIps()
-        .getOrDefault(hostname, ImmutableMap.of())
-        .getOrDefault(iface, EmptyIpSpace.INSTANCE);
-  }
+  IpSpace getInterfaceLinkOwnedIps(String hostname, String iface);
 }

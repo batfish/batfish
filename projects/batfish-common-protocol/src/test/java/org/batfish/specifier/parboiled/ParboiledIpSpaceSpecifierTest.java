@@ -13,6 +13,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -91,16 +92,20 @@ public class ParboiledIpSpaceSpecifierTest {
         .setAddress(ConcreteInterfaceAddress.parse("3.3.3.0/24"))
         .build();
 
-    SpecifierContext ctxt =
-        MockSpecifierContext.builder().setConfigs(ImmutableMap.of(node1, n1)).build();
+    IpSpace ipSpace1 = Ip.parse("3.3.3.0").toIpSpace();
 
+    SpecifierContext ctxt =
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of(node1, n1))
+            .setInterfaceOwnedIps(ImmutableMap.of(node1, ImmutableMap.of(iface1, ipSpace1)))
+            .build();
     assertThat(
         computeIpSpace(
             new LocationIpSpaceAstNode(
                 InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new NameNodeAstNode(node1), new NameInterfaceAstNode(iface1))),
             ctxt),
-        equalTo(Ip.parse("3.3.3.0").toIpSpace()));
+        equalTo(ipSpace1));
   }
 
   @Test
