@@ -42,6 +42,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_lineContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
@@ -82,6 +83,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
@@ -112,6 +114,7 @@ import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cumulus.RouteMapMatchTag;
 import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
@@ -145,6 +148,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nonnull StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
     return StandardCommunity.of(
         Integer.parseInt(ctx.high.getText()), Integer.parseInt(ctx.low.getText()));
+  }
+
+  @Nonnull
+  private Long toLong(Uint32Context ctx) {
+    return Long.parseUnsignedLong(ctx.getText());
   }
 
   @Override
@@ -704,6 +712,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
                 // add new names
                 .addAll(ctx.names.stream().map(RuleContext::getText).iterator())
                 .build()));
+  }
+
+  @Override
+  public void exitRmm_tag(Rmm_tagContext ctx) {
+    _currentRouteMapEntry.setMatchTag(new RouteMapMatchTag(toLong(ctx.tag)));
   }
 
   @Override

@@ -461,6 +461,11 @@ SYSLOG
   'syslog'
 ;
 
+TAG
+:
+  'tag'
+;
+
 TRADITIONAL
 :
   'traditional'
