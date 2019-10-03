@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_frr;
 
+import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
@@ -31,14 +32,18 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -633,6 +638,43 @@ public class CumulusFrrGrammarTest {
             "lo",
             CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE),
         equalTo(ImmutableSet.of(2)));
+  }
+
+  @Test
+  public void testCumulusFrrRouteMapMatchTagExtraction() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
+
+    RouteMapEntry c = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+
+    assertThat(c.getMatchTag().getTag(), equalTo(65555L));
+  }
+
+  @Test
+  public void testCumulusFrrRouteMapMatchTagConversion() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
+    Configuration c = CONFIG.toVendorIndependentConfigurations().get(0);
+    RoutingPolicy policy = c.getRoutingPolicies().get(name);
+
+    Builder routeBuilder =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setAdmin(1)
+            .setNextHopInterface("iface");
+    // NOTE: re-using the builder, order of asserts may matter
+    // With missing tag -- no match
+    assertFalse(policy.process(routeBuilder.build(), Bgpv4Route.builder(), null, "default", OUT));
+    // With tag -- match
+    assertTrue(
+        policy.process(
+            routeBuilder.setTag(65555L).build(), Bgpv4Route.builder(), null, "default", OUT));
+    // With different tag -- no match
+    assertFalse(
+        policy.process(
+            routeBuilder.setTag(65554L).build(), Bgpv4Route.builder(), null, "default", OUT));
   }
 
   @Test
