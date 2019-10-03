@@ -36,6 +36,7 @@ import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Pro
 import static org.batfish.representation.cisco.CiscoConversions.toOspfDeadInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfNetworkType;
+import static org.batfish.representation.cisco.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.cisco.eos.AristaRedistributeType.CONNECTED;
 import static org.batfish.representation.cisco.eos.AristaRedistributeType.STATIC;
 
@@ -157,6 +158,7 @@ import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -2661,7 +2663,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ospfSettings.setPassive(true);
       }
     }
-    ospfSettings.setCost(vsIface.getOspfCost());
     ospfSettings.setHelloMultiplier(vsIface.getOspfHelloMultiplier());
 
     ospfSettings.setAreaName(areaNum);
@@ -2669,6 +2670,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     org.batfish.datamodel.ospf.OspfNetworkType networkType =
         toOspfNetworkType(vsIface.getOspfNetworkType(), _w);
     ospfSettings.setNetworkType(networkType);
+    if (vsIface.getOspfCost() == null
+        && iface.isLoopback()
+        && networkType != OspfNetworkType.POINT_TO_POINT) {
+      ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
+    } else {
+      ospfSettings.setCost(vsIface.getOspfCost());
+    }
     ospfSettings.setHelloInterval(toOspfHelloInterval(vsIface, networkType));
     ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface, networkType));
 

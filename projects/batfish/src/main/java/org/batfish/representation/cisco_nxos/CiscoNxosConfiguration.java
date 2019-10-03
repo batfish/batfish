@@ -27,6 +27,7 @@ import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_I
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -2409,7 +2410,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ospf.getPassive() != null
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
-    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
+    org.batfish.datamodel.ospf.OspfNetworkType networkType = toOspfNetworkType(ospf.getNetwork());
+    ospfSettings.setNetworkType(networkType);
+    if (ospf.getCost() == null
+        && newIface.isLoopback()
+        && networkType != org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT) {
+      ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
+    } else {
+      ospfSettings.setCost(ospf.getCost());
+    }
     ospfSettings.setDeadInterval(toOspfDeadInterval(ospf));
     ospfSettings.setHelloInterval(toOspfHelloInterval(ospf));
 
