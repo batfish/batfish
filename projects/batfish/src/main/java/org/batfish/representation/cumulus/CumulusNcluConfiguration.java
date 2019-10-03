@@ -1117,7 +1117,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
-      routerId = inferRouteId();
+      routerId = inferRouterId();
     }
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
@@ -1153,7 +1153,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
     Ip routerId = ospfVrf.getRouterId();
     if (routerId == null) {
-      routerId = inferRouteId();
+      routerId = inferRouterId();
     }
 
     org.batfish.datamodel.ospf.OspfProcess.Builder builder =
@@ -1232,15 +1232,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
    * Logic of inferring router ID for Zebra based system
    * (https://github.com/coreswitch/zebra/blob/master/docs/router-id.md):
    *
-   * <p>When IPv4 address is assigned to the loopback interface (other than 127.0.0.1 or IP address
-   * belongs to network 127.0.0.0/8), the biggest IPv4 address is used as a Router ID.
-   *
-   * <p>Otherwise, biggest IP Address among all of the interfaces is used as a Router ID.
-   *
-   * <p>Otherwise, 0.0.0.0 is used (as tested on GNS3).
+   * <p>If the loopback is configured with an IP address NOT in 127.0.0.0/8, the numerically largest
+   * such IP is used. Otherwise, the numerically largest IP configured on any interface on the
+   * device is used. Otherwise, 0.0.0.0 is used.
    */
   @VisibleForTesting
-  Ip inferRouteId() {
+  Ip inferRouterId() {
     if (_loopback.getConfigured()) {
       Optional<ConcreteInterfaceAddress> maxLoIp =
           _loopback.getAddresses().stream()

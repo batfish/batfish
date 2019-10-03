@@ -559,7 +559,7 @@ public class CumulusNcluConfigurationTest {
   @Test
   public void testInferRouterID_DefaultCase() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("0.0.0.0")));
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("0.0.0.0")));
   }
 
   @Test
@@ -568,7 +568,7 @@ public class CumulusNcluConfigurationTest {
     Loopback lo = ncluConfiguration.getLoopback();
     lo.setConfigured(true);
     lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/31"));
-    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("1.1.1.1")));
   }
 
   @Test
@@ -577,7 +577,7 @@ public class CumulusNcluConfigurationTest {
     Loopback lo = ncluConfiguration.getLoopback();
     lo.setConfigured(true);
     lo.getAddresses().add(ConcreteInterfaceAddress.parse("127.0.0.2/31"));
-    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("0.0.0.0")));
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("0.0.0.0")));
   }
 
   @Test
@@ -590,7 +590,7 @@ public class CumulusNcluConfigurationTest {
 
     ncluConfiguration.setInterfaces(ImmutableMap.of("eth1", i1, "eth2", i2));
 
-    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("2.2.2.2")));
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("2.2.2.2")));
   }
 
   @Test
