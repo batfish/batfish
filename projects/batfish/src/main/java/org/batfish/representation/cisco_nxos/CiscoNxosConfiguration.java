@@ -16,7 +16,6 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpComm
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
@@ -28,6 +27,7 @@ import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_I
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
