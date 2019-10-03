@@ -30,6 +30,9 @@ import org.batfish.representation.cumulus.InterfaceClagSettings;
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
 public final class Interface {
+  private static final Pattern PHYSICAL_INTERFACE_PATTERN =
+      Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
+
   private static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
 
   private @Nullable List<ConcreteInterfaceAddress> _addresses;
@@ -229,5 +232,12 @@ public final class Interface {
       _addressVirtuals = new HashMap<>();
     }
     _addressVirtuals.computeIfAbsent(macAddress, k -> new HashSet<>()).add(address);
+  }
+
+  public static boolean isPhysicalInterfaceType(String ifaceName) {
+    if (PHYSICAL_INTERFACE_PATTERN.matcher(ifaceName).matches()) {
+      return true;
+    }
+    return false;
   }
 }

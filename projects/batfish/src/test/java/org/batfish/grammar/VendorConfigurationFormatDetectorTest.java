@@ -98,7 +98,7 @@ public class VendorConfigurationFormatDetectorTest {
             "#RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper-srx\n!\nsomething {\n blah;\n}\n",
             "snmp {\n}\n")) {
-      assertThat(identifyConfigurationFormat(fileText), equalTo(JUNIPER));
+      assertThat(fileText, identifyConfigurationFormat(fileText), equalTo(JUNIPER));
     }
 
     /* Confirm flat (set-style) configs are correctly identified */
@@ -131,24 +131,28 @@ public class VendorConfigurationFormatDetectorTest {
   @Test
   public void testPaloAlto() {
     String rancid = "!RANCID-CONTENT-TYPE: paloalto\n!\nstructure {";
+    String rancid2 = "#RANCID-CONTENT-TYPE: paloalto\n!\nstructure {";
     String panorama = "deviceconfig {\n  system {\n    panorama-server 1.2.3.4;\n  }\n}";
     String sendPanorama = "alarm {\n  informational {\n    send-to-panorama yes;\n  }\n}";
     String deviceConfig = "deviceconfig {\n  system {\n    blah;\n  }\n}";
 
     String flatRancid = "!RANCID-CONTENT-TYPE: paloalto\n!\n";
+    String flatRancid2 = "#RANCID-CONTENT-TYPE: paloalto\n!\n";
     String flatPanorama = "set deviceconfig system panorama-server 1.2.3.4\n}";
     String flatSendPanorama = "set alarm informational send-to-panorama yes\n";
     String flatDeviceConfig = "set deviceconfig system blah\n";
     String flattened = "####BATFISH FLATTENED PALO ALTO CONFIG####\n";
 
     /* Confirm hierarchical PAN configs are correctly identified */
-    for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama, deviceConfig)) {
+    for (String fileText :
+        ImmutableList.of(rancid, rancid2, panorama, sendPanorama, deviceConfig)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(PALO_ALTO_NESTED));
     }
 
     /* Confirm flat (set-style) PAN configs are correctly identified */
     for (String fileText :
-        ImmutableList.of(flatRancid, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
+        ImmutableList.of(
+            flatRancid, flatRancid2, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(PALO_ALTO));
     }
   }
