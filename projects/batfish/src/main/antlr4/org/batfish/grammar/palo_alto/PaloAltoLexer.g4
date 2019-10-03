@@ -14,6 +14,16 @@ tokens {
 
 // Keywords
 
+TWO_BYTE
+:
+    '2-byte'
+;
+
+FOUR_BYTE
+:
+    '4-byte'
+;
+
 ACTION
 :
     'action'
@@ -104,6 +114,11 @@ APPLICATION_GROUP
     'application-group'
 ;
 
+AS_FORMAT
+:
+    'as-format'
+;
+
 AUTHENTICATION
 :
     'authentication'
@@ -187,6 +202,11 @@ DAYS
 DEFAULT_GATEWAY
 :
     'default-gateway'
+;
+
+DEFAULT_LOCAL_PREFERENCE
+:
+    'default-local-preference'
 ;
 
 DENY
@@ -692,6 +712,11 @@ PROTOCOL
 QOS
 :
     'qos'
+;
+
+REFLECTOR_CLUSTER_ID
+:
+    'reflector-cluster-id'
 ;
 
 REJECT_DEFAULT_ROUTE

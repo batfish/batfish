@@ -1,30 +1,33 @@
-config {
-  devices {
-    localhost.localdomain {
-      network {
-        virtual-router BGP {
-          protocol {
-            bgp {
-              routing-options {
-                graceful-restart {
-                  enable no;
-                }
-                med {
-                  always-compare-med yes;
-                  deterministic-med-comparison no;
-                }
-                aggregate {
-                  aggregate-med no;
-                }
-              }
-              enable yes;
-              reject-default-route no;
-              router-id 1.2.3.4/32;
-              local-as 65001;
-              install-route yes;
-            }
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname bgp;
+  }
+}
+network {
+  virtual-router BGP {
+    protocol {
+      bgp {
+        routing-options {
+          graceful-restart {
+            enable no;
           }
+          as-format 4-byte;
+          med {
+            always-compare-med yes;
+            deterministic-med-comparison no;
+          }
+          aggregate {
+            aggregate-med no;
+          }
+          default-local-preference 103;
+          reflector-cluster-id 1.2.3.5;
         }
+        enable yes;
+        reject-default-route no;
+        router-id 1.2.3.4/32;
+        local-as 65001;
+        install-route yes;
       }
     }
   }
