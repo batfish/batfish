@@ -80,8 +80,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_install_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_prefContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_router_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_as_formatContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_default_local_preferenceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_reflector_cluster_idContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgproa_aggregate_medContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprog_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprom_always_compare_medContext;
@@ -211,6 +215,7 @@ import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.ApplicationBuiltIn;
 import org.batfish.representation.palo_alto.ApplicationGroup;
 import org.batfish.representation.palo_alto.BgpVr;
+import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -464,7 +469,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitBgp_local_as(Bgp_local_asContext ctx) {
-    toLocalAs(ctx, ctx.asn).ifPresent(_currentBgpVr::setLocalAs);
+    Optional<Long> asnOrError = toLocalAs(ctx, ctx.asn);
+    if (!asnOrError.isPresent()) {
+      return;
+    }
+    long asn = asnOrError.get();
+    boolean twoByte = _currentBgpVr.getRoutingOptions().getAsFormat() == AsFormat.TWO_BYTE_AS;
+    if (twoByte && asn >= (1L << 16)) {
+      warn(ctx, ctx.asn.getStart(), "as-format 4-byte must be enabled in routing-options first");
+    } else {
+      _currentBgpVr.setLocalAs(asn);
+    }
   }
 
   @Override
@@ -475,6 +490,26 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitBgproa_aggregate_med(Bgproa_aggregate_medContext ctx) {
     _currentBgpVr.getRoutingOptions().setAggregateMed(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgpro_as_format(Bgpro_as_formatContext ctx) {
+    if (ctx.TWO_BYTE() != null) {
+      _currentBgpVr.getRoutingOptions().setAsFormat(AsFormat.TWO_BYTE_AS);
+    } else {
+      assert ctx.FOUR_BYTE() != null;
+      _currentBgpVr.getRoutingOptions().setAsFormat(AsFormat.FOUR_BYTE_AS);
+    }
+  }
+
+  @Override
+  public void exitBgpro_default_local_preference(Bgpro_default_local_preferenceContext ctx) {
+    _currentBgpVr.getRoutingOptions().setDefaultLocalPreference(toLong(ctx.pref));
+  }
+
+  @Override
+  public void exitBgpro_reflector_cluster_id(Bgpro_reflector_cluster_idContext ctx) {
+    _currentBgpVr.getRoutingOptions().setReflectorClusterId(toIp(ctx.id));
   }
 
   @Override
@@ -1669,6 +1704,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private long toLong(Uint32Context t) {
     return Long.parseLong(getText(t));
+  }
+
+  private static long toLong(Bgp_local_prefContext ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   /**
