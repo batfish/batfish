@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -38,26 +39,9 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern MRV_HOSTNAME_PATTERN =
       Pattern.compile("(?m)^configuration hostname .*$");
   private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
-  private static final Pattern RANCID_ARISTA_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: arista$");
-  private static final Pattern RANCID_CISCO_NX_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco-nx$");
-  private static final Pattern RANCID_CISCO_XR_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco-xr$");
-  private static final Pattern RANCID_CISCO_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco$");
-  private static final Pattern RANCID_F5_BIGIP_STRUCTURED_PATTERN =
-      Pattern.compile("(?m)^#RANCID-CONTENT-TYPE: bigip$");
-  private static final Pattern RANCID_FORCE_10_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: force10$");
-  private static final Pattern RANCID_FOUNDRY_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: foundry$");
-  private static final Pattern RANCID_JUNIPER_PATTERN =
-      Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: juniper(-srx)?$");
-  private static final Pattern RANCID_MRV_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$");
-  private static final Pattern RANCID_PALO_ALTO_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: paloalto");
+
+  private static final Pattern RANCID_BASE_PATTERN =
+      Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: ([a-zA-Z0-9_-]+)");
 
   // checkCisco patterns
   private static final Pattern ASA_VERSION_LINE_PATTERN = Pattern.compile("(?m)(^ASA Version.*$)");
@@ -234,7 +218,7 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
-  private ConfigurationFormat checkJuniper() {
+  private ConfigurationFormat checkJuniper(boolean preMatch) {
     if (_notJuniper) {
       return null;
     } else if (_fileText.contains("set hostname")) {
@@ -252,7 +236,7 @@ public final class VendorConfigurationFormatDetector {
         || fileTextMatches(JUNIPER_POLICY_OPTIONS_PATTERN)
         || fileTextMatches(JUNIPER_SNMP_PATTERN)) {
       return ConfigurationFormat.JUNIPER;
-    } else if (fileTextMatches(RANCID_JUNIPER_PATTERN)) {
+    } else if (preMatch) {
       return (_fileText.contains("{"))
           ? ConfigurationFormat.JUNIPER
           : ConfigurationFormat.FLAT_JUNIPER;
@@ -295,12 +279,12 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
-  private ConfigurationFormat checkPaloAlto() {
+  private ConfigurationFormat checkPaloAlto(boolean preMatch) {
     if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)) {
       return ConfigurationFormat.PALO_ALTO;
-    } else if (fileTextMatches(PALO_ALTO_DEVICECONFIG_PATTERN)
-        || fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)
-        || fileTextMatches(RANCID_PALO_ALTO_PATTERN)) {
+    } else if (preMatch
+        || fileTextMatches(PALO_ALTO_DEVICECONFIG_PATTERN)
+        || fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)) {
       if (_fileText.contains("{")) {
         return ConfigurationFormat.PALO_ALTO_NESTED;
       }
@@ -311,29 +295,36 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkRancid() {
-    if (fileTextMatches(RANCID_ARISTA_PATTERN)) {
-      return ConfigurationFormat.ARISTA;
-    } else if (fileTextMatches(RANCID_CISCO_PATTERN)) {
-      return checkCisco(); // unfortunately, old RANCID cannot distinguish
-      // subtypes
-    } else if (fileTextMatches(RANCID_CISCO_NX_PATTERN)) {
-      return ConfigurationFormat.CISCO_NX;
-    } else if (fileTextMatches(RANCID_CISCO_XR_PATTERN)) {
-      return ConfigurationFormat.CISCO_IOS_XR;
-    } else if (fileTextMatches(RANCID_F5_BIGIP_STRUCTURED_PATTERN)) {
-      return ConfigurationFormat.F5_BIGIP_STRUCTURED;
-    } else if (fileTextMatches(RANCID_FORCE_10_PATTERN)) {
-      return ConfigurationFormat.FORCE10;
-    } else if (fileTextMatches(RANCID_FOUNDRY_PATTERN)) {
-      return ConfigurationFormat.FOUNDRY;
-    } else if (fileTextMatches(RANCID_JUNIPER_PATTERN)) {
-      return checkJuniper();
-    } else if (fileTextMatches(RANCID_MRV_PATTERN)) {
-      return ConfigurationFormat.MRV;
-    } else if (fileTextMatches(RANCID_PALO_ALTO_PATTERN)) {
-      return checkPaloAlto();
+    Matcher m = RANCID_BASE_PATTERN.matcher(_fileText);
+    if (!m.find()) {
+      return null;
     }
-    return null;
+    switch (m.group(1)) {
+      case "arista":
+        return ConfigurationFormat.ARISTA;
+      case "bigip":
+        return ConfigurationFormat.F5_BIGIP_STRUCTURED;
+      case "cisco":
+        return checkCisco(); // unfortunately, old RANCID cannot distinguish subtypes
+      case "cisco-nx":
+        return ConfigurationFormat.CISCO_NX;
+      case "cisco-xr":
+        return ConfigurationFormat.CISCO_IOS_XR;
+      case "force10":
+        return ConfigurationFormat.FORCE10;
+      case "foundry":
+        return ConfigurationFormat.FOUNDRY;
+      case "juniper":
+      case "juniper-srx":
+        return checkJuniper(true);
+      case "mrv":
+        return ConfigurationFormat.MRV;
+      case "paloalto":
+        return checkPaloAlto(true);
+      default:
+        // Fall back to another check.
+        return null;
+    }
   }
 
   @Nullable
@@ -411,7 +402,7 @@ public final class VendorConfigurationFormatDetector {
     if (format != null) {
       return format;
     }
-    format = checkPaloAlto();
+    format = checkPaloAlto(false);
     if (format != null) {
       return format;
     }
@@ -431,7 +422,7 @@ public final class VendorConfigurationFormatDetector {
     if (format != null) {
       return format;
     }
-    format = checkJuniper();
+    format = checkJuniper(false);
     if (format != null) {
       return format;
     }
