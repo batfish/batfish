@@ -37,7 +37,7 @@ sd_system
 
 sds_default_gateway
 :
-    DEFAULT_GATEWAY IP_ADDRESS
+    DEFAULT_GATEWAY ip_address
 ;
 
 sds_dns_setting
@@ -55,12 +55,12 @@ sds_hostname
 
 sds_ip_address
 :
-    IP_ADDRESS_LITERAL IP_ADDRESS
+    IP_ADDRESS_LITERAL ip_address
 ;
 
 sds_netmask
 :
-    NETMASK IP_ADDRESS
+    NETMASK ip_address
 ;
 
 sds_ntp_servers
@@ -92,8 +92,8 @@ sdsd_servers
 :
     SERVERS
     (
-        PRIMARY primary_name = IP_ADDRESS
-        | SECONDARY secondary_name = IP_ADDRESS
+        PRIMARY primary_name = ip_address
+        | SECONDARY secondary_name = ip_address
     )
 ;
 

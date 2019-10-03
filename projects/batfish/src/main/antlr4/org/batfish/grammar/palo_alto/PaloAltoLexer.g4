@@ -59,9 +59,24 @@ AES_256_GCM
     'aes-256-gcm'
 ;
 
+AGGREGATE
+:
+    'aggregate'
+;
+
+AGGREGATE_MED
+:
+    'aggregate-med'
+;
+
 ALLOW
 :
     'allow'
+;
+
+ALWAYS_COMPARE_MED
+:
+    'always-compare-med'
 ;
 
 ANY
@@ -189,6 +204,11 @@ DESTINATION
     'destination'
 ;
 
+DETERMINISTIC_MED_COMPARISON
+:
+    'deterministic-med-comparison'
+;
+
 DEVICES
 :
     'devices'
@@ -264,6 +284,11 @@ EXCESSIVE_BANDWIDTH_USE
     'excessive-bandwidth-use'
 ;
 
+EXPORT
+:
+    'export'
+;
+
 EXTERNAL
 :
     'external'
@@ -292,6 +317,11 @@ GATEWAY
 GLOBAL_PROTECT_APP_CRYPTO_PROFILES
 :
     'global-protect-app-crypto-profiles'
+;
+
+GRACEFUL_RESTART
+:
+    'graceful-restart'
 ;
 
 GROUP1
@@ -369,6 +399,11 @@ IMPORT
     'import'
 ;
 
+INSTALL_ROUTE
+:
+    'install-route'
+;
+
 INTERFACE
 :
     'interface'
@@ -434,6 +469,11 @@ LLDP
     'lldp'
 ;
 
+LOCAL_AS
+:
+    'local-as'
+;
+
 LOG_SETTINGS
 :
     'log-settings'
@@ -447,6 +487,11 @@ LOOPBACK
 MD5
 :
     'md5'
+;
+
+MED
+:
+    'med'
 ;
 
 MINUTES
@@ -539,6 +584,11 @@ OPEN_BRACKET
     '['
 ;
 
+OSPF
+:
+    'ospf'
+;
+
 PANORAMA
 :
     'panorama'
@@ -604,6 +654,11 @@ QOS
     'qos'
 ;
 
+REJECT_DEFAULT_ROUTE
+:
+    'reject-default-route'
+;
+
 RESET_BOTH
 :
     'reset-both'
@@ -619,9 +674,24 @@ RESET_SERVER
     'reset-server'
 ;
 
+RIP
+:
+    'rip'
+;
+
 RISK
 :
     'risk'
+;
+
+ROUTER_ID
+:
+    'router-id'
+;
+
+ROUTING_OPTIONS
+:
+    'routing-options'
 ;
 
 ROUTING_TABLE
@@ -834,6 +904,21 @@ UDP
     'udp'
 ;
 
+UINT8
+:
+  F_Uint8
+;
+
+UINT16
+:
+  F_Uint16
+;
+
+UINT32
+:
+  F_Uint32
+;
+
 UNITS
 :
     'units'
@@ -904,11 +989,6 @@ COMMA
 DASH
 :
     '-'
-;
-
-DEC
-:
-    F_Digit+
 ;
 
 DOUBLE_QUOTED_STRING
@@ -1019,6 +1099,48 @@ fragment
 F_PositiveDigit
 :
   [1-9]
+;
+
+fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
+;
+
+fragment
+F_Uint16
+:
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit?
+  | [1-5] F_Digit F_Digit F_Digit F_Digit
+  | '6' [0-4] F_Digit F_Digit F_Digit
+  | '65' [0-4] F_Digit F_Digit
+  | '655' [0-2] F_Digit
+  | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
 ;
 
 fragment

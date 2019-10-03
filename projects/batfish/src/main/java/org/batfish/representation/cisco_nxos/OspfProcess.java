@@ -14,6 +14,10 @@ import org.batfish.datamodel.Prefix;
 public abstract class OspfProcess implements Serializable {
 
   public static final int DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS = 40_000; // Mbps
+
+  // Although not clearly documented; from GNS3 emulation and Cisco forum
+  // (https://community.cisco.com/t5/switching/ospf-cost-calculation/td-p/2917356)
+  public static final int DEFAULT_LOOPBACK_OSPF_COST = 1;
   public static final int DEFAULT_TIMERS_LSA_ARRIVAL_MS = 1000; // ms
 
   // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/ospf/timers-lsa-group-pacing-ospf.html

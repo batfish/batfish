@@ -6,14 +6,18 @@ import
     PaloAlto_address_group,
     PaloAlto_application,
     PaloAlto_application_filter,
+    PaloAlto_bgp,
     PaloAlto_common,
     PaloAlto_deviceconfig,
     PaloAlto_interface,
     PaloAlto_network,
+    PaloAlto_ospf,
+    PaloAlto_rip,
     PaloAlto_rulebase,
     PaloAlto_service,
     PaloAlto_service_group,
     PaloAlto_shared,
+    PaloAlto_virtual_router,
     PaloAlto_vsys,
     PaloAlto_zone;
 

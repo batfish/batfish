@@ -10,17 +10,10 @@ junit_tests(
     srcs = glob([
         "**/*Test.java",
     ]),
-    resources = [
-        "//projects/batfish/src/test/resources/org/batfish/grammar/palo_alto/testconfigs",
-    ],
     deps = [
-        "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
-        "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto",
         "//projects/batfish/src/main/java/org/batfish/representation/palo_alto",
-        "@antlr4_runtime//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
     ],

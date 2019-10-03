@@ -11,8 +11,10 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
+import static org.batfish.representation.cumulus_interfaces.Interface.isPhysicalInterfaceType;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -74,8 +77,9 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sio_areaContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sio_network_p2pContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -92,6 +96,7 @@ import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
+import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -312,17 +317,43 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterS_interface(S_interfaceContext ctx) {
     String name = ctx.name.getText();
 
-    Interface iface = _c.getInterfaces().get(name);
-    if (iface == null) {
-      _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", name));
-      return;
+    _currentInterface = _c.getInterfaces().get(name);
+
+    if (_currentInterface == null) {
+      // Currently only support defining lo and physical interfaces in frr
+      // TODO: check other interface types
+      CumulusInterfaceType type = null;
+      if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
+        type = CumulusInterfaceType.LOOPBACK;
+      } else if (isPhysicalInterfaceType(name)) {
+        type = CumulusInterfaceType.PHYSICAL;
+      } else {
+        _w.addWarning(
+            ctx,
+            ctx.getText(),
+            _parser,
+            String.format(
+                ("cannot recognize interface %s. Only support loopback and physical interfaces"),
+                name));
+      }
+
+      if (type == null) {
+        return;
+      }
+
+      _currentInterface = new Interface(name, type, null, null);
+      _c.setInterfaces(
+          new ImmutableMap.Builder<String, Interface>()
+              .putAll(_c.getInterfaces())
+              .put(name, _currentInterface)
+              .build());
     }
-    _currentInterface = iface;
 
     if (ctx.VRF() != null) {
       String vrf = ctx.vrf.getText();
-      if (!vrf.equals(_currentInterface.getVrf())) {
+      if (_currentInterface.getVrf() == null) {
+        _currentInterface.setVrf(vrf);
+      } else if (!vrf.equals(_currentInterface.getVrf())) {
         _w.addWarning(
             ctx,
             ctx.getText(),
@@ -348,6 +379,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSiip_address(Siip_addressContext ctx) {
+    if (_currentInterface == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "no interfaces found for %s");
+    }
+
+    _currentInterface.getIpAddresses().add(ConcreteInterfaceAddress.parse(ctx.ip_prefix.getText()));
+  }
+
+  @Override
   public void enterS_router_ospf(S_router_ospfContext ctx) {
     if (_c.getOspfProcess() == null) {
       _c.setOspfProcess(new OspfProcess());
@@ -365,7 +405,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSio_area(Sio_areaContext ctx) {
+  public void exitSiipo_area(Siipo_areaContext ctx) {
     if (_currentInterface == null) {
       return;
     }
@@ -415,7 +455,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSio_network_p2p(Sio_network_p2pContext ctx) {
+  public void exitSiipo_network_p2p(Siipo_network_p2pContext ctx) {
     _currentInterface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
   }
 

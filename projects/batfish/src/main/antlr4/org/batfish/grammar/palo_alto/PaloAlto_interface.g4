@@ -31,7 +31,7 @@ if_comment
 /* tag command can be run on almost any unit's l2 or l3 config. */
 if_tag
 :
-    TAG tag = DEC
+    TAG tag = vlan_tag
 ;
 
 sni_ethernet
@@ -141,16 +141,12 @@ sniel3_common
 
 sniel3_ip
 :
-    IP address =
-    (
-        IP_PREFIX
-        | IP_ADDRESS
-    )
+    IP address = interface_address
 ;
 
 sniel3_mtu
 :
-    MTU mtu = DEC
+    MTU mtu = uint32
 ;
 
 sniel3_null

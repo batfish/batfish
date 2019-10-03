@@ -472,7 +472,7 @@ subnet_mask
 tcp_port_number
 :
 // 0-65535
-  uint32
+  uint16
 ;
 
 template_name
