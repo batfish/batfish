@@ -3055,6 +3055,14 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfCostLoopback() throws IOException {
+    Configuration c = parseConfig("ios-ospf-cost-loopback");
+
+    assertThat(c.getAllInterfaces().get("Loopback61").getOspfSettings(), not(nullValue()));
+    assertThat(c.getAllInterfaces().get("Loopback61").getOspfSettings().getCost(), equalTo(1));
+  }
+
+  @Test
   public void testIosOspfStubSettings() throws IOException {
     Configuration c = parseConfig("ios-ospf-stub-settings");
 

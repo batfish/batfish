@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos-ospf-cost-loopback
+feature ospf
+!
+interface loopback61
+  ip address 192.168.61.5/24
+  ip router ospf 5 area 0.0.0.15
+router ospf 5
+  router-id 5.5.5.5
