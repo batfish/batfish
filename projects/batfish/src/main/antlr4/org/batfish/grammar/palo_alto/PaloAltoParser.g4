@@ -17,6 +17,7 @@ import
     PaloAlto_service,
     PaloAlto_service_group,
     PaloAlto_shared,
+    PaloAlto_virtual_router,
     PaloAlto_vsys,
     PaloAlto_zone;
 

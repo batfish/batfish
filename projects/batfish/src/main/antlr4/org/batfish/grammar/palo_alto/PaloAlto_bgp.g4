@@ -6,7 +6,7 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
-snvrp_bgp
+vrp_bgp
 :
     BGP
     (
