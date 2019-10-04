@@ -24,6 +24,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapSetIpNextHopLiteral _setIpNextHop;
   private @Nullable RouteMapSetCommunity _setCommunity;
   private @Nullable RouteMapSetLocalPreference _setLocalPreference;
+  private @Nullable RouteMapSetTag _setTag;
 
   public RouteMapEntry(int number, LineAction action) {
     _number = number;
@@ -71,7 +72,7 @@ public final class RouteMapEntry implements Serializable {
 
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
-    return Stream.of(_setMetric, _setIpNextHop, _setCommunity, _setLocalPreference)
+    return Stream.of(_setMetric, _setIpNextHop, _setCommunity, _setLocalPreference, _setTag)
         .filter(Objects::nonNull);
   }
 
@@ -123,5 +124,14 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetLocalPreference(@Nullable RouteMapSetLocalPreference setLocalPreference) {
     _setLocalPreference = setLocalPreference;
+  }
+
+  @Nullable
+  public RouteMapSetTag getSetTag() {
+    return _setTag;
+  }
+
+  public void setSetTag(@Nullable RouteMapSetTag setTag) {
+    _setTag = setTag;
   }
 }
