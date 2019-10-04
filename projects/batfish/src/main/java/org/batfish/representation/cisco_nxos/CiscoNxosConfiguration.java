@@ -64,7 +64,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.topology.SnapshotRuntimeData.InterfaceRuntimeData;
+import org.batfish.common.runtime.InterfaceRuntimeData;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
