@@ -1711,6 +1711,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         union(getInsufficientInfo(), getNeighborUnreachable()),
         ipSpaceToBDD);
 
+    // Sanity check disjointness of ARP failure dispositions
+    assertDeepIpSpaceDisjointness(getDeliveredToSubnet(), getExitsNetwork(), ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(getDeliveredToSubnet(), getInsufficientInfo(), ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(getDeliveredToSubnet(), getNeighborUnreachable(), ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(getExitsNetwork(), getInsufficientInfo(), ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(getExitsNetwork(), getNeighborUnreachable(), ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(getInsufficientInfo(), getNeighborUnreachable(), ipSpaceToBDD);
+
     Map<String, Map<String, Map<String, IpSpace>>> union1 =
         union(getNeighborUnreachable(), getInsufficientInfo());
     Map<String, Map<String, Map<String, IpSpace>>> union2 = union(union1, getDeliveredToSubnet());
@@ -1802,6 +1810,42 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                               + iface;
                       assert !rightBDD.diffSat(bdd)
                           : "Right BDDs larger for node "
+                              + node
+                              + " VRF "
+                              + vrf
+                              + " interface "
+                              + iface;
+                    });
+              });
+        });
+  }
+
+  private static void assertDeepIpSpaceDisjointness(
+      Map<String, Map<String, Map<String, IpSpace>>> left,
+      Map<String, Map<String, Map<String, IpSpace>>> right,
+      IpSpaceToBDD toBDD) {
+    left.forEach(
+        (node, vrfIfaceMap) -> {
+          Map<String, Map<String, IpSpace>> rightVrfIfaceMap = right.get(node);
+          if (rightVrfIfaceMap == null) {
+            return;
+          }
+          vrfIfaceMap.forEach(
+              (vrf, ifaceMap) -> {
+                Map<String, IpSpace> rightIfaceMap = rightVrfIfaceMap.get(vrf);
+                if (rightIfaceMap == null) {
+                  return;
+                }
+                ifaceMap.forEach(
+                    (iface, ipSpace) -> {
+                      IpSpace rightIpSpace = rightIfaceMap.get(iface);
+                      if (rightIpSpace == null) {
+                        return;
+                      }
+                      BDD bdd = toBDD.visit(ipSpace);
+                      BDD rightBDD = toBDD.visit(rightIpSpace);
+                      assert bdd.andSat(rightBDD)
+                          : "Left and right BDDs intersect for node "
                               + node
                               + " VRF "
                               + vrf
