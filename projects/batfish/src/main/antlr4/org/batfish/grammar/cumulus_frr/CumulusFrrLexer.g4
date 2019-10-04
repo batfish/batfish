@@ -311,6 +311,11 @@ LINE
   'line'
 ;
 
+MAXIMUM_PATHS
+:
+  'maximum-paths'
+;
+
 MESSAGE_DIGEST
 :
   'message-digest'
