@@ -27,12 +27,14 @@ import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExprs;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
-import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
@@ -343,8 +345,7 @@ public final class CommunityStructuresVerifierTest {
   public void testVisitCommunitySetExprReferenceDefined() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
-            .setCommunitySetExprs(
-                ImmutableMap.of("defined", new LiteralCommunitySet(CommunitySet.empty())))
+            .setCommunitySetExprs(ImmutableMap.of("defined", CommunitySetExprs.empty()))
             .build();
 
     assertNull(new CommunitySetExprReference("defined").accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
@@ -389,6 +390,76 @@ public final class CommunityStructuresVerifierTest {
     _thrown.expect(VendorConversionException.class);
     _thrown.expectMessage(containsString("Undefined reference"));
     new CommunitySetReference("undefined").accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitCommunitySetUnionDefined() {
+    CommunityStructuresVerifierContext ctx =
+        CommunityStructuresVerifierContext.builder()
+            .setCommunitySetExprs(ImmutableMap.of("defined", CommunitySetExprs.empty()))
+            .build();
+
+    assertNull(
+        CommunitySetUnion.of(new CommunitySetExprReference("defined"))
+            .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+  }
+
+  @Test
+  public void testVisitCommunitySetUnionUndefined() {
+    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
+
+    _thrown.expect(VendorConversionException.class);
+    _thrown.expectMessage(containsString("Undefined reference"));
+    CommunitySetUnion.of(new CommunitySetExprReference("undefined"))
+        .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitCommunitySetDifferenceSetDefined() {
+    CommunityStructuresVerifierContext ctx =
+        CommunityStructuresVerifierContext.builder()
+            .setCommunitySetExprs(ImmutableMap.of("defined", CommunitySetExprs.empty()))
+            .build();
+
+    assertNull(
+        new CommunitySetDifference(
+                new CommunitySetExprReference("defined"), AllStandardCommunities.instance())
+            .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+  }
+
+  @Test
+  public void testVisitCommunitySetDifferenceSetUndefined() {
+    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
+
+    _thrown.expect(VendorConversionException.class);
+    _thrown.expectMessage(containsString("Undefined reference"));
+    new CommunitySetDifference(
+            new CommunitySetExprReference("undefined"), AllStandardCommunities.instance())
+        .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitCommunitySetDifferenceMatchDefined() {
+    CommunityStructuresVerifierContext ctx =
+        CommunityStructuresVerifierContext.builder()
+            .setCommunityMatchExprs(ImmutableMap.of("defined", AllStandardCommunities.instance()))
+            .build();
+
+    assertNull(
+        new CommunitySetDifference(
+                CommunitySetExprs.empty(), new CommunityMatchExprReference("defined"))
+            .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+  }
+
+  @Test
+  public void testVisitCommunitySetDifferenceMatchUndefined() {
+    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
+
+    _thrown.expect(VendorConversionException.class);
+    _thrown.expectMessage(containsString("Undefined reference"));
+    new CommunitySetDifference(
+            CommunitySetExprs.empty(), new CommunityMatchExprReference("undefined"))
+        .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
   }
 
   @Test

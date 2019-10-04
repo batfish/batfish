@@ -3,7 +3,8 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class VarInt extends IntExpr {
+/** An {@link IntExpr} composed of a named local variable reference to an int. */
+public final class VarInt extends IntExpr {
 
   private String _var;
 
@@ -12,6 +13,11 @@ public class VarInt extends IntExpr {
 
   public VarInt(String var) {
     _var = var;
+  }
+
+  @Override
+  public <T, U> T accept(IntExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitVarInt(this, arg);
   }
 
   @Override

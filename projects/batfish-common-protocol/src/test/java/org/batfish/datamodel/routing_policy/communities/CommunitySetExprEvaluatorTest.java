@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.junit.Test;
 
 /** Test of {@link CommunitySetExprEvaluator}. */
@@ -24,6 +25,15 @@ public final class CommunitySetExprEvaluatorTest {
 
     assertThat(
         InputCommunities.instance().accept(CommunitySetExprEvaluator.instance(), ctx), equalTo(cs));
+  }
+
+  @Test
+  public void testVisitCommunityExprsSet() {
+    assertThat(
+        eval(
+            CommunityExprsSet.of(
+                new StandardCommunityHighLowExprs(new LiteralInt(1), new LiteralInt(2)))),
+        equalTo(CommunitySet.of(StandardCommunity.of(1, 2))));
   }
 
   @Test
@@ -67,7 +77,7 @@ public final class CommunitySetExprEvaluatorTest {
     CommunitySet cs2 = CommunitySet.of(StandardCommunity.of(2L));
 
     assertThat(
-        eval(new CommunitySetUnion(new LiteralCommunitySet(cs1), new LiteralCommunitySet(cs2))),
+        eval(CommunitySetUnion.of(new LiteralCommunitySet(cs1), new LiteralCommunitySet(cs2))),
         equalTo(CommunitySet.of(StandardCommunity.of(1L), StandardCommunity.of(2L))));
   }
 

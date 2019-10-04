@@ -35,6 +35,10 @@ public interface CommunityMatchExprVisitor<T, U> {
   T visitSiteOfOriginExtendedCommunities(
       SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, U arg);
 
+  T visitStandardCommunityHighMatch(StandardCommunityHighMatch standardCommunityHighMatch, U arg);
+
+  T visitStandardCommunityLowMatch(StandardCommunityLowMatch standardCommunityLowMatch, U arg);
+
   T visitVpnDistinguisherExtendedCommunities(
       VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, U arg);
 }

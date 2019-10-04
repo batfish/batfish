@@ -7,6 +7,8 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.expr.IntMatchExprEvaluator;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 
 /** A visitor for evaluating a {@link CommunityMatchExpr} under a {@link CommunityContext}. */
 public final class CommunityMatchExprEvaluator
@@ -112,6 +114,28 @@ public final class CommunityMatchExprEvaluator
       return false;
     }
     return ((ExtendedCommunity) arg).isRouteOrigin();
+  }
+
+  @Override
+  public Boolean visitStandardCommunityHighMatch(
+      StandardCommunityHighMatch standardCommunityHighMatch, Community arg) {
+    if (!(arg instanceof StandardCommunity)) {
+      return false;
+    }
+    return standardCommunityHighMatch
+        .getExpr()
+        .accept(IntMatchExprEvaluator.instance(), new LiteralInt(((StandardCommunity) arg).high()));
+  }
+
+  @Override
+  public Boolean visitStandardCommunityLowMatch(
+      StandardCommunityLowMatch standardCommunityLowMatch, Community arg) {
+    if (!(arg instanceof StandardCommunity)) {
+      return false;
+    }
+    return standardCommunityLowMatch
+        .getExpr()
+        .accept(IntMatchExprEvaluator.instance(), new LiteralInt(((StandardCommunity) arg).low()));
   }
 
   @Override

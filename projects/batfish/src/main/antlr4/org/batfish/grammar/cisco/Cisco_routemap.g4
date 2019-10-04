@@ -170,7 +170,7 @@ continue_rm_stanza
    CONTINUE DEC? NEWLINE
 ;
 
-delete_rp_stanza
+delete_community_rp_stanza
 :
    DELETE COMMUNITY
    (
@@ -514,7 +514,7 @@ rp_route_type
 rp_stanza
 :
    apply_rp_stanza
-   | delete_rp_stanza
+   | delete_community_rp_stanza
    | disposition_rp_stanza
    |
    (
