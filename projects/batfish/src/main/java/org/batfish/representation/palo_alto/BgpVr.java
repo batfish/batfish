@@ -10,24 +10,33 @@ import org.batfish.datamodel.Ip;
  * protocol bgp}.
  */
 public class BgpVr implements Serializable {
+  /** From PAN admin UI - only shows in running config if checked (as yes). */
+  private static final boolean DEFAULT_ENABLE = false;
+  /** From PAN admin UI - only shows in running config if checked (as yes). */
+  private static final boolean DEFAULT_INSTALL_ROUTE = false;
+  /** From PAN admin UI - only shows in running config if unchecked (as no). */
+  private static final boolean DEFAULT_REJECT_DEFAULT_ROUTE = true;
 
   public BgpVr() {
+    _enable = DEFAULT_ENABLE;
+    _installRoute = DEFAULT_INSTALL_ROUTE;
+    _rejectDefaultRoute = DEFAULT_REJECT_DEFAULT_ROUTE;
     _routingOptions = new BgpVrRoutingOptions();
   }
 
-  public @Nullable Boolean getEnable() {
+  public boolean getEnable() {
     return _enable;
   }
 
-  public void setEnable(@Nullable Boolean enable) {
+  public void setEnable(boolean enable) {
     _enable = enable;
   }
 
-  public @Nullable Boolean getInstallRoute() {
+  public boolean getInstallRoute() {
     return _installRoute;
   }
 
-  public void setInstallRoute(@Nullable Boolean installRoute) {
+  public void setInstallRoute(boolean installRoute) {
     _installRoute = installRoute;
   }
 
@@ -39,11 +48,11 @@ public class BgpVr implements Serializable {
     _localAs = localAs;
   }
 
-  public @Nullable Boolean getRejectDefaultRoute() {
+  public boolean getRejectDefaultRoute() {
     return _rejectDefaultRoute;
   }
 
-  public void setRejectDefaultRoute(@Nullable Boolean rejectDefaultRoute) {
+  public void setRejectDefaultRoute(boolean rejectDefaultRoute) {
     _rejectDefaultRoute = rejectDefaultRoute;
   }
 
@@ -62,9 +71,9 @@ public class BgpVr implements Serializable {
   // private implementation details
   private final BgpVrRoutingOptions _routingOptions;
 
-  private @Nullable Boolean _enable;
-  private @Nullable Boolean _installRoute;
+  private boolean _enable;
+  private boolean _installRoute;
   private @Nullable Long _localAs;
-  private @Nullable Boolean _rejectDefaultRoute;
+  private boolean _rejectDefaultRoute;
   private @Nullable Ip _routerId;
 }
