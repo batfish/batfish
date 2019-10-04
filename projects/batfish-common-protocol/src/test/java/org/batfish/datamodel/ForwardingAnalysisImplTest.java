@@ -1544,9 +1544,9 @@ public class ForwardingAnalysisImplTest {
         computeDeliveredToSubnet(
             ownedIps, ifaceArpFalseDstIp, ifaceArpFalseDstIpNetworkBroadcast, ifaceHostSubnetIps);
     BDD expected =
-        DST.visit(ifaceHostSubnetIps).and(
-            DST.visit(ifaceArpFalseDstIp).diff(DST.visit(ifaceArpFalseDstIpNetworkBroadcast))
-        ).diff(DST.visit(ownedIps));
+        DST.visit(ifaceHostSubnetIps)
+            .and(DST.visit(ifaceArpFalseDstIp).diff(DST.visit(ifaceArpFalseDstIpNetworkBroadcast)))
+            .diff(DST.visit(ownedIps));
     BDD actual = DST.visit(deliveredToSubnet);
     assertEquals(expected, actual);
   }

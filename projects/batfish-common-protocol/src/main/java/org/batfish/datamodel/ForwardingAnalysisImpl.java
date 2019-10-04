@@ -243,7 +243,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           ipOwners.getActiveInterfaceHostIps();
 
       _deliveredToSubnet =
-          computeDeliveredToSubnet(arpFalseDestIp, arpFalseDestIpNetworkBroadcast, interfaceHostSubnetIps, ownedIps);
+          computeDeliveredToSubnet(
+              arpFalseDestIp, arpFalseDestIpNetworkBroadcast, interfaceHostSubnetIps, ownedIps);
 
       Map<String, Map<String, BDD>> interfaceHostSubnetIpBDDs =
           computeInterfaceHostSubnetIpBDDs(interfaceHostSubnetIps, ipSpaceToBDD);
@@ -1287,11 +1288,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             IpSpace ifaceArpFalseDstIpNetworkBroadcast =
                                 arpFalseDestIpNetworkBroadcast.get(node).get(vrf).get(iface);
                             IpSpace ifaceHostSubnetIps =
-                                interfaceHostSubnetIps
-                                    .get(node)
-                                    .get(iface);
+                                interfaceHostSubnetIps.get(node).get(iface);
                             return computeDeliveredToSubnet(
-                                ownedIps, ifaceArpFalseDstIp, ifaceArpFalseDstIpNetworkBroadcast, ifaceHostSubnetIps);
+                                ownedIps,
+                                ifaceArpFalseDstIp,
+                                ifaceArpFalseDstIpNetworkBroadcast,
+                                ifaceHostSubnetIps);
                           })));
     }
   }
@@ -1299,7 +1301,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @Nonnull
   @VisibleForTesting
   static IpSpace computeDeliveredToSubnet(
-      IpSpace ownedIps, IpSpace ifaceArpFalseDstIp, IpSpace ifaceArpFalseDstIpNetworkBroadcast,
+      IpSpace ownedIps,
+      IpSpace ifaceArpFalseDstIp,
+      IpSpace ifaceArpFalseDstIpNetworkBroadcast,
       IpSpace ifaceHostSubnetIps) {
     return firstNonNull(
         AclIpSpace.difference(
