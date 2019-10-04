@@ -57,6 +57,7 @@ sni_loopback
     LOOPBACK
     (
         if_common
+        | snil_ip
         | snil_units
     )?
 ;
@@ -172,6 +173,11 @@ sniel3_unit
 sniel3_units
 :
     UNITS sniel3_unit?
+;
+
+snil_ip
+:
+    IP address = interface_address
 ;
 
 snil_unit
