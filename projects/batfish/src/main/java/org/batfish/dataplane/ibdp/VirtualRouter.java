@@ -861,10 +861,25 @@ public class VirtualRouter implements Serializable {
       return Stream.empty();
     }
     return iface.getAllConcreteAddresses().stream()
-        .filter(addr -> addr.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH)
+        .filter(
+            addr ->
+                shouldGenerateLocalRoute(
+                    addr.getNetworkBits(), iface.getAddressMetadata().get(addr)))
         .map(
             addr ->
                 generateLocalRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));
+  }
+
+  /**
+   * Returns true if local routes should always be generated for the provided {@link
+   * ConnectedRouteMetadata}
+   */
+  @VisibleForTesting
+  static boolean shouldGenerateLocalRoute(
+      int prefixLength, @Nullable ConnectedRouteMetadata connectedRouteMetadata) {
+    return (connectedRouteMetadata != null
+            && Boolean.TRUE.equals(connectedRouteMetadata.getGenerateLocalRoutes()))
+        || prefixLength < Prefix.MAX_PREFIX_LENGTH;
   }
 
   /** Generate a connected route for a given address (and associated metadata). */

@@ -27842,6 +27842,7 @@
             "addressMetadata" : {
               "1.2.3.4/24" : {
                 "admin" : 10,
+                "generateLocalRoutes" : true,
                 "tag" : 12345
               }
             },
@@ -27982,6 +27983,7 @@
             "addressMetadata" : {
               "1.1.1.2/31" : {
                 "admin" : 0,
+                "generateLocalRoutes" : true,
                 "tag" : 0
               }
             },
