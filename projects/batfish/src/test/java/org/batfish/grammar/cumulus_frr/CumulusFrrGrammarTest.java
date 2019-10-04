@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
+import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
@@ -1045,5 +1046,15 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testEnd() {
     parseLines("frr version", "end\n");
+  }
+
+  @Test
+  public void testNextMultipleOfFive() {
+    assertThat(nextMultipleOfFive(null), equalTo(5L));
+    assertThat(nextMultipleOfFive(0L), equalTo(5L));
+    assertThat(nextMultipleOfFive(1L), equalTo(5L));
+    assertThat(nextMultipleOfFive(4L), equalTo(5L));
+    assertThat(nextMultipleOfFive(5L), equalTo(10L));
+    assertThat(nextMultipleOfFive(6L), equalTo(10L));
   }
 }

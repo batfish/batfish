@@ -13,6 +13,7 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.batfish.representation.cumulus_interfaces.Interface.isPhysicalInterfaceType;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -812,7 +813,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentIpPrefixList.getLines().put(num, pll);
   }
 
-  private long nextMultipleOfFive(@Nullable Long lastNum) {
-    return (long) (Math.ceil(Optional.ofNullable(lastNum).orElse(0L) * 1.0 / 5) * 5);
+  @VisibleForTesting
+  static long nextMultipleOfFive(@Nullable Long lastNum) {
+    return (long) (Math.ceil((Optional.ofNullable(lastNum).orElse(0L) + 1) * 1.0 / 5) * 5);
   }
 }
