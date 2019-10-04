@@ -1,8 +1,8 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.hamcrest.Matchers.empty;
@@ -79,7 +79,7 @@ public class CiscoConversionsBgpPoliciesTest {
     NetworkFactory nf = new NetworkFactory();
     _c = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     RoutingPolicy.builder()
-        .setName(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+        .setName(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
         .setOwner(_c)
         .addStatement(Statements.ReturnTrue.toStaticStatement())
         .build();
@@ -173,7 +173,7 @@ public class CiscoConversionsBgpPoliciesTest {
     generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, true, null, _c, _w);
     RoutingPolicy bgpExportPolicy =
         _c.getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
+            .get(generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
     assertThat(bgpExportPolicy, notNullValue());
     assertThat(_w.getRedFlagWarnings(), empty());
 
@@ -214,7 +214,7 @@ public class CiscoConversionsBgpPoliciesTest {
 
     RoutingPolicy bgpExportPolicy =
         _c.getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
+            .get(generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
     assertThat(bgpExportPolicy, notNullValue());
     assertThat(_w.getRedFlagWarnings(), empty());
 
@@ -247,7 +247,7 @@ public class CiscoConversionsBgpPoliciesTest {
 
     RoutingPolicy bgpExportPolicy =
         _c.getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
+            .get(generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
     assertThat(bgpExportPolicy, notNullValue());
     assertThat(_w.getRedFlagWarnings(), empty());
 
@@ -289,7 +289,7 @@ public class CiscoConversionsBgpPoliciesTest {
 
     RoutingPolicy bgpExportPolicy =
         _c.getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
+            .get(generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
     assertThat(bgpExportPolicy, notNullValue());
     assertThat(_w.getRedFlagWarnings(), hasSize(1));
     assertThat(
