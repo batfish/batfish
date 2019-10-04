@@ -1712,12 +1712,42 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         ipSpaceToBDD);
 
     // Sanity check disjointness of ARP failure dispositions
-    assertDeepIpSpaceDisjointness(getDeliveredToSubnet(), getExitsNetwork(), ipSpaceToBDD);
-    assertDeepIpSpaceDisjointness(getDeliveredToSubnet(), getInsufficientInfo(), ipSpaceToBDD);
-    assertDeepIpSpaceDisjointness(getDeliveredToSubnet(), getNeighborUnreachable(), ipSpaceToBDD);
-    assertDeepIpSpaceDisjointness(getExitsNetwork(), getInsufficientInfo(), ipSpaceToBDD);
-    assertDeepIpSpaceDisjointness(getExitsNetwork(), getNeighborUnreachable(), ipSpaceToBDD);
-    assertDeepIpSpaceDisjointness(getInsufficientInfo(), getNeighborUnreachable(), ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(
+        "delivered_to_subnet",
+        getDeliveredToSubnet(),
+        "exits_network",
+        getExitsNetwork(),
+        ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(
+        "delivered_to_subnet",
+        getDeliveredToSubnet(),
+        "insufficient_info",
+        getInsufficientInfo(),
+        ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(
+        "delivered_to_subnet",
+        getDeliveredToSubnet(),
+        "neighbor_unreachable",
+        getNeighborUnreachable(),
+        ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(
+        "exits_network",
+        getExitsNetwork(),
+        "insufficient_info",
+        getInsufficientInfo(),
+        ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(
+        "exits_network",
+        getExitsNetwork(),
+        "neighbor_unreachable",
+        getNeighborUnreachable(),
+        ipSpaceToBDD);
+    assertDeepIpSpaceDisjointness(
+        "insufficient_info",
+        getInsufficientInfo(),
+        "neighbor_unreachable",
+        getNeighborUnreachable(),
+        ipSpaceToBDD);
 
     Map<String, Map<String, Map<String, IpSpace>>> union1 =
         union(getNeighborUnreachable(), getInsufficientInfo());
@@ -1821,7 +1851,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   private static void assertDeepIpSpaceDisjointness(
+      String leftName,
       Map<String, Map<String, Map<String, IpSpace>>> left,
+      String rightName,
       Map<String, Map<String, Map<String, IpSpace>>> right,
       IpSpaceToBDD toBDD) {
     left.forEach(
@@ -1844,13 +1876,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       }
                       BDD bdd = toBDD.visit(ipSpace);
                       BDD rightBDD = toBDD.visit(rightIpSpace);
-                      assert bdd.andSat(rightBDD)
-                          : "Left and right BDDs intersect for node "
-                              + node
-                              + " VRF "
-                              + vrf
-                              + " interface "
-                              + iface;
+                      assert !bdd.andSat(rightBDD)
+                          : String.format(
+                              "%s and %s BDDs intersect for node %s VRF %s interface %s",
+                              leftName, rightName, node, vrf, iface);
                     });
               });
         });
