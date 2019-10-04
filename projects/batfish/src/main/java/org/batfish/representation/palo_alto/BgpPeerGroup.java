@@ -15,8 +15,9 @@ public class BgpPeerGroup implements Serializable {
   /** TODO From PAN admin UI - only shows in running config if checked (as yes). */
   private static final boolean DEFAULT_ENABLE = false;
 
-  public BgpPeerGroup() {
+  public BgpPeerGroup(String name) {
     _enable = DEFAULT_ENABLE;
+    _name = name;
     _peers = new HashMap<>();
   }
 
@@ -26,6 +27,10 @@ public class BgpPeerGroup implements Serializable {
 
   public void setEnable(boolean enable) {
     _enable = enable;
+  }
+
+  public @Nonnull String getName() {
+    return _name;
   }
 
   public @Nullable BgpPeerGroupTypeAndOptions getTypeAndOptions() {
@@ -47,7 +52,7 @@ public class BgpPeerGroup implements Serializable {
   }
 
   public @Nonnull BgpPeer getOrCreatePeerGroup(String name) {
-    return _peers.computeIfAbsent(name, n -> new BgpPeer());
+    return _peers.computeIfAbsent(name, BgpPeer::new);
   }
 
   public @Nonnull Map<String, BgpPeer> getPeers() {
@@ -57,6 +62,7 @@ public class BgpPeerGroup implements Serializable {
   // private implementation details
 
   private boolean _enable;
+  private final @Nonnull String _name;
   private @Nonnull final Map<String, BgpPeer> _peers;
   private @Nullable BgpPeerGroupTypeAndOptions _typeAndOptions;
 }
