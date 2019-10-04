@@ -170,6 +170,12 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamily_ipv4UnicastMaximumPaths() {
+    // do not crash
+    parse("router bgp 1\n address-family ipv4 unicast\n maximum-paths 4\nexit-address-family\n");
+  }
+
+  @Test
   public void testBgpAddressFamilyIpv4UnicastNetwork() {
     parseLines(
         "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24", "exit-address-family");
