@@ -11,11 +11,11 @@ import org.batfish.datamodel.Ip;
  */
 public class BgpVr implements Serializable {
   /** From PAN admin UI - only shows in running config if checked (as yes). */
-  private final boolean DEFAULT_ENABLE = false;
+  private static final boolean DEFAULT_ENABLE = false;
   /** From PAN admin UI - only shows in running config if checked (as yes). */
-  private final boolean DEFAULT_INSTALL_ROUTE = false;
+  private static final boolean DEFAULT_INSTALL_ROUTE = false;
   /** From PAN admin UI - only shows in running config if unchecked (as no). */
-  private final boolean DEFAULT_REJECT_DEFAULT_ROUTE = true;
+  private static final boolean DEFAULT_REJECT_DEFAULT_ROUTE = true;
 
   public BgpVr() {
     _enable = DEFAULT_ENABLE;
