@@ -1521,16 +1521,34 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             String vrf = vrfEntry.getKey();
                             String iface = ifaceEntry.getKey();
 
+                            boolean isIfaceFull =
+                                !interfacesWithMissingDevices.get(node).contains(iface);
                             IpSpace ifaceArpFalse = ifaceEntry.getValue();
+                            IpSpace ifaceArpFalseDestIp =
+                                arpFalseDestIp.get(node).get(vrf).get(iface);
+                            IpSpace ifaceHostSubnetIps =
+                                interfaceHostSubnetIps.get(node).get(iface);
 
-                            return interfacesWithMissingDevices.get(node).contains(iface)
-                                ? AclIpSpace.intersection(
-                                    arpFalseDestIp.get(node).get(vrf).get(iface),
-                                    interfaceHostSubnetIps.get(node).get(iface),
-                                    ownedIps)
-                                : ifaceArpFalse;
+                            return computeNeighborUnreachable(
+                                isIfaceFull,
+                                ownedIps,
+                                ifaceArpFalse,
+                                ifaceArpFalseDestIp,
+                                ifaceHostSubnetIps);
                           })));
     }
+  }
+
+  @VisibleForTesting
+  static IpSpace computeNeighborUnreachable(
+      boolean isIfaceFull,
+      IpSpace ownedIps,
+      IpSpace ifaceArpFalse,
+      IpSpace ifaceArpFalseDestIp,
+      IpSpace ifaceHostSubnetIps) {
+    return isIfaceFull
+        ? ifaceArpFalse
+        : AclIpSpace.intersection(ifaceArpFalseDestIp, ifaceHostSubnetIps, ownedIps);
   }
 
   @Override

@@ -23,6 +23,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNext
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeSomeoneReplies;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.union;
+import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
@@ -1416,9 +1417,8 @@ public class ForwardingAnalysisImplTest {
   }
 
   /**
-   * Case 1a:
-   * A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it is
-   * internal but not connected to the interface.
+   * Case 1a: A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it
+   * is internal but not connected to the interface.
    */
   @Test
   public void testInsufficientInfo_arpFalseDstIp_internalElsewhere() {
@@ -1442,9 +1442,8 @@ public class ForwardingAnalysisImplTest {
   }
 
   /**
-   * Case 1b:
-   * A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it is
-   * a network or broadcast IP of the route's network.
+   * Case 1b: A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it
+   * is a network or broadcast IP of the route's network.
    */
   @Test
   public void testInsufficientInfo_arpFalseNetworkBroadcastDstIp() {
@@ -1467,11 +1466,7 @@ public class ForwardingAnalysisImplTest {
     assertEquals(expected, actual);
   }
 
-
-  /**
-   * Case 2:
-   * Internal dstIPs routable to an external next-hop should get insufficient_info.
-   */
+  /** Case 2: Internal dstIPs routable to an external next-hop should get insufficient_info. */
   @Test
   public void testInsufficientInfo_internalDstIpExternalNextHopIp() {
     IpSpace internalIps = IP_IP_SPACE;
@@ -1494,9 +1489,8 @@ public class ForwardingAnalysisImplTest {
   }
 
   /**
-   * Case 3:
-   * Internal dstIPs routable to an owned next-hop IP for which we don't get an ARP reply should
-   * get insufficient_info.
+   * Case 3: Internal dstIPs routable to an owned next-hop IP for which we don't get an ARP reply
+   * should get insufficient_info.
    */
   @Test
   public void testInsufficientInfo_ownedNextHopIp() {
@@ -1516,6 +1510,46 @@ public class ForwardingAnalysisImplTest {
             ifaceDstIpsWithOwnedNextHopIpArpFalse);
     BDD expected = DST.visit(PREFIX_IP_SPACE);
     BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * If an interface is full (all connected host IPs are owned by the network), all dstIPs for which
+   * we get an ARP failure (regardless of the ARP IP) get neighbor_unreachable.
+   */
+  @Test
+  public void testComputeNeighborUnreachable_full() {
+    boolean isIfaceFull = true;
+    IpSpace ownedIps = UniverseIpSpace.INSTANCE;
+    IpSpace ifaceArpFalse = PREFIX_IP_SPACE;
+    IpSpace ifaceArpFalseDestIp = UniverseIpSpace.INSTANCE;
+    IpSpace ifaceHostSubnetIps = UniverseIpSpace.INSTANCE;
+    IpSpace neighborUnreachable =
+        computeNeighborUnreachable(
+            isIfaceFull, ownedIps, ifaceArpFalse, ifaceArpFalseDestIp, ifaceHostSubnetIps);
+    BDD expected = DST.visit(PREFIX_IP_SPACE);
+    BDD actual = DST.visit(neighborUnreachable);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * For an interface that is not full, we give a dst IP neighbor_unreachable if: we ARP for the dst
+   * IP but don't get a reply, the dst IP is a host IP of the connected subnet, and it's owned in
+   * the network.
+   */
+  @Test
+  public void testComputeNeighborUnreachable_notFull() {
+    boolean isIfaceFull = false;
+    IpSpace ownedIps = ipWithWildcardMask(Ip.parse("255.0.0.0"), 0x00FFFFFFL).toIpSpace();
+    IpSpace ifaceArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDestIp = ipWithWildcardMask(Ip.parse("0.255.0.0"), 0xFF00FFFFL).toIpSpace();
+    IpSpace ifaceHostSubnetIps = ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
+    IpSpace neighborUnreachable =
+        computeNeighborUnreachable(
+            isIfaceFull, ownedIps, ifaceArpFalse, ifaceArpFalseDestIp, ifaceHostSubnetIps);
+    BDD expected =
+        DST.visit(ownedIps).and(DST.visit(ifaceArpFalseDestIp)).and(DST.visit(ifaceHostSubnetIps));
+    BDD actual = DST.visit(neighborUnreachable);
     assertEquals(expected, actual);
   }
 
