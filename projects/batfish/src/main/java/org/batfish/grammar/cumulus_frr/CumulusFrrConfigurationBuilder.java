@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -40,7 +41,9 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_on_matchContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
@@ -113,6 +116,7 @@ import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.RouteMap;
+import org.batfish.representation.cumulus.RouteMapCall;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
@@ -177,6 +181,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, ctx.getText(), _parser);
   }
 
   @Override
@@ -669,6 +677,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRm_call(Rm_callContext ctx) {
+    _currentRouteMapEntry.setCall(new RouteMapCall(ctx.name.getText()));
+  }
+
+  @Override
   public void exitRmmipa_prefix_list(Rmmipa_prefix_listContext ctx) {
     String name = ctx.name.getText();
     RouteMapMatchIpAddressPrefixList matchPrefixList =
@@ -722,6 +735,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRmm_tag(Rmm_tagContext ctx) {
     _currentRouteMapEntry.setMatchTag(new RouteMapMatchTag(toLong(ctx.tag)));
+  }
+
+  @Override
+  public void enterRm_on_match(Rm_on_matchContext ctx) {
+    // Could not find good docs for what this is. Guessing like a "continue" but punting for now.
+    todo(ctx);
   }
 
   @Override

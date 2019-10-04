@@ -13,6 +13,7 @@ import org.batfish.datamodel.LineAction;
 public final class RouteMapEntry implements Serializable {
 
   private final @Nonnull LineAction _action;
+  private @Nullable RouteMapCall _call;
   private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
   private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
@@ -33,6 +34,15 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nonnull LineAction getAction() {
     return _action;
+  }
+
+  @Nullable
+  public RouteMapCall getCall() {
+    return _call;
+  }
+
+  public void setCall(@Nullable RouteMapCall call) {
+    _call = call;
   }
 
   /** Return stream of match statements for this entry. */

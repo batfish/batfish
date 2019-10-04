@@ -1106,6 +1106,16 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull List<Statement> toActions(RouteMapEntry entry) {
     ImmutableList.Builder<Statement> builder = ImmutableList.builder();
     entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
+    // Call statement is executed after all set statements.
+    // http://docs.frrouting.org/en/latest/routemap.html#route-maps
+    RouteMapCall callStmt = entry.getCall();
+    if (callStmt != null && _routeMaps.containsKey(callStmt.getRouteMapName())) {
+      builder.add(
+          new If(
+              new CallExpr(callStmt.getRouteMapName()),
+              ImmutableList.of(),
+              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    }
     return builder.add(toStatement(entry.getAction())).build();
   }
 
