@@ -1,6 +1,7 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
@@ -18,8 +19,9 @@ public class BgpPeer implements Serializable {
   /** TODO From PAN admin UI - only shows in running config if checked (as yes). */
   private static final boolean DEFAULT_ENABLE = false;
 
-  public BgpPeer() {
+  public BgpPeer(String name) {
     _enable = DEFAULT_ENABLE;
+    _name = name;
   }
 
   public boolean getEnable() {
@@ -44,6 +46,10 @@ public class BgpPeer implements Serializable {
 
   public void setLocalInterface(@Nullable String localInterface) {
     _localInterface = localInterface;
+  }
+
+  public @Nonnull String getName() {
+    return _name;
   }
 
   public @Nullable Ip getPeerAddress() {
@@ -75,6 +81,7 @@ public class BgpPeer implements Serializable {
   private boolean _enable;
   private @Nullable Ip _localAddress;
   private @Nullable String _localInterface;
+  private final @Nonnull String _name;
   private @Nullable Ip _peerAddress;
   private @Nullable Long _peerAs;
   private @Nullable ReflectorClient _reflectorClient;
