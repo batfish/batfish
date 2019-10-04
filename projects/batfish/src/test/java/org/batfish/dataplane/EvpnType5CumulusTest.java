@@ -1,6 +1,5 @@
 package org.batfish.dataplane;
 
-import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isEvpnType5RouteThat;
@@ -58,8 +57,7 @@ public class EvpnType5CumulusTest {
 
     ImmutableSet<Prefix> prefixes =
         ImmutableSet.of(
-            Prefix.create(Ip.parse("100.100.100.100"), MAX_PREFIX_LENGTH),
-            Prefix.create(Ip.parse("100.100.100.101"), MAX_PREFIX_LENGTH));
+            Ip.parse("100.100.100.100").toPrefix(), Ip.parse("100.100.100.101").toPrefix());
 
     Map<String, Set<String>> nextHopInterfaces =
         ImmutableMap.of(

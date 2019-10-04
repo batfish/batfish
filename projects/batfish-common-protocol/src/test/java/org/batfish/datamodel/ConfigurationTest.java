@@ -46,7 +46,7 @@ public final class ConfigurationTest {
     String generatedRouteGenerationPolicyName = "generatedRouteGenerationPolicy";
     String ospfExportPolicyName = "ospfExportPolicy";
     String ospfExportSubPolicyName = "ospfExportSubPolicy";
-    Prefix generatedRoutePrefix = Prefix.create(Ip.ZERO, Prefix.MAX_PREFIX_LENGTH);
+    Prefix generatedRoutePrefix = Ip.ZERO.toPrefix();
 
     Configuration c = new Configuration("test", ConfigurationFormat.CISCO_IOS);
     Vrf vrf = c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new);

@@ -20,7 +20,7 @@ public final class IpRange {
 
     // If IPs are the same, just add /32 prefix
     if (low == high) {
-      prefixes.add(Prefix.create(lowIp, Prefix.MAX_PREFIX_LENGTH));
+      prefixes.add(lowIp.toPrefix());
       return;
     }
 

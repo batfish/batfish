@@ -39,7 +39,7 @@ public final class BDDPrefixTest {
     Ip nonMatchingIp = Ip.parse("2.2.2.2");
     BDD matchingPrefix8 = _bddPrefix.isPrefix(Prefix.create(matchingIp, 8));
     BDD matchingPrefix24 = _bddPrefix.isPrefix(Prefix.create(matchingIp, 24));
-    BDD matchingPrefix32 = _bddPrefix.isPrefix(Prefix.create(matchingIp, 32));
+    BDD matchingPrefix32 = _bddPrefix.isPrefix(matchingIp.toPrefix());
     BDD nonMatchingPrefix24 = _bddPrefix.isPrefix(Prefix.create(nonMatchingIp, 24));
 
     assertTrue(matchingPrefix24.imp(rangeBdd).isOne());
@@ -85,7 +85,7 @@ public final class BDDPrefixTest {
     Ip nonMatchingIp = Ip.parse("2.2.2.2");
     BDD matchingPrefix8 = _bddPrefix.isPrefix(Prefix.create(matchingIp, 8));
     BDD matchingPrefix24 = _bddPrefix.isPrefix(Prefix.create(matchingIp, 24));
-    BDD matchingPrefix32 = _bddPrefix.isPrefix(Prefix.create(matchingIp, 32));
+    BDD matchingPrefix32 = _bddPrefix.isPrefix(matchingIp.toPrefix());
     BDD nonMatchingPrefix24 = _bddPrefix.isPrefix(Prefix.create(nonMatchingIp, 24));
 
     assertTrue(matchingPrefix24.imp(rangeBdd).isOne());

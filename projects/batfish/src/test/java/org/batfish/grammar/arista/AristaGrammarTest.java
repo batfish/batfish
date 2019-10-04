@@ -515,10 +515,7 @@ public class AristaGrammarTest {
     for (Ip ip : neighborIPs) {
 
       BgpActivePeerConfig neighbor =
-          c.getDefaultVrf()
-              .getBgpProcess()
-              .getActiveNeighbors()
-              .get(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH));
+          c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ip.toPrefix());
       assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
       assertThat(
           neighbor.getEvpnAddressFamily().getL2VNIs(),

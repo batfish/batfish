@@ -34,7 +34,7 @@ public final class HostNetworkObject implements Serializable, NetworkObject {
   }
 
   public Prefix getPrefix() {
-    return Prefix.create(_host, Prefix.MAX_PREFIX_LENGTH);
+    return _host.toPrefix();
   }
 
   @Override

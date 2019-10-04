@@ -80,7 +80,6 @@ import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
@@ -298,9 +297,8 @@ public class EdgesAnswererTest {
             .setLocalAs(1L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    bgp1.getActiveNeighbors().put(Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), activePeer1);
-    BgpPeerConfigId activeId1 =
-        new BgpPeerConfigId("host1", "vrf1", Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), false);
+    bgp1.getActiveNeighbors().put(ip2.toPrefix(), activePeer1);
+    BgpPeerConfigId activeId1 = new BgpPeerConfigId("host1", "vrf1", ip2.toPrefix(), false);
 
     BgpActivePeerConfig activePeer2 =
         BgpActivePeerConfig.builder()
@@ -308,9 +306,8 @@ public class EdgesAnswererTest {
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    bgp2.getActiveNeighbors().put(Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), activePeer2);
-    BgpPeerConfigId activeId2 =
-        new BgpPeerConfigId("host2", "vrf2", Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), false);
+    bgp2.getActiveNeighbors().put(ip1.toPrefix(), activePeer2);
+    BgpPeerConfigId activeId2 = new BgpPeerConfigId("host2", "vrf2", ip1.toPrefix(), false);
 
     // Edge between unnumbered peers
     String iface1 = "iface1";

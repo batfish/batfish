@@ -17,13 +17,13 @@ public class IpWildcardTest {
     new EqualsTester()
         .addEqualityGroup(
             IpWildcard.parse("1.2.3.4"),
-            IpWildcard.create(Ip.parse("1.2.3.4")),
-            IpWildcard.create(Prefix.parse("1.2.3.4/32")),
+            IpWildcard.parse("1.2.3.4"),
+            IpWildcard.parse("1.2.3.4/32"),
             IpWildcard.ipWithWildcardMask(Ip.parse("1.2.3.4"), 0L),
             IpWildcard.parse("1.2.3.4:0.0.0.0"))
         .addEqualityGroup(
             IpWildcard.parse("1.2.3.4/8"),
-            IpWildcard.create(Prefix.parse("1.2.3.4/8")),
+            IpWildcard.parse("1.2.3.4/8"),
             IpWildcard.ipWithWildcardMask(Ip.parse("1.2.3.4"), 0x00FFFFFFL),
             IpWildcard.parse("1.2.3.4:0.255.255.255"))
         .addEqualityGroup(

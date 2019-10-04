@@ -128,8 +128,7 @@ public class FilterLineReachabilityTest {
                     .build()),
             IpAccessListLine.acceptingHeaderSpace(
                 HeaderSpace.builder()
-                    .setSrcIps(
-                        IpWildcard.create(Prefix.create(Ip.parse("1.2.3.4"), 32)).toIpSpace())
+                    .setSrcIps(IpWildcard.create(Ip.parse("1.2.3.4").toPrefix()).toIpSpace())
                     .build()),
             IpAccessListLine.acceptingHeaderSpace(
                 HeaderSpace.builder()

@@ -4467,7 +4467,7 @@ public final class CiscoNxosGrammarTest {
       ObjectGroupIpAddressLine line;
 
       line = lines.next();
-      assertThat(line.getIpWildcard(), equalTo(IpWildcard.create(Ip.parse("10.0.0.1"))));
+      assertThat(line.getIpWildcard(), equalTo(IpWildcard.parse("10.0.0.1")));
 
       line = lines.next();
       assertThat(
@@ -4475,7 +4475,7 @@ public final class CiscoNxosGrammarTest {
           equalTo(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.255.0.255"))));
 
       line = lines.next();
-      assertThat(line.getIpWildcard(), equalTo(IpWildcard.create(Prefix.parse("10.0.0.0/24"))));
+      assertThat(line.getIpWildcard(), equalTo(IpWildcard.parse("10.0.0.0/24")));
     }
   }
 

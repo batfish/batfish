@@ -3849,16 +3849,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
-    _currentNetworkObjectGroup.getLines().add(IpWildcard.create(toIp(ctx.ip)).toIpSpace());
+    _currentNetworkObjectGroup.getLines().add(toIp(ctx.ip).toIpSpace());
   }
 
   @Override
   public void exitOgn_ip_with_mask(Ogn_ip_with_maskContext ctx) {
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
-    _currentNetworkObjectGroup
-        .getLines()
-        .add(IpWildcard.create(Prefix.create(ip, mask)).toIpSpace());
+    _currentNetworkObjectGroup.getLines().add(Prefix.create(ip, mask).toIpSpace());
   }
 
   @Override

@@ -224,7 +224,7 @@ final class Conversions {
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
         .collect(
             ImmutableMap.toImmutableMap(
-                e -> Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                e -> e.getKey().toPrefix(),
                 e ->
                     (BgpActivePeerConfig)
                         Conversions.toBgpNeighbor(
@@ -232,7 +232,7 @@ final class Conversions {
                             vsConfig,
                             vrf,
                             proc,
-                            Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                            e.getKey().toPrefix(),
                             bgpConfig,
                             bgpVrf,
                             e.getValue(),

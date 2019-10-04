@@ -126,7 +126,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
           .flatMap(ni -> ni.getPrivateIpAddresses().stream())
           .map(PrivateIpAddress::getPublicIp)
           .filter(Objects::nonNull)
-          .forEach(ip -> publicPrefixSpace.addPrefix(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH)));
+          .forEach(ip -> publicPrefixSpace.addPrefix(ip.toPrefix()));
     }
     installRoutingPolicyAdvertiseStatic(
         BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory());

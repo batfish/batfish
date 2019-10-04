@@ -776,10 +776,8 @@ public final class FlatJuniperGrammarTest {
 
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
-    BgpPeerConfig neighbor1 =
-        proc.getActiveNeighbors().get(Prefix.create(neighbor1Ip, Prefix.MAX_PREFIX_LENGTH));
-    BgpPeerConfig neighbor2 =
-        proc.getActiveNeighbors().get(Prefix.create(neighbor2Ip, Prefix.MAX_PREFIX_LENGTH));
+    BgpPeerConfig neighbor1 = proc.getActiveNeighbors().get(neighbor1Ip.toPrefix());
+    BgpPeerConfig neighbor2 = proc.getActiveNeighbors().get(neighbor2Ip.toPrefix());
 
     assertThat(neighbor1, hasClusterId(Ip.parse("3.3.3.3").asLong()));
     assertThat(neighbor2, hasClusterId(Ip.parse("1.1.1.1").asLong()));
