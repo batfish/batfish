@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
+import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
@@ -742,6 +743,49 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrIpPrefixListNoSeq() {
+    String name = "NAME";
+    String prefix1 = "10.0.0.1/24";
+    String prefix2 = "10.0.1.2/24";
+    parse(
+        String.format(
+            "ip prefix-list %s seq 4 permit %s\n" + "ip prefix-list %s deny %s ge 27 le 30 \n",
+            name, prefix1, name, prefix2));
+    assertThat(CONFIG.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = CONFIG.getIpPrefixLists().get(name);
+    IpPrefixListLine line1 = prefixList.getLines().get(4L);
+    assertThat(line1.getLine(), equalTo(4L));
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
+
+    IpPrefixListLine line2 = prefixList.getLines().get(5L);
+    assertThat(line2.getLine(), equalTo(5L));
+    assertThat(line2.getAction(), equalTo(LineAction.DENY));
+    assertThat(line2.getLengthRange(), equalTo(new SubRange(27, 30)));
+    assertThat(line2.getPrefix(), equalTo(Prefix.parse("10.0.1.2/24")));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixListAny() {
+    String name = "NAME";
+    parse(String.format("ip prefix-list %s seq 5 permit any\n", name));
+    assertThat(CONFIG.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = CONFIG.getIpPrefixLists().get(name);
+    IpPrefixListLine line1 = prefixList.getLines().get(5L);
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.ZERO));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixListDescription() {
+    String name = "NAME";
+    // Don't crash
+    parse(String.format("ip prefix-list %s description FOO\n", name));
+  }
+
+  @Test
   public void testCumulusFrrAgentx() {
     parse("agentx\n");
   }
@@ -1014,5 +1058,15 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testEnd() {
     parseLines("frr version", "end\n");
+  }
+
+  @Test
+  public void testNextMultipleOfFive() {
+    assertThat(nextMultipleOfFive(null), equalTo(5L));
+    assertThat(nextMultipleOfFive(0L), equalTo(5L));
+    assertThat(nextMultipleOfFive(1L), equalTo(5L));
+    assertThat(nextMultipleOfFive(4L), equalTo(5L));
+    assertThat(nextMultipleOfFive(5L), equalTo(10L));
+    assertThat(nextMultipleOfFive(6L), equalTo(10L));
   }
 }
