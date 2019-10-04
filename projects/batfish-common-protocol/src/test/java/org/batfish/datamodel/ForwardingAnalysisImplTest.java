@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +45,9 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.junit.Before;
@@ -1263,6 +1267,155 @@ public class ForwardingAnalysisImplTest {
         hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), containsIp(ip)))));
   }
 
+  //  @Test
+  //  public void testComputeDeliveredToSubnet() {
+  //    // host IP
+  //    {
+  //      computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+  //    }
+  //
+  //  }
+
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
+  private static final BDD ZERO = PKT.getFactory().zero();
+  private static final IpSpace PREFIX_IP_SPACE = Prefix.parse("1.1.1.0/24").toIpSpace();
+  private static final IpSpace IP_IP_SPACE = Ip.parse("1.1.1.1").toIpSpace();
+
+  /** No IPs have exits_network if the interface is full. */
+  @Test
+  public void testComputeExitsNetwork_full() {
+    // case: interface is full
+    boolean hasMissingDevices = false;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIp = UniverseIpSpace.INSTANCE;
+    IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
+    IpSpace externalIps = UniverseIpSpace.INSTANCE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            hasMissingDevices,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    assertEquals(ZERO, DST.visit(exitsNetwork));
+  }
+
+  /**
+   * No IPs have exits_network if there are no unowned next-hop IPs and all dst IPs get ARP replies.
+   */
+  @Test
+  public void testComputeExitsNetwork_noUnownedNextHop_noArpFalse() {
+    boolean hasMissingDevices = true;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
+    IpSpace externalIps = UniverseIpSpace.INSTANCE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            hasMissingDevices,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = ZERO;
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * Of the dstIPs we ARP for without a reply, the Network/broadcast IPs of the route's network
+   * should not get exits_network.
+   */
+  @Test
+  public void testComputeExitsNetwork_excludeNetworkBroadcastInArpFalse() {
+    boolean hasMissingDevices = true;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIpNetworkBroadcast = IP_IP_SPACE;
+    IpSpace externalIps = UniverseIpSpace.INSTANCE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            hasMissingDevices,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = DST.visit(arpFalseDstIp).diff(DST.visit(arpFalseDstIpNetworkBroadcast));
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * network/broadcast IPs should get exits_network if they are routable using an external next-hop
+   * IP (even if they're also in arpFalseDstIp).
+   */
+  @Test
+  public void testComputeExitsNetwork_includeNetworkBroadcastIPsInUnownedNextHop() {
+    boolean hasMissingDevices = true;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIpNetworkBroadcast = IP_IP_SPACE;
+    IpSpace externalIps = UniverseIpSpace.INSTANCE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            hasMissingDevices,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = DST.visit(arpFalseDstIp);
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * Of the dst IPs routable to an external next-hop, only external dst IPs should get
+   * exits_network.
+   */
+  @Test
+  public void testComputeExitsNetwork_includeOnlyExternalDstIpsWithUnownedNextHop() {
+    boolean hasMissingDevices = true;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
+    IpSpace externalIps = IP_IP_SPACE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            hasMissingDevices,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = DST.visit(externalIps);
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * Of the dst IPs that are routed to an external next-hop IP, only those that are external get
+   * exits_network.
+   */
+  @Test
+  public void testComputeExitsNetwork_unownedNextHop_include_only_external_dstIps() {
+    // case: for unowned next-hop IPs, only include external dst IPs
+    boolean hasMissingDevices = true;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
+    IpSpace externalIps = IP_IP_SPACE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            hasMissingDevices,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = DST.visit(externalIps);
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
+
   enum NextHopIpStatus {
     NONE,
     INTERNAL,
@@ -1300,7 +1453,8 @@ public class ForwardingAnalysisImplTest {
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
       dstIpsWithUnownedNextHopIpArpFalse =
           ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
+              CONFIG1,
+              ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toHostIpSpace())));
     } else if (nextHopIpStatus == NextHopIpStatus.INTERNAL) {
       arpFalseDestIp =
           ImmutableMap.of(
@@ -1308,7 +1462,8 @@ public class ForwardingAnalysisImplTest {
       internalIpsBuilder.thenPermitting(nextHopIp.toIpSpace());
       dstIpsWithOwnedNextHopIpArpFalse =
           ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
+              CONFIG1,
+              ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toHostIpSpace())));
       dstIpsWithUnownedNextHopIpArpFalse =
           ImmutableMap.of(
               CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
@@ -1325,7 +1480,7 @@ public class ForwardingAnalysisImplTest {
     }
 
     if (isDstIpInternal) {
-      internalIpsBuilder.thenPermitting(dstPrefix.toIpSpace());
+      internalIpsBuilder.thenPermitting(dstPrefix.toHostIpSpace());
     }
 
     IpSpace internalIps = internalIpsBuilder.build();
@@ -1334,7 +1489,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, IpSpace>> interfaceHostSubnetIps;
     if (isDstIpInSubnet) {
       interfaceHostSubnetIps =
-          ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace()));
+          ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, dstPrefix.toHostIpSpace()));
     } else {
       interfaceHostSubnetIps =
           ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE));
@@ -1345,6 +1500,16 @@ public class ForwardingAnalysisImplTest {
             CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
 
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
+
+    Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIpNetworkBroadcast =
+        ImmutableMap.of(
+            CONFIG1,
+            ImmutableMap.of(
+                VRF1,
+                ImmutableMap.of(
+                    INTERFACE1,
+                    AclIpSpace.union(
+                        dstPrefix.getStartIp().toIpSpace(), dstPrefix.getEndIp().toIpSpace()))));
 
     IpSpace deliveredToSubnetIpSpace =
         computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps)
@@ -1367,6 +1532,7 @@ public class ForwardingAnalysisImplTest {
                 interfaceHostSubnetIps,
                 interfacesWithMissingDevices,
                 arpFalseDestIp,
+                arpFalseDestIpNetworkBroadcast,
                 dstIpsWithUnownedNextHopIpArpFalse,
                 dstIpsWithOwnedNextHopIpArpFalse,
                 internalIps)
@@ -1385,27 +1551,31 @@ public class ForwardingAnalysisImplTest {
             .get(INTERFACE1);
 
     if (expectedDisposition == FlowDisposition.EXITS_NETWORK) {
-      assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getStartIp()));
-      assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getEndIp()));
+      assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getFirstHostIp()));
+      assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getLastHostIp()));
     } else {
-      assertThat(exitsNetworkIpSpace, not(containsIp(dstPrefix.getStartIp())));
-      assertThat(exitsNetworkIpSpace, not(containsIp(dstPrefix.getEndIp())));
+      assertThat(exitsNetworkIpSpace, not(containsIp(dstPrefix.getFirstHostIp())));
+      assertThat(exitsNetworkIpSpace, not(containsIp(dstPrefix.getLastHostIp())));
     }
 
     if (expectedDisposition == FlowDisposition.INSUFFICIENT_INFO) {
       assertThat(insufficientInfoIpSpace, containsIp(dstPrefix.getStartIp()));
       assertThat(insufficientInfoIpSpace, containsIp(dstPrefix.getEndIp()));
+      assertThat(insufficientInfoIpSpace, containsIp(dstPrefix.getFirstHostIp()));
+      assertThat(insufficientInfoIpSpace, containsIp(dstPrefix.getFirstHostIp()));
     } else {
-      assertThat(insufficientInfoIpSpace, not(containsIp(dstPrefix.getStartIp())));
-      assertThat(insufficientInfoIpSpace, not(containsIp(dstPrefix.getEndIp())));
+      assertThat(insufficientInfoIpSpace, not(containsIp(dstPrefix.getFirstHostIp())));
+      assertThat(insufficientInfoIpSpace, not(containsIp(dstPrefix.getLastHostIp())));
     }
 
     if (expectedDisposition == FlowDisposition.DELIVERED_TO_SUBNET) {
-      assertThat(deliveredToSubnetIpSpace, containsIp(dstPrefix.getStartIp()));
-      assertThat(deliveredToSubnetIpSpace, containsIp(dstPrefix.getEndIp()));
-    } else {
       assertThat(deliveredToSubnetIpSpace, not(containsIp(dstPrefix.getStartIp())));
       assertThat(deliveredToSubnetIpSpace, not(containsIp(dstPrefix.getEndIp())));
+      assertThat(deliveredToSubnetIpSpace, containsIp(dstPrefix.getFirstHostIp()));
+      assertThat(deliveredToSubnetIpSpace, containsIp(dstPrefix.getLastHostIp()));
+    } else {
+      assertThat(deliveredToSubnetIpSpace, not(containsIp(dstPrefix.getFirstHostIp())));
+      assertThat(deliveredToSubnetIpSpace, not(containsIp(dstPrefix.getLastHostIp())));
     }
 
     if (expectedDisposition == FlowDisposition.NEIGHBOR_UNREACHABLE) {

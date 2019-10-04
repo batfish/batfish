@@ -267,6 +267,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               interfaceHostSubnetIps,
               interfacesWithMissingDevices,
               arpFalseDestIp,
+              arpFalseDestIpNetworkBroadcast,
               dstIpsWithUnownedNextHopIpArpFalse,
               dstIpsWithOwnedNextHopIpArpFalse,
               internalIps);
@@ -603,146 +604,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                                       AclIpSpace.union(
                                                           routePrefix.getStartIp().toIpSpace(),
                                                           routePrefix.getEndIp().toIpSpace()),
-                                                      matchedIps);
-                                                })
-                                            .collect(ImmutableList.toImmutableList()));
-
-                                IpSpace someoneRepliesIface =
-                                    someoneRepliesNode.getOrDefault(
-                                        outInterface, EmptyIpSpace.INSTANCE);
-
-                                return AclIpSpace.difference(
-                                    matchedNetworkBroadcastIps, someoneRepliesIface);
-                              }));
-                });
-          });
-    }
-  }
-
-  @VisibleForTesting
-  static Map<String, Map<String, Map<String, IpSpace>>> computeArpFalseDestIpNetwork(
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp,
-      Map<String, Map<String, IpSpace>> someoneReplies) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeArpFalseDestIpNetwork")
-            .startActive()) {
-      assert span != null; // avoid unused warning
-      return toImmutableMap(
-          routesWhereDstIpCanBeArpIp,
-          Entry::getKey /* hostname */,
-          nodeEntry -> {
-            String hostname = nodeEntry.getKey();
-            Map<String, IpSpace> someoneRepliesNode =
-                someoneReplies.getOrDefault(hostname, ImmutableMap.of());
-            return toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey /* vrf */,
-                vrfEntry -> {
-                  String vrf = vrfEntry.getKey();
-                  Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(hostname).get(vrf);
-                  return vrfEntry.getValue().entrySet().stream()
-                      /* null_interface is handled in computeNullRoutedIps */
-                      .filter(entry -> !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Entry::getKey /* outInterface */,
-                              ifaceEntry -> {
-                                String outInterface = ifaceEntry.getKey();
-                                Set<AbstractRoute> routes = ifaceEntry.getValue();
-
-                                IpSpace matchedNetworkBroadcastIps =
-                                    AclIpSpace.union(
-                                        routes.stream()
-                                            // only consider routes for prefixes that have
-                                            // network/broadcast IPs
-                                            .filter(
-                                                route ->
-                                                    route.getNetwork().getPrefixLength()
-                                                        < Prefix.MAX_PREFIX_LENGTH - 1)
-                                            .map(
-                                                route -> {
-                                                  Prefix routePrefix = route.getNetwork();
-                                                  IpSpace matchedIps =
-                                                      vrfMatchingIps.get(routePrefix);
-                                                  // Note: unclear whether this is better than
-                                                  // simply testing each IP now. If matchedIps
-                                                  // is very simple, testing now could save some
-                                                  // BDD work later. But if it's very complex, the
-                                                  // BDD work could be cheaper.
-                                                  return AclIpSpace.intersection(
-                                                      routePrefix.getStartIp().toIpSpace(),
-                                                      matchedIps);
-                                                })
-                                            .collect(ImmutableList.toImmutableList()));
-
-                                IpSpace someoneRepliesIface =
-                                    someoneRepliesNode.getOrDefault(
-                                        outInterface, EmptyIpSpace.INSTANCE);
-
-                                return AclIpSpace.difference(
-                                    matchedNetworkBroadcastIps, someoneRepliesIface);
-                              }));
-                });
-          });
-    }
-  }
-
-  @VisibleForTesting
-  static Map<String, Map<String, Map<String, IpSpace>>> computeArpFalseDestIpBroadcast(
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp,
-      Map<String, Map<String, IpSpace>> someoneReplies) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeArpFalseDestIpBroadcast")
-            .startActive()) {
-      assert span != null; // avoid unused warning
-      return toImmutableMap(
-          routesWhereDstIpCanBeArpIp,
-          Entry::getKey /* hostname */,
-          nodeEntry -> {
-            String hostname = nodeEntry.getKey();
-            Map<String, IpSpace> someoneRepliesNode =
-                someoneReplies.getOrDefault(hostname, ImmutableMap.of());
-            return toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey /* vrf */,
-                vrfEntry -> {
-                  String vrf = vrfEntry.getKey();
-                  Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(hostname).get(vrf);
-                  return vrfEntry.getValue().entrySet().stream()
-                      /* null_interface is handled in computeNullRoutedIps */
-                      .filter(entry -> !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Entry::getKey /* outInterface */,
-                              ifaceEntry -> {
-                                String outInterface = ifaceEntry.getKey();
-                                Set<AbstractRoute> routes = ifaceEntry.getValue();
-
-                                IpSpace matchedNetworkBroadcastIps =
-                                    AclIpSpace.union(
-                                        routes.stream()
-                                            // only consider routes for prefixes that have
-                                            // network/broadcast IPs
-                                            .filter(
-                                                route ->
-                                                    route.getNetwork().getPrefixLength()
-                                                        < Prefix.MAX_PREFIX_LENGTH - 1)
-                                            .map(
-                                                route -> {
-                                                  Prefix routePrefix = route.getNetwork();
-                                                  IpSpace matchedIps =
-                                                      vrfMatchingIps.get(routePrefix);
-                                                  // Note: unclear whether this is better than
-                                                  // simply testing each IP now. If matchedIps
-                                                  // is very simple, testing now could save some
-                                                  // BDD work later. But if it's very complex, the
-                                                  // BDD work could be cheaper.
-                                                  return AclIpSpace.intersection(
-                                                      routePrefix.getEndIp().toIpSpace(),
                                                       matchedIps);
                                                 })
                                             .collect(ImmutableList.toImmutableList()));
@@ -1463,30 +1324,49 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       Entry::getKey,
                       ifaceEntry -> {
                         String ifaceName = ifaceEntry.getKey();
-                        IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = ifaceEntry.getValue();
+                        IpSpace dstIpsWithUnownedNextHopIpArpFalseIface = ifaceEntry.getValue();
+                        boolean interfaceHasMissingDevices =
+                            interfacesWithMissingDevicesNode.contains(ifaceName);
+                        IpSpace arpFalseDstIpIface = arpFalseDstIpVrf.get(ifaceName);
+                        IpSpace arpFalseDstIpNetworkBroadcastIface =
+                            arpFalseDstIpNetworkBroadcastVrf.get(ifaceName);
 
-                        // the connected subnet is full
-                        if (!interfacesWithMissingDevicesNode.contains(ifaceName)) {
-                          return EmptyIpSpace.INSTANCE;
-                        }
-
-                        // Returns the union of the following 2 cases:
-                        // 1. Arp for dst ip and dst ip is external
-                        // 2. Arp for next hop ip, next hop ip is not owned by any interfaces,
-                        // and dst ip is external
-                        return AclIpSpace.intersection(
-                            // dest ip is external
-                            externalIps,
-                            // arp for dst Ip OR arp for external next-hop IP
-                            AclIpSpace.union(
-                                AclIpSpace.difference(
-                                    arpFalseDstIpVrf.get(ifaceName),
-                                    arpFalseDstIpNetworkBroadcastVrf.get(ifaceName)),
-                                ifaceDstIpsWithUnownedNextHopIpArpFalse));
-                      });
+                        return computeExitsNetwork(
+                            interfaceHasMissingDevices,
+                            dstIpsWithUnownedNextHopIpArpFalseIface,
+                            arpFalseDstIpIface,
+                            arpFalseDstIpNetworkBroadcastIface,
+                            externalIps);
+                        });
                 });
           });
     }
+  }
+
+  /**
+   * Returns the union of the following 2 cases:
+   * 1. Arp for dst ip and dst ip is external
+   * 2. Arp for next hop ip, next hop ip is not owned by any interfaces,
+   * and dst ip is external
+   */
+  @VisibleForTesting
+  static IpSpace computeExitsNetwork(boolean interfaceHasMissingDevices,
+      IpSpace dstIpsWithUnownedNextHopIpArpFalseIface,
+      IpSpace arpFalseDstIpIface,
+      IpSpace arpFalseDstIpNetworkBroadcastIface,
+      IpSpace externalIps) {
+    return !interfaceHasMissingDevices
+        ? EmptyIpSpace.INSTANCE
+        : AclIpSpace.intersection(
+            // dest ip is external
+            externalIps,
+            // arp for dst Ip OR arp for external next-hop IP
+            AclIpSpace.union(
+                AclIpSpace.difference(
+                    arpFalseDstIpIface,
+                    // dst IP is not the network or broadcast IP of the network
+                    arpFalseDstIpNetworkBroadcastIface),
+              dstIpsWithUnownedNextHopIpArpFalseIface));
   }
 
   /**
@@ -1499,6 +1379,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    *     be other devices connected to the subnet for which we don't have a config.
    * @param arpFalseDestIp For each interface, dst IPs that can be ARP IPs and that we will not
    *     receive an ARP response for.
+   * @param arpFalseDestIpNetworkBroadcast node -> vrf -> iface dstIps that match a route, are the
+   *     network or broadcast IP of the route's network, and that do not get an ARP reply.
    * @param dstIpsWithUnownedNextHopIpArpFalse node -> vrf -> iface -> dst IPs the vrf forwards out
    *     the interface, ARPing for some unowned next-hop IP and not receiving a reply.
    * @param dstIpsWithOwnedNextHopIpArpFalse node -> vrf -> iface -> dst IPs the vrf forwards out
@@ -1510,6 +1392,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, IpSpace>> interfaceHostSubnetIps,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
+      Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIpNetworkBroadcast,
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse,
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithOwnedNextHopIpArpFalse,
       IpSpace internalIps) {
@@ -1545,12 +1428,20 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                     internalIps,
                                     interfaceHostSubnetIps.get(hostname).get(ifaceName));
 
-                            // case 1: arp for dst ip, dst ip is internal but not in any subnet of
-                            // the interface
+                            IpSpace ifaceArpFalseDstIpNetworkBroadcastIps =
+                                arpFalseDestIpNetworkBroadcast
+                                    .get(hostname)
+                                    .get(vrfName)
+                                    .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE);
+
+                            // case 1: arp for dst ip, and either:
+                            // 1a) dst ip is internal but not in any subnet of the interface
+                            // 1b) dst ip is the network or broadcast IP of the route
                             IpSpace ipSpaceInternalDstIp =
                                 AclIpSpace.intersection(
                                     arpFalseDestIp.get(hostname).get(vrfName).get(ifaceName),
-                                    ipSpaceElsewhere);
+                                    AclIpSpace.union(
+                                        ipSpaceElsewhere, ifaceArpFalseDstIpNetworkBroadcastIps));
 
                             // case 2: arp for nhip, nhip is not owned by interfaces, dst ip is
                             // internal
