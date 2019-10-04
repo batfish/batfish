@@ -56,10 +56,11 @@ import org.junit.Test;
 
 /** Tests of {@link ForwardingAnalysisImpl}. */
 public class ForwardingAnalysisImplTest {
-
-  private static final String CONFIG1 = "config1";
-
-  private static final String VRF1 = "vrf1";
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
+  private static final BDD ZERO = PKT.getFactory().zero();
+  private static final IpSpace PREFIX_IP_SPACE = Prefix.parse("1.1.1.0/24").toIpSpace();
+  private static final IpSpace IP_IP_SPACE = Ip.parse("1.1.1.1").toIpSpace();
 
   private static final String INTERFACE1 = "interface1";
 
@@ -1205,84 +1206,6 @@ public class ForwardingAnalysisImplTest {
         result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), not(containsIp(P2.getStartIp())))));
   }
 
-  @Test
-  public void testComputeDeliveredToSubnetNoArpFalse() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    Ip ip = Ip.parse("10.0.0.1");
-
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
-    IpSpace ownedIps = EmptyIpSpace.INSTANCE;
-
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
-  }
-
-  @Test
-  public void testComputeDeliveredToSubnetNoInterfaceHostIps() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    Ip ip = Ip.parse("10.0.0.1");
-
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE));
-    IpSpace ownedIps = EmptyIpSpace.INSTANCE;
-
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
-  }
-
-  @Test
-  public void testComputeDeliveredToSubnetEqual() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    Ip ip = Ip.parse("10.0.0.1");
-
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
-    IpSpace ownedIps = EmptyIpSpace.INSTANCE;
-
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), containsIp(ip)))));
-  }
-
-  //  @Test
-  //  public void testComputeDeliveredToSubnet() {
-  //    // host IP
-  //    {
-  //      computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-  //    }
-  //
-  //  }
-
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
-  private static final BDD ZERO = PKT.getFactory().zero();
-  private static final IpSpace PREFIX_IP_SPACE = Prefix.parse("1.1.1.0/24").toIpSpace();
-  private static final IpSpace IP_IP_SPACE = Ip.parse("1.1.1.1").toIpSpace();
-
   /** No IPs have exits_network if the interface is full. */
   @Test
   public void testComputeExitsNetwork_full() {
@@ -1606,18 +1529,24 @@ public class ForwardingAnalysisImplTest {
   }
 
   /**
-   * A dstIp gets delivered_to_subnet if we ARP for it and do not get a reply, it is not owned in
-   * the network, and is in a connected subnet of the interface.
+   * A dstIp gets delivered_to_subnet if we ARP for it and do not get a reply, it is not the network
+   * or broadcast IP of the route's prefix, it is not owned in the network, and is in a connected
+   * subnet of the interface.
    */
   @Test
   public void testComputeDeliveredToSubnet() {
     IpSpace ownedIps = ipWithWildcardMask(Ip.parse("255.0.0.0"), 0x00FFFFFFL).toIpSpace();
     IpSpace ifaceArpFalseDstIp = ipWithWildcardMask(Ip.parse("0.255.0.0"), 0xFF00FFFFL).toIpSpace();
-    IpSpace ifaceHostSubnetIps = ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
+    IpSpace ifaceArpFalseDstIpNetworkBroadcast =
+        ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
+    IpSpace ifaceHostSubnetIps = ipWithWildcardMask(Ip.parse("0.0.0.255"), 0xFFFFFF00L).toIpSpace();
     IpSpace deliveredToSubnet =
-        computeDeliveredToSubnet(ownedIps, ifaceArpFalseDstIp, ifaceHostSubnetIps);
+        computeDeliveredToSubnet(
+            ownedIps, ifaceArpFalseDstIp, ifaceArpFalseDstIpNetworkBroadcast, ifaceHostSubnetIps);
     BDD expected =
-        DST.visit(ifaceArpFalseDstIp).and(DST.visit(ifaceHostSubnetIps)).diff(DST.visit(ownedIps));
+        DST.visit(ifaceHostSubnetIps).and(
+            DST.visit(ifaceArpFalseDstIp).diff(DST.visit(ifaceArpFalseDstIpNetworkBroadcast))
+        ).diff(DST.visit(ownedIps));
     BDD actual = DST.visit(deliveredToSubnet);
     assertEquals(expected, actual);
   }

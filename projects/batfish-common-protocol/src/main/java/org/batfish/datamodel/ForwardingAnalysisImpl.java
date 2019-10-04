@@ -243,7 +243,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           ipOwners.getActiveInterfaceHostIps();
 
       _deliveredToSubnet =
-          computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+          computeDeliveredToSubnet(arpFalseDestIp, arpFalseDestIpNetworkBroadcast, interfaceHostSubnetIps, ownedIps);
 
       Map<String, Map<String, BDD>> interfaceHostSubnetIpBDDs =
           computeInterfaceHostSubnetIpBDDs(interfaceHostSubnetIps, ipSpaceToBDD);
@@ -1260,6 +1260,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet(
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
+      Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIpNetworkBroadcast,
       Map<String, Map<String, IpSpace>> interfaceHostSubnetIps,
       IpSpace ownedIps) {
     try (ActiveSpan span =
@@ -1279,13 +1280,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                           vrfEntry.getValue(),
                           Entry::getKey,
                           ifaceEntry -> {
+                            String node = nodeEntry.getKey();
+                            String vrf = vrfEntry.getKey();
+                            String iface = ifaceEntry.getKey();
                             IpSpace ifaceArpFalseDstIp = ifaceEntry.getValue();
+                            IpSpace ifaceArpFalseDstIpNetworkBroadcast =
+                                arpFalseDestIpNetworkBroadcast.get(node).get(vrf).get(iface);
                             IpSpace ifaceHostSubnetIps =
                                 interfaceHostSubnetIps
-                                    .get(nodeEntry.getKey())
-                                    .get(ifaceEntry.getKey());
+                                    .get(node)
+                                    .get(iface);
                             return computeDeliveredToSubnet(
-                                ownedIps, ifaceArpFalseDstIp, ifaceHostSubnetIps);
+                                ownedIps, ifaceArpFalseDstIp, ifaceArpFalseDstIpNetworkBroadcast, ifaceHostSubnetIps);
                           })));
     }
   }
@@ -1293,10 +1299,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @Nonnull
   @VisibleForTesting
   static IpSpace computeDeliveredToSubnet(
-      IpSpace ownedIps, IpSpace ifaceArpFalseDstIp, IpSpace ifaceHostSubnetIps) {
+      IpSpace ownedIps, IpSpace ifaceArpFalseDstIp, IpSpace ifaceArpFalseDstIpNetworkBroadcast,
+      IpSpace ifaceHostSubnetIps) {
     return firstNonNull(
         AclIpSpace.difference(
-            AclIpSpace.intersection(ifaceArpFalseDstIp, ifaceHostSubnetIps), ownedIps),
+            AclIpSpace.intersection(
+                ifaceHostSubnetIps,
+                AclIpSpace.difference(ifaceArpFalseDstIp, ifaceArpFalseDstIpNetworkBroadcast)),
+            ownedIps),
         EmptyIpSpace.INSTANCE);
   }
 
