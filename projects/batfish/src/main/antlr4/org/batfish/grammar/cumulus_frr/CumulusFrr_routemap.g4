@@ -58,6 +58,7 @@ rm_set
     | rms_ip
     | rms_local_preference
     | rms_metric
+    | rms_tag
   )
 ;
 
@@ -94,6 +95,11 @@ rmm_interface
 rms_ip
 :
   IP rmsip_next_hop
+;
+
+rms_tag
+:
+  TAG tag = uint32 NEWLINE
 ;
 
 rmsip_next_hop

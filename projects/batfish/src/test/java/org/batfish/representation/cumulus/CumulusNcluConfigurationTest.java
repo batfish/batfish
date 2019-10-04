@@ -712,4 +712,20 @@ public class CumulusNcluConfigurationTest {
     policy.call(env.setOutputRoute(outputBuilder).build());
     assertThat(outputBuilder.getLocalPreference(), equalTo(200L));
   }
+
+  @Test
+  public void testToRouteMapSetTag() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+    RouteMap rm = new RouteMap("RM");
+    RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+    rme.setSetTag(new RouteMapSetTag(999));
+    rm.getEntries().put(10, rme);
+    RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+    Builder outputBuilder = Bgpv4Route.builder();
+    Environment.Builder env =
+        Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
+    policy.call(env.setOutputRoute(outputBuilder).build());
+    assertThat(outputBuilder.getTag(), equalTo(999L));
+  }
 }
