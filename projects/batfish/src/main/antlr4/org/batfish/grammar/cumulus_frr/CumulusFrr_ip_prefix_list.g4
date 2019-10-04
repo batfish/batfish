@@ -13,18 +13,29 @@ ip_prefix_list
 
 pl_line
 :
-  SEQ num = ip_prefix_list_line_number
-  action = line_action ip_prefix = prefix
-  (GE ge = ip_prefix_list_line_prefix_length)? (LE le = ip_prefix_list_line_prefix_length)?
-  NEWLINE
+  pl_line_action
+  | pl_line_description
 ;
 
-ip_prefix_list_line_number
+pl_line_action
 :
-// 1-4294967294
-  UINT8
-  | UINT16
-  | UINT32
+  (SEQ num = uint32)?
+  action = line_action
+  (
+    (ANY NEWLINE)
+    |
+    (
+      ip_prefix = prefix
+      (GE ge = ip_prefix_list_line_prefix_length)?
+      (LE le = ip_prefix_list_line_prefix_length)?
+      NEWLINE
+    )
+  )
+;
+
+pl_line_description
+:
+  DESCRIPTION REMARK_TEXT NEWLINE
 ;
 
 ip_prefix_list_line_prefix_length

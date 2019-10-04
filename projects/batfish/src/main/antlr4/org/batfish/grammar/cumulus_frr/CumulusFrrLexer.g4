@@ -24,6 +24,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+ANY
+:
+  'any'
+;
+
 AREA
 :
   'area'
