@@ -24,7 +24,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
-import org.batfish.common.topology.SnapshotRuntimeData.RuntimeData;
+import org.batfish.common.runtime.RuntimeData;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;

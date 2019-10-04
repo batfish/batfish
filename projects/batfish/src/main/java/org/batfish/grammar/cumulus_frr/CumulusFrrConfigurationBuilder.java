@@ -46,7 +46,9 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
@@ -118,7 +120,9 @@ import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cumulus.RouteMapMatchTag;
 import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
+import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
+import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
@@ -748,6 +752,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             ctx.communities.stream()
                 .map(this::toStandardCommunity)
                 .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Override
+  public void exitRms_local_preference(Rms_local_preferenceContext ctx) {
+    _currentRouteMapEntry.setSetLocalPreference(new RouteMapSetLocalPreference(toLong(ctx.pref)));
+  }
+
+  @Override
+  public void exitRms_tag(Rms_tagContext ctx) {
+    _currentRouteMapEntry.setSetTag(new RouteMapSetTag(toLong(ctx.tag)));
   }
 
   @Override

@@ -124,6 +124,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
 
   private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
+  private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
   /**
    * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
    */
@@ -1116,14 +1117,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
-      if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
-        routerId = _loopback.getAddresses().get(0).getIp();
-      } else {
-        _w.redFlag(
-            String.format(
-                "Cannot configure BGP session for vrf '%s' because router-id is missing", vrfName));
-        return null;
-      }
+      routerId = inferRouterId();
     }
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
@@ -1159,7 +1153,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
     Ip routerId = ospfVrf.getRouterId();
     if (routerId == null) {
-      routerId = inferRouteId();
+      routerId = inferRouterId();
     }
 
     org.batfish.datamodel.ospf.OspfProcess.Builder builder =
@@ -1234,14 +1228,34 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     }
   }
 
+  /**
+   * Logic of inferring router ID for Zebra based system
+   * (https://github.com/coreswitch/zebra/blob/master/docs/router-id.md):
+   *
+   * <p>If the loopback is configured with an IP address NOT in 127.0.0.0/8, the numerically largest
+   * such IP is used. Otherwise, the numerically largest IP configured on any interface on the
+   * device is used. Otherwise, 0.0.0.0 is used.
+   */
   @VisibleForTesting
-  Ip inferRouteId() {
-    // https://github.com/coreswitch/zebra/blob/master/docs/router-id.md
-    // TODO: checking physical interfaces and largest lo IP
-    if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
-      return _loopback.getAddresses().get(0).getIp();
+  Ip inferRouterId() {
+    if (_loopback.getConfigured()) {
+      Optional<ConcreteInterfaceAddress> maxLoIp =
+          _loopback.getAddresses().stream()
+              .filter(addr -> !LOOPBACK_PREFIX.containsIp(addr.getIp()))
+              .max(ConcreteInterfaceAddress::compareTo);
+      if (maxLoIp.isPresent()) {
+        return maxLoIp.get().getIp();
+      }
     }
-    return Ip.parse("0.0.0.0");
+
+    Optional<ConcreteInterfaceAddress> biggestInterfaceIp =
+        _interfaces.values().stream()
+            .flatMap(iface -> iface.getIpAddresses().stream())
+            .max(InterfaceAddress::compareTo);
+
+    return biggestInterfaceIp
+        .map(ConcreteInterfaceAddress::getIp)
+        .orElseGet(() -> Ip.parse("0.0.0.0"));
   }
 
   /**
@@ -1492,7 +1506,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  private @Nonnull RoutingPolicy toRouteMap(RouteMap routeMap) {
+  @VisibleForTesting
+  @Nonnull
+  RoutingPolicy toRouteMap(RouteMap routeMap) {
     RoutingPolicy.Builder builder =
         RoutingPolicy.builder().setName(routeMap.getName()).setOwner(_c);
     routeMap.getEntries().values().stream()

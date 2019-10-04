@@ -296,6 +296,11 @@ LE
   'le'
 ;
 
+LOCAL_PREFERENCE
+:
+  'local-preference'
+;
+
 LOG
 :
   'log'
@@ -309,6 +314,11 @@ LOG_ADJACENCY_CHANGES
 LINE
 :
   'line'
+;
+
+MAXIMUM_PATHS
+:
+  'maximum-paths'
 ;
 
 MESSAGE_DIGEST

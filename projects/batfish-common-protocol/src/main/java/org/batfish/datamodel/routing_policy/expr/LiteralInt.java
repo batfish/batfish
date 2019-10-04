@@ -25,6 +25,11 @@ public final class LiteralInt extends IntExpr {
   }
 
   @Override
+  public <T, U> T accept(IntExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitLiteralInt(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

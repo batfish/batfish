@@ -67,7 +67,7 @@ public class IptablesMatch implements Serializable {
     }
 
     if (_matchData instanceof Ip) {
-      Prefix pfx = Prefix.create((Ip) _matchData, Prefix.MAX_PREFIX_LENGTH);
+      Prefix pfx = ((Ip) _matchData).toPrefix();
       return IpWildcard.create(pfx);
     } else if (_matchData instanceof Prefix) {
       return IpWildcard.create((Prefix) _matchData);

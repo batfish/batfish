@@ -557,12 +557,40 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
-  public void testInferRouterID() {
+  public void testInferRouterID_DefaultCase() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("0.0.0.0")));
+  }
+
+  @Test
+  public void testInferRouterID_Loopback() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     Loopback lo = ncluConfiguration.getLoopback();
     lo.setConfigured(true);
-    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
-    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("1.1.1.1")));
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/31"));
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("1.1.1.1")));
+  }
+
+  @Test
+  public void testInferRouterID_LoopbackNotUsable() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Loopback lo = ncluConfiguration.getLoopback();
+    lo.setConfigured(true);
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("127.0.0.2/31"));
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("0.0.0.0")));
+  }
+
+  @Test
+  public void testInferRouterID_MaxInterfaceIp() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface i1 = new Interface("eth1", CumulusInterfaceType.PHYSICAL, null, null);
+    i1.getIpAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/30"));
+    Interface i2 = new Interface("eth2", CumulusInterfaceType.PHYSICAL, null, null);
+    i2.getIpAddresses().add(ConcreteInterfaceAddress.parse("2.2.2.2/30"));
+
+    ncluConfiguration.setInterfaces(ImmutableMap.of("eth1", i1, "eth2", i2));
+
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("2.2.2.2")));
   }
 
   @Test
@@ -695,5 +723,37 @@ public class CumulusNcluConfigurationTest {
     assertThat(
         loopback.getAddresses(),
         equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
+  }
+
+  @Test
+  public void testToRouteMapSetLocalPref() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+    RouteMap rm = new RouteMap("RM");
+    RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+    rme.setSetLocalPreference(new RouteMapSetLocalPreference(200L));
+    rm.getEntries().put(10, rme);
+    RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+    Builder outputBuilder = Bgpv4Route.builder();
+    Environment.Builder env =
+        Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
+    policy.call(env.setOutputRoute(outputBuilder).build());
+    assertThat(outputBuilder.getLocalPreference(), equalTo(200L));
+  }
+
+  @Test
+  public void testToRouteMapSetTag() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+    RouteMap rm = new RouteMap("RM");
+    RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+    rme.setSetTag(new RouteMapSetTag(999));
+    rm.getEntries().put(10, rme);
+    RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+    Builder outputBuilder = Bgpv4Route.builder();
+    Environment.Builder env =
+        Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
+    policy.call(env.setOutputRoute(outputBuilder).build());
+    assertThat(outputBuilder.getTag(), equalTo(999L));
   }
 }

@@ -1,6 +1,5 @@
 package org.batfish.question.routes;
 
-import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
@@ -216,7 +215,7 @@ public class RoutesAnswererUtilTest {
   public void testBgpRibRouteColumnsValue() {
     // Create two BGP routes: one standard route and one from a BGP unnumbered session
     Ip ip = Ip.parse("1.1.1.1");
-    Prefix prefix = Prefix.create(ip, MAX_PREFIX_LENGTH);
+    Prefix prefix = ip.toPrefix();
     Ip bgpUnnumIp = Ip.parse("169.254.0.1");
     Bgpv4Route.Builder rb =
         Bgpv4Route.builder()
@@ -278,7 +277,7 @@ public class RoutesAnswererUtilTest {
         "vrf",
         ImmutableSet.of(
             new Builder()
-                .setNetwork(Prefix.create(ip, MAX_PREFIX_LENGTH))
+                .setNetwork(ip.toPrefix())
                 .setOriginType(OriginType.IGP)
                 .setOriginatorIp(ip)
                 .setReceivedFromIp(ip)
@@ -302,7 +301,7 @@ public class RoutesAnswererUtilTest {
   public void testEvpnRibRouteColumns() {
     // Create two BGP routes: one standard route and one from a BGP unnumbered session
     Ip ip = Ip.parse("1.1.1.1");
-    Prefix prefix = Prefix.create(ip, MAX_PREFIX_LENGTH);
+    Prefix prefix = ip.toPrefix();
     EvpnType3Route.Builder rb =
         EvpnType3Route.builder()
             .setVniIp(ip)

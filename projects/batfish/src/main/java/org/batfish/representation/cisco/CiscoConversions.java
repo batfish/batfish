@@ -6,19 +6,19 @@ import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE6;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.toJavaRegex;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -79,8 +78,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
@@ -98,22 +95,45 @@ import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExprs;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.IntMatchAll;
+import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
@@ -263,25 +283,178 @@ public class CiscoConversions {
   }
 
   /**
-   * Creates a generation policy for the aggregate network with the given {@link Prefix}. The
-   * generation policy matches any route with a destination more specific than {@code prefix}.
-   *
-   * @param c {@link Configuration} in which to create the generation policy
-   * @param vrfName Name of VRF in which the aggregate network exists
-   * @param prefix The aggregate network prefix
+   * Convert {@code communitySet} to a {@link CommunityMatchExpr} to be applied as a deletion
+   * criterion against each individual community in a route's standard community attribute.
    */
-  public static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
-        .addStatement(
-            new If(
-                // Match routes with destination networks more specific than prefix.
-                new MatchPrefixSet(
-                    DestinationNetwork.instance(),
-                    new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))),
-                singletonList(Statements.ReturnTrue.toStaticStatement())))
-        .build();
+  public static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      XrCommunitySet communitySet, Configuration c) {
+    return new CommunityMatchAny(
+        communitySet.getElements().stream()
+            .map(elem -> elem.accept(CommunitySetElemToCommunityMatchExpr.INSTANCE, c))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  private static final class CommunitySetElemToCommunityMatchExpr
+      implements XrCommunitySetElemVisitor<CommunityMatchExpr, Configuration> {
+    @Override
+    public CommunityMatchExpr visitCommunitySetHighLowRangeExprs(
+        XrCommunitySetHighLowRangeExprs highLowRangeExprs, Configuration arg) {
+      return new CommunityMatchAll(
+          ImmutableList.of(
+              new StandardCommunityHighMatch(
+                  highLowRangeExprs
+                      .getHighRangeExpr()
+                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg)),
+              new StandardCommunityLowMatch(
+                  highLowRangeExprs
+                      .getLowRangeExpr()
+                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg))));
+    }
+
+    @Override
+    public CommunityMatchExpr visitCommunitySetIosRegex(
+        XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
+      return new CommunityMatchRegex(
+          ColonSeparatedRendering.instance(), toJavaRegex(communitySetIosRegex.getRegex()));
+    }
+
+    private static final CommunitySetElemToCommunityMatchExpr INSTANCE =
+        new CommunitySetElemToCommunityMatchExpr();
+  }
+
+  private static final class XrUint16RangeExprToIntMatchExpr
+      implements XrUint16RangeExprVisitor<IntMatchExpr, Configuration> {
+    private static final XrUint16RangeExprToIntMatchExpr INSTANCE =
+        new XrUint16RangeExprToIntMatchExpr();
+
+    @Override
+    public IntMatchExpr visitLiteralUint16(XrLiteralUint16 literalUint16, Configuration arg) {
+      return new IntComparison(IntComparator.EQ, new LiteralInt(literalUint16.getValue()));
+    }
+
+    @Override
+    public IntMatchExpr visitLiteralUint16Range(
+        XrLiteralUint16Range literalUint16Range, Configuration arg) {
+      SubRange range = literalUint16Range.getRange();
+      return IntMatchAll.of(
+          new IntComparison(IntComparator.GE, new LiteralInt(range.getStart())),
+          new IntComparison(IntComparator.LE, new LiteralInt(range.getEnd())));
+    }
+
+    @Override
+    public IntMatchExpr visitUint16Reference(XrUint16Reference uint16Reference, Configuration arg) {
+      return new IntComparison(IntComparator.EQ, new VarInt(uint16Reference.getVar()));
+    }
+  }
+
+  /**
+   * Convert {@code communitySet} to a {@link CommunitySetExpr} representing a set of concrete
+   * communities for setting or appending to the standard community attribute within a route-policy.
+   *
+   * <p>Only concrete elements of {@code communitySet} representing a single community are
+   * considered.
+   */
+  public static @Nonnull CommunitySetExpr toCommunitySetExpr(
+      XrCommunitySet communitySet, Configuration c) {
+    return CommunitySetUnion.of(
+        communitySet.getElements().stream()
+            .map(elem -> elem.accept(CommunitySetElemToCommunitySetExpr.INSTANCE, c))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  private static final class CommunitySetElemToCommunitySetExpr
+      implements XrCommunitySetElemVisitor<CommunitySetExpr, Configuration> {
+    @Override
+    public CommunitySetExpr visitCommunitySetHighLowRangeExprs(
+        XrCommunitySetHighLowRangeExprs highLowRangeExprs, Configuration arg) {
+      Optional<IntExpr> highExpr =
+          highLowRangeExprs.getHighRangeExpr().accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
+      if (!highExpr.isPresent()) {
+        return CommunitySetExprs.empty();
+      }
+      Optional<IntExpr> lowExpr =
+          highLowRangeExprs.getLowRangeExpr().accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
+      if (!lowExpr.isPresent()) {
+        return CommunitySetExprs.empty();
+      }
+      return CommunityExprsSet.of(new StandardCommunityHighLowExprs(highExpr.get(), lowExpr.get()));
+    }
+
+    @Override
+    public CommunitySetExpr visitCommunitySetIosRegex(
+        XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
+      return CommunitySetExprs.empty();
+    }
+
+    private static final CommunitySetElemToCommunitySetExpr INSTANCE =
+        new CommunitySetElemToCommunitySetExpr();
+  }
+
+  private static class XrUint16RangeExprToIntExpr
+      implements XrUint16RangeExprVisitor<Optional<IntExpr>, Void> {
+
+    private static final XrUint16RangeExprToIntExpr INSTANCE = new XrUint16RangeExprToIntExpr();
+
+    @Override
+    public Optional<IntExpr> visitLiteralUint16(XrLiteralUint16 literalUint16, Void arg) {
+      return Optional.of(new LiteralInt(literalUint16.getValue()));
+    }
+
+    @Override
+    public Optional<IntExpr> visitLiteralUint16Range(
+        XrLiteralUint16Range literalUint16Range, Void arg) {
+      return Optional.empty();
+    }
+
+    @Override
+    public Optional<IntExpr> visitUint16Reference(XrUint16Reference uint16Reference, Void arg) {
+      return Optional.of(new VarInt(uint16Reference.getVar()));
+    }
+  }
+
+  /**
+   * Convert {@code communitySet} to a {@link CommunitySetMatchExpr} that matches a route whose
+   * standard community attribute is matched by any element of {@code communitySet}.
+   */
+  public static @Nonnull CommunitySetMatchExpr convertMatchesAnyToCommunitySetMatchExpr(
+      XrCommunitySet communitySet, Configuration c) {
+    return new CommunitySetMatchAny(
+        communitySet.getElements().stream()
+            .map(elem -> elem.accept(CommunitySetElemToCommunitySetMatchExpr.INSTANCE, c))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  /**
+   * Convert {@code communitySet} to a {@link CommunitySetMatchExpr} that matches a route whose
+   * standard community attribute is matched by every element of {@code communitySet}.
+   */
+  public static @Nonnull CommunitySetMatchExpr convertMatchesEveryToCommunitySetMatchExpr(
+      XrCommunitySet communitySet, Configuration c) {
+    return new CommunitySetMatchAll(
+        communitySet.getElements().stream()
+            .map(elem -> elem.accept(CommunitySetElemToCommunitySetMatchExpr.INSTANCE, c))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  private static final class CommunitySetElemToCommunitySetMatchExpr
+      implements XrCommunitySetElemVisitor<CommunitySetMatchExpr, Configuration> {
+    private static final CommunitySetElemToCommunitySetMatchExpr INSTANCE =
+        new CommunitySetElemToCommunitySetMatchExpr();
+
+    @Override
+    public CommunitySetMatchExpr visitCommunitySetHighLowRangeExprs(
+        XrCommunitySetHighLowRangeExprs highLowRangeExprs, Configuration arg) {
+      return new HasCommunity(
+          highLowRangeExprs.accept(CommunitySetElemToCommunityMatchExpr.INSTANCE, arg));
+    }
+
+    @Override
+    public CommunitySetMatchExpr visitCommunitySetIosRegex(
+        XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
+      return new CommunitySetMatchRegex(
+          new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+          toJavaRegex(communitySetIosRegex.getRegex()));
+    }
   }
 
   /**
@@ -379,7 +552,7 @@ public class CiscoConversions {
 
     // Conditions for exporting regular routes (not spawned by default-originate)
     List<BooleanExpr> peerExportConjuncts = new ArrayList<>();
-    peerExportConjuncts.add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
+    peerExportConjuncts.add(new CallExpr(generatedBgpCommonExportPolicyName(vrfName)));
 
     // Add constraints on export routes from configured outbound filter.
     // TODO support configuring multiple outbound filters
@@ -415,7 +588,7 @@ public class CiscoConversions {
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     RoutingPolicy.builder()
         .setOwner(c)
-        .setName(computeBgpPeerExportPolicyName(vrfName, lpg.getName()))
+        .setName(generatedBgpPeerExportPolicyName(vrfName, lpg.getName()))
         .setStatements(exportPolicyStatements)
         .build();
   }
@@ -468,40 +641,6 @@ public class CiscoConversions {
                 defaultRouteExportStatements))
         .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();
-  }
-
-  /**
-   * Generates and returns a {@link Statement} that suppresses routes that are summarized by the
-   * given set of {@link Prefix prefixes} configured as {@code summary-only}.
-   *
-   * <p>Returns {@code null} if {@code prefixesToSuppress} has no entries.
-   *
-   * <p>If any Batfish-generated structures are generated, does the bookkeeping in the provided
-   * {@link Configuration} to ensure they are available and tracked.
-   */
-  @Nullable
-  public static If suppressSummarizedPrefixes(
-      Configuration c, String vrfName, Stream<Prefix> summaryOnlyPrefixes) {
-    Iterator<Prefix> prefixesToSuppress = summaryOnlyPrefixes.iterator();
-    if (!prefixesToSuppress.hasNext()) {
-      return null;
-    }
-    // Create a RouteFilterList that matches any network longer than a prefix marked summary only.
-    RouteFilterList matchLonger =
-        new RouteFilterList("~MATCH_SUPPRESSED_SUMMARY_ONLY:" + vrfName + "~");
-    prefixesToSuppress.forEachRemaining(
-        p ->
-            matchLonger.addLine(
-                new RouteFilterLine(LineAction.PERMIT, PrefixRange.moreSpecificThan(p))));
-    // Bookkeeping: record that we created this RouteFilterList to match longer networks.
-    c.getRouteFilterLists().put(matchLonger.getName(), matchLonger);
-
-    return new If(
-        "Suppress more specific networks for summary-only aggregate-address networks",
-        new MatchPrefixSet(
-            DestinationNetwork.instance(), new NamedPrefixSet(matchLonger.getName())),
-        ImmutableList.of(Statements.Suppress.toStaticStatement()),
-        ImmutableList.of());
   }
 
   /**
@@ -584,15 +723,6 @@ public class CiscoConversions {
             .map(IpAsPathAccessListLine::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(pathList.getName(), lines);
-  }
-
-  static CommunityList toCommunityList(NamedCommunitySet communitySet) {
-    return new CommunityList(
-        communitySet.getName(),
-        communitySet.getElements().stream()
-            .map(CiscoConversions::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList()),
-        false);
   }
 
   static CommunityList toCommunityList(ExpandedCommunityList ecList) {
@@ -1608,10 +1738,6 @@ public class CiscoConversions {
     return line;
   }
 
-  private static CommunityListLine toCommunityListLine(CommunitySetElem elem) {
-    return new CommunityListLine(LineAction.PERMIT, elem.toCommunitySetExpr());
-  }
-
   private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
     String javaRegex = CiscoConfiguration.toJavaRegex(eclLine.getRegex());
     return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));
@@ -1619,7 +1745,7 @@ public class CiscoConversions {
 
   private static CommunityListLine toCommunityListLine(StandardCommunityListLine sclLine) {
     Collection<Long> lineCommunities = sclLine.getCommunities();
-    CommunitySetExpr expr =
+    org.batfish.datamodel.routing_policy.expr.CommunitySetExpr expr =
         lineCommunities.size() == 1
             ? new LiteralCommunity(StandardCommunity.of(lineCommunities.iterator().next()))
             : new LiteralCommunityConjunction(

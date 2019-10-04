@@ -25,6 +25,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.VIRTUAL
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
@@ -81,8 +82,21 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_install_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_asContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_prefContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_peer_group_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_peer_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_router_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_peerContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_reflector_clientContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ebgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ibgpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_as_formatContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_default_local_preferenceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_reflector_cluster_idContext;
@@ -214,6 +228,9 @@ import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.ApplicationBuiltIn;
 import org.batfish.representation.palo_alto.ApplicationGroup;
+import org.batfish.representation.palo_alto.BgpPeer;
+import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
+import org.batfish.representation.palo_alto.BgpPeerGroup;
 import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
@@ -257,6 +274,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private AddressObject _currentAddressObject;
   private Application _currentApplication;
   private ApplicationGroup _currentApplicationGroup;
+  private BgpPeer _currentBgpPeer;
+  private BgpPeerGroup _currentBgpPeerGroup;
   private BgpVr _currentBgpVr;
   private CryptoProfile _currentCrytoProfile;
   private String _currentDeviceName;
@@ -469,17 +488,91 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitBgp_local_as(Bgp_local_asContext ctx) {
-    Optional<Long> asnOrError = toLocalAs(ctx, ctx.asn);
-    if (!asnOrError.isPresent()) {
-      return;
-    }
-    long asn = asnOrError.get();
-    boolean twoByte = _currentBgpVr.getRoutingOptions().getAsFormat() == AsFormat.TWO_BYTE_AS;
-    if (twoByte && asn >= (1L << 16)) {
-      warn(ctx, ctx.asn.getStart(), "as-format 4-byte must be enabled in routing-options first");
+    toAsn(ctx, ctx.asn, _currentBgpVr.getRoutingOptions().getAsFormat())
+        .ifPresent(_currentBgpVr::setLocalAs);
+  }
+
+  @Override
+  public void enterBgppg_definition(Bgppg_definitionContext ctx) {
+    _currentBgpPeerGroup =
+        toString(ctx, ctx.name)
+            .map(_currentBgpVr::getOrCreatePeerGroup)
+            .orElseGet(() -> new BgpPeerGroup("dummy")); // create dummy if the name is invalid.
+  }
+
+  @Override
+  public void exitBgppg_definition(Bgppg_definitionContext ctx) {
+    _currentBgpPeerGroup = null;
+  }
+
+  @Override
+  public void exitBgppg_enable(Bgppg_enableContext ctx) {
+    _currentBgpPeerGroup.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void enterBgppg_peer(Bgppg_peerContext ctx) {
+    _currentBgpPeer =
+        toString(ctx, ctx.name)
+            .map(_currentBgpPeerGroup::getOrCreatePeerGroup)
+            .orElseGet(() -> new BgpPeer("dummy")); // create dummy if the name is invalid.
+  }
+
+  @Override
+  public void exitBgppgp_enable(Bgppgp_enableContext ctx) {
+    _currentBgpPeer.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgppgp_la_interface(Bgppgp_la_interfaceContext ctx) {
+    String name = getText(ctx.name);
+    _currentBgpPeer.setLocalInterface(name);
+    _configuration.referenceStructure(
+        INTERFACE, name, BGP_PEER_LOCAL_ADDRESS_INTERFACE, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitBgppgp_la_ip(Bgppgp_la_ipContext ctx) {
+    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.interface_address());
+    _currentBgpPeer.setLocalAddress(address.getIp());
+  }
+
+  @Override
+  public void exitBgppgp_peer_address(Bgppgp_peer_addressContext ctx) {
+    _currentBgpPeer.setPeerAddress(toIp(ctx.address));
+  }
+
+  @Override
+  public void exitBgppgp_peer_as(Bgppgp_peer_asContext ctx) {
+    toAsn(ctx, ctx.asn, _currentBgpVr.getRoutingOptions().getAsFormat())
+        .ifPresent(_currentBgpPeer::setPeerAs);
+  }
+
+  @Override
+  public void exitBgppg_peer(Bgppg_peerContext ctx) {
+    _currentBgpPeer = null;
+  }
+
+  @Override
+  public void exitBgppgp_reflector_client(Bgppgp_reflector_clientContext ctx) {
+    if (ctx.CLIENT() != null) {
+      _currentBgpPeer.setReflectorClient(ReflectorClient.CLIENT);
+    } else if (ctx.MESHED_CLIENT() != null) {
+      _currentBgpPeer.setReflectorClient(ReflectorClient.MESHED_CLIENT);
     } else {
-      _currentBgpVr.setLocalAs(asn);
+      assert ctx.NON_CLIENT() != null;
+      _currentBgpPeer.setReflectorClient(ReflectorClient.NON_CLIENT);
     }
+  }
+
+  @Override
+  public void enterBgppgt_ebgp(Bgppgt_ebgpContext ctx) {
+    _currentBgpPeerGroup.updateAndGetEbgpType();
+  }
+
+  @Override
+  public void enterBgppgt_ibgp(Bgppgt_ibgpContext ctx) {
+    _currentBgpPeerGroup.updateAndGetIbgpType();
   }
 
   @Override
@@ -1696,10 +1789,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return Optional.of(num);
   }
 
-  private static final LongSpace BGP_ASN_SPACE = LongSpace.of(Range.closed(1L, 4294967295L));
+  private static final LongSpace BGP_2_BYTE_ASN_SPACE = LongSpace.of(Range.closed(1L, 65535L));
+  private static final LongSpace BGP_4_BYTE_ASN_SPACE = LongSpace.of(Range.closed(1L, 4294967295L));
 
-  private Optional<Long> toLocalAs(ParserRuleContext ctx, Bgp_asnContext asn) {
-    return toLongInSpace(ctx, asn, BGP_ASN_SPACE, "BGP AS number");
+  private Optional<Long> toAsn(ParserRuleContext ctx, Bgp_asnContext asn, AsFormat fmt) {
+    if (fmt == AsFormat.TWO_BYTE_AS) {
+      return toLongInSpace(ctx, asn, BGP_2_BYTE_ASN_SPACE, "2-byte BGP AS number");
+    } else {
+      assert fmt == AsFormat.FOUR_BYTE_AS;
+      return toLongInSpace(ctx, asn, BGP_4_BYTE_ASN_SPACE, "4-byte BGP AS number");
+    }
   }
 
   private long toLong(Uint32Context t) {
@@ -1726,6 +1825,39 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return Optional.empty();
     }
     return Optional.of(num);
+  }
+
+  private static final IntegerSpace BGP_PEER_GROUP_NAME_LENGTH_SPACE =
+      IntegerSpace.of(Range.closed(1, 31));
+
+  private @Nonnull Optional<String> toString(ParserRuleContext ctx, Bgp_peer_group_nameContext pg) {
+    return toStringWithLengthInSpace(ctx, pg, BGP_PEER_GROUP_NAME_LENGTH_SPACE, "bgp peer-group");
+  }
+
+  private static final IntegerSpace BGP_PEER_NAME_LENGTH_SPACE =
+      IntegerSpace.of(Range.closed(1, 31));
+
+  private @Nonnull Optional<String> toString(ParserRuleContext ctx, Bgp_peer_nameContext peer) {
+    return toStringWithLengthInSpace(ctx, peer, BGP_PEER_NAME_LENGTH_SPACE, "bgp peer");
+  }
+
+  /**
+   * Return the text of the provided {@code ctx} if its length is within the provided {@link
+   * IntegerSpace lengthSpace}, or else {@link Optional#empty}.
+   */
+  private @Nonnull Optional<String> toStringWithLengthInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace lengthSpace, String name) {
+    String text = ctx.getText();
+    if (!lengthSpace.contains(text.length())) {
+      _w.addWarning(
+          messageCtx,
+          getFullText(messageCtx),
+          _parser,
+          String.format(
+              "Expected %s with length in range %s, but got '%s'", text, lengthSpace, name));
+      return Optional.empty();
+    }
+    return Optional.of(text);
   }
 
   @Override

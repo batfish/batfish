@@ -9,6 +9,9 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.junit.Test;
 
 /** Test of {@link CommunityMatchExprEvaluator}. */
@@ -159,6 +162,26 @@ public final class CommunityMatchExprEvaluatorTest {
         SiteOfOriginExtendedCommunities.instance()
             .accept(EVAL, ExtendedCommunity.of(0x0000, 1L, 1L)));
     assertFalse(SiteOfOriginExtendedCommunities.instance().accept(EVAL, StandardCommunity.of(1L)));
+  }
+
+  @Test
+  public void testVisitStandardCommunityHighMatch() {
+    assertTrue(
+        new StandardCommunityHighMatch(new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+            .accept(EVAL, StandardCommunity.of(1, 2)));
+    assertFalse(
+        new StandardCommunityHighMatch(new IntComparison(IntComparator.EQ, new LiteralInt(2)))
+            .accept(EVAL, StandardCommunity.of(1, 2)));
+  }
+
+  @Test
+  public void testVisitStandardCommunityLowMatch() {
+    assertFalse(
+        new StandardCommunityLowMatch(new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+            .accept(EVAL, StandardCommunity.of(1, 2)));
+    assertTrue(
+        new StandardCommunityLowMatch(new IntComparison(IntComparator.EQ, new LiteralInt(2)))
+            .accept(EVAL, StandardCommunity.of(1, 2)));
   }
 
   @Test

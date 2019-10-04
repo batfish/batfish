@@ -360,6 +360,17 @@ public final class FlatJuniperGrammarTest {
     return fb.build();
   }
 
+  private boolean routingPolicyPermitsRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
+    return routingPolicy.process(
+        route,
+        route instanceof Bgpv4Route
+            ? route.toBuilder()
+            : Bgpv4Route.builder().setNetwork(route.getNetwork()),
+        Ip.parse("192.0.2.1"),
+        DEFAULT_VRF_NAME,
+        Direction.OUT);
+  }
+
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
@@ -776,10 +787,8 @@ public final class FlatJuniperGrammarTest {
 
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
-    BgpPeerConfig neighbor1 =
-        proc.getActiveNeighbors().get(Prefix.create(neighbor1Ip, Prefix.MAX_PREFIX_LENGTH));
-    BgpPeerConfig neighbor2 =
-        proc.getActiveNeighbors().get(Prefix.create(neighbor2Ip, Prefix.MAX_PREFIX_LENGTH));
+    BgpPeerConfig neighbor1 = proc.getActiveNeighbors().get(neighbor1Ip.toPrefix());
+    BgpPeerConfig neighbor2 = proc.getActiveNeighbors().get(neighbor2Ip.toPrefix());
 
     assertThat(neighbor1, hasClusterId(Ip.parse("3.3.3.3").asLong()));
     assertThat(neighbor2, hasClusterId(Ip.parse("1.1.1.1").asLong()));
@@ -963,6 +972,39 @@ public final class FlatJuniperGrammarTest {
     Bgpv4Route br6 = b6.build();
 
     assertThat(br6.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
+  }
+
+  @Test
+  public void testPsFromCommunity() throws IOException {
+    Configuration c = parseConfig("community");
+
+    assertThat(c.getRoutingPolicies(), hasKey("match"));
+    RoutingPolicy rp = c.getRoutingPolicies().get("match");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    // deny route with communities only matching one element of named community
+    assertFalse(
+        routingPolicyPermitsRoute(
+            rp,
+            base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(0, 1))).build()));
+    // permit route with communities matching all elements of named community
+    assertTrue(
+        routingPolicyPermitsRoute(
+            rp,
+            base.toBuilder()
+                .setCommunities(
+                    ImmutableSet.of(
+                        StandardCommunity.of(0, 1),
+                        StandardCommunity.of(0, 2),
+                        StandardCommunity.of(1, 1),
+                        StandardCommunity.of(0, 3)))
+                .build()));
   }
 
   @Test

@@ -339,7 +339,7 @@ public class AbstractRibTest {
   public void testRemoveRoute() {
     StaticRoute r =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -373,7 +373,7 @@ public class AbstractRibTest {
     // Two routes for same prefix,
     StaticRoute r1 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -382,7 +382,7 @@ public class AbstractRibTest {
             .build();
     StaticRoute r2 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.parse("2.2.2.2"))
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -411,7 +411,7 @@ public class AbstractRibTest {
             .setTag(1L);
 
     Ip ip = Ip.parse("1.1.1.1");
-    StaticRoute r32 = builder.setNetwork(Prefix.create(ip, 32)).build();
+    StaticRoute r32 = builder.setNetwork(ip.toPrefix()).build();
     StaticRoute r18 = builder.setNetwork(Prefix.create(ip, 18)).build();
     _rib.mergeRoute(r32);
     _rib.mergeRoute(r18);

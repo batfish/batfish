@@ -5,6 +5,8 @@ package org.batfish.datamodel.routing_policy.communities;
  */
 public interface CommunitySetExprVisitor<T, U> {
 
+  T visitCommunityExprsSet(CommunityExprsSet communityExprsSet, U arg);
+
   T visitCommunitySetDifference(CommunitySetDifference communitySetDifference, U arg);
 
   T visitCommunitySetExprReference(CommunitySetExprReference communitySetExprReference, U arg);

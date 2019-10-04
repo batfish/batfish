@@ -64,6 +64,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -85,6 +86,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -103,6 +105,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -115,10 +118,14 @@ import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
+import org.batfish.representation.palo_alto.BgpPeer;
+import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
+import org.batfish.representation.palo_alto.BgpPeerGroup;
 import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.IbgpPeerGroupType;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
@@ -186,7 +193,8 @@ public final class PaloAltoGrammarTest {
     String fileText = flattener.getFlattenedConfigurationText();
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
     PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(fileText, settings, lineMap);
-    PaloAltoControlPlaneExtractor extractor = new PaloAltoControlPlaneExtractor(src, paParser, w);
+    PaloAltoControlPlaneExtractor extractor =
+        new PaloAltoControlPlaneExtractor(fileText, paParser, w);
     ParserRuleContext tree = Batfish.parse(paParser, logger, settings);
     extractor.processParseTree(tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
@@ -488,6 +496,20 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getRoutingOptions().getDeterministicMedComparison(), equalTo(Boolean.FALSE));
     assertThat(bgp.getRoutingOptions().getGracefulRestartEnable(), equalTo(Boolean.FALSE));
     assertThat(bgp.getRoutingOptions().getReflectorClusterId(), equalTo(Ip.parse("1.2.3.5")));
+
+    assertThat(bgp.getPeerGroups().keySet(), contains("PG"));
+    BgpPeerGroup pg = bgp.getPeerGroups().get("PG");
+    assertThat(pg.getEnable(), equalTo(true));
+    assertThat(pg.getTypeAndOptions(), instanceOf(IbgpPeerGroupType.class));
+
+    assertThat(pg.getPeers().keySet(), contains("PEER"));
+    BgpPeer peer = pg.getOrCreatePeerGroup("PEER");
+    assertThat(peer.getEnable(), equalTo(true));
+    assertThat(peer.getLocalInterface(), equalTo("ethernet1/1"));
+    assertThat(peer.getLocalAddress(), equalTo(Ip.parse("1.2.3.6")));
+    assertThat(peer.getPeerAddress(), equalTo(Ip.parse("5.4.3.2")));
+    assertThat(peer.getPeerAs(), equalTo(54321L));
+    assertThat(peer.getReflectorClient(), equalTo(ReflectorClient.NON_CLIENT));
   }
 
   @Test
@@ -496,6 +518,13 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasVrf("BGP", hasBgpProcess(any(BgpProcess.class))));
     BgpProcess proc = c.getVrfs().get("BGP").getBgpProcess();
     assertThat(proc, hasRouterId(Ip.parse("1.2.3.4")));
+    assertThat(proc.getActiveNeighbors().keySet(), contains(Prefix.parse("5.4.3.2/32")));
+    BgpActivePeerConfig peer = proc.getActiveNeighbors().get(Prefix.parse("5.4.3.2/32"));
+    assertThat(peer.getDescription(), equalTo("PEER"));
+    assertThat(peer.getGroup(), equalTo("PG"));
+    assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.2.3.6")));
+    assertThat(peer.getLocalAs(), equalTo(65001L));
+    assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65001)));
   }
 
   @Test

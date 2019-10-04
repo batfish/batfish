@@ -165,7 +165,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       Ip vniIp,
       int weight) {
     super(
-        Prefix.create(vniIp, Prefix.MAX_PREFIX_LENGTH),
+        vniIp.toPrefix(),
         nextHopIp,
         admin,
         asPath,

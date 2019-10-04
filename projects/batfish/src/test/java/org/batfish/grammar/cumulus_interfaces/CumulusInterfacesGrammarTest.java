@@ -17,13 +17,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Set;
 import org.batfish.common.Warnings;
-import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
+import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -73,10 +74,12 @@ public class CumulusInterfacesGrammarTest {
   }
 
   private static Interfaces parse(String input) {
-    Settings settings = new Settings();
-    settings.setDisableUnrecognized(true);
-    settings.setThrowOnLexerError(true);
-    settings.setThrowOnParserError(true);
+    GrammarSettings settings =
+        MockGrammarSettings.builder()
+            .setDisableUnrecognized(true)
+            .setThrowOnLexerError(true)
+            .setThrowOnParserError(true)
+            .build();
     CumulusInterfacesCombinedParser parser =
         new CumulusInterfacesCombinedParser(input, settings, 1, 0);
     Cumulus_interfaces_configurationContext ctxt = parser.parse();

@@ -80,7 +80,7 @@ public final class AutoAs extends AsExpr {
       if (peerAddress == null) {
         throw new BatfishException("Expected a peer address");
       }
-      Prefix peerPrefix = Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH);
+      Prefix peerPrefix = peerAddress.toPrefix();
       // TODO: support passive, interface neighbors via session instead
       BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(peerPrefix);
       if (neighbor == null) {

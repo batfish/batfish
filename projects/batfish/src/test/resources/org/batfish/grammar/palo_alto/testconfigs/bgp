@@ -23,6 +23,32 @@ network {
           default-local-preference 103;
           reflector-cluster-id 1.2.3.5;
         }
+        peer-group {
+          PG {
+           type {
+             ibgp;
+           }
+           peer {
+             PEER {
+               enable yes;
+               local-address {
+                 interface ethernet1/1;
+                 ip 1.2.3.6/24;
+               }
+               peer-address {
+                 ip 5.4.3.2;
+               }
+               # The router would reject this command as iBGP peer cannot have explicit peer-as
+               # different from local-as. But since commands are not in order, Batfish cannot reject
+               # at parse time. Instead, we extract as-is and, during conversion, mimic device
+               # behavior by retroactively ignoring the command and overwriting it with local-as.
+               peer-as 54321;
+               reflector-client non-client;
+             }
+           }
+           enable yes;
+          }
+        }
         enable yes;
         reject-default-route no;
         router-id 1.2.3.4/32;

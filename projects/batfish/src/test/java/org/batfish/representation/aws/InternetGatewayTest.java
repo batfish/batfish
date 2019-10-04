@@ -110,9 +110,7 @@ public class InternetGatewayTest {
         equalTo(
             Collections.singletonList(
                 IspModelingUtils.getAdvertiseStaticStatement(
-                    new PrefixSpace(
-                        PrefixRange.fromPrefix(
-                            Prefix.create(publicIp, Prefix.MAX_PREFIX_LENGTH)))))));
+                    new PrefixSpace(PrefixRange.fromPrefix(publicIp.toPrefix()))))));
 
     BgpActivePeerConfig nbr =
         getOnlyElement(igwConfig.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());

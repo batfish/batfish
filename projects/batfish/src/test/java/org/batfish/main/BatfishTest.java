@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -217,6 +219,35 @@ public class BatfishTest {
     assertThat(
         batfish.getTopologyProvider().getRawLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
         containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
+  }
+
+  @Test
+  public void testInitSnapshotWithRuntimeData() throws IOException {
+    /*
+    Setup: Config rtr1 has interfaces Ethernet0, Ethernet1, and Ethernet2, all no shutdown.
+    Runtime data says Ethernet0 is line down and Ethernet1 is line up, no entry for Ethernet2.
+     */
+    String snapshotResourcePrefix = "org/batfish/main/snapshots/interface_blacklist";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(snapshotResourcePrefix, "rtr1")
+                .setRuntimeDataText(snapshotResourcePrefix)
+                .build(),
+            _folder);
+    Map<String, Interface> interfaces = batfish.loadConfigurations().get("rtr1").getAllInterfaces();
+
+    // Ethernet0 should be inactive and blacklisted
+    Interface ethernet0 = interfaces.get("Ethernet0");
+    assertTrue(ethernet0.getBlacklisted() && !ethernet0.getActive());
+
+    // Ensure other interfaces are active
+    assertThat(
+        interfaces.entrySet().stream()
+            .filter(e -> e.getValue().getActive())
+            .map(Entry::getKey)
+            .collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder("Ethernet1", "Ethernet2"));
   }
 
   @Test

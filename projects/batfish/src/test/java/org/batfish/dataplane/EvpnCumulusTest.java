@@ -22,8 +22,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class EvpnCumulusTest {
-  private static final String SNAPSHOT_FOLDER =
-      "org/batfish/grammar/cumulus_nclu/testrigs/evpn-l2-vnis";
+  private static final String SNAPSHOT_FOLDER = "org/batfish/dataplane/testrigs/evpn-l2-vnis";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
