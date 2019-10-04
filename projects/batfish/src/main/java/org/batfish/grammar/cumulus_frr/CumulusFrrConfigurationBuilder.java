@@ -38,7 +38,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_lineContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
@@ -785,14 +785,34 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitPl_line(Pl_lineContext ctx) {
-    long num = parseLong(ctx.num.getText());
+  public void exitPl_line_action(Pl_line_actionContext ctx) {
+    long num;
+    if (ctx.num != null) {
+      num = toLong(ctx.num);
+    } else {
+      // Round up to the next multiple of 5
+      // http://docs.frrouting.org/en/latest/filter.html#clicmd-ipprefix-listNAMEseqNUMBER(permit|deny)PREFIX[leLEN][geLEN]
+      Long lastNum = _currentIpPrefixList.getLines().lastKey();
+      num = nextMultipleOfFive(lastNum);
+    }
+    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
+
+    if (ctx.ANY() != null) {
+      _currentIpPrefixList.addLine(
+          new IpPrefixListLine(
+              action, num, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+      return;
+    }
+
     Prefix prefix = Prefix.parse(ctx.ip_prefix.getText());
     int prefixLength = prefix.getPrefixLength();
     int low = ctx.ge != null ? Integer.parseInt(ctx.ge.getText()) : prefixLength;
     int high = ctx.le != null ? Integer.parseInt(ctx.le.getText()) : Prefix.MAX_PREFIX_LENGTH;
-    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
     IpPrefixListLine pll = new IpPrefixListLine(action, num, prefix, new SubRange(low, high));
     _currentIpPrefixList.getLines().put(num, pll);
+  }
+
+  private long nextMultipleOfFive(@Nullable Long lastNum) {
+    return (long) (Math.ceil(Optional.ofNullable(lastNum).orElse(0L) * 1.0 / 5) * 5);
   }
 }
