@@ -696,4 +696,20 @@ public class CumulusNcluConfigurationTest {
         loopback.getAddresses(),
         equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
   }
+
+  @Test
+  public void testToRouteMapSetLocalPref() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+    RouteMap rm = new RouteMap("RM");
+    RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+    rme.setSetLocalPreference(new RouteMapSetLocalPreference(200L));
+    rm.getEntries().put(10, rme);
+    RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+    Builder outputBuilder = Bgpv4Route.builder();
+    Environment.Builder env =
+        Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
+    policy.call(env.setOutputRoute(outputBuilder).build());
+    assertThat(outputBuilder.getLocalPreference(), equalTo(200L));
+  }
 }
