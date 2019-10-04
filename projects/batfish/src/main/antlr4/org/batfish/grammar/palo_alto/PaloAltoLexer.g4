@@ -504,6 +504,11 @@ LLDP
     'lldp'
 ;
 
+LOCAL_ADDRESS
+:
+    'local-address'
+;
+
 LOCAL_AS
 :
     'local-as'
@@ -662,6 +667,11 @@ PANORAMA_SERVER
 PEER
 :
     'peer'
+;
+
+PEER_ADDRESS
+:
+    'peer-address'
 ;
 
 PEER_AS

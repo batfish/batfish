@@ -25,6 +25,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.VIRTUAL
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
@@ -89,6 +90,9 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_peerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_asContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ebgpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ibgpContext;
@@ -515,6 +519,25 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitBgppgp_enable(Bgppgp_enableContext ctx) {
     _currentBgpPeer.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgppgp_la_interface(Bgppgp_la_interfaceContext ctx) {
+    String name = getText(ctx.name);
+    _currentBgpPeer.setLocalInterface(name);
+    _configuration.referenceStructure(
+        INTERFACE, name, BGP_PEER_LOCAL_ADDRESS_INTERFACE, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitBgppgp_la_ip(Bgppgp_la_ipContext ctx) {
+    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.interface_address());
+    _currentBgpPeer.setLocalAddress(address.getIp());
+  }
+
+  @Override
+  public void exitBgppgp_peer_address(Bgppgp_peer_addressContext ctx) {
+    _currentBgpPeer.setPeerAddress(toIp(ctx.address));
   }
 
   @Override
