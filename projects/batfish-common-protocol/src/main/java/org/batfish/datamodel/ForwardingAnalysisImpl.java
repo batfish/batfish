@@ -1325,14 +1325,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       ifaceEntry -> {
                         String ifaceName = ifaceEntry.getKey();
                         IpSpace dstIpsWithUnownedNextHopIpArpFalseIface = ifaceEntry.getValue();
-                        boolean interfaceHasMissingDevices =
-                            interfacesWithMissingDevicesNode.contains(ifaceName);
+                        boolean isInterfaceFull =
+                            !interfacesWithMissingDevicesNode.contains(ifaceName);
                         IpSpace arpFalseDstIpIface = arpFalseDstIpVrf.get(ifaceName);
                         IpSpace arpFalseDstIpNetworkBroadcastIface =
                             arpFalseDstIpNetworkBroadcastVrf.get(ifaceName);
 
                         return computeExitsNetwork(
-                            interfaceHasMissingDevices,
+                            isInterfaceFull,
                             dstIpsWithUnownedNextHopIpArpFalseIface,
                             arpFalseDstIpIface,
                             arpFalseDstIpNetworkBroadcastIface,
@@ -1350,12 +1350,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * and dst ip is external
    */
   @VisibleForTesting
-  static IpSpace computeExitsNetwork(boolean interfaceHasMissingDevices,
+  static IpSpace computeExitsNetwork(boolean isInterfaceFull,
       IpSpace dstIpsWithUnownedNextHopIpArpFalseIface,
       IpSpace arpFalseDstIpIface,
       IpSpace arpFalseDstIpNetworkBroadcastIface,
       IpSpace externalIps) {
-    return !interfaceHasMissingDevices
+    return isInterfaceFull
         ? EmptyIpSpace.INSTANCE
         : AclIpSpace.intersection(
             // dest ip is external

@@ -1285,15 +1285,14 @@ public class ForwardingAnalysisImplTest {
   /** No IPs have exits_network if the interface is full. */
   @Test
   public void testComputeExitsNetwork_full() {
-    // case: interface is full
-    boolean hasMissingDevices = false;
+    boolean isInterfaceFull = true;
     IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     IpSpace arpFalseDstIp = UniverseIpSpace.INSTANCE;
     IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
     IpSpace externalIps = UniverseIpSpace.INSTANCE;
     IpSpace exitsNetwork =
         computeExitsNetwork(
-            hasMissingDevices,
+            isInterfaceFull,
             dstIpsWithUnownedNextHopIpArpFalse,
             arpFalseDstIp,
             arpFalseDstIpNetworkBroadcast,
@@ -1306,14 +1305,14 @@ public class ForwardingAnalysisImplTest {
    */
   @Test
   public void testComputeExitsNetwork_noUnownedNextHop_noArpFalse() {
-    boolean hasMissingDevices = true;
+    boolean isInterfaceFull = false;
     IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     IpSpace arpFalseDstIp = EmptyIpSpace.INSTANCE;
     IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
     IpSpace externalIps = UniverseIpSpace.INSTANCE;
     IpSpace exitsNetwork =
         computeExitsNetwork(
-            hasMissingDevices,
+            isInterfaceFull,
             dstIpsWithUnownedNextHopIpArpFalse,
             arpFalseDstIp,
             arpFalseDstIpNetworkBroadcast,
@@ -1329,14 +1328,14 @@ public class ForwardingAnalysisImplTest {
    */
   @Test
   public void testComputeExitsNetwork_excludeNetworkBroadcastInArpFalse() {
-    boolean hasMissingDevices = true;
+    boolean isInterfaceFull = false;
     IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
     IpSpace arpFalseDstIpNetworkBroadcast = IP_IP_SPACE;
     IpSpace externalIps = UniverseIpSpace.INSTANCE;
     IpSpace exitsNetwork =
         computeExitsNetwork(
-            hasMissingDevices,
+            isInterfaceFull,
             dstIpsWithUnownedNextHopIpArpFalse,
             arpFalseDstIp,
             arpFalseDstIpNetworkBroadcast,
@@ -1352,14 +1351,14 @@ public class ForwardingAnalysisImplTest {
    */
   @Test
   public void testComputeExitsNetwork_includeNetworkBroadcastIPsInUnownedNextHop() {
-    boolean hasMissingDevices = true;
+    boolean isInterfaceFull = false;
     IpSpace dstIpsWithUnownedNextHopIpArpFalse = PREFIX_IP_SPACE;
     IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
     IpSpace arpFalseDstIpNetworkBroadcast = IP_IP_SPACE;
     IpSpace externalIps = UniverseIpSpace.INSTANCE;
     IpSpace exitsNetwork =
         computeExitsNetwork(
-            hasMissingDevices,
+            isInterfaceFull,
             dstIpsWithUnownedNextHopIpArpFalse,
             arpFalseDstIp,
             arpFalseDstIpNetworkBroadcast,
@@ -1375,14 +1374,14 @@ public class ForwardingAnalysisImplTest {
    */
   @Test
   public void testComputeExitsNetwork_includeOnlyExternalDstIpsWithUnownedNextHop() {
-    boolean hasMissingDevices = true;
+    boolean isInterfaceFull = false;
     IpSpace dstIpsWithUnownedNextHopIpArpFalse = PREFIX_IP_SPACE;
     IpSpace arpFalseDstIp = EmptyIpSpace.INSTANCE;
     IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
     IpSpace externalIps = IP_IP_SPACE;
     IpSpace exitsNetwork =
         computeExitsNetwork(
-            hasMissingDevices,
+            isInterfaceFull,
             dstIpsWithUnownedNextHopIpArpFalse,
             arpFalseDstIp,
             arpFalseDstIpNetworkBroadcast,
@@ -1399,14 +1398,14 @@ public class ForwardingAnalysisImplTest {
   @Test
   public void testComputeExitsNetwork_unownedNextHop_include_only_external_dstIps() {
     // case: for unowned next-hop IPs, only include external dst IPs
-    boolean hasMissingDevices = true;
+    boolean isInterfaceFull = false;
     IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
     IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
     IpSpace externalIps = IP_IP_SPACE;
     IpSpace exitsNetwork =
         computeExitsNetwork(
-            hasMissingDevices,
+            isInterfaceFull,
             dstIpsWithUnownedNextHopIpArpFalse,
             arpFalseDstIp,
             arpFalseDstIpNetworkBroadcast,
