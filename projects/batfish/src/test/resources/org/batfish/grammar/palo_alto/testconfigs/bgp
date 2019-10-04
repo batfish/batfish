@@ -31,7 +31,15 @@ network {
            peer {
              PEER {
                enable yes;
+               local-address {
+                 interface ethernet1/1;
+                 ip 1.2.3.6/24;
+               }
+               peer-address {
+                 ip 5.4.3.2;
+               }
                peer-as 54321;
+               reflector-client non-client;
              }
            }
            enable yes;

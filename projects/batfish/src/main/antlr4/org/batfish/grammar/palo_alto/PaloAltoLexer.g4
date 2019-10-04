@@ -164,6 +164,11 @@ CERTIFICATE_PROFILE
     'certificate-profile'
 ;
 
+CLIENT
+:
+    'client'
+;
+
 CLOSE_BRACKET
 :
     ']'
@@ -504,6 +509,11 @@ LLDP
     'lldp'
 ;
 
+LOCAL_ADDRESS
+:
+    'local-address'
+;
+
 LOCAL_AS
 :
     'local-as'
@@ -527,6 +537,11 @@ MD5
 MED
 :
     'med'
+;
+
+MESHED_CLIENT
+:
+    'meshed-client'
 ;
 
 MINUTES
@@ -592,6 +607,11 @@ NEXTHOP
 NO
 :
     'no'
+;
+
+NON_CLIENT
+:
+    'non-client'
 ;
 
 NONE
@@ -664,6 +684,11 @@ PEER
     'peer'
 ;
 
+PEER_ADDRESS
+:
+    'peer-address'
+;
+
 PEER_AS
 :
     'peer-as'
@@ -727,6 +752,11 @@ PROTOCOL
 QOS
 :
     'qos'
+;
+
+REFLECTOR_CLIENT
+:
+    'reflector-client'
 ;
 
 REFLECTOR_CLUSTER_ID

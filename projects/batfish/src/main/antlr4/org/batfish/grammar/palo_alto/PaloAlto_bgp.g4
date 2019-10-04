@@ -86,11 +86,12 @@ bgppg_peer
     PEER name = bgp_peer_name
     (
         bgppgp_enable
-//        | bgppgp_local_address
-//        | bgppgp_peer_address
+        | bgppgp_local_address
+//        | bgppgp_max_prefixes
+        | bgppgp_peer_address
         | bgppgp_peer_as
 //        | bgppgp_peering_type
-//        | bgppgp_reflector_client
+        | bgppgp_reflector_client
     )?
 ;
 
@@ -99,9 +100,38 @@ bgppgp_enable
     ENABLE yn = yes_or_no
 ;
 
+bgppgp_local_address
+:
+    LOCAL_ADDRESS
+    (
+        bgppgp_la_interface
+        | bgppgp_la_ip
+    )
+;
+
+bgppgp_la_interface
+:
+    INTERFACE name = variable
+;
+
+bgppgp_la_ip
+:
+    IP interface_address
+;
+
+bgppgp_peer_address
+:
+    PEER_ADDRESS IP address = ip_address
+;
+
 bgppgp_peer_as
 :
     PEER_AS asn = bgp_asn
+;
+
+bgppgp_reflector_client
+:
+    REFLECTOR_CLIENT (CLIENT | MESHED_CLIENT | NON_CLIENT)
 ;
 
 bgppg_type
