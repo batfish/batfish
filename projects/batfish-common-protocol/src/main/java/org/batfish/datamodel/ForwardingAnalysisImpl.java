@@ -1431,9 +1431,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             // info
                             boolean isInterfaceFull =
                                 !interfacesWithMissingDevices.get(hostname).contains(ifaceName);
-                            if (!isInterfaceFull) {
-                              return EmptyIpSpace.INSTANCE;
-                            }
 
                             IpSpace ifaceArpFalseDstIpNetworkBroadcastIps =
                                 arpFalseDestIpNetworkBroadcast
@@ -1459,6 +1456,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                     .get(ifaceName);
 
                             return computeInsufficientInfo(
+                                isInterfaceFull,
                                 internalIps,
                                 ifaceArpFalseDstIpNetworkBroadcastIps,
                                 ifaceHostSubnetIps,
@@ -1471,12 +1469,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   @VisibleForTesting
   static IpSpace computeInsufficientInfo(
+      boolean isInterfaceFull,
       IpSpace internalIps,
       IpSpace ifaceArpFalseDstIpNetworkBroadcastIps,
       IpSpace ifaceHostSubnetIps,
       IpSpace ifaceArpFalseDstIp,
       IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse,
       IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse) {
+    if (!isInterfaceFull) {
+      return ifaceArpFalseDstIpNetworkBroadcastIps;
+    }
+
     IpSpace internalIpsElsewhere = AclIpSpace.difference(internalIps, ifaceHostSubnetIps);
 
     // case 1: arp for dst ip, and either:

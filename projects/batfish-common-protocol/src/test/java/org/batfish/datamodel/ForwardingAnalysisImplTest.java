@@ -1417,11 +1417,39 @@ public class ForwardingAnalysisImplTest {
   }
 
   /**
+   * If the interface is not full, only give a dstIP insufficient_info if we ARP for it without
+   * reply and its the network or broadcast IP of the route's network.
+   */
+  @Test
+  public void testInsufficientInfo_notFull() {
+    boolean isInterfaceFull = false;
+    IpSpace internalIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = IP_IP_SPACE;
+    IpSpace ifaceHostSubnetIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            isInterfaceFull,
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(IP_IP_SPACE);
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
+
+  /**
    * Case 1a: A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it
    * is internal but not connected to the interface.
    */
   @Test
   public void testInsufficientInfo_arpFalseDstIp_internalElsewhere() {
+    boolean isInterfaceFull = true;
     IpSpace internalIps = PREFIX_IP_SPACE;
     IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
     IpSpace ifaceHostSubnetIps = IP_IP_SPACE;
@@ -1430,6 +1458,7 @@ public class ForwardingAnalysisImplTest {
     IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     IpSpace insufficientInfo =
         computeInsufficientInfo(
+            isInterfaceFull,
             internalIps,
             ifaceArpFalseDstIpNetworkBroadcastIps,
             ifaceHostSubnetIps,
@@ -1447,6 +1476,7 @@ public class ForwardingAnalysisImplTest {
    */
   @Test
   public void testInsufficientInfo_arpFalseNetworkBroadcastDstIp() {
+    boolean isInterfaceFull = true;
     IpSpace internalIps = EmptyIpSpace.INSTANCE;
     IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = IP_IP_SPACE;
     IpSpace ifaceHostSubnetIps = PREFIX_IP_SPACE;
@@ -1455,6 +1485,7 @@ public class ForwardingAnalysisImplTest {
     IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     IpSpace insufficientInfo =
         computeInsufficientInfo(
+            isInterfaceFull,
             internalIps,
             ifaceArpFalseDstIpNetworkBroadcastIps,
             ifaceHostSubnetIps,
@@ -1469,6 +1500,7 @@ public class ForwardingAnalysisImplTest {
   /** Case 2: Internal dstIPs routable to an external next-hop should get insufficient_info. */
   @Test
   public void testInsufficientInfo_internalDstIpExternalNextHopIp() {
+    boolean isInterfaceFull = true;
     IpSpace internalIps = IP_IP_SPACE;
     IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
     IpSpace ifaceHostSubnetIps = EmptyIpSpace.INSTANCE;
@@ -1477,6 +1509,7 @@ public class ForwardingAnalysisImplTest {
     IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     IpSpace insufficientInfo =
         computeInsufficientInfo(
+            isInterfaceFull,
             internalIps,
             ifaceArpFalseDstIpNetworkBroadcastIps,
             ifaceHostSubnetIps,
@@ -1494,6 +1527,7 @@ public class ForwardingAnalysisImplTest {
    */
   @Test
   public void testInsufficientInfo_ownedNextHopIp() {
+    boolean isInterfaceFull = true;
     IpSpace internalIps = EmptyIpSpace.INSTANCE;
     IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
     IpSpace ifaceHostSubnetIps = EmptyIpSpace.INSTANCE;
@@ -1502,6 +1536,7 @@ public class ForwardingAnalysisImplTest {
     IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = PREFIX_IP_SPACE;
     IpSpace insufficientInfo =
         computeInsufficientInfo(
+            isInterfaceFull,
             internalIps,
             ifaceArpFalseDstIpNetworkBroadcastIps,
             ifaceHostSubnetIps,
