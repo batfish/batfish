@@ -2052,6 +2052,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (blacklistedNodes != null) {
       processInterfaceBlacklist(nodeToInterfaceBlacklist(blacklistedNodes, nc), nc);
     }
+    // If interface blacklist was provided, it was converted to runtime data file by WorkMgr
     SnapshotRuntimeData runtimeData = _storage.loadRuntimeData(networkId, snapshotId);
     if (runtimeData != null) {
       processInterfaceBlacklist(runtimeData.getBlacklistedInterfaces(), nc);
