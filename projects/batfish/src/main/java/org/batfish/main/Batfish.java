@@ -8,7 +8,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
-import static org.batfish.common.topology.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
+import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CommonUtil.detectCharset;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
@@ -111,7 +111,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
-import org.batfish.common.topology.SnapshotRuntimeData;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -2048,15 +2048,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NetworkId networkId = networkSnapshot.getNetwork();
     SnapshotId snapshotId = networkSnapshot.getSnapshot();
 
-    processInterfaceBlacklist(
-        nodeToInterfaceBlacklist(
-            firstNonNull(
-                _storage.loadNodeBlacklist(networkId, snapshotId), ImmutableSortedSet.of()),
-            nc),
-        nc);
-    processInterfaceBlacklist(
-        firstNonNull(_storage.loadInterfaceBlacklist(networkId, snapshotId), ImmutableSet.of()),
-        nc);
+    SortedSet<String> blacklistedNodes = _storage.loadNodeBlacklist(networkId, snapshotId);
+    if (blacklistedNodes != null) {
+      processInterfaceBlacklist(nodeToInterfaceBlacklist(blacklistedNodes, nc), nc);
+    }
+    SnapshotRuntimeData runtimeData = _storage.loadRuntimeData(networkId, snapshotId);
+    if (runtimeData != null) {
+      processInterfaceBlacklist(runtimeData.getBlacklistedInterfaces(), nc);
+    }
     if (_settings.ignoreManagementInterfaces()) {
       processManagementInterfaces(configurations);
     }
