@@ -15,6 +15,7 @@ import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -169,7 +170,6 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasL
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
@@ -3168,7 +3168,7 @@ public class CiscoGrammarTest {
     String generatedImportPolicyName =
         computeBgpPeerImportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
     String generatedExportPolicyName =
-        computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
+        generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
     RoutingPolicy importPolicy = c.getRoutingPolicies().get(generatedImportPolicyName);
     RoutingPolicy exportPolicy = c.getRoutingPolicies().get(generatedExportPolicyName);
     assertThat(importPolicy, notNullValue());

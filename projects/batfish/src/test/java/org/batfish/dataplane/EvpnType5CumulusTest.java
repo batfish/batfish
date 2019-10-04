@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class EvpnType5CumulusTest {
-  private static final String SNAPSHOT_PREFIX = "org/batfish/grammar/cumulus_nclu/testrigs/";
+  private static final String SNAPSHOT_PREFIX = "org/batfish/dataplane/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

@@ -1,4 +1,4 @@
-package org.batfish.grammar.flatjuniper;
+package org.batfish.representation.juniper;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

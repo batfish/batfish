@@ -1,4 +1,4 @@
-package org.batfish.grammar.flatjuniper;
+package org.batfish.representation.juniper;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

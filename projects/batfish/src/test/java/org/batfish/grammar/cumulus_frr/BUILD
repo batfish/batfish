@@ -10,17 +10,12 @@ junit_tests(
     srcs = glob([
         "**/*Test.java",
     ]),
-    resources = [
-        "//projects/batfish/src/test/resources/org/batfish/grammar/cisco/testconfigs",
-        "//projects/batfish/src/test/resources/org/batfish/grammar/cisco/testrigs",
-    ],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
-        "//projects/batfish/src/main/java/org/batfish/grammar/cisco",
-        "//projects/batfish/src/main/java/org/batfish/representation/cisco",
+        "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_frr",
+        "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
         "@antlr4_runtime//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",

@@ -19,6 +19,7 @@ junit_tests(
     deps = [
         "//projects/batfish",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish/src/main/java/org/batfish/representation/cisco",
         "@guava//:compile",
         "@hamcrest//:compile",
     ],

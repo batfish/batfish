@@ -16,7 +16,7 @@ import org.junit.Test;
 
 /** Test of {@link SetStatementTree}. */
 @ParametersAreNonnullByDefault
-public final class SetStatementTreeText {
+public final class SetStatementTreeTest {
 
   @Test
   public void testAddSetStatementIndex() {
