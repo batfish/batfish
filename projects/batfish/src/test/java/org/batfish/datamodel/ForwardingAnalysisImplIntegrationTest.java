@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.Map;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -112,7 +111,8 @@ public class ForwardingAnalysisImplIntegrationTest {
         forwardingAnalysis.getExitsNetwork().get(hostname).get(vrfName).get(ifaceName);
 
     // the forwarding route's prefix should be routed out the interface
-    assertThat(exitsNetwork,
+    assertThat(
+        exitsNetwork,
         allOf(
             not(containsIp(forwardingRoutePrefix.getStartIp())),
             not(containsIp(forwardingRoutePrefix.getEndIp())),
@@ -169,7 +169,8 @@ public class ForwardingAnalysisImplIntegrationTest {
         forwardingAnalysis.getExitsNetwork();
 
     assertThat(
-        exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()), allOf(
+        exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()),
+        allOf(
             not(containsIp(prefix.getStartIp())),
             not(containsIp(prefix.getEndIp())),
             containsIp(prefix.getFirstHostIp()),
