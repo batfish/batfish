@@ -346,9 +346,7 @@ public class ForwardingAnalysisImplTest {
                     .setMatchingIps(
                         ImmutableMap.of(
                             P1,
-                            AclIpSpace.rejecting(
-                                    Prefix.create(P1.getEndIp(), Prefix.MAX_PREFIX_LENGTH)
-                                        .toIpSpace())
+                            AclIpSpace.rejecting(P1.getEndIp().toPrefix().toIpSpace())
                                 .thenPermitting(P1.toIpSpace())
                                 .build()))
                     .build()));
@@ -420,9 +418,7 @@ public class ForwardingAnalysisImplTest {
                     .setMatchingIps(
                         ImmutableMap.of(
                             P1,
-                            AclIpSpace.rejecting(
-                                    Prefix.create(P1.getEndIp(), Prefix.MAX_PREFIX_LENGTH)
-                                        .toIpSpace())
+                            AclIpSpace.rejecting(P1.getEndIp().toPrefix().toIpSpace())
                                 .thenPermitting(P1.toIpSpace())
                                 .build()))
                     .build()));

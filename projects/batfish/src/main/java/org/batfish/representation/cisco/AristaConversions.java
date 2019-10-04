@@ -205,14 +205,14 @@ final class AristaConversions {
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), bgpVrf, e.getValue(), warnings))
         .collect(
             ImmutableMap.toImmutableMap(
-                e -> Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                e -> e.getKey().toPrefix(),
                 e ->
                     (BgpActivePeerConfig)
                         AristaConversions.toBgpNeighbor(
                             c,
                             vrf,
                             proc,
-                            Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                            e.getKey().toPrefix(),
                             bgpConfig,
                             bgpVrf,
                             e.getValue(),

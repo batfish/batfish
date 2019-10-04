@@ -530,7 +530,7 @@ public class VirtualRouter implements Serializable {
 
       Ip srcIp = advert.getSrcIp();
       // TODO: support passive and unnumbered bgp connections
-      Prefix srcPrefix = Prefix.create(srcIp, Prefix.MAX_PREFIX_LENGTH);
+      Prefix srcPrefix = srcIp.toPrefix();
       BgpPeerConfig neighbor = _vrf.getBgpProcess().getActiveNeighbors().get(srcPrefix);
       if (neighbor == null) {
         continue;
@@ -891,7 +891,7 @@ public class VirtualRouter implements Serializable {
       @Nullable ConnectedRouteMetadata metadata) {
     LocalRoute.Builder builder =
         LocalRoute.builder()
-            .setNetwork(Prefix.create(address.getIp(), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(address.getIp().toPrefix())
             .setSourcePrefixLength(address.getNetworkBits())
             .setNextHopInterface(ifaceName);
     if (metadata != null) {

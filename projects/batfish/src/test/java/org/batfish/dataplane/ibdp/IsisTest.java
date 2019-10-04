@@ -157,8 +157,8 @@ public class IsisTest {
     // Test with passive level 1 on r1. Should see each other's loopback addresses in L2 RIB, but
     // not L1, and both should have routes to the other's loopback with ISIS_L2 protocol.
     IncrementalDataPlane dp = setUpPassiveIsis(true, false);
-    Prefix r1LoopbackPrefix = Prefix.create(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
-    Prefix r2LoopbackPrefix = Prefix.create(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
+    Prefix r1LoopbackPrefix = R1_LOOPBACK_IP.toPrefix();
+    Prefix r2LoopbackPrefix = R2_LOOPBACK_IP.toPrefix();
     Prefix isisInterfacePrefix = Prefix.create(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH);
 
     Set<IsisRoute> r1L1RibRoutes =
@@ -217,8 +217,8 @@ public class IsisTest {
     // Test with passive level 2 on r1. Should see each other's loopback addresses in L1 RIB, but
     // not L2, and both should have routes to the other's loopback with ISIS_L1 protocol.
     IncrementalDataPlane dp = setUpPassiveIsis(false, true);
-    Prefix r1LoopbackPrefix = Prefix.create(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
-    Prefix r2LoopbackPrefix = Prefix.create(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
+    Prefix r1LoopbackPrefix = R1_LOOPBACK_IP.toPrefix();
+    Prefix r2LoopbackPrefix = R2_LOOPBACK_IP.toPrefix();
     Prefix isisInterfacePrefix = Prefix.create(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH);
 
     Set<IsisRoute> r1L1RibRoutes =
@@ -643,10 +643,10 @@ public class IsisTest {
     IncrementalDataPlane dp = setUpOverloadIsis();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
-    Prefix r1LoopbackPrefix = Prefix.create(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
-    Prefix r2LoopbackPrefix = Prefix.create(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
-    Prefix r3LoopbackPrefix = Prefix.create(R3_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
-    Prefix r4LoopbackPrefix = Prefix.create(R4_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
+    Prefix r1LoopbackPrefix = R1_LOOPBACK_IP.toPrefix();
+    Prefix r2LoopbackPrefix = R2_LOOPBACK_IP.toPrefix();
+    Prefix r3LoopbackPrefix = R3_LOOPBACK_IP.toPrefix();
+    Prefix r4LoopbackPrefix = R4_LOOPBACK_IP.toPrefix();
 
     // r2 is overloaded. Other three routers should all have routes to each other's loopbacks that
     // don't traverse r2.

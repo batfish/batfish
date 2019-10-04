@@ -1,7 +1,6 @@
 package org.batfish.grammar.f5_bigip_imish;
 
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
-import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
@@ -133,7 +132,7 @@ public final class F5BigipImishGrammarTest {
             new KernelRoute(Prefix.ZERO),
             outputBuilder,
             peerAddress,
-            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            peerAddress.toPrefix(),
             Configuration.DEFAULT_VRF_NAME,
             Direction.OUT));
   }
@@ -145,7 +144,7 @@ public final class F5BigipImishGrammarTest {
             new KernelRoute(Prefix.ZERO),
             outputBuilder,
             peerAddress,
-            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            peerAddress.toPrefix(),
             Configuration.DEFAULT_VRF_NAME,
             Direction.OUT));
   }
@@ -226,7 +225,7 @@ public final class F5BigipImishGrammarTest {
             makeBgpRoute(Prefix.ZERO),
             outputBuilder,
             peerAddress,
-            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            peerAddress.toPrefix(),
             Configuration.DEFAULT_VRF_NAME,
             Direction.OUT));
     return outputBuilder.build();
@@ -409,9 +408,9 @@ public final class F5BigipImishGrammarTest {
     Ip peer1Ip = Ip.parse(peer1);
     Ip peer2Ip = Ip.parse(peer2);
     Ip peer3Ip = Ip.parse(peer3);
-    Prefix peer1Prefix = Prefix.create(peer1Ip, MAX_PREFIX_LENGTH);
-    Prefix peer2Prefix = Prefix.create(peer2Ip, MAX_PREFIX_LENGTH);
-    Prefix peer3Prefix = Prefix.create(peer3Ip, MAX_PREFIX_LENGTH);
+    Prefix peer1Prefix = peer1Ip.toPrefix();
+    Prefix peer2Prefix = peer2Ip.toPrefix();
+    Prefix peer3Prefix = peer3Ip.toPrefix();
 
     assertThat(
         c,

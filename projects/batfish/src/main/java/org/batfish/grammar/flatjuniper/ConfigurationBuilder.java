@@ -2227,8 +2227,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           getLine(ctx.NEIGHBOR().getSymbol()));
     }
     if (ctx.IP_ADDRESS() != null) {
-      Prefix remoteAddress =
-          Prefix.create(Ip.parse(ctx.IP_ADDRESS().getText()), Prefix.MAX_PREFIX_LENGTH);
+      Prefix remoteAddress = Ip.parse(ctx.IP_ADDRESS().getText()).toPrefix();
       Map<Prefix, IpBgpGroup> ipBgpGroups = _currentRoutingInstance.getIpBgpGroups();
       IpBgpGroup ipBgpGroup = ipBgpGroups.get(remoteAddress);
       if (ipBgpGroup == null) {
@@ -4065,7 +4064,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Prefix nextPrefix;
     if (ctx.ip != null) {
       Ip nextIp = Ip.parse(ctx.ip.getText());
-      nextPrefix = Prefix.create(nextIp, Prefix.MAX_PREFIX_LENGTH);
+      nextPrefix = nextIp.toPrefix();
     } else {
       nextPrefix = Prefix.parse(ctx.prefix.getText());
     }
@@ -5747,9 +5746,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.wildcard_address() != null) {
       ipWildcard = toIpWildcard(ctx.wildcard_address());
     } else if (ctx.address != null) {
-      ipWildcard = IpWildcard.create(Ip.parse(ctx.address.getText()));
+      ipWildcard = IpWildcard.parse(ctx.address.getText());
     } else if (ctx.prefix != null) {
-      ipWildcard = IpWildcard.create(Prefix.parse(ctx.prefix.getText()));
+      ipWildcard = IpWildcard.parse(ctx.prefix.getText());
     } else {
       throw convError(IpWildcard.class, ctx);
     }
@@ -5968,11 +5967,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Ip mask = Ip.parse(ctx.wildcard_mask.getText());
       ipWildcard = IpWildcard.ipWithWildcardMask(ipAddress, mask.inverted());
     } else if (ctx.ip_address != null) {
-      ipWildcard =
-          IpWildcard.create(
-              Prefix.create(Ip.parse(ctx.ip_address.getText()), Prefix.MAX_PREFIX_LENGTH));
+      ipWildcard = IpWildcard.create(Ip.parse(ctx.ip_address.getText()).toPrefix());
     } else if (ctx.IP_PREFIX() != null) {
-      ipWildcard = IpWildcard.create(Prefix.parse(ctx.IP_PREFIX().getText()));
+      ipWildcard = IpWildcard.parse(ctx.IP_PREFIX().getText());
     }
     return ipWildcard;
   }

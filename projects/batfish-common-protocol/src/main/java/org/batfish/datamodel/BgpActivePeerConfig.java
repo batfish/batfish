@@ -161,9 +161,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       if (_bgpProcess != null) {
         _bgpProcess
             .getActiveNeighbors()
-            .put(
-                Prefix.create(Objects.requireNonNull(_peerAddress), Prefix.MAX_PREFIX_LENGTH),
-                bgpPeerConfig);
+            .put(Objects.requireNonNull(_peerAddress).toPrefix(), bgpPeerConfig);
       }
       return bgpPeerConfig;
     }

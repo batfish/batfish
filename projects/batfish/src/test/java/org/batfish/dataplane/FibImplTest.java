@@ -125,7 +125,7 @@ public class FibImplTest {
     _vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
-                .setNetwork(Prefix.create(DST_IP, 32))
+                .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(FAST_ETHERNET_0)
                 .setNextHopIp(EXTERNAL_IP)
                 .setAdministrativeCost(1)
@@ -156,7 +156,7 @@ public class FibImplTest {
     _vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
-                .setNetwork(Prefix.create(DST_IP, 32))
+                .setNetwork(DST_IP.toPrefix())
                 .setNextHopIp(Ip.parse("2.1.1.1"))
                 .setAdministrativeCost(1)
                 .build()));
