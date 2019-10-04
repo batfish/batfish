@@ -53,7 +53,7 @@ public class BgpVr implements Serializable {
   }
 
   public @Nonnull BgpPeerGroup getOrCreatePeerGroup(String name) {
-    return _peerGroups.computeIfAbsent(name, n -> new BgpPeerGroup());
+    return _peerGroups.computeIfAbsent(name, BgpPeerGroup::new);
   }
 
   public @Nonnull Map<String, BgpPeerGroup> getPeerGroups() {

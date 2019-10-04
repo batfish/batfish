@@ -497,7 +497,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _currentBgpPeerGroup =
         toString(ctx, ctx.name)
             .map(_currentBgpVr::getOrCreatePeerGroup)
-            .orElseGet(BgpPeerGroup::new); // create dummy if the name is invalid.
+            .orElseGet(() -> new BgpPeerGroup("dummy")); // create dummy if the name is invalid.
   }
 
   @Override
@@ -515,7 +515,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _currentBgpPeer =
         toString(ctx, ctx.name)
             .map(_currentBgpPeerGroup::getOrCreatePeerGroup)
-            .orElseGet(BgpPeer::new); // create dummy if the name is invalid.
+            .orElseGet(() -> new BgpPeer("dummy")); // create dummy if the name is invalid.
   }
 
   @Override

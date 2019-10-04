@@ -86,6 +86,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -104,6 +105,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -516,6 +518,13 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasVrf("BGP", hasBgpProcess(any(BgpProcess.class))));
     BgpProcess proc = c.getVrfs().get("BGP").getBgpProcess();
     assertThat(proc, hasRouterId(Ip.parse("1.2.3.4")));
+    assertThat(proc.getActiveNeighbors().keySet(), contains(Prefix.parse("5.4.3.2/32")));
+    BgpActivePeerConfig peer = proc.getActiveNeighbors().get(Prefix.parse("5.4.3.2/32"));
+    assertThat(peer.getDescription(), equalTo("PEER"));
+    assertThat(peer.getGroup(), equalTo("PG"));
+    assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.2.3.6")));
+    assertThat(peer.getLocalAs(), equalTo(65001L));
+    assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65001)));
   }
 
   @Test
