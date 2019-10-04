@@ -587,7 +587,7 @@ import org.batfish.grammar.cisco.CiscoParser.Default_information_originate_rb_st
 import org.batfish.grammar.cisco.CiscoParser.Default_metric_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_originate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_shutdown_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Delete_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Delete_community_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Description_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Description_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.Dh_groupContext;
@@ -1195,10 +1195,6 @@ import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
 import org.batfish.representation.cisco.CiscoIosStaticNat;
 import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
-import org.batfish.representation.cisco.CommunitySetElem;
-import org.batfish.representation.cisco.CommunitySetElemHalfExpr;
-import org.batfish.representation.cisco.CommunitySetElemHalves;
-import org.batfish.representation.cisco.CommunitySetElemIosRegex;
 import org.batfish.representation.cisco.CryptoMapEntry;
 import org.batfish.representation.cisco.CryptoMapSet;
 import org.batfish.representation.cisco.DistributeList;
@@ -1240,13 +1236,11 @@ import org.batfish.representation.cisco.IsakmpProfile;
 import org.batfish.representation.cisco.IsisProcess;
 import org.batfish.representation.cisco.IsisRedistributionPolicy;
 import org.batfish.representation.cisco.Keyring;
-import org.batfish.representation.cisco.LiteralCommunitySetElemHalf;
 import org.batfish.representation.cisco.MacAccessList;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.MatchSemantics;
 import org.batfish.representation.cisco.MlagConfiguration;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
-import org.batfish.representation.cisco.NamedCommunitySet;
 import org.batfish.representation.cisco.NamedRsaPubKey;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
@@ -1268,7 +1262,6 @@ import org.batfish.representation.cisco.ProtocolObjectGroup;
 import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
 import org.batfish.representation.cisco.ProtocolObjectGroupReferenceLine;
 import org.batfish.representation.cisco.ProtocolOrServiceObjectGroupServiceSpecifier;
-import org.batfish.representation.cisco.RangeCommunitySetElemHalf;
 import org.batfish.representation.cisco.RangeNetworkObject;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
@@ -1307,8 +1300,6 @@ import org.batfish.representation.cisco.RoutePolicyBooleanAsPathIsLocal;
 import org.batfish.representation.cisco.RoutePolicyBooleanAsPathNeighborIs;
 import org.batfish.representation.cisco.RoutePolicyBooleanAsPathOriginatesFrom;
 import org.batfish.representation.cisco.RoutePolicyBooleanAsPathPassesThrough;
-import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesAny;
-import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesEvery;
 import org.batfish.representation.cisco.RoutePolicyBooleanDestination;
 import org.batfish.representation.cisco.RoutePolicyBooleanLocalPreference;
 import org.batfish.representation.cisco.RoutePolicyBooleanMed;
@@ -1319,11 +1310,6 @@ import org.batfish.representation.cisco.RoutePolicyBooleanRibHasRoute;
 import org.batfish.representation.cisco.RoutePolicyBooleanRouteTypeIs;
 import org.batfish.representation.cisco.RoutePolicyBooleanTagIs;
 import org.batfish.representation.cisco.RoutePolicyComment;
-import org.batfish.representation.cisco.RoutePolicyCommunitySet;
-import org.batfish.representation.cisco.RoutePolicyCommunitySetInline;
-import org.batfish.representation.cisco.RoutePolicyCommunitySetName;
-import org.batfish.representation.cisco.RoutePolicyDeleteAllStatement;
-import org.batfish.representation.cisco.RoutePolicyDeleteCommunityStatement;
 import org.batfish.representation.cisco.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco.RoutePolicyDispositionType;
 import org.batfish.representation.cisco.RoutePolicyElseBlock;
@@ -1340,7 +1326,6 @@ import org.batfish.representation.cisco.RoutePolicyNextHopSelf;
 import org.batfish.representation.cisco.RoutePolicyPrefixSet;
 import org.batfish.representation.cisco.RoutePolicyPrefixSetName;
 import org.batfish.representation.cisco.RoutePolicyPrependAsPath;
-import org.batfish.representation.cisco.RoutePolicySetCommunity;
 import org.batfish.representation.cisco.RoutePolicySetIsisMetric;
 import org.batfish.representation.cisco.RoutePolicySetIsisMetricType;
 import org.batfish.representation.cisco.RoutePolicySetLevel;
@@ -1379,12 +1364,27 @@ import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.UnimplementedAccessListServiceSpecifier;
-import org.batfish.representation.cisco.VarCommunitySetElemHalf;
 import org.batfish.representation.cisco.VlanTrunkGroup;
 import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.batfish.representation.cisco.XrCommunitySet;
+import org.batfish.representation.cisco.XrCommunitySetElem;
+import org.batfish.representation.cisco.XrCommunitySetExpr;
+import org.batfish.representation.cisco.XrCommunitySetHighLowRangeExprs;
+import org.batfish.representation.cisco.XrCommunitySetIosRegex;
+import org.batfish.representation.cisco.XrCommunitySetReference;
+import org.batfish.representation.cisco.XrInlineCommunitySet;
+import org.batfish.representation.cisco.XrLiteralUint16;
+import org.batfish.representation.cisco.XrLiteralUint16Range;
+import org.batfish.representation.cisco.XrRoutePolicyBooleanCommunityMatchesAny;
+import org.batfish.representation.cisco.XrRoutePolicyBooleanCommunityMatchesEvery;
+import org.batfish.representation.cisco.XrRoutePolicyDeleteAllStatement;
+import org.batfish.representation.cisco.XrRoutePolicyDeleteCommunityStatement;
+import org.batfish.representation.cisco.XrRoutePolicySetCommunity;
+import org.batfish.representation.cisco.XrUint16RangeExpr;
+import org.batfish.representation.cisco.XrUint16Reference;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.cisco.eos.AristaBgpHasPeerGroup;
@@ -2302,8 +2302,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .computeIfAbsent(
             name,
             n ->
-                new NamedCommunitySet(
-                    n,
+                new XrCommunitySet(
                     ctx.community_set_elem_list().elems.stream()
                         .map(this::toCommunitySetElemExpr)
                         .filter(Objects::nonNull)
@@ -10828,45 +10827,43 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private @Nullable CommunitySetElem toCommunitySetElemExpr(Community_set_elemContext ctx) {
+  private @Nullable XrCommunitySetElem toCommunitySetElemExpr(Community_set_elemContext ctx) {
     if (ctx.prefix != null) {
-      CommunitySetElemHalfExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
-      CommunitySetElemHalfExpr suffix = toCommunitySetElemHalfExpr(ctx.suffix);
-      return new CommunitySetElemHalves(prefix, suffix);
+      XrUint16RangeExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
+      XrUint16RangeExpr suffix = toCommunitySetElemHalfExpr(ctx.suffix);
+      return new XrCommunitySetHighLowRangeExprs(prefix, suffix);
     } else if (ctx.community() != null) {
       Long value = toLong(ctx.community());
       if (value == null) {
         warn(ctx, String.format("Invalid standard community: '%s'.", ctx.community().getText()));
-        return convProblem(CommunitySetElem.class, ctx, null);
+        return convProblem(XrCommunitySetElem.class, ctx, null);
       }
-      return new CommunitySetElemHalves(value);
+      return XrCommunitySetHighLowRangeExprs.of(value);
     } else if (ctx.IOS_REGEX() != null) {
-      return new CommunitySetElemIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+      return new XrCommunitySetIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
     } else {
-      return convProblem(CommunitySetElem.class, ctx, null);
+      return convProblem(XrCommunitySetElem.class, ctx, null);
     }
   }
 
-  private CommunitySetElemHalfExpr toCommunitySetElemHalfExpr(Community_set_elem_halfContext ctx) {
+  private XrUint16RangeExpr toCommunitySetElemHalfExpr(Community_set_elem_halfContext ctx) {
     if (ctx.value != null) {
       int value = toInteger(ctx.value);
-      return new LiteralCommunitySetElemHalf(value);
+      return new XrLiteralUint16(value);
     } else if (ctx.var != null) {
       String var = ctx.var.getText();
-      return new VarCommunitySetElemHalf(var);
+      return new XrUint16Reference(var);
     } else if (ctx.first != null) {
       int first = toInteger(ctx.first);
       int last = toInteger(ctx.last);
       SubRange range = new SubRange(first, last);
-      return new RangeCommunitySetElemHalf(range);
+      return new XrLiteralUint16Range(range);
     } else if (ctx.ASTERISK() != null) {
-      return new RangeCommunitySetElemHalf(new SubRange(0, 65535));
+      return new XrLiteralUint16Range(new SubRange(0, 65535));
     } else {
       // For an unhandled expression, treat it as matching everything.
       return convProblem(
-          CommunitySetElemHalfExpr.class,
-          ctx,
-          new RangeCommunitySetElemHalf(new SubRange(0, 65535)));
+          XrUint16RangeExpr.class, ctx, new XrLiteralUint16Range(new SubRange(0, 65535)));
     }
   }
 
@@ -11978,16 +11975,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_community_matches_any_rp_stanzaContext ctx) {
-    RoutePolicyCommunitySet communitySet =
+    XrCommunitySetExpr communitySet =
         toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_COMMUNITY_MATCHES_ANY);
-    return new RoutePolicyBooleanCommunityMatchesAny(communitySet);
+    return new XrRoutePolicyBooleanCommunityMatchesAny(communitySet);
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_community_matches_every_rp_stanzaContext ctx) {
-    RoutePolicyCommunitySet communitySet =
+    XrCommunitySetExpr communitySet =
         toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_COMMUNITY_MATCHES_EVERY);
-    return new RoutePolicyBooleanCommunityMatchesEvery(communitySet);
+    return new XrRoutePolicyBooleanCommunityMatchesEvery(communitySet);
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_destination_rp_stanzaContext ctx) {
@@ -12134,19 +12131,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new RoutePolicyBooleanTagIs(cmp, rhs);
   }
 
-  private RoutePolicyCommunitySet toRoutePolicyCommunitySet(
+  private XrCommunitySetExpr toRoutePolicyCommunitySet(
       Rp_community_setContext ctx, CiscoStructureUsage usage) {
     if (ctx.name != null) {
       String name = ctx.name.getText();
       _configuration.referenceStructure(COMMUNITY_SET, name, usage, ctx.name.getStart().getLine());
-      return new RoutePolicyCommunitySetName(name);
+      return new XrCommunitySetReference(name);
     } else {
       // inline
-      return new RoutePolicyCommunitySetInline(
-          ctx.elems.stream()
-              .map(this::toCommunitySetElemExpr)
-              .filter(Objects::nonNull)
-              .collect(Collectors.toList()));
+      return new XrInlineCommunitySet(
+          new XrCommunitySet(
+              ctx.elems.stream()
+                  .map(this::toCommunitySetElemExpr)
+                  .filter(Objects::nonNull)
+                  .collect(Collectors.toList())));
     }
   }
 
@@ -12226,12 +12224,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new RoutePolicyApplyStatement(ctx.name.getText());
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Delete_rp_stanzaContext ctx) {
+  private RoutePolicyStatement toRoutePolicyStatement(Delete_community_rp_stanzaContext ctx) {
     if (ctx.ALL() != null) {
-      return new RoutePolicyDeleteAllStatement();
+      return XrRoutePolicyDeleteAllStatement.instance();
     } else {
       boolean negated = (ctx.NOT() != null);
-      return new RoutePolicyDeleteCommunityStatement(
+      return new XrRoutePolicyDeleteCommunityStatement(
           negated,
           toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_DELETE_COMMUNITY_IN));
     }
@@ -12286,7 +12284,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return toRoutePolicyStatement(actx);
     }
 
-    Delete_rp_stanzaContext dectx = ctx.delete_rp_stanza();
+    Delete_community_rp_stanzaContext dectx = ctx.delete_community_rp_stanza();
     if (dectx != null) {
       return toRoutePolicyStatement(dectx);
     }
@@ -12315,10 +12313,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_community_rp_stanzaContext ctx) {
-    RoutePolicyCommunitySet cset =
+    XrCommunitySetExpr cset =
         toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_SET_COMMUNITY);
     boolean additive = (ctx.ADDITIVE() != null);
-    return new RoutePolicySetCommunity(cset, additive);
+    return new XrRoutePolicySetCommunity(cset, additive);
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_isis_metric_rp_stanzaContext ctx) {

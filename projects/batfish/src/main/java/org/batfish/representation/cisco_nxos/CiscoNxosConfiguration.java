@@ -3029,7 +3029,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             return Stream.of(
                 new SetCommunities(
                     routeMapSetCommunity.getAdditive()
-                        ? new CommunitySetUnion(InputCommunities.instance(), communities)
+                        ? CommunitySetUnion.of(InputCommunities.instance(), communities)
                         : communities));
           }
 

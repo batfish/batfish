@@ -54340,7 +54340,7 @@
             "          THEN:'then'",
             "          NEWLINE:'\\n'",
             "          (rp_stanza",
-            "            (delete_rp_stanza",
+            "            (delete_community_rp_stanza",
             "              DELETE:'delete'",
             "              COMMUNITY:'community'",
             "              IN:'in'",

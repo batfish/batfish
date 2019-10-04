@@ -118,10 +118,6 @@ public final class CommunityContext {
     return _communityMatchExprEvaluator;
   }
 
-  public @Nonnull CommunitySetExprEvaluator getCommunitySetExprEvaluator() {
-    return _communitySetExprEvaluator;
-  }
-
   public @Nonnull CommunitySetMatchExprEvaluator getCommunitySetMatchExprEvaluator() {
     return _communitySetMatchExprEvaluator;
   }
@@ -133,7 +129,6 @@ public final class CommunityContext {
   private final @Nonnull CommunitySet _inputCommunitySet;
 
   private final @Nonnull CommunityMatchExprEvaluator _communityMatchExprEvaluator;
-  private final @Nonnull CommunitySetExprEvaluator _communitySetExprEvaluator;
   private final @Nonnull CommunitySetMatchExprEvaluator _communitySetMatchExprEvaluator;
 
   private CommunityContext(
@@ -150,7 +145,6 @@ public final class CommunityContext {
 
     // instantiate evaluators
     _communityMatchExprEvaluator = new CommunityMatchExprEvaluator(this);
-    _communitySetExprEvaluator = new CommunitySetExprEvaluator();
     _communitySetMatchExprEvaluator = new CommunitySetMatchExprEvaluator(this);
   }
 }

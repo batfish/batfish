@@ -78,14 +78,14 @@ public final class StandardCommunity extends Community {
     return new StandardCommunity((long) high << 16 | low);
   }
 
-  /** Return the lower 16 bits of the community value as an integer */
-  public int low() {
-    return (int) (_value & 0xFFFF);
+  /** Return the high 16 bits of the community value as an integer */
+  public int high() {
+    return (int) (_value >> 16);
   }
 
   /** Return the lower 16 bits of the community value as an integer */
-  public int high() {
-    return (int) (_value >> 16);
+  public int low() {
+    return (int) (_value & 0xFFFF);
   }
 
   @Override
