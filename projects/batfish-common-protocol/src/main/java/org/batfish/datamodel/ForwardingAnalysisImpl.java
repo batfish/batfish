@@ -256,6 +256,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               _arpFalse,
               interfacesWithMissingDevices,
               arpFalseDestIp,
+              arpFalseDestIpNetworkBroadcast,
               interfaceHostSubnetIps,
               ownedIps);
 
@@ -1512,6 +1513,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
+      Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIpNetworkBroadcast,
       Map<String, Map<String, IpSpace>> interfaceHostSubnetIps,
       IpSpace ownedIps) {
     try (ActiveSpan span =
@@ -1540,6 +1542,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             IpSpace ifaceArpFalse = ifaceEntry.getValue();
                             IpSpace ifaceArpFalseDestIp =
                                 arpFalseDestIp.get(node).get(vrf).get(iface);
+                            IpSpace ifaceArpFalseDestIpNetworkBroadcast =
+                                arpFalseDestIpNetworkBroadcast.get(node).get(vrf).get(iface);
                             IpSpace ifaceHostSubnetIps =
                                 interfaceHostSubnetIps.get(node).get(iface);
 
@@ -1548,6 +1552,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 ownedIps,
                                 ifaceArpFalse,
                                 ifaceArpFalseDestIp,
+                                ifaceArpFalseDestIpNetworkBroadcast,
                                 ifaceHostSubnetIps);
                           })));
     }
@@ -1559,10 +1564,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       IpSpace ownedIps,
       IpSpace ifaceArpFalse,
       IpSpace ifaceArpFalseDestIp,
+      IpSpace ifaceArpFalseDestIpNetworkBroadcast,
       IpSpace ifaceHostSubnetIps) {
-    return isIfaceFull
-        ? ifaceArpFalse
-        : AclIpSpace.intersection(ifaceArpFalseDestIp, ifaceHostSubnetIps, ownedIps);
+    return
+        AclIpSpace.difference(
+            isIfaceFull
+                ? ifaceArpFalse
+                : AclIpSpace.intersection(ifaceArpFalseDestIp, ifaceHostSubnetIps, ownedIps),
+            // exclude network/broadcast IPs
+            ifaceArpFalseDestIpNetworkBroadcast);
   }
 
   @Override

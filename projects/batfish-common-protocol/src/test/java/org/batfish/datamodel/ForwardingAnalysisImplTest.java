@@ -1558,19 +1558,20 @@ public class ForwardingAnalysisImplTest {
     IpSpace ownedIps = UniverseIpSpace.INSTANCE;
     IpSpace ifaceArpFalse = PREFIX_IP_SPACE;
     IpSpace ifaceArpFalseDestIp = UniverseIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDestIpNetworkBroadcast = IP_IP_SPACE;
     IpSpace ifaceHostSubnetIps = UniverseIpSpace.INSTANCE;
     IpSpace neighborUnreachable =
         computeNeighborUnreachable(
-            isIfaceFull, ownedIps, ifaceArpFalse, ifaceArpFalseDestIp, ifaceHostSubnetIps);
-    BDD expected = DST.visit(PREFIX_IP_SPACE);
+            isIfaceFull, ownedIps, ifaceArpFalse, ifaceArpFalseDestIp, ifaceArpFalseDestIpNetworkBroadcast, ifaceHostSubnetIps);
+    BDD expected = DST.visit(PREFIX_IP_SPACE).diff(DST.visit(IP_IP_SPACE));
     BDD actual = DST.visit(neighborUnreachable);
     assertEquals(expected, actual);
   }
 
   /**
-   * For an interface that is not full, we give a dst IP neighbor_unreachable if: we ARP for the dst
-   * IP but don't get a reply, the dst IP is a host IP of the connected subnet, and it's owned in
-   * the network.
+   * For an interface that is not full, we give a dst IP neighbor_unreachable if: it's not the
+   * network or broadcast IP of the route's network, we ARP for the dst IP but don't get a reply,
+   * the dst IP is a host IP of the connected subnet, and it's owned in the network.
    */
   @Test
   public void testComputeNeighborUnreachable_notFull() {
@@ -1579,12 +1580,14 @@ public class ForwardingAnalysisImplTest {
     IpSpace ifaceArpFalse = EmptyIpSpace.INSTANCE;
     IpSpace ifaceArpFalseDestIp =
         ipWithWildcardMask(Ip.parse("0.255.0.0"), 0xFF00FFFFL).toIpSpace();
-    IpSpace ifaceHostSubnetIps = ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
+    IpSpace ifaceArpFalseDestIpNetworkBroadcast = ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
+    IpSpace ifaceHostSubnetIps =ipWithWildcardMask(Ip.parse("0.0.0.255"), 0xFFFFFF00L).toIpSpace();
     IpSpace neighborUnreachable =
         computeNeighborUnreachable(
-            isIfaceFull, ownedIps, ifaceArpFalse, ifaceArpFalseDestIp, ifaceHostSubnetIps);
+            isIfaceFull, ownedIps, ifaceArpFalse, ifaceArpFalseDestIp, ifaceArpFalseDestIpNetworkBroadcast, ifaceHostSubnetIps);
     BDD expected =
-        DST.visit(ownedIps).and(DST.visit(ifaceArpFalseDestIp)).and(DST.visit(ifaceHostSubnetIps));
+        DST.visit(ownedIps).and(DST.visit(ifaceArpFalseDestIp)).and(DST.visit(ifaceHostSubnetIps))
+        .diff(DST.visit(ifaceArpFalseDestIpNetworkBroadcast));
     BDD actual = DST.visit(neighborUnreachable);
     assertEquals(expected, actual);
   }
