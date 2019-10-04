@@ -583,31 +583,33 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 Set<AbstractRoute> routes = ifaceEntry.getValue();
 
                                 IpSpace matchedNetworkBroadcastIps =
-                                    AclIpSpace.union(
-                                        routes.stream()
-                                            // only consider routes for prefixes that have
-                                            // network/broadcast IPs
-                                            .filter(
-                                                route ->
-                                                    route.getNetwork().getPrefixLength()
-                                                        < Prefix.MAX_PREFIX_LENGTH - 1)
-                                            .map(
-                                                route -> {
-                                                  Prefix routePrefix = route.getNetwork();
-                                                  IpSpace matchedIps =
-                                                      vrfMatchingIps.get(routePrefix);
-                                                  // Note: unclear whether this is better than
-                                                  // simply testing each IP now. If matchedIps
-                                                  // is very simple, testing now could save some
-                                                  // BDD work later. But if it's very complex, the
-                                                  // BDD work could be cheaper.
-                                                  return AclIpSpace.intersection(
-                                                      AclIpSpace.union(
-                                                          routePrefix.getStartIp().toIpSpace(),
-                                                          routePrefix.getEndIp().toIpSpace()),
-                                                      matchedIps);
-                                                })
-                                            .collect(ImmutableList.toImmutableList()));
+                                    firstNonNull(
+                                        AclIpSpace.union(
+                                            routes.stream()
+                                                // only consider routes for prefixes that have
+                                                // network/broadcast IPs
+                                                .filter(
+                                                    route ->
+                                                        route.getNetwork().getPrefixLength()
+                                                            < Prefix.MAX_PREFIX_LENGTH - 1)
+                                                .map(
+                                                    route -> {
+                                                      Prefix routePrefix = route.getNetwork();
+                                                      IpSpace matchedIps =
+                                                          vrfMatchingIps.get(routePrefix);
+                                                      // Note: unclear whether this is better than
+                                                      // simply testing each IP now. If matchedIps
+                                                      // is very simple, testing now could save some
+                                                      // BDD work later. But if it's very complex,
+                                                      // the BDD work could be cheaper.
+                                                      return AclIpSpace.intersection(
+                                                          AclIpSpace.union(
+                                                              routePrefix.getStartIp().toIpSpace(),
+                                                              routePrefix.getEndIp().toIpSpace()),
+                                                          matchedIps);
+                                                    })
+                                                .collect(ImmutableList.toImmutableList())),
+                                        EmptyIpSpace.INSTANCE);
 
                                 IpSpace someoneRepliesIface =
                                     someoneRepliesNode.getOrDefault(
