@@ -7,6 +7,7 @@ import static org.batfish.datamodel.eigrp.EigrpTopologyUtils.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateConnectedRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalRoute;
+import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateLocalRoute;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -16,7 +17,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -838,5 +841,23 @@ public class VirtualRouterTest {
                 .setNextHopInterface(nextHopInterface)
                 .setTag(7L)
                 .build()));
+  }
+
+  @Test
+  public void testAlwaysGenerateLocalRoutes() {
+    assertFalse(shouldGenerateLocalRoute(Prefix.MAX_PREFIX_LENGTH, null));
+    assertFalse(
+        shouldGenerateLocalRoute(
+            Prefix.MAX_PREFIX_LENGTH, ConnectedRouteMetadata.builder().build()));
+    assertTrue(
+        shouldGenerateLocalRoute(
+            Prefix.MAX_PREFIX_LENGTH,
+            ConnectedRouteMetadata.builder().setGenerateLocalRoutes(true).build()));
+
+    assertTrue(shouldGenerateLocalRoute(24, null));
+    assertTrue(shouldGenerateLocalRoute(24, ConnectedRouteMetadata.builder().build()));
+    assertTrue(
+        shouldGenerateLocalRoute(
+            24, ConnectedRouteMetadata.builder().setGenerateLocalRoutes(true).build()));
   }
 }

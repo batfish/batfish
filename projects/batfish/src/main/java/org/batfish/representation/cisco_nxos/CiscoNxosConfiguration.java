@@ -1689,6 +1689,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
               ConnectedRouteMetadata.builder()
                   .setAdmin(addrWithAttr.getRoutePreference())
+                  .setGenerateLocalRoutes(true)
                   .setTag(addrWithAttr.getTag())
                   .build());
         }
@@ -1705,6 +1706,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       (ConcreteInterfaceAddress) addr.getAddress(),
                       ConnectedRouteMetadata.builder()
                           .setAdmin(addr.getRoutePreference())
+                          .setGenerateLocalRoutes(true)
                           .setTag(addr.getTag())
                           .build()));
       newIfaceBuilder.setAddressMetadata(addressMetadata.build());
