@@ -169,9 +169,7 @@ public class BgpRoutingProcessTest {
                     .setPropagateUnmatched(true)
                     .build())
             .build();
-    _bgpProcess
-        .getActiveNeighbors()
-        .put(Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH), evpnPeer);
+    _bgpProcess.getActiveNeighbors().put(localIp.toPrefix(), evpnPeer);
     _vrf.getVniSettings()
         .put(
             vni,
@@ -269,9 +267,7 @@ public class BgpRoutingProcessTest {
                     .setPropagateUnmatched(true)
                     .build())
             .build();
-    _bgpProcess
-        .getActiveNeighbors()
-        .put(Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH), evpnPeer);
+    _bgpProcess.getActiveNeighbors().put(peerAddress.toPrefix(), evpnPeer);
 
     Map<String, String> actual = BgpRoutingProcess.computeRouteTargetToVrfMap(Stream.of(evpnPeer));
     assertThat(
@@ -288,7 +284,7 @@ public class BgpRoutingProcessTest {
   public void testQueueInitializationAddressFamiliesMustOverlap() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
-    Prefix remotePeerPrefix = Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH);
+    Prefix remotePeerPrefix = ip1.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -310,8 +306,7 @@ public class BgpRoutingProcessTest {
     BgpPeerConfigId peer1Id =
         new BgpPeerConfigId(_c.getHostname(), DEFAULT_VRF_NAME, remotePeerPrefix, false);
     BgpPeerConfigId peer2Id =
-        new BgpPeerConfigId(
-            "someHost", DEFAULT_VRF_NAME, Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), false);
+        new BgpPeerConfigId("someHost", DEFAULT_VRF_NAME, ip1.toPrefix(), false);
     BgpSessionProperties.Builder sessionBuilderForward =
         BgpSessionProperties.builder()
             .setHeadIp(ip2)
@@ -393,7 +388,7 @@ public class BgpRoutingProcessTest {
         .setName(policyName)
         .setStatements(Collections.singletonList(Statements.ExitAccept.toStaticStatement()))
         .build();
-    _bgpProcess.getActiveNeighbors().put(Prefix.create(peerIp, Prefix.MAX_PREFIX_LENGTH), evpnPeer);
+    _bgpProcess.getActiveNeighbors().put(peerIp.toPrefix(), evpnPeer);
     _vrf.getVniSettings()
         .put(
             vni,
@@ -445,7 +440,7 @@ public class BgpRoutingProcessTest {
                     .setPropagateUnmatched(true)
                     .build())
             .build();
-    bgp2.getActiveNeighbors().put(Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH), node2Peer);
+    bgp2.getActiveNeighbors().put(localIp.toPrefix(), node2Peer);
     Node node2 = new Node(c2);
     BgpRoutingProcess routingProcNode2 =
         node2.getVirtualRouters().get(DEFAULT_VRF_NAME).getBgpRoutingProcess();
@@ -464,14 +459,9 @@ public class BgpRoutingProcessTest {
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
         ValueGraphBuilder.directed().build();
     BgpPeerConfigId peer1Id =
-        new BgpPeerConfigId(
-            _c.getHostname(),
-            DEFAULT_VRF_NAME,
-            Prefix.create(peerIp, Prefix.MAX_PREFIX_LENGTH),
-            false);
+        new BgpPeerConfigId(_c.getHostname(), DEFAULT_VRF_NAME, peerIp.toPrefix(), false);
     BgpPeerConfigId peer2Id =
-        new BgpPeerConfigId(
-            "c2", DEFAULT_VRF_NAME, Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH), false);
+        new BgpPeerConfigId("c2", DEFAULT_VRF_NAME, localIp.toPrefix(), false);
     BgpSessionProperties.Builder sessionBuilderForward =
         BgpSessionProperties.builder()
             .setHeadIp(localIp)

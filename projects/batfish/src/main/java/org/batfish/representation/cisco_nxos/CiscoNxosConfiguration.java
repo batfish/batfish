@@ -2908,9 +2908,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                     address ->
                                         address.getPrefix().getPrefixLength() <= 30
                                             ? Stream.of(
-                                                address.getPrefix(),
-                                                Prefix.create(
-                                                    address.getIp(), Prefix.MAX_PREFIX_LENGTH))
+                                                address.getPrefix(), address.getIp().toPrefix())
                                             : Stream.of(address.getPrefix()))
                                 .map(PrefixRange::fromPrefix)
                                 .collect(ImmutableList.toImmutableList())))));

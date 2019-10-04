@@ -462,7 +462,7 @@ public class VirtualRouterTest {
     // Test queueing non-empty delta
     StaticRoute sr1 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -471,7 +471,7 @@ public class VirtualRouterTest {
             .build();
     StaticRoute sr2 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(100)
@@ -496,7 +496,7 @@ public class VirtualRouterTest {
     Queue<RouteAdvertisement<AbstractRoute>> q = new ConcurrentLinkedQueue<>();
     StaticRoute sr1 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -505,7 +505,7 @@ public class VirtualRouterTest {
             .build();
     StaticRoute sr2 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(100)
@@ -820,7 +820,7 @@ public class VirtualRouterTest {
   public void testGenerateLocalRoute() {
     String nextHopInterface = "Eth0";
     ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
-    Prefix prefix = Prefix.create(address.getIp(), Prefix.MAX_PREFIX_LENGTH);
+    Prefix prefix = address.getIp().toPrefix();
 
     assertThat(
         generateLocalRoute(address, nextHopInterface, null),
