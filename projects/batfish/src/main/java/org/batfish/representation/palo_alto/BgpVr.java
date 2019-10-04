@@ -1,6 +1,9 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -20,6 +23,7 @@ public class BgpVr implements Serializable {
   public BgpVr() {
     _enable = DEFAULT_ENABLE;
     _installRoute = DEFAULT_INSTALL_ROUTE;
+    _peerGroups = new HashMap<>(0);
     _rejectDefaultRoute = DEFAULT_REJECT_DEFAULT_ROUTE;
     _routingOptions = new BgpVrRoutingOptions();
   }
@@ -48,6 +52,14 @@ public class BgpVr implements Serializable {
     _localAs = localAs;
   }
 
+  public @Nonnull BgpPeerGroup getOrCreatePeerGroup(String name) {
+    return _peerGroups.computeIfAbsent(name, n -> new BgpPeerGroup());
+  }
+
+  public @Nonnull Map<String, BgpPeerGroup> getPeerGroups() {
+    return Collections.unmodifiableMap(_peerGroups);
+  }
+
   public boolean getRejectDefaultRoute() {
     return _rejectDefaultRoute;
   }
@@ -74,6 +86,7 @@ public class BgpVr implements Serializable {
   private boolean _enable;
   private boolean _installRoute;
   private @Nullable Long _localAs;
+  private @Nonnull final Map<String, BgpPeerGroup> _peerGroups;
   private boolean _rejectDefaultRoute;
   private @Nullable Ip _routerId;
 }

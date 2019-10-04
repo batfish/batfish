@@ -12,6 +12,18 @@ bgp_local_pref
    uint32
 ;
 
+bgp_peer_group_name
+:
+// 1-31 chars
+   variable
+;
+
+bgp_peer_name
+:
+// 1-31 chars
+   variable
+;
+
 vrp_bgp
 :
     BGP
@@ -20,6 +32,7 @@ vrp_bgp
         | bgp_install_route
         | bgp_local_as
         | bgp_null
+        | bgp_peer_group
         | bgp_policy
         | bgp_reject_default_route
         | bgp_router_id
@@ -46,6 +59,70 @@ bgp_null
 :
     DAMPENING_PROFILE
     null_rest_of_line
+;
+
+bgp_peer_group
+:
+    PEER_GROUP bgppg_definition?
+;
+
+bgppg_definition
+:
+    name = bgp_peer_group_name
+    (
+        bgppg_enable
+        | bgppg_peer
+        | bgppg_type
+    )?
+;
+
+bgppg_enable
+:
+    ENABLE yn = yes_or_no
+;
+
+bgppg_peer
+:
+    PEER name = bgp_peer_name
+    (
+        bgppgp_enable
+//        | bgppgp_local_address
+//        | bgppgp_peer_address
+        | bgppgp_peer_as
+//        | bgppgp_peering_type
+//        | bgppgp_reflector_client
+    )?
+;
+
+bgppgp_enable
+:
+    ENABLE yn = yes_or_no
+;
+
+bgppgp_peer_as
+:
+    PEER_AS asn = bgp_asn
+;
+
+bgppg_type
+:
+    TYPE
+    (
+        bgppgt_ebgp
+        | bgppgt_ibgp
+    )?
+;
+
+bgppgt_ebgp
+:
+    EBGP
+    // TODO ebgp-specific options
+;
+
+bgppgt_ibgp
+:
+    IBGP
+    // TODO ibgp-specific options
 ;
 
 bgp_policy

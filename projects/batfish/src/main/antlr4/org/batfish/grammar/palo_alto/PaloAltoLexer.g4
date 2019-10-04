@@ -659,6 +659,21 @@ PANORAMA_SERVER
     'panorama-server'
 ;
 
+PEER
+:
+    'peer'
+;
+
+PEER_AS
+:
+    'peer-as'
+;
+
+PEER_GROUP
+:
+    'peer-group'
+;
+
 PERVASIVE
 :
     'pervasive'

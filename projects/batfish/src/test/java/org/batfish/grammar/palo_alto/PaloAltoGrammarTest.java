@@ -64,6 +64,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -115,10 +116,13 @@ import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
+import org.batfish.representation.palo_alto.BgpPeer;
+import org.batfish.representation.palo_alto.BgpPeerGroup;
 import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.IbgpPeerGroupType;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
@@ -488,6 +492,15 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getRoutingOptions().getDeterministicMedComparison(), equalTo(Boolean.FALSE));
     assertThat(bgp.getRoutingOptions().getGracefulRestartEnable(), equalTo(Boolean.FALSE));
     assertThat(bgp.getRoutingOptions().getReflectorClusterId(), equalTo(Ip.parse("1.2.3.5")));
+
+    assertThat(bgp.getPeerGroups().keySet(), contains("PG"));
+    BgpPeerGroup pg = bgp.getPeerGroups().get("PG");
+    assertThat(pg.getEnable(), equalTo(true));
+    assertThat(pg.getPeers().keySet(), contains("PEER"));
+    assertThat(pg.getTypeAndOptions(), instanceOf(IbgpPeerGroupType.class));
+    BgpPeer peer = pg.getOrCreatePeerGroup("PEER");
+    assertThat(peer.getEnable(), equalTo(true));
+    assertThat(peer.getPeerAs(), equalTo(54321L));
   }
 
   @Test
