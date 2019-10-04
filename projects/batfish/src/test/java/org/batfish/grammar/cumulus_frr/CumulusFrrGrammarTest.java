@@ -1,7 +1,6 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
-import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
@@ -30,7 +29,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -74,12 +72,9 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link CumulusFrrParser}. */
 public class CumulusFrrGrammarTest {
   private static final String FILENAME = "";
-  private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cumulus_frr/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
   private static CumulusNcluConfiguration CONFIG;
 
   @Before
@@ -112,17 +107,6 @@ public class CumulusFrrGrammarTest {
         .get(type.getDescription())
         .get(name)
         .get(usage.getDescription());
-  }
-
-  private static void parseVendorConfig(String filename) {
-    Settings settings = new Settings();
-    configureBatfishTestSettings(settings);
-    parseVendorConfig(filename, settings);
-  }
-
-  private static void parseVendorConfig(String filename, Settings settings) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
-    parseFromTextWithSettings(src, settings);
   }
 
   private static void parse(String src) {
