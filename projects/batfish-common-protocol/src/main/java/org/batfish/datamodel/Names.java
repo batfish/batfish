@@ -92,6 +92,22 @@ public final class Names {
         type.getExplanation());
   }
 
+  public static String generatedBgpCommonExportPolicyName(String vrf) {
+    return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrf);
+  }
+
+  public static String generatedBgpDefaultRouteExportPolicyName(boolean ipv4) {
+    return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s~", ipv4 ? "4" : "6");
+  }
+
+  public static String generatedBgpPeerExportPolicyName(String vrf, String peer) {
+    return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", vrf, peer);
+  }
+
+  public static String generatedBgpPeerEvpnExportPolicyName(String vrf, String peer) {
+    return String.format("~BGP_PEER_EXPORT_POLICY_EVPN:%s:%s~", vrf, peer);
+  }
+
   public static String generatedReferenceBook(String hostname, String source) {
     return String.format("%s~on~%s", source, hostname);
   }

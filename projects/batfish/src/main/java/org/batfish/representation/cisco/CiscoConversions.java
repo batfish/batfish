@@ -6,14 +6,13 @@ import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE6;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -79,8 +77,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
@@ -104,7 +100,6 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
@@ -263,28 +258,6 @@ public class CiscoConversions {
   }
 
   /**
-   * Creates a generation policy for the aggregate network with the given {@link Prefix}. The
-   * generation policy matches any route with a destination more specific than {@code prefix}.
-   *
-   * @param c {@link Configuration} in which to create the generation policy
-   * @param vrfName Name of VRF in which the aggregate network exists
-   * @param prefix The aggregate network prefix
-   */
-  public static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
-        .addStatement(
-            new If(
-                // Match routes with destination networks more specific than prefix.
-                new MatchPrefixSet(
-                    DestinationNetwork.instance(),
-                    new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))),
-                singletonList(Statements.ReturnTrue.toStaticStatement())))
-        .build();
-  }
-
-  /**
    * Returns the name of a {@link RoutingPolicy} to be used as the BGP import policy for the given
    * {@link LeafBgpPeerGroup}, or {@code null} if no constraints are imposed on the peer's inbound
    * routes. When a nonnull policy name is returned, the corresponding policy is guaranteed to exist
@@ -379,7 +352,7 @@ public class CiscoConversions {
 
     // Conditions for exporting regular routes (not spawned by default-originate)
     List<BooleanExpr> peerExportConjuncts = new ArrayList<>();
-    peerExportConjuncts.add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
+    peerExportConjuncts.add(new CallExpr(generatedBgpCommonExportPolicyName(vrfName)));
 
     // Add constraints on export routes from configured outbound filter.
     // TODO support configuring multiple outbound filters
@@ -415,7 +388,7 @@ public class CiscoConversions {
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     RoutingPolicy.builder()
         .setOwner(c)
-        .setName(computeBgpPeerExportPolicyName(vrfName, lpg.getName()))
+        .setName(generatedBgpPeerExportPolicyName(vrfName, lpg.getName()))
         .setStatements(exportPolicyStatements)
         .build();
   }
@@ -468,40 +441,6 @@ public class CiscoConversions {
                 defaultRouteExportStatements))
         .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();
-  }
-
-  /**
-   * Generates and returns a {@link Statement} that suppresses routes that are summarized by the
-   * given set of {@link Prefix prefixes} configured as {@code summary-only}.
-   *
-   * <p>Returns {@code null} if {@code prefixesToSuppress} has no entries.
-   *
-   * <p>If any Batfish-generated structures are generated, does the bookkeeping in the provided
-   * {@link Configuration} to ensure they are available and tracked.
-   */
-  @Nullable
-  public static If suppressSummarizedPrefixes(
-      Configuration c, String vrfName, Stream<Prefix> summaryOnlyPrefixes) {
-    Iterator<Prefix> prefixesToSuppress = summaryOnlyPrefixes.iterator();
-    if (!prefixesToSuppress.hasNext()) {
-      return null;
-    }
-    // Create a RouteFilterList that matches any network longer than a prefix marked summary only.
-    RouteFilterList matchLonger =
-        new RouteFilterList("~MATCH_SUPPRESSED_SUMMARY_ONLY:" + vrfName + "~");
-    prefixesToSuppress.forEachRemaining(
-        p ->
-            matchLonger.addLine(
-                new RouteFilterLine(LineAction.PERMIT, PrefixRange.moreSpecificThan(p))));
-    // Bookkeeping: record that we created this RouteFilterList to match longer networks.
-    c.getRouteFilterLists().put(matchLonger.getName(), matchLonger);
-
-    return new If(
-        "Suppress more specific networks for summary-only aggregate-address networks",
-        new MatchPrefixSet(
-            DestinationNetwork.instance(), new NamedPrefixSet(matchLonger.getName())),
-        ImmutableList.of(Statements.Suppress.toStaticStatement()),
-        ImmutableList.of());
   }
 
   /**

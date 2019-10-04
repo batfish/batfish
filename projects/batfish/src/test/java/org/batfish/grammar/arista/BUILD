@@ -18,6 +18,8 @@ junit_tests(
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
+        "//projects/batfish/src/main/java/org/batfish/grammar/cisco",
+        "//projects/batfish/src/main/java/org/batfish/representation/cisco",
         "@antlr4_runtime//:compile",
         "@commons_lang3//:compile",
         "@guava//:compile",

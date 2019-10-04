@@ -43,6 +43,7 @@ java_library(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/ios",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/nxos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/vyos",
+        "//projects/batfish/src/main/java/org/batfish/grammar/cisco",
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/juniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto",
