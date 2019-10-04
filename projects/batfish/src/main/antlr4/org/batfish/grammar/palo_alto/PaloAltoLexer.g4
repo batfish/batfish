@@ -164,6 +164,11 @@ CERTIFICATE_PROFILE
     'certificate-profile'
 ;
 
+CLIENT
+:
+    'client'
+;
+
 CLOSE_BRACKET
 :
     ']'
@@ -534,6 +539,11 @@ MED
     'med'
 ;
 
+MESHED_CLIENT
+:
+    'meshed-client'
+;
+
 MINUTES
 :
     'minutes'
@@ -597,6 +607,11 @@ NEXTHOP
 NO
 :
     'no'
+;
+
+NON_CLIENT
+:
+    'non-client'
 ;
 
 NONE
@@ -737,6 +752,11 @@ PROTOCOL
 QOS
 :
     'qos'
+;
+
+REFLECTOR_CLIENT
+:
+    'reflector-client'
 ;
 
 REFLECTOR_CLUSTER_ID

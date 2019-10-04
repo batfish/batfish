@@ -9,6 +9,12 @@ import org.batfish.datamodel.Ip;
  * NAME}.
  */
 public class BgpPeer implements Serializable {
+  public enum ReflectorClient {
+    CLIENT,
+    MESHED_CLIENT,
+    NON_CLIENT,
+  }
+
   /** TODO From PAN admin UI - only shows in running config if checked (as yes). */
   private static final boolean DEFAULT_ENABLE = false;
 
@@ -55,6 +61,15 @@ public class BgpPeer implements Serializable {
   public void setPeerAs(@Nullable Long peerAs) {
     _peerAs = peerAs;
   }
+
+  public @Nullable ReflectorClient getReflectorClient() {
+    return _reflectorClient;
+  }
+
+  public void setReflectorClient(@Nullable ReflectorClient reflectorClient) {
+    _reflectorClient = reflectorClient;
+  }
+
   // private implementation details
 
   private boolean _enable;
@@ -62,4 +77,5 @@ public class BgpPeer implements Serializable {
   private @Nullable String _localInterface;
   private @Nullable Ip _peerAddress;
   private @Nullable Long _peerAs;
+  private @Nullable ReflectorClient _reflectorClient;
 }

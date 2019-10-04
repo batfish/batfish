@@ -94,6 +94,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_reflector_clientContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ebgpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ibgpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_as_formatContext;
@@ -228,6 +229,7 @@ import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.ApplicationBuiltIn;
 import org.batfish.representation.palo_alto.ApplicationGroup;
 import org.batfish.representation.palo_alto.BgpPeer;
+import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
 import org.batfish.representation.palo_alto.BgpPeerGroup;
 import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
@@ -549,6 +551,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitBgppg_peer(Bgppg_peerContext ctx) {
     _currentBgpPeer = null;
+  }
+
+  @Override
+  public void exitBgppgp_reflector_client(Bgppgp_reflector_clientContext ctx) {
+    if (ctx.CLIENT() != null) {
+      _currentBgpPeer.setReflectorClient(ReflectorClient.CLIENT);
+    } else if (ctx.MESHED_CLIENT() != null) {
+      _currentBgpPeer.setReflectorClient(ReflectorClient.MESHED_CLIENT);
+    } else {
+      assert ctx.NON_CLIENT() != null;
+      _currentBgpPeer.setReflectorClient(ReflectorClient.NON_CLIENT);
+    }
   }
 
   @Override

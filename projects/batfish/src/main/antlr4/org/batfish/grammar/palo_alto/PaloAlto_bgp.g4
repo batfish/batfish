@@ -87,10 +87,11 @@ bgppg_peer
     (
         bgppgp_enable
         | bgppgp_local_address
+//        | bgppgp_max_prefixes
         | bgppgp_peer_address
         | bgppgp_peer_as
 //        | bgppgp_peering_type
-//        | bgppgp_reflector_client
+        | bgppgp_reflector_client
     )?
 ;
 
@@ -120,12 +121,17 @@ bgppgp_la_ip
 
 bgppgp_peer_address
 :
-    PEER_ADDRESS address = ip_address
+    PEER_ADDRESS IP address = ip_address
 ;
 
 bgppgp_peer_as
 :
     PEER_AS asn = bgp_asn
+;
+
+bgppgp_reflector_client
+:
+    REFLECTOR_CLIENT (CLIENT | MESHED_CLIENT | NON_CLIENT)
 ;
 
 bgppg_type

@@ -117,6 +117,7 @@ import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.BgpPeer;
+import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
 import org.batfish.representation.palo_alto.BgpPeerGroup;
 import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
@@ -190,7 +191,8 @@ public final class PaloAltoGrammarTest {
     String fileText = flattener.getFlattenedConfigurationText();
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
     PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(fileText, settings, lineMap);
-    PaloAltoControlPlaneExtractor extractor = new PaloAltoControlPlaneExtractor(src, paParser, w);
+    PaloAltoControlPlaneExtractor extractor =
+        new PaloAltoControlPlaneExtractor(fileText, paParser, w);
     ParserRuleContext tree = Batfish.parse(paParser, logger, settings);
     extractor.processParseTree(tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
@@ -505,6 +507,7 @@ public final class PaloAltoGrammarTest {
     assertThat(peer.getLocalAddress(), equalTo(Ip.parse("1.2.3.6")));
     assertThat(peer.getPeerAddress(), equalTo(Ip.parse("5.4.3.2")));
     assertThat(peer.getPeerAs(), equalTo(54321L));
+    assertThat(peer.getReflectorClient(), equalTo(ReflectorClient.NON_CLIENT));
   }
 
   @Test
