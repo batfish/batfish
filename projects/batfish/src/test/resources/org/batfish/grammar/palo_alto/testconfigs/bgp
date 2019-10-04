@@ -23,6 +23,20 @@ network {
           default-local-preference 103;
           reflector-cluster-id 1.2.3.5;
         }
+        peer-group {
+          PG {
+           type {
+             ibgp;
+           }
+           peer {
+             PEER {
+               enable yes;
+               peer-as 54321;
+             }
+           }
+           enable yes;
+          }
+        }
         enable yes;
         reject-default-route no;
         router-id 1.2.3.4/32;
