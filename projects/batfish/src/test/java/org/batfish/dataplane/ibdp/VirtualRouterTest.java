@@ -5,9 +5,9 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.eigrp.EigrpTopologyUtils.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
-import static org.batfish.dataplane.ibdp.VirtualRouter.alwaysGenerateLocalRoutes;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateConnectedRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalRoute;
+import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateLocalRoute;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -845,10 +845,19 @@ public class VirtualRouterTest {
 
   @Test
   public void testAlwaysGenerateLocalRoutes() {
-    assertFalse(alwaysGenerateLocalRoutes(null));
-    assertFalse(alwaysGenerateLocalRoutes(ConnectedRouteMetadata.builder().build()));
+    assertFalse(shouldGenerateLocalRoute(Prefix.MAX_PREFIX_LENGTH, null));
+    assertFalse(
+        shouldGenerateLocalRoute(
+            Prefix.MAX_PREFIX_LENGTH, ConnectedRouteMetadata.builder().build()));
     assertTrue(
-        alwaysGenerateLocalRoutes(
+        shouldGenerateLocalRoute(
+            Prefix.MAX_PREFIX_LENGTH,
             ConnectedRouteMetadata.builder().setGenerateLocalRoutes(true).build()));
+
+    assertTrue(shouldGenerateLocalRoute(24, null));
+    assertTrue(shouldGenerateLocalRoute(24, ConnectedRouteMetadata.builder().build()));
+    assertTrue(
+        shouldGenerateLocalRoute(
+            24, ConnectedRouteMetadata.builder().setGenerateLocalRoutes(true).build()));
   }
 }
