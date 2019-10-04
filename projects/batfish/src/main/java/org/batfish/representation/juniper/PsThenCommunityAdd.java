@@ -32,7 +32,7 @@ public final class PsThenCommunityAdd extends PsThen {
     _configuration.getOrCreateNamedCommunitiesUsedForSet().add(_name);
     statements.add(
         new SetCommunities(
-            new CommunitySetUnion(InputCommunities.instance(), new CommunitySetReference(_name))));
+            CommunitySetUnion.of(InputCommunities.instance(), new CommunitySetReference(_name))));
   }
 
   public @Nonnull String getName() {

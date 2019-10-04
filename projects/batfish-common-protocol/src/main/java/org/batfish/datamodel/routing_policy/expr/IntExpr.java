@@ -7,6 +7,8 @@ import org.batfish.datamodel.routing_policy.Environment;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class IntExpr implements Serializable {
 
+  public abstract <T, U> T accept(IntExprVisitor<T, U> visitor, U arg);
+
   @Override
   public abstract boolean equals(Object obj);
 

@@ -15,6 +15,8 @@ import static org.batfish.representation.cisco.AristaConversions.getVrfForVlan;
 import static org.batfish.representation.cisco.CiscoConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
+import static org.batfish.representation.cisco.CiscoConversions.convertMatchesAnyToCommunitySetMatchExpr;
+import static org.batfish.representation.cisco.CiscoConversions.convertMatchesEveryToCommunitySetMatchExpr;
 import static org.batfish.representation.cisco.CiscoConversions.eigrpRedistributionPoliciesToStatements;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
@@ -25,6 +27,8 @@ import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpPro
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.toCommunityList;
+import static org.batfish.representation.cisco.CiscoConversions.toCommunityMatchExpr;
+import static org.batfish.representation.cisco.CiscoConversions.toCommunitySetExpr;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
@@ -342,6 +346,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", vrf, peer);
   }
 
+  public static @Nonnull String computeCommunitySetMatchAnyName(String name) {
+    return String.format("~MATCH_ANY~%s~", name);
+  }
+
+  public static @Nonnull String computeCommunitySetMatchEveryName(String name) {
+    return String.format("~MATCH_EVERY~%s~", name);
+  }
+
   public static String computeIcmpObjectGroupAclName(String name) {
     return String.format("~ICMP_OBJECT_GROUP~%s~", name);
   }
@@ -562,7 +574,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, TrackMethod> _trackingGroups;
 
-  private Map<String, NamedCommunitySet> _communitySets;
+  private Map<String, XrCommunitySet> _communitySets;
 
   // initialized when needed
   private Multimap<Integer, Interface> _interfacesBySecurityLevel;
@@ -3104,8 +3116,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       CommunityList cList = toCommunityList(ecList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
-    _communitySets.forEach(
-        (name, communitySet) -> c.getCommunityLists().put(name, toCommunityList(communitySet)));
+    convertCommunitySets(c);
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -3978,6 +3989,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return ImmutableList.of(c);
   }
 
+  private void convertCommunitySets(Configuration c) {
+    _communitySets.forEach(
+        (name, communitySet) -> {
+          c.getCommunitySetMatchExprs()
+              .put(
+                  computeCommunitySetMatchAnyName(name),
+                  convertMatchesAnyToCommunitySetMatchExpr(communitySet, c));
+          c.getCommunitySetMatchExprs()
+              .put(
+                  computeCommunitySetMatchEveryName(name),
+                  convertMatchesEveryToCommunitySetMatchExpr(communitySet, c));
+          c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(communitySet, c));
+          c.getCommunitySetExprs().put(name, toCommunitySetExpr(communitySet, c));
+        });
+  }
+
   private static VniSettings toVniSettings(
       @Nonnull AristaEosVxlan vxlan,
       @Nonnull Integer vni,
@@ -4542,7 +4569,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _trackingGroups;
   }
 
-  public Map<String, NamedCommunitySet> getCommunitySets() {
+  public Map<String, XrCommunitySet> getCommunitySets() {
     return _communitySets;
   }
 }
