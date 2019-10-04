@@ -1337,20 +1337,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             arpFalseDstIpIface,
                             arpFalseDstIpNetworkBroadcastIface,
                             externalIps);
-                        });
+                      });
                 });
           });
     }
   }
 
   /**
-   * Returns the union of the following 2 cases:
-   * 1. Arp for dst ip and dst ip is external
-   * 2. Arp for next hop ip, next hop ip is not owned by any interfaces,
-   * and dst ip is external
+   * Returns the union of the following 2 cases: 1. Arp for dst ip and dst ip is external 2. Arp for
+   * next hop ip, next hop ip is not owned by any interfaces, and dst ip is external
    */
   @VisibleForTesting
-  static IpSpace computeExitsNetwork(boolean isInterfaceFull,
+  static IpSpace computeExitsNetwork(
+      boolean isInterfaceFull,
       IpSpace dstIpsWithUnownedNextHopIpArpFalseIface,
       IpSpace arpFalseDstIpIface,
       IpSpace arpFalseDstIpNetworkBroadcastIface,
@@ -1366,7 +1365,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                     arpFalseDstIpIface,
                     // dst IP is not the network or broadcast IP of the network
                     arpFalseDstIpNetworkBroadcastIface),
-              dstIpsWithUnownedNextHopIpArpFalseIface));
+                dstIpsWithUnownedNextHopIpArpFalseIface));
   }
 
   /**
@@ -1419,14 +1418,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             String ifaceName = ifaceEntry.getKey();
                             // If interface is full (no missing devices), it cannot be insufficient
                             // info
-                            if (!interfacesWithMissingDevices.get(hostname).contains(ifaceName)) {
+                            boolean isInterfaceFull =
+                                !interfacesWithMissingDevices.get(hostname).contains(ifaceName);
+                            if (!isInterfaceFull) {
                               return EmptyIpSpace.INSTANCE;
                             }
-
-                            IpSpace ipSpaceElsewhere =
-                                AclIpSpace.difference(
-                                    internalIps,
-                                    interfaceHostSubnetIps.get(hostname).get(ifaceName));
 
                             IpSpace ifaceArpFalseDstIpNetworkBroadcastIps =
                                 arpFalseDestIpNetworkBroadcast
@@ -1434,40 +1430,62 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                     .get(vrfName)
                                     .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE);
 
-                            // case 1: arp for dst ip, and either:
-                            // 1a) dst ip is internal but not in any subnet of the interface
-                            // 1b) dst ip is the network or broadcast IP of the route
-                            IpSpace ipSpaceInternalDstIp =
-                                AclIpSpace.intersection(
-                                    arpFalseDestIp.get(hostname).get(vrfName).get(ifaceName),
-                                    AclIpSpace.union(
-                                        ipSpaceElsewhere, ifaceArpFalseDstIpNetworkBroadcastIps));
+                            IpSpace ifaceHostSubnetIps =
+                                interfaceHostSubnetIps.get(hostname).get(ifaceName);
+                            IpSpace ifaceArpFalseDstIp =
+                                arpFalseDestIp.get(hostname).get(vrfName).get(ifaceName);
 
-                            // case 2: arp for nhip, nhip is not owned by interfaces, dst ip is
-                            // internal
-                            IpSpace dstIpsWithUnownedNextHopIpArpFalsePerInterafce =
+                            IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse =
                                 dstIpsWithUnownedNextHopIpArpFalse
                                     .get(hostname)
                                     .get(vrfName)
                                     .get(ifaceName);
 
-                            IpSpace ipSpaceInternalDstIpUnownedNexthopIp =
-                                AclIpSpace.intersection(
-                                    dstIpsWithUnownedNextHopIpArpFalsePerInterafce, internalIps);
-
-                            // case 3: arp for nhip, nhip is owned by some interfaces
-                            IpSpace ipSpaceOwnedNextHopIp =
+                            IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse =
                                 dstIpsWithOwnedNextHopIpArpFalse
                                     .get(hostname)
                                     .get(vrfName)
                                     .get(ifaceName);
 
-                            return AclIpSpace.union(
-                                ipSpaceInternalDstIp,
-                                ipSpaceInternalDstIpUnownedNexthopIp,
-                                ipSpaceOwnedNextHopIp);
+                            return computeInsufficientInfo(
+                                internalIps,
+                                ifaceArpFalseDstIpNetworkBroadcastIps,
+                                ifaceHostSubnetIps,
+                                ifaceArpFalseDstIp,
+                                ifaceDstIpsWithUnownedNextHopIpArpFalse,
+                                ifaceDstIpsWithOwnedNextHopIpArpFalse);
                           })));
     }
+  }
+
+  @VisibleForTesting
+  static IpSpace computeInsufficientInfo(
+      IpSpace internalIps,
+      IpSpace ifaceArpFalseDstIpNetworkBroadcastIps,
+      IpSpace ifaceHostSubnetIps,
+      IpSpace ifaceArpFalseDstIp,
+      IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse,
+      IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse) {
+    IpSpace internalIpsElsewhere = AclIpSpace.difference(internalIps, ifaceHostSubnetIps);
+
+    // case 1: arp for dst ip, and either:
+    // 1a) dst ip is internal but not in any subnet of the interface
+    // 1b) dst ip is the network or broadcast IP of the route
+    IpSpace ipSpaceInternalDstIp =
+        AclIpSpace.intersection(
+            ifaceArpFalseDstIp,
+            AclIpSpace.union(internalIpsElsewhere, ifaceArpFalseDstIpNetworkBroadcastIps));
+
+    // case 2: arp for nhip, nhip is not owned by interfaces, dst ip is
+    // internal
+    IpSpace ipSpaceInternalDstIpUnownedNexthopIp =
+        AclIpSpace.intersection(ifaceDstIpsWithUnownedNextHopIpArpFalse, internalIps);
+
+    // case 3: arp for an owned nhip
+    IpSpace ipSpaceOwnedNextHopIp = ifaceDstIpsWithOwnedNextHopIpArpFalse;
+
+    return AclIpSpace.union(
+        ipSpaceInternalDstIp, ipSpaceInternalDstIpUnownedNexthopIp, ipSpaceOwnedNextHopIp);
   }
 
   /**

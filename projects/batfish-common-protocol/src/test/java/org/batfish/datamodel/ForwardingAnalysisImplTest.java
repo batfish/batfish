@@ -1415,6 +1415,110 @@ public class ForwardingAnalysisImplTest {
     assertEquals(expected, actual);
   }
 
+  /**
+   * Case 1a:
+   * A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it is
+   * internal but not connected to the interface.
+   */
+  @Test
+  public void testInsufficientInfo_arpFalseDstIp_internalElsewhere() {
+    IpSpace internalIps = PREFIX_IP_SPACE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceHostSubnetIps = IP_IP_SPACE;
+    IpSpace ifaceArpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(PREFIX_IP_SPACE).diff(DST.visit(IP_IP_SPACE));
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * Case 1b:
+   * A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it is
+   * a network or broadcast IP of the route's network.
+   */
+  @Test
+  public void testInsufficientInfo_arpFalseNetworkBroadcastDstIp() {
+    IpSpace internalIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = IP_IP_SPACE;
+    IpSpace ifaceHostSubnetIps = PREFIX_IP_SPACE;
+    IpSpace ifaceArpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(IP_IP_SPACE);
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
+
+
+  /**
+   * Case 2:
+   * Internal dstIPs routable to an external next-hop should get insufficient_info.
+   */
+  @Test
+  public void testInsufficientInfo_internalDstIpExternalNextHopIp() {
+    IpSpace internalIps = IP_IP_SPACE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceHostSubnetIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = PREFIX_IP_SPACE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(IP_IP_SPACE);
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * Case 3:
+   * Internal dstIPs routable to an owned next-hop IP for which we don't get an ARP reply should
+   * get insufficient_info.
+   */
+  @Test
+  public void testInsufficientInfo_ownedNextHopIp() {
+    IpSpace internalIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceHostSubnetIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = PREFIX_IP_SPACE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(PREFIX_IP_SPACE);
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
+
   enum NextHopIpStatus {
     NONE,
     INTERNAL,
