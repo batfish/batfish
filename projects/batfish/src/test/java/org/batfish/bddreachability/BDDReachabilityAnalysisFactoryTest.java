@@ -29,9 +29,10 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -1004,12 +1005,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
 
     // set up interface
-    Interface i1 =
-        nf.interfaceBuilder()
-            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/30"))
-            .setOwner(c1)
-            .setVrf(v1)
-            .build();
+    ConcreteInterfaceAddress i1Addr = ConcreteInterfaceAddress.parse("1.0.0.1/30");
+    Interface i1 = nf.interfaceBuilder().setAddress(i1Addr).setOwner(c1).setVrf(v1).build();
 
     // set up static route "8.8.8.0/24" -> 1.0.0.2
     v1.setStaticRoutes(
@@ -1055,7 +1052,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
 
-    assertThat(transitionII, nullValue());
+    assertThat(transitionII, notNullValue());
+    BDD ii = transitionII.transitForward(ONE);
+
+    Prefix i1RouteNetwork = i1Addr.getPrefix();
+    Ip i1RouteNetworkIp = i1RouteNetwork.getStartIp();
+    Ip i1RouteBroadcastIp = i1RouteNetwork.getEndIp();
+    BDD expected = dstToBdd.toBDD(i1RouteNetworkIp).or(dstToBdd.toBDD(i1RouteBroadcastIp));
+    assertEquals(expected, ii);
   }
 
   /*
@@ -1138,7 +1142,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
 
-    assertThat(transitionEN.transitForward(resultBDD), equalTo(PKT.getFactory().zero()));
+    assertNull(transitionEN);
   }
 
   @Test

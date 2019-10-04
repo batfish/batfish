@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.util.Map;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -110,7 +112,12 @@ public class ForwardingAnalysisImplIntegrationTest {
         forwardingAnalysis.getExitsNetwork().get(hostname).get(vrfName).get(ifaceName);
 
     // the forwarding route's prefix should be routed out the interface
-    assertThat(exitsNetwork, containsIp(forwardingRoutePrefix.getStartIp()));
+    assertThat(exitsNetwork,
+        allOf(
+            not(containsIp(forwardingRoutePrefix.getStartIp())),
+            not(containsIp(forwardingRoutePrefix.getEndIp())),
+            containsIp(forwardingRoutePrefix.getFirstHostIp()),
+            containsIp(forwardingRoutePrefix.getLastHostIp())));
 
     /* the non-forwarding route's prefix should also be routed out the interface (using the
      * forwarding route).
@@ -162,8 +169,11 @@ public class ForwardingAnalysisImplIntegrationTest {
         forwardingAnalysis.getExitsNetwork();
 
     assertThat(
-        exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()),
-        containsIp(prefix.getStartIp()));
+        exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()), allOf(
+            not(containsIp(prefix.getStartIp())),
+            not(containsIp(prefix.getEndIp())),
+            containsIp(prefix.getFirstHostIp()),
+            containsIp(prefix.getLastHostIp())));
 
     // after setting the static arp on i2, should not be exits network anymore
     i2.setAdditionalArpIps(prefix.getStartIp().toIpSpace());
