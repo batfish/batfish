@@ -1479,7 +1479,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       IpSpace ifaceArpFalseDstIp,
       IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse,
       IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse) {
-    if (!isInterfaceFull) {
+    if (isInterfaceFull) {
       return ifaceArpFalseDstIpNetworkBroadcastIps;
     }
 
@@ -1568,13 +1568,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       IpSpace ifaceArpFalseDestIp,
       IpSpace ifaceArpFalseDestIpNetworkBroadcast,
       IpSpace ifaceHostSubnetIps) {
-    return
-        AclIpSpace.difference(
-            isIfaceFull
-                ? ifaceArpFalse
-                : AclIpSpace.intersection(ifaceArpFalseDestIp, ifaceHostSubnetIps, ownedIps),
-            // exclude network/broadcast IPs
-            ifaceArpFalseDestIpNetworkBroadcast);
+    return AclIpSpace.difference(
+        isIfaceFull
+            ? ifaceArpFalse
+            : AclIpSpace.intersection(ifaceArpFalseDestIp, ifaceHostSubnetIps, ownedIps),
+        // exclude network/broadcast IPs
+        ifaceArpFalseDestIpNetworkBroadcast);
   }
 
   @Override
