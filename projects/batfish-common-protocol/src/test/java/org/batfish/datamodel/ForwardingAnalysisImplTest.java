@@ -1542,7 +1542,8 @@ public class ForwardingAnalysisImplTest {
     boolean isIfaceFull = false;
     IpSpace ownedIps = ipWithWildcardMask(Ip.parse("255.0.0.0"), 0x00FFFFFFL).toIpSpace();
     IpSpace ifaceArpFalse = EmptyIpSpace.INSTANCE;
-    IpSpace ifaceArpFalseDestIp = ipWithWildcardMask(Ip.parse("0.255.0.0"), 0xFF00FFFFL).toIpSpace();
+    IpSpace ifaceArpFalseDestIp =
+        ipWithWildcardMask(Ip.parse("0.255.0.0"), 0xFF00FFFFL).toIpSpace();
     IpSpace ifaceHostSubnetIps = ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
     IpSpace neighborUnreachable =
         computeNeighborUnreachable(
@@ -1550,6 +1551,23 @@ public class ForwardingAnalysisImplTest {
     BDD expected =
         DST.visit(ownedIps).and(DST.visit(ifaceArpFalseDestIp)).and(DST.visit(ifaceHostSubnetIps));
     BDD actual = DST.visit(neighborUnreachable);
+    assertEquals(expected, actual);
+  }
+
+  /**
+   * A dstIp gets delivered_to_subnet if we ARP for it and do not get a reply, it is not owned in
+   * the network, and is in a connected subnet of the interface.
+   */
+  @Test
+  public void testComputeDeliveredToSubnet() {
+    IpSpace ownedIps = ipWithWildcardMask(Ip.parse("255.0.0.0"), 0x00FFFFFFL).toIpSpace();
+    IpSpace ifaceArpFalseDstIp = ipWithWildcardMask(Ip.parse("0.255.0.0"), 0xFF00FFFFL).toIpSpace();
+    IpSpace ifaceHostSubnetIps = ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
+    IpSpace deliveredToSubnet =
+        computeDeliveredToSubnet(ownedIps, ifaceArpFalseDstIp, ifaceHostSubnetIps);
+    BDD expected =
+        DST.visit(ifaceArpFalseDstIp).and(DST.visit(ifaceHostSubnetIps)).diff(DST.visit(ownedIps));
+    BDD actual = DST.visit(deliveredToSubnet);
     assertEquals(expected, actual);
   }
 
