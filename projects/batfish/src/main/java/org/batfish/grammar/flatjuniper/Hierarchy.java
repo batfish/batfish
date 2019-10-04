@@ -18,10 +18,10 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.batfish.common.BatfishException;
-import org.batfish.config.Settings;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.BatfishParseTreeWalker;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
@@ -29,7 +29,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_host_nameContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.batfish.main.UndefinedGroupBatfishException;
 
 public final class Hierarchy {
 
@@ -282,11 +281,68 @@ public final class Hierarchy {
       }
     }
 
-    private static Settings parserSettings() {
-      Settings settings = new Settings();
-      settings.setThrowOnLexerError(true);
-      settings.setThrowOnParserError(true);
-      return settings;
+    private static GrammarSettings parserSettings() {
+      return new GrammarSettings() {
+        @Override
+        public boolean getDisableUnrecognized() {
+          return false;
+        }
+
+        @Override
+        public int getMaxParserContextLines() {
+          return 0;
+        }
+
+        @Override
+        public int getMaxParserContextTokens() {
+          return 0;
+        }
+
+        @Override
+        public int getMaxParseTreePrintLength() {
+          return 0;
+        }
+
+        @Override
+        public boolean getPrintParseTree() {
+          return false;
+        }
+
+        @Override
+        public boolean getPrintParseTreeLineNums() {
+          return false;
+        }
+
+        @Override
+        public boolean getThrowOnLexerError() {
+          return true;
+        }
+
+        @Override
+        public boolean getThrowOnParserError() {
+          return true;
+        }
+
+        @Override
+        public boolean getUseAristaBgp() {
+          return false;
+        }
+
+        @Override
+        public void setDisableUnrecognized(boolean disableUnrecognized) {}
+
+        @Override
+        public void setPrintParseTree(boolean printParseTree) {}
+
+        @Override
+        public void setPrintParseTreeLineNums(boolean printParseTreeLineNums) {}
+
+        @Override
+        public void setThrowOnLexerError(boolean throwOnLexerError) {}
+
+        @Override
+        public void setThrowOnParserError(boolean throwOnParserError) {}
+      };
     }
 
     private String _groupName;
@@ -523,8 +579,8 @@ public final class Hierarchy {
       setLine.children.add(set);
       setLine.children.add(setLineTail);
       setLine.children.add(newline);
-      Settings settings = parserSettings();
-      FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(newStatementText, settings);
+      FlatJuniperCombinedParser parser =
+          new FlatJuniperCombinedParser(newStatementText, parserSettings());
       // Use the supplied line number for the constructed nodes
       parser.getLexer().setOverrideTokenStartLine(overrideLine);
       if (markWildcards) {

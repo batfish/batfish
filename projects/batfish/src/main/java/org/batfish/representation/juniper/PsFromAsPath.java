@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
-import org.batfish.grammar.flatjuniper.AsPathRegex;
 
 /** Represents a "from as-path" line in a {@link PsTerm} */
 public final class PsFromAsPath extends PsFrom {
