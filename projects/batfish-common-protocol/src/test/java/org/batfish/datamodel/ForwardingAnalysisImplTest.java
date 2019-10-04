@@ -1356,6 +1356,7 @@ public class ForwardingAnalysisImplTest {
                 interfacesWithMissingDevices,
                 dstIpsWithUnownedNextHopIpArpFalse,
                 arpFalseDestIp,
+                arpFalseDestIpNetworkBroadcast,
                 externalIps)
             .get(CONFIG1)
             .get(VRF1)
