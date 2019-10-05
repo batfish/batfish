@@ -15,14 +15,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -48,7 +46,6 @@ import org.junit.rules.TemporaryFolder;
 /** Test the dispostions when ARP failures occur. */
 public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   private static final BDDPacket PKT = new BDDPacket();
-  private static final BDDOps BDD_OPS = new BDDOps(PKT.getFactory());
   private static final IpSpaceToBDD DST_TO_BDD = new IpSpaceToBDD(PKT.getDstIp());
   private static final ImmutableSet<FlowDisposition> DISPOSITIONS =
       ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK, INSUFFICIENT_INFO, NEIGHBOR_UNREACHABLE);
@@ -62,10 +59,6 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   private static final String LOOPBACK_INTERFACE = "iface2";
   private static final ConcreteInterfaceAddress NEXT_HOP_INTERFACE_NOT_FULL_ADDR =
       ConcreteInterfaceAddress.parse("2.0.0.1/30");
-  private static final Ip NEXT_HOP_INTERFACE_NOT_FULL_NETWORK_IP =
-      NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp();
-  private static final Ip NEXT_HOP_INTERFACE_NOT_FULL_BROADCAST_IP =
-      NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp();
   private static final ConcreteInterfaceAddress NEXT_HOP_INTERFACE_FULL_ADDR =
       ConcreteInterfaceAddress.parse("2.0.0.1/32");
   private static final ConcreteInterfaceAddress NEXT_HOP_INTERFACE_NEIGHBOR_ADDR =
@@ -80,8 +73,8 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   private SortedMap<String, Configuration> _configs;
   IngressLocation _loc;
 
-  private BDD dstIpToBDD(Ip... dstIp) {
-    return BDD_OPS.orAll(Arrays.stream(dstIp).map(DST_TO_BDD::toBDD).collect(Collectors.toList()));
+  private BDD dstIpToBDD(Ip dstIp) {
+    return DST_TO_BDD.toBDD(dstIp);
   }
 
   private Batfish initBatfish(SortedMap<String, Configuration> configs) throws IOException {
@@ -177,7 +170,18 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD neighborUnreachableIps = dstIpToBDD(NEXT_HOP_INTERFACE_NEIGHBOR_ADDR.getIp());
+    BDD neighborUnreachableIps =
+        Stream.of(
+                NEXT_HOP_INTERFACE_NEIGHBOR_ADDR.getIp(),
+                /*
+                 * Note: sometimes the network and broadcast IPs are EXITS_NETWORK, sometimes
+                 * NEIGHBOR_UNREACHABLE. We don't really care what disposition these have, and at
+                 * some point we will disallow using them as dst IPs in reachability or traceroute.
+                 */
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
+            .map(this::dstIpToBDD)
+            .reduce(PKT.getFactory().zero(), BDD::or);
     assertThat(reach, hasEntry(_loc, neighborUnreachableIps));
   }
 
@@ -287,12 +291,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD insufficientInfo =
-        dstIpToBDD(
-            DST_IP,
-            NEXT_HOP_INTERFACE_NOT_FULL_NETWORK_IP,
-            NEXT_HOP_INTERFACE_NOT_FULL_BROADCAST_IP);
-    assertThat(reach, hasEntry(_loc, insufficientInfo));
+    assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
   }
 
   private void setup_noNHIp_subnetNotFull_externalDstIp() {
@@ -316,7 +315,13 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(EXITS_NETWORK);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD exitsNetworkIps = this.dstIpToBDD(DST_IP);
+    BDD exitsNetworkIps =
+        Stream.of(
+                DST_IP,
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
+            .map(this::dstIpToBDD)
+            .reduce(PKT.getFactory().zero(), BDD::or);
     assertThat(reach, hasEntry(_loc, exitsNetworkIps));
   }
 
@@ -417,13 +422,8 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-
-    BDD insufficientInfo =
-        dstIpToBDD(
-            DST_IP,
-            NEXT_HOP_INTERFACE_NOT_FULL_NETWORK_IP,
-            NEXT_HOP_INTERFACE_NOT_FULL_BROADCAST_IP);
-    assertThat(reach, hasEntry(_loc, insufficientInfo));
+    BDD neighborUnreachableIps = dstIpToBDD(DST_IP);
+    assertThat(reach, hasEntry(_loc, neighborUnreachableIps));
   }
 
   private void setup_externalNHIp_subnetNotFull_externalDstIp() {
@@ -448,7 +448,13 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(EXITS_NETWORK);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD exitsNetworkIps = dstIpToBDD(DST_IP);
+    BDD exitsNetworkIps =
+        Stream.of(
+                DST_IP,
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
+            .map(this::dstIpToBDD)
+            .reduce(PKT.getFactory().zero(), BDD::or);
     assertThat(reach, hasEntry(_loc, exitsNetworkIps));
   }
 
@@ -558,12 +564,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD insufficientInfo =
-        dstIpToBDD(
-            DST_IP,
-            NEXT_HOP_INTERFACE_NOT_FULL_NETWORK_IP,
-            NEXT_HOP_INTERFACE_NOT_FULL_BROADCAST_IP);
-    assertThat(reach, hasEntry(_loc, insufficientInfo));
+    assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
   }
 
   private void setup_internalNHIp_subnetNotFull_externalDstIp() {
@@ -599,11 +600,6 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD insufficientInfo =
-        dstIpToBDD(
-            DST_IP,
-            NEXT_HOP_INTERFACE_NOT_FULL_NETWORK_IP,
-            NEXT_HOP_INTERFACE_NOT_FULL_BROADCAST_IP);
-    assertThat(reach, hasEntry(_loc, insufficientInfo));
+    assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
   }
 }
