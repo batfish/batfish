@@ -17,8 +17,8 @@ null_rest_of_line
 
 interface_address
 :
-    IP_ADDRESS
-    | IP_PREFIX
+    addr = ip_address
+    | addr_with_mask = IP_PREFIX
 ;
 
 ip_address
