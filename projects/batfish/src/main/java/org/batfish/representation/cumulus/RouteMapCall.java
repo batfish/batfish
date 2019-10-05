@@ -1,5 +1,7 @@
 package org.batfish.representation.cumulus;
 
+import java.io.Serializable;
+
 /**
  * Route map statement that calls another routemap.
  *
@@ -10,7 +12,7 @@ package org.batfish.representation.cumulus;
  *
  * <p>See also <a href="http://docs.frrouting.org/en/latest/routemap.html#route-maps"></a>
  */
-public class RouteMapCall {
+public class RouteMapCall implements Serializable {
   private final String _routeMapName;
 
   public RouteMapCall(String routeMapName) {
