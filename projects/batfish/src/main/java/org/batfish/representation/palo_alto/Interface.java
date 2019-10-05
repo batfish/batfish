@@ -1,6 +1,7 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.SortedMap;
@@ -49,6 +50,13 @@ public final class Interface implements Serializable {
     return _active;
   }
 
+  public void addAddress(ConcreteInterfaceAddress address) {
+    if (_address == null) {
+      _address = address;
+    }
+    _allAddresses.add(address);
+  }
+
   @Nullable
   public ConcreteInterfaceAddress getAddress() {
     return _address;
@@ -56,7 +64,7 @@ public final class Interface implements Serializable {
 
   @Nonnull
   public Set<ConcreteInterfaceAddress> getAllAddresses() {
-    return _allAddresses;
+    return Collections.unmodifiableSet(_allAddresses);
   }
 
   @Nullable
@@ -101,10 +109,6 @@ public final class Interface implements Serializable {
 
   public void setActive(boolean active) {
     _active = active;
-  }
-
-  public void setAddress(ConcreteInterfaceAddress address) {
-    _address = address;
   }
 
   public void setComment(@Nullable String comment) {
