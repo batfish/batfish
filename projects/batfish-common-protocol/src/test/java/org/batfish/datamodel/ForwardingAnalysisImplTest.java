@@ -23,6 +23,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNext
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeSomeoneReplies;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.union;
+import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
@@ -32,6 +33,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +46,9 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.junit.Before;
@@ -51,10 +56,11 @@ import org.junit.Test;
 
 /** Tests of {@link ForwardingAnalysisImpl}. */
 public class ForwardingAnalysisImplTest {
-
-  private static final String CONFIG1 = "config1";
-
-  private static final String VRF1 = "vrf1";
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
+  private static final BDD ZERO = PKT.getFactory().zero();
+  private static final IpSpace PREFIX_IP_SPACE = Prefix.parse("1.1.1.0/24").toIpSpace();
+  private static final IpSpace IP_IP_SPACE = Ip.parse("1.1.1.1").toIpSpace();
 
   private static final String INTERFACE1 = "interface1";
 
@@ -1196,292 +1202,349 @@ public class ForwardingAnalysisImplTest {
         result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), not(containsIp(P2.getStartIp())))));
   }
 
+  /** No IPs have exits_network if the interface is full. */
   @Test
-  public void testComputeDeliveredToSubnetNoArpFalse() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    Ip ip = Ip.parse("10.0.0.1");
-
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
-    IpSpace ownedIps = EmptyIpSpace.INSTANCE;
-
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
-  }
-
-  @Test
-  public void testComputeDeliveredToSubnetNoInterfaceHostIps() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    Ip ip = Ip.parse("10.0.0.1");
-
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE));
-    IpSpace ownedIps = EmptyIpSpace.INSTANCE;
-
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
-  }
-
-  @Test
-  public void testComputeDeliveredToSubnetEqual() {
-    String c1 = "c1";
-    String vrf1 = "vrf1";
-    String i1 = "i1";
-    Ip ip = Ip.parse("10.0.0.1");
-
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
-    IpSpace ownedIps = EmptyIpSpace.INSTANCE;
-
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), containsIp(ip)))));
-  }
-
-  enum NextHopIpStatus {
-    NONE,
-    INTERNAL,
-    EXTERNAL
-  }
-
-  private static void testDispositionComputationTemplate(
-      NextHopIpStatus nextHopIpStatus,
-      boolean isSubnetFull,
-      boolean isDstIpInternal,
-      boolean isDstIpInSubnet,
-      FlowDisposition expectedDisposition) {
-    String nextHopIpString = "1.0.0.1";
-    Prefix dstPrefix = P3;
-    Ip nextHopIp = Ip.parse(nextHopIpString);
-
-    AclIpSpace.Builder internalIpsBuilder = AclIpSpace.builder();
-
-    Map<String, Set<String>> interfacesWithMissingDevices;
-    if (!isSubnetFull) {
-      interfacesWithMissingDevices = ImmutableMap.of(CONFIG1, ImmutableSet.of(INTERFACE1));
-    } else {
-      interfacesWithMissingDevices = ImmutableMap.of(CONFIG1, ImmutableSet.of());
-    }
-
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp;
-    Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithOwnedNextHopIpArpFalse;
-    Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse;
-    if (nextHopIpStatus == NextHopIpStatus.EXTERNAL) {
-      arpFalseDestIp =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      dstIpsWithOwnedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      dstIpsWithUnownedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
-    } else if (nextHopIpStatus == NextHopIpStatus.INTERNAL) {
-      arpFalseDestIp =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      internalIpsBuilder.thenPermitting(nextHopIp.toIpSpace());
-      dstIpsWithOwnedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
-      dstIpsWithUnownedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-    } else {
-      arpFalseDestIp =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
-      dstIpsWithOwnedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      dstIpsWithUnownedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-    }
-
-    if (isDstIpInternal) {
-      internalIpsBuilder.thenPermitting(dstPrefix.toIpSpace());
-    }
-
-    IpSpace internalIps = internalIpsBuilder.build();
-    IpSpace externalIps = internalIps.complement();
-
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps;
-    if (isDstIpInSubnet) {
-      interfaceHostSubnetIps =
-          ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace()));
-    } else {
-      interfaceHostSubnetIps =
-          ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE));
-    }
-
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalse =
-        ImmutableMap.of(
-            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
-
-    IpSpace ownedIps = EmptyIpSpace.INSTANCE;
-
-    IpSpace deliveredToSubnetIpSpace =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps)
-            .get(CONFIG1)
-            .get(VRF1)
-            .get(INTERFACE1);
-    IpSpace exitsNetworkIpSpace =
+  public void testComputeExitsNetwork_full() {
+    boolean isInterfaceFull = true;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIp = UniverseIpSpace.INSTANCE;
+    IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
+    IpSpace externalIps = UniverseIpSpace.INSTANCE;
+    IpSpace exitsNetwork =
         computeExitsNetwork(
-                interfacesWithMissingDevices,
-                dstIpsWithUnownedNextHopIpArpFalse,
-                arpFalseDestIp,
-                externalIps)
-            .get(CONFIG1)
-            .get(VRF1)
-            .get(INTERFACE1);
-
-    IpSpace insufficientInfoIpSpace =
-        computeInsufficientInfo(
-                interfaceHostSubnetIps,
-                interfacesWithMissingDevices,
-                arpFalseDestIp,
-                dstIpsWithUnownedNextHopIpArpFalse,
-                dstIpsWithOwnedNextHopIpArpFalse,
-                internalIps)
-            .get(CONFIG1)
-            .get(VRF1)
-            .get(INTERFACE1);
-    IpSpace neighborUnreachableIpSpace =
-        computeNeighborUnreachable(
-                arpFalse,
-                interfacesWithMissingDevices,
-                arpFalseDestIp,
-                interfaceHostSubnetIps,
-                ownedIps)
-            .get(CONFIG1)
-            .get(VRF1)
-            .get(INTERFACE1);
-
-    if (expectedDisposition == FlowDisposition.EXITS_NETWORK) {
-      assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getStartIp()));
-      assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getEndIp()));
-    } else {
-      assertThat(exitsNetworkIpSpace, not(containsIp(dstPrefix.getStartIp())));
-      assertThat(exitsNetworkIpSpace, not(containsIp(dstPrefix.getEndIp())));
-    }
-
-    if (expectedDisposition == FlowDisposition.INSUFFICIENT_INFO) {
-      assertThat(insufficientInfoIpSpace, containsIp(dstPrefix.getStartIp()));
-      assertThat(insufficientInfoIpSpace, containsIp(dstPrefix.getEndIp()));
-    } else {
-      assertThat(insufficientInfoIpSpace, not(containsIp(dstPrefix.getStartIp())));
-      assertThat(insufficientInfoIpSpace, not(containsIp(dstPrefix.getEndIp())));
-    }
-
-    if (expectedDisposition == FlowDisposition.DELIVERED_TO_SUBNET) {
-      assertThat(deliveredToSubnetIpSpace, containsIp(dstPrefix.getStartIp()));
-      assertThat(deliveredToSubnetIpSpace, containsIp(dstPrefix.getEndIp()));
-    } else {
-      assertThat(deliveredToSubnetIpSpace, not(containsIp(dstPrefix.getStartIp())));
-      assertThat(deliveredToSubnetIpSpace, not(containsIp(dstPrefix.getEndIp())));
-    }
-
-    if (expectedDisposition == FlowDisposition.NEIGHBOR_UNREACHABLE) {
-      assertThat(neighborUnreachableIpSpace, (containsIp(dstPrefix.getStartIp())));
-      assertThat(neighborUnreachableIpSpace, (containsIp(dstPrefix.getEndIp())));
-    } else {
-      assertThat(neighborUnreachableIpSpace, not(containsIp(dstPrefix.getStartIp())));
-      assertThat(neighborUnreachableIpSpace, not(containsIp(dstPrefix.getEndIp())));
-    }
+            isInterfaceFull,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    assertEquals(ZERO, DST.visit(exitsNetwork));
   }
 
+  /**
+   * No IPs have exits_network if there are no unowned next-hop IPs and all dst IPs get ARP replies.
+   */
   @Test
-  public void testDispositionComputation() {
-    /*
-     * Avoid the case where arp dst ip, interface is full, and dst ip is in subnet (would be accepted).
-     * Avoid cases where dst ip is internal but not in subet.
-     */
+  public void testComputeExitsNetwork_noUnownedNextHop_noArpFalse() {
+    boolean isInterfaceFull = false;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
+    IpSpace externalIps = UniverseIpSpace.INSTANCE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            isInterfaceFull,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = ZERO;
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
 
-    // Arp dst ip, interface is full, dst ip is internal -> neighbor unreachable
-    testDispositionComputationTemplate(
-        NextHopIpStatus.NONE, true, true, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+  /**
+   * Of the dstIPs we ARP for without a reply, the Network/broadcast IPs of the route's network
+   * should not get exits_network.
+   */
+  @Test
+  public void testComputeExitsNetwork_excludeNetworkBroadcastInArpFalse() {
+    boolean isInterfaceFull = false;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIpNetworkBroadcast = IP_IP_SPACE;
+    IpSpace externalIps = UniverseIpSpace.INSTANCE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            isInterfaceFull,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = DST.visit(arpFalseDstIp).diff(DST.visit(arpFalseDstIpNetworkBroadcast));
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
 
-    // Arp dst ip, interface is full, dst ip is external -> neighbor unreachable
-    testDispositionComputationTemplate(
-        NextHopIpStatus.NONE, true, false, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+  /**
+   * network/broadcast IPs should get exits_network if they are routable using an external next-hop
+   * IP (even if they're also in arpFalseDstIp).
+   */
+  @Test
+  public void testComputeExitsNetwork_includeNetworkBroadcastIPsInUnownedNextHop() {
+    boolean isInterfaceFull = false;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIpNetworkBroadcast = IP_IP_SPACE;
+    IpSpace externalIps = UniverseIpSpace.INSTANCE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            isInterfaceFull,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = DST.visit(arpFalseDstIp);
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
 
-    // Arp dst ip, interface is not full, dst ip is subnet -> delivered to subnet
-    testDispositionComputationTemplate(
-        NextHopIpStatus.NONE, false, true, true, FlowDisposition.DELIVERED_TO_SUBNET);
+  /**
+   * Of the dst IPs routable to an external next-hop, only external dst IPs should get
+   * exits_network.
+   */
+  @Test
+  public void testComputeExitsNetwork_includeOnlyExternalDstIpsWithUnownedNextHop() {
+    boolean isInterfaceFull = false;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
+    IpSpace externalIps = IP_IP_SPACE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            isInterfaceFull,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = DST.visit(externalIps);
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
 
-    // Arp dst ip, interface is not full, dst ip is internal -> insufficient info
-    testDispositionComputationTemplate(
-        NextHopIpStatus.NONE, false, true, false, FlowDisposition.INSUFFICIENT_INFO);
+  /**
+   * Of the dst IPs that are routed to an external next-hop IP, only those that are external get
+   * exits_network.
+   */
+  @Test
+  public void testComputeExitsNetwork_unownedNextHop_include_only_external_dstIps() {
+    // case: for unowned next-hop IPs, only include external dst IPs
+    boolean isInterfaceFull = false;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace arpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace arpFalseDstIpNetworkBroadcast = EmptyIpSpace.INSTANCE;
+    IpSpace externalIps = IP_IP_SPACE;
+    IpSpace exitsNetwork =
+        computeExitsNetwork(
+            isInterfaceFull,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDstIp,
+            arpFalseDstIpNetworkBroadcast,
+            externalIps);
+    BDD expected = DST.visit(externalIps);
+    BDD actual = DST.visit(exitsNetwork);
+    assertEquals(expected, actual);
+  }
 
-    // Arp dst ip, interface is not full, dst ip is external -> exits network
-    testDispositionComputationTemplate(
-        NextHopIpStatus.NONE, false, false, false, FlowDisposition.EXITS_NETWORK);
+  /**
+   * If the interface is full, only give a dstIP insufficient_info if we ARP for it without reply
+   * and its the network or broadcast IP of the route's network.
+   */
+  @Test
+  public void testInsufficientInfo_full() {
+    boolean isInterfaceFull = true;
+    IpSpace internalIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = IP_IP_SPACE;
+    IpSpace ifaceHostSubnetIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            isInterfaceFull,
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(IP_IP_SPACE);
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
 
-    // nhip external, interface is full, dst ip is internal -> neighbor unreachable
-    testDispositionComputationTemplate(
-        NextHopIpStatus.EXTERNAL, true, true, true, FlowDisposition.NEIGHBOR_UNREACHABLE);
+  /**
+   * Case 1a: A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it
+   * is internal but not connected to the interface.
+   */
+  @Test
+  public void testInsufficientInfo_arpFalseDstIp_internalElsewhere() {
+    boolean isInterfaceFull = false;
+    IpSpace internalIps = PREFIX_IP_SPACE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceHostSubnetIps = IP_IP_SPACE;
+    IpSpace ifaceArpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            isInterfaceFull,
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(PREFIX_IP_SPACE).diff(DST.visit(IP_IP_SPACE));
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
 
-    testDispositionComputationTemplate(
-        NextHopIpStatus.EXTERNAL, true, true, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+  /**
+   * Case 1b: A dstIp should get insufficient_info if: we ARP for it but do not get a reply, and it
+   * is a network or broadcast IP of the route's network.
+   */
+  @Test
+  public void testInsufficientInfo_arpFalseNetworkBroadcastDstIp() {
+    boolean isInterfaceFull = true;
+    IpSpace internalIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = IP_IP_SPACE;
+    IpSpace ifaceHostSubnetIps = PREFIX_IP_SPACE;
+    IpSpace ifaceArpFalseDstIp = PREFIX_IP_SPACE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            isInterfaceFull,
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(IP_IP_SPACE);
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
 
-    // nhip external, interface is full, dst ip is external -> neighbor unreachable
-    testDispositionComputationTemplate(
-        NextHopIpStatus.EXTERNAL, true, false, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
+  /** Case 2: Internal dstIPs routable to an external next-hop should get insufficient_info. */
+  @Test
+  public void testInsufficientInfo_internalDstIpExternalNextHopIp() {
+    boolean isInterfaceFull = false;
+    IpSpace internalIps = IP_IP_SPACE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceHostSubnetIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = PREFIX_IP_SPACE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            isInterfaceFull,
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(IP_IP_SPACE);
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
 
-    // nhip external, interface is not full, dst ip is internal -> insufficient info
-    testDispositionComputationTemplate(
-        NextHopIpStatus.EXTERNAL, false, true, true, FlowDisposition.INSUFFICIENT_INFO);
+  /**
+   * Case 3: Internal dstIPs routable to an owned next-hop IP for which we don't get an ARP reply
+   * should get insufficient_info.
+   */
+  @Test
+  public void testInsufficientInfo_ownedNextHopIp() {
+    boolean isInterfaceFull = false;
+    IpSpace internalIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIpNetworkBroadcastIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceHostSubnetIps = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDstIp = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceDstIpsWithOwnedNextHopIpArpFalse = PREFIX_IP_SPACE;
+    IpSpace insufficientInfo =
+        computeInsufficientInfo(
+            isInterfaceFull,
+            internalIps,
+            ifaceArpFalseDstIpNetworkBroadcastIps,
+            ifaceHostSubnetIps,
+            ifaceArpFalseDstIp,
+            ifaceDstIpsWithUnownedNextHopIpArpFalse,
+            ifaceDstIpsWithOwnedNextHopIpArpFalse);
+    BDD expected = DST.visit(PREFIX_IP_SPACE);
+    BDD actual = DST.visit(insufficientInfo);
+    assertEquals(expected, actual);
+  }
 
-    testDispositionComputationTemplate(
-        NextHopIpStatus.EXTERNAL, false, true, false, FlowDisposition.INSUFFICIENT_INFO);
+  /**
+   * If an interface is full (all connected host IPs are owned by the network), all dstIPs for which
+   * we get an ARP failure (regardless of the ARP IP) get neighbor_unreachable.
+   */
+  @Test
+  public void testComputeNeighborUnreachable_full() {
+    boolean isIfaceFull = true;
+    IpSpace ownedIps = UniverseIpSpace.INSTANCE;
+    IpSpace ifaceArpFalse = PREFIX_IP_SPACE;
+    IpSpace ifaceArpFalseDestIp = UniverseIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDestIpNetworkBroadcast = IP_IP_SPACE;
+    IpSpace ifaceHostSubnetIps = UniverseIpSpace.INSTANCE;
+    IpSpace neighborUnreachable =
+        computeNeighborUnreachable(
+            isIfaceFull,
+            ownedIps,
+            ifaceArpFalse,
+            ifaceArpFalseDestIp,
+            ifaceArpFalseDestIpNetworkBroadcast,
+            ifaceHostSubnetIps);
+    BDD expected = DST.visit(PREFIX_IP_SPACE).diff(DST.visit(IP_IP_SPACE));
+    BDD actual = DST.visit(neighborUnreachable);
+    assertEquals(expected, actual);
+  }
 
-    // nhip external, interface is not full, dst ip is external -> exits network
-    testDispositionComputationTemplate(
-        NextHopIpStatus.EXTERNAL, false, false, false, FlowDisposition.EXITS_NETWORK);
+  /**
+   * For an interface that is not full, we give a dst IP neighbor_unreachable if: it's not the
+   * network or broadcast IP of the route's network, we ARP for the dst IP but don't get a reply,
+   * the dst IP is a host IP of the connected subnet, and it's owned in the network.
+   */
+  @Test
+  public void testComputeNeighborUnreachable_notFull() {
+    boolean isIfaceFull = false;
+    IpSpace ownedIps = ipWithWildcardMask(Ip.parse("255.0.0.0"), 0x00FFFFFFL).toIpSpace();
+    IpSpace ifaceArpFalse = EmptyIpSpace.INSTANCE;
+    IpSpace ifaceArpFalseDestIp =
+        ipWithWildcardMask(Ip.parse("0.255.0.0"), 0xFF00FFFFL).toIpSpace();
+    IpSpace ifaceArpFalseDestIpNetworkBroadcast =
+        ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
+    IpSpace ifaceHostSubnetIps = ipWithWildcardMask(Ip.parse("0.0.0.255"), 0xFFFFFF00L).toIpSpace();
+    IpSpace neighborUnreachable =
+        computeNeighborUnreachable(
+            isIfaceFull,
+            ownedIps,
+            ifaceArpFalse,
+            ifaceArpFalseDestIp,
+            ifaceArpFalseDestIpNetworkBroadcast,
+            ifaceHostSubnetIps);
+    BDD expected =
+        DST.visit(ownedIps)
+            .and(DST.visit(ifaceArpFalseDestIp))
+            .and(DST.visit(ifaceHostSubnetIps))
+            .diff(DST.visit(ifaceArpFalseDestIpNetworkBroadcast));
+    BDD actual = DST.visit(neighborUnreachable);
+    assertEquals(expected, actual);
+  }
 
-    // nhip internal, interface is full, dst ip is internal -> neighbor unreachable
-    testDispositionComputationTemplate(
-        NextHopIpStatus.INTERNAL, true, true, true, FlowDisposition.NEIGHBOR_UNREACHABLE);
-
-    testDispositionComputationTemplate(
-        NextHopIpStatus.INTERNAL, true, true, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
-
-    // nhip internal, interface is full, dst ip is external -> neighbor unreachable
-    testDispositionComputationTemplate(
-        NextHopIpStatus.INTERNAL, true, false, false, FlowDisposition.NEIGHBOR_UNREACHABLE);
-
-    // nhip internal, interface is not full, dst ip is internal -> insufficient info
-    testDispositionComputationTemplate(
-        NextHopIpStatus.INTERNAL, false, true, true, FlowDisposition.INSUFFICIENT_INFO);
-
-    testDispositionComputationTemplate(
-        NextHopIpStatus.INTERNAL, false, true, false, FlowDisposition.INSUFFICIENT_INFO);
-
-    // nhip internal, interface is not full, dst ip is external -> insufficient info
-    testDispositionComputationTemplate(
-        NextHopIpStatus.INTERNAL, false, false, false, FlowDisposition.INSUFFICIENT_INFO);
+  /**
+   * A dstIp gets delivered_to_subnet if we ARP for it and do not get a reply, it is not the network
+   * or broadcast IP of the route's prefix, it is not owned in the network, and is in a connected
+   * subnet of the interface.
+   */
+  @Test
+  public void testComputeDeliveredToSubnet() {
+    IpSpace ownedIps = ipWithWildcardMask(Ip.parse("255.0.0.0"), 0x00FFFFFFL).toIpSpace();
+    IpSpace ifaceArpFalseDstIp = ipWithWildcardMask(Ip.parse("0.255.0.0"), 0xFF00FFFFL).toIpSpace();
+    IpSpace ifaceArpFalseDstIpNetworkBroadcast =
+        ipWithWildcardMask(Ip.parse("0.0.255.0"), 0xFFFF00FFL).toIpSpace();
+    IpSpace ifaceHostSubnetIps = ipWithWildcardMask(Ip.parse("0.0.0.255"), 0xFFFFFF00L).toIpSpace();
+    IpSpace deliveredToSubnet =
+        computeDeliveredToSubnet(
+            ownedIps, ifaceArpFalseDstIp, ifaceArpFalseDstIpNetworkBroadcast, ifaceHostSubnetIps);
+    BDD expected =
+        DST.visit(ifaceHostSubnetIps)
+            .and(DST.visit(ifaceArpFalseDstIp).diff(DST.visit(ifaceArpFalseDstIpNetworkBroadcast)))
+            .diff(DST.visit(ownedIps));
+    BDD actual = DST.visit(deliveredToSubnet);
+    assertEquals(expected, actual);
   }
 
   // If two nodes are in the same subnet but not connected per the given topology,
