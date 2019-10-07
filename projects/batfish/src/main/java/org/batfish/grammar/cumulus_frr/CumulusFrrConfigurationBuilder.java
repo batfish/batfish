@@ -37,6 +37,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
@@ -107,6 +108,8 @@ import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.IpAsPathAccessList;
+import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
@@ -797,6 +800,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitIp_prefix_list(Ip_prefix_listContext ctx) {
     _currentIpPrefixList = null;
+  }
+
+  @Override
+  public void exitIp_as_path(Ip_as_pathContext ctx) {
+    String name = ctx.name.getText();
+    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
+    long asNum = toLong(ctx.asn);
+    _c.getIpAsPathAccessLists()
+        .computeIfAbsent(name, IpAsPathAccessList::new)
+        .addLine(new IpAsPathAccessListLine(action, asNum));
+    _c.defineStructure(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override

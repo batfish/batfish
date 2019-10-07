@@ -19,7 +19,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.List;
 import java.util.SortedMap;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -131,6 +134,20 @@ public class CumulusNcluConfigurationTest {
                         LineAction.DENY, Prefix.parse("10.0.0.1/24"), new SubRange(27, 30)),
                     new RouteFilterLine(
                         LineAction.PERMIT, Prefix.parse("10.0.2.1/24"), new SubRange(28, 31))))));
+  }
+
+  @Test
+  public void testToAsPathAccessList() {
+    IpAsPathAccessList asPathAccessList = new IpAsPathAccessList("name");
+    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.PERMIT, 12345));
+    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.DENY, 54321));
+    AsPathAccessList viList = CumulusNcluConfiguration.toAsPathAccessList(asPathAccessList);
+
+    List<AsPathAccessListLine> expectedViLines =
+        ImmutableList.of(
+            new AsPathAccessListLine(LineAction.PERMIT, "12345"),
+            new AsPathAccessListLine(LineAction.DENY, "54321"));
+    assertThat(viList, equalTo(new AsPathAccessList("name", expectedViLines)));
   }
 
   @Test

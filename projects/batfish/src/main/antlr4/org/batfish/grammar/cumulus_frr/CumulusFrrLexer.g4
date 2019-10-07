@@ -413,6 +413,11 @@ PREFIX_LIST
   'prefix-list' -> pushMode ( M_Word )
 ;
 
+PREPEND
+:
+  'prepend'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
