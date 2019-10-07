@@ -145,8 +145,8 @@ public class CumulusNcluConfigurationTest {
 
     List<AsPathAccessListLine> expectedViLines =
         ImmutableList.of(
-            new AsPathAccessListLine(LineAction.PERMIT, "^12345$"),
-            new AsPathAccessListLine(LineAction.DENY, "^54321$"));
+            new AsPathAccessListLine(LineAction.PERMIT, "12345"),
+            new AsPathAccessListLine(LineAction.DENY, "54321"));
     assertThat(viList, equalTo(new AsPathAccessList("name", expectedViLines)));
   }
 
