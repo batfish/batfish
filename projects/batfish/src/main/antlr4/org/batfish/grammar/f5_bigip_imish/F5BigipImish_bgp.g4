@@ -131,6 +131,7 @@ router_bgp
     | rb_neighbor_ipv6
     | rb_neighbor_peer_group
     | rb_no
+    | rb_null
     | rb_redistribute_kernel
   )*
 ;
