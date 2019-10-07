@@ -64,7 +64,8 @@ s_ip
 :
   IP
   (
-    ip_community_list
+    ip_as_path
+    | ip_community_list
     | ip_prefix_list
   )
 ;
@@ -77,4 +78,9 @@ si_description
 s_end
 :
   END NEWLINE
+;
+
+ip_as_path
+:
+  AS_PATH ACCESS_LIST name = word action = line_action asn = uint32 NEWLINE
 ;

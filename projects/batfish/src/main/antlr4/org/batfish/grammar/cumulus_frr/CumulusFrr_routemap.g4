@@ -32,7 +32,8 @@ rm_match
 :
   MATCH
   (
-    rmm_community
+    rmm_as_path
+    | rmm_community
     | rmm_interface
     | rmm_ip
     | rmm_tag
@@ -45,6 +46,11 @@ route_map_sequence
   uint32
 ;
 
+rmm_as_path
+:
+  AS_PATH name = word NEWLINE
+;
+
 rmm_community
 :
   COMMUNITY names += ip_community_list_name+ NEWLINE
@@ -54,6 +60,7 @@ rm_set
 :
   SET
   (
+    rms_as_path
     | rms_community
     | rms_ip
     | rms_local_preference
@@ -90,6 +97,11 @@ rmmipa_prefix_list
 rmm_interface
 :
   INTERFACE name = WORD NEWLINE
+;
+
+rms_as_path
+:
+  AS_PATH PREPEND as_path = literal_as_path
 ;
 
 rms_ip

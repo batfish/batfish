@@ -9,68 +9,19 @@ tokens {
   WORD
 }
 
-ADDRESS
+ACCESS_LIST
 :
-  'address'
-;
-
-AGENTX
-:
-  'agentx'
-;
-
-AGGREGATE_ADDRESS
-:
-  'aggregate-address'
-;
-
-ANY
-:
-  'any'
-;
-
-AREA
-:
-  'area'
-;
-
-AS_PATH
-:
-  'as-path'
-;
-
-BESTPATH
-:
-  'bestpath'
-;
-
-BFD
-:
-  'bfd' -> pushMode(M_Words)
-;
-
-COMMANDS
-:
-  'commands'
-;
-
-COMMENT_LINE
-:
-  (
-    F_Whitespace
-  )* [!]
-  {lastTokenType() == NEWLINE || lastTokenType() == -1}?
-
-  F_NonNewline*
-  (
-    F_Newline+
-    | EOF
-  ) -> channel ( HIDDEN )
+  'access-list' -> pushMode(M_Word)
 ;
 
 ACTIVATE
 :
   'activate'
+;
+
+ADDRESS
+:
+  'address'
 ;
 
 ADDRESS_FAMILY
@@ -88,15 +39,57 @@ ADVERTISE_ALL_VNI
   'advertise-all-vni'
 ;
 
+AGENTX
+:
+  'agentx'
+;
+
+AGGREGATE_ADDRESS
+:
+  'aggregate-address'
+;
+
 ALWAYS_COMPARE_MED
 :
   'always-compare-med'
+;
+
+ANY
+:
+  'any'
+;
+
+AREA
+:
+  'area'
+;
+
+AS_PATH
+:
+  'as-path'
 ;
 
 AUTHENTICATION
 :
   'authentication'
 ;
+
+
+BESTPATH
+:
+  'bestpath'
+;
+
+BFD
+:
+  'bfd' -> pushMode(M_Words)
+;
+
+COMMANDS
+:
+  'commands'
+;
+
 
 BGP
 :
@@ -106,6 +99,20 @@ BGP
 COLON
 :
   ':'
+;
+
+COMMENT_LINE
+:
+  (
+    F_Whitespace
+  )* [!]
+  {lastTokenType() == NEWLINE || lastTokenType() == -1}?
+
+  F_NonNewline*
+  (
+    F_Newline+
+    | EOF
+  ) -> channel ( HIDDEN )
 ;
 
 COMMUNITY
