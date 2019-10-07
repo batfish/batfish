@@ -1,0 +1,10 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_net_interface_description
+}
+net interface 1.0 {
+}
+net interface 2.0 {
+    description "foo"
+}
