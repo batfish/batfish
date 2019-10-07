@@ -18,15 +18,39 @@ ltm pool /Common/pool_used {
             address 192.0.2.3
         }
     }
+    #dns
+    monitor /Common/dns #builtin
+    monitor /Common/monitor_dns_used
+    monitor /Common/monitor_dns_undefined
+
+    #gateway-icmp
+    monitor /Common/gateway_icmp #builtin
+    monitor /Common/monitor_gateway_icmp_used
+    monitor /Common/monitor_gateway_icmp_undefined
+
+    #http
     monitor /Common/http #builtin
     monitor /Common/http_head_f5 #builtin
     monitor /Common/monitor_http_used
     monitor /Common/monitor_http_undefined
+
+    #https
     monitor /Common/https #builtin
     monitor /Common/https_443 #builtin
     monitor /Common/https_head_f5 #builtin
     monitor /Common/monitor_https_used
     monitor /Common/monitor_https_undefined
+
+    #ldap
+    monitor /Common/ldap #builtin
+    monitor /Common/monitor_ldap_used
+    monitor /Common/monitor_ldap_undefined
+
+    #tcp
+    monitor /Common/tcp #builtin
+    monitor /Common/tcp_half_open #builtin
+    monitor /Common/monitor_tcp_used
+    monitor /Common/monitor_tcp_undefined
 }
 ltm pool /Common/pool_unused { }
 ltm rule /Common/rule_used { }
@@ -119,6 +143,16 @@ ltm virtual /Common/virtual_used {
 }
 ltm virtual-address /Common/192.0.2.7 { }
 ltm virtual-address /Common/192.0.2.8 { }
+ltm monitor dns /Common/monitor_dns_used { }
+ltm monitor dns /Common/monitor_dns_unused {
+    defaults-from /Common/monitor_dns_undefined
+    defaults-from /Common/monitor_dns_used
+}
+ltm monitor gateway-icmp /Common/monitor_gateway_icmp_used { }
+ltm monitor gateway-icmp /Common/monitor_gateway_icmp_unused {
+    defaults-from /Common/monitor_gateway_icmp_undefined
+    defaults-from /Common/monitor_gateway_icmp_used
+}
 ltm monitor http /Common/monitor_http_used { }
 ltm monitor http /Common/monitor_http_unused {
     defaults-from /Common/monitor_http_undefined
@@ -130,6 +164,16 @@ ltm monitor https /Common/monitor_https_used {
 ltm monitor https /Common/monitor_https_unused {
     defaults-from /Common/monitor_https_undefined
     defaults-from /Common/monitor_https_used
+}
+ltm monitor ldap /Common/monitor_ldap_used { }
+ltm monitor ldap /Common/monitor_ldap_unused {
+    defaults-from /Common/monitor_ldap_undefined
+    defaults-from /Common/monitor_ldap_used
+}
+ltm monitor tcp /Common/monitor_tcp_used { }
+ltm monitor tcp /Common/monitor_tcp_unused {
+    defaults-from /Common/monitor_tcp_undefined
+    defaults-from /Common/monitor_tcp_used
 }
 ltm persistence source-addr /Common/persistence_source_addr_used { }
 ltm persistence source-addr /Common/persistence_source_addr_unused {

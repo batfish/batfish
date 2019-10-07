@@ -121,6 +121,11 @@ DISABLED
   'disabled'
 ;
 
+DNS
+:
+  'dns'
+;
+
 EBGP_MULTIHOP
 :
   'ebgp-multihop'
@@ -139,6 +144,11 @@ ENTRIES
 FORTY_G
 :
   '40G'
+;
+
+GATEWAY_ICMP
+:
+  'gateway-icmp'
 ;
 
 GLOBAL_SETTINGS
@@ -214,6 +224,11 @@ KERNEL
 LACP
 :
   'lacp'
+;
+
+LDAP
+:
+  'ldap'
 ;
 
 LOCAL_AS

@@ -10,10 +10,48 @@ l_monitor
 :
   MONITOR
   (
-    lm_http
+    lm_dns
+    | lm_gateway_icmp
+    | lm_http
     | lm_https
+    | lm_ldap
+    | lm_tcp
     | unrecognized
   )
+;
+
+lm_dns
+:
+  DNS name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lmd_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lmd_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lm_gateway_icmp
+:
+  GATEWAY_ICMP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lmg_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lmg_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lm_http
@@ -54,6 +92,40 @@ lmhs_defaults_from
 lmhs_ssl_profile
 :
   SSL_PROFILE name = structure_name NEWLINE
+;
+
+lm_ldap
+:
+  LDAP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lml_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lml_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lm_tcp
+:
+  TCP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lmt_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lmt_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 l_node

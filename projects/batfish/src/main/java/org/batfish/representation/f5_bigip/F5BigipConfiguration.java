@@ -1001,11 +1001,26 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markAbstractStructure(
         F5BigipStructureType.MONITOR,
         F5BigipStructureUsage.POOL_MONITOR,
-        ImmutableList.of(F5BigipStructureType.MONITOR_HTTP, F5BigipStructureType.MONITOR_HTTPS));
+        ImmutableList.of(
+            F5BigipStructureType.MONITOR_DNS,
+            F5BigipStructureType.MONITOR_GATEWAY_ICMP,
+            F5BigipStructureType.MONITOR_HTTP,
+            F5BigipStructureType.MONITOR_HTTPS,
+            F5BigipStructureType.MONITOR_LDAP,
+            F5BigipStructureType.MONITOR_TCP));
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_DNS, F5BigipStructureUsage.MONITOR_DNS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_GATEWAY_ICMP,
+        F5BigipStructureUsage.MONITOR_GATEWAY_ICMP_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.MONITOR_HTTP, F5BigipStructureUsage.MONITOR_HTTP_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.MONITOR_HTTPS, F5BigipStructureUsage.MONITOR_HTTPS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_LDAP, F5BigipStructureUsage.MONITOR_LDAP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_TCP, F5BigipStructureUsage.MONITOR_TCP_DEFAULTS_FROM);
     markConcreteStructure(F5BigipStructureType.NODE, F5BigipStructureUsage.POOL_MEMBER);
     markConcreteStructure(
         F5BigipStructureType.OSPF_PROCESS, F5BigipStructureUsage.OSPF_PROCESS_SELF_REFERENCE);
