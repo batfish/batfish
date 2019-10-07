@@ -17414,24 +17414,26 @@
           "f5Bigip" : {
             "pools" : {
               "/Common/SOME_LTM_POOL" : {
+                "description" : "foo",
                 "members" : {
                   "/Common/bar:80" : {
+                    "address" : "192.0.2.3",
                     "name" : "/Common/bar:80",
                     "node" : "/Common/bar",
-                    "port" : 80,
-                    "address" : "192.0.2.3"
+                    "port" : 80
                   },
                   "/Common/foo:80" : {
+                    "address" : "192.0.2.2",
+                    "description" : "bar.baz",
                     "name" : "/Common/foo:80",
                     "node" : "/Common/foo",
-                    "port" : 80,
-                    "address" : "192.0.2.2",
-                    "description" : "bar.baz"
+                    "port" : 80
                   }
                 },
-                "name" : "/Common/SOME_LTM_POOL",
-                "description" : "foo",
-                "monitor" : "/Common/SOME_MONITOR"
+                "monitors" : [
+                  "/Common/SOME_MONITOR"
+                ],
+                "name" : "/Common/SOME_LTM_POOL"
               }
             },
             "virtualAddresses" : {

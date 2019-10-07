@@ -51,7 +51,7 @@ public final class Pool implements Serializable {
 
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_MEMBERS = "members";
-  private static final String PROP_MONITORS = "monitor";
+  private static final String PROP_MONITORS = "monitors";
   private static final String PROP_NAME = "name";
 
   @JsonCreator
