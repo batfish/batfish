@@ -969,6 +969,15 @@ public final class F5BigipStructuredGrammarTest {
       assertThat(ans, hasNumReferrers(file, MONITOR_TCP, used, 2));
     }
 
+    // conjunction of monitors
+    {
+      String undefined1 = "/Common/undef1";
+      String undefined2 = "/Common/undef2";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined1));
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined2));
+    }
+
     assertNoUndefinedReferencesToBuiltins(
         ans,
         Stream.of(

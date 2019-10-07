@@ -247,7 +247,10 @@ lpmm_address6
 
 lp_monitor
 :
-  MONITOR name = structure_name NEWLINE
+  MONITOR names += structure_name
+  (
+    AND names += structure_name
+  )* NEWLINE
 ;
 
 lpmm_description

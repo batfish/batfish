@@ -101,8 +101,6 @@ import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
-import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
-import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
@@ -1404,7 +1402,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _c.getVendorFamily()
         .setF5Bigip(
             F5BigipFamily.builder()
-                .setPools(_pools)
+                .setPools(
+                    _pools.entrySet().stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(Entry::getKey, e -> toPool(e.getValue()))))
                 .setVirtuals(_virtuals)
                 .setVirtualAddresses(_virtualAddresses)
                 .build());
@@ -1565,6 +1566,26 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markStructures();
 
     return _c;
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.Pool toPool(Pool pool) {
+    return new org.batfish.datamodel.vendor_family.f5_bigip.Pool(
+        pool.getDescription(),
+        pool.getMembers().entrySet().stream()
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> toPoolMember(e.getValue()))),
+        pool.getMonitors(),
+        pool.getName());
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.PoolMember toPoolMember(
+      PoolMember poolMember) {
+    return new org.batfish.datamodel.vendor_family.f5_bigip.PoolMember(
+        poolMember.getAddress(),
+        poolMember.getAddress6(),
+        poolMember.getDescription(),
+        poolMember.getName(),
+        poolMember.getNode(),
+        poolMember.getPort());
   }
 
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(OspfProcess proc) {

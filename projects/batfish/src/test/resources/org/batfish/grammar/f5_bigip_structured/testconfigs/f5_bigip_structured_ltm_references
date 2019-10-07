@@ -51,6 +51,9 @@ ltm pool /Common/pool_used {
     monitor /Common/tcp_half_open #builtin
     monitor /Common/monitor_tcp_used
     monitor /Common/monitor_tcp_undefined
+
+    # conjunction of monitors
+    monitor /Common/undef1 and /Common/undef2
 }
 ltm pool /Common/pool_unused { }
 ltm rule /Common/rule_used { }

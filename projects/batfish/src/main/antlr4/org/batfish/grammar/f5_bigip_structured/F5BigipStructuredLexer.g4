@@ -56,6 +56,11 @@ ALWAYS
   'always'
 ;
 
+AND
+:
+  'and'
+;
+
 ANY
 :
   'any'

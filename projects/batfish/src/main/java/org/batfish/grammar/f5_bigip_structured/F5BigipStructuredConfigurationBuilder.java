@@ -99,8 +99,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
-import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
@@ -278,6 +276,8 @@ import org.batfish.representation.f5_bigip.Interface;
 import org.batfish.representation.f5_bigip.Ipv4Origin;
 import org.batfish.representation.f5_bigip.Ipv6Origin;
 import org.batfish.representation.f5_bigip.Node;
+import org.batfish.representation.f5_bigip.Pool;
+import org.batfish.representation.f5_bigip.PoolMember;
 import org.batfish.representation.f5_bigip.PrefixList;
 import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.Route;
@@ -872,11 +872,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLp_monitor(Lp_monitorContext ctx) {
-    String name = toName(ctx.name);
-    if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
-      _c.referenceStructure(MONITOR, name, POOL_MONITOR, ctx.name.getStart().getLine());
+    for (Structure_nameContext nameCtx : ctx.names) {
+      String name = toName(nameCtx);
+      if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
+        _c.referenceStructure(MONITOR, name, POOL_MONITOR, nameCtx.getStart().getLine());
+      }
+      _currentPool.getMonitors().add(name);
     }
-    _currentPool.setMonitor(name);
   }
 
   @Override
