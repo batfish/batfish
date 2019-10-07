@@ -122,7 +122,8 @@ router_bgp
 :
   BGP localas = uint32 NEWLINE
   (
-    rb_bgp
+    rb_aggregate_address
+    | rb_bgp
     | rb_neighbor_ipv4
     | rb_neighbor_ipv6
     | rb_neighbor_peer_group
@@ -134,6 +135,15 @@ router_bgp
 peer_group_name
 :
   ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+;
+
+rb_aggregate_address
+:
+  AGGREGATE_ADDRESS prefix = ip_prefix
+  (
+    as_set = AS_SET summary_only = SUMMARY_ONLY?
+    | summary_only = SUMMARY_ONLY
+  )? NEWLINE
 ;
 
 rb_bgp
