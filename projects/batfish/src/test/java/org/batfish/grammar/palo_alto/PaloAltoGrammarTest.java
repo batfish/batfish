@@ -24,9 +24,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
@@ -701,7 +701,7 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceName311, not(isActive())));
 
     // Confirm tag extraction for units
-    assertThat(c, hasInterface(interfaceName311, hasVlan(11)));
+    assertThat(c, hasInterface(interfaceName311, hasEncapsulationVlan(11)));
 
     // Confirm types
     assertThat(c, hasInterface(interfaceName1, hasInterfaceType(InterfaceType.PHYSICAL)));

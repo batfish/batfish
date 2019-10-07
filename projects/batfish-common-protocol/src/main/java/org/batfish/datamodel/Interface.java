@@ -1095,6 +1095,7 @@ public final class Interface extends ComparableStructure<String> {
     return _eigrp;
   }
 
+  /** VLAN for a L3 subinterface. */
   @JsonProperty(PROP_ENCAPSULATION_VLAN)
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
@@ -1382,6 +1383,7 @@ public final class Interface extends ComparableStructure<String> {
     return _tunnelConfig;
   }
 
+  /** VLAN for an IRB interface. */
   @JsonProperty(PROP_VLAN)
   public @Nullable Integer getVlan() {
     return _vlan;

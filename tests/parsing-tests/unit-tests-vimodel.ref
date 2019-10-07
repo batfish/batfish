@@ -31965,6 +31965,7 @@
           },
           "ethernet1/1.4" : {
             "name" : "ethernet1/1.4",
+            "accessVlan" : 4,
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -31982,7 +31983,6 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
-            "vlan" : 4,
             "vrf" : "~NULL_VRF~"
           },
           "ethernet1/1.5" : {
@@ -31994,6 +31994,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "description" : "subif comment",
+            "encapsulationVlan" : 5,
             "mtu" : 1500,
             "outgoingFilter" : "~ethernet1/1.5~OUTGOING_FILTER~",
             "proxyArp" : false,
@@ -32004,7 +32005,6 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
-            "vlan" : 5,
             "vrf" : "~NULL_VRF~"
           },
           "loopback" : {
