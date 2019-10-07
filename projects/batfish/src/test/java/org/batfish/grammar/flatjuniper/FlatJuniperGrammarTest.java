@@ -311,6 +311,7 @@ import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.PatPool;
+import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
@@ -384,6 +385,7 @@ public final class FlatJuniperGrammarTest {
   private JuniperConfiguration parseJuniperConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
+    BatfishTestUtils.configureBatfishTestSettings(settings);
     FlatJuniperCombinedParser flatJuniperParser =
         new FlatJuniperCombinedParser(src, settings, null);
     FlatJuniperControlPlaneExtractor extractor =
@@ -792,6 +794,14 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(neighbor1, hasClusterId(Ip.parse("3.3.3.3").asLong()));
     assertThat(neighbor2, hasClusterId(Ip.parse("1.1.1.1").asLong()));
+  }
+
+  @Test
+  public void testBgpConfederation() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-confederation");
+    RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
+    assertThat(ri.getConfederation(), equalTo(7L));
+    assertThat(ri.getConfederationMembers(), contains(65001L, 65002L, 65003L));
   }
 
   @Test
