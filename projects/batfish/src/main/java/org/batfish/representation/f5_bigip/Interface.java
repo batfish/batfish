@@ -2,8 +2,8 @@ package org.batfish.representation.f5_bigip;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A Layer1-2 physical interface */
 @ParametersAreNonnullByDefault
@@ -12,6 +12,7 @@ public final class Interface implements Serializable {
   public static final Double DEFAULT_BANDWIDTH = 1E12D;
 
   private @Nullable Double _bandwidth;
+  private @Nullable String _description;
   private @Nullable Boolean _disabled;
   private final @Nonnull String _name;
   private @Nullable Double _speed;
@@ -22,6 +23,10 @@ public final class Interface implements Serializable {
 
   public @Nullable Double getBandwidth() {
     return _bandwidth;
+  }
+
+  public @Nullable String getDescription() {
+    return _description;
   }
 
   public @Nullable Boolean getDisabled() {
@@ -38,6 +43,10 @@ public final class Interface implements Serializable {
 
   public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
+  }
+
+  public void setDescription(@Nullable String description) {
+    _description = description;
   }
 
   public void setDisabled(@Nullable Boolean disabled) {
