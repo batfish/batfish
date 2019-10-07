@@ -38604,7 +38604,7 @@
               "ibgpAdminCost" : 170,
               "routerId" : "192.168.1.2",
               "multipathEbgp" : true,
-              "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
+              "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
               "multipathIbgp" : true,
               "neighbors" : {
                 "172.16.3.2/32" : {
