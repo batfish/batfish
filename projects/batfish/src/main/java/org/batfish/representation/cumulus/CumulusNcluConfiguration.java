@@ -1615,7 +1615,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     String name = asPathAccessList.getName();
     List<AsPathAccessListLine> lines =
         asPathAccessList.getLines().stream()
-            .map(l -> new AsPathAccessListLine(l.getAction(), String.valueOf(l.getAsNum())))
+            .map(l -> new AsPathAccessListLine(l.getAction(), String.format("^%s$", l.getAsNum())))
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(name, lines);
   }
