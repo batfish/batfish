@@ -386,16 +386,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
         neighbor.setClusterId(routerId.asLong());
       }
 
+      boolean ibgp = Objects.equals(remoteAs, ig.getLocalAs());
+
       // multipath multiple-as
-      boolean currentGroupMultipathMultipleAs = ig.getMultipathMultipleAs();
-      if (multipathMultipleAsSet && currentGroupMultipathMultipleAs != multipathMultipleAs) {
-        _w.redFlag(
-            "Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgp"
-                + "groups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS");
-        multipathMultipleAs = false;
-      } else {
-        multipathMultipleAs = currentGroupMultipathMultipleAs;
-        multipathMultipleAsSet = true;
+      if (!ibgp) {
+        // Do not include iBGP peer [groups] in this computation: multiple-as only matters for
+        // eBGP multipath (in iBGP, the next AS is always the same, and iBGP routes are always
+        // worse than eBGP routes).org.batfish.grammar.flatjuniper.FlatJuniperGrammarTest
+        //
+        // As the iBGP setting does not matter, don't look for conflicts with it. We have seen
+        // it set 'inconsistently' in real configs.
+        boolean currentGroupMultipathMultipleAs = ig.getMultipathMultipleAs();
+        if (multipathMultipleAsSet && currentGroupMultipathMultipleAs != multipathMultipleAs) {
+          _w.redFlag(
+              "Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgp"
+                  + "groups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS");
+          multipathMultipleAs = false;
+        } else {
+          multipathMultipleAs = currentGroupMultipathMultipleAs;
+          multipathMultipleAsSet = true;
+        }
       }
 
       String authenticationKeyChainName = ig.getAuthenticationKeyChainName();
