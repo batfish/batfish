@@ -31963,6 +31963,7 @@
           },
           "ethernet1/1.4" : {
             "name" : "ethernet1/1.4",
+            "accessVlan" : 4,
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
