@@ -960,7 +960,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
-    newIface.setVlan(iface.getTag());
+
+    if (iface.getType() == Interface.Type.LAYER3) {
+      newIface.setEncapsulationVlan(iface.getTag());
+    }
 
     Zone zone = iface.getZone();
     IpAccessList.Builder aclBuilder =
