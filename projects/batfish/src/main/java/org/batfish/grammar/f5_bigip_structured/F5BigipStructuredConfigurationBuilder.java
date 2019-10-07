@@ -5,8 +5,12 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGH
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_DNS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_GATEWAY_ICMP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_HTTP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_HTTPS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_LDAP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_TCP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.NODE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SOURCE_ADDR;
@@ -38,9 +42,13 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIG
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_DNS_DEFAULTS_FROM;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_GATEWAY_ICMP_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_HTTPS_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_HTTPS_SSL_PROFILE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_HTTP_DEFAULTS_FROM;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_LDAP_DEFAULTS_FROM;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_TCP_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PERSISTENCE_SSL_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.POOL_MEMBER;
@@ -91,8 +99,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
-import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
@@ -115,11 +121,19 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_snat_tr
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_snatpoolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_virtualContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_virtual_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_dnsContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_gateway_icmpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_httpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_httpsContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_ldapContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_tcpContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmd_defaults_fromContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmg_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmh_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmhs_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmhs_ssl_profileContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lml_defaults_fromContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmt_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ln_address6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ln_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lp_descriptionContext;
@@ -263,6 +277,8 @@ import org.batfish.representation.f5_bigip.Interface;
 import org.batfish.representation.f5_bigip.Ipv4Origin;
 import org.batfish.representation.f5_bigip.Ipv6Origin;
 import org.batfish.representation.f5_bigip.Node;
+import org.batfish.representation.f5_bigip.Pool;
+import org.batfish.representation.f5_bigip.PoolMember;
 import org.batfish.representation.f5_bigip.PrefixList;
 import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.Route;
@@ -489,6 +505,18 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterLm_dns(Lm_dnsContext ctx) {
+    String name = toName(ctx.name);
+    _c.defineStructure(MONITOR_DNS, name, ctx);
+  }
+
+  @Override
+  public void enterLm_gateway_icmp(Lm_gateway_icmpContext ctx) {
+    String name = toName(ctx.name);
+    _c.defineStructure(MONITOR_GATEWAY_ICMP, name, ctx);
+  }
+
+  @Override
   public void enterLm_http(Lm_httpContext ctx) {
     String name = toName(ctx.name);
     _c.defineStructure(MONITOR_HTTP, name, ctx);
@@ -498,6 +526,18 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void enterLm_https(Lm_httpsContext ctx) {
     String name = toName(ctx.name);
     _c.defineStructure(MONITOR_HTTPS, name, ctx);
+  }
+
+  @Override
+  public void exitLm_ldap(Lm_ldapContext ctx) {
+    String name = toName(ctx.name);
+    _c.defineStructure(MONITOR_LDAP, name, ctx);
+  }
+
+  @Override
+  public void exitLm_tcp(Lm_tcpContext ctx) {
+    String name = toName(ctx.name);
+    _c.defineStructure(MONITOR_TCP, name, ctx);
   }
 
   @Override
@@ -744,6 +784,29 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLmd_defaults_from(Lmd_defaults_fromContext ctx) {
+    String name = toName(ctx.name);
+    if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
+      _c.referenceStructure(
+          MONITOR_DNS, name, MONITOR_DNS_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
+  }
+
+  @Override
+  public void exitLmg_defaults_from(Lmg_defaults_fromContext ctx) {
+    String name = toName(ctx.name);
+    if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
+      _c.referenceStructure(
+          MONITOR_GATEWAY_ICMP,
+          name,
+          MONITOR_GATEWAY_ICMP_DEFAULTS_FROM,
+          ctx.name.getStart().getLine());
+    }
+    todo(ctx);
+  }
+
+  @Override
   public void exitLmh_defaults_from(Lmh_defaults_fromContext ctx) {
     String name = toName(ctx.name);
     if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
@@ -774,6 +837,26 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLml_defaults_from(Lml_defaults_fromContext ctx) {
+    String name = toName(ctx.name);
+    if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
+      _c.referenceStructure(
+          MONITOR_LDAP, name, MONITOR_LDAP_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
+  }
+
+  @Override
+  public void exitLmt_defaults_from(Lmt_defaults_fromContext ctx) {
+    String name = toName(ctx.name);
+    if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
+      _c.referenceStructure(
+          MONITOR_TCP, name, MONITOR_TCP_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
+  }
+
+  @Override
   public void exitLn_address(Ln_addressContext ctx) {
     _currentNode.setAddress(toIp(ctx.address));
   }
@@ -790,11 +873,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLp_monitor(Lp_monitorContext ctx) {
-    String name = toName(ctx.name);
-    if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
-      _c.referenceStructure(MONITOR, name, POOL_MONITOR, ctx.name.getStart().getLine());
+    for (Structure_nameContext nameCtx : ctx.names) {
+      String name = toName(nameCtx);
+      if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
+        _c.referenceStructure(MONITOR, name, POOL_MONITOR, nameCtx.getStart().getLine());
+      }
+      _currentPool.getMonitors().add(name);
     }
-    _currentPool.setMonitor(name);
   }
 
   @Override
