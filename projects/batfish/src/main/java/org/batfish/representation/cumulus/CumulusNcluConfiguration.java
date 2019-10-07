@@ -1113,8 +1113,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       builder.add(
           new If(
               new CallExpr(callStmt.getRouteMapName()),
-              ImmutableList.of(),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+              ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+              ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
     }
     return builder.add(toStatement(entry.getAction())).build();
   }
