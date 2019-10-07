@@ -130,6 +130,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
    */
   private static final double SPEED_CONVERSION_FACTOR = 10e6;
 
+  // Follow the default setting of Cisco.
+  // TODO: need to verify this
+  public static final double DEFAUL_LOOPBACK_BANDWIDTH = 8e9;
+
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
     WithEnvironmentExpr we = new WithEnvironmentExpr();
@@ -809,13 +813,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     Optional.ofNullable(_interfaces.get(LOOPBACK_INTERFACE_NAME))
         .ifPresent(iface -> populateLoInInterfacesToLoopback(iface, _loopback));
 
-    org.batfish.datamodel.Interface newIface =
-        org.batfish.datamodel.Interface.builder()
-            .setName(LOOPBACK_INTERFACE_NAME)
-            .setOwner(_c)
-            .setType(InterfaceType.LOOPBACK)
-            .build();
-    newIface.setActive(true);
+    org.batfish.datamodel.Interface newIface = createVIInterfaceForLo();
 
     if (!_loopback.getAddresses().isEmpty()) {
       newIface.setAddress(_loopback.getAddresses().get(0));
@@ -830,6 +828,18 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     }
     newIface.setAllAddresses(allAddresses.build());
     _c.getAllInterfaces().put(LOOPBACK_INTERFACE_NAME, newIface);
+  }
+
+  @VisibleForTesting
+  org.batfish.datamodel.Interface createVIInterfaceForLo() {
+    return org.batfish.datamodel.Interface.builder()
+        .setActive(true)
+        .setName(LOOPBACK_INTERFACE_NAME)
+        .setOwner(_c)
+        .setType(InterfaceType.LOOPBACK)
+        .setBandwidth(
+            Optional.ofNullable(_loopback.getBandwidth()).orElse(DEFAUL_LOOPBACK_BANDWIDTH))
+        .build();
   }
 
   private void convertPhysicalInterfaces() {

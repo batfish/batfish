@@ -756,4 +756,11 @@ public class CumulusNcluConfigurationTest {
     policy.call(env.setOutputRoute(outputBuilder).build());
     assertThat(outputBuilder.getTag(), equalTo(999L));
   }
+
+  @Test
+  public void testCreateVIInterfaceForLo_Bandwidth() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+    org.batfish.datamodel.Interface iface = vendorConfiguration.createVIInterfaceForLo();
+    assertThat(iface.getBandwidth(), equalTo(CumulusNcluConfiguration.DEFAUL_LOOPBACK_BANDWIDTH));
+  }
 }
