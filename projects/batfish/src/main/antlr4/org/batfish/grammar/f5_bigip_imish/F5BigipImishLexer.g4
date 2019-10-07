@@ -170,6 +170,11 @@ LINE
   'line'
 ;
 
+LOG_NEIGHBOR_CHANGES
+:
+  'log-neighbor-changes'
+;
+
 LOGIN
 :
   'login'
