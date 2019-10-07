@@ -537,8 +537,9 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusFrrVrfRouteMapOnMatch() {
     String name = "ROUTE-MAP-NAME";
-    // do not crash
     parse(String.format("route-map %s permit 10\non-match next\n", name));
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertTrue(entry.getOnMatchNext());
   }
 
   @Test

@@ -21,6 +21,8 @@ public final class RouteMapEntry implements Serializable {
   private final int _number;
   private @Nullable String _description;
 
+  private @Nullable Boolean onMatchNext;
+
   private @Nullable RouteMapSetMetric _setMetric;
   private @Nullable RouteMapSetIpNextHopLiteral _setIpNextHop;
   private @Nullable RouteMapSetCommunity _setCommunity;
@@ -78,6 +80,15 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable String getDescription() {
     return _description;
+  }
+
+  @Nullable
+  public Boolean getOnMatchNext() {
+    return onMatchNext;
+  }
+
+  public void setOnMatchNext(@Nullable Boolean onMatchNext) {
+    this.onMatchNext = onMatchNext;
   }
 
   /** Return stream of set statements for this entry. */

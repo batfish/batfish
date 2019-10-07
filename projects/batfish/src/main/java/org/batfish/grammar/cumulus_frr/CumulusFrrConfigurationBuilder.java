@@ -739,7 +739,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterRm_on_match(Rm_on_matchContext ctx) {
+    _currentRouteMapEntry.setOnMatchNext(true);
     // Could not find good docs for what this is. Guessing like a "continue" but punting for now.
+    // TODO: conversion
     todo(ctx);
   }
 
