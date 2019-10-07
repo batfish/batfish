@@ -77118,7 +77118,7 @@
         "variables" : "PASSED",
         "variables_dos" : "PASSED",
         "vlan_access_map4" : "PASSED",
-        "vmx4" : "WARNINGS",
+        "vmx4" : "PASSED",
         "vxlan" : "PASSED"
       },
       "definedStructures" : {
@@ -93471,10 +93471,6 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 3.4.5.6/32"
             },
             {
@@ -93652,14 +93648,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Interface vlan.1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            }
-          ]
-        },
-        "vmx4" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS"
             }
           ]
         }
