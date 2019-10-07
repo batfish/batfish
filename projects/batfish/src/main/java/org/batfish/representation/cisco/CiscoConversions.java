@@ -1351,7 +1351,12 @@ public class CiscoConversions {
       Long otherAsn =
           (Long) policy.getSpecialAttributes().get(EigrpRedistributionPolicy.EIGRP_AS_NUMBER);
       if (otherAsn == null) {
-        oldConfig.getWarnings().redFlag("Unable to redistribute - policy has no ASN");
+        oldConfig
+            .getWarnings()
+            .redFlag(
+                String.format(
+                    "Unable to redistribute %s into EIGRP proc %s - policy has no ASN",
+                    protocol, proc.getAsn()));
         return null;
       }
       eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
@@ -1387,7 +1392,12 @@ public class CiscoConversions {
        * 2) static with next hop interface can use the interface metric
        * 3) If none of the above, bad configuration
        */
-      oldConfig.getWarnings().redFlag("Unable to redistribute - no metric");
+      oldConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "Unable to redistribute %s into EIGRP proc %s - no metric",
+                  protocol, proc.getAsn()));
       return null;
     }
 

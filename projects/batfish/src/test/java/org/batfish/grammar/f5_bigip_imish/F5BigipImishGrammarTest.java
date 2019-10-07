@@ -347,6 +347,12 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpNullParsing() {
+    // test that ignored BGP lines parse successfully
+    assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_null"));
+  }
+
+  @Test
   public void testBgpAlwaysCompareMedExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_always_compare_med");
 

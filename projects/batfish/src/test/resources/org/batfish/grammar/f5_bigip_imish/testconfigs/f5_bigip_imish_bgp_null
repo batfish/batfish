@@ -1,0 +1,11 @@
+#TMSH-VERSION: 12.1.4
+
+sys global-settings {
+    hostname f5_bigip_imish_bgp_null
+}
+
+!
+router bgp 65001
+ bgp graceful-restart restart-time 60
+ bgp log-neighbor-changes
+!
