@@ -93,6 +93,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -789,6 +790,15 @@ public final class F5BigipStructuredGrammarTest {
     assertTrue(
         "Configuration contains an imish component",
         parseVendorConfig("f5_bigip_structured_with_imish").getImish());
+  }
+
+  @Test
+  public void testInterfaceDescriptionExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_interface_description");
+
+    assertThat(vc.getInterfaces(), hasKeys("1.0", "2.0"));
+    assertNull(vc.getInterfaces().get("1.0").getDescription());
+    assertThat(vc.getInterfaces().get("2.0").getDescription(), equalTo("foo"));
   }
 
   @Test
