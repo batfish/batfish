@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +29,7 @@ public final class BgpConfederation implements Serializable {
    * @param id externally visible autonomous system number
    * @param members Set of autonomous system numbers visible only within a BGP confederation
    */
-  public BgpConfederation(long id, SortedSet<Long> members) {
+  public BgpConfederation(long id, Set<Long> members) {
     checkArgument(!members.isEmpty(), "BGP confederation without members is not allowed");
     _id = id;
     _members = ImmutableSortedSet.copyOf(members);
@@ -75,7 +76,7 @@ public final class BgpConfederation implements Serializable {
   @JsonCreator
   private static BgpConfederation create(
       @Nullable @JsonProperty(PROP_ID) Long id,
-      @Nullable @JsonProperty(PROP_MEMBERS) SortedSet<Long> members) {
+      @Nullable @JsonProperty(PROP_MEMBERS) Set<Long> members) {
     checkArgument(id != null, "Missing %s", PROP_ID);
     checkArgument(members != null, "Missing %s", PROP_ID);
     return new BgpConfederation(id, members);
