@@ -519,7 +519,7 @@ public class CumulusNcluConfigurationTest {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, vrf);
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
@@ -536,7 +536,7 @@ public class CumulusNcluConfigurationTest {
     OspfProcess ospfProcess =
         ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
@@ -552,7 +552,7 @@ public class CumulusNcluConfigurationTest {
     OspfProcess ospfProcess =
         ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
@@ -606,7 +606,7 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertThat(viIface.getOspfAreaName(), equalTo(1L));
   }
 
@@ -635,7 +635,7 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertNull(viIface.getOspfNetworkType());
   }
 
@@ -650,7 +650,7 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertFalse(viIface.getOspfPassive());
   }
 
@@ -667,7 +667,7 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertTrue(viIface.getOspfPassive());
   }
 
@@ -683,10 +683,75 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertThat(
         viIface.getOspfNetworkType(),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_HelloInterval() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default hello interval
+    assertThat(
+        viIface.getOspfSettings().getHelloInterval(),
+        equalTo(OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL));
+
+    // set hello interval
+    vsIface.getOrCreateOspf().setHelloInterval(1);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertThat(viIface.getOspfSettings().getHelloInterval(), equalTo(1));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_DeadInterval() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default dead interval
+    assertThat(
+        viIface.getOspfSettings().getDeadInterval(),
+        equalTo(OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL));
+
+    // set dead interval
+    vsIface.getOrCreateOspf().setDeadInterval(1);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertThat(viIface.getOspfSettings().getDeadInterval(), equalTo(1));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_ProcessId() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default dead interval
+    assertThat(viIface.getOspfSettings().getProcess(), equalTo("1"));
   }
 
   @Test
