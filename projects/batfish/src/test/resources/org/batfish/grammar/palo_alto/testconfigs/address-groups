@@ -15,4 +15,4 @@ set address-group group1 tag tag1
 
 # defined on the same line
 set address-group group2 static [ addr1 addr2 ]
-set address-group group2 tag [ tag2 tag3]
+set address-group group2 tag [ tag2 "tag with spaces"]

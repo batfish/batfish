@@ -300,7 +300,8 @@ public final class PaloAltoGrammarTest {
     // check that we parse multiple address objects and tags on the same line correctly
     assertThat(
         addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
-    assertThat(addressGroups.get("group2").getTags(), contains("tag2", "tag3"));
+    assertThat(
+        addressGroups.get("group2").getTags(), containsInAnyOrder("tag2", "tag with spaces"));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
@@ -422,7 +423,8 @@ public final class PaloAltoGrammarTest {
 
     // check that we parse the IP address and tags right
     assertThat(addressObjects.get("addr2").getIpSpace(), equalTo(Ip.parse("10.1.1.2").toIpSpace()));
-    assertThat(addressObjects.get("addr2").getTags(), contains("tag2", "tag3"));
+    assertThat(
+        addressObjects.get("addr2").getTags(), containsInAnyOrder("tag2", "tag with spaces"));
 
     // check that we parse the IP range right
     assertThat(
