@@ -6836,11 +6836,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.vlan != null) {
       int vlan = toInteger(ctx.vlan);
       for (Interface currentInterface : _currentInterfaces) {
+        currentInterface.setSwitchport(true);
         currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
         currentInterface.setAccessVlan(vlan);
       }
     } else {
       for (Interface currentInterface : _currentInterfaces) {
+        currentInterface.setSwitchport(true);
         currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
         currentInterface.setSwitchportAccessDynamic(true);
       }
@@ -6876,6 +6878,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unhandled switchport mode");
     }
+    _currentInterfaces.forEach(iface -> iface.setSwitchport(true));
     _currentInterfaces.forEach(iface -> iface.setSwitchportMode(mode));
   }
 
