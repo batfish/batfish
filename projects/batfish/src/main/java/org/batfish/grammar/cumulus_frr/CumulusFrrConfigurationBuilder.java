@@ -45,6 +45,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_on_matchContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
@@ -121,6 +122,7 @@ import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
 import org.batfish.representation.cumulus.RouteMapEntry;
+import org.batfish.representation.cumulus.RouteMapMatchAsPath;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
@@ -682,6 +684,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRm_call(Rm_callContext ctx) {
     _currentRouteMapEntry.setCall(new RouteMapCall(ctx.name.getText()));
+  }
+
+  @Override
+  public void exitRmm_as_path(Rmm_as_pathContext ctx) {
+    String name = ctx.name.getText();
+    _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(name));
+    _c.referenceStructure(
+        CumulusStructureType.IP_AS_PATH_ACCESS_LIST,
+        name,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
+        ctx.getStart().getLine());
   }
 
   @Override
