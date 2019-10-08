@@ -174,9 +174,19 @@ CLOSE_BRACKET
     ']'
 ;
 
+COLOR
+:
+    'color'
+;
+
 COMMENT
 :
     'comment'
+;
+
+COMMENTS
+:
+    'comments'
 ;
 
 CONFIG

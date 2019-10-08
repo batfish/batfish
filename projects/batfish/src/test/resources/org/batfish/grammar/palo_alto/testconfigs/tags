@@ -1,0 +1,7 @@
+set deviceconfig system hostname tags
+
+set tag vsys_tag comments something
+set tag "vsys_tag with spaces" comments "comments with spaces"
+set tag "vsys_tag with spaces" color color1
+
+set shared tag shared_tag
