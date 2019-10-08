@@ -22,9 +22,9 @@ sb_bgp
   BGP
   (
     sbb_bestpath
-    | sbb_router_id
-    | sbb_log_neighbor_changes
     | sbb_confederation
+    | sbb_log_neighbor_changes
+    | sbb_router_id
   )
 ;
 
