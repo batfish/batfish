@@ -517,7 +517,7 @@ public class CumulusNcluConfigurationTest {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, vrf);
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
@@ -534,7 +534,7 @@ public class CumulusNcluConfigurationTest {
     OspfProcess ospfProcess =
         ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
@@ -550,7 +550,7 @@ public class CumulusNcluConfigurationTest {
     OspfProcess ospfProcess =
         ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
