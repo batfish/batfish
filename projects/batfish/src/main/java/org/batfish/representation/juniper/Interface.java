@@ -63,7 +63,8 @@ public class Interface implements Serializable {
   private final List<String> _allowedVlanNames;
   private double _bandwidth;
   private String _description;
-  private String _incomingFilter;
+  private @Nullable String _incomingFilter;
+  private @Nullable List<String> _incomingFilterList;
   private transient boolean _inherited;
   @Nonnull private final IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
@@ -78,7 +79,8 @@ public class Interface implements Serializable {
   private int _ospfHelloMultiplier;
   private boolean _ospfPassive;
   private OspfInterfaceType _ospfInterfaceType;
-  private String _outgoingFilter;
+  private @Nullable String _outgoingFilter;
+  private @Nullable List<String> _outgoingFilterList;
   private Interface _parent;
   private InterfaceAddress _preferredAddress;
   private ConcreteInterfaceAddress _primaryAddress;
@@ -152,8 +154,12 @@ public class Interface implements Serializable {
     return _description;
   }
 
-  public String getIncomingFilter() {
+  public @Nullable String getIncomingFilter() {
     return _incomingFilter;
+  }
+
+  public @Nullable List<String> getIncomingFilterList() {
+    return _incomingFilterList;
   }
 
   @Nonnull
@@ -216,8 +222,12 @@ public class Interface implements Serializable {
     return _ospfPassive;
   }
 
-  public String getOutgoingFilter() {
+  public @Nullable String getOutgoingFilter() {
     return _outgoingFilter;
+  }
+
+  public @Nullable List<String> getOutgoingFilterList() {
+    return _outgoingFilterList;
   }
 
   public Interface getParent() {
@@ -326,8 +336,17 @@ public class Interface implements Serializable {
     _description = description;
   }
 
-  public void setIncomingFilter(String accessListName) {
+  public void setIncomingFilter(@Nonnull String accessListName) {
     _incomingFilter = accessListName;
+    _incomingFilterList = null;
+  }
+
+  public void addIncomingFilterList(@Nonnull String accessListName) {
+    _incomingFilter = null;
+    if (_incomingFilterList == null) {
+      _incomingFilterList = new LinkedList<>();
+    }
+    _incomingFilterList.add(accessListName);
   }
 
   public void setIsoAddress(IsoAddress address) {
@@ -374,8 +393,17 @@ public class Interface implements Serializable {
     _ospfInterfaceType = ospfInterfaceType;
   }
 
-  public void setOutgoingFilter(String accessListName) {
+  public void setOutgoingFilter(@Nonnull String accessListName) {
     _outgoingFilter = accessListName;
+    _outgoingFilterList = null;
+  }
+
+  public void addOutgoingFilterList(@Nonnull String accessListName) {
+    _outgoingFilter = null;
+    if (_outgoingFilterList == null) {
+      _outgoingFilterList = new LinkedList<>();
+    }
+    _outgoingFilterList.add(accessListName);
   }
 
   public void setParent(Interface parent) {

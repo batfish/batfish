@@ -3089,7 +3089,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.FIREWALL_FILTER,
         JuniperStructureUsage.INTERFACE_FILTER,
         JuniperStructureUsage.INTERFACE_INCOMING_FILTER,
-        JuniperStructureUsage.INTERFACE_OUTGOING_FILTER);
+        JuniperStructureUsage.INTERFACE_INCOMING_FILTER_LIST,
+        JuniperStructureUsage.INTERFACE_OUTGOING_FILTER,
+        JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST);
     markConcreteStructure(
         JuniperStructureType.INTERFACE,
         JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE,

@@ -1140,7 +1140,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilters() throws IOException {
+  public void testFirewallFilterReferences() throws IOException {
     String hostname = "firewall-filters";
     String filename = "configs/" + hostname;
 
@@ -1155,6 +1155,64 @@ public final class FlatJuniperGrammarTest {
 
     /* Confirm undefined reference is identified */
     assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "FILTER_UNDEF"));
+    assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "A"));
+    assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "B"));
+  }
+
+  @Test
+  public void testFirewallFilterExtraction() throws IOException {
+    JuniperConfiguration c = parseJuniperConfig("firewall-filters");
+    Map<String, org.batfish.representation.juniper.Interface> ifaces =
+        c.getMasterLogicalSystem().getInterfaces();
+
+    {
+      String parentName = "xe-0/0/0";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), equalTo("FILTER1"));
+      assertThat(iface.getIncomingFilterList(), nullValue());
+      assertThat(iface.getOutgoingFilter(), nullValue());
+      assertThat(iface.getOutgoingFilterList(), nullValue());
+    }
+    {
+      String parentName = "xe-0/0/1";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), equalTo("FILTER2"));
+      assertThat(iface.getIncomingFilterList(), nullValue());
+      assertThat(iface.getOutgoingFilter(), equalTo("FILTER2"));
+      assertThat(iface.getOutgoingFilterList(), nullValue());
+    }
+    {
+      String parentName = "xe-0/0/2";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), nullValue());
+      assertThat(iface.getIncomingFilterList(), nullValue());
+      assertThat(iface.getOutgoingFilter(), equalTo("FILTER_UNDEF"));
+      assertThat(iface.getOutgoingFilterList(), nullValue());
+    }
+    {
+      String parentName = "xe-0/0/3";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), nullValue());
+      assertThat(iface.getIncomingFilterList(), contains("A", "B"));
+      assertThat(iface.getOutgoingFilter(), nullValue());
+      assertThat(iface.getOutgoingFilterList(), contains("B", "A"));
+    }
   }
 
   @Test
