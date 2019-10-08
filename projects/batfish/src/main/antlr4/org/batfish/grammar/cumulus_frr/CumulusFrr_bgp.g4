@@ -24,7 +24,13 @@ sb_bgp
     sbb_bestpath
     | sbb_router_id
     | sbb_log_neighbor_changes
+    | sbb_confederation
   )
+;
+
+sbb_confederation
+:
+  CONFEDERATION IDENTIFIER id = uint32 NEWLINE
 ;
 
 sbb_bestpath
