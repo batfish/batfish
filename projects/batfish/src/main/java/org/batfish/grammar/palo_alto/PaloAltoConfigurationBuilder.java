@@ -135,9 +135,11 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_fqdnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
@@ -755,6 +757,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitS_address_definition(S_address_definitionContext ctx) {
     _currentAddressObject = null;
+  }
+
+  @Override
+  public void exitSa_tag(Sa_tagContext ctx) {
+    if (_currentAddressObject == null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String tag = getText(var);
+      _currentAddressObject.getTags().add(tag);
+    }
+  }
+
+  @Override
+  public void exitSag_tag(Sag_tagContext ctx) {
+    if (_currentAddressGroup == null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String tag = getText(var);
+      _currentAddressGroup.getTags().add(tag);
+    }
   }
 
   @Override
