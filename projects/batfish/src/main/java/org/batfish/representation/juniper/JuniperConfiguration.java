@@ -1651,6 +1651,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     newIface.setSwitchportMode(iface.getSwitchportMode());
+    if (iface.getSwitchportMode() != SwitchportMode.NONE) {
+      newIface.setSwitchport(true);
+    }
+
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
     if (swe == null) {
       swe = SwitchportEncapsulationType.DOT1Q;
