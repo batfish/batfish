@@ -113,7 +113,6 @@ import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class VirtualRouter implements Serializable {
 
@@ -811,7 +810,7 @@ public class VirtualRouter implements Serializable {
 
   /** Generate a connected route for a given address (and associated metadata). */
   @VisibleForTesting
-  @NonNull
+  @Nonnull
   static ConnectedRoute generateConnectedRoute(
       @Nonnull ConcreteInterfaceAddress address,
       @Nonnull String ifaceName,
@@ -884,7 +883,7 @@ public class VirtualRouter implements Serializable {
 
   /** Generate a connected route for a given address (and associated metadata). */
   @VisibleForTesting
-  @NonNull
+  @Nonnull
   static LocalRoute generateLocalRoute(
       @Nonnull ConcreteInterfaceAddress address,
       @Nonnull String ifaceName,

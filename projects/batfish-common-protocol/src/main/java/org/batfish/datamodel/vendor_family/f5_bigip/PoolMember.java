@@ -14,32 +14,17 @@ import org.batfish.datamodel.Ip6;
 /** Configuration for a pool member. */
 @ParametersAreNonnullByDefault
 public final class PoolMember implements Serializable {
-  private static final String PROP_ADDRESS = "address";
-  private static final String PROP_ADDRESS6 = "address6";
-  private static final String PROP_DESCRIPTION = "description";
-  private static final String PROP_NAME = "name";
-  private static final String PROP_NODE = "node";
-  private static final String PROP_PORT = "port";
 
-  @JsonCreator
-  private static @Nonnull PoolMember create(
-      @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_NODE) @Nullable String node,
-      @JsonProperty(PROP_PORT) @Nullable Integer port) {
-    checkArgument(name != null, "Missing %s", PROP_NAME);
-    checkArgument(node != null, "Missing %s", PROP_NODE);
-    checkArgument(port != null, "Missing %s", PROP_PORT);
-    return new PoolMember(name, node, port);
-  }
-
-  private @Nullable Ip _address;
-  private @Nullable Ip6 _address6;
-  private @Nullable String _description;
-  private final @Nonnull String _name;
-  private final @Nonnull String _node;
-  private final int _port;
-
-  public PoolMember(String name, String node, int port) {
+  public PoolMember(
+      @Nullable Ip address,
+      @Nullable Ip6 address6,
+      @Nullable String description,
+      String name,
+      String node,
+      int port) {
+    _address = address;
+    _address6 = address6;
+    _description = description;
     _name = name;
     _node = node;
     _port = port;
@@ -75,18 +60,31 @@ public final class PoolMember implements Serializable {
     return _port;
   }
 
-  @JsonProperty(PROP_ADDRESS)
-  public void setAddress(@Nullable Ip address) {
-    _address = address;
+  private static final String PROP_ADDRESS = "address";
+  private static final String PROP_ADDRESS6 = "address6";
+  private static final String PROP_DESCRIPTION = "description";
+  private static final String PROP_NAME = "name";
+  private static final String PROP_NODE = "node";
+  private static final String PROP_PORT = "port";
+
+  @JsonCreator
+  private static @Nonnull PoolMember create(
+      @JsonProperty(PROP_ADDRESS) @Nullable Ip address,
+      @JsonProperty(PROP_ADDRESS6) @Nullable Ip6 address6,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_NODE) @Nullable String node,
+      @JsonProperty(PROP_PORT) @Nullable Integer port) {
+    checkArgument(name != null, "Missing %s", PROP_NAME);
+    checkArgument(node != null, "Missing %s", PROP_NODE);
+    checkArgument(port != null, "Missing %s", PROP_PORT);
+    return new PoolMember(address, address6, description, name, node, port);
   }
 
-  @JsonProperty(PROP_ADDRESS6)
-  public void setAddress6(@Nullable Ip6 address6) {
-    _address6 = address6;
-  }
-
-  @JsonProperty(PROP_DESCRIPTION)
-  public void setDescription(@Nullable String description) {
-    _description = description;
-  }
+  private final @Nullable Ip _address;
+  private final @Nullable Ip6 _address6;
+  private final @Nullable String _description;
+  private final @Nonnull String _name;
+  private final @Nonnull String _node;
+  private final int _port;
 }

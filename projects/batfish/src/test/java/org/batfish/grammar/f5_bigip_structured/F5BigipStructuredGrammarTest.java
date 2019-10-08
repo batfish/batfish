@@ -52,8 +52,12 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGH
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_DNS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_GATEWAY_ICMP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_HTTP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_HTTPS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_LDAP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_TCP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.NODE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SOURCE_ADDR;
@@ -93,6 +97,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -792,6 +797,15 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testInterfaceDescriptionExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_interface_description");
+
+    assertThat(vc.getInterfaces(), hasKeys("1.0", "2.0"));
+    assertNull(vc.getInterfaces().get("1.0").getDescription());
+    assertThat(vc.getInterfaces().get("2.0").getDescription(), equalTo("foo"));
+  }
+
+  @Test
   public void testInterfaceDisabledConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_net_interface_disabled");
 
@@ -869,6 +883,38 @@ public final class F5BigipStructuredGrammarTest {
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
+    // monitor dns
+    {
+      String undefined = "/Common/monitor_dns_undefined";
+      String unused = "/Common/monitor_dns_unused";
+      String used = "/Common/monitor_dns_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined));
+      assertThat(ans, hasUndefinedReference(file, MONITOR_DNS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, MONITOR_DNS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, MONITOR_DNS, used, 2));
+    }
+
+    // monitor gateway-icmp
+    {
+      String undefined = "/Common/monitor_gateway_icmp_undefined";
+      String unused = "/Common/monitor_gateway_icmp_unused";
+      String used = "/Common/monitor_gateway_icmp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined));
+      assertThat(ans, hasUndefinedReference(file, MONITOR_GATEWAY_ICMP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, MONITOR_GATEWAY_ICMP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, MONITOR_GATEWAY_ICMP, used, 2));
+    }
+
     // monitor http
     {
       String undefined = "/Common/monitor_http_undefined";
@@ -901,8 +947,58 @@ public final class F5BigipStructuredGrammarTest {
       assertThat(ans, hasNumReferrers(file, MONITOR_HTTPS, used, 2));
     }
 
+    // monitor ldap
+    {
+      String undefined = "/Common/monitor_ldap_undefined";
+      String unused = "/Common/monitor_ldap_unused";
+      String used = "/Common/monitor_ldap_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined));
+      assertThat(ans, hasUndefinedReference(file, MONITOR_LDAP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, MONITOR_LDAP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, MONITOR_LDAP, used, 2));
+    }
+
+    // monitor tcp
+    {
+      String undefined = "/Common/monitor_tcp_undefined";
+      String unused = "/Common/monitor_tcp_unused";
+      String used = "/Common/monitor_tcp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined));
+      assertThat(ans, hasUndefinedReference(file, MONITOR_TCP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, MONITOR_TCP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, MONITOR_TCP, used, 2));
+    }
+
+    // conjunction of monitors
+    {
+      String undefined1 = "/Common/undef1";
+      String undefined2 = "/Common/undef2";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined1));
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined2));
+    }
+
     assertNoUndefinedReferencesToBuiltins(
-        ans, Stream.of(MONITOR, MONITOR_HTTP, MONITOR_HTTPS), BuiltinMonitor::getBuiltinMonitor);
+        ans,
+        Stream.of(
+            MONITOR,
+            MONITOR_DNS,
+            MONITOR_GATEWAY_ICMP,
+            MONITOR_HTTP,
+            MONITOR_HTTPS,
+            MONITOR_LDAP,
+            MONITOR_TCP),
+        BuiltinMonitor::getBuiltinMonitor);
   }
 
   @Test

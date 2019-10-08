@@ -13,12 +13,15 @@ import org.batfish.datamodel.LineAction;
 public final class RouteMapEntry implements Serializable {
 
   private final @Nonnull LineAction _action;
+  private @Nullable RouteMapCall _call;
   private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
   private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
   private @Nullable RouteMapMatchTag _matchTag;
   private final int _number;
   private @Nullable String _description;
+
+  private @Nullable Boolean _onMatchNext;
 
   private @Nullable RouteMapSetMetric _setMetric;
   private @Nullable RouteMapSetIpNextHopLiteral _setIpNextHop;
@@ -33,6 +36,15 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nonnull LineAction getAction() {
     return _action;
+  }
+
+  @Nullable
+  public RouteMapCall getCall() {
+    return _call;
+  }
+
+  public void setCall(@Nullable RouteMapCall call) {
+    _call = call;
   }
 
   /** Return stream of match statements for this entry. */
@@ -68,6 +80,15 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable String getDescription() {
     return _description;
+  }
+
+  @Nullable
+  public Boolean getOnMatchNext() {
+    return _onMatchNext;
+  }
+
+  public void setOnMatchNext(@Nullable Boolean onMatchNext) {
+    this._onMatchNext = onMatchNext;
   }
 
   /** Return stream of set statements for this entry. */

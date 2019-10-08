@@ -35,6 +35,11 @@ ADDRESS
   'address'
 ;
 
+AGGREGATE_ADDRESS
+:
+  'aggregate-address'
+;
+
 ALWAYS_COMPARE_MED
 :
   'always-compare-med'
@@ -48,6 +53,11 @@ ANY
 AREA
 :
   'area'
+;
+
+AS_SET
+:
+  'as-set'
 ;
 
 BFD
@@ -168,6 +178,11 @@ LE
 LINE
 :
   'line'
+;
+
+LOG_NEIGHBOR_CHANGES
+:
+  'log-neighbor-changes'
 ;
 
 LOGIN
@@ -298,6 +313,11 @@ SERVICE
 SET
 :
   'set'
+;
+
+SUMMARY_ONLY
+:
+  'summary-only'
 ;
 
 UPDATE_SOURCE

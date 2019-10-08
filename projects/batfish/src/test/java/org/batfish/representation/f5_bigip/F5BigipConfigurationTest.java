@@ -16,8 +16,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Names;
-import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
-import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
