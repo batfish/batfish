@@ -284,8 +284,9 @@ public final class PaloAltoGrammarTest {
         addressGroups.get("group0").getIpSpace(addressObjects, addressGroups),
         equalTo(EmptyIpSpace.INSTANCE));
 
-    // we parsed the description, addr3 is undefined but should not have been discarded
+    // we parsed the description and tag, addr3 is undefined but should not have been discarded
     assertThat(addressGroups.get("group1").getDescription(), equalTo("group1-desc"));
+    assertThat(addressGroups.get("group1").getTags(), contains("tag1"));
     assertThat(
         addressGroups.get("group1").getMembers(),
         equalTo(ImmutableSet.of("addr1", "addr2", "addr3")));
@@ -296,9 +297,10 @@ public final class PaloAltoGrammarTest {
                 addressObjects.get("addr2").getIpSpace(),
                 addressObjects.get("addr1").getIpSpace())));
 
-    // check that we parse multiple address objects on the same line correctly
+    // check that we parse multiple address objects and tags on the same line correctly
     assertThat(
         addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
+    assertThat(addressGroups.get("group2").getTags(), contains("tag2", "tag3"));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
@@ -410,15 +412,17 @@ public final class PaloAltoGrammarTest {
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
 
-    // check that we parsed description and prefix right
+    // check that we parsed description, tag, and prefix right
     // note that PA allows non-canonical prefixes
     assertThat(
         addressObjects.get("addr1").getIpSpace(),
         equalTo(Prefix.strict("10.1.1.0/24").toIpSpace()));
     assertThat(addressObjects.get("addr1").getDescription(), equalTo("addr1-desc"));
+    assertThat(addressObjects.get("addr1").getTags(), contains("tag1"));
 
-    // check that we parse the IP address right
+    // check that we parse the IP address and tags right
     assertThat(addressObjects.get("addr2").getIpSpace(), equalTo(Ip.parse("10.1.1.2").toIpSpace()));
+    assertThat(addressObjects.get("addr2").getTags(), contains("tag2", "tag3"));
 
     // check that we parse the IP range right
     assertThat(

@@ -17,8 +17,8 @@ s_address_group_definition
     (
         sag_description
         | sag_dynamic
-        | sag_null
         | sag_static
+        | sag_tag
     )?
 ;
 
@@ -30,12 +30,6 @@ sag_description
 sag_dynamic
 :
     DYNAMIC
-    null_rest_of_line
-;
-
-sag_null
-:
-    TAG
     null_rest_of_line
 ;
 
@@ -53,4 +47,9 @@ sag_static
             CLOSE_BRACKET
         )
     )
+;
+
+sag_tag
+:
+    TAG tags = variable_list
 ;
