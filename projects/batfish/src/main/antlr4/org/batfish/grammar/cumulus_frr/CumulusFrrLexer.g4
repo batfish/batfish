@@ -333,6 +333,11 @@ LOG_ADJACENCY_CHANGES
   'log-adjacency-changes'
 ;
 
+LOG_NEIGHBOR_CHANGES
+:
+  'log-neighbor-changes'
+;
+
 LINE
 :
   'line'

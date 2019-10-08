@@ -1160,4 +1160,9 @@ public class CumulusFrrGrammarTest {
     assertThat(nextMultipleOfFive(5L), equalTo(10L));
     assertThat(nextMultipleOfFive(6L), equalTo(10L));
   }
+
+  @Test
+  public void testBgpLogNeighborChanges() {
+    parseLines("router bgp 1", "bgp log-neighbor-changes");
+  }
 }
