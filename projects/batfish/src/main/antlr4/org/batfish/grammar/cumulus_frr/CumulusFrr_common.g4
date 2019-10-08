@@ -35,7 +35,9 @@ line_action
 
 literal_as_path
 :
+  (
   asns += uint32
+  )+
 ;
 
 literal_standard_community

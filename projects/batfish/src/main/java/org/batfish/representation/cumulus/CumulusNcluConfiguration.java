@@ -1615,6 +1615,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     String name = asPathAccessList.getName();
     List<AsPathAccessListLine> lines =
         asPathAccessList.getLines().stream()
+            // TODO Fix VI AS path matching, check FRR AS path match semantics, fix ASN regex param
             .map(l -> new AsPathAccessListLine(l.getAction(), String.valueOf(l.getAsNum())))
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(name, lines);

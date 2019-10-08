@@ -101,7 +101,7 @@ rmm_interface
 
 rms_as_path
 :
-  AS_PATH PREPEND as_path = literal_as_path
+  AS_PATH PREPEND as_path = literal_as_path NEWLINE
 ;
 
 rms_ip

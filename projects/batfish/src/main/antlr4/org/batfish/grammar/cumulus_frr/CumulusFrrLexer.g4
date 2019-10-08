@@ -67,6 +67,11 @@ AREA
 AS_PATH
 :
   'as-path'
+  {
+    if (lastTokenType() == MATCH) {
+        pushMode(M_Word);
+    }
+  }
 ;
 
 AUTHENTICATION

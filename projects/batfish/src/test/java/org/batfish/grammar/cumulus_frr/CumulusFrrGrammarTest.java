@@ -527,6 +527,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testRouteMapMatchAsPathAccessList() {
+    parseLines("route-map ROUTE_MAP permit 10", "match as-path AS_PATH_ACCESS_LIST");
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapMatchCommunity() {
     String name = "ROUTE-MAP-NAME";
 
@@ -668,6 +673,11 @@ public class CumulusFrrGrammarTest {
     assertFalse(
         policy.process(
             routeBuilder.setTag(65554L).build(), Bgpv4Route.builder(), null, "default", OUT));
+  }
+
+  @Test
+  public void testRouteMapSetAsPath() {
+    parseLines("route-map ROUTE_MAP permit 10", "set as-path prepend 11111 22222");
   }
 
   @Test
