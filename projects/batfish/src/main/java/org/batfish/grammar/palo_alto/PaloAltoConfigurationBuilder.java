@@ -744,6 +744,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the object definition.",
               name));
+      _currentAddressObject = new AddressObject(name);
     } else {
       _currentAddressObject =
           _currentVsys.getAddressObjects().computeIfAbsent(name, AddressObject::new);
@@ -761,9 +762,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_tag(Sa_tagContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String tag = getText(var);
       _currentAddressObject.getTags().add(tag);
@@ -772,9 +770,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSag_tag(Sag_tagContext ctx) {
-    if (_currentAddressGroup == null) {
-      return;
-    }
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String tag = getText(var);
       _currentAddressGroup.getTags().add(tag);
@@ -806,6 +801,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the group definition.",
               name));
+      _currentAddressGroup = new AddressGroup(name);
     } else {
       _currentAddressGroup =
           _currentVsys.getAddressGroups().computeIfAbsent(name, AddressGroup::new);
@@ -885,9 +881,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_description(Sa_descriptionContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     _currentAddressObject.setDescription(getText(ctx.description));
   }
 
@@ -898,9 +891,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_ip_netmask(Sa_ip_netmaskContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     if (ctx.ip_address() != null) {
       _currentAddressObject.setIpSpace(toIp(ctx.ip_address()).toIpSpace());
     } else if (ctx.IP_PREFIX() != null) {
@@ -912,18 +902,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     String[] ips = getText(ctx.IP_RANGE()).split("-");
     _currentAddressObject.setIpSpace(IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1])));
   }
 
   @Override
   public void exitSag_description(Sag_descriptionContext ctx) {
-    if (_currentAddressGroup == null) {
-      return;
-    }
     _currentAddressGroup.setDescription(getText(ctx.description));
   }
 
@@ -934,9 +918,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSag_static(Sag_staticContext ctx) {
-    if (_currentAddressGroup == null) {
-      return;
-    }
     for (VariableContext var : ctx.variable()) {
       String objectName = getText(var);
       if (objectName.equals(_currentAddressGroup.getName())) {
