@@ -36,7 +36,7 @@ line_action
 literal_as_path
 :
   (
-  asns += uint32
+    asns += uint32
   )+
 ;
 
