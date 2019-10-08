@@ -23,6 +23,7 @@ sb_bgp
   (
     sbb_bestpath
     | sbb_router_id
+    | sbb_log_neighbor_changes
   )
 ;
 
@@ -32,6 +33,11 @@ sbb_bestpath
   (
     sbbb_aspath_multipath_relax
   )
+;
+
+sbb_log_neighbor_changes
+:
+  LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
 sbbb_aspath_multipath_relax
