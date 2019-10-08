@@ -145,6 +145,11 @@ COMMUNITY_LIST
   'community-list'
 ;
 
+CONFEDERATION
+:
+  'confederation'
+;
+
 CONNECTED
 :
   'connected'
@@ -238,6 +243,11 @@ GE
 HOSTNAME
 :
   'hostname' -> pushMode(M_Word)
+;
+
+IDENTIFIER
+:
+  'identifier'
 ;
 
 IN

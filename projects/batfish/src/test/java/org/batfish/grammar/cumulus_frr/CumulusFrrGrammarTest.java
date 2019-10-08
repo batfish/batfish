@@ -1165,4 +1165,10 @@ public class CumulusFrrGrammarTest {
   public void testBgpLogNeighborChanges() {
     parseLines("router bgp 1", "bgp log-neighbor-changes");
   }
+
+  @Test
+  public void testBgpConfederationId() {
+    parseLines("router bgp 65001", "bgp confederation identifier 100");
+    assertThat(CONFIG.getBgpProcess().getDefaultVrf().getConfederationId(), equalTo(100L));
+  }
 }
