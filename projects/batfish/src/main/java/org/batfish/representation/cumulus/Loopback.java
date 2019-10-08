@@ -14,6 +14,7 @@ public class Loopback implements Serializable {
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Ip _clagVxlanAnycastIp;
   private boolean _configured;
+  private @Nullable Double _bandwidth;
 
   public Loopback() {
     _addresses = new LinkedList<>();
@@ -37,5 +38,10 @@ public class Loopback implements Serializable {
 
   public void setConfigured(boolean configured) {
     _configured = configured;
+  }
+
+  @Nullable
+  public Double getBandwidth() {
+    return _bandwidth;
   }
 }
