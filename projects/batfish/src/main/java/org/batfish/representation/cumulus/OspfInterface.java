@@ -9,6 +9,12 @@ public class OspfInterface implements Serializable {
   private @Nullable OspfNetworkType _network;
 
   private @Nullable Boolean _passive;
+  private @Nullable Integer _deadInterval;
+  private @Nullable Integer _helloInterval;
+
+  // http://docs.frrouting.org/en/latest/ospfd.html
+  public static int DEFAULT_OSPF_HELLO_INTERVAL = 10;
+  public static int DEFAULT_OSPF_DEAD_INTERVAL = 40;
 
   public @Nullable OspfNetworkType getNetwork() {
     return _network;
@@ -34,5 +40,23 @@ public class OspfInterface implements Serializable {
 
   public void setPassive(@Nullable Boolean passive) {
     _passive = passive;
+  }
+
+  @Nullable
+  public Integer getDeadInterval() {
+    return _deadInterval;
+  }
+
+  @Nullable
+  public Integer getHelloInterval() {
+    return _helloInterval;
+  }
+
+  public void setDeadInterval(@Nullable Integer deadInterval) {
+    _deadInterval = deadInterval;
+  }
+
+  public void setHelloInterval(@Nullable Integer helloInterval) {
+    _helloInterval = helloInterval;
   }
 }
