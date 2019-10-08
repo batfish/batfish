@@ -532,6 +532,24 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrVrfRouteMapMatchCallExtraction() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\ncall SUB-MAP\n", name));
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getCall().getRouteMapName(), equalTo("SUB-MAP"));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapOnMatch() {
+    String name = "ROUTE-MAP-NAME";
+    parse(String.format("route-map %s permit 10\non-match next\n", name));
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertTrue(entry.getOnMatchNext());
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapMatchCommunity() {
     String name = "ROUTE-MAP-NAME";
 

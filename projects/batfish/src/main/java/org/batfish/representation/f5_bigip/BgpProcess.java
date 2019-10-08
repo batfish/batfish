@@ -7,11 +7,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 
 /** BGP process configuration */
 @ParametersAreNonnullByDefault
 public final class BgpProcess implements Serializable {
 
+  private final @Nonnull Map<Prefix, AggregateAddress> _aggregateAddresses;
   private boolean _alwaysCompareMed;
   private boolean _deterministicMed;
   private final @Nonnull BgpIpv4AddressFamily _ipv4AddressFamily;
@@ -24,10 +26,15 @@ public final class BgpProcess implements Serializable {
 
   public BgpProcess(String name) {
     _name = name;
+    _aggregateAddresses = new HashMap<>();
     _neighbors = new HashMap<>();
     _ipv4AddressFamily = new BgpIpv4AddressFamily();
     _ipv6AddressFamily = new BgpIpv6AddressFamily();
     _peerGroups = new HashMap<>();
+  }
+
+  public @Nonnull Map<Prefix, AggregateAddress> getAggregateAddresses() {
+    return _aggregateAddresses;
   }
 
   public boolean getAlwaysCompareMed() {

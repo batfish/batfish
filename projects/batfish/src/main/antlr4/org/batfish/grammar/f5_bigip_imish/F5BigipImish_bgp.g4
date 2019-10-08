@@ -16,6 +16,14 @@ rb_bgp_deterministic_med
   DETERMINISTIC_MED NEWLINE
 ;
 
+rb_bgp_null
+:
+  (
+    GRACEFUL_RESTART
+    | LOG_NEIGHBOR_CHANGES
+  ) null_rest_of_line
+;
+
 rb_bgp_router_id
 :
   ROUTER_ID id = IP_ADDRESS NEWLINE
@@ -101,12 +109,8 @@ rbn_route_map_out
 
 rb_null
 :
-  NO?
   (
-    (
-      BGP GRACEFUL_RESTART
-    )
-    | MAX_PATHS
+    MAX_PATHS
   ) null_rest_of_line
 ;
 
@@ -122,18 +126,29 @@ router_bgp
 :
   BGP localas = uint32 NEWLINE
   (
-    rb_bgp
+    rb_aggregate_address
+    | rb_bgp
     | rb_neighbor_ipv4
     | rb_neighbor_ipv6
     | rb_neighbor_peer_group
-    | rb_redistribute_kernel
+    | rb_no
     | rb_null
+    | rb_redistribute_kernel
   )*
 ;
 
 peer_group_name
 :
   ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+;
+
+rb_aggregate_address
+:
+  AGGREGATE_ADDRESS prefix = ip_prefix
+  (
+    as_set = AS_SET summary_only = SUMMARY_ONLY?
+    | summary_only = SUMMARY_ONLY
+  )? NEWLINE
 ;
 
 rb_bgp
@@ -143,6 +158,7 @@ rb_bgp
     rb_bgp_always_compare_med
     | rb_bgp_confederation
     | rb_bgp_deterministic_med
+    | rb_bgp_null
     | rb_bgp_router_id
   )
 ;
@@ -164,4 +180,17 @@ rbbc_identifier
 rbbc_peers
 :
   PEERS peers += uint32+ NEWLINE
+;
+
+rb_no
+:
+  NO rb_no_null
+;
+
+rb_no_null
+:
+  (
+    BGP
+    | MAX_PATHS
+  ) null_rest_of_line
 ;

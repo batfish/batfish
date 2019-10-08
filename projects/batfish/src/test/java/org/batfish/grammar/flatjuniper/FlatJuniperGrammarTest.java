@@ -311,6 +311,7 @@ import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.PatPool;
+import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
@@ -384,6 +385,7 @@ public final class FlatJuniperGrammarTest {
   private JuniperConfiguration parseJuniperConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
+    BatfishTestUtils.configureBatfishTestSettings(settings);
     FlatJuniperCombinedParser flatJuniperParser =
         new FlatJuniperCombinedParser(src, settings, null);
     FlatJuniperControlPlaneExtractor extractor =
@@ -795,6 +797,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpConfederation() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-confederation");
+    RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
+    assertThat(ri.getConfederation(), equalTo(7L));
+    assertThat(ri.getConfederationMembers(), contains(65001L, 65002L, 65003L));
+  }
+
+  @Test
   public void testBgpMultipath() throws IOException {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),
@@ -813,7 +823,11 @@ public final class FlatJuniperGrammarTest {
   public void testBgpMultipathMultipleAs() throws IOException {
     String testrigName = "multipath-multiple-as";
     List<String> configurationNames =
-        ImmutableList.of("multiple_as_disabled", "multiple_as_enabled", "multiple_as_mixed");
+        ImmutableList.of(
+            "multiple_as_disabled",
+            "multiple_as_enabled",
+            "multiple_as_mixed",
+            "multiple_as_mixed_conflict");
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -840,10 +854,17 @@ public final class FlatJuniperGrammarTest {
             .getDefaultVrf()
             .getBgpProcess()
             .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode mixedConflict =
+        configurations
+            .get("multiple_as_mixed_conflict")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
 
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+    assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(mixedConflict, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
   }
 
   /** Make sure bgp type internal properly sets remote as when non explicitly specified */

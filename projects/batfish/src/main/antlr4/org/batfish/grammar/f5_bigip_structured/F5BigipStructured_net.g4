@@ -21,6 +21,7 @@ net_interface
     (
       ni_bundle
       | ni_bundle_speed
+      | ni_description
       | ni_disabled
       | ni_enabled
       | unrecognized
@@ -171,6 +172,11 @@ ni_bundle
 ni_bundle_speed
 :
   BUNDLE_SPEED bundle_speed NEWLINE
+;
+
+ni_description
+:
+  DESCRIPTION text = word NEWLINE
 ;
 
 ni_disabled

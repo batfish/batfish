@@ -1,0 +1,8 @@
+#
+set system host-name bgp-confederation
+#
+set routing-options autonomous-system 1
+# Juniper will produce this as a single confederation 7 with all 3 members
+set routing-options confederation 5 members 65001
+set routing-options confederation 5 members 65002
+set routing-options confederation 7 members 65003

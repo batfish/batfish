@@ -20,12 +20,13 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
@@ -664,6 +665,7 @@ public final class PaloAltoGrammarTest {
     String interfaceName2 = "ethernet1/2";
     String interfaceName3 = "ethernet1/3";
     String interfaceName311 = "ethernet1/3.11";
+    String loopback = "loopback";
     Configuration c = parseConfig(hostname);
 
     // Confirm interface MTU is extracted
@@ -675,6 +677,16 @@ public final class PaloAltoGrammarTest {
         hasInterface(
             interfaceName1,
             hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
+    assertThat(
+        c,
+        hasInterface(
+            loopback,
+            allOf(
+                hasAddress("7.7.7.7/32"),
+                hasAllAddresses(
+                    contains(
+                        ConcreteInterfaceAddress.parse("7.7.7.7/32"),
+                        ConcreteInterfaceAddress.parse("7.7.7.8/32"))))));
 
     // Confirm comments are extracted
     assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
@@ -689,7 +701,7 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceName311, not(isActive())));
 
     // Confirm tag extraction for units
-    assertThat(c, hasInterface(interfaceName311, hasVlan(11)));
+    assertThat(c, hasInterface(interfaceName311, hasEncapsulationVlan(11)));
 
     // Confirm types
     assertThat(c, hasInterface(interfaceName1, hasInterfaceType(InterfaceType.PHYSICAL)));

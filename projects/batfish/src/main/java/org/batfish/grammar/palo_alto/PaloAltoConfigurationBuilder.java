@@ -161,6 +161,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniv_unitContext;
@@ -625,7 +626,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitBgp_router_id(Bgp_router_idContext ctx) {
     ConcreteInterfaceAddress addr = toInterfaceAddress(ctx.address);
     if (addr.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
-      warn(ctx, ctx.getStart(), "Expected a 32-bit prefix on BGP router-id");
+      warn(ctx, ctx.address, "Expected a 32-bit prefix on BGP router-id");
     } else {
       _currentBgpVr.setRouterId(addr.getIp());
     }
@@ -1171,8 +1172,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSniel3_ip(Sniel3_ipContext ctx) {
     ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
-    _currentInterface.setAddress(address);
-    _currentInterface.getAllAddresses().add(address);
+    _currentInterface.addAddress(address);
   }
 
   @Override
@@ -1194,6 +1194,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSniel3_unit(Sniel3_unitContext ctx) {
     _currentInterface = _currentParentInterface;
+  }
+
+  @Override
+  public void exitSnil_ip(Snil_ipContext ctx) {
+    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
+    if (address.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+      warn(ctx, ctx.address, "Loopback ip address must be /32 or without mask");
+      return;
+    }
+    _currentInterface.addAddress(address);
   }
 
   @Override
@@ -1734,6 +1744,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private static @Nonnull ConcreteInterfaceAddress toInterfaceAddress(
       Interface_addressContext ctx) {
+    if (ctx.addr != null) {
+      // PAN allows implicit /32 in lots of places.
+      return ConcreteInterfaceAddress.create(toIp(ctx.addr), Prefix.MAX_PREFIX_LENGTH);
+    }
     return ConcreteInterfaceAddress.parse(ctx.getText());
   }
 
@@ -1820,7 +1834,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (!space.contains(num)) {
       warn(
           messageCtx,
-          ctx.getStart(),
+          ctx,
           String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
     }
@@ -1881,6 +1895,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private void warn(ParserRuleContext ctx, String message) {
     _w.addWarning(ctx, getFullText(ctx), _parser, message);
+  }
+
+  private void warn(ParserRuleContext ctx, ParserRuleContext warnCtx, String message) {
+    warn(ctx, warnCtx.start, message);
   }
 
   private void warn(ParserRuleContext ctx, Token warnToken, String message) {

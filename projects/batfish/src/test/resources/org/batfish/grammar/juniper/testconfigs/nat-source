@@ -9,7 +9,7 @@ set security nat source rule-set RULE-SET from interface ge-0/0/0.0
 set security nat source rule-set RULE-SET from routing-instance FROM-ROUTING-INSTANCE
 set security nat source rule-set RULE-SET from zone FROM-ZONE
 #
-set security nat source rule-set RULE-SET to interface TO-INTERFACE
+set security nat source rule-set RULE-SET to interface ge-0/0/1.0
 set security nat source rule-set RULE-SET to routing-instance TO-ROUTING-INSTANCE
 set security nat source rule-set RULE-SET to zone TO-ZONE
 #

@@ -5048,7 +5048,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentRoutingInstance.setConfederation(toLong(ctx.num));
     }
     // Note that Juniper will not allow commit with declared members unless confederation number
-    // above is evenutally set, even though members can be declared separately from confederation
+    // above is eventually set, even though members can be declared separately from confederation
     // number. So confederation members should not make it into data model when confederation number
     // is not set.
     ctx.member.forEach(mctx -> _currentRoutingInstance.getConfederationMembers().add(toLong(mctx)));

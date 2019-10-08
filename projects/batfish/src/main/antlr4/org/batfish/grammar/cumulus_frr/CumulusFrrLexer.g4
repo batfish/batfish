@@ -90,20 +90,25 @@ BFD
   'bfd' -> pushMode(M_Words)
 ;
 
-COMMANDS
-:
-  'commands'
-;
-
 
 BGP
 :
   'bgp'
 ;
 
+CALL
+:
+  'call' -> pushMode(M_Word)
+;
+
 COLON
 :
   ':'
+;
+
+COMMANDS
+:
+  'commands'
 ;
 
 COMMENT_LINE
@@ -363,6 +368,11 @@ NETWORK
   'network'
 ;
 
+NEXT
+:
+  'next'
+;
+
 NEXT_HOP_SELF
 :
   'next-hop-self'
@@ -371,6 +381,11 @@ NEXT_HOP_SELF
 NO
 :
   'no'
+;
+
+ON_MATCH
+:
+  'on-match'
 ;
 
 OSPF
