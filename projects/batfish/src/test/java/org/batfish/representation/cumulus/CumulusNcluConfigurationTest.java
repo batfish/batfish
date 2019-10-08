@@ -604,7 +604,7 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertThat(viIface.getOspfAreaName(), equalTo(1L));
   }
 
@@ -633,7 +633,7 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertNull(viIface.getOspfNetworkType());
   }
 
@@ -648,7 +648,7 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertFalse(viIface.getOspfPassive());
   }
 
@@ -665,7 +665,7 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertTrue(viIface.getOspfPassive());
   }
 
@@ -681,10 +681,75 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
     assertThat(
         viIface.getOspfNetworkType(),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_HelloInterval() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default hello interval
+    assertThat(
+        viIface.getOspfSettings().getHelloInterval(),
+        equalTo(OspfInterface.DEFAUL_OSPF_HELLO_INTERVAL));
+
+    // set hello interval
+    vsIface.getOrCreateOspf().setHelloInterval(1);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertThat(viIface.getOspfSettings().getHelloInterval(), equalTo(1));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_DeadInterval() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default dead interval
+    assertThat(
+        viIface.getOspfSettings().getDeadInterval(),
+        equalTo(OspfInterface.DEFAUL_OSPF_DEAD_INTERVAL));
+
+    // set dead interval
+    vsIface.getOrCreateOspf().setDeadInterval(1);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertThat(viIface.getOspfSettings().getDeadInterval(), equalTo(1));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_ProcessId() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default dead interval
+    assertThat(viIface.getOspfSettings().getProcess(), equalTo("1"));
   }
 
   @Test
