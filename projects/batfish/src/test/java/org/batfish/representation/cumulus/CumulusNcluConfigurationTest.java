@@ -48,9 +48,11 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Test;
@@ -755,5 +757,85 @@ public class CumulusNcluConfigurationTest {
         Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
     policy.call(env.setOutputRoute(outputBuilder).build());
     assertThat(outputBuilder.getTag(), equalTo(999L));
+  }
+
+  @Test
+  public void testToRouteMapCall() {
+    String subMapName = "SUB-MAP";
+
+    // Call route map that permits -- accept route, both maps modify route.
+    {
+      CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+      // Real value of VS submap does not matter; Actual policy semantics placed in VI
+      vendorConfiguration.getRouteMaps().put(subMapName, new RouteMap(subMapName));
+      RouteMap rm = new RouteMap("RM");
+      RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+      rme.setSetTag(new RouteMapSetTag(7777L));
+      rme.setCall(new RouteMapCall(subMapName));
+      rm.getEntries().put(10, rme);
+      RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+      Builder outputBuilder = Bgpv4Route.builder();
+      Configuration c = new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED);
+      c.getRoutingPolicies()
+          .put(
+              subMapName,
+              RoutingPolicy.builder()
+                  .setOwner(c)
+                  .setName(subMapName)
+                  .setStatements(
+                      ImmutableList.of(
+                          new SetLocalPreference(new LiteralLong(2000)),
+                          Statements.ExitAccept.toStaticStatement()))
+                  .build());
+      Environment.Builder env = Environment.builder(c);
+      Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+      assertTrue(result.getBooleanValue());
+      assertThat(outputBuilder.getTag(), equalTo(7777L));
+      assertThat(outputBuilder.getLocalPreference(), equalTo(2000L));
+    }
+
+    // Call route map that denies -- route denied.
+    {
+      CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+      // Real value of VS submap does not matter; Actual policy semantics placed in VI
+      vendorConfiguration.getRouteMaps().put(subMapName, new RouteMap(subMapName));
+      RouteMap rm = new RouteMap("RM");
+      RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+      rme.setCall(new RouteMapCall(subMapName));
+      rm.getEntries().put(10, rme);
+      RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+      Configuration c = new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED);
+      c.getRoutingPolicies()
+          .put(
+              subMapName,
+              RoutingPolicy.builder()
+                  .setOwner(c)
+                  .setName(subMapName)
+                  .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
+                  .build());
+
+      Builder outputBuilder = Bgpv4Route.builder();
+      Environment.Builder env = Environment.builder(c);
+      Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+      assertFalse(result.getBooleanValue());
+    }
+
+    // Call route map that does not exist -- route permitted (?)
+    {
+      CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+      RouteMap rm = new RouteMap("RM");
+      RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+      rme.setCall(new RouteMapCall(subMapName));
+      rm.getEntries().put(10, rme);
+      RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+      Builder outputBuilder = Bgpv4Route.builder();
+      Environment.Builder env =
+          Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
+      Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+      assertTrue(result.getBooleanValue());
+    }
   }
 }
