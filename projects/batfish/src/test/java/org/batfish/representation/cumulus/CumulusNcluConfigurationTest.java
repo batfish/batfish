@@ -703,7 +703,7 @@ public class CumulusNcluConfigurationTest {
     // default hello interval
     assertThat(
         viIface.getOspfSettings().getHelloInterval(),
-        equalTo(OspfInterface.DEFAUL_OSPF_HELLO_INTERVAL));
+        equalTo(OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL));
 
     // set hello interval
     vsIface.getOrCreateOspf().setHelloInterval(1);
@@ -727,7 +727,7 @@ public class CumulusNcluConfigurationTest {
     // default dead interval
     assertThat(
         viIface.getOspfSettings().getDeadInterval(),
-        equalTo(OspfInterface.DEFAUL_OSPF_DEAD_INTERVAL));
+        equalTo(OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL));
 
     // set dead interval
     vsIface.getOrCreateOspf().setDeadInterval(1);

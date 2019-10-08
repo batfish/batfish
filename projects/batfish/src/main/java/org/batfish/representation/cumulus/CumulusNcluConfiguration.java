@@ -14,8 +14,8 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateExpo
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
-import static org.batfish.representation.cumulus.OspfInterface.DEFAUL_OSPF_DEAD_INTERVAL;
-import static org.batfish.representation.cumulus.OspfInterface.DEFAUL_OSPF_HELLO_INTERVAL;
+import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
+import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
 import static org.batfish.representation.cumulus.OspfProcess.DEFAULT_OSPF_PROCESS_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1196,10 +1196,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                       .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
                       .setDeadInterval(
                           Optional.ofNullable(ospfInterface.getDeadInterval())
-                              .orElse(DEFAUL_OSPF_DEAD_INTERVAL))
+                              .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
                       .setHelloInterval(
                           Optional.ofNullable(ospfInterface.getHelloInterval())
-                              .orElse(DEFAUL_OSPF_HELLO_INTERVAL))
+                              .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
                       .setProcess(processId)
                       .build());
             });

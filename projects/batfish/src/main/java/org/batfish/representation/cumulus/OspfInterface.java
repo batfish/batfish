@@ -13,8 +13,8 @@ public class OspfInterface implements Serializable {
   private @Nullable Integer _helloInterval;
 
   // http://docs.frrouting.org/en/latest/ospfd.html
-  public static int DEFAUL_OSPF_HELLO_INTERVAL = 10;
-  public static int DEFAUL_OSPF_DEAD_INTERVAL = 40;
+  public static int DEFAULT_OSPF_HELLO_INTERVAL = 10;
+  public static int DEFAULT_OSPF_DEAD_INTERVAL = 40;
 
   public @Nullable OspfNetworkType getNetwork() {
     return _network;
