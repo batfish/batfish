@@ -43,7 +43,9 @@ public final class AddressObject implements Serializable {
   }
 
   @Nonnull
-  public Set<String> getTags() {return _tags;}
+  public Set<String> getTags() {
+    return _tags;
+  }
 
   public void setDescription(String description) {
     _description = description;
