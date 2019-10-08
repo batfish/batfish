@@ -761,6 +761,6 @@ public class CumulusNcluConfigurationTest {
   public void testCreateVIInterfaceForLo_Bandwidth() {
     CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
     org.batfish.datamodel.Interface iface = vendorConfiguration.createVIInterfaceForLo();
-    assertThat(iface.getBandwidth(), equalTo(CumulusNcluConfiguration.DEFAUL_LOOPBACK_BANDWIDTH));
+    assertThat(iface.getBandwidth(), equalTo(CumulusNcluConfiguration.DEFAULT_LOOPBACK_BANDWIDTH));
   }
 }

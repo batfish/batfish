@@ -132,7 +132,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   // Follow the default setting of Cisco.
   // TODO: need to verify this
-  public static final double DEFAUL_LOOPBACK_BANDWIDTH = 8e9;
+  public static final double DEFAULT_LOOPBACK_BANDWIDTH = 8e9;
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
@@ -838,7 +838,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setOwner(_c)
         .setType(InterfaceType.LOOPBACK)
         .setBandwidth(
-            Optional.ofNullable(_loopback.getBandwidth()).orElse(DEFAUL_LOOPBACK_BANDWIDTH))
+            Optional.ofNullable(_loopback.getBandwidth()).orElse(DEFAULT_LOOPBACK_BANDWIDTH))
         .build();
   }
 
