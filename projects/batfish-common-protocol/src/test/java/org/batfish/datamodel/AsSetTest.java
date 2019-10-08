@@ -14,7 +14,7 @@ public class AsSetTest {
     long asn = 12345;
     assertThat(AsSet.of(asn).toString(), equalTo(String.valueOf(asn)));
 
-    // For set of ASNs, should return {asn1, asn2, ... lastAsn}
-    assertThat(AsSet.of(1, 2, 3).toString(), equalTo("{1, 2, 3}"));
+    // For set of ASNs, should return {asn1,asn2,...lastAsn}
+    assertThat(AsSet.of(1, 2, 3).toString(), equalTo("{1,2,3}"));
   }
 }

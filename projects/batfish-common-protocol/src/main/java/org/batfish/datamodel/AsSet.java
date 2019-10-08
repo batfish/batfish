@@ -14,9 +14,9 @@ import com.google.common.primitives.Longs;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.commons.lang3.StringUtils;
 
 /** An immutable class representing a set of AS numbers. */
 @ParametersAreNonnullByDefault
@@ -115,7 +115,6 @@ public class AsSet implements Serializable, Comparable<AsSet> {
     if (_value.length == 1) {
       return Long.toString(_value[0]);
     }
-    return String.format(
-        "{%s}", Arrays.stream(_value).mapToObj(String::valueOf).collect(Collectors.joining(", ")));
+    return "{" + StringUtils.join(_value, ',') + "}";
   }
 }
