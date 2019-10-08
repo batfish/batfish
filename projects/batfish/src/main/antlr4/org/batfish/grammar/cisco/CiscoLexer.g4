@@ -10998,7 +10998,7 @@ RP_ANNOUNCE_FILTER
 
 RP_CANDIDATE
 :
-   'rp-candidate'
+   'rp-candidate' -> pushMode(M_Interface)
 ;
 
 RP_LIST
@@ -11368,7 +11368,7 @@ SEND_LIFETIME
 
 SEND_RP_ANNOUNCE
 :
-   'send-rp-announce'
+   'send-rp-announce' -> pushMode(M_Interface)
 ;
 
 SEND_RP_DISCOVERY
