@@ -17,6 +17,7 @@ import
     PaloAlto_service,
     PaloAlto_service_group,
     PaloAlto_shared,
+    PaloAlto_tag,
     PaloAlto_virtual_router,
     PaloAlto_vsys,
     PaloAlto_zone;
@@ -44,7 +45,6 @@ s_null
 :
     (
         MGT_CONFIG
-        | TAG
     )
     null_rest_of_line
 ;
@@ -77,6 +77,7 @@ statement_config_devices
     | s_rulebase
     | s_service
     | s_service_group
+    | s_tag
     | s_vsys
     | s_zone
 ;

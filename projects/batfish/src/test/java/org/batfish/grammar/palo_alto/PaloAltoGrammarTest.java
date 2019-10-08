@@ -133,6 +133,7 @@ import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
+import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
@@ -240,6 +241,30 @@ public final class PaloAltoGrammarTest {
     fb.setSrcPort(sourcePort);
     fb.setTag("test");
     return fb.build();
+  }
+
+  @Test
+  public void testTags() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("tags");
+
+    String tag1 = "vsys_tag";
+    String tag2 = "vsys_tag with spaces";
+    String sharedTag = "shared_tag";
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, Tag> tags = vsys.getTags();
+
+    Vsys sharedVsys = c.getShared();
+    Map<String, Tag> sharedTags = sharedVsys.getTags();
+
+    // Confirm vsys-specific tags are extracted correctly
+    assertThat(tags.keySet(), contains(tag1, tag2));
+    assertThat(tags.get(tag1).getComments(), equalTo("something"));
+    assertThat(tags.get(tag2).getComments(), equalTo("comments with spaces"));
+
+    // Confirm shared tags are extracted correctly
+    assertThat(sharedTags.keySet(), contains(sharedTag));
+    assertThat(sharedTags.get(sharedTag).getComments(), nullValue());
   }
 
   @Test

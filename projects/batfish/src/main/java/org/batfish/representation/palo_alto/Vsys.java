@@ -53,6 +53,8 @@ public final class Vsys implements Serializable {
 
   private final SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
 
+  private final SortedMap<String, Tag> _tags;
+
   private final SortedMap<String, Zone> _zones;
 
   private final @Nonnull NamespaceType _namespaceType;
@@ -81,6 +83,7 @@ public final class Vsys implements Serializable {
     _services = new TreeMap<>();
     _serviceGroups = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
+    _tags = new TreeMap<>();
     _zones = new TreeMap<>();
   }
 
@@ -172,6 +175,11 @@ public final class Vsys implements Serializable {
     SortedSet<String> servers = new TreeSet<>();
     _syslogServerGroups.values().forEach(g -> g.values().forEach(s -> servers.add(s.getAddress())));
     return servers;
+  }
+
+  /** Returns a map of tag name to tag for tags in this vsys. */
+  public SortedMap<String, Tag> getTags() {
+    return _tags;
   }
 
   /** Returns a map of zone name to zone for the zones in this vsys. */

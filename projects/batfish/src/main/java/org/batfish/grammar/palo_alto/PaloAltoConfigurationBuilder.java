@@ -128,6 +128,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_group_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsys_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_descriptionContext;
@@ -190,6 +191,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.St_commentsContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
@@ -248,6 +250,7 @@ import org.batfish.representation.palo_alto.ServiceGroup;
 import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
+import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
@@ -290,6 +293,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private StaticRoute _currentStaticRoute;
   private SyslogServer _currentSyslogServer;
   private String _currentSyslogServerGroupName;
+  private Tag _currentTag;
   private VirtualRouter _currentVirtualRouter;
   private Vsys _currentVsys;
   private Zone _currentZone;
@@ -751,6 +755,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitS_address_definition(S_address_definitionContext ctx) {
     _currentAddressObject = null;
+  }
+
+  @Override
+  public void enterS_tag(S_tagContext ctx) {
+    String name = getText(ctx.name);
+    _currentTag = _currentVsys.getTags().computeIfAbsent(name, Tag::new);
+  }
+
+  @Override
+  public void exitS_tag(S_tagContext ctx) {
+    _currentTag = null;
+  }
+
+  @Override
+  public void exitSt_comments(St_commentsContext ctx) {
+    _currentTag.setComments(getText(ctx.comments));
   }
 
   @Override
