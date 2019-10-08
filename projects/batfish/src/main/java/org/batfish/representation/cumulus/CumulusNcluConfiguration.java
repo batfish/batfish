@@ -1096,8 +1096,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             CumulusStructureType.VRF));
     markConcreteStructure(CumulusStructureType.BOND);
     markConcreteStructure(CumulusStructureType.INTERFACE);
-    markConcreteStructure(
-        CumulusStructureType.IP_AS_PATH_ACCESS_LIST, CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH);
+    markConcreteStructure(CumulusStructureType.IP_AS_PATH_ACCESS_LIST);
     markConcreteStructure(CumulusStructureType.IP_COMMUNITY_LIST);
     markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
     markConcreteStructure(CumulusStructureType.LOOPBACK);
