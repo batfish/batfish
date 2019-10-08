@@ -823,7 +823,11 @@ public final class FlatJuniperGrammarTest {
   public void testBgpMultipathMultipleAs() throws IOException {
     String testrigName = "multipath-multiple-as";
     List<String> configurationNames =
-        ImmutableList.of("multiple_as_disabled", "multiple_as_enabled", "multiple_as_mixed");
+        ImmutableList.of(
+            "multiple_as_disabled",
+            "multiple_as_enabled",
+            "multiple_as_mixed",
+            "multiple_as_mixed_conflict");
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -850,10 +854,17 @@ public final class FlatJuniperGrammarTest {
             .getDefaultVrf()
             .getBgpProcess()
             .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode mixedConflict =
+        configurations
+            .get("multiple_as_mixed_conflict")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
 
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+    assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(mixedConflict, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
   }
 
   /** Make sure bgp type internal properly sets remote as when non explicitly specified */

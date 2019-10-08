@@ -12,7 +12,12 @@ public interface BuiltinMonitor extends Builtin {
   public static @Nullable BuiltinMonitor getBuiltinMonitor(String name) {
     String unqualifiedName = Builtin.unqualify(name);
     return Stream.<Function<String, ? extends BuiltinMonitor>>of(
-            BuiltinMonitorHttp::forName, BuiltinMonitorHttps::forName)
+            BuiltinMonitorDns::forName,
+            BuiltinMonitorGatewayIcmp::forName,
+            BuiltinMonitorHttp::forName,
+            BuiltinMonitorHttps::forName,
+            BuiltinMonitorLdap::forName,
+            BuiltinMonitorTcp::forName)
         .map(f -> f.apply(unqualifiedName))
         .filter(Objects::nonNull)
         .findAny()

@@ -27,6 +27,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Origin_typeContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ospf_network_typeContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_aggregate_addressContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_always_compare_medContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_deterministic_medContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_router_idContext;
@@ -62,6 +63,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Uint32Context;
 import org.batfish.representation.f5_bigip.AbstractBgpNeighbor;
 import org.batfish.representation.f5_bigip.AccessList;
 import org.batfish.representation.f5_bigip.AccessListLine;
+import org.batfish.representation.f5_bigip.AggregateAddress;
 import org.batfish.representation.f5_bigip.BgpNeighbor;
 import org.batfish.representation.f5_bigip.BgpPeerGroup;
 import org.batfish.representation.f5_bigip.BgpProcess;
@@ -299,6 +301,22 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
         name,
         F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE,
         ctx.localas.getStart().getLine());
+  }
+
+  @Override
+  public void exitRb_aggregate_address(Rb_aggregate_addressContext ctx) {
+    AggregateAddress a =
+        _currentBgpProcess
+            .getAggregateAddresses()
+            .computeIfAbsent(toPrefix(ctx.prefix), AggregateAddress::new);
+    if (ctx.as_set != null) {
+      a.setAsSet(true);
+    }
+    if (ctx.summary_only != null) {
+      a.setSummaryOnly(true);
+    }
+    // TODO: conversion
+    todo(ctx);
   }
 
   @Override

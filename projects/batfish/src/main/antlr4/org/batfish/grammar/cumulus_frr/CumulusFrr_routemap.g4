@@ -11,10 +11,17 @@ s_routemap
   ROUTE_MAP name = word action = line_action sequence =
   route_map_sequence NEWLINE
   (
-    rm_description
+    rm_call
+    | rm_description
     | rm_match
+    | rm_on_match
     | rm_set
   )*
+;
+
+rm_call
+:
+  CALL name = word NEWLINE
 ;
 
 rm_description
@@ -90,6 +97,11 @@ rmmipa_prefix_list
 rmm_interface
 :
   INTERFACE name = WORD NEWLINE
+;
+
+rm_on_match
+:
+  ON_MATCH NEXT NEWLINE
 ;
 
 rms_ip

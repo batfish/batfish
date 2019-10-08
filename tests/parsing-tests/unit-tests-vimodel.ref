@@ -17414,24 +17414,26 @@
           "f5Bigip" : {
             "pools" : {
               "/Common/SOME_LTM_POOL" : {
+                "description" : "foo",
                 "members" : {
                   "/Common/bar:80" : {
+                    "address" : "192.0.2.3",
                     "name" : "/Common/bar:80",
                     "node" : "/Common/bar",
-                    "port" : 80,
-                    "address" : "192.0.2.3"
+                    "port" : 80
                   },
                   "/Common/foo:80" : {
+                    "address" : "192.0.2.2",
+                    "description" : "bar.baz",
                     "name" : "/Common/foo:80",
                     "node" : "/Common/foo",
-                    "port" : 80,
-                    "address" : "192.0.2.2",
-                    "description" : "bar.baz"
+                    "port" : 80
                   }
                 },
-                "name" : "/Common/SOME_LTM_POOL",
-                "description" : "foo",
-                "monitor" : "/Common/SOME_MONITOR"
+                "monitors" : [
+                  "/Common/SOME_MONITOR"
+                ],
+                "name" : "/Common/SOME_LTM_POOL"
               }
             },
             "virtualAddresses" : {
@@ -31963,6 +31965,7 @@
           },
           "ethernet1/1.4" : {
             "name" : "ethernet1/1.4",
+            "accessVlan" : 4,
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -31980,7 +31983,6 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
-            "vlan" : 4,
             "vrf" : "~NULL_VRF~"
           },
           "ethernet1/1.5" : {
@@ -31992,6 +31994,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "description" : "subif comment",
+            "encapsulationVlan" : 5,
             "mtu" : 1500,
             "outgoingFilter" : "~ethernet1/1.5~OUTGOING_FILTER~",
             "proxyArp" : false,
@@ -32002,7 +32005,6 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
-            "vlan" : 5,
             "vrf" : "~NULL_VRF~"
           },
           "loopback" : {
@@ -38604,7 +38606,7 @@
               "ibgpAdminCost" : 170,
               "routerId" : "192.168.1.2",
               "multipathEbgp" : true,
-              "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
+              "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
               "multipathIbgp" : true,
               "neighbors" : {
                 "172.16.3.2/32" : {
