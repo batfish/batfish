@@ -256,6 +256,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_interface_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
@@ -4195,6 +4196,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitIfe_interface_mode(Ife_interface_modeContext ctx) {
+    if (ctx.ACCESS() != null) {
+      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.ACCESS);
+    } else if (ctx.TRUNK() != null) {
+      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.TRUNK);
+    } else {
+      todo(ctx);
+    }
+  }
+
+  @Override
   public void exitIfe_native_vlan_id(Ife_native_vlan_idContext ctx) {
     _currentInterfaceOrRange.setNativeVlan(toInt(ctx.id));
   }
@@ -4223,6 +4235,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String name = ctx.name.getText();
       _currentInterfaceOrRange.setAccessVlan(name);
       _configuration.referenceStructure(VLAN, name, INTERFACE_VLAN, getLine(ctx.name.getStart()));
+    } else {
+      todo(ctx, "Unexpected vlan members range on non-trunk interface");
     }
   }
 
