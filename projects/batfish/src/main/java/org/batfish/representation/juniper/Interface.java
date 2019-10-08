@@ -336,7 +336,7 @@ public class Interface implements Serializable {
     _description = description;
   }
 
-  public void setIncomingFilter(@Nonnull String accessListName) {
+  public void setIncomingFilter(@Nullable String accessListName) {
     _incomingFilter = accessListName;
     _incomingFilterList = null;
   }
@@ -393,7 +393,7 @@ public class Interface implements Serializable {
     _ospfInterfaceType = ospfInterfaceType;
   }
 
-  public void setOutgoingFilter(@Nonnull String accessListName) {
+  public void setOutgoingFilter(@Nullable String accessListName) {
     _outgoingFilter = accessListName;
     _outgoingFilterList = null;
   }

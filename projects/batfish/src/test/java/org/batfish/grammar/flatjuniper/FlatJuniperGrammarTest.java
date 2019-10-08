@@ -378,8 +378,14 @@ public final class FlatJuniperGrammarTest {
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
-  private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname.toLowerCase());
+  private Configuration parseConfig(String hostname) {
+    try {
+      Map<String, Configuration> configs = parseTextConfigs(hostname);
+      assertThat(configs, hasKey(hostname.toLowerCase()));
+      return configs.get(hostname.toLowerCase());
+    } catch (IOException e) {
+      throw new AssertionError("Failed to parse " + hostname, e);
+    }
   }
 
   private JuniperConfiguration parseJuniperConfig(String hostname) {
@@ -502,7 +508,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationSetNested() throws IOException {
+  public void testApplicationSetNested() {
     String hostname = "application-set-nested";
     Configuration c = parseConfig(hostname);
 
@@ -545,7 +551,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationWithTerms() throws IOException {
+  public void testApplicationWithTerms() {
     String hostname = "application-with-terms";
     Configuration c = parseConfig(hostname);
 
@@ -593,7 +599,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAuthenticationOrder() throws IOException {
+  public void testAuthenticationOrder() {
     String hostname = "authentication-order";
 
     Configuration configuration = parseConfig(hostname);
@@ -682,7 +688,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAutonomousSystemLoops() throws IOException {
+  public void testAutonomousSystemLoops() {
     Configuration c = parseConfig("autonomous-system-loops");
     assertThat(
         c,
@@ -708,7 +714,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAutonomousSystemLoopsNonDefaultRoutingInstance() throws IOException {
+  public void testAutonomousSystemLoopsNonDefaultRoutingInstance() {
     Configuration c = parseConfig("autonomous-system-loops-routing-instance");
     assertThat(
         c,
@@ -725,7 +731,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Tests support for dynamic bgp parsing using "bgp allow" command */
   @Test
-  public void testBgpAllow() throws IOException {
+  public void testBgpAllow() {
     Configuration c = parseConfig("bgp-allow");
     assertThat(
         c,
@@ -805,7 +811,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpMultipath() throws IOException {
+  public void testBgpMultipath() {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),
         hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(true))));
@@ -869,7 +875,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Make sure bgp type internal properly sets remote as when non explicitly specified */
   @Test
-  public void testBgpTypeInternalPeerAs() throws IOException {
+  public void testBgpTypeInternalPeerAs() {
     String hostname = "bgp-type-internal";
     Configuration c = parseConfig(hostname);
     assertThat(
@@ -879,7 +885,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSetCommunity() throws IOException {
+  public void testSetCommunity() {
     Configuration c = parseConfig("community");
 
     ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
@@ -936,7 +942,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAddCommunity() throws IOException {
+  public void testAddCommunity() {
     Configuration c = parseConfig("community");
 
     ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
@@ -996,7 +1002,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsFromCommunity() throws IOException {
+  public void testPsFromCommunity() {
     Configuration c = parseConfig("community");
 
     assertThat(c.getRoutingPolicies(), hasKey("match"));
@@ -1120,7 +1126,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEnforceFirstAs() throws IOException {
+  public void testEnforceFirstAs() {
     String hostname = "bgp-enforce-first-as";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasValue(hasEnforceFirstAs())))));
@@ -1149,18 +1155,16 @@ public final class FlatJuniperGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm filter usage is tracked properly */
-    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 1));
-    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER2", 2));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 3));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER2", 4));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER_UNUSED", 0));
 
     /* Confirm undefined reference is identified */
     assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "FILTER_UNDEF"));
-    assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "A"));
-    assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "B"));
   }
 
   @Test
-  public void testFirewallFilterExtraction() throws IOException {
+  public void testFirewallFilterExtraction() {
     JuniperConfiguration c = parseJuniperConfig("firewall-filters");
     Map<String, org.batfish.representation.juniper.Interface> ifaces =
         c.getMasterLogicalSystem().getInterfaces();
@@ -1209,14 +1213,41 @@ public final class FlatJuniperGrammarTest {
       assertThat(parent.getUnits(), hasKey(unitName));
       org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
       assertThat(iface.getIncomingFilter(), nullValue());
-      assertThat(iface.getIncomingFilterList(), contains("A", "B"));
+      assertThat(iface.getIncomingFilterList(), contains("FILTER1", "FILTER2"));
       assertThat(iface.getOutgoingFilter(), nullValue());
-      assertThat(iface.getOutgoingFilterList(), contains("B", "A"));
+      assertThat(iface.getOutgoingFilterList(), contains("FILTER2", "FILTER1"));
     }
   }
 
   @Test
-  public void testFirewallCombinedPolicies() throws IOException {
+  public void testFirewallFilterConversion() {
+    Configuration c = parseConfig("firewall-filters");
+    Flow.Builder fb =
+        Flow.builder()
+            .setIpProtocol(IpProtocol.OSPF)
+            .setIngressNode(c.getHostname())
+            .setDstIp(Ip.ZERO)
+            .setTag("tag");
+    Flow src1235 = fb.setSrcIp(Ip.parse("1.2.3.5")).build();
+    Flow src1236 = fb.setSrcIp(Ip.parse("1.2.3.6")).build();
+    Flow src8888 = fb.setSrcIp(Ip.parse("8.8.8.8")).build();
+
+    assertThat(
+        c,
+        hasIpAccessList(
+            "xe-0/0/3.0-i",
+            allOf(
+                rejects(src1235, null, c), accepts(src1236, null, c), rejects(src8888, null, c))));
+    assertThat(
+        c,
+        hasIpAccessList(
+            "xe-0/0/3.0-o",
+            allOf(
+                rejects(src1235, null, c), rejects(src1236, null, c), rejects(src8888, null, c))));
+  }
+
+  @Test
+  public void testFirewallCombinedPolicies() {
     Configuration c = parseConfig("firewall-combined-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1272,7 +1303,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalAddressBook() throws IOException {
+  public void testFirewallGlobalAddressBook() {
     Configuration c = parseConfig("firewall-global-address-book");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1356,7 +1387,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalPolicy() throws IOException {
+  public void testFirewallGlobalPolicy() {
     Configuration c = parseConfig("firewall-global-policy");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1398,7 +1429,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalPolicyGlobalAddressBook() throws IOException {
+  public void testFirewallGlobalPolicyGlobalAddressBook() {
     /*
      * Test address book behavior when used in a global policy
      * i.e. a policy that does not have fromZone or toZone
@@ -1440,7 +1471,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallNoPolicies() throws IOException {
+  public void testFirewallNoPolicies() {
     Configuration c = parseConfig("firewall-no-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1478,7 +1509,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicies() throws IOException {
+  public void testFirewallPolicies() {
     Configuration c = parseConfig("firewall-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1537,7 +1568,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZoneAddressBookInline() throws IOException {
+  public void testFirewallZoneAddressBookInline() {
     Configuration c = parseConfig("firewall-zone-address-book-inline");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1586,7 +1617,7 @@ public final class FlatJuniperGrammarTest {
    * inlined address book
    */
   @Test
-  public void testFirewallZoneAddressBookAttach() throws IOException {
+  public void testFirewallZoneAddressBookAttach() {
     Configuration c = parseConfig("firewall-zone-address-book-attach");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1635,7 +1666,7 @@ public final class FlatJuniperGrammarTest {
    * inlined address book
    */
   @Test
-  public void testFirewallZoneAddressBookGlobal() throws IOException {
+  public void testFirewallZoneAddressBookGlobal() {
     Configuration c = parseConfig("firewall-zone-address-book-global");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1683,7 +1714,7 @@ public final class FlatJuniperGrammarTest {
    * When both global and zone-specific (attached or inline) address books are present, global loses
    */
   @Test
-  public void testFirewallZoneAddressBookGlobalLoses() throws IOException {
+  public void testFirewallZoneAddressBookGlobalLoses() {
     Configuration c = parseConfig("firewall-zone-address-book-global-loses");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1711,7 +1742,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZoneAddressUndefined() throws IOException {
+  public void testFirewallZoneAddressUndefined() {
     Configuration c = parseConfig("firewall-zone-address-undefined");
 
     String interfaceNameTrust = "ge-0/0/0.0";
@@ -1747,7 +1778,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZoneAddressBookAttachAndGlobal() throws IOException {
+  public void testFirewallZoneAddressBookAttachAndGlobal() {
     Configuration c = parseConfig("firewall-zone-address-book-attach-and-global");
 
     String interfaceNameTrust = "ge-0/0/0.0";
@@ -1777,7 +1808,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZones() throws IOException {
+  public void testFirewallZones() {
     Configuration c = parseConfig("firewall-no-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -1814,7 +1845,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAggregateDefaults() throws IOException {
+  public void testAggregateDefaults() {
     Configuration config = parseConfig("aggregate-defaults");
 
     Set<GeneratedRoute> aggregateRoutes = config.getDefaultVrf().getGeneratedRoutes();
@@ -1877,7 +1908,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAggregateRoutesGenerationPolicies() throws IOException {
+  public void testAggregateRoutesGenerationPolicies() {
     Configuration config = parseConfig("aggregate-routes");
 
     Set<GeneratedRoute> aggregateRoutes = config.getDefaultVrf().getGeneratedRoutes();
@@ -1966,7 +1997,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testGeneratedDefaults() throws IOException {
+  public void testGeneratedDefaults() {
     Configuration config = parseConfig("generated-defaults");
 
     Set<GeneratedRoute> generatedRoutes = config.getDefaultVrf().getGeneratedRoutes();
@@ -2029,7 +2060,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testGeneratedRoutesGenerationPolicies() throws IOException {
+  public void testGeneratedRoutesGenerationPolicies() {
     Configuration config = parseConfig("generated-routes");
 
     Set<GeneratedRoute> generatedRoutes = config.getDefaultVrf().getGeneratedRoutes();
@@ -2181,7 +2212,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfInterfaceDisable() throws IOException {
+  public void testOspfInterfaceDisable() {
     // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.
     // Interface ge-0/0/2.0 has disable set in OSPF config.
     Configuration config = parseConfig("ospf-interface-disable");
@@ -2193,7 +2224,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfDisable() throws IOException {
+  public void testOspfDisable() {
     /*
     - Default VRF has OSPF process disabled, with interface ge-0/0/0.0
     - VRF INSTANCE_1 has OSPF process disabled, with interface ge-0/0/1.0
@@ -2257,13 +2288,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfPsk() throws IOException {
+  public void testOspfPsk() {
     /* allow both encrypted and unencrypted key */
     parseConfig("ospf-psk");
   }
 
   @Test
-  public void testOspfReferenceBandwidth() throws IOException {
+  public void testOspfReferenceBandwidth() {
     String hostname = "ospf-reference-bandwidth";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasReferenceBandwidth(1E9D))));
@@ -2274,7 +2305,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsPreferenceBehavior() throws IOException {
+  public void testPsPreferenceBehavior() {
     Configuration c = parseConfig("policy-statement-preference");
 
     RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
@@ -2296,7 +2327,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsPreferenceStructure() throws IOException {
+  public void testPsPreferenceStructure() {
     Configuration c = parseConfig("policy-statement-preference");
 
     RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
@@ -2318,13 +2349,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testTacplusPsk() throws IOException {
+  public void testTacplusPsk() {
     /* allow both encrypted and unencrypted key */
     parseConfig("tacplus-psk");
   }
 
   @Test
-  public void testIkePolicy() throws IOException {
+  public void testIkePolicy() {
     Configuration c = parseConfig("ike-policy");
 
     assertThat(
@@ -2339,7 +2370,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIkeProposal() throws IOException {
+  public void testIkeProposal() {
     Configuration c = parseConfig("ike-proposal");
 
     // test for IKE phase1 proposals
@@ -2357,7 +2388,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceArp() throws IOException {
+  public void testInterfaceArp() {
     Configuration c = parseConfig("interface-arp");
 
     /* The additional ARP IP set for irb.0 should appear in the data model */
@@ -2365,7 +2396,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceBandwidth() throws IOException {
+  public void testInterfaceBandwidth() {
     Configuration c = parseConfig("interface-bandwidth");
 
     // Configuration has ge-0/0/0 with four units configured bandwidths 5000000000, 5000000k, 5000m,
@@ -2387,7 +2418,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceMtu() throws IOException {
+  public void testInterfaceMtu() {
     Configuration c = parseConfig("interfaceMtu");
 
     /* Properly configured interfaces should be present in respective areas. */
@@ -2396,7 +2427,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceNativeVlan() throws IOException {
+  public void testInterfaceNativeVlan() {
     String hostname = "interface-native-vlan";
     Configuration c = parseConfig(hostname);
 
@@ -2406,7 +2437,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceOspfNetworkType() throws IOException {
+  public void testInterfaceOspfNetworkType() {
     String hostname = "ospf-interface-network-type";
     Configuration c = parseConfig(hostname);
     // Interface is assumed broadcast by default
@@ -2453,7 +2484,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceRange() throws IOException {
+  public void testInterfaceRange() {
     String hostname = "interface-range";
     JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
 
@@ -2483,7 +2514,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceVlan() throws IOException {
+  public void testInterfaceVlan() {
     Configuration c = parseConfig("interface-vlan");
 
     // Expecting an Interface in ACCESS mode with VLAN 101
@@ -2523,7 +2554,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIrbInterfaces() throws IOException {
+  public void testIrbInterfaces() {
     String hostname = "irb-interfaces";
     Configuration c = parseConfig(hostname);
 
@@ -2548,7 +2579,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpProtocol() throws IOException {
+  public void testIpProtocol() {
     String hostname = "firewall-filter-ip-protocol";
     Configuration c = parseConfig(hostname);
 
@@ -2568,7 +2599,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSourceAddress() throws IOException {
+  public void testSourceAddress() {
     Configuration c = parseConfig("firewall-source-address");
     String filterNameV4 = "FILTER";
     String filterNameV6 = "FILTERv6";
@@ -2604,7 +2635,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpsecPolicy() throws IOException {
+  public void testIpsecPolicy() {
     Configuration c = parseConfig("ipsec-policy");
 
     // tests for conversion to IPSec phase 2 policies
@@ -2658,7 +2689,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpsecProposalSet() throws IOException {
+  public void testIpsecProposalSet() {
     Configuration c = parseConfig("ipsec-proposal-set");
 
     assertThat(
@@ -2761,7 +2792,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpsecProposalToIpsecPhase2Proposal() throws IOException {
+  public void testIpsecProposalToIpsecPhase2Proposal() {
     Configuration c = parseConfig("ipsec-proposal");
     assertThat(
         c,
@@ -2834,7 +2865,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testToIpsecPeerConfig() throws IOException {
+  public void testToIpsecPeerConfig() {
     Configuration c = parseConfig("ipsec-vpn");
 
     assertThat(
@@ -2852,7 +2883,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDestinationAddress() throws IOException {
+  public void testDestinationAddress() {
     Configuration c = parseConfig("firewall-destination-address");
     String filterNameV4 = "FILTER";
     String filterNameV6 = "FILTERv6";
@@ -2888,7 +2919,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSourceAddressBehavior() throws IOException {
+  public void testSourceAddressBehavior() {
     Configuration c = parseConfig("firewall-source-address");
 
     assertThat(c.getIpAccessLists().keySet(), hasSize(2));
@@ -2906,7 +2937,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDestinationAddressBehavior() throws IOException {
+  public void testDestinationAddressBehavior() {
     Configuration c = parseConfig("firewall-destination-address");
 
     assertThat(c.getIpAccessLists().keySet(), hasSize(2));
@@ -2965,7 +2996,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsis() throws IOException {
+  public void testJuniperIsis() {
     String hostname = "juniper-isis";
     String loopback = "lo0.0";
     String physical = "ge-0/0/0.0";
@@ -3036,14 +3067,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsisNoIsoAddress() throws IOException {
+  public void testJuniperIsisNoIsoAddress() {
     Configuration c = parseConfig("juniper-isis-no-iso");
 
     assertThat(c, hasDefaultVrf(hasIsisProcess(nullValue())));
   }
 
   @Test
-  public void testJuniperIsisNonLoopbackIsoAddress() throws IOException {
+  public void testJuniperIsisNonLoopbackIsoAddress() {
     Configuration c = parseConfig("juniper-isis-iso-non-loopback");
 
     assertThat(
@@ -3053,7 +3084,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsisNoReferenceBandwidth() throws IOException {
+  public void testJuniperIsisNoReferenceBandwidth() {
     Configuration c = parseConfig("juniper-isis-no-reference-bandwidth");
 
     // With no set metric or reference bandwidth, Juniper IS-IS cost should default to 10
@@ -3065,19 +3096,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsisOverload() throws IOException {
+  public void testJuniperIsisOverload() {
     Configuration c = parseConfig("juniper-isis-overload");
     assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasOverload(true))));
   }
 
   @Test
-  public void testJuniperIsisOverloadWithTimeout() throws IOException {
+  public void testJuniperIsisOverloadWithTimeout() {
     Configuration c = parseConfig("juniper-isis-overload-with-timeout");
     assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasOverload(false))));
   }
 
   @Test
-  public void testJuniperIsisPassiveLevel() throws IOException {
+  public void testJuniperIsisPassiveLevel() {
     Configuration c = parseConfig("juniper-isis-passive-level");
     assertThat(
         c,
@@ -3090,7 +3121,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperOspfStubSettings() throws IOException {
+  public void testJuniperOspfStubSettings() {
     Configuration c = parseConfig("juniper-ospf-stub-settings");
 
     // Get OSPF process
@@ -3118,7 +3149,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatementPrefixListDisjunction() throws IOException {
+  public void testJuniperPolicyStatementPrefixListDisjunction() {
     // Configuration has policy statement with term that checks two prefix lists.
     Configuration c = parseConfig("juniper-from-prefix-list");
 
@@ -3160,7 +3191,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatementTermFromEvaluation() throws IOException {
+  public void testJuniperPolicyStatementTermFromEvaluation() {
     // Configuration has policy statements
     Configuration c = parseConfig("juniper-policy-statement-term");
     Prefix testPrefix = Prefix.parse("1.1.1.1/28");
@@ -3367,7 +3398,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperWildcards() throws IOException {
+  public void testJuniperWildcards() {
     String hostname = "juniper-wildcards";
     String loopback = "lo0.0";
     String prefix1 = "1.1.1.1/32";
@@ -3559,7 +3590,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLocalRouteExportBgp() throws IOException {
+  public void testLocalRouteExportBgp() {
     Configuration c = parseConfig("local-route-export-bgp");
 
     String peer1Vrf = "peer1Vrf";
@@ -3642,7 +3673,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLocalRouteExportOspf() throws IOException {
+  public void testLocalRouteExportOspf() {
     Configuration c = parseConfig("local-route-export-ospf");
 
     String vrf1 = "vrf1";
@@ -3740,7 +3771,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNatDest() throws IOException {
+  public void testNatDest() {
     Configuration config = parseConfig("nat-dest");
 
     Map<String, Interface> interfaces = config.getAllInterfaces();
@@ -3880,7 +3911,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNatSource() throws IOException {
+  public void testNatSource() {
     Configuration config = parseConfig("nat-source2");
     Map<String, Interface> interfaceMap = config.getAllInterfaces();
 
@@ -4061,7 +4092,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfInterfaceAreaAssignment() throws IOException {
+  public void testOspfInterfaceAreaAssignment() {
     Configuration c = parseConfig("ospfInterfaceAreaAssignment");
 
     /* Properly configured interfaces should be present in respective areas. */
@@ -4093,7 +4124,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfRouterId() throws IOException {
+  public void testOspfRouterId() {
     Configuration c = parseConfig("ospf-router-id");
 
     assertThat(
@@ -4102,7 +4133,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfSummaries() throws IOException {
+  public void testOspfSummaries() {
     Configuration c = parseConfig(("ospf-abr-with-summaries"));
 
     assertThat(
@@ -4204,7 +4235,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPrefixListEmpty() throws IOException {
+  public void testPrefixListEmpty() {
     Configuration c = parseConfig("prefix-list-empty");
     Flow testFlow1 = createFlow("9.8.7.6", "0.0.0.0");
     Flow testFlow2 = createFlow("1.2.3.4", "1.2.3.4");
@@ -4246,7 +4277,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRouteFilters() throws IOException {
+  public void testRouteFilters() {
     Configuration c = parseConfig("route-filter");
     RouteFilterList rfl = c.getRouteFilterLists().get("route-filter-test:t1");
     assertThat(
@@ -4268,7 +4299,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRoutingInstanceType() throws IOException {
+  public void testRoutingInstanceType() {
     Configuration c = parseConfig("routing-instance-type");
 
     /* All types for now should result in a VRF */
@@ -4281,7 +4312,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRoutingPolicy() throws IOException {
+  public void testRoutingPolicy() {
     Configuration c = parseConfig("routing-policy");
 
     RoutingPolicy policyExact = c.getRoutingPolicies().get("route-filter-exact");
@@ -4378,7 +4409,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRoutePreference() throws IOException {
+  public void testStaticRoutePreference() {
     Configuration c = parseConfig("static-route-preference");
     assertThat(
         c,
@@ -4400,7 +4431,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRoutes() throws IOException {
+  public void testStaticRoutes() {
     Configuration c = parseConfig("static-routes");
     assertThat(
         c,
@@ -4435,13 +4466,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStormControl() throws IOException {
+  public void testStormControl() {
     /* allow storm-control configuration in an interface */
     parseConfig("storm-control");
   }
 
   @Test
-  public void testSecurityAddressBookGlobalAddress() throws IOException {
+  public void testSecurityAddressBookGlobalAddress() {
     Configuration config = parseConfig("security-address-book-global-address");
     Map<String, IpSpace> ipSpaces = config.getIpSpaces();
     assertThat(ipSpaces.keySet(), contains("global~NAME"));
@@ -4464,7 +4495,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPreSourceNatOutgoingFilter() throws IOException {
+  public void testPreSourceNatOutgoingFilter() {
     Configuration config = parseConfig("security-policy");
     String ifaceIn = "ge-0/0/0.0";
     String ifaceOut = "ge-0/0/1.0";
@@ -4494,7 +4525,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsFromInterface() throws IOException {
+  public void testPsFromInterface() {
     Configuration config = parseConfig("juniper-routing-policy");
 
     // Matches iface prefix, connected route
@@ -4592,7 +4623,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testScreenOptionsToVIModel() throws IOException {
+  public void testScreenOptionsToVIModel() {
     Configuration config = parseConfig("screen-options");
 
     IpAccessList inAcl = config.getIpAccessLists().get("FILTER1");
@@ -4919,7 +4950,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Throws the creation of {@link FirewallSessionInterfaceInfo} objects for juniper devices. */
   @Test
-  public void testFirewallSession() throws IOException {
+  public void testFirewallSession() {
     Configuration c = parseConfig("firewall-session-info");
 
     String i0Name = "ge-0/0/0.0";
@@ -5021,7 +5052,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticNatViModel() throws IOException {
+  public void testStaticNatViModel() {
     Configuration config = parseConfig("juniper-nat-static");
 
     // incoming transformation

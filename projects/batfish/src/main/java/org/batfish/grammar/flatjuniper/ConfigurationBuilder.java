@@ -598,6 +598,7 @@ import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.CommunityMember;
+import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.Family;
@@ -1946,7 +1947,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private DhcpRelayGroup _currentDhcpRelayGroup;
 
-  private FirewallFilter _currentFilter;
+  private ConcreteFirewallFilter _currentFilter;
 
   private Family _currentFirewallFamily;
 
@@ -2034,7 +2035,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private Zone _currentZone;
 
-  private FirewallFilter _currentZoneInboundFilter;
+  private ConcreteFirewallFilter _currentZoneInboundFilter;
 
   private String _currentZoneInterface;
 
@@ -2252,14 +2253,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterF_filter(F_filterContext ctx) {
-    String name = ctx.name.getText();
-    Map<String, FirewallFilter> filters = _currentLogicalSystem.getFirewallFilters();
-    _currentFilter = filters.get(name);
     if (_currentFirewallFamily == null) {
       _currentFirewallFamily = Family.INET;
     }
+    String name = ctx.name.getText();
+    Map<String, FirewallFilter> filters = _currentLogicalSystem.getFirewallFilters();
+    _currentFilter = (ConcreteFirewallFilter) filters.get(name);
     if (_currentFilter == null) {
-      _currentFilter = new FirewallFilter(name, _currentFirewallFamily);
+      _currentFilter = new ConcreteFirewallFilter(name, _currentFirewallFamily);
       filters.put(name, _currentFilter);
     }
     _configuration.defineFlattenedStructure(FIREWALL_FILTER, name, ctx, _parser);
@@ -3324,7 +3325,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         // Policy for traffic originating from this device
         _currentFilter = _currentToZone.getFromHostFilter();
         if (_currentFilter == null) {
-          _currentFilter = new FirewallFilter(policyName, Family.INET);
+          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
           _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
           _currentToZone.setFromHostFilter(_currentFilter);
         }
@@ -3332,7 +3333,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         // Policy for traffic destined for this device
         _currentFilter = _currentFromZone.getToHostFilter();
         if (_currentFilter == null) {
-          _currentFilter = new FirewallFilter(policyName, Family.INET);
+          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
           _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
           _currentFromZone.setToHostFilter(_currentFilter);
         }
@@ -3340,7 +3341,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         // Policy for thru traffic
         _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
         if (_currentFilter == null) {
-          _currentFilter = new FirewallFilter(policyName, Family.INET);
+          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
           _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
           _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
         }
@@ -3361,9 +3362,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSep_global(Sep_globalContext ctx) {
     _currentFilter =
-        _currentLogicalSystem
-            .getFirewallFilters()
-            .computeIfAbsent(ACL_NAME_GLOBAL_POLICY, n -> new FirewallFilter(n, Family.INET));
+        (ConcreteFirewallFilter)
+            _currentLogicalSystem
+                .getFirewallFilters()
+                .computeIfAbsent(
+                    ACL_NAME_GLOBAL_POLICY, n -> new ConcreteFirewallFilter(n, Family.INET));
   }
 
   @Override
@@ -3419,7 +3422,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 + _currentZone.getName()
                 + "~INTERFACE~"
                 + _currentZoneInterface;
-        _currentZoneInboundFilter = new FirewallFilter(name, Family.INET);
+        _currentZoneInboundFilter = new ConcreteFirewallFilter(name, Family.INET);
         _currentLogicalSystem.getFirewallFilters().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
