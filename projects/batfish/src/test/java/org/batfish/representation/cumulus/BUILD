@@ -13,6 +13,7 @@ junit_tests(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
+        "@commons_lang3//:compile",
         "@guava_testlib//:compile",
     ],
 )
