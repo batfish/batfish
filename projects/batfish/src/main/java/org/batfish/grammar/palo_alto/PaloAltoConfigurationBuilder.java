@@ -1357,7 +1357,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitVrrtn_ip(Vrrtn_ipContext ctx) {
-    _currentStaticRoute.setNextHopIp(Ip.parse(getText(ctx.address)));
+    Ip ip;
+    if (ctx.address != null) {
+      ip = Ip.parse(getText(ctx.address));
+    } else {
+      Prefix prefix = Prefix.parse(getText(ctx.prefix));
+      if (prefix.getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+        _w.addWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
+            String.format("Static route has non-IP next hop: %s", prefix));
+      }
+      ip = prefix.getStartIp();
+    }
+    _currentStaticRoute.setNextHopIp(ip);
   }
 
   @Override
