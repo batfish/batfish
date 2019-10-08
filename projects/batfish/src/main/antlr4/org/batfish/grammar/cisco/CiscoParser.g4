@@ -716,7 +716,7 @@ failover_lan_tail
 
 failover_link
 :
-   LINK name = variable iface = interface_name NEWLINE
+   LINK name = variable iface = interface_name_unstructured NEWLINE
 ;
 
 failover_interface
@@ -1251,7 +1251,7 @@ ip_route_tail
       nexthopip = IP_ADDRESS
       | nexthopprefix = IP_PREFIX
       | GLOBAL
-      | nexthopint = interface_name
+      | nexthopint = interface_name_unstructured
    )*
    (
       (
@@ -3123,7 +3123,7 @@ s_service_policy_global
 
 s_service_policy_interface
 :
-   SERVICE_POLICY name = variable INTERFACE iface = interface_name NEWLINE
+   SERVICE_POLICY name = variable INTERFACE iface = interface_name_unstructured NEWLINE
 ;
 
 s_sip_ua

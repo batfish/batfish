@@ -5,3 +5,6 @@ interface bad-interface-name0
 !
 ip route 0.0.0.0 0.0.0.0 bad-interface-name0
 !
+! nonsense non-interface-name 'hello-interval'
+interface hello-interval router disable
+!

@@ -176,7 +176,7 @@ ro_distribute_list
     | OUT
   )
   (
-    iname = interface_name
+    iname = interface_name_unstructured
   )?
   NEWLINE
 ;
@@ -476,7 +476,7 @@ ro6_distribute_list
       | OUT
    )
    (
-      iname = interface_name
+      iname = interface_name_unstructured
    )?
    NEWLINE
 ;
