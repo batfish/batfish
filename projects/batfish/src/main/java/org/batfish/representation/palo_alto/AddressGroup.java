@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
@@ -21,9 +22,12 @@ public final class AddressGroup implements Serializable {
 
   private final String _name;
 
+  @Nonnull private final Set<String> _tags;
+
   public AddressGroup(String name) {
     _name = name;
     _members = new TreeSet<>();
+    _tags = new HashSet<>();
   }
 
   /**
@@ -79,6 +83,11 @@ public final class AddressGroup implements Serializable {
 
   public String getName() {
     return _name;
+  }
+
+  @Nonnull
+  public Set<String> getTags() {
+    return _tags;
   }
 
   public void setDescription(String description) {

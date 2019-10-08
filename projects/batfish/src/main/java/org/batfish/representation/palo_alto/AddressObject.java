@@ -1,6 +1,8 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,9 +19,12 @@ public final class AddressObject implements Serializable {
 
   @Nonnull private final String _name;
 
+  @Nonnull private final Set<String> _tags;
+
   public AddressObject(String name) {
     _name = name;
     _ipSpace = EmptyIpSpace.INSTANCE;
+    _tags = new HashSet<>();
   }
 
   @Nullable
@@ -35,6 +40,11 @@ public final class AddressObject implements Serializable {
   @Nonnull
   public String getName() {
     return _name;
+  }
+
+  @Nonnull
+  public Set<String> getTags() {
+    return _tags;
   }
 
   public void setDescription(String description) {
