@@ -44,7 +44,7 @@ rr_distribute_list
       | OUT
    )
    (
-      i = interface_name
+      i = interface_name_unstructured
    )? NEWLINE
 ;
 

@@ -28,7 +28,7 @@ rs_route
    (
       nhip = IP_ADDRESS
       | nhip6 = IPV6_ADDRESS
-      | nhint = interface_name
+      | nhint = interface_name_unstructured
       (
          nhip = IP_ADDRESS
          | nhip6 = IPV6_ADDRESS

@@ -2239,7 +2239,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.IP_ADDRESS() != null) {
       _currentIsakmpProfile.setLocalAddress(toIp(ctx.IP_ADDRESS()));
     } else {
-      _currentIsakmpProfile.setLocalInterfaceName(ctx.interface_name().getText());
+      _currentIsakmpProfile.setLocalInterfaceName(ctx.iname.getText());
     }
   }
 
@@ -2248,7 +2248,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.IP_ADDRESS() != null) {
       _currentKeyring.setLocalAddress(toIp(ctx.IP_ADDRESS()));
     } else {
-      _currentKeyring.setLocalInterfaceName(ctx.interface_name().getText());
+      _currentKeyring.setLocalInterfaceName(ctx.iname.getText());
     }
   }
 
@@ -7044,10 +7044,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Interface iface : _currentInterfaces) {
         iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
       }
-    } else if (ctx.interface_name() != null) {
-      String sourceInterfaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
+    } else if (ctx.iname != null) {
+      String sourceInterfaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(
-          INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.interface_name().getStart().getLine());
+          INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.iname.getStart().getLine());
       for (Interface iface : _currentInterfaces) {
         iface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
       }

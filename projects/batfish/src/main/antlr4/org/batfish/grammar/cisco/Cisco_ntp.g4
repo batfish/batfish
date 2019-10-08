@@ -147,7 +147,7 @@ ntp_server
       (
          SOURCE
          (
-            src_interface = interface_name
+            src_interface = interface_name_unstructured
             | src_interface_alias = variable
          )
       )
