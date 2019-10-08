@@ -2436,6 +2436,9 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(
         c, hasInterface("ge-0/3/0.0", hasAllowedVlans(IntegerSpace.of(new SubRange("1-5")))));
+    // Expecting an Interface in TRUNK mode with VLANs 6
+    assertThat(c, hasInterface("ge-0/3/0.1", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(c, hasInterface("ge-0/3/0.1", hasAllowedVlans(IntegerSpace.of(6))));
   }
 
   @Test
