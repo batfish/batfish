@@ -1143,12 +1143,12 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testEnd() {
-    parseLines("frr version", "end\n");
+    parseLines("frr version", "end");
   }
 
   @Test
   public void testPasswordParsing() {
-    parseLines("password 8 geC4x9Mm5HYDE\n", "enable password 8 <SCRUBBED>\n");
+    parseLines("password 8 geC4x9Mm5HYDE", "enable password 8 <SCRUBBED>");
   }
 
   @Test
