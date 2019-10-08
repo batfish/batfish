@@ -1,9 +1,9 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -13,6 +13,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,12 +27,16 @@ public class AsSet implements Serializable, Comparable<AsSet> {
   //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).
   private static final LoadingCache<AsSet, AsSet> CACHE =
       CacheBuilder.newBuilder().softValues().maximumSize(1 << 16).build(CacheLoader.from(x -> x));
+  private static final String PROP_ASNS = "asns";
+  private static final String PROP_CONFEDERATION = "confederation";
 
   private final long[] _value;
+  private final boolean _confederation;
 
-  private AsSet(long[] value) {
+  private AsSet(long[] value, boolean confederation) {
     Arrays.sort(value);
     _value = value;
+    _confederation = confederation;
   }
 
   /** Create a new empty {@link AsSet}. */
@@ -50,13 +55,54 @@ public class AsSet implements Serializable, Comparable<AsSet> {
    * <p>Note: this {@link AsSet} will take ownership of the given {@code long[]}.
    */
   public static AsSet of(long... value) {
-    AsSet set = new AsSet(value);
+    AsSet set = new AsSet(value, false);
+    return CACHE.getUnchecked(set);
+  }
+
+  /** Create a new empty confederation {@link AsSet}. */
+  public static AsSet confedEmpty() {
+    return confed();
+  }
+
+  /** Create a new confederation {@link AsSet} that is an immutable copy of {@code value}. */
+  public static AsSet confed(long... value) {
+    AsSet set = new AsSet(value, true);
     return CACHE.getUnchecked(set);
   }
 
   @JsonCreator
-  private static AsSet jsonCreator(@Nullable long[] value) {
-    return AsSet.of(firstNonNull(value, new long[] {}));
+  private static AsSet jsonCreator(
+      // Keep backwards compatibility in deserialization
+      @Nullable JsonNode data) {
+    if (data == null) {
+      return AsSet.empty();
+    }
+    if (data.isArray()) {
+      // Old array format: treat as regular as set
+      return AsSet.of(getValues(data));
+    } else if (data.isObject()) {
+      JsonNode propConfed = data.get(PROP_CONFEDERATION);
+      if (propConfed == null || !propConfed.asBoolean(Boolean.FALSE)) {
+        return AsSet.of(getValues(data.get(PROP_ASNS)));
+      } else {
+        return AsSet.confed(getValues(data.get(PROP_ASNS)));
+      }
+    } else {
+      throw new IllegalArgumentException(String.format("Cannot deserialize %s", AsSet.class));
+    }
+  }
+
+  /** Convert JsonNode to an array of longs */
+  private static long[] getValues(JsonNode data) {
+    long[] values = new long[data.size()];
+    int i = 0;
+    Iterator<JsonNode> iterator = data.elements();
+    while (iterator.hasNext()) {
+      JsonNode v = iterator.next();
+      assert v.isNumber();
+      values[i++] = v.asLong();
+    }
+    return values;
   }
 
   @Override
@@ -80,12 +126,13 @@ public class AsSet implements Serializable, Comparable<AsSet> {
     } else if (!(o instanceof AsSet)) {
       return false;
     }
-    return Arrays.equals(_value, ((AsSet) o)._value);
+    return Arrays.equals(_value, ((AsSet) o)._value)
+        && _confederation == ((AsSet) o)._confederation;
   }
 
   /** Expensive. */
   @VisibleForTesting
-  @JsonValue
+  @JsonProperty(PROP_ASNS)
   public SortedSet<Long> getAsns() {
     return Arrays.stream(_value)
         .boxed()
@@ -94,11 +141,18 @@ public class AsSet implements Serializable, Comparable<AsSet> {
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(_value);
+    return Arrays.hashCode(_value) * 31 + Boolean.hashCode(_confederation);
   }
 
+  @JsonIgnore
   public boolean isEmpty() {
     return _value.length == 0;
+  }
+
+  /** Returns true if this AsSet is of type {@code AS_CONFED_SEQUENCE} or {@code AS_CONFED_SET} */
+  @JsonProperty(PROP_CONFEDERATION)
+  public boolean isConfederationAsSet() {
+    return _confederation;
   }
 
   /** Returns a new {@link AsSet} that consists of this set with any private ASNs removed. */

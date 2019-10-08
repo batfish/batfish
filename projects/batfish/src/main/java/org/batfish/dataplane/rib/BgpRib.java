@@ -99,7 +99,6 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
             // Aggregates (for non-juniper devices, won't appear on Juniper)
             .thenComparing(r -> getAggregatePreference(r.getProtocol()))
             // AS path: prefer shorter
-            // NOTE: if BGP confederations were supported, confederation segments have a length of 0
             // TODO: support `bestpath as-path ignore` (both cisco, juniper)
             .thenComparing(r -> r.getAsPath().size(), Comparator.reverseOrder())
             // Prefer certain origin type Internal over External over Incomplete

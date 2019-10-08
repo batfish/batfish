@@ -26788,9 +26788,12 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 130,
                 "asPath" : [
-                  [
-                    8060932
-                  ]
+                  {
+                    "asns" : [
+                      8060932
+                    ],
+                    "confederation" : false
+                  }
                 ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:20.0.0.0/8~",
@@ -26803,10 +26806,13 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 130,
                 "asPath" : [
-                  [
-                    8060932,
-                    29884423
-                  ]
+                  {
+                    "asns" : [
+                      8060932,
+                      29884423
+                    ],
+                    "confederation" : false
+                  }
                 ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:30.0.0.0/8~",
