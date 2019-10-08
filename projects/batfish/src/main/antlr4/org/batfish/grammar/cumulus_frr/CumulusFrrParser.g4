@@ -24,40 +24,48 @@ statement
   | NO IPV6 FORWARDING NEWLINE
   | s_agentx
   | s_bgp
-  | s_vrf
-  | s_routemap
-  | s_ip
-  | s_service
-  | LINE VTY NEWLINE
-  | s_log
-  | s_interface
-  | s_router_ospf
+  | s_enable
   | s_end
+  | s_interface
+  | s_ip
+  | s_line
+  | s_log
+  | s_password
+  | s_routemap
+  | s_router_ospf
+  | s_service
+  | s_vrf
 ;
 
-s_service
+ip_as_path
 :
-  SERVICE
-  (
-    INTEGRATED_VTYSH_CONFIG
-    | PASSWORD_ENCRYPTION
-  )
-  NEWLINE
-;
-
-s_log
-:
-  LOG
-  (
-    SYSLOG INFORMATIONAL
-    | FILE REMARK_TEXT
-    | COMMANDS
-  ) NEWLINE
+  AS_PATH ACCESS_LIST name = word action = line_action asn = uint32 NEWLINE
 ;
 
 s_agentx
 :
   AGENTX NEWLINE
+;
+
+si_description
+:
+  DESCRIPTION description = REMARK_TEXT NEWLINE
+;
+
+s_enable
+:
+  ENABLE
+  se_password
+;
+
+s_end
+:
+  END NEWLINE
+;
+
+se_password
+:
+  PASSWORD null_rest_of_line
 ;
 
 s_ip
@@ -70,17 +78,33 @@ s_ip
   )
 ;
 
-si_description
+s_line
 :
-  DESCRIPTION description = REMARK_TEXT NEWLINE
+  LINE VTY NEWLINE
 ;
 
-s_end
+s_log
 :
-  END NEWLINE
+  LOG
+  (
+    SYSLOG INFORMATIONAL
+    | FILE REMARK_TEXT
+    | COMMANDS
+  ) NEWLINE
 ;
 
-ip_as_path
+s_password
 :
-  AS_PATH ACCESS_LIST name = word action = line_action asn = uint32 NEWLINE
+  PASSWORD null_rest_of_line
 ;
+
+s_service
+:
+  SERVICE
+  (
+    INTEGRATED_VTYSH_CONFIG
+    | PASSWORD_ENCRYPTION
+  )
+  NEWLINE
+;
+
