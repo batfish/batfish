@@ -22,9 +22,15 @@ sb_bgp
   BGP
   (
     sbb_bestpath
-    | sbb_router_id
+    | sbb_confederation
     | sbb_log_neighbor_changes
+    | sbb_router_id
   )
+;
+
+sbb_confederation
+:
+  CONFEDERATION IDENTIFIER id = uint32 NEWLINE
 ;
 
 sbb_bestpath

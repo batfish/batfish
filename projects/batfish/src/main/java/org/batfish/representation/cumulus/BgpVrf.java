@@ -17,6 +17,7 @@ public class BgpVrf implements Serializable {
   private @Nullable BgpL2vpnEvpnAddressFamily _l2VpnEvpn;
   private @Nullable Ip _routerId;
   private final @Nonnull String _vrfName;
+  private @Nullable Long _confederationId;
 
   public BgpVrf(String vrfName) {
     _vrfName = vrfName;
@@ -70,5 +71,14 @@ public class BgpVrf implements Serializable {
 
   public void setRouterId(@Nullable Ip routerId) {
     _routerId = routerId;
+  }
+
+  @Nullable
+  public Long getConfederationId() {
+    return _confederationId;
+  }
+
+  public void setConfederationId(@Nullable Long confederationId) {
+    _confederationId = confederationId;
   }
 }
