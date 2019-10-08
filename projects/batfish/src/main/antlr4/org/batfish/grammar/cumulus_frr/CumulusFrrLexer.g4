@@ -9,9 +9,34 @@ tokens {
   WORD
 }
 
+ACCESS_LIST
+:
+  'access-list' -> pushMode(M_Word)
+;
+
+ACTIVATE
+:
+  'activate'
+;
+
 ADDRESS
 :
   'address'
+;
+
+ADDRESS_FAMILY
+:
+  'address-family'
+;
+
+ADVERTISE
+:
+  'advertise'
+;
+
+ADVERTISE_ALL_VNI
+:
+  'advertise-all-vni'
 ;
 
 AGENTX
@@ -22,6 +47,11 @@ AGENTX
 AGGREGATE_ADDRESS
 :
   'aggregate-address'
+;
+
+ALWAYS_COMPARE_MED
+:
+  'always-compare-med'
 ;
 
 ANY
@@ -37,7 +67,18 @@ AREA
 AS_PATH
 :
   'as-path'
+  {
+    if (lastTokenType() == MATCH) {
+        pushMode(M_Word);
+    }
+  }
 ;
+
+AUTHENTICATION
+:
+  'authentication'
+;
+
 
 BESTPATH
 :
@@ -47,6 +88,22 @@ BESTPATH
 BFD
 :
   'bfd' -> pushMode(M_Words)
+;
+
+
+BGP
+:
+  'bgp'
+;
+
+CALL
+:
+  'call' -> pushMode(M_Word)
+;
+
+COLON
+:
+  ':'
 ;
 
 COMMANDS
@@ -66,51 +123,6 @@ COMMENT_LINE
     F_Newline+
     | EOF
   ) -> channel ( HIDDEN )
-;
-
-ACTIVATE
-:
-  'activate'
-;
-
-ADDRESS_FAMILY
-:
-  'address-family'
-;
-
-ADVERTISE
-:
-  'advertise'
-;
-
-ADVERTISE_ALL_VNI
-:
-  'advertise-all-vni'
-;
-
-ALWAYS_COMPARE_MED
-:
-  'always-compare-med'
-;
-
-AUTHENTICATION
-:
-  'authentication'
-;
-
-BGP
-:
-  'bgp'
-;
-
-CALL
-:
-  'call' -> pushMode(M_Word)
-;
-
-COLON
-:
-  ':'
 ;
 
 COMMUNITY
@@ -419,6 +431,11 @@ POINT_TO_POINT
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
+;
+
+PREPEND
+:
+  'prepend'
 ;
 
 REDISTRIBUTE

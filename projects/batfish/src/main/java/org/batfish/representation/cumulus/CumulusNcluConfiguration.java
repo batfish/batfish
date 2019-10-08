@@ -49,6 +49,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
@@ -181,6 +183,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull Map<String, Vlan> _vlans;
   private @Nonnull Map<String, Vrf> _vrfs;
   private @Nonnull Map<String, Vxlan> _vxlans;
+  private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
@@ -191,6 +194,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _bonds = new HashMap<>();
     _bridge = new Bridge();
     _interfaces = new HashMap<>();
+    _ipAsPathAccessLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
@@ -1024,6 +1028,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _vxlans;
   }
 
+  public @Nonnull Map<String, IpAsPathAccessList> getIpAsPathAccessLists() {
+    return _ipAsPathAccessLists;
+  }
+
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
   }
@@ -1088,6 +1096,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             CumulusStructureType.VRF));
     markConcreteStructure(CumulusStructureType.BOND);
     markConcreteStructure(CumulusStructureType.INTERFACE);
+    markConcreteStructure(CumulusStructureType.IP_AS_PATH_ACCESS_LIST);
     markConcreteStructure(CumulusStructureType.IP_COMMUNITY_LIST);
     markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
     markConcreteStructure(CumulusStructureType.LOOPBACK);
@@ -1591,6 +1600,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertVrfLoopbackInterfaces();
     convertVrfs();
     convertDefaultVrf();
+    convertIpAsPathAccessLists();
     convertIpPrefixLists();
     convertIpCommunityLists();
     convertRouteMaps();
@@ -1625,6 +1635,27 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                     .map(k -> new CommunityListLine(ipCommunityList.getAction(), k))
                     .collect(ImmutableList.toImmutableList()),
                 false));
+  }
+
+  private void convertIpAsPathAccessLists() {
+    _ipAsPathAccessLists.forEach(
+        (name, asPathAccessList) ->
+            _c.getAsPathAccessLists().put(name, toAsPathAccessList(asPathAccessList)));
+  }
+
+  @VisibleForTesting
+  static @Nonnull AsPathAccessList toAsPathAccessList(IpAsPathAccessList asPathAccessList) {
+    String name = asPathAccessList.getName();
+    List<AsPathAccessListLine> lines =
+        asPathAccessList.getLines().stream()
+            // TODO Check FRR AS path match semantics.
+            // This regex assumes we should match any path containing the specified ASN anywhere.
+            .map(
+                line ->
+                    new AsPathAccessListLine(
+                        line.getAction(), String.format("(^| )%s($| )", line.getAsNum())))
+            .collect(ImmutableList.toImmutableList());
+    return new AsPathAccessList(name, lines);
   }
 
   private void convertIpPrefixLists() {

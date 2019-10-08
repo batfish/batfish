@@ -19,7 +19,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.List;
 import java.util.SortedMap;
+import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -133,6 +138,41 @@ public class CumulusNcluConfigurationTest {
                         LineAction.DENY, Prefix.parse("10.0.0.1/24"), new SubRange(27, 30)),
                     new RouteFilterLine(
                         LineAction.PERMIT, Prefix.parse("10.0.2.1/24"), new SubRange(28, 31))))));
+  }
+
+  @Test
+  public void testToAsPathAccessList() {
+    long permitted = 11111;
+    long denied = 22222;
+    IpAsPathAccessList asPathAccessList = new IpAsPathAccessList("name");
+    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.DENY, denied));
+    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.PERMIT, permitted));
+    AsPathAccessList viList = CumulusNcluConfiguration.toAsPathAccessList(asPathAccessList);
+
+    // Cache initialization only happens in AsPathAccessList on deserialization o.O
+    viList = SerializationUtils.clone(viList);
+
+    List<AsPathAccessListLine> expectedViLines =
+        ImmutableList.of(
+            new AsPathAccessListLine(LineAction.DENY, String.format("(^| )%s($| )", denied)),
+            new AsPathAccessListLine(LineAction.PERMIT, String.format("(^| )%s($| )", permitted)));
+    assertThat(viList, equalTo(new AsPathAccessList("name", expectedViLines)));
+
+    // Matches paths containing permitted ASN
+    long other = 33333;
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(permitted)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(permitted, other)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(other, permitted)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(other, permitted, other)));
+
+    // Does not match if denied ASN is in path, even if permitted is also there
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(denied)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(denied, permitted)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(permitted, denied)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(permitted, denied, permitted)));
+
+    // Does not match by default
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(other)));
   }
 
   @Test

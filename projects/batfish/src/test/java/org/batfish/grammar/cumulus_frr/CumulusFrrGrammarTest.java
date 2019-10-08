@@ -56,6 +56,8 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.IpAsPathAccessList;
+import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
@@ -525,6 +527,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testRouteMapMatchAsPathAccessList() {
+    parseLines("route-map ROUTE_MAP permit 10", "match as-path AS_PATH_ACCESS_LIST");
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapMatchCallExtraction() {
     String name = "ROUTE-MAP-NAME";
 
@@ -687,6 +694,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testRouteMapSetAsPath() {
+    parseLines("route-map ROUTE_MAP permit 10", "set as-path prepend 11111 22222");
+  }
+
+  @Test
   public void testCumulusFrrRouteMapSetLocalPref() {
     String name = "ROUTE-MAP-NAME";
 
@@ -729,6 +741,36 @@ public class CumulusFrrGrammarTest {
     assertThat(
         entry.getSetCommunity().getCommunities(),
         equalTo(ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2))));
+  }
+
+  @Test
+  public void testCumulusFrrIpAsPathAccessList() {
+    String name = "NAME";
+    long as1 = 11111;
+    long as2 = 22222;
+    parse(
+        String.format(
+            "ip as-path access-list %s permit %s\n" + "ip as-path access-list %s deny %s\n",
+            name, as1, name, as2));
+
+    // Check that config has the expected AS-path access list with the expected name and num lines
+    assertThat(CONFIG.getIpAsPathAccessLists().keySet(), contains(name));
+    IpAsPathAccessList asPathAccessList = CONFIG.getIpAsPathAccessLists().get(name);
+    assertThat(asPathAccessList.getName(), equalTo(name));
+    assertThat(asPathAccessList.getLines(), hasSize(2));
+
+    // Check that lines look as expected
+    IpAsPathAccessListLine line0 = asPathAccessList.getLines().get(0);
+    IpAsPathAccessListLine line1 = asPathAccessList.getLines().get(1);
+    assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getAction(), equalTo(LineAction.DENY));
+    assertThat(line0.getAsNum(), equalTo(as1));
+    assertThat(line1.getAsNum(), equalTo(as2));
+
+    // Check that the AS-path access list definition was registered
+    DefinedStructureInfo definedStructureInfo =
+        getDefinedStructureInfo(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name);
+    assertThat(definedStructureInfo.getDefinitionLines(), contains(1, 2));
   }
 
   @Test
