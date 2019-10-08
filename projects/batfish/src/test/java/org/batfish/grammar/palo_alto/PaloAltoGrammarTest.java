@@ -1158,6 +1158,17 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c, hasVrf(vr2Name, hasStaticRoutes(not(hasItem(hasPrefix(Prefix.strict("1.0.0.0/8")))))));
 
+    // static route with next hop specified as prefix
+    assertThat(
+        c,
+        hasVrf(
+            vr2Name,
+            hasStaticRoutes(
+                hasItem(
+                    allOf(
+                        hasPrefix(Prefix.strict("2.0.0.0/8")),
+                        hasNextHopIp(Ip.parse("2.2.2.2")))))));
+
     // assert static interface route reference
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
