@@ -145,8 +145,8 @@ public class CumulusNcluConfigurationTest {
     long permitted = 11111;
     long denied = 22222;
     IpAsPathAccessList asPathAccessList = new IpAsPathAccessList("name");
-    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.PERMIT, permitted));
     asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.DENY, denied));
+    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.PERMIT, permitted));
     AsPathAccessList viList = CumulusNcluConfiguration.toAsPathAccessList(asPathAccessList);
 
     // Cache initialization only happens in AsPathAccessList on deserialization o.O
@@ -154,13 +154,25 @@ public class CumulusNcluConfigurationTest {
 
     List<AsPathAccessListLine> expectedViLines =
         ImmutableList.of(
-            new AsPathAccessListLine(LineAction.PERMIT, String.valueOf(permitted)),
-            new AsPathAccessListLine(LineAction.DENY, String.valueOf(denied)));
+            new AsPathAccessListLine(LineAction.DENY, String.format("(^| )%s($| )", denied)),
+            new AsPathAccessListLine(LineAction.PERMIT, String.format("(^| )%s($| )", permitted)));
     assertThat(viList, equalTo(new AsPathAccessList("name", expectedViLines)));
 
+    // Matches paths containing permitted ASN
+    long other = 33333;
     assertTrue(viList.permits(AsPath.ofSingletonAsSets(permitted)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(permitted, other)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(other, permitted)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(other, permitted, other)));
+
+    // Does not match if denied ASN is in path, even if permitted is also there
     assertFalse(viList.permits(AsPath.ofSingletonAsSets(denied)));
-    assertFalse(viList.permits(AsPath.ofSingletonAsSets(33333L)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(denied, permitted)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(permitted, denied)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(permitted, denied, permitted)));
+
+    // Does not match by default
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(other)));
   }
 
   @Test
