@@ -1,0 +1,9 @@
+set deviceconfig system hostname address-group-hybrid
+
+# address accessible by any vsys
+set shared address shared_addr ip-netmask 1.1.1.1
+
+# vsys-specific address
+set address addr ip-netmask 10.10.10.10
+
+set address-group group static [ addr shared_addr]
