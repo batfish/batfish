@@ -284,12 +284,14 @@ public class BgpRoutingProcessTest {
   public void testQueueInitializationAddressFamiliesMustOverlap() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
+    long localAs = 1;
+    long remoteAs = 1;
     Prefix remotePeerPrefix = ip1.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
-            .setLocalAs(1L)
-            .setRemoteAs(1L)
+            .setLocalAs(localAs)
+            .setRemoteAs(remoteAs)
             .setPeerAddress(ip2)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
@@ -309,11 +311,15 @@ public class BgpRoutingProcessTest {
         new BgpPeerConfigId("someHost", DEFAULT_VRF_NAME, ip1.toPrefix(), false);
     BgpSessionProperties.Builder sessionBuilderForward =
         BgpSessionProperties.builder()
+            .setHeadAs(remoteAs)
+            .setTailAs(localAs)
             .setHeadIp(ip2)
             .setTailIp(ip1)
             .setAddressFamilies(ImmutableSet.of(Type.EVPN));
     BgpSessionProperties.Builder sessionBuilderReverse =
         BgpSessionProperties.builder()
+            .setHeadAs(localAs)
+            .setTailAs(remoteAs)
             .setHeadIp(ip1)
             .setTailIp(ip2)
             .setAddressFamilies(ImmutableSet.of(Type.EVPN));
@@ -355,6 +361,8 @@ public class BgpRoutingProcessTest {
   @Test
   public void testResendInitializationOnTopologyUpdate() {
     // Setup
+    long localAs = 2;
+    long peerAs = 1;
     Ip localIp = Ip.parse("2.2.2.2");
     Ip peerIp = Ip.parse("1.1.1.1");
     int vni = 10001;
@@ -372,9 +380,9 @@ public class BgpRoutingProcessTest {
     BgpActivePeerConfig evpnPeer =
         BgpActivePeerConfig.builder()
             .setPeerAddress(peerIp)
-            .setRemoteAs(1L)
+            .setRemoteAs(peerAs)
             .setLocalIp(localIp)
-            .setLocalAs(2L)
+            .setLocalAs(localAs)
             .setEvpnAddressFamily(
                 EvpnAddressFamily.builder()
                     .setL2Vnis(ImmutableSet.of())
@@ -430,9 +438,9 @@ public class BgpRoutingProcessTest {
     BgpActivePeerConfig node2Peer =
         BgpActivePeerConfig.builder()
             .setPeerAddress(localIp)
-            .setRemoteAs(2L)
+            .setRemoteAs(localAs)
             .setLocalIp(peerIp)
-            .setLocalAs(1L)
+            .setLocalAs(peerAs)
             .setEvpnAddressFamily(
                 EvpnAddressFamily.builder()
                     .setL2Vnis(ImmutableSet.of())
@@ -464,11 +472,15 @@ public class BgpRoutingProcessTest {
         new BgpPeerConfigId("c2", DEFAULT_VRF_NAME, localIp.toPrefix(), false);
     BgpSessionProperties.Builder sessionBuilderForward =
         BgpSessionProperties.builder()
+            .setHeadAs(localAs)
+            .setTailAs(peerAs)
             .setHeadIp(localIp)
             .setTailIp(peerIp)
             .setAddressFamilies(ImmutableSet.of(Type.EVPN));
     BgpSessionProperties.Builder sessionBuilderReverse =
         BgpSessionProperties.builder()
+            .setHeadAs(peerAs)
+            .setTailAs(localAs)
             .setHeadIp(peerIp)
             .setTailIp(localIp)
             .setAddressFamilies(ImmutableSet.of(Type.EVPN));
