@@ -14,6 +14,7 @@ public final class RouteMapEntry implements Serializable {
 
   private final @Nonnull LineAction _action;
   private @Nullable RouteMapCall _call;
+  private @Nullable Integer _continue;
   private @Nullable RouteMapMatchAsPath _matchAsPath;
   private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
@@ -164,5 +165,14 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetTag(@Nullable RouteMapSetTag setTag) {
     _setTag = setTag;
+  }
+
+  @Nullable
+  public Integer getContinue() {
+    return _continue;
+  }
+
+  public void setContinue(@Nullable Integer aContinue) {
+    _continue = aContinue;
   }
 }
