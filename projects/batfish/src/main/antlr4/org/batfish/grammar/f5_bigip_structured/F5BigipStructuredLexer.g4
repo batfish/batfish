@@ -136,6 +136,11 @@ EBGP_MULTIHOP
   'ebgp-multihop'
 ;
 
+ELSEIF
+:
+  'elseif'
+;
+
 ENABLED
 :
   'enabled'

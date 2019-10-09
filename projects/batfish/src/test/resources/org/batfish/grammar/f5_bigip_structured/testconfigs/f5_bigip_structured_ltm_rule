@@ -1,0 +1,28 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_rule
+}
+
+ltm rule /Common/irule_foo {
+                                                            # Version 1.0
+# Author: foo@example.com
+# Stuff
+# More stuff.
+when CLIENT_ACCEPTED {
+    set bar1 [HSL::open -proto UDP -pool foo_pool]
+}
+when HTTP_REQUEST {
+    set bar2 [HTTP::header value "bunch-o-stuff"]
+    if { $bar2 eq "" } {
+        set bar2 [IP::client_addr]
+    }
+    set bar3 [whereis $bar2 country]
+    if { [class match $bar3 equals class_foo] } {
+        HSL::send $bar4 "<190> bar5 virtual=[virtual name] http_host=[HTTP::host] rem_addr=$bar2 country=$bar3"
+    } elseif { [class match $bar2 equals class_foo2] } {
+        HSL::send $bar4 "<190> bar5 virtual=[virtual name] http_host=[HTTP::host] rem_addr=$bar2 country=$bar3"
+    }
+
+}
+}
