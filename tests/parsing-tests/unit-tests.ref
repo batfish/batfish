@@ -44448,7 +44448,7 @@
             "              (word",
             "                WORD:'!SSLv2:!EXPORT:!DHE+AES-GCM:!DHE+AES:!DHE+3DES:ECDHE+AES-GCM:ECDHE+AES:RSA+AES-GCM:RSA+AES:ECDHE+3DES:RSA+3DES:-MD5:DES-CBC3-SHA:-SSLv3:-RC4'))",
             "            NEWLINE:'\\n')",
-            "          (lprofcs_defaults_from",
+            "          (lprof_client_ssl_defaults_from",
             "            DEFAULTS_FROM:'defaults-from'",
             "            name = (structure_name",
             "              partition = PARTITION:'/Common/'",
@@ -44950,7 +44950,7 @@
             "              (word",
             "                WORD:'!SSLv2:!EXPORT:!DHE+AES-GCM:!DHE+AES:!DHE+3DES:ECDHE+AES-GCM:ECDHE+AES:RSA+AES-GCM:RSA+AES:ECDHE+3DES:RSA+3DES:-MD5:DES-CBC3-SHA:-SSLv3:-RC4'))",
             "            NEWLINE:'\\n')",
-            "          (lprofss_defaults_from",
+            "          (lprof_server_ssl_defaults_from",
             "            DEFAULTS_FROM:'defaults-from'",
             "            name = (structure_name",
             "              partition = PARTITION:'/Common/'",
@@ -75554,7 +75554,7 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 206,
-              "Parser_Context" : "[lprofcs_defaults_from lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Parser_Context" : "[lprof_client_ssl_defaults_from lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "defaults-from /Common/clientssl"
             },
             {
@@ -75884,7 +75884,7 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 267,
-              "Parser_Context" : "[lprofss_defaults_from lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Parser_Context" : "[lprof_server_ssl_defaults_from lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "defaults-from /Common/serverssl"
             },
             {
