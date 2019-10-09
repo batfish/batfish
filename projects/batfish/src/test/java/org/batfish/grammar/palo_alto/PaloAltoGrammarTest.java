@@ -137,6 +137,7 @@ import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -315,6 +316,30 @@ public final class PaloAltoGrammarTest {
         hasIpSpace(
             "group1",
             equalTo(addressGroups.get("group1").getIpSpace(addressObjects, addressGroups))));
+  }
+
+  // TODO: https://github.com/batfish/batfish/issues/4921
+  @Ignore
+  @Test
+  public void testAddressGroupHybrid() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-group-hybrid");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    Vsys sharedVsys = c.getShared();
+    Map<String, AddressObject> sharedAddressObjects = sharedVsys.getAddressObjects();
+
+    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group")));
+
+    // Confirm hybrid address-group contains both shared and vsys-specific addresses
+    assertThat(
+        addressGroups.get("group").getIpSpace(addressObjects, addressGroups),
+        equalTo(
+            AclIpSpace.union(
+                addressObjects.get("addr").getIpSpace(),
+                sharedAddressObjects.get("shared_addr").getIpSpace())));
   }
 
   @Test
