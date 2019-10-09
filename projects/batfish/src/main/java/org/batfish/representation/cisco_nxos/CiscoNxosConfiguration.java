@@ -1731,10 +1731,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // switchport+vlan settings
     SwitchportMode switchportMode = iface.getSwitchportModeEffective(_systemDefaultSwitchport);
+    newIfaceBuilder.setSwitchport(switchportMode != SwitchportMode.NONE);
     newIfaceBuilder.setSwitchportMode(switchportMode.toSwitchportMode());
     switch (switchportMode) {
       case ACCESS:
-        newIfaceBuilder.setSwitchport(true);
         newIfaceBuilder.setAccessVlan(iface.getAccessVlan());
         break;
 
@@ -1743,7 +1743,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         break;
 
       case TRUNK:
-        newIfaceBuilder.setSwitchport(true);
         newIfaceBuilder.setAllowedVlans(iface.getAllowedVlans());
         newIfaceBuilder.setNativeVlan(iface.getNativeVlan());
         break;
