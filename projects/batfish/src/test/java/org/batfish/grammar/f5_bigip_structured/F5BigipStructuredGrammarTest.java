@@ -186,6 +186,7 @@ import org.batfish.representation.f5_bigip.BuiltinProfile;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.batfish.representation.f5_bigip.Route;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -267,10 +268,11 @@ public final class F5BigipStructuredGrammarTest {
     return !toBDD().toBdd(acl.getLines().get(matchLine).getMatchCondition()).isOne();
   }
 
-  private static F5BigipConfiguration parseVendorConfig(String filename) {
+  private @Nonnull F5BigipConfiguration parseVendorConfig(String filename) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
+    settings.setDisableUnrecognized(_disableUnrecognized);
     F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
     F5BigipStructuredControlPlaneExtractor extractor =
         new F5BigipStructuredControlPlaneExtractor(
@@ -290,14 +292,27 @@ public final class F5BigipStructuredGrammarTest {
     return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
   }
 
+  // TODO: switch to true when tests are fixed
+  private static boolean DEFAULT_DISABLE_UNRECOGNIZED = false;
+
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
+  private boolean _disableUnrecognized;
+
+  @Before
+  public void setup() {
+    _disableUnrecognized = DEFAULT_DISABLE_UNRECOGNIZED;
+  }
+
+  private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
+      throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+    Batfish batfish = BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+    batfish.getSettings().setDisableUnrecognized(_disableUnrecognized);
+    return batfish;
   }
 
   private Bgpv4Route.Builder makeBgpOutputRouteBuilder() {
@@ -314,9 +329,7 @@ public final class F5BigipStructuredGrammarTest {
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    String[] names =
-        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.parseTextConfigs(_folder, names);
+    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
   }
 
   @Test

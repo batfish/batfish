@@ -18,6 +18,11 @@ empty_list
   BRACE_LEFT BRACE_RIGHT
 ;
 
+ignored
+:
+  unrecognized
+;
+
 ip_address
 :
   IP_ADDRESS
