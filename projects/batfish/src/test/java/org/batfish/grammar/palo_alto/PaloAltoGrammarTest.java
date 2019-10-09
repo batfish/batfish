@@ -71,7 +71,9 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -128,6 +130,12 @@ import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.IbgpPeerGroupType;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.OspfArea;
+import org.batfish.representation.palo_alto.OspfAreaNormal;
+import org.batfish.representation.palo_alto.OspfAreaNssa;
+import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
+import org.batfish.representation.palo_alto.OspfAreaStub;
+import org.batfish.representation.palo_alto.OspfVr;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
@@ -582,6 +590,49 @@ public final class PaloAltoGrammarTest {
     assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.2.3.6")));
     assertThat(peer.getLocalAs(), equalTo(65001L));
     assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65001)));
+  }
+
+  @Test
+  public void testOspfExtraction() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("ospf");
+    VirtualRouter vr = c.getVirtualRouters().get("vr1");
+    assertThat(vr, notNullValue());
+    OspfVr ospf = vr.getOspf();
+
+    assertThat(ospf, notNullValue());
+    assertThat(ospf.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
+    assertTrue(ospf.isEnable());
+    assertFalse(ospf.isRejectDefaultRoute());
+
+    Ip areaId = Ip.parse("1.1.1.1");
+    assertThat(ospf.getAreas(), hasKey(areaId));
+    OspfArea ospfArea = ospf.getAreas().get(areaId);
+    assertThat(ospfArea.getAreaId(), equalTo(areaId));
+    assertThat(ospfArea.getTypeSettings(), not(nullValue()));
+    assertThat(ospfArea.getTypeSettings(), instanceOf(OspfAreaStub.class));
+    OspfAreaStub stubArea = (OspfAreaStub) ospfArea.getTypeSettings();
+    assertThat(stubArea.getDefaultRouteMetric(), equalTo(12));
+    assertThat(stubArea.getAcceptSummary(), equalTo(Boolean.TRUE));
+    assertTrue(stubArea.isDefaultRouteDisable());
+
+    areaId = Ip.parse("2.2.2.2");
+    assertThat(ospf.getAreas(), hasKey(areaId));
+    ospfArea = ospf.getAreas().get(areaId);
+    assertThat(ospfArea.getAreaId(), equalTo(areaId));
+    assertThat(ospfArea.getTypeSettings(), not(nullValue()));
+    assertThat(ospfArea.getTypeSettings(), instanceOf(OspfAreaNormal.class));
+
+    areaId = Ip.parse("3.3.3.3");
+    assertThat(ospf.getAreas(), hasKey(areaId));
+    ospfArea = ospf.getAreas().get(areaId);
+    assertThat(ospfArea.getAreaId(), equalTo(areaId));
+    assertThat(ospfArea.getTypeSettings(), not(nullValue()));
+    assertThat(ospfArea.getTypeSettings(), instanceOf(OspfAreaNssa.class));
+    OspfAreaNssa nssaArea = (OspfAreaNssa) ospfArea.getTypeSettings();
+    assertThat(nssaArea.getDefaultRouteMetric(), equalTo(13));
+    assertThat(nssaArea.getAcceptSummary(), equalTo(Boolean.FALSE));
+    assertThat(nssaArea.getDefaultRouteType(), equalTo(DefaultRouteType.EXT_2));
+    assertFalse(nssaArea.isDefaultRouteDisable());
   }
 
   @Test
