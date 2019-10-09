@@ -56,7 +56,9 @@ public class OspfVr {
     _routerId = routerId;
   }
 
-  // private implementation details
+  //////////////////////////////////////////
+  ///// Private implementation details /////
+  //////////////////////////////////////////
   private Map<Ip, OspfArea> _areas;
   private boolean _enable;
   private boolean _rejectDefaultRoute;

@@ -71,8 +71,8 @@ ospfat_nssa
 :
     NSSA
     (
-        ospfatn_default_route
-        | ospfatn_accept_summary
+        ospfatn_accept_summary
+        | ospfatn_default_route
     )
 ;
 
@@ -80,8 +80,8 @@ ospfat_stub
 :
     STUB
     (
-        ospfats_default_route
-        | ospfats_accept_summary
+        ospfats_accept_summary
+        | ospfats_default_route
     )
 ;
 

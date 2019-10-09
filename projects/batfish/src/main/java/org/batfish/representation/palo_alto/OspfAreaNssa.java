@@ -2,12 +2,13 @@ package org.batfish.representation.palo_alto;
 
 import javax.annotation.Nullable;
 
+/** Configurations specific to NSSA type OSPF area */
 public class OspfAreaNssa implements OspfAreaTypeSettings {
   public enum DefaultRouteType {
     EXT_1,
     EXT_2
   }
-  /** If not appearing in the config then it means default route is not disabled. */
+  /** If not appearing in the config then default route is not disabled. */
   private static final boolean DEFAULT_DEFAULT_ROUTE_DISABLE = false;
 
   public OspfAreaNssa() {

@@ -2,8 +2,9 @@ package org.batfish.representation.palo_alto;
 
 import javax.annotation.Nullable;
 
+/** Configurations specific to NSSA type OSPF area */
 public class OspfAreaStub implements OspfAreaTypeSettings {
-  /** If explicitly appaered in the config then it means default route is not disabled. */
+  /** If explicitly appeared in config then default route is not disabled. */
   private static final boolean DEFAULT_DEFAULT_ROUTE_DISABLE = false;
 
   public OspfAreaStub() {

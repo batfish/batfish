@@ -735,6 +735,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _currentOspfArea =
         toIp(ctx, ctx.addr, "OSPF area-id")
             .map(_currentOspfVr::getOrCreateOspfArea)
+            // dummy area with Ip MAX
             .orElseGet(() -> new OspfArea(Ip.MAX));
   }
 
@@ -767,7 +768,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitOspfat_stub(Ospfat_stubContext ctx) {
-    _currentOspfArea.setTypeSettings(_currentOspfStubAreaType);
     _currentOspfStubAreaType = null;
   }
 
@@ -805,7 +805,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitOspfat_nssa(Ospfat_nssaContext ctx) {
-    _currentOspfArea.setTypeSettings(_currentOspfNssaAreaType);
     _currentOspfNssaAreaType = null;
   }
 

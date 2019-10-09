@@ -4,9 +4,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
+/** Configuration of an OSPF area {@code network virtual-router NAME protocol ospf area AREA_ID}. */
 public class OspfArea {
 
-  public OspfArea(@Nonnull Ip areaId) {
+  public OspfArea(Ip areaId) {
     _areaId = areaId;
   }
 
