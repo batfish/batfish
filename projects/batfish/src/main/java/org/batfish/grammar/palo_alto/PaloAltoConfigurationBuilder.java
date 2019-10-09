@@ -114,6 +114,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
@@ -546,7 +547,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitBgppgp_peer_address(Bgppgp_peer_addressContext ctx) {
-    _currentBgpPeer.setPeerAddress(toIp(ctx.address));
+    toIp(ctx, ctx.addr, "BGP peer-address").ifPresent(_currentBgpPeer::setPeerAddress);
   }
 
   @Override
@@ -630,12 +631,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitBgp_router_id(Bgp_router_idContext ctx) {
-    ConcreteInterfaceAddress addr = toInterfaceAddress(ctx.address);
-    if (addr.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
-      warn(ctx, ctx.address, "Expected a 32-bit prefix on BGP router-id");
-    } else {
-      _currentBgpVr.setRouterId(addr.getIp());
-    }
+    toIp(ctx, ctx.addr, "BGP router-id").ifPresent(_currentBgpVr::setRouterId);
   }
 
   @Override
@@ -1382,21 +1378,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitVrrtn_ip(Vrrtn_ipContext ctx) {
-    Ip ip;
-    if (ctx.address != null) {
-      ip = Ip.parse(getText(ctx.address));
-    } else {
-      Prefix prefix = Prefix.parse(getText(ctx.prefix));
-      if (prefix.getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
-        _w.addWarning(
-            ctx,
-            getFullText(ctx),
-            _parser,
-            String.format("Static route has non-IP next hop: %s", prefix));
-      }
-      ip = prefix.getStartIp();
-    }
-    _currentStaticRoute.setNextHopIp(ip);
+    toIp(ctx, ctx.addr, "static route nexthop ip-address")
+        .ifPresent(_currentStaticRoute::setNextHopIp);
   }
 
   @Override
@@ -1792,6 +1775,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
+  }
+
+  private @Nonnull Optional<Ip> toIp(
+      ParserRuleContext ctx, Ip_address_or_slash32Context addr, String ipType) {
+    ConcreteInterfaceAddress ip = toInterfaceAddress(addr.addr);
+    if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
+      warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
+      return Optional.empty();
+    }
+    return Optional.of(ip.getIp());
   }
 
   /////////////////////////////////////////
