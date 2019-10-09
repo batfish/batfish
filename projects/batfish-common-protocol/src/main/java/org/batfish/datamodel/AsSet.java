@@ -146,7 +146,7 @@ public class AsSet implements Serializable, Comparable<AsSet> {
 
   @JsonIgnore
   public boolean isEmpty() {
-    return _value.length == 0;
+    return size() == 0;
   }
 
   /** Returns true if this AsSet is of type {@code AS_CONFED_SEQUENCE} or {@code AS_CONFED_SET} */
