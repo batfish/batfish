@@ -26,6 +26,11 @@ ip_address
     IP_ADDRESS
 ;
 
+ip_address_or_slash32
+:
+    addr = interface_address
+;
+
 src_or_dst_list
 :
     (

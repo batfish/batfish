@@ -146,7 +146,7 @@ vrrt_nexthop
 
 vrrtn_ip
 :
-  IP_ADDRESS_LITERAL (address = ip_address | prefix = IP_PREFIX)
+  IP_ADDRESS_LITERAL addr = ip_address_or_slash32
 ;
 
 vrrtn_next_vr
