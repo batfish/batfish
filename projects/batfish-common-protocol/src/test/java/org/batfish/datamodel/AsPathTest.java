@@ -30,12 +30,14 @@ public class AsPathTest {
   @Test
   public void testAsPathLength() {
     AsPath path = AsPath.of(AsSet.confed(1L));
-    assertThat(path.size(), equalTo(0));
+    assertThat(path.length(), equalTo(0));
 
     path = AsPath.of(ImmutableList.of(AsSet.confed(1L), AsSet.of(2L)));
-    assertThat(path.size(), equalTo(1));
+    assertThat(path.length(), equalTo(1));
+    assertThat(path.size(), equalTo(2));
 
     path = AsPath.of(ImmutableList.of(AsSet.confed(1L), AsSet.of(2L, 3L), AsSet.confed(3L)));
-    assertThat(path.size(), equalTo(1));
+    assertThat(path.length(), equalTo(1));
+    assertThat(path.size(), equalTo(3));
   }
 }

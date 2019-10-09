@@ -137,10 +137,12 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
     return _asSets.hashCode();
   }
 
-  /**
-   * Return the size (i.e., length) for this AS path as required for BGP path selection algorithm
-   */
   public int size() {
+    return _asSets.size();
+  }
+
+  /** Return the length for this AS path as required for BGP path selection algorithm */
+  public int length() {
     return (int) _asSets.stream().filter(Predicates.not(AsSet::isConfederationAsSet)).count();
   }
 
