@@ -14,10 +14,12 @@ public class OspfArea {
     _interfaces = new HashMap<>();
   }
 
-  public @Nonnull OspfInterface getOrCreateOspfInterface(String ifaceName) {
+  @Nonnull
+  public OspfInterface getOrCreateOspfInterface(String ifaceName) {
     return _interfaces.computeIfAbsent(ifaceName, OspfInterface::new);
   }
 
+  @Nonnull
   public Map<String, OspfInterface> getInterfaces() {
     return _interfaces;
   }
@@ -41,6 +43,6 @@ public class OspfArea {
   }
 
   private @Nonnull Ip _areaId;
-  private Map<String, OspfInterface> _interfaces;
+  private @Nonnull Map<String, OspfInterface> _interfaces;
   private @Nullable OspfAreaTypeSettings _typeSettings;
 }
