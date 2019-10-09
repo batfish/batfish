@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-/** A firewall filter on Juniper */
+/** A firewall filter on Juniper that is a concatenation of its member filters. */
 public final class CompositeFirewallFilter extends FirewallFilter {
 
   public CompositeFirewallFilter(String name, @Nonnull List<FirewallFilter> inner) {

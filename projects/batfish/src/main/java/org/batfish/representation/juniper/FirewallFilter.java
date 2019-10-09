@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 
-/** A firewall filter on Juniper */
+/** The VS structure for things that are ACL-like. */
 public abstract class FirewallFilter implements Serializable {
   public final @Nonnull String getName() {
     return _name;

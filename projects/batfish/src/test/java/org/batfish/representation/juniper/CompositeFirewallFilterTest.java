@@ -34,8 +34,8 @@ public class CompositeFirewallFilterTest {
 
     CompositeFirewallFilter barfoo =
         new CompositeFirewallFilter("comp", ImmutableList.of(bar, foo));
-    assertThat(foobar.getFamily(), equalTo(Family.INET));
-    assertThat(foobar.isUsedForFBF(), equalTo(true));
+    assertThat(barfoo.getFamily(), equalTo(Family.INET));
+    assertThat(barfoo.isUsedForFBF(), equalTo(true));
 
     CompositeFirewallFilter barbarOnly =
         new CompositeFirewallFilter("comp", ImmutableList.of(bar, barOnly));

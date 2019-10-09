@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-/** A firewall filter on Juniper */
+/** A firewall filter on Juniper. */
 public final class ConcreteFirewallFilter extends FirewallFilter {
 
   private final Family _family;
