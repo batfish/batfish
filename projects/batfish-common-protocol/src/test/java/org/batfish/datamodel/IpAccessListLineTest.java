@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -47,18 +48,22 @@ public class IpAccessListLineTest {
             .setTag("tag");
 
     {
+      // The testACL should explicitly permit the flow on some line, since it was permitted by acl.
       FilterResult r2345 =
           testAcl.filter(fb.setSrcIp(ip2345).build(), "eth", acls, Collections.emptyMap());
       assertThat(r2345.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(r2345.getMatchLine(), equalTo(0));
+      assertThat(r2345.getMatchLine(), equalTo(not(nullValue())));
     }
     {
+      // The testACL should explicitly reject the flow on some line, since it was rejected by acl.
       FilterResult r1234 =
           testAcl.filter(fb.setSrcIp(ip1234).build(), "eth", acls, Collections.emptyMap());
       assertThat(r1234.getAction(), equalTo(LineAction.DENY));
-      assertThat(r1234.getMatchLine(), equalTo(1));
+      assertThat(r1234.getMatchLine(), equalTo(not(nullValue())));
     }
     {
+      // The testACL should reject the flow by falling off the end, since it was not explicitly
+      // handled by acl.
       Ip ip3456 = Ip.parse("3.4.5.6");
       FilterResult r3456 =
           testAcl.filter(fb.setSrcIp(ip3456).build(), "eth", acls, Collections.emptyMap());
