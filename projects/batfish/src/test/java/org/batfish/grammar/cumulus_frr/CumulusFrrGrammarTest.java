@@ -636,6 +636,14 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrVrfRouteMapSetAsPath() {
+    String name = "ROUTE-MAP-NAME";
+    parse(String.format("route-map %s permit 10\nset as-path prepend 11111 22222 33333\n", name));
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getSetAsPath().getAsns(), contains(11111L, 22222L, 33333L));
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapSetMetric() {
     String name = "ROUTE-MAP-NAME";
 
