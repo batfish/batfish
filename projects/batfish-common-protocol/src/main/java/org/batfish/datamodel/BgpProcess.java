@@ -18,12 +18,14 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.bgp.BgpConfederation;
 
 /** Represents a bgp process on a router */
 public class BgpProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
+    @Nullable private BgpConfederation _confederation;
     @Nullable private Integer _ebgpAdminCost;
     @Nullable private Integer _ibgpAdminCost;
     @Nullable private Ip _routerId;
@@ -38,11 +40,18 @@ public class BgpProcess implements Serializable {
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
       checkArgument(_ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
       checkArgument(_ibgpAdminCost != null, "Missing %s", PROP_IBGP_ADMIN_COST);
-      BgpProcess bgpProcess = new BgpProcess(_routerId, _ebgpAdminCost, _ibgpAdminCost);
+      BgpProcess bgpProcess =
+          new BgpProcess(_routerId, _ebgpAdminCost, _ibgpAdminCost, _confederation);
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
       }
       return bgpProcess;
+    }
+
+    @Nonnull
+    public Builder setConfederation(@Nullable BgpConfederation confederation) {
+      _confederation = confederation;
+      return this;
     }
 
     /**
@@ -91,6 +100,7 @@ public class BgpProcess implements Serializable {
     }
   }
 
+  private static final String PROP_CONFEDERATION = "confederation";
   private static final String PROP_EBGP_ADMIN_COST = "ebgpAdminCost";
   private static final String PROP_IBGP_ADMIN_COST = "ibgpAdminCost";
   private static final String PROP_INTERFACE_NEIGHBORS = "interfaceNeighbors";
@@ -103,6 +113,7 @@ public class BgpProcess implements Serializable {
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_TIE_BREAKER = "tieBreaker";
 
+  @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
   private final int _ibgpAdminCost;
   private Supplier<Set<Long>> _clusterIds;
@@ -144,7 +155,16 @@ public class BgpProcess implements Serializable {
 
   /** Constructs a BgpProcess with the given router ID and admin costs */
   public BgpProcess(@Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost) {
+    this(routerId, ebgpAdminCost, ibgpAdminCost, null);
+  }
+
+  private BgpProcess(
+      @Nonnull Ip routerId,
+      int ebgpAdminCost,
+      int ibgpAdminCost,
+      @Nullable BgpConfederation confederation) {
     _activeNeighbors = new TreeMap<>();
+    _confederation = confederation;
     _ebgpAdminCost = ebgpAdminCost;
     _ibgpAdminCost = ibgpAdminCost;
     _interfaceNeighbors = new TreeMap<>();
@@ -158,6 +178,7 @@ public class BgpProcess implements Serializable {
   @JsonCreator
   private static BgpProcess create(
       @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
+      @Nullable @JsonProperty(PROP_CONFEDERATION) BgpConfederation confederation,
       @Nullable @JsonProperty(PROP_EBGP_ADMIN_COST) Integer ebgpAdminCost,
       @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost) {
     checkArgument(routerId != null, "Missing %s", routerId);
@@ -169,7 +190,8 @@ public class BgpProcess implements Serializable {
             RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)),
         firstNonNull(
             ibgpAdminCost,
-            RoutingProtocol.IBGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)));
+            RoutingProtocol.IBGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)),
+        confederation);
   }
 
   public static Builder builder() {
@@ -225,6 +247,13 @@ public class BgpProcess implements Serializable {
       default:
         throw new IllegalArgumentException(String.format("Unrecognized BGP protocol %s", protocol));
     }
+  }
+
+  /** Return the global confederation config */
+  @Nullable
+  @JsonProperty(PROP_CONFEDERATION)
+  public BgpConfederation getConfederation() {
+    return _confederation;
   }
 
   /** Returns the admin cost for eBGP routes in this process */
