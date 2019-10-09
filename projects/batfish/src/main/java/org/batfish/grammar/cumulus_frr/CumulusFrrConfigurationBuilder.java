@@ -4,9 +4,15 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
+import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_PREFIX_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
@@ -111,7 +117,6 @@ import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkCon
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
-import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
@@ -208,10 +213,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _currentBgpVrf = new BgpVrf(vrfName);
       _c.getBgpProcess().getVrfs().put(vrfName, _currentBgpVrf);
       _c.referenceStructure(
-          CumulusStructureType.VRF,
-          vrfName,
-          CumulusStructureUsage.BGP_VRF,
-          ctx.vrf_name().getStart().getLine());
+          VRF, vrfName, CumulusStructureUsage.BGP_VRF, ctx.vrf_name().getStart().getLine());
     }
     _currentBgpVrf.setAutonomousSystem(parseLong(ctx.autonomous_system().getText()));
   }
@@ -254,8 +256,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     String routeMap;
     if (ctx.route_map_name() != null) {
       routeMap = ctx.route_map_name().getText();
-      _c.referenceStructure(
-          CumulusStructureType.ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+      _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
     } else {
       routeMap = null;
     }
@@ -609,7 +610,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
     // VRFs are declared in /etc/network/interfaces file, but this is part of the definition
     _currentVrf = _c.getVrfs().get(name);
-    _c.defineStructure(CumulusStructureType.VRF, name, ctx);
+    _c.defineStructure(VRF, name, ctx);
   }
 
   @Override
@@ -630,8 +631,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else {
       throw new IllegalStateException("only support in and out in route map");
     }
-    _c.referenceStructure(
-        CumulusStructureType.ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
+    _c.referenceStructure(ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -665,7 +665,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .getEntries()
             .computeIfAbsent(
                 sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
-    _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx);
+    _c.defineStructure(ROUTE_MAP, name, ctx);
   }
 
   @Override
@@ -692,7 +692,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRm_call(Rm_callContext ctx) {
-    _currentRouteMapEntry.setCall(new RouteMapCall(ctx.name.getText()));
+    String name = ctx.name.getText();
+    _currentRouteMapEntry.setCall(new RouteMapCall(name));
+    _c.referenceStructure(ROUTE_MAP, name, ROUTE_MAP_CALL, ctx.getStart().getLine());
   }
 
   @Override
@@ -700,7 +702,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(name));
     _c.referenceStructure(
-        CumulusStructureType.IP_AS_PATH_ACCESS_LIST,
+        IP_AS_PATH_ACCESS_LIST,
         name,
         CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
         ctx.getStart().getLine());
@@ -719,7 +721,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         new RouteMapMatchIpAddressPrefixList(prefixNameList));
 
     _c.referenceStructure(
-        CumulusStructureType.IP_PREFIX_LIST,
+        IP_PREFIX_LIST,
         name,
         CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
         ctx.getStart().getLine());
@@ -730,7 +732,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of(name)));
     _c.referenceStructure(
-        CumulusStructureType.ABSTRACT_INTERFACE,
+        ABSTRACT_INTERFACE,
         name,
         CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         ctx.getStart().getLine());
@@ -844,7 +846,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterIp_prefix_list(Ip_prefix_listContext ctx) {
     String name = ctx.name.getText();
     _currentIpPrefixList = _c.getIpPrefixLists().computeIfAbsent(name, IpPrefixList::new);
-    _c.defineStructure(CumulusStructureType.IP_PREFIX_LIST, name, ctx);
+    _c.defineStructure(IP_PREFIX_LIST, name, ctx);
   }
 
   @Override
@@ -860,7 +862,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _c.getIpAsPathAccessLists()
         .computeIfAbsent(name, IpAsPathAccessList::new)
         .addLine(new IpAsPathAccessListLine(action, asNum));
-    _c.defineStructure(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name, ctx);
+    _c.defineStructure(IP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override
