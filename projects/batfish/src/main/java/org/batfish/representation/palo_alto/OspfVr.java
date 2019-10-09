@@ -22,6 +22,10 @@ public class OspfVr {
     _rejectDefaultRoute = DEFAULT_REJECT_DEFAULT_ROUTE;
   }
 
+  public @Nonnull OspfArea getOrCreateOspfArea(Ip areaId) {
+    return _areas.computeIfAbsent(areaId, OspfArea::new);
+  }
+
   @Nonnull
   public Map<Ip, OspfArea> getAreas() {
     return _areas;

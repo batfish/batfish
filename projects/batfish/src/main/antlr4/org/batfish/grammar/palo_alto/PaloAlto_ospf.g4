@@ -26,7 +26,7 @@ vrp_ospf
 
 ospf_area
 :
-    AREA address = interface_address
+    AREA addr = ip_address_or_slash32
     (
         ospfa_type
     )
@@ -64,7 +64,7 @@ ospf_reject_default_route
 
 ospf_router_id
 :
-    ROUTER_ID address = interface_address
+    ROUTER_ID addr = ip_address_or_slash32
 ;
 
 ospfat_nssa
@@ -134,7 +134,7 @@ ospfats_default_route
 
 ospfatsdr_advertise_metric
 :
-    DEFAULT_ROUTE ADVERTISE METRIC metric = ospf_metric
+    ADVERTISE METRIC metric = ospf_metric
 ;
 
 ospfgr_enable

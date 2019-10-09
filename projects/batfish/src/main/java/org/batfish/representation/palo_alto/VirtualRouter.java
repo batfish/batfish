@@ -35,6 +35,11 @@ public class VirtualRouter implements Serializable {
     return _bgp;
   }
 
+  @Nullable
+  public OspfVr getOspf() {
+    return _ospf;
+  }
+
   public @Nonnull OspfVr getOrCreateOspf() {
     if (_ospf == null) {
       _ospf = new OspfVr();

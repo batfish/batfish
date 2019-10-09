@@ -732,14 +732,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterOspf_area(Ospf_areaContext ctx) {
-    _currentOspfArea = new OspfArea();
-    ConcreteInterfaceAddress addr = toInterfaceAddress(ctx.address);
-    if (addr.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
-      warn(ctx, ctx.address, "Expected a 32-bit prefix on OSPF area-id");
-    } else {
-      _currentOspfArea.setAreaId(addr.getIp());
-      _currentOspfVr.getAreas().put(addr.getIp(), _currentOspfArea);
-    }
+    _currentOspfArea =
+        toIp(ctx, ctx.addr, "OSPF area-id")
+            .map(_currentOspfVr::getOrCreateOspfArea)
+            .orElseGet(() -> new OspfArea(Ip.MAX));
   }
 
   @Override
@@ -756,7 +752,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterOspfat_stub(Ospfat_stubContext ctx) {
-    _currentOspfStubAreaType = new OspfAreaStub();
+    _currentOspfStubAreaType =
+        Optional.ofNullable(_currentOspfArea.getTypeSettings())
+            .filter(OspfAreaStub.class::isInstance)
+            .map(OspfAreaStub.class::cast)
+            .orElseGet(
+                () -> {
+                  // overwrite if missing or a different area type
+                  OspfAreaStub newStubArea = new OspfAreaStub();
+                  _currentOspfArea.setTypeSettings(newStubArea);
+                  return newStubArea;
+                });
   }
 
   @Override
@@ -784,7 +790,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterOspfat_nssa(Ospfat_nssaContext ctx) {
-    _currentOspfNssaAreaType = new OspfAreaNssa();
+    _currentOspfNssaAreaType =
+        Optional.ofNullable(_currentOspfArea.getTypeSettings())
+            .filter(OspfAreaNssa.class::isInstance)
+            .map(OspfAreaNssa.class::cast)
+            .orElseGet(
+                () -> {
+                  // overwrite if missing or a different area type
+                  OspfAreaNssa newNssaArea = new OspfAreaNssa();
+                  _currentOspfArea.setTypeSettings(newNssaArea);
+                  return newNssaArea;
+                });
   }
 
   @Override
@@ -831,12 +847,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitOspf_router_id(Ospf_router_idContext ctx) {
-    ConcreteInterfaceAddress addr = toInterfaceAddress(ctx.address);
-    if (addr.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
-      warn(ctx, ctx.address, "Expected a 32-bit prefix on OSPF router-id");
-    } else {
-      _currentOspfVr.setRouterId(addr.getIp());
-    }
+    toIp(ctx, ctx.addr, "OSPF router-id").ifPresent(_currentOspfVr::setRouterId);
   }
 
   @Override
@@ -1491,6 +1502,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterVrp_ospf(Vrp_ospfContext ctx) {
     _currentOspfVr = _currentVirtualRouter.getOrCreateOspf();
+  }
+
+  @Override
+  public void exitVrp_ospf(Vrp_ospfContext ctx) {
+    _currentOspfVr = null;
   }
 
   @Override
