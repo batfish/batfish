@@ -97,6 +97,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -863,6 +864,11 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder("1.0", "2.0"));
     assertThat(c, hasInterface("1.0", hasSpeed(40E9D)));
     assertThat(c, hasInterface("2.0", hasSpeed(100E9D)));
+  }
+
+  @Test
+  public void testRuleParsing() {
+    assertNotNull(parseVendorConfig("f5_bigip_structured_ltm_rule"));
   }
 
   @Test
