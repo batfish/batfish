@@ -109,8 +109,7 @@ public abstract class BgpPeerConfig implements Serializable {
 
   /** Check whether the given AS number matches this peer's remote AS numbers. */
   public boolean hasCompatibleRemoteAsns(@Nullable Long asNumber) {
-    return _remoteAsns.equals(ALL_AS_NUMBERS)
-        || (asNumber != null && _remoteAsns.contains(asNumber));
+    return asNumber != null && _remoteAsns.contains(asNumber);
   }
 
   /** Return the {@link RibGroup} applied to this config */

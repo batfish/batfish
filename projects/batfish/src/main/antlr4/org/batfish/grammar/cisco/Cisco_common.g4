@@ -177,36 +177,35 @@ int_expr
 
 interface_name
 :
-   (
-      name_prefix_alpha = M_Interface_PREFIX
+  name_prefix_alpha = M_Interface_PREFIX
+  (
+    (
       (
-         (
-            (
-               name_middle_parts += M_Interface_PREFIX
-            )? name_middle_parts += DEC
-            (
-               name_middle_parts += FORWARD_SLASH
-               | name_middle_parts += PERIOD
-               | name_middle_parts += COLON
-            )
-         )*
-         | name_middle_parts += MODULE
-      ) range?
-   )
-   |
-   (
+        name_middle_parts += M_Interface_PREFIX
+      )? name_middle_parts += DEC
       (
-         VARIABLE
-         | variable_interface_name DEC?
+        name_middle_parts += FORWARD_SLASH
+        | name_middle_parts += PERIOD
+        | name_middle_parts += COLON
       )
-      (
-         (
-            COLON
-            | FORWARD_SLASH
-            | PERIOD
-         ) DEC
-      )*
-   )
+    )*
+    | name_middle_parts += MODULE
+  ) range?
+;
+
+interface_name_unstructured
+:
+  (
+    VARIABLE
+    | variable_interface_name DEC?
+  )
+  (
+    (
+      COLON
+      | FORWARD_SLASH
+      | PERIOD
+    ) DEC
+  )*
 ;
 
 ios_delimited_banner

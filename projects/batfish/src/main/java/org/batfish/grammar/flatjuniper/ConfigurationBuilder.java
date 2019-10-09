@@ -54,7 +54,9 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEW
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ROUTING_OPTIONS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
@@ -4255,9 +4257,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (direction.INPUT() != null) {
         _currentInterfaceOrRange.setIncomingFilter(name);
         usage = INTERFACE_INCOMING_FILTER;
+      } else if (direction.INPUT_LIST() != null) {
+        _currentInterfaceOrRange.addIncomingFilterList(name);
+        usage = INTERFACE_INCOMING_FILTER_LIST;
       } else if (direction.OUTPUT() != null) {
         _currentInterfaceOrRange.setOutgoingFilter(name);
         usage = INTERFACE_OUTGOING_FILTER;
+      } else if (direction.OUTPUT_LIST() != null) {
+        _currentInterfaceOrRange.addOutgoingFilterList(name);
+        usage = INTERFACE_OUTGOING_FILTER_LIST;
+      } else {
+        // Should be unreachable.
+        todo(ctx, "Unhandled filter direction");
       }
     }
     _configuration.referenceStructure(

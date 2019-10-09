@@ -5224,6 +5224,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    batfish.getSettings().setThrowOnParserError(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     /* Parser should not crash, and configuration with hostname from file should be generated */

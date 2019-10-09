@@ -4,7 +4,9 @@ import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
@@ -547,6 +549,30 @@ public class CumulusFrrGrammarTest {
     parse(String.format("route-map %s permit 10\non-match next\n", name));
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertTrue(entry.getOnMatchNext());
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchAsPath() {
+    String routeMapName = "ROUTE-MAP-NAME";
+    String asPathName1 = "AS-PATH-1";
+    String asPathName2 = "AS-PATH-2";
+
+    // Second match as-path line should overwrite first.
+    parseLines(
+        String.format("route-map %s permit 10", routeMapName),
+        String.format("match as-path %s", asPathName1),
+        String.format("match as-path %s", asPathName2));
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(routeMapName).getEntries().get(10);
+    assertThat(entry.getMatchAsPath().getName(), equalTo(asPathName2));
+
+    // Both AS paths should be referenced.
+    assertThat(
+        getStructureReferences(IP_AS_PATH_ACCESS_LIST, asPathName1, ROUTE_MAP_MATCH_AS_PATH),
+        contains(2));
+    assertThat(
+        getStructureReferences(IP_AS_PATH_ACCESS_LIST, asPathName2, ROUTE_MAP_MATCH_AS_PATH),
+        contains(3));
   }
 
   @Test
@@ -1117,12 +1143,12 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testEnd() {
-    parseLines("frr version", "end\n");
+    parseLines("frr version", "end");
   }
 
   @Test
   public void testPasswordParsing() {
-    parseLines("password 8 geC4x9Mm5HYDE\n", "enable password 8 <SCRUBBED>\n");
+    parseLines("password 8 geC4x9Mm5HYDE", "enable password 8 <SCRUBBED>");
   }
 
   @Test
@@ -1133,5 +1159,16 @@ public class CumulusFrrGrammarTest {
     assertThat(nextMultipleOfFive(4L), equalTo(5L));
     assertThat(nextMultipleOfFive(5L), equalTo(10L));
     assertThat(nextMultipleOfFive(6L), equalTo(10L));
+  }
+
+  @Test
+  public void testBgpLogNeighborChanges() {
+    parseLines("router bgp 1", "bgp log-neighbor-changes");
+  }
+
+  @Test
+  public void testBgpConfederationId() {
+    parseLines("router bgp 65001", "bgp confederation identifier 100");
+    assertThat(CONFIG.getBgpProcess().getDefaultVrf().getConfederationId(), equalTo(100L));
   }
 }

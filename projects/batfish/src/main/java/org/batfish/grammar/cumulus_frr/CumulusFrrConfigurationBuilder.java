@@ -45,6 +45,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_on_matchContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
@@ -74,6 +75,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_c
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
@@ -121,6 +123,7 @@ import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
 import org.batfish.representation.cumulus.RouteMapEntry;
+import org.batfish.representation.cumulus.RouteMapMatchAsPath;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
@@ -494,6 +497,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSbb_confederation(Sbb_confederationContext ctx) {
+    Long id = toLong(ctx.id);
+    _currentBgpVrf.setConfederationId(id);
+  }
+
+  @Override
   public void enterSbn_ip(Sbn_ipContext ctx) {
     String name = ctx.ip.getText();
     _currentBgpNeighbor =
@@ -682,6 +691,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRm_call(Rm_callContext ctx) {
     _currentRouteMapEntry.setCall(new RouteMapCall(ctx.name.getText()));
+  }
+
+  @Override
+  public void exitRmm_as_path(Rmm_as_pathContext ctx) {
+    String name = ctx.name.getText();
+    _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(name));
+    _c.referenceStructure(
+        CumulusStructureType.IP_AS_PATH_ACCESS_LIST,
+        name,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
+        ctx.getStart().getLine());
   }
 
   @Override

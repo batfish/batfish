@@ -145,6 +145,11 @@ COMMUNITY_LIST
   'community-list'
 ;
 
+CONFEDERATION
+:
+  'confederation'
+;
+
 CONNECTED
 :
   'connected'
@@ -240,6 +245,11 @@ HOSTNAME
   'hostname' -> pushMode(M_Word)
 ;
 
+IDENTIFIER
+:
+  'identifier'
+;
+
 IN
 :
   'in'
@@ -331,6 +341,11 @@ LOG
 LOG_ADJACENCY_CHANGES
 :
   'log-adjacency-changes'
+;
+
+LOG_NEIGHBOR_CHANGES
+:
+  'log-neighbor-changes'
 ;
 
 LINE

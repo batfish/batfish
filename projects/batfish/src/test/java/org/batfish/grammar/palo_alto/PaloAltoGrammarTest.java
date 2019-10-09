@@ -133,9 +133,11 @@ import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
+import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -243,6 +245,30 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testTags() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("tags");
+
+    String tag1 = "vsys_tag";
+    String tag2 = "vsys_tag with spaces";
+    String sharedTag = "shared_tag";
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, Tag> tags = vsys.getTags();
+
+    Vsys sharedVsys = c.getShared();
+    Map<String, Tag> sharedTags = sharedVsys.getTags();
+
+    // Confirm vsys-specific tags are extracted correctly
+    assertThat(tags.keySet(), contains(tag1, tag2));
+    assertThat(tags.get(tag1).getComments(), equalTo("something"));
+    assertThat(tags.get(tag2).getComments(), equalTo("comments with spaces"));
+
+    // Confirm shared tags are extracted correctly
+    assertThat(sharedTags.keySet(), contains(sharedTag));
+    assertThat(sharedTags.get(sharedTag).getComments(), nullValue());
+  }
+
+  @Test
   public void testAddressGroups() {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-groups");
 
@@ -259,8 +285,9 @@ public final class PaloAltoGrammarTest {
         addressGroups.get("group0").getIpSpace(addressObjects, addressGroups),
         equalTo(EmptyIpSpace.INSTANCE));
 
-    // we parsed the description, addr3 is undefined but should not have been discarded
+    // we parsed the description and tag, addr3 is undefined but should not have been discarded
     assertThat(addressGroups.get("group1").getDescription(), equalTo("group1-desc"));
+    assertThat(addressGroups.get("group1").getTags(), contains("tag1"));
     assertThat(
         addressGroups.get("group1").getMembers(),
         equalTo(ImmutableSet.of("addr1", "addr2", "addr3")));
@@ -271,9 +298,11 @@ public final class PaloAltoGrammarTest {
                 addressObjects.get("addr2").getIpSpace(),
                 addressObjects.get("addr1").getIpSpace())));
 
-    // check that we parse multiple address objects on the same line correctly
+    // check that we parse multiple address objects and tags on the same line correctly
     assertThat(
         addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
+    assertThat(
+        addressGroups.get("group2").getTags(), containsInAnyOrder("tag2", "tag with spaces"));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
@@ -287,6 +316,30 @@ public final class PaloAltoGrammarTest {
         hasIpSpace(
             "group1",
             equalTo(addressGroups.get("group1").getIpSpace(addressObjects, addressGroups))));
+  }
+
+  // TODO: https://github.com/batfish/batfish/issues/4921
+  @Ignore
+  @Test
+  public void testAddressGroupHybrid() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-group-hybrid");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    Vsys sharedVsys = c.getShared();
+    Map<String, AddressObject> sharedAddressObjects = sharedVsys.getAddressObjects();
+
+    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group")));
+
+    // Confirm hybrid address-group contains both shared and vsys-specific addresses
+    assertThat(
+        addressGroups.get("group").getIpSpace(addressObjects, addressGroups),
+        equalTo(
+            AclIpSpace.union(
+                addressObjects.get("addr").getIpSpace(),
+                sharedAddressObjects.get("shared_addr").getIpSpace())));
   }
 
   @Test
@@ -385,15 +438,18 @@ public final class PaloAltoGrammarTest {
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
 
-    // check that we parsed description and prefix right
+    // check that we parsed description, tag, and prefix right
     // note that PA allows non-canonical prefixes
     assertThat(
         addressObjects.get("addr1").getIpSpace(),
         equalTo(Prefix.strict("10.1.1.0/24").toIpSpace()));
     assertThat(addressObjects.get("addr1").getDescription(), equalTo("addr1-desc"));
+    assertThat(addressObjects.get("addr1").getTags(), contains("tag1"));
 
-    // check that we parse the IP address right
+    // check that we parse the IP address and tags right
     assertThat(addressObjects.get("addr2").getIpSpace(), equalTo(Ip.parse("10.1.1.2").toIpSpace()));
+    assertThat(
+        addressObjects.get("addr2").getTags(), containsInAnyOrder("tag2", "tag with spaces"));
 
     // check that we parse the IP range right
     assertThat(

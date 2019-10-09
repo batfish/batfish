@@ -114,6 +114,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
@@ -143,15 +144,18 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_group_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsys_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_fqdnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
@@ -205,6 +209,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.St_commentsContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
@@ -270,6 +275,7 @@ import org.batfish.representation.palo_alto.ServiceGroup;
 import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
+import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
@@ -316,6 +322,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private StaticRoute _currentStaticRoute;
   private SyslogServer _currentSyslogServer;
   private String _currentSyslogServerGroupName;
+  private Tag _currentTag;
   private VirtualRouter _currentVirtualRouter;
   private Vsys _currentVsys;
   private Zone _currentZone;
@@ -566,7 +573,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitBgppgp_peer_address(Bgppgp_peer_addressContext ctx) {
-    _currentBgpPeer.setPeerAddress(toIp(ctx.address));
+    toIp(ctx, ctx.addr, "BGP peer-address").ifPresent(_currentBgpPeer::setPeerAddress);
   }
 
   @Override
@@ -650,12 +657,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitBgp_router_id(Bgp_router_idContext ctx) {
-    ConcreteInterfaceAddress addr = toInterfaceAddress(ctx.address);
-    if (addr.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
-      warn(ctx, ctx.address, "Expected a 32-bit prefix on BGP router-id");
-    } else {
-      _currentBgpVr.setRouterId(addr.getIp());
-    }
+    toIp(ctx, ctx.addr, "BGP router-id").ifPresent(_currentBgpVr::setRouterId);
   }
 
   @Override
@@ -878,6 +880,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the object definition.",
               name));
+      _currentAddressObject = new AddressObject(name);
     } else {
       _currentAddressObject =
           _currentVsys.getAddressObjects().computeIfAbsent(name, AddressObject::new);
@@ -894,6 +897,38 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSa_tag(Sa_tagContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String tag = getText(var);
+      _currentAddressObject.getTags().add(tag);
+    }
+  }
+
+  @Override
+  public void exitSag_tag(Sag_tagContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String tag = getText(var);
+      _currentAddressGroup.getTags().add(tag);
+    }
+  }
+
+  @Override
+  public void enterS_tag(S_tagContext ctx) {
+    String name = getText(ctx.name);
+    _currentTag = _currentVsys.getTags().computeIfAbsent(name, Tag::new);
+  }
+
+  @Override
+  public void exitS_tag(S_tagContext ctx) {
+    _currentTag = null;
+  }
+
+  @Override
+  public void exitSt_comments(St_commentsContext ctx) {
+    _currentTag.setComments(getText(ctx.comments));
+  }
+
+  @Override
   public void enterS_address_group_definition(S_address_group_definitionContext ctx) {
     String name = getText(ctx.name);
     if (_currentVsys.getAddressObjects().get(name) != null) {
@@ -902,6 +937,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the group definition.",
               name));
+      _currentAddressGroup = new AddressGroup(name);
     } else {
       _currentAddressGroup =
           _currentVsys.getAddressGroups().computeIfAbsent(name, AddressGroup::new);
@@ -981,9 +1017,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_description(Sa_descriptionContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     _currentAddressObject.setDescription(getText(ctx.description));
   }
 
@@ -994,9 +1027,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_ip_netmask(Sa_ip_netmaskContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     if (ctx.ip_address() != null) {
       _currentAddressObject.setIpSpace(toIp(ctx.ip_address()).toIpSpace());
     } else if (ctx.IP_PREFIX() != null) {
@@ -1008,18 +1038,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     String[] ips = getText(ctx.IP_RANGE()).split("-");
     _currentAddressObject.setIpSpace(IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1])));
   }
 
   @Override
   public void exitSag_description(Sag_descriptionContext ctx) {
-    if (_currentAddressGroup == null) {
-      return;
-    }
     _currentAddressGroup.setDescription(getText(ctx.description));
   }
 
@@ -1030,9 +1054,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSag_static(Sag_staticContext ctx) {
-    if (_currentAddressGroup == null) {
-      return;
-    }
     for (VariableContext var : ctx.variable()) {
       String objectName = getText(var);
       if (objectName.equals(_currentAddressGroup.getName())) {
@@ -1502,21 +1523,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitVrrtn_ip(Vrrtn_ipContext ctx) {
-    Ip ip;
-    if (ctx.address != null) {
-      ip = Ip.parse(getText(ctx.address));
-    } else {
-      Prefix prefix = Prefix.parse(getText(ctx.prefix));
-      if (prefix.getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
-        _w.addWarning(
-            ctx,
-            getFullText(ctx),
-            _parser,
-            String.format("Static route has non-IP next hop: %s", prefix));
-      }
-      ip = prefix.getStartIp();
-    }
-    _currentStaticRoute.setNextHopIp(ip);
+    toIp(ctx, ctx.addr, "static route nexthop ip-address")
+        .ifPresent(_currentStaticRoute::setNextHopIp);
   }
 
   @Override
@@ -1912,6 +1920,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
+  }
+
+  private @Nonnull Optional<Ip> toIp(
+      ParserRuleContext ctx, Ip_address_or_slash32Context addr, String ipType) {
+    ConcreteInterfaceAddress ip = toInterfaceAddress(addr.addr);
+    if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
+      warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
+      return Optional.empty();
+    }
+    return Optional.of(ip.getIp());
   }
 
   /////////////////////////////////////////

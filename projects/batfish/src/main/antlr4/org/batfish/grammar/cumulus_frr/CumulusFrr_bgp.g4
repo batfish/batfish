@@ -22,8 +22,15 @@ sb_bgp
   BGP
   (
     sbb_bestpath
+    | sbb_confederation
+    | sbb_log_neighbor_changes
     | sbb_router_id
   )
+;
+
+sbb_confederation
+:
+  CONFEDERATION IDENTIFIER id = uint32 NEWLINE
 ;
 
 sbb_bestpath
@@ -32,6 +39,11 @@ sbb_bestpath
   (
     sbbb_aspath_multipath_relax
   )
+;
+
+sbb_log_neighbor_changes
+:
+  LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
 sbbb_aspath_multipath_relax
