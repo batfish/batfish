@@ -8,6 +8,7 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
     EXT_1,
     EXT_2
   }
+
   /** If not appearing in the config then default route is not disabled. */
   private static final boolean DEFAULT_DEFAULT_ROUTE_DISABLE = false;
 
