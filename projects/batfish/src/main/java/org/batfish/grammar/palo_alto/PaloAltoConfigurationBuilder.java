@@ -120,16 +120,16 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_router_idContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfa_typeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfat_normalContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfat_nssaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfat_stubContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatn_accept_summaryContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatn_default_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatndr_disableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatndra_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatndra_typeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfats_accept_summaryContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfats_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatsdr_advertise_metricContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatsdr_disableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
@@ -745,13 +745,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterOspfa_type(Ospfa_typeContext ctx) {
-    if (ctx.NORMAL() != null) {
-      _currentOspfArea.setTypeSettings(new OspfAreaNormal());
-    }
-  }
-
-  @Override
   public void enterOspfat_stub(Ospfat_stubContext ctx) {
     _currentOspfStubAreaType =
         Optional.ofNullable(_currentOspfArea.getTypeSettings())
@@ -772,10 +765,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitOspfats_default_route(Ospfats_default_routeContext ctx) {
-    if (ctx.DISABLE() != null) {
-      _currentOspfStubAreaType.setDefaultRouteDisable(true);
-    }
+  public void exitOspfat_normal(Ospfat_normalContext ctx) {
+    _currentOspfArea.setTypeSettings(new OspfAreaNormal());
+  }
+
+  @Override
+  public void exitOspfatsdr_disable(Ospfatsdr_disableContext ctx) {
+    _currentOspfStubAreaType.setDefaultRouteDisable(true);
   }
 
   @Override
@@ -809,10 +805,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitOspfatn_default_route(Ospfatn_default_routeContext ctx) {
-    if (ctx.DISABLE() != null) {
-      _currentOspfNssaAreaType.setDefaultRouteDisable(true);
-    }
+  public void exitOspfatndr_disable(Ospfatndr_disableContext ctx) {
+    _currentOspfNssaAreaType.setDefaultRouteDisable(true);
   }
 
   @Override

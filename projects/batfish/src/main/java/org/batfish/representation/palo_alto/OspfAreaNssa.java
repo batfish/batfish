@@ -21,6 +21,11 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
     return visitor.visitOspfAreaNssa(this);
   }
 
+  /**
+   * If set then default route will not be advertised from this area
+   *
+   * @return true if no default route will be advertised from this area
+   */
   public boolean isDefaultRouteDisable() {
     return _defaultRouteDisable;
   }

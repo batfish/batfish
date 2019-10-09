@@ -16,6 +16,11 @@ public class OspfAreaStub implements OspfAreaTypeSettings {
     return visitor.visitOspfAreaStub(this);
   }
 
+  /**
+   * If set then default route will not be advertised from this area
+   *
+   * @return true if no default route will be advertised from this area
+   */
   public boolean isDefaultRouteDisable() {
     return _defaultRouteDisable;
   }

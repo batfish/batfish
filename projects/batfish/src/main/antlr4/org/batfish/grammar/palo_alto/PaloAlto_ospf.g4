@@ -8,7 +8,7 @@ options {
 
 ospf_metric
 :
-// 0-256
+// 0-255
    uint8
 ;
 
@@ -29,14 +29,14 @@ ospf_area
     AREA addr = ip_address_or_slash32
     (
         ospfa_type
-    )
+    )?
 ;
 
 ospfa_type
 :
     TYPE
     (
-        NORMAL
+        ospfat_normal
         | ospfat_nssa
         | ospfat_stub
     )
@@ -67,6 +67,11 @@ ospf_router_id
     ROUTER_ID addr = ip_address_or_slash32
 ;
 
+ospfat_normal
+:
+    NORMAL
+;
+
 ospfat_nssa
 :
     NSSA
@@ -94,8 +99,8 @@ ospfatn_default_route
 :
     DEFAULT_ROUTE
     (
-        DISABLE
-        | ospfatndr_advertise
+        ospfatndr_advertise
+        | ospfatndr_disable
     )
 ;
 
@@ -106,6 +111,11 @@ ospfatndr_advertise
         ospfatndra_metric
         | ospfatndra_type
     )
+;
+
+ospfatndr_disable
+:
+    DISABLE
 ;
 
 ospfatndra_metric
@@ -127,14 +137,19 @@ ospfats_default_route
 :
     DEFAULT_ROUTE
     (
-        DISABLE
-        | ospfatsdr_advertise_metric
+        ospfatsdr_advertise_metric
+        | ospfatsdr_disable
     )
 ;
 
 ospfatsdr_advertise_metric
 :
     ADVERTISE METRIC metric = ospf_metric
+;
+
+ospfatsdr_disable
+:
+    DISABLE
 ;
 
 ospfgr_enable
@@ -149,7 +164,7 @@ ospfgr_helper_enable
 
 ospfgr_strict_lsa_checking
 :
-    STRIC_LSA_CHECKING yn = yes_or_no
+    STRICT_LSA_CHECKING yn = yes_or_no
 ;
 
 

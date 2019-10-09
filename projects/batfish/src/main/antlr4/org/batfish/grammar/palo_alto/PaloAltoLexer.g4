@@ -999,7 +999,7 @@ STATIC_ROUTE
     'static-route'
 ;
 
-STRIC_LSA_CHECKING
+STRICT_LSA_CHECKING
 :
     'strict-LSA-checking'
 ;

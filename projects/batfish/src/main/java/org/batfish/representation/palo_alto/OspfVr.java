@@ -39,6 +39,11 @@ public class OspfVr {
     _enable = enable;
   }
 
+  /**
+   * If set then no default routes will be learnt through OSPF
+   *
+   * @return true if no default routes will be learnt through OSPF
+   */
   public boolean isRejectDefaultRoute() {
     return _rejectDefaultRoute;
   }
