@@ -114,6 +114,21 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_reject_default_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_router_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfa_typeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfat_nssaContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfat_stubContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatn_accept_summaryContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatn_default_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatndra_metricContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatndra_typeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfats_accept_summaryContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfats_default_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatsdr_advertise_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
@@ -217,6 +232,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ripContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_static_ipv6Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrp_bgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrp_ospfContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_admin_distContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_interfaceContext;
@@ -237,6 +253,12 @@ import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.OspfArea;
+import org.batfish.representation.palo_alto.OspfAreaNormal;
+import org.batfish.representation.palo_alto.OspfAreaNssa;
+import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
+import org.batfish.representation.palo_alto.OspfAreaStub;
+import org.batfish.representation.palo_alto.OspfVr;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
@@ -283,6 +305,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private Interface _currentInterface;
   private boolean _currentNtpServerPrimary;
   private Interface _currentParentInterface;
+  private OspfArea _currentOspfArea;
+  private OspfAreaStub _currentOspfStubAreaType;
+  private OspfAreaNssa _currentOspfNssaAreaType;
+  private OspfVr _currentOspfVr;
   private RulebaseId _currentRuleScope;
   private Rule _currentRule;
   private Service _currentService;
@@ -700,6 +726,120 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitIf_tag(If_tagContext ctx) {
     toInteger(ctx, ctx.tag).ifPresent(_currentInterface::setTag);
+  }
+
+  @Override
+  public void enterOspf_area(Ospf_areaContext ctx) {
+    _currentOspfArea = new OspfArea();
+    ConcreteInterfaceAddress addr = toInterfaceAddress(ctx.address);
+    if (addr.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
+      warn(ctx, ctx.address, "Expected a 32-bit prefix on OSPF area-id");
+    } else {
+      _currentOspfArea.setAreaId(addr.getIp());
+      _currentOspfVr.getAreas().put(addr.getIp(), _currentOspfArea);
+    }
+  }
+
+  @Override
+  public void exitOspf_area(Ospf_areaContext ctx) {
+    _currentOspfArea = null;
+  }
+
+  @Override
+  public void enterOspfa_type(Ospfa_typeContext ctx) {
+    if (ctx.NORMAL() != null) {
+      _currentOspfArea.setTypeSettings(new OspfAreaNormal());
+    }
+  }
+
+  @Override
+  public void enterOspfat_stub(Ospfat_stubContext ctx) {
+    _currentOspfStubAreaType = new OspfAreaStub();
+  }
+
+  @Override
+  public void exitOspfat_stub(Ospfat_stubContext ctx) {
+    _currentOspfArea.setTypeSettings(_currentOspfStubAreaType);
+    _currentOspfStubAreaType = null;
+  }
+
+  @Override
+  public void exitOspfats_default_route(Ospfats_default_routeContext ctx) {
+    if (ctx.DISABLE() != null) {
+      _currentOspfStubAreaType.setDefaultRouteDisable(true);
+    }
+  }
+
+  @Override
+  public void exitOspfatsdr_advertise_metric(Ospfatsdr_advertise_metricContext ctx) {
+    _currentOspfStubAreaType.setDefaultRouteMetric(toInteger(ctx.metric.uint8()));
+  }
+
+  @Override
+  public void exitOspfats_accept_summary(Ospfats_accept_summaryContext ctx) {
+    _currentOspfStubAreaType.setAcceptSummary(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void enterOspfat_nssa(Ospfat_nssaContext ctx) {
+    _currentOspfNssaAreaType = new OspfAreaNssa();
+  }
+
+  @Override
+  public void exitOspfat_nssa(Ospfat_nssaContext ctx) {
+    _currentOspfArea.setTypeSettings(_currentOspfNssaAreaType);
+    _currentOspfNssaAreaType = null;
+  }
+
+  @Override
+  public void exitOspfatn_default_route(Ospfatn_default_routeContext ctx) {
+    if (ctx.DISABLE() != null) {
+      _currentOspfNssaAreaType.setDefaultRouteDisable(true);
+    }
+  }
+
+  @Override
+  public void exitOspfatndra_metric(Ospfatndra_metricContext ctx) {
+    _currentOspfNssaAreaType.setDefaultRouteMetric(toInteger(ctx.metric.uint8()));
+  }
+
+  @Override
+  public void exitOspfatndra_type(Ospfatndra_typeContext ctx) {
+    if (ctx.EXT_1() != null) {
+      _currentOspfNssaAreaType.setDefaultRouteType(DefaultRouteType.EXT_1);
+      return;
+    }
+    _currentOspfNssaAreaType.setDefaultRouteType(DefaultRouteType.EXT_2);
+  }
+
+  @Override
+  public void exitOspfatn_accept_summary(Ospfatn_accept_summaryContext ctx) {
+    _currentOspfNssaAreaType.setAcceptSummary(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitOspf_enable(Ospf_enableContext ctx) {
+    _currentOspfVr.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitOspf_reject_default_route(Ospf_reject_default_routeContext ctx) {
+    _currentOspfVr.setRejectDefaultRoute(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitOspf_router_id(Ospf_router_idContext ctx) {
+    ConcreteInterfaceAddress addr = toInterfaceAddress(ctx.address);
+    if (addr.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
+      warn(ctx, ctx.address, "Expected a 32-bit prefix on OSPF router-id");
+    } else {
+      _currentOspfVr.setRouterId(addr.getIp());
+    }
+  }
+
+  @Override
+  public void exitOspf_graceful_restart(Ospf_graceful_restartContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -1328,6 +1468,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterVrp_ospf(Vrp_ospfContext ctx) {
+    _currentOspfVr = _currentVirtualRouter.getOrCreateOspf();
+  }
+
+  @Override
   public void exitVrp_bgp(Vrp_bgpContext ctx) {
     _currentBgpVr = null;
   }
@@ -1905,6 +2050,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, getFullText(ctx), _parser);
   }
 
   private void warn(ParserRuleContext ctx, String message) {

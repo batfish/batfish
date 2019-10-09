@@ -24,6 +24,11 @@ FOUR_BYTE
     '4-byte'
 ;
 
+ACCEPT_SUMMARY
+:
+    'accept-summary'
+;
+
 ACTION
 :
     'action'
@@ -47,6 +52,11 @@ ADMIN_DIST
 ADMIN_DISTS
 :
     'admin-dists'
+;
+
+ADVERTISE
+:
+    'advertise'
 ;
 
 AES_128_CBC
@@ -112,6 +122,11 @@ APPLICATION_FILTER
 APPLICATION_GROUP
 :
     'application-group'
+;
+
+AREA
+:
+    'area'
 ;
 
 AS_FORMAT
@@ -214,6 +229,11 @@ DEFAULT_LOCAL_PREFERENCE
     'default-local-preference'
 ;
 
+DEFAULT_ROUTE
+:
+    'default-route'
+;
+
 DENY
 :
     'deny'
@@ -252,6 +272,11 @@ DEVICECONFIG
 DH_GROUP
 :
     'dh-group'
+;
+
+DISABLE
+:
+    'disable'
 ;
 
 DISABLED
@@ -322,6 +347,16 @@ EXCESSIVE_BANDWIDTH_USE
 EXPORT
 :
     'export'
+;
+
+EXT_1
+:
+    'ext-1'
+;
+
+EXT_2
+:
+    'ext-2'
 ;
 
 EXTERNAL
@@ -397,6 +432,11 @@ HAS_KNOWN_VULNERABILITIES
 HASH
 :
     'hash'
+;
+
+HELPER_ENABLE
+:
+    'helper-enable'
 ;
 
 HIP_PROFILES
@@ -617,6 +657,16 @@ NON_CLIENT
 NONE
 :
     'none'
+;
+
+NORMAL
+:
+    'normal'
+;
+
+NSSA
+:
+    'nssa'
 ;
 
 NTP_SERVER_ADDRESS
@@ -937,6 +987,16 @@ STATIC_IPV6
 STATIC_ROUTE
 :
     'static-route'
+;
+
+STRIC_LSA_CHECKING
+:
+    'strict-LSA-checking'
+;
+
+STUB
+:
+    'stub'
 ;
 
 SUBCATEGORY
