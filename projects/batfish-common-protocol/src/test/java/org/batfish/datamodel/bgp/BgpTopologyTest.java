@@ -27,6 +27,8 @@ public final class BgpTopologyTest {
         new BgpPeerConfigId("a", "b", "c"),
         new BgpPeerConfigId("d", "e", "f"),
         BgpSessionProperties.builder()
+            .setHeadAs(1L)
+            .setTailAs(2L)
             .setHeadIp(Ip.FIRST_CLASS_A_PRIVATE_IP)
             .setTailIp(Ip.FIRST_CLASS_B_PRIVATE_IP)
             .setSessionType(SessionType.EBGP_SINGLEHOP)

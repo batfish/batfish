@@ -22,8 +22,15 @@ sb_bgp
   BGP
   (
     sbb_bestpath
+    | sbb_confederation
+    | sbb_log_neighbor_changes
     | sbb_router_id
   )
+;
+
+sbb_confederation
+:
+  CONFEDERATION IDENTIFIER id = uint32 NEWLINE
 ;
 
 sbb_bestpath
@@ -32,6 +39,11 @@ sbb_bestpath
   (
     sbbb_aspath_multipath_relax
   )
+;
+
+sbb_log_neighbor_changes
+:
+  LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
 sbbb_aspath_multipath_relax
@@ -66,9 +78,12 @@ sbaf_ipv4_unicast
   IPV4 UNICAST NEWLINE
   (
     sbafi_aggregate_address
-  | sbafi_network
-  | sbafi_neighbor
-  | sbafi_redistribute
+    // Skeptical that max-paths belongs here.
+    // Adding for now to prevent jumping out of parser context.
+    | sbafi_maximum_paths
+    | sbafi_network
+    | sbafi_neighbor
+    | sbafi_redistribute
   )*
 ;
 
@@ -88,6 +103,11 @@ sbafl_statement
 sbafi_aggregate_address
 :
   AGGREGATE_ADDRESS IP_PREFIX SUMMARY_ONLY? NEWLINE
+;
+
+sbafi_maximum_paths
+:
+  MAXIMUM_PATHS num = uint32 NEWLINE
 ;
 
 sbafi_network

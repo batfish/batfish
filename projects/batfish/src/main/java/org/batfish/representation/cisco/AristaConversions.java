@@ -2,13 +2,13 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerEvpnExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeNxosBgpDefaultRouteExportPolicyName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -205,14 +205,14 @@ final class AristaConversions {
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), bgpVrf, e.getValue(), warnings))
         .collect(
             ImmutableMap.toImmutableMap(
-                e -> Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                e -> e.getKey().toPrefix(),
                 e ->
                     (BgpActivePeerConfig)
                         AristaConversions.toBgpNeighbor(
                             c,
                             vrf,
                             proc,
-                            Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                            e.getKey().toPrefix(),
                             bgpConfig,
                             bgpVrf,
                             e.getValue(),
@@ -401,7 +401,7 @@ final class AristaConversions {
       exportStatements.add(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(computeNxosBgpDefaultRouteExportPolicyName(true)),
+              new CallExpr(generatedBgpDefaultRouteExportPolicyName(true)),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
 
@@ -423,7 +423,7 @@ final class AristaConversions {
             peerExportGuard,
             ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    peerExportConditions.add(new CallExpr(computeBgpCommonExportPolicyName(vrf.getName())));
+    peerExportConditions.add(new CallExpr(generatedBgpCommonExportPolicyName(vrf.getName())));
 
     if (v4Enabled) {
       String outboundMap = naf4.getRouteMapOut();
@@ -434,7 +434,7 @@ final class AristaConversions {
 
     RoutingPolicy exportPolicy =
         new RoutingPolicy(
-            computeBgpPeerExportPolicyName(
+            generatedBgpPeerExportPolicyName(
                 vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
             c);
     exportPolicy.setStatements(exportStatements);
@@ -557,7 +557,7 @@ final class AristaConversions {
       } else {
         throw new IllegalStateException("Unsupported type of BGP neighbor");
       }
-      String policyName = computeBgpPeerEvpnExportPolicyName(vrfConfig.getName(), neighborKey);
+      String policyName = generatedBgpPeerEvpnExportPolicyName(vrfConfig.getName(), neighborKey);
 
       // TODO: handle modifiers (next-hop-unchanged, next-hop-self, etc.) and export route map
       RoutingPolicy.builder()
@@ -583,8 +583,8 @@ final class AristaConversions {
    * Initializes export policy for default routes if it doesn't already exist. This policy is the
    * same across BGP processes, so only one is created for each configuration.
    */
-  static void initBgpDefaultRouteExportPolicy(Configuration c) {
-    String defaultRouteExportPolicyName = computeNxosBgpDefaultRouteExportPolicyName(true);
+  private static void initBgpDefaultRouteExportPolicy(Configuration c) {
+    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName(true);
     if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
       RoutingPolicy.builder()
           .setOwner(c)

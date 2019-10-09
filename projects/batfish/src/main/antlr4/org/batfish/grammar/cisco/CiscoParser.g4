@@ -18,18 +18,12 @@ options {
 
    private boolean _multilineBgpNeighbors;
 
-   private boolean _nxos;
-
    public boolean isAristaBgp() {
       return _aristaBgp;
    }
 
    public boolean isEos() {
       return _eos;
-   }
-
-   public boolean isNxos() {
-      return _nxos;
    }
 
    public void setAristaBgp(boolean b) {
@@ -48,16 +42,11 @@ options {
       _multilineBgpNeighbors = multilineBgpNeighbors;
    }
 
-   public void setNxos(boolean b) {
-      _nxos = b;
-   }
-
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n_eos: %s\n, _aristaBgp: %s\n",
+      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_eos: %s\n, _aristaBgp: %s\n",
          _cadant,
          _multilineBgpNeighbors,
-         _nxos,
          _eos,
          _aristaBgp
       );
@@ -307,11 +296,6 @@ av_null
       | SHUTDOWN
       | TIMESOURCE
    ) null_rest_of_line
-;
-
-banner_stanza
-:
-   BANNER banner_type banner
 ;
 
 bfd_null
@@ -732,7 +716,7 @@ failover_lan_tail
 
 failover_link
 :
-   LINK name = variable iface = interface_name NEWLINE
+   LINK name = variable iface = interface_name_unstructured NEWLINE
 ;
 
 failover_interface
@@ -1267,7 +1251,7 @@ ip_route_tail
       nexthopip = IP_ADDRESS
       | nexthopprefix = IP_PREFIX
       | GLOBAL
-      | nexthopint = interface_name
+      | nexthopint = interface_name_unstructured
    )*
    (
       (
@@ -2316,6 +2300,58 @@ s_asa_twice_nat
    )
 ;
 
+s_banner_asa
+:
+  banner_header = asa_banner_header body = BANNER_BODY? NEWLINE
+;
+
+asa_banner_header
+:
+  BANNER_ASDM_ASA
+  | BANNER_EXEC_ASA
+  | BANNER_LOGIN_ASA
+  | BANNER_MOTD_ASA
+;
+
+s_banner_cadant
+:
+  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
+;
+
+cadant_banner_type
+:
+  LOGIN
+  | MOTD
+;
+
+s_banner_eos
+:
+  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_EOS // delimiter includes newline
+;
+
+eos_banner_type
+:
+  LOGIN
+  | MOTD
+;
+
+s_banner_ios
+:
+  banner_header = ios_banner_header banner = ios_delimited_banner NEWLINE
+;
+
+ios_banner_header
+:
+  BANNER_IOS
+  | BANNER_CONFIG_SAVE_IOS
+  | BANNER_EXEC_IOS
+  | BANNER_INCOMING_IOS
+  | BANNER_LOGIN_IOS
+  | BANNER_MOTD_IOS
+  | BANNER_PROMPT_TIMEOUT_IOS
+  | BANNER_SLIP_PPP_IOS
+;
+
 s_bfd
 :
    BFD null_rest_of_line
@@ -2564,14 +2600,6 @@ s_failover_tail
    | failover_lan
    | failover_link
    | failover_interface
-;
-
-s_feature
-:
-   NO? FEATURE
-   (
-      words += variable
-   )+ NEWLINE
 ;
 
 s_flow
@@ -3095,7 +3123,7 @@ s_service_policy_global
 
 s_service_policy_interface
 :
-   SERVICE_POLICY name = variable INTERFACE iface = interface_name NEWLINE
+   SERVICE_POLICY name = variable INTERFACE iface = interface_name_unstructured NEWLINE
 ;
 
 s_sip_ua
@@ -3400,20 +3428,6 @@ s_vpn_dialer
    )*
 ;
 
-// A way to define a VRF on NX-OS (keeping separate from IOS)
-s_vrf_context
-:
-   VRF CONTEXT name = variable NEWLINE
-   (
-      vrfc_address_family
-      | vrfc_ip_route
-      | vrfc_rd
-      | vrfc_shutdown
-      | vrfc_vni
-      | vrfc_null
-   )*
-;
-
 // a way to define a VRF on IOS or EOS
 s_vrf_definition
 :
@@ -3676,7 +3690,6 @@ stanza
    | asa_comment_stanza
    | asa_access_group
    | as_path_set_stanza
-   | banner_stanza
    | community_set_stanza
    | del_stanza
    | extended_access_list_stanza
@@ -3716,6 +3729,10 @@ stanza
    | s_arp_access_list_extended
    | s_asa_twice_nat
    | s_authentication
+   | s_banner_asa
+   | s_banner_cadant
+   | s_banner_eos
+   | s_banner_ios
    | s_bfd
    | s_bfd_template
    | s_cable
@@ -3755,7 +3772,6 @@ stanza
    | s_flow
    | s_flow_sampler_map
    | s_foundry_mac_access_list
-   | s_feature
    | s_gatekeeper
    | s_global_port_security
    | s_guest_access_email
@@ -3888,7 +3904,6 @@ stanza
    | s_vpdn_group
    | s_vpn
    | s_vpn_dialer
-   | s_vrf_context
    | s_vrf_definition
    | s_web_server
    | s_webvpn

@@ -11,8 +11,11 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
+import static org.batfish.representation.cumulus_interfaces.Interface.isPhysicalInterfaceType;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +23,14 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -33,16 +38,25 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_lineContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_on_matchContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
@@ -62,6 +76,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_c
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
@@ -73,8 +88,12 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
@@ -89,23 +108,33 @@ import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
+import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.IpAsPathAccessList;
+import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.RouteMap;
+import org.batfish.representation.cumulus.RouteMapCall;
 import org.batfish.representation.cumulus.RouteMapEntry;
+import org.batfish.representation.cumulus.RouteMapMatchAsPath;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cumulus.RouteMapMatchTag;
+import org.batfish.representation.cumulus.RouteMapSetAsPath;
 import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
+import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
+import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
@@ -138,6 +167,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         Integer.parseInt(ctx.high.getText()), Integer.parseInt(ctx.low.getText()));
   }
 
+  @Nonnull
+  private Long toLong(Uint32Context ctx) {
+    return Long.parseUnsignedLong(ctx.getText());
+  }
+
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
@@ -155,6 +189,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, ctx.getText(), _parser);
   }
 
   @Override
@@ -308,17 +346,43 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterS_interface(S_interfaceContext ctx) {
     String name = ctx.name.getText();
 
-    Interface iface = _c.getInterfaces().get(name);
-    if (iface == null) {
-      _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", name));
-      return;
+    _currentInterface = _c.getInterfaces().get(name);
+
+    if (_currentInterface == null) {
+      // Currently only support defining lo and physical interfaces in frr
+      // TODO: check other interface types
+      CumulusInterfaceType type = null;
+      if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
+        type = CumulusInterfaceType.LOOPBACK;
+      } else if (isPhysicalInterfaceType(name)) {
+        type = CumulusInterfaceType.PHYSICAL;
+      } else {
+        _w.addWarning(
+            ctx,
+            ctx.getText(),
+            _parser,
+            String.format(
+                ("cannot recognize interface %s. Only support loopback and physical interfaces"),
+                name));
+      }
+
+      if (type == null) {
+        return;
+      }
+
+      _currentInterface = new Interface(name, type, null, null);
+      _c.setInterfaces(
+          new ImmutableMap.Builder<String, Interface>()
+              .putAll(_c.getInterfaces())
+              .put(name, _currentInterface)
+              .build());
     }
-    _currentInterface = iface;
 
     if (ctx.VRF() != null) {
       String vrf = ctx.vrf.getText();
-      if (!vrf.equals(_currentInterface.getVrf())) {
+      if (_currentInterface.getVrf() == null) {
+        _currentInterface.setVrf(vrf);
+      } else if (!vrf.equals(_currentInterface.getVrf())) {
         _w.addWarning(
             ctx,
             ctx.getText(),
@@ -344,6 +408,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSiip_address(Siip_addressContext ctx) {
+    if (_currentInterface == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "no interfaces found for %s");
+    }
+
+    _currentInterface.getIpAddresses().add(ConcreteInterfaceAddress.parse(ctx.ip_prefix.getText()));
+  }
+
+  @Override
   public void enterS_router_ospf(S_router_ospfContext ctx) {
     if (_c.getOspfProcess() == null) {
       _c.setOspfProcess(new OspfProcess());
@@ -358,6 +431,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (_currentInterface.getAlias() == null) {
       _currentInterface.setAlias(ctx.description.getText());
     }
+  }
+
+  @Override
+  public void exitSiipo_area(Siipo_areaContext ctx) {
+    if (_currentInterface == null) {
+      return;
+    }
+
+    _currentInterface.getOrCreateOspf().setOspfArea(Ip.parse(ctx.ip.getText()).asLong());
   }
 
   @Override
@@ -402,6 +484,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSiipo_network_p2p(Siipo_network_p2pContext ctx) {
+    _currentInterface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
+  }
+
+  @Override
   public void exitSbbb_aspath_multipath_relax(Sbbb_aspath_multipath_relaxContext ctx) {
     _currentBgpVrf.setAsPathMultipathRelax(true);
   }
@@ -409,6 +496,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbb_router_id(Sbb_router_idContext ctx) {
     _currentBgpVrf.setRouterId(Ip.parse(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
+  public void exitSbb_confederation(Sbb_confederationContext ctx) {
+    Long id = toLong(ctx.id);
+    _currentBgpVrf.setConfederationId(id);
   }
 
   @Override
@@ -576,6 +669,18 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
+    String ifaceName = ctx.name.getText();
+    Interface iface = _c.getInterfaces().get(ifaceName);
+    if (iface == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", ifaceName));
+      return;
+    }
+    iface.getOrCreateOspf().setPassive(true);
+  }
+
+  @Override
   public void exitRm_description(Rm_descriptionContext ctx) {
     _currentRouteMapEntry.setDescription(ctx.route_map_description().getText());
   }
@@ -583,6 +688,22 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitS_routemap(S_routemapContext ctx) {
     _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitRm_call(Rm_callContext ctx) {
+    _currentRouteMapEntry.setCall(new RouteMapCall(ctx.name.getText()));
+  }
+
+  @Override
+  public void exitRmm_as_path(Rmm_as_pathContext ctx) {
+    String name = ctx.name.getText();
+    _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(name));
+    _c.referenceStructure(
+        CumulusStructureType.IP_AS_PATH_ACCESS_LIST,
+        name,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
+        ctx.getStart().getLine());
   }
 
   @Override
@@ -637,6 +758,26 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRmm_tag(Rmm_tagContext ctx) {
+    _currentRouteMapEntry.setMatchTag(new RouteMapMatchTag(toLong(ctx.tag)));
+  }
+
+  @Override
+  public void enterRm_on_match(Rm_on_matchContext ctx) {
+    _currentRouteMapEntry.setOnMatchNext(true);
+    // Could not find good docs for what this is. Guessing like a "continue" but punting for now.
+    // TODO: conversion
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRms_as_path(Rms_as_pathContext ctx) {
+    List<Long> asns =
+        ctx.as_path.asns.stream().map(this::toLong).collect(ImmutableList.toImmutableList());
+    _currentRouteMapEntry.setSetAsPath(new RouteMapSetAsPath(asns));
+  }
+
+  @Override
   public void exitRms_metric(Rms_metricContext ctx) {
     _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(parseLong(ctx.metric.getText())));
   }
@@ -664,6 +805,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             ctx.communities.stream()
                 .map(this::toStandardCommunity)
                 .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Override
+  public void exitRms_local_preference(Rms_local_preferenceContext ctx) {
+    _currentRouteMapEntry.setSetLocalPreference(new RouteMapSetLocalPreference(toLong(ctx.pref)));
+  }
+
+  @Override
+  public void exitRms_tag(Rms_tagContext ctx) {
+    _currentRouteMapEntry.setSetTag(new RouteMapSetTag(toLong(ctx.tag)));
   }
 
   @Override
@@ -702,14 +853,46 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitPl_line(Pl_lineContext ctx) {
-    long num = parseLong(ctx.num.getText());
+  public void exitIp_as_path(Ip_as_pathContext ctx) {
+    String name = ctx.name.getText();
+    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
+    long asNum = toLong(ctx.asn);
+    _c.getIpAsPathAccessLists()
+        .computeIfAbsent(name, IpAsPathAccessList::new)
+        .addLine(new IpAsPathAccessListLine(action, asNum));
+    _c.defineStructure(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name, ctx);
+  }
+
+  @Override
+  public void exitPl_line_action(Pl_line_actionContext ctx) {
+    long num;
+    if (ctx.num != null) {
+      num = toLong(ctx.num);
+    } else {
+      // Round up to the next multiple of 5
+      // http://docs.frrouting.org/en/latest/filter.html#clicmd-ipprefix-listNAMEseqNUMBER(permit|deny)PREFIX[leLEN][geLEN]
+      Long lastNum = _currentIpPrefixList.getLines().lastKey();
+      num = nextMultipleOfFive(lastNum);
+    }
+    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
+
+    if (ctx.ANY() != null) {
+      _currentIpPrefixList.addLine(
+          new IpPrefixListLine(
+              action, num, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+      return;
+    }
+
     Prefix prefix = Prefix.parse(ctx.ip_prefix.getText());
     int prefixLength = prefix.getPrefixLength();
     int low = ctx.ge != null ? Integer.parseInt(ctx.ge.getText()) : prefixLength;
     int high = ctx.le != null ? Integer.parseInt(ctx.le.getText()) : Prefix.MAX_PREFIX_LENGTH;
-    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
     IpPrefixListLine pll = new IpPrefixListLine(action, num, prefix, new SubRange(low, high));
     _currentIpPrefixList.getLines().put(num, pll);
+  }
+
+  @VisibleForTesting
+  static long nextMultipleOfFive(@Nullable Long lastNum) {
+    return (long) (Math.ceil((Optional.ofNullable(lastNum).orElse(0L) + 1) * 1.0 / 5) * 5);
   }
 }

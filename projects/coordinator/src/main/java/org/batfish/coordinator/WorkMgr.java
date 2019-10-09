@@ -48,6 +48,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,6 +88,7 @@ import org.batfish.common.Task;
 import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
@@ -229,15 +231,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static final Set<String> WELL_KNOWN_NETWORK_FILENAMES =
       ImmutableSet.of(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
-
-  private static final Set<String> ENV_FILENAMES =
-      ImmutableSet.of(
-          BfConsts.RELPATH_NODE_BLACKLIST_FILE,
-          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE,
-          BfConsts.RELPATH_EDGE_BLACKLIST_FILE,
-          BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES,
-          BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES,
-          BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
 
   private static final int MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES = 10;
 
@@ -1629,6 +1622,13 @@ public class WorkMgr extends AbstractCoordinator {
     Path subDir = getSnapshotSubdir(srcDir);
     validateSnapshotDir(subDir);
 
+    // If interface blacklist was provided, delete it and copy contents into runtime data
+    List<NodeInterfacePair> ifaceBlacklist =
+        deserializeAndDeleteInterfaceBlacklist(
+            subDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
+    updateRuntimeData(
+        subDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE), ifaceBlacklist, ImmutableList.of());
+
     SortedSet<Path> subFileList = getEntries(subDir);
 
     NetworkId networkId = _idManager.getNetworkId(networkName);
@@ -1664,11 +1664,8 @@ public class WorkMgr extends AbstractCoordinator {
     boolean referenceLibraryData = false;
     for (Path subFile : subFileList) {
       String name = subFile.getFileName().toString();
-      if (isEnvFile(subFile)) {
-        // copy environment level files to the environment directory
-        if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
-          bgpTables = true;
-        }
+      if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
+        bgpTables = true;
       } else if (isWellKnownNetworkFile(subFile)) {
         if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
           referenceLibraryData = true;
@@ -1835,11 +1832,21 @@ public class WorkMgr extends AbstractCoordinator {
       FileUtils.copyDirectory(getSnapshotSubdir(unzipDir).toFile(), newSnapshotInputsDir.toFile());
     }
 
+    // Update line-up/line-down interface statuses
+    Set<NodeInterfacePair> deactivate = new HashSet<>();
+    if (forkSnapshotBean.deactivateInterfaces != null) {
+      deactivate.addAll(forkSnapshotBean.deactivateInterfaces);
+    }
+    // Deactivate any interfaces in interface blacklist and delete blacklist if present
+    deactivate.addAll(
+        deserializeAndDeleteInterfaceBlacklist(
+            newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE)));
+    List<NodeInterfacePair> restore =
+        firstNonNull(forkSnapshotBean.restoreInterfaces, ImmutableList.of());
+    updateRuntimeData(
+        newSnapshotInputsDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE), deactivate, restore);
+
     // Add user-specified failures to new blacklists
-    addToSerializedList(
-        newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
-        forkSnapshotBean.deactivateInterfaces,
-        new TypeReference<List<NodeInterfacePair>>() {});
     addToSerializedList(
         newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
         forkSnapshotBean.deactivateLinks,
@@ -1850,10 +1857,6 @@ public class WorkMgr extends AbstractCoordinator {
         new TypeReference<List<String>>() {});
 
     // Remove user-specified items from blacklists
-    removeFromSerializedList(
-        newSnapshotInputsDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
-        forkSnapshotBean.restoreInterfaces,
-        new TypeReference<List<NodeInterfacePair>>() {});
     removeFromSerializedList(
         newSnapshotInputsDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE),
         forkSnapshotBean.restoreLinks,
@@ -1866,6 +1869,69 @@ public class WorkMgr extends AbstractCoordinator {
     // Use initSnapshot to handle creating metadata, etc.
     initSnapshot(
         networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotId);
+  }
+
+  /**
+   * Creates or updates {@link SnapshotRuntimeData} at the given {@code runtimeDataPath} by setting
+   * the given {@code deactivateIfaces} to line down and the given {@code activateIfaces} to line
+   * up. Interfaces in both collections will be marked line up.
+   */
+  @VisibleForTesting
+  static void updateRuntimeData(
+      Path runtimeDataPath,
+      @Nonnull Collection<NodeInterfacePair> deactivateIfaces,
+      @Nonnull Collection<NodeInterfacePair> restoreIfaces) {
+    if (deactivateIfaces.isEmpty() && restoreIfaces.isEmpty()) {
+      return;
+    }
+    SnapshotRuntimeData runtimeData = SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
+    if (runtimeDataPath.toFile().exists()) {
+      try {
+        runtimeData =
+            firstNonNull(
+                BatfishObjectMapper.mapper()
+                    .readValue(CommonUtil.readFile(runtimeDataPath), SnapshotRuntimeData.class),
+                SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
+      } catch (IOException e) {
+        // fine, existing runtime data is unreadable. Don't care, replace it. TODO warn?
+      }
+    }
+    SnapshotRuntimeData updatedRuntimeData =
+        runtimeData
+            .toBuilder()
+            .setInterfacesLineDown(deactivateIfaces)
+            .setInterfacesLineUp(restoreIfaces)
+            .build();
+    try {
+      CommonUtil.writeFile(runtimeDataPath, BatfishObjectMapper.writeString(updatedRuntimeData));
+    } catch (JsonProcessingException e) {
+      // TODO Warn here?
+    }
+  }
+
+  /**
+   * If interface blacklist is present at the given path, deserializes it and deletes file. Returns
+   * an empty list if file did not exist or could not be deserialized. File is deleted regardless of
+   * whether deserialization was successful.
+   *
+   * <p>TODO Delete method when {@link BfConsts#RELPATH_INTERFACE_BLACKLIST_FILE} is removed.
+   */
+  @VisibleForTesting
+  @Nonnull
+  static List<NodeInterfacePair> deserializeAndDeleteInterfaceBlacklist(Path blacklistPath) {
+    if (!blacklistPath.toFile().exists()) {
+      return ImmutableList.of();
+    }
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(
+              CommonUtil.readFile(blacklistPath), new TypeReference<List<NodeInterfacePair>>() {});
+    } catch (IOException e) {
+      // Blacklist could not be deserialized as List<NodeInterfacePair>
+      return ImmutableList.of();
+    } finally {
+      CommonUtil.delete(blacklistPath);
+    }
   }
 
   @VisibleForTesting
@@ -1939,10 +2005,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static boolean isWellKnownNetworkFile(Path path) {
     return WELL_KNOWN_NETWORK_FILENAMES.contains(path.getFileName().toString());
-  }
-
-  private static boolean isEnvFile(Path path) {
-    return ENV_FILENAMES.contains(path.getFileName().toString());
   }
 
   public boolean killWork(QueuedWork work) {

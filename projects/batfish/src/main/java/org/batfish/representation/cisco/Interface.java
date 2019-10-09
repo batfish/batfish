@@ -43,9 +43,6 @@ public class Interface implements Serializable {
   /** Loopback bandwidth */
   private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
 
-  /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
-  private static final double DEFAULT_NXOS_ETHERNET_SPEED = 1E9D;
-
   private static final double DEFAULT_TEN_GIGABIT_ETHERNET_SPEED = 10E9D;
 
   /** Loopback delay in picoseconds for IOS */
@@ -104,9 +101,6 @@ public class Interface implements Serializable {
         case FORCE10:
         case FOUNDRY:
           return DEFAULT_IOS_ETHERNET_SPEED;
-
-        case CISCO_NX:
-          return DEFAULT_NXOS_ETHERNET_SPEED;
 
         case AWS:
         case BLADENETWORK:
@@ -257,7 +251,6 @@ public class Interface implements Serializable {
   /** Returns the default interface delay in picoseconds for the given {@code format}. */
   public static long getDefaultDelay(String name, ConfigurationFormat format) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
-      // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
       // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
       return LOOPBACK_IOS_DELAY;
     }
@@ -296,9 +289,6 @@ public class Interface implements Serializable {
         return SwitchportMode.ACCESS;
       case CISCO_IOS:
         return SwitchportMode.DYNAMIC_AUTO;
-      case CISCO_NX:
-        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/5_x/nx-os/interfaces/configuration/guide/if_cli/if_access_trunk.html#pgfId-1525675
-        return SwitchportMode.ACCESS;
       default:
         return SwitchportMode.ACCESS;
     }

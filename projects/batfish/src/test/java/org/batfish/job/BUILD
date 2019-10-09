@@ -11,12 +11,15 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
-        "//projects/batfish/src/test/resources",
+        "//projects/batfish/src/test/resources/org/batfish/job/host",
+        "//projects/batfish/src/test/resources/org/batfish/job/juniper",
         "//projects/batfish/src/test/resources/org/batfish/job/palo_alto",
+        "//projects/batfish/src/test/resources/org/batfish/job/vyos",
     ],
     deps = [
         "//projects/batfish",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish/src/main/java/org/batfish/representation/cisco",
         "@guava//:compile",
         "@hamcrest//:compile",
     ],

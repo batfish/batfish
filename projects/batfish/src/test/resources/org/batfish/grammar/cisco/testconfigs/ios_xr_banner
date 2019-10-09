@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname ios_xr_banner
+!
+banner exec ^CFirst line.
+Second line, with no ignored text.^Cignored text
+!
+banner login ^First line.
+Second line.^
+!

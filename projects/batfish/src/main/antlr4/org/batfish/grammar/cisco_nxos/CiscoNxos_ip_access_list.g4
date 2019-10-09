@@ -525,9 +525,7 @@ udp_port
 udp_port_number
 :
 // 0-65535
-  UINT8
-  | UINT16
-  | UINT32
+  uint16
 ;
 
 acllal4udp_option

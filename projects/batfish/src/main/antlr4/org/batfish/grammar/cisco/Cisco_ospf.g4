@@ -176,7 +176,7 @@ ro_distribute_list
     | OUT
   )
   (
-    iname = interface_name
+    iname = interface_name_unstructured
   )?
   NEWLINE
 ;
@@ -196,10 +196,6 @@ ro_max_metric
       |
       (
          summary_lsa = SUMMARY_LSA summary = DEC?
-      )
-      |
-      (
-         wait_for_bgp_nx = WAIT_FOR BGP bgptag = variable_max_metric
       )
       |
       (
@@ -480,7 +476,7 @@ ro6_distribute_list
       | OUT
    )
    (
-      iname = interface_name
+      iname = interface_name_unstructured
    )?
    NEWLINE
 ;

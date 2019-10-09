@@ -1,0 +1,21 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname virtual-router;
+  }
+}
+network {
+  virtual-router VR {
+    admin-dists {
+      static 11;
+      static-ipv6 12;
+      ospf-int 31;
+      ospf-ext 111;
+      ospfv3-int 32;
+      ospfv3-ext 112;
+      ibgp 201;
+      ebgp 21;
+      rip 121;
+    }
+  }
+}

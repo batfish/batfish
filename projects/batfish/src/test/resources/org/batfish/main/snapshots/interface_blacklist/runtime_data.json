@@ -1,0 +1,14 @@
+{
+    "runtimeData": {
+        "rtr1": {
+            "interfaces": {
+                "Ethernet0": {
+                    "lineUp": false
+                },
+                "Ethernet1": {
+                    "lineUp": true
+                }
+            }
+        }
+    }
+}

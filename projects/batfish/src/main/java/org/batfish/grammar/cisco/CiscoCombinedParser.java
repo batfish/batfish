@@ -37,7 +37,6 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
         break;
 
       case CISCO_IOS_XR:
-      case CISCO_NX:
         multilineBgpNeighbors = true;
         break;
 
@@ -45,15 +44,18 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
       default:
         throw new BatfishException("Should not be possible");
     }
-    _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
+    boolean eos = format == ConfigurationFormat.ARISTA;
     boolean cadant = format == ConfigurationFormat.CADANT;
+    _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _lexer.setCadant(cadant);
+    _lexer.setEos(eos);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
+    _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
+    _lexer.setIosXr(format == ConfigurationFormat.CISCO_IOS_XR);
     _parser.setAristaBgp(settings.getUseAristaBgp() && format == ConfigurationFormat.ARISTA);
     _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _parser.setEos(format == ConfigurationFormat.ARISTA);
+    _parser.setEos(eos);
     _parser.setCadant(cadant);
-    _parser.setNxos(format == ConfigurationFormat.CISCO_NX);
     _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
   }
 

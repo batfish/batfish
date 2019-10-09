@@ -14,6 +14,7 @@ import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunityIn;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
@@ -46,6 +47,8 @@ import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
@@ -436,6 +439,22 @@ public final class CommunityStructuresVerifier {
     }
 
     @Override
+    public Void visitStandardCommunityHighMatch(
+        StandardCommunityHighMatch standardCommunityHighMatch,
+        CommunityStructuresVerifierContext arg) {
+      // nothing that can be checked statically
+      return null;
+    }
+
+    @Override
+    public Void visitStandardCommunityLowMatch(
+        StandardCommunityLowMatch standardCommunityLowMatch,
+        CommunityStructuresVerifierContext arg) {
+      // nothing that can be checked statically
+      return null;
+    }
+
+    @Override
     public Void visitVpnDistinguisherExtendedCommunities(
         VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities,
         CommunityStructuresVerifierContext arg) {
@@ -524,6 +543,13 @@ public final class CommunityStructuresVerifier {
       implements CommunitySetExprVisitor<Void, CommunityStructuresVerifierContext> {
 
     @Override
+    public Void visitCommunityExprsSet(
+        CommunityExprsSet communityExprsSet, CommunityStructuresVerifierContext arg) {
+      // nothing that can be checked statically
+      return null;
+    }
+
+    @Override
     public Void visitCommunitySetDifference(
         CommunitySetDifference communitySetDifference, CommunityStructuresVerifierContext arg) {
       communitySetDifference.getInitial().accept(COMMUNITY_SET_EXPR_VERIFIER, arg);
@@ -572,8 +598,7 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitCommunitySetUnion(
         CommunitySetUnion communitySetUnion, CommunityStructuresVerifierContext arg) {
-      communitySetUnion.getExpr1().accept(COMMUNITY_SET_EXPR_VERIFIER, arg);
-      communitySetUnion.getExpr2().accept(COMMUNITY_SET_EXPR_VERIFIER, arg);
+      communitySetUnion.getExprs().forEach(expr -> expr.accept(COMMUNITY_SET_EXPR_VERIFIER, arg));
       return null;
     }
 

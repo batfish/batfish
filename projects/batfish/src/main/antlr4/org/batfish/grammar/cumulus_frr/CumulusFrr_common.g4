@@ -33,6 +33,13 @@ line_action
   | permit = PERMIT
 ;
 
+literal_as_path
+:
+  (
+    asns += uint32
+  )+
+;
+
 literal_standard_community
 :
   high = uint16 COLON low = uint16

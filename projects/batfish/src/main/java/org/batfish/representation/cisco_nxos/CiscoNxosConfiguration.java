@@ -7,15 +7,14 @@ import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
-import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
-import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
@@ -27,6 +26,7 @@ import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_I
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -64,7 +64,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.topology.SnapshotRuntimeData.InterfaceRuntimeData;
+import org.batfish.common.runtime.InterfaceRuntimeData;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -529,7 +529,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Next we build up the BGP common export policy.
     RoutingPolicy bgpCommonExportPolicy =
-        new RoutingPolicy(computeBgpCommonExportPolicyName(vrfName), c);
+        new RoutingPolicy(generatedBgpCommonExportPolicyName(vrfName), c);
     c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
 
     // 1. If there are any ipv4 summary only networks, do not export the more specific routes.
@@ -562,14 +562,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           ipv4af.getAggregateNetworks().entrySet()) {
         Prefix prefix = e.getKey();
         BgpVrfAddressFamilyAggregateNetworkConfiguration agg = e.getValue();
-        generateGenerationPolicy(c, vrfName, prefix);
+        RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix);
 
         GeneratedRoute.Builder gr =
             GeneratedRoute.builder()
                 .setNetwork(prefix)
                 .setAdmin(AGGREGATE_ROUTE_ADMIN_COST)
-                .setGenerationPolicy(
-                    computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
+                .setGenerationPolicy(genPolicy.getName())
                 .setDiscard(true);
 
         // Conditions to generate this route
@@ -1688,6 +1687,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
               ConnectedRouteMetadata.builder()
                   .setAdmin(addrWithAttr.getRoutePreference())
+                  .setGenerateLocalRoutes(true)
                   .setTag(addrWithAttr.getTag())
                   .build());
         }
@@ -1704,6 +1704,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       (ConcreteInterfaceAddress) addr.getAddress(),
                       ConnectedRouteMetadata.builder()
                           .setAdmin(addr.getRoutePreference())
+                          .setGenerateLocalRoutes(true)
                           .setTag(addr.getTag())
                           .build()));
       newIfaceBuilder.setAddressMetadata(addressMetadata.build());
@@ -2409,7 +2410,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ospf.getPassive() != null
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
-    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
+    org.batfish.datamodel.ospf.OspfNetworkType networkType = toOspfNetworkType(ospf.getNetwork());
+    ospfSettings.setNetworkType(networkType);
+    if (ospf.getCost() == null
+        && newIface.isLoopback()
+        && networkType != org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT) {
+      ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
+    } else {
+      ospfSettings.setCost(ospf.getCost());
+    }
     ospfSettings.setDeadInterval(toOspfDeadInterval(ospf));
     ospfSettings.setHelloInterval(toOspfHelloInterval(ospf));
 
@@ -2899,9 +2908,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                     address ->
                                         address.getPrefix().getPrefixLength() <= 30
                                             ? Stream.of(
-                                                address.getPrefix(),
-                                                Prefix.create(
-                                                    address.getIp(), Prefix.MAX_PREFIX_LENGTH))
+                                                address.getPrefix(), address.getIp().toPrefix())
                                             : Stream.of(address.getPrefix()))
                                 .map(PrefixRange::fromPrefix)
                                 .collect(ImmutableList.toImmutableList())))));
@@ -3022,7 +3029,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             return Stream.of(
                 new SetCommunities(
                     routeMapSetCommunity.getAdditive()
-                        ? new CommunitySetUnion(InputCommunities.instance(), communities)
+                        ? CommunitySetUnion.of(InputCommunities.instance(), communities)
                         : communities));
           }
 

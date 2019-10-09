@@ -1,7 +1,6 @@
 package org.batfish.grammar.f5_bigip_imish;
 
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
-import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
@@ -97,6 +96,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredControlPlaneExtr
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.f5_bigip.AggregateAddress;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.ImishInterface;
 import org.batfish.representation.f5_bigip.OspfInterface;
@@ -133,7 +133,7 @@ public final class F5BigipImishGrammarTest {
             new KernelRoute(Prefix.ZERO),
             outputBuilder,
             peerAddress,
-            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            peerAddress.toPrefix(),
             Configuration.DEFAULT_VRF_NAME,
             Direction.OUT));
   }
@@ -145,7 +145,7 @@ public final class F5BigipImishGrammarTest {
             new KernelRoute(Prefix.ZERO),
             outputBuilder,
             peerAddress,
-            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            peerAddress.toPrefix(),
             Configuration.DEFAULT_VRF_NAME,
             Direction.OUT));
   }
@@ -226,7 +226,7 @@ public final class F5BigipImishGrammarTest {
             makeBgpRoute(Prefix.ZERO),
             outputBuilder,
             peerAddress,
-            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            peerAddress.toPrefix(),
             Configuration.DEFAULT_VRF_NAME,
             Direction.OUT));
     return outputBuilder.build();
@@ -309,6 +309,47 @@ public final class F5BigipImishGrammarTest {
                                 Prefix.strict("192.0.2.128/32"),
                                 new SubRange(Prefix.MAX_PREFIX_LENGTH, Prefix.MAX_PREFIX_LENGTH)))
                         .not())));
+  }
+
+  @Test
+  public void testBgpAggregateAddressExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_aggregate_address");
+
+    Map<Prefix, AggregateAddress> aggregateAddresses =
+        vc.getBgpProcesses().get("65001").getAggregateAddresses();
+    assertThat(
+        aggregateAddresses,
+        hasKeys(
+            Prefix.strict("10.2.0.0/24"),
+            Prefix.strict("10.3.0.0/24"),
+            Prefix.strict("10.4.0.0/24"),
+            Prefix.strict("10.5.0.0/24")));
+    {
+      AggregateAddress aa = aggregateAddresses.get(Prefix.strict("10.2.0.0/24"));
+      assertFalse(aa.getAsSet());
+      assertFalse(aa.getSummaryOnly());
+    }
+    {
+      AggregateAddress aa = aggregateAddresses.get(Prefix.strict("10.3.0.0/24"));
+      assertTrue(aa.getAsSet());
+      assertFalse(aa.getSummaryOnly());
+    }
+    {
+      AggregateAddress aa = aggregateAddresses.get(Prefix.strict("10.4.0.0/24"));
+      assertFalse(aa.getAsSet());
+      assertTrue(aa.getSummaryOnly());
+    }
+    {
+      AggregateAddress aa = aggregateAddresses.get(Prefix.strict("10.5.0.0/24"));
+      assertTrue(aa.getAsSet());
+      assertTrue(aa.getSummaryOnly());
+    }
+  }
+
+  @Test
+  public void testBgpNullParsing() {
+    // test that ignored BGP lines parse successfully
+    assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_null"));
   }
 
   @Test
@@ -409,9 +450,9 @@ public final class F5BigipImishGrammarTest {
     Ip peer1Ip = Ip.parse(peer1);
     Ip peer2Ip = Ip.parse(peer2);
     Ip peer3Ip = Ip.parse(peer3);
-    Prefix peer1Prefix = Prefix.create(peer1Ip, MAX_PREFIX_LENGTH);
-    Prefix peer2Prefix = Prefix.create(peer2Ip, MAX_PREFIX_LENGTH);
-    Prefix peer3Prefix = Prefix.create(peer3Ip, MAX_PREFIX_LENGTH);
+    Prefix peer1Prefix = peer1Ip.toPrefix();
+    Prefix peer2Prefix = peer2Ip.toPrefix();
+    Prefix peer3Prefix = peer3Ip.toPrefix();
 
     assertThat(
         c,

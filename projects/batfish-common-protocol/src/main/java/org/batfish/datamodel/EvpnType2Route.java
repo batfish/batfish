@@ -182,7 +182,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       long tag,
       int weight) {
     super(
-        Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH),
+        ip.toPrefix(),
         nextHopIp,
         admin,
         asPath,

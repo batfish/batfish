@@ -12,7 +12,6 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 
 public enum HostProtocol {
@@ -180,7 +179,7 @@ public enum HostProtocol {
               .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
               .setDstPorts(
                   ImmutableSet.of(new SubRange(NamedPort.SAP.number(), NamedPort.SAP.number())))
-              .setDstIps(ImmutableSet.of(IpWildcard.create(Prefix.parse("224.2.127.254/32"))));
+              .setDstIps(ImmutableSet.of(IpWildcard.parse("224.2.127.254/32")));
           break;
         }
 

@@ -95,7 +95,6 @@ if_bfd
      | if_bfd_neighbor
      | if_bfd_optimize
      | if_bfd_template
-     | nxos_if_bfd_per_link
   )
 ;
 
@@ -1701,7 +1700,7 @@ iftunnel_source
    (
      DYNAMIC
      | IP_ADDRESS
-     | interface_name
+     | iname = interface_name_unstructured
    ) NEWLINE
 ;
 
@@ -1875,9 +1874,4 @@ if_inner
  
    | if_null_single
    | if_null_block
-;
-
-nxos_if_bfd_per_link
-:
-  PER_LINK NEWLINE
 ;

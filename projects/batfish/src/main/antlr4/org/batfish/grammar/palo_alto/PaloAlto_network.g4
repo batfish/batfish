@@ -75,7 +75,7 @@ cp_lifetime
         | MINUTES
         | SECONDS
     )
-    val = DEC
+    val = uint16
 ;
 
 s_network
@@ -184,21 +184,6 @@ snsgzn_layer3
     LAYER3 variable_list
 ;
 
-sn_virtual_router
-:
-    VIRTUAL_ROUTER sn_virtual_router_definition?
-;
-
-sn_virtual_router_definition
-:
-    name = variable
-    (
-        snvr_interface
-        | snvr_protocol
-        | snvr_routing_table
-    )?
-;
-
 snicp_global_protect
 :
     GLOBAL_PROTECT_APP_CRYPTO_PROFILES name = variable
@@ -233,87 +218,4 @@ snicp_ipsec_crypto_profiles
         | cp_dh_group
         | cp_lifetime
     )
-;
-
-snvr_interface
-:
-    INTERFACE variable_list
-;
-
-snvr_protocol
-:
-    PROTOCOL
-    snvrp_bgp
-;
-
-snvr_routing_table
-:
-    ROUTING_TABLE IP STATIC_ROUTE name = variable
-    (
-        snvrrt_admin_dist
-        | snvrrt_destination
-        | snvrrt_interface
-        | snvrrt_metric
-        | snvrrt_nexthop
-    )
-;
-
-snvrp_bgp
-:
-    BGP
-    (
-        snvrp_bgp_enable
-        | snvrp_bgp_null
-    )
-;
-
-snvrp_bgp_enable
-:
-    ENABLE NO  // parse and ignore NO
-;
-
-
-snvrp_bgp_null
-:
-    DAMPENING_PROFILE
-    null_rest_of_line
-;
-
-snvrrt_admin_dist
-:
-    ADMIN_DIST distance = DEC
-;
-
-snvrrt_destination
-:
-    DESTINATION destination = IP_PREFIX
-;
-
-snvrrt_interface
-:
-    INTERFACE iface = variable
-;
-
-snvrrt_metric
-:
-    METRIC metric = DEC
-;
-
-snvrrt_nexthop
-:
-  NEXTHOP
-  (
-    snvrrtn_ip
-    | snvrrtn_next_vr
-  )
-;
-
-snvrrtn_ip
-:
-  IP_ADDRESS_LITERAL address = IP_ADDRESS
-;
-
-snvrrtn_next_vr
-:
-  NEXT_VR name = variable
 ;

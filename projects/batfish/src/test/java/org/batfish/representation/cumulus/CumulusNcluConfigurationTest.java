@@ -18,6 +18,13 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.List;
+import java.util.SortedMap;
+import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -39,15 +46,18 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Test;
@@ -128,6 +138,41 @@ public class CumulusNcluConfigurationTest {
                         LineAction.DENY, Prefix.parse("10.0.0.1/24"), new SubRange(27, 30)),
                     new RouteFilterLine(
                         LineAction.PERMIT, Prefix.parse("10.0.2.1/24"), new SubRange(28, 31))))));
+  }
+
+  @Test
+  public void testToAsPathAccessList() {
+    long permitted = 11111;
+    long denied = 22222;
+    IpAsPathAccessList asPathAccessList = new IpAsPathAccessList("name");
+    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.DENY, denied));
+    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.PERMIT, permitted));
+    AsPathAccessList viList = CumulusNcluConfiguration.toAsPathAccessList(asPathAccessList);
+
+    // Cache initialization only happens in AsPathAccessList on deserialization o.O
+    viList = SerializationUtils.clone(viList);
+
+    List<AsPathAccessListLine> expectedViLines =
+        ImmutableList.of(
+            new AsPathAccessListLine(LineAction.DENY, String.format("(^| )%s($| )", denied)),
+            new AsPathAccessListLine(LineAction.PERMIT, String.format("(^| )%s($| )", permitted)));
+    assertThat(viList, equalTo(new AsPathAccessList("name", expectedViLines)));
+
+    // Matches paths containing permitted ASN
+    long other = 33333;
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(permitted)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(permitted, other)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(other, permitted)));
+    assertTrue(viList.permits(AsPath.ofSingletonAsSets(other, permitted, other)));
+
+    // Does not match if denied ASN is in path, even if permitted is also there
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(denied)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(denied, permitted)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(permitted, denied)));
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(permitted, denied, permitted)));
+
+    // Does not match by default
+    assertFalse(viList.permits(AsPath.ofSingletonAsSets(other)));
   }
 
   @Test
@@ -509,11 +554,12 @@ public class CumulusNcluConfigurationTest {
   @Test
   public void testToOspfProcess_NoRouterId() {
     OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, vrf);
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
@@ -527,9 +573,10 @@ public class CumulusNcluConfigurationTest {
     Loopback lo = ncluConfiguration.getLoopback();
     lo.setConfigured(true);
     lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
-    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    OspfProcess ospfProcess =
+        ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
@@ -542,20 +589,365 @@ public class CumulusNcluConfigurationTest {
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
 
-    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf);
+    OspfProcess ospfProcess =
+        ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
-    assertThat(ospfProcess.getProcessId(), equalTo("1"));
+    assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
   }
 
   @Test
-  public void testInferRouterID() {
+  public void testInferRouterID_DefaultCase() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("0.0.0.0")));
+  }
+
+  @Test
+  public void testInferRouterID_Loopback() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     Loopback lo = ncluConfiguration.getLoopback();
     lo.setConfigured(true);
-    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
-    assertThat(ncluConfiguration.inferRouteId(), equalTo(Ip.parse("1.1.1.1")));
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/31"));
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("1.1.1.1")));
+  }
+
+  @Test
+  public void testInferRouterID_LoopbackNotUsable() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Loopback lo = ncluConfiguration.getLoopback();
+    lo.setConfigured(true);
+    lo.getAddresses().add(ConcreteInterfaceAddress.parse("127.0.0.2/31"));
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("0.0.0.0")));
+  }
+
+  @Test
+  public void testInferRouterID_MaxInterfaceIp() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface i1 = new Interface("eth1", CumulusInterfaceType.PHYSICAL, null, null);
+    i1.getIpAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/30"));
+    Interface i2 = new Interface("eth2", CumulusInterfaceType.PHYSICAL, null, null);
+    i2.getIpAddresses().add(ConcreteInterfaceAddress.parse("2.2.2.2/30"));
+
+    ncluConfiguration.setInterfaces(ImmutableMap.of("eth1", i1, "eth2", i2));
+
+    assertThat(ncluConfiguration.inferRouterId(), equalTo(Ip.parse("2.2.2.2")));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_HasArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    vsIface.getOrCreateOspf().setOspfArea(1L);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertThat(viIface.getOspfAreaName(), equalTo(1L));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NoArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf();
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    assertNull(viIface.getOspfAreaName());
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NoNetworkType() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertNull(viIface.getOspfNetworkType());
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NoPassiveInterface() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf();
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertFalse(viIface.getOspfPassive());
+  }
+
+  @Test
+  public void testAddOspfInterfaces_PassiveInterface() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    OspfInterface ospf = vsIface.getOrCreateOspf();
+    ospf.setOspfArea(0L);
+    ospf.setPassive(true);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertTrue(viIface.getOspfPassive());
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NetworkTypeP2P() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+    vsIface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertThat(
+        viIface.getOspfNetworkType(),
+        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_HelloInterval() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default hello interval
+    assertThat(
+        viIface.getOspfSettings().getHelloInterval(),
+        equalTo(OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL));
+
+    // set hello interval
+    vsIface.getOrCreateOspf().setHelloInterval(1);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertThat(viIface.getOspfSettings().getHelloInterval(), equalTo(1));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_DeadInterval() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default dead interval
+    assertThat(
+        viIface.getOspfSettings().getDeadInterval(),
+        equalTo(OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL));
+
+    // set dead interval
+    vsIface.getOrCreateOspf().setDeadInterval(1);
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    assertThat(viIface.getOspfSettings().getDeadInterval(), equalTo(1));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_ProcessId() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    ncluConfiguration.addOspfInterfaces(vrf, "1");
+
+    // default dead interval
+    assertThat(viIface.getOspfSettings().getProcess(), equalTo("1"));
+  }
+
+  @Test
+  public void testComputeOspfProcess_HasArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    vsIface.getOrCreateOspf().setOspfArea(1L);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+
+    SortedMap<Long, OspfArea> areas = ncluConfiguration.computeOspfAreas(ImmutableList.of("iface"));
+    assertThat(
+        areas,
+        equalTo(
+            ImmutableSortedMap.of(
+                1L, OspfArea.builder().addInterface("iface").setNumber(1L).build())));
+  }
+
+  @Test
+  public void testComputeOspfProcess_NoArea() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf();
+
+    SortedMap<Long, OspfArea> areas = ncluConfiguration.computeOspfAreas(ImmutableList.of("iface"));
+    assertThat(areas, equalTo(ImmutableSortedMap.of()));
+  }
+
+  @Test
+  public void testPopulateLoopback() {
+    Interface iface = new Interface("lo", CumulusInterfaceType.LOOPBACK, null, null);
+    iface.getIpAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/30"));
+    Loopback loopback = new Loopback();
+
+    CumulusNcluConfiguration.populateLoInInterfacesToLoopback(iface, loopback);
+    assertThat(
+        loopback.getAddresses(),
+        equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
+  }
+
+  @Test
+  public void testToRouteMapSetLocalPref() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+    RouteMap rm = new RouteMap("RM");
+    RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+    rme.setSetLocalPreference(new RouteMapSetLocalPreference(200L));
+    rm.getEntries().put(10, rme);
+    RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+    Builder outputBuilder = Bgpv4Route.builder();
+    Environment.Builder env =
+        Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
+    policy.call(env.setOutputRoute(outputBuilder).build());
+    assertThat(outputBuilder.getLocalPreference(), equalTo(200L));
+  }
+
+  @Test
+  public void testToRouteMapSetTag() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+    RouteMap rm = new RouteMap("RM");
+    RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+    rme.setSetTag(new RouteMapSetTag(999));
+    rm.getEntries().put(10, rme);
+    RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+    Builder outputBuilder = Bgpv4Route.builder();
+    Environment.Builder env =
+        Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
+    policy.call(env.setOutputRoute(outputBuilder).build());
+    assertThat(outputBuilder.getTag(), equalTo(999L));
+  }
+
+  @Test
+  public void testToRouteMapCall() {
+    String subMapName = "SUB-MAP";
+
+    // Call route map that permits -- accept route, both maps modify route.
+    {
+      CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+      // Real value of VS submap does not matter; Actual policy semantics placed in VI
+      vendorConfiguration.getRouteMaps().put(subMapName, new RouteMap(subMapName));
+      RouteMap rm = new RouteMap("RM");
+      RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+      rme.setSetTag(new RouteMapSetTag(7777L));
+      rme.setCall(new RouteMapCall(subMapName));
+      rm.getEntries().put(10, rme);
+      RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+      Builder outputBuilder = Bgpv4Route.builder();
+      Configuration c = new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED);
+      c.getRoutingPolicies()
+          .put(
+              subMapName,
+              RoutingPolicy.builder()
+                  .setOwner(c)
+                  .setName(subMapName)
+                  .setStatements(
+                      ImmutableList.of(
+                          new SetLocalPreference(new LiteralLong(2000)),
+                          Statements.ExitAccept.toStaticStatement()))
+                  .build());
+      Environment.Builder env = Environment.builder(c);
+      Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+      assertTrue(result.getBooleanValue());
+      assertThat(outputBuilder.getTag(), equalTo(7777L));
+      assertThat(outputBuilder.getLocalPreference(), equalTo(2000L));
+    }
+
+    // Call route map that denies -- route denied.
+    {
+      CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+      // Real value of VS submap does not matter; Actual policy semantics placed in VI
+      vendorConfiguration.getRouteMaps().put(subMapName, new RouteMap(subMapName));
+      RouteMap rm = new RouteMap("RM");
+      RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+      rme.setCall(new RouteMapCall(subMapName));
+      rm.getEntries().put(10, rme);
+      RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+      Configuration c = new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED);
+      c.getRoutingPolicies()
+          .put(
+              subMapName,
+              RoutingPolicy.builder()
+                  .setOwner(c)
+                  .setName(subMapName)
+                  .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
+                  .build());
+
+      Builder outputBuilder = Bgpv4Route.builder();
+      Environment.Builder env = Environment.builder(c);
+      Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+      assertFalse(result.getBooleanValue());
+    }
+
+    // Call route map that does not exist -- route permitted (?)
+    {
+      CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+      RouteMap rm = new RouteMap("RM");
+      RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
+      rme.setCall(new RouteMapCall(subMapName));
+      rm.getEntries().put(10, rme);
+      RoutingPolicy policy = vendorConfiguration.toRouteMap(rm);
+
+      Builder outputBuilder = Bgpv4Route.builder();
+      Environment.Builder env =
+          Environment.builder(new Configuration("h", ConfigurationFormat.CUMULUS_CONCATENATED));
+      Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+      assertTrue(result.getBooleanValue());
+    }
+  }
+
+  @Test
+  public void testCreateVIInterfaceForLo_Bandwidth() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+    org.batfish.datamodel.Interface iface = vendorConfiguration.createVIInterfaceForLo();
+    assertThat(iface.getBandwidth(), equalTo(CumulusNcluConfiguration.DEFAULT_LOOPBACK_BANDWIDTH));
   }
 }

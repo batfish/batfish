@@ -1,0 +1,20 @@
+feature bgp
+!
+hostname nxos-bgp-maximum-paths
+!
+!!! Define VRFs so they are converted !!!
+vrf context justebgp
+vrf context justibgp
+vrf context both
+!
+router bgp 1
+  vrf justebgp
+    address-family ipv4 unicast
+      maximum-paths 4
+  vrf justibgp
+    address-family ipv4 unicast
+      maximum-paths ibgp 4
+  vrf both
+    address-family ipv4 unicast
+      maximum-paths eibgp 4
+!

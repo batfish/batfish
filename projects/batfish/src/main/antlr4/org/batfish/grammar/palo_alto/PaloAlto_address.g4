@@ -19,7 +19,7 @@ s_address_definition
         | sa_fqdn
         | sa_ip_netmask
         | sa_ip_range
-        | sa_null
+        | sa_tag
     )?
 ;
 
@@ -38,10 +38,9 @@ sa_ip_netmask
 :
     IP_NETMASK
     (
-        IP_ADDRESS
+        ip_address
         | IP_PREFIX
     )
-
 ;
 
 sa_ip_range
@@ -49,8 +48,7 @@ sa_ip_range
     IP_RANGE_LITERAL IP_RANGE
 ;
 
-sa_null
+sa_tag
 :
-    TAG
-    null_rest_of_line
+    TAG tags = variable_list
 ;

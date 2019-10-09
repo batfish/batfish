@@ -115,6 +115,6 @@ public class AsSet implements Serializable, Comparable<AsSet> {
     if (_value.length == 1) {
       return Long.toString(_value[0]);
     }
-    return "{" + StringUtils.join(_value, ",") + "}";
+    return "{" + StringUtils.join(_value, ',') + "}";
   }
 }

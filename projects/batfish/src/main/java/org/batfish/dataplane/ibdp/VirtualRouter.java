@@ -113,7 +113,6 @@ import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class VirtualRouter implements Serializable {
 
@@ -530,7 +529,7 @@ public class VirtualRouter implements Serializable {
 
       Ip srcIp = advert.getSrcIp();
       // TODO: support passive and unnumbered bgp connections
-      Prefix srcPrefix = Prefix.create(srcIp, Prefix.MAX_PREFIX_LENGTH);
+      Prefix srcPrefix = srcIp.toPrefix();
       BgpPeerConfig neighbor = _vrf.getBgpProcess().getActiveNeighbors().get(srcPrefix);
       if (neighbor == null) {
         continue;
@@ -811,7 +810,7 @@ public class VirtualRouter implements Serializable {
 
   /** Generate a connected route for a given address (and associated metadata). */
   @VisibleForTesting
-  @NonNull
+  @Nonnull
   static ConnectedRoute generateConnectedRoute(
       @Nonnull ConcreteInterfaceAddress address,
       @Nonnull String ifaceName,
@@ -861,22 +860,37 @@ public class VirtualRouter implements Serializable {
       return Stream.empty();
     }
     return iface.getAllConcreteAddresses().stream()
-        .filter(addr -> addr.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH)
+        .filter(
+            addr ->
+                shouldGenerateLocalRoute(
+                    addr.getNetworkBits(), iface.getAddressMetadata().get(addr)))
         .map(
             addr ->
                 generateLocalRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));
   }
 
+  /**
+   * Returns true if local routes should always be generated for the provided {@link
+   * ConnectedRouteMetadata}
+   */
+  @VisibleForTesting
+  static boolean shouldGenerateLocalRoute(
+      int prefixLength, @Nullable ConnectedRouteMetadata connectedRouteMetadata) {
+    return (connectedRouteMetadata != null
+            && Boolean.TRUE.equals(connectedRouteMetadata.getGenerateLocalRoutes()))
+        || prefixLength < Prefix.MAX_PREFIX_LENGTH;
+  }
+
   /** Generate a connected route for a given address (and associated metadata). */
   @VisibleForTesting
-  @NonNull
+  @Nonnull
   static LocalRoute generateLocalRoute(
       @Nonnull ConcreteInterfaceAddress address,
       @Nonnull String ifaceName,
       @Nullable ConnectedRouteMetadata metadata) {
     LocalRoute.Builder builder =
         LocalRoute.builder()
-            .setNetwork(Prefix.create(address.getIp(), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(address.getIp().toPrefix())
             .setSourcePrefixLength(address.getNetworkBits())
             .setNextHopInterface(ifaceName);
     if (metadata != null) {

@@ -78,7 +78,6 @@ import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_9000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS5;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS6;
-import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACKET_LENGTH_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_PORT_RANGE;
@@ -415,7 +414,6 @@ public final class CiscoNxosGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     Batfish batfish = BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
-    batfish.getSettings().setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));
     return batfish;
   }
 
@@ -435,7 +433,6 @@ public final class CiscoNxosGrammarTest {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    settings.setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
     NxosControlPlaneExtractor extractor =
         new NxosControlPlaneExtractor(src, ciscoNxosParser, new Warnings());
@@ -1458,13 +1455,25 @@ public final class CiscoNxosGrammarTest {
           allOf(
               hasEntry(
                   ConcreteInterfaceAddress.parse("10.0.0.1/24"),
-                  ConnectedRouteMetadata.builder().setAdmin(0).setTag(0).build()),
+                  ConnectedRouteMetadata.builder()
+                      .setAdmin(0)
+                      .setTag(0)
+                      .setGenerateLocalRoutes(true)
+                      .build()),
               hasEntry(
                   ConcreteInterfaceAddress.parse("10.0.0.2/24"),
-                  ConnectedRouteMetadata.builder().setAdmin(0).setTag(0).build()),
+                  ConnectedRouteMetadata.builder()
+                      .setAdmin(0)
+                      .setTag(0)
+                      .setGenerateLocalRoutes(true)
+                      .build()),
               hasEntry(
                   ConcreteInterfaceAddress.parse("10.0.0.3/24"),
-                  ConnectedRouteMetadata.builder().setAdmin(5).setTag(3).build())));
+                  ConnectedRouteMetadata.builder()
+                      .setAdmin(5)
+                      .setTag(3)
+                      .setGenerateLocalRoutes(true)
+                      .build())));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
@@ -4458,7 +4467,7 @@ public final class CiscoNxosGrammarTest {
       ObjectGroupIpAddressLine line;
 
       line = lines.next();
-      assertThat(line.getIpWildcard(), equalTo(IpWildcard.create(Ip.parse("10.0.0.1"))));
+      assertThat(line.getIpWildcard(), equalTo(IpWildcard.parse("10.0.0.1")));
 
       line = lines.next();
       assertThat(
@@ -4466,7 +4475,7 @@ public final class CiscoNxosGrammarTest {
           equalTo(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.255.0.255"))));
 
       line = lines.next();
-      assertThat(line.getIpWildcard(), equalTo(IpWildcard.create(Prefix.parse("10.0.0.0/24"))));
+      assertThat(line.getIpWildcard(), equalTo(IpWildcard.parse("10.0.0.0/24")));
     }
   }
 
@@ -4499,6 +4508,14 @@ public final class CiscoNxosGrammarTest {
                       Prefix.parse("10.0.0.0/24").toIpSpace())
                   .accept(SRC_IP_BDD)));
     }
+  }
+
+  @Test
+  public void testNxosOspfCostLoopback() throws IOException {
+    Configuration c = parseConfig("nxos-ospf-cost-loopback");
+
+    assertThat(c.getAllInterfaces().get("loopback61").getOspfSettings(), not(nullValue()));
+    assertThat(c.getAllInterfaces().get("loopback61").getOspfSettings().getCost(), equalTo(1));
   }
 
   @Test

@@ -5,5 +5,8 @@ package(
 
 filegroup(
     name = "palo_alto",
-    srcs = glob(["**"]),
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD"],
+    ),
 )

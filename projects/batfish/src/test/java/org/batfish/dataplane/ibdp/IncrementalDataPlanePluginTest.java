@@ -85,7 +85,7 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link IncrementalDataPlanePlugin}. */
 public class IncrementalDataPlanePluginTest {
 
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
+  private static final String TESTRIGS_PREFIX = "org/batfish/dataplane/ibdp/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -876,11 +876,9 @@ public class IncrementalDataPlanePluginTest {
             .size(),
         equalTo(2));
     BgpPeerConfigId bgpConfig1 =
-        new BgpPeerConfigId(
-            "n1", DEFAULT_VRF_NAME, Prefix.create(lo2Ip, Prefix.MAX_PREFIX_LENGTH), false);
+        new BgpPeerConfigId("n1", DEFAULT_VRF_NAME, lo2Ip.toPrefix(), false);
     BgpPeerConfigId bgpConfig2 =
-        new BgpPeerConfigId(
-            "n2", DEFAULT_VRF_NAME, Prefix.create(lo1Ip, Prefix.MAX_PREFIX_LENGTH), false);
+        new BgpPeerConfigId("n2", DEFAULT_VRF_NAME, lo1Ip.toPrefix(), false);
     assertThat(
         batfish
             .getTopologyProvider()

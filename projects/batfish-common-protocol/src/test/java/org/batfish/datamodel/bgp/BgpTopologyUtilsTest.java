@@ -94,7 +94,7 @@ public class BgpTopologyUtilsTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
 
-    Prefix peer1PeerPrefix = Prefix.create(ip2, 32);
+    Prefix peer1PeerPrefix = ip2.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -148,7 +148,7 @@ public class BgpTopologyUtilsTest {
     Ip ip2 = Ip.parse("1.1.1.2");
     Ip ip3 = Ip.parse("1.1.1.3");
 
-    Prefix peer1PeerPrefix = Prefix.create(ip2, 32);
+    Prefix peer1PeerPrefix = ip2.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)

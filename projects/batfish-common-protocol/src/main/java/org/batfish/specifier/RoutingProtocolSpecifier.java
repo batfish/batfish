@@ -9,7 +9,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -49,28 +51,28 @@ public class RoutingProtocolSpecifier {
 
   public static final String ALL = "all";
 
-  private static final String AGGREGATE = "aggregate";
-  @VisibleForTesting static final String BGP = "bgp";
-  private static final String CONNECTED = "connected";
-  @VisibleForTesting static final String EBGP = "ebgp";
-  private static final String EIGRP = "eigrp";
-  private static final String EIGRP_EXT = "eigrp-ext";
-  private static final String EIGRP_INT = "eigrp-int";
-  @VisibleForTesting static final String IBGP = "ibgp";
-  private static final String IGP = "igp";
-  private static final String ISIS = "isis";
-  private static final String ISIS_L1 = "isis-l1";
-  private static final String ISIS_L2 = "isis-l2";
-  private static final String LOCAL = "local";
-  private static final String OSPF = "ospf";
-  private static final String OSPF_EXT = "ospf-ext";
-  private static final String OSPF_EXT1 = "ospf-ext1";
-  private static final String OSPF_EXT2 = "ospf-ext2";
-  private static final String OSPF_INT = "ospf-int";
-  private static final String OSPF_INTER = "ospf-inter";
-  private static final String OSPF_INTRA = "ospf-intra";
-  private static final String RIP = "rip";
-  private static final String STATIC = "static";
+  public static final String AGGREGATE = "aggregate";
+  public static final String BGP = "bgp";
+  public static final String CONNECTED = "connected";
+  public static final String EBGP = "ebgp";
+  public static final String EIGRP = "eigrp";
+  public static final String EIGRP_EXT = "eigrp-ext";
+  public static final String EIGRP_INT = "eigrp-int";
+  public static final String IBGP = "ibgp";
+  public static final String IGP = "igp";
+  public static final String ISIS = "isis";
+  public static final String ISIS_L1 = "isis-l1";
+  public static final String ISIS_L2 = "isis-l2";
+  public static final String LOCAL = "local";
+  public static final String OSPF = "ospf";
+  public static final String OSPF_EXT = "ospf-ext";
+  public static final String OSPF_EXT1 = "ospf-ext1";
+  public static final String OSPF_EXT2 = "ospf-ext2";
+  public static final String OSPF_INT = "ospf-int";
+  public static final String OSPF_INTER = "ospf-inter";
+  public static final String OSPF_INTRA = "ospf-intra";
+  public static final String RIP = "rip";
+  public static final String STATIC = "static";
 
   private static final RoutingProtocol AGGREGATE_PROTOCOL = RoutingProtocol.AGGREGATE;
   private static final RoutingProtocol CONNECTED_PROTOCOL = RoutingProtocol.CONNECTED;
@@ -87,6 +89,25 @@ public class RoutingProtocolSpecifier {
   private static final RoutingProtocol OSPF_INTRA_PROTOCOL = RoutingProtocol.OSPF;
   private static final RoutingProtocol RIP_PROTOCOL = RoutingProtocol.RIP;
   private static final RoutingProtocol STATIC_PROTOCOL = RoutingProtocol.STATIC;
+
+  /** Set of most specific protocols */
+  private static final Set<String> ATOMIC_VALUES =
+      ImmutableSet.of(
+          AGGREGATE,
+          CONNECTED,
+          EBGP,
+          EIGRP_EXT,
+          EIGRP_INT,
+          IBGP,
+          ISIS_L1,
+          ISIS_L2,
+          LOCAL,
+          OSPF_EXT1,
+          OSPF_EXT2,
+          OSPF_INTER,
+          OSPF_INTRA,
+          RIP,
+          STATIC);
 
   private static final Set<RoutingProtocol> ALL_PROTOCOLS =
       ImmutableSet.copyOf(RoutingProtocol.values());
@@ -201,6 +222,30 @@ public class RoutingProtocolSpecifier {
   @JsonIgnore
   public static Set<String> getAllProtocolKeys() {
     return MAP.keySet();
+  }
+
+  /** Returns the set of atomic routing protocol strings. */
+  @JsonIgnore
+  public static Set<String> getAtomicProtocols() {
+    return ATOMIC_VALUES;
+  }
+
+  /** Returns a mapping from (only) group protocol to their atomic values. */
+  @JsonIgnore
+  public static Map<String, Set<String>> getGroupings() {
+    return MAP.keySet().stream()
+        .filter(p -> !ATOMIC_VALUES.contains(p))
+        .collect(ImmutableMap.toImmutableMap(p -> p, RoutingProtocolSpecifier::getContainedAtoms));
+  }
+
+  @VisibleForTesting
+  static Set<String> getContainedAtoms(String protocol) {
+    return MAP.entrySet().stream()
+        .filter(e -> !e.getKey().equals(protocol))
+        .filter(e -> ATOMIC_VALUES.contains(e.getKey()))
+        .filter(e -> Sets.difference(e.getValue(), MAP.get(protocol)).isEmpty())
+        .map(Entry::getKey)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public Set<RoutingProtocol> getProtocols() {

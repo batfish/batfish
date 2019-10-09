@@ -28,7 +28,7 @@ public class RipAndBgpTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
+  private static String TESTRIGS_PREFIX = "org/batfish/dataplane/testrigs/";
 
   @Test
   public void testOutputRoutes() throws IOException {

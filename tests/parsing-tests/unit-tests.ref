@@ -132,12 +132,6 @@
         "aws_configs" : [
           "input/aws_configs/NatGateways.json"
         ],
-        "banner" : [
-          "configs/banner"
-        ],
-        "banner_dos" : [
-          "configs/banner_dos"
-        ],
         "bgp-allow" : [
           "configs/juniper_bgp_allow"
         ],
@@ -559,6 +553,12 @@
         "interfacemtu" : [
           "configs/juniper-interfaces"
         ],
+        "ios_banner" : [
+          "configs/ios_banner"
+        ],
+        "ios_banner_dos" : [
+          "configs/ios_banner_dos"
+        ],
         "ios_bfd" : [
           "configs/ios_bfd"
         ],
@@ -950,8 +950,6 @@
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
-        "configs/banner" : "PASSED",
-        "configs/banner_dos" : "PASSED",
         "configs/bgp_address_family" : "PASSED",
         "configs/bgp_default_originate_policy" : "PASSED",
         "configs/bgp_foundry" : "PASSED",
@@ -1090,6 +1088,8 @@
         "configs/interface_exit" : "PASSED",
         "configs/interface_name" : "PASSED",
         "configs/interface_sdr" : "PASSED",
+        "configs/ios_banner" : "PASSED",
+        "configs/ios_banner_dos" : "PASSED",
         "configs/ios_bfd" : "PASSED",
         "configs/ios_bgp" : "PASSED",
         "configs/ios_bgp_aggregate_address" : "PASSED",
@@ -1836,7 +1836,7 @@
             "      ROUTE:'route'",
             "      (ip_route_tail",
             "        prefix = IP_PREFIX:'1.2.3.32/29'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          VARIABLE:'Null0')",
             "        NAME:'name'",
             "        (variable",
@@ -7778,50 +7778,47 @@
           "sentences" : [
             "(cisco_configuration",
             "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.9'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
             "      VARIABLE:'asa_banner'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        ASA_BANNER_LINE:'**************************************************'  <== mode:M_BannerText",
-            "        NEWLINE:'\\n')))",
+            "    (s_banner_asa",
+            "      banner_header = (asa_banner_header",
+            "        BANNER_LOGIN_ASA:'banner login ')",
+            "      body = BANNER_BODY:'**************************************************'  <== mode:M_BannerAsa",
+            "      NEWLINE:'\\n'  <== mode:M_BannerAsa))",
             "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        ASA_BANNER_LINE:'You are connected to HOSTNAME If you are'  <== mode:M_BannerText",
-            "        NEWLINE:'\\n')))",
+            "    (s_banner_asa",
+            "      banner_header = (asa_banner_header",
+            "        BANNER_LOGIN_ASA:'banner login ')",
+            "      body = BANNER_BODY:'You are connected to HOSTNAME If you are'  <== mode:M_BannerAsa",
+            "      NEWLINE:'\\n'  <== mode:M_BannerAsa))",
             "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        ASA_BANNER_LINE:'experiencing any problems, please contact XXX at'  <== mode:M_BannerText",
-            "        NEWLINE:'\\n')))",
+            "    (s_banner_asa",
+            "      banner_header = (asa_banner_header",
+            "        BANNER_LOGIN_ASA:'banner login ')",
+            "      body = BANNER_BODY:'experiencing any problems, please contact XXX at'  <== mode:M_BannerAsa",
+            "      NEWLINE:'\\n'  <== mode:M_BannerAsa))",
             "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        ASA_BANNER_LINE:'someone@somewhere.com or XXX-XXX-XXX'  <== mode:M_BannerText",
-            "        NEWLINE:'\\n')))",
+            "    (s_banner_asa",
+            "      banner_header = (asa_banner_header",
+            "        BANNER_LOGIN_ASA:'banner login ')",
+            "      body = BANNER_BODY:'someone@somewhere.com or XXX-XXX-XXX'  <== mode:M_BannerAsa",
+            "      NEWLINE:'\\n'  <== mode:M_BannerAsa))",
             "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        ASA_BANNER_LINE:'**************************************************'  <== mode:M_BannerText",
-            "        NEWLINE:'\\n')))",
+            "    (s_banner_asa",
+            "      banner_header = (asa_banner_header",
+            "        BANNER_LOGIN_ASA:'banner login ')",
+            "      body = BANNER_BODY:'**************************************************'  <== mode:M_BannerAsa",
+            "      NEWLINE:'\\n'  <== mode:M_BannerAsa))",
             "  EOF:<EOF>)"
           ]
         },
@@ -7863,7 +7860,7 @@
             "      name = (variable",
             "        VARIABLE:'some-interface-policy')",
             "      INTERFACE:'interface'",
-            "      iface = (interface_name",
+            "      iface = (interface_name_unstructured",
             "        VARIABLE:'ifname')",
             "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
@@ -8370,171 +8367,6 @@
             "        TIMEOUT:'timeout'",
             "        DEC:'30'",
             "        NEWLINE:'\\n')))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/banner" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      BANNER:'banner'",
-            "      NEWLINE:'\\n'  <== mode:M_Banner))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        NEWLINE:'\\n'  <== mode:M_BannerText",
-            "        M_MOTD_EOF_MOTD:'THIS IS AN ARISTA STYLE BANNER\\n\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\n\\n'  <== mode:M_MOTD_EOF",
-            "        EOF_LITERAL:'EOF'  <== mode:M_MOTD_EOF",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        MOTD:'motd'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'\\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\\n\\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\\n\\nUnauthorized access and/or use prohibited.\\nAll access and/or use subject to monitoring.\\n\\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\\n'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        MOTD:'motd'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'\\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\\nIt has a has (#) character in it\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\nUnauthorized a'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        MOTD:'motd'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\n'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'\\n***************************************************************************\\n*                                                                         *\\n*  This banner was seen in IOS XR                                         *\\n*  It ends with a caret                                                   *\\n*                                                                         *\\n***************************************************************************\\n'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        MOTD:'motd'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'=================================================================================                                             \\n                       BLAH BLAH\\n\\n                             BOOP\\n================================================================================='  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^\\n'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        ASDM:'asdm'  <== mode:M_Banner)",
-            "      (banner",
-            "        ASA_BANNER_LINE:'********************************************************************************'  <== mode:M_BannerText",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        ASDM:'asdm'  <== mode:M_Banner)",
-            "      (banner",
-            "        ASA_BANNER_LINE:'*THIS IS A PRIVATE COMPUTER SYSTEM. SUPER SECRET SAUCE    *'  <== mode:M_BannerText",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        ASDM:'asdm'  <== mode:M_Banner)",
-            "      (banner",
-            "        ASA_BANNER_LINE:'********************************************************************************'  <== mode:M_BannerText",
-            "        NEWLINE:'\\n\\n')))",
-            "  (stanza",
-            "    (s_logging",
-            "      LOGGING:'logging'",
-            "      (logging_common",
-            "        (logging_trap",
-            "          TRAP:'trap'",
-            "          (logging_severity",
-            "            INFORMATIONAL:'informational')",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'",
-            "        NEWLINE:'\\n\\n')))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/banner_dos" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'banner_dos'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        NEWLINE:'\\n'  <== mode:M_BannerText",
-            "        M_MOTD_EOF_MOTD:'THIS IS AN ARISTA STYLE BANNER\\n\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\n\\n'  <== mode:M_MOTD_EOF",
-            "        EOF_LITERAL:'EOF'  <== mode:M_MOTD_EOF",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        MOTD:'motd'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'\\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\\n\\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\\n\\nUnauthorized access and/or use prohibited.\\nAll access and/or use subject to monitoring.\\n\\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\\n'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        MOTD:'motd'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'\\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\\nIt has a has (#) character in it\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\nUnauthorized a'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        MOTD:'motd'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\n'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'",
-            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -9490,16 +9322,13 @@
             "        (null_rest_of_line",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
-            "    (banner_stanza",
+            "    (s_banner_cadant",
             "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        NEWLINE:'\\n'  <== mode:M_BannerText",
-            "        LINE_CADANT:'****************************\\n'  <== mode:M_BannerCadant",
-            "        LINE_CADANT:'* Arris CADANT banner text *\\n'  <== mode:M_BannerCadant",
-            "        LINE_CADANT:'****************************\\n'  <== mode:M_BannerCadant",
-            "        END_CADANT:'/end\\n'  <== mode:M_BannerCadant)))",
+            "      type = (eos_banner_type",
+            "        LOGIN:'login')",
+            "      NEWLINE:'\\n'  <== mode:M_BannerCadant",
+            "      body = BANNER_BODY:'Some text\\nSome more text\\n'  <== mode:M_BannerCadantText",
+            "      BANNER_DELIMITER_CADANT:'/end\\n'  <== mode:M_BannerCadantText))",
             "  EOF:<EOF>)"
           ]
         },
@@ -13800,12 +13629,12 @@
             "      (aaa_authentication",
             "        AUTHENTICATION:'authentication'",
             "        (aaa_authentication_banner",
-            "          BANNER:'banner'  <== mode:M_Authentication",
-            "          (banner",
-            "            ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "            M_MOTD_C_MOTD:'Unauthorized access prohibited by law - disconnect now!'  <== mode:M_MOTD_C",
-            "            ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "            NEWLINE:'\\n')))))",
+            "          BANNER:'banner '  <== mode:M_Authentication",
+            "          banner = (ios_delimited_banner",
+            "            BANNER_DELIMITER_IOS:'^C'  <== mode:M_BannerIosDelimiter",
+            "            body = BANNER_BODY:'Unauthorized access prohibited by law - disconnect now!'  <== mode:M_BannerIosText",
+            "            BANNER_DELIMITER_IOS:'^'  <== mode:M_BannerIosText)",
+            "          NEWLINE:'\\n'  <== mode:M_BannerIosCleanup))))",
             "  (stanza",
             "    (s_aaa",
             "      AAA:'aaa'",
@@ -24831,7 +24660,7 @@
             "          TUNNEL:'tunnel'",
             "          (iftunnel_source",
             "            SOURCE:'source'",
-            "            (interface_name",
+            "            iname = (interface_name_unstructured",
             "              VARIABLE:'Cellular0')",
             "            NEWLINE:'\\n')))",
             "      (if_inner",
@@ -24839,7 +24668,7 @@
             "          TUNNEL:'tunnel'",
             "          (iftunnel_source",
             "            SOURCE:'source'",
-            "            (interface_name",
+            "            iname = (interface_name_unstructured",
             "              VARIABLE:'Ethernet0')",
             "            NEWLINE:'\\n')))",
             "      (if_inner",
@@ -25276,7 +25105,7 @@
             "      (ip_route_tail",
             "        address = IP_ADDRESS:'1.2.37.104'",
             "        mask = IP_ADDRESS:'255.255.255.248'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          VARIABLE:'GigabitEthernet3/0/0.212')",
             "        TAG:'tag'",
             "        tag = DEC:'32361'",
@@ -25288,7 +25117,7 @@
             "      (ip_route_tail",
             "        address = IP_ADDRESS:'1.2.39.17'",
             "        mask = IP_ADDRESS:'255.255.255.255'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          VARIABLE:'Serial5/0'",
             "          COLON:':'",
             "          DEC:'2')",
@@ -25310,7 +25139,7 @@
             "      (ip_route_tail",
             "        address = IP_ADDRESS:'1.2.39.32'",
             "        mask = IP_ADDRESS:'255.255.255.255'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          VARIABLE:'Serial5/1'",
             "          COLON:':'",
             "          DEC:'5')",
@@ -25324,7 +25153,7 @@
             "      (ip_route_tail",
             "        address = IP_ADDRESS:'1.2.39.69'",
             "        mask = IP_ADDRESS:'255.255.255.255'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          VARIABLE:'POS5/3'",
             "          COLON:':'",
             "          DEC:'10')",
@@ -25336,7 +25165,7 @@
             "      (ip_route_tail",
             "        address = IP_ADDRESS:'0.0.0.0'",
             "        mask = IP_ADDRESS:'0.0.0.0'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          (variable_interface_name",
             "            LOOPBACK:'loopback')",
             "          DEC:'66')",
@@ -25349,7 +25178,7 @@
             "      (ip_route_tail",
             "        address = IP_ADDRESS:'0.0.0.0'",
             "        mask = IP_ADDRESS:'0.0.0.0'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          VARIABLE:'loopback99')",
             "        distance = DEC:'150'",
             "        NEWLINE:'\\n')))",
@@ -25360,7 +25189,7 @@
             "      (ip_route_tail",
             "        address = IP_ADDRESS:'0.0.0.0'",
             "        mask = IP_ADDRESS:'0.0.0.0'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          (variable_interface_name",
             "            DIALER:'dialer')",
             "          DEC:'1')",
@@ -25373,7 +25202,7 @@
             "      (ip_route_tail",
             "        address = IP_ADDRESS:'0.0.0.0'",
             "        mask = IP_ADDRESS:'0.0.0.0'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          VARIABLE:'Dialer2')",
             "        distance = DEC:'300'",
             "        NEWLINE:'\\n')))",
@@ -27386,16 +27215,17 @@
             "          DEC:'120'",
             "          NEWLINE:'\\n'))",
             "      (l_vacant_message",
-            "        VACANT_MESSAGE:'vacant-message'",
-            "        ESCAPE_C:'^C'  <== mode:M_VacantMessageText",
-            "        M_MOTD_C_MOTD:'\\n    Unauthorized access prohibited\\n'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n')",
+            "        VACANT_MESSAGE:'vacant-message '",
+            "        message = (ios_delimited_banner",
+            "          BANNER_DELIMITER_IOS:'^C'  <== mode:M_BannerIosDelimiter",
+            "          body = BANNER_BODY:'\\n    Unauthorized access prohibited\\n'  <== mode:M_BannerIosText",
+            "          BANNER_DELIMITER_IOS:'^'  <== mode:M_BannerIosText)",
+            "        NEWLINE:'\\n'  <== mode:M_BannerIosCleanup)",
             "      (l_null",
             "        NO:'no'",
             "        VACANT_MESSAGE:'vacant-message'",
             "        (null_rest_of_line",
-            "          NEWLINE:'\\n'  <== mode:M_VacantMessageText))",
+            "          NEWLINE:'\\n'))",
             "      (l_null",
             "        SPEED:'speed'",
             "        (null_rest_of_line",
@@ -31304,7 +31134,7 @@
             "          hostname = (variable",
             "            IP_ADDRESS:'1.2.3.4')",
             "          SOURCE:'source'",
-            "          src_interface = (interface_name",
+            "          src_interface = (interface_name_unstructured",
             "            (variable_interface_name",
             "              LOOPBACK:'loopback')",
             "            DEC:'0')",
@@ -31321,7 +31151,7 @@
             "          hostname = (variable",
             "            IP_ADDRESS:'2.3.4.5')",
             "          SOURCE:'source'",
-            "          src_interface = (interface_name",
+            "          src_interface = (interface_name_unstructured",
             "            VARIABLE:'loopback1')",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
@@ -31939,7 +31769,7 @@
             "        name = (variable_distribute_list",
             "          VARIABLE:'aclin')",
             "        IN:'in'",
-            "        iname = (interface_name",
+            "        iname = (interface_name_unstructured",
             "          VARIABLE:'ethernet0/0')",
             "        NEWLINE:'\\n')",
             "      (ro_distribute_list",
@@ -32217,7 +32047,7 @@
             "        name = (variable_distribute_list",
             "          VARIABLE:'SWITCHLAN-OUT'  <== mode:M_Name)",
             "        OUT:'out'",
-            "        iname = (interface_name",
+            "        iname = (interface_name_unstructured",
             "          VARIABLE:'Ethernet0/0')",
             "        NEWLINE:'\\n')",
             "      (ro6_passive_interface",
@@ -34006,7 +33836,7 @@
             "        acl = (variable",
             "          VARIABLE:'some-ACL')",
             "        IN:'in'",
-            "        i = (interface_name",
+            "        i = (interface_name_unstructured",
             "          VARIABLE:'Ethernet0')",
             "        NEWLINE:'\\n')",
             "      (rr_distribute_list",
@@ -34020,18 +33850,16 @@
             "        acl = (variable",
             "          VARIABLE:'some-ACL')",
             "        OUT:'out'",
-            "        i = (interface_name",
+            "        i = (interface_name_unstructured",
             "          VARIABLE:'Ethernet0')",
             "        NEWLINE:'\\n')",
             "      (rr_network",
             "        NETWORK:'network'",
             "        network = IP_ADDRESS:'1.2.3.0'",
             "        NEWLINE:'\\n')",
-            "      (rr_passive_interface",
+            "      (rr_passive_interface_default",
             "        PASSIVE_INTERFACE:'passive-interface'",
-            "        iname = (interface_name",
-            "          (variable_interface_name",
-            "            DEFAULT:'default'  <== mode:M_Interface))",
+            "        DEFAULT:'default'  <== mode:M_Interface",
             "        NEWLINE:'\\n')",
             "      (rr_passive_interface",
             "        NO:'no'",
@@ -38781,17 +38609,6 @@
             "          ATTRIBUTES:'attributes'",
             "          NEWLINE:'\\n')",
             "        (null_inner",
-            "          BANNER:'banner'",
-            "          VALUE:'value'  <== mode:M_Banner",
-            "          (null_rest_of_line",
-            "            RAW_TEXT:' ** AUTHORIZED ACCESS ONLY **'  <== mode:M_Description",
-            "            NEWLINE:'\\n'  <== mode:M_Description))",
-            "        (null_inner",
-            "          BANNER:'banner'",
-            "          NONE:'none'  <== mode:M_Banner",
-            "          (null_rest_of_line",
-            "            NEWLINE:'\\n'  <== mode:M_Banner))",
-            "        (null_inner",
             "          WINS_SERVER:'wins-server'",
             "          (null_rest_of_line",
             "            NONE:'none'",
@@ -43429,7 +43246,7 @@
             "          NEWLINE:'\\n')",
             "        (lp_monitor",
             "          MONITOR:'monitor'",
-            "          name = (structure_name",
+            "          (structure_name",
             "            partition = PARTITION:'/Common/'",
             "            (word_id",
             "              WORD_ID:'SOME_MONITOR'))",
@@ -45552,6 +45369,11 @@
             "          (bundle_speed",
             "            FORTY_G:'40G')",
             "          NEWLINE:'\\n')",
+            "        (ni_description",
+            "          DESCRIPTION:'description'",
+            "          text = (word",
+            "            WORD_ID:'foo')",
+            "          NEWLINE:'\\n')",
             "        (ni_disabled",
             "          DISABLED:'disabled'",
             "          NEWLINE:'\\n')",
@@ -46675,7 +46497,7 @@
             "      (unrecognized",
             "        last_word = (u_word",
             "          (word",
-            "            WORD_ID:'dns'))",
+            "            DNS:'dns'))",
             "        (list",
             "          (u_list",
             "            BRACE_LEFT:'{'",
@@ -47760,13 +47582,14 @@
             "          (rb_bgp_deterministic_med",
             "            DETERMINISTIC_MED:'deterministic-med'",
             "            NEWLINE:'\\n'))",
-            "        (rb_null",
+            "        (rb_bgp",
             "          BGP:'bgp'",
-            "          GRACEFUL_RESTART:'graceful-restart'",
-            "          (null_rest_of_line",
-            "            WORD:'restart-time'",
-            "            DEC:'123'",
-            "            NEWLINE:'\\n'))",
+            "          (rb_bgp_null",
+            "            GRACEFUL_RESTART:'graceful-restart'",
+            "            (null_rest_of_line",
+            "              WORD:'restart-time'",
+            "              DEC:'123'",
+            "              NEWLINE:'\\n')))",
             "        (rb_bgp",
             "          BGP:'bgp'",
             "          (rb_bgp_router_id",
@@ -48768,7 +48591,7 @@
             "      ROUTE:'route'",
             "      (ip_route_tail",
             "        prefix = IP_PREFIX:'1.2.28.104/31'",
-            "        nexthopint = (interface_name",
+            "        nexthopint = (interface_name_unstructured",
             "          (variable_interface_name",
             "            ETHERNET:'ethernet')",
             "          DEC:'13'",
@@ -49945,16 +49768,9 @@
             "                text = FABRIC:'fabric')",
             "              (poc_members",
             "                MEMBERS:'members'",
-            "                (extended_community",
-            "                  (ec_named",
-            "                    (ec_type",
-            "                      TARGET:'target'  <== mode:M_Members)",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    (ec_administrator",
-            "                      (administrator_dec",
-            "                        DEC:'1'  <== mode:M_Members))",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    assigned_number = DEC:'1'  <== mode:M_Members))))))))",
+            "                member = (poc_members_member",
+            "                  (literal_or_regex_community",
+            "                    LITERAL_OR_REGEX_COMMUNITY:'target:1:1'  <== mode:M_Members))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Members)",
             "  (set_line",
             "    SET:'set'",
@@ -49969,16 +49785,9 @@
             "                text = VARIABLE:'vni-100')",
             "              (poc_members",
             "                MEMBERS:'members'",
-            "                (extended_community",
-            "                  (ec_named",
-            "                    (ec_type",
-            "                      TARGET:'target'  <== mode:M_Members)",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    (ec_administrator",
-            "                      (administrator_dec",
-            "                        DEC:'100'  <== mode:M_Members))",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    assigned_number = DEC:'100'  <== mode:M_Members))))))))",
+            "                member = (poc_members_member",
+            "                  (literal_or_regex_community",
+            "                    LITERAL_OR_REGEX_COMMUNITY:'target:100:100'  <== mode:M_Members))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Members)",
             "  (set_line",
             "    SET:'set'",
@@ -49993,16 +49802,9 @@
             "                text = VARIABLE:'vni-101')",
             "              (poc_members",
             "                MEMBERS:'members'",
-            "                (extended_community",
-            "                  (ec_named",
-            "                    (ec_type",
-            "                      TARGET:'target'  <== mode:M_Members)",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    (ec_administrator",
-            "                      (administrator_dec",
-            "                        DEC:'101'  <== mode:M_Members))",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    assigned_number = DEC:'101'  <== mode:M_Members))))))))",
+            "                member = (poc_members_member",
+            "                  (literal_or_regex_community",
+            "                    LITERAL_OR_REGEX_COMMUNITY:'target:101:101'  <== mode:M_Members))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Members)",
             "  (set_line",
             "    SET:'set'",
@@ -50826,6 +50628,74 @@
             "          ADDRESS:'address'",
             "          IPV6_PREFIX:'2607:F380::118:9A41:500/124'",
             "          NEWLINE:'\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/ios_banner" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios_banner'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_banner_ios",
+            "      banner_header = (ios_banner_header",
+            "        BANNER_LOGIN_IOS:'banner login ')",
+            "      banner = (ios_delimited_banner",
+            "        BANNER_DELIMITER_IOS:'^C'  <== mode:M_BannerIosDelimiter",
+            "        body = BANNER_BODY:'\\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\\nIt has a has (#) character in it\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\nUnauthorized a'  <== mode:M_BannerIosText",
+            "        BANNER_DELIMITER_IOS:'^'  <== mode:M_BannerIosText)",
+            "      NEWLINE:'\\n'  <== mode:M_BannerIosCleanup))",
+            "  (stanza",
+            "    (s_banner_ios",
+            "      banner_header = (ios_banner_header",
+            "        BANNER_MOTD_IOS:'banner motd ')",
+            "      banner = (ios_delimited_banner",
+            "        BANNER_DELIMITER_IOS:'\u0003'  <== mode:M_BannerIosDelimiter",
+            "        body = BANNER_BODY:'\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\n'  <== mode:M_BannerIosText",
+            "        BANNER_DELIMITER_IOS:'\u0003'  <== mode:M_BannerIosText)",
+            "      NEWLINE:'\\n'  <== mode:M_BannerIosCleanup))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        END:'end'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/ios_banner_dos" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios_banner_dos'",
+            "      NEWLINE:'\\r\\n'))",
+            "  (stanza",
+            "    (s_banner_ios",
+            "      banner_header = (ios_banner_header",
+            "        BANNER_LOGIN_IOS:'banner login ')",
+            "      banner = (ios_delimited_banner",
+            "        BANNER_DELIMITER_IOS:'^C'  <== mode:M_BannerIosDelimiter",
+            "        body = BANNER_BODY:'\\r\\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\\r\\nIt has a has (#) character in it\\r\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\r\\nUnauthorized a'  <== mode:M_BannerIosText",
+            "        BANNER_DELIMITER_IOS:'^'  <== mode:M_BannerIosText)",
+            "      NEWLINE:'\\r\\n'  <== mode:M_BannerIosCleanup))",
+            "  (stanza",
+            "    (s_banner_ios",
+            "      banner_header = (ios_banner_header",
+            "        BANNER_MOTD_IOS:'banner motd ')",
+            "      banner = (ios_delimited_banner",
+            "        BANNER_DELIMITER_IOS:'\u0003'  <== mode:M_BannerIosDelimiter",
+            "        body = BANNER_BODY:'\\r\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\r\\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\\r\\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\\r\\n'  <== mode:M_BannerIosText",
+            "        BANNER_DELIMITER_IOS:'\u0003'  <== mode:M_BannerIosText)",
+            "      NEWLINE:'\\r\\n'  <== mode:M_BannerIosCleanup))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        END:'end'",
+            "        NEWLINE:'\\r\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -53444,15 +53314,14 @@
             "          VARIABLE:'UTC'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
-            "    (banner_stanza",
-            "      BANNER:'banner'",
-            "      (banner_type",
-            "        LOGIN:'login'  <== mode:M_Banner)",
-            "      (banner",
-            "        ESCAPE_C:'^C'  <== mode:M_BannerText",
-            "        M_MOTD_C_MOTD:'\\n\\n***************************************************************************\\n*                                                                         *\\n*  This router is : ios_xr_multipart                                      *\\n*                                                                         * \\n***************************************************************************\\n'  <== mode:M_MOTD_C",
-            "        ESCAPE_C:'^C'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n\\n')))",
+            "    (s_banner_ios",
+            "      banner_header = (ios_banner_header",
+            "        BANNER_LOGIN_IOS:'banner login ')",
+            "      banner = (ios_delimited_banner",
+            "        BANNER_DELIMITER_IOS:'^'  <== mode:M_BannerIosDelimiter",
+            "        body = BANNER_BODY:'\\n\\n***************************************************************************\\n*                                                                         *\\n*  This router is : ios_xr_multipart                                      *\\n*                                                                         * \\n***************************************************************************\\n'  <== mode:M_BannerIosText",
+            "        BANNER_DELIMITER_IOS:'^'  <== mode:M_BannerIosText)",
+            "      NEWLINE:'\\n\\n'  <== mode:M_BannerIosCleanup))",
             "  (stanza",
             "    (rsvp_stanza",
             "      RSVP:'rsvp'",
@@ -54475,7 +54344,7 @@
             "          THEN:'then'",
             "          NEWLINE:'\\n'",
             "          (rp_stanza",
-            "            (delete_rp_stanza",
+            "            (delete_community_rp_stanza",
             "              DELETE:'delete'",
             "              COMMUNITY:'community'",
             "              IN:'in'",
@@ -55774,12 +55643,12 @@
             "        NEWLINE:'\\n'",
             "        (rs_route",
             "          prefix = IP_PREFIX:'1.2.16.255/32'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix = IP_PREFIX:'1.2.220.0/24'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'TenGigE0/0/2/3')",
             "          nhip = IP_ADDRESS:'1.2.220.245'",
             "          TAG:'tag'",
@@ -55791,28 +55660,28 @@
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix = IP_PREFIX:'4.5.0.0/16'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          TAG:'tag'",
             "          tag = DEC:'64725'",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix = IP_PREFIX:'2.3.0.0/16'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          TAG:'tag'",
             "          tag = DEC:'64725'",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix = IP_PREFIX:'1.2.0.0/16'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          TAG:'tag'",
             "          tag = DEC:'64725'",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix = IP_PREFIX:'1.2.11.251/32'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          TAG:'tag'",
             "          tag = DEC:'64725'",
@@ -55831,19 +55700,19 @@
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix = IP_PREFIX:'1.2.16.0/24'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          TAG:'tag'",
             "          tag = DEC:'64725'",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix = IP_PREFIX:'1.2.16.255/32'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix = IP_PREFIX:'9.8.192.32/29'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'GigabitEthernet0/2/1/5.290')",
             "          nhip = IP_ADDRESS:'1.2.24.98'",
             "          TAG:'tag'",
@@ -55856,27 +55725,27 @@
             "        NEWLINE:'\\n'",
             "        (rs_route",
             "          prefix6 = IPV6_PREFIX:'2607:0000::/32'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix6 = IPV6_PREFIX:'2607:0000::10:0:0/92'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix6 = IPV6_PREFIX:'2607:0000::110:0:0/92'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix6 = IPV6_PREFIX:'2607:0000::118:9a41:ff0/128'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix6 = IPV6_PREFIX:'2607:0000:0:118::/64'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          TAG:'tag'",
             "          tag = DEC:'64725'",
@@ -55886,7 +55755,7 @@
             "          NEWLINE:'\\n')",
             "        (rs_route",
             "          prefix6 = IPV6_PREFIX:'2607:0000:1::/54'",
-            "          nhint = (interface_name",
+            "          nhint = (interface_name_unstructured",
             "            VARIABLE:'Null0')",
             "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
@@ -58669,16 +58538,9 @@
             "                text = VARIABLE:'COMM_ALL')",
             "              (poc_members",
             "                MEMBERS:'members'",
-            "                (extended_community_regex",
-            "                  (base_extended_community_regex",
-            "                    TARGET:'target'  <== mode:M_Members",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    DEC:'123456'  <== mode:M_Members",
-            "                    L:'L'  <== mode:M_Members",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    PERIOD:'.'  <== mode:M_Members",
-            "                    ASTERISK:'*'  <== mode:M_Members",
-            "                    DOLLAR:'$'  <== mode:M_Members))))))))",
+            "                member = (poc_members_member",
+            "                  (literal_or_regex_community",
+            "                    LITERAL_OR_REGEX_COMMUNITY:'target:123456L:.*$'  <== mode:M_Members))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Members)",
             "  (set_line",
             "    SET:'set'",
@@ -58693,36 +58555,9 @@
             "                text = VARIABLE:'COMM_NON_CUST')",
             "              (poc_members",
             "                MEMBERS:'members'",
-            "                (community_regex",
-            "                  (base_community_regex",
-            "                    DEC:'8075'  <== mode:M_Members",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    OPEN_BRACKET:'['  <== mode:M_Members",
-            "                    DEC:'1'  <== mode:M_Members",
-            "                    CLOSE_BRACKET:']'  <== mode:M_Members",
-            "                    OPEN_BRACKET:'['  <== mode:M_Members",
-            "                    DEC:'0'  <== mode:M_Members",
-            "                    CLOSE_BRACKET:']'  <== mode:M_Members",
-            "                    OPEN_BRACKET:'['  <== mode:M_Members",
-            "                    DEC:'0'  <== mode:M_Members",
-            "                    DASH:'-'  <== mode:M_Members",
-            "                    DEC:'3'  <== mode:M_Members",
-            "                    COMMA:','  <== mode:M_Members",
-            "                    DEC:'5'  <== mode:M_Members",
-            "                    DASH:'-'  <== mode:M_Members",
-            "                    DEC:'9'  <== mode:M_Members",
-            "                    CLOSE_BRACKET:']'  <== mode:M_Members",
-            "                    OPEN_BRACKET:'['  <== mode:M_Members",
-            "                    DEC:'0'  <== mode:M_Members",
-            "                    DASH:'-'  <== mode:M_Members",
-            "                    DEC:'9'  <== mode:M_Members",
-            "                    CLOSE_BRACKET:']'  <== mode:M_Members",
-            "                    OPEN_BRACKET:'['  <== mode:M_Members",
-            "                    DEC:'0'  <== mode:M_Members",
-            "                    DASH:'-'  <== mode:M_Members",
-            "                    DEC:'9'  <== mode:M_Members",
-            "                    CLOSE_BRACKET:']'  <== mode:M_Members",
-            "                    DOLLAR:'$'  <== mode:M_Members))))))))",
+            "                member = (poc_members_member",
+            "                  (literal_or_regex_community",
+            "                    LITERAL_OR_REGEX_COMMUNITY:'8075:[1][0][0-3,5-9][0-9][0-9]$'  <== mode:M_Members))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Members)",
             "  (set_line",
             "    SET:'set'",
@@ -58737,29 +58572,9 @@
             "                text = VARIABLE:'COMM_REGEX')",
             "              (poc_members",
             "                MEMBERS:'members'",
-            "                (community_regex",
-            "                  (base_community_regex",
-            "                    CARAT:'^'  <== mode:M_Members",
-            "                    UNDERSCORE:'_'  <== mode:M_Members",
-            "                    DEC:'200'  <== mode:M_Members",
-            "                    UNDERSCORE:'_'  <== mode:M_Members",
-            "                    DEC:'5'  <== mode:M_Members",
-            "                    QUESTION_MARK:'?'  <== mode:M_Members",
-            "                    OPEN_PAREN:'('  <== mode:M_Members",
-            "                    DEC:'1'  <== mode:M_Members",
-            "                    DASH:'-'  <== mode:M_Members",
-            "                    DEC:'3'  <== mode:M_Members",
-            "                    CLOSE_PAREN:')'  <== mode:M_Members",
-            "                    ASTERISK:'*'  <== mode:M_Members",
-            "                    BACKSLASH:'\\'  <== mode:M_Members",
-            "                    QUESTION_MARK:'?'  <== mode:M_Members",
-            "                    COLON:':'  <== mode:M_Members",
-            "                    OPEN_BRACKET:'['  <== mode:M_Members",
-            "                    CARAT:'^'  <== mode:M_Members",
-            "                    DEC:'3'  <== mode:M_Members",
-            "                    CLOSE_BRACKET:']'  <== mode:M_Members",
-            "                    PLUS:'+'  <== mode:M_Members",
-            "                    DOLLAR:'$'  <== mode:M_Members))))))))",
+            "                member = (poc_members_member",
+            "                  (literal_or_regex_community",
+            "                    LITERAL_OR_REGEX_COMMUNITY:'^_200_5?(1-3)*\\?:[^3]+$'  <== mode:M_Members))))))))",
             "    NEWLINE:'\\n'  <== mode:M_Members)",
             "  EOF:<EOF>)"
           ]
@@ -65503,8 +65318,8 @@
             "              CONFEDERATION:'confederation'",
             "              num = DEC:'11111'",
             "              MEMBERS:'members'",
-            "              DEC:'22222'  <== mode:M_Members)))))",
-            "    NEWLINE:'\\n'  <== mode:M_Members)",
+            "              DEC:'22222')))))",
+            "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
             "    (set_line_tail",
@@ -71705,7 +71520,9 @@
             "                          VARIABLE:'ethernet1/1.4')",
             "                        (if_tag",
             "                          TAG:'tag'",
-            "                          tag = DEC:'4')))))))))))",
+            "                          tag = (vlan_tag",
+            "                            (uint16",
+            "                              UINT8:'4')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -71766,7 +71583,8 @@
             "                        (sniel3_common",
             "                          (sniel3_mtu",
             "                            MTU:'mtu'",
-            "                            mtu = DEC:'1500'))))))))))))",
+            "                            mtu = (uint32",
+            "                              UINT16:'1500')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -71795,7 +71613,9 @@
             "                          VARIABLE:'ethernet1/1.5')",
             "                        (if_tag",
             "                          TAG:'tag'",
-            "                          tag = DEC:'5')))))))))))",
+            "                          tag = (vlan_tag",
+            "                            (uint16",
+            "                              UINT8:'5')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -71993,16 +71813,16 @@
             "            NETWORK:'network'",
             "            (sn_virtual_router",
             "              VIRTUAL_ROUTER:'virtual-router'",
-            "              (sn_virtual_router_definition",
+            "              (vr_definition",
             "                name = (variable",
             "                  VARIABLE:'vr1')",
-            "                (snvr_routing_table",
+            "                (vr_routing_table",
             "                  ROUTING_TABLE:'routing-table'",
             "                  IP:'ip'",
             "                  STATIC_ROUTE:'static-route'",
             "                  name = (variable",
             "                    VARIABLE:'sr1')",
-            "                  (snvrrt_destination",
+            "                  (vrrt_destination",
             "                    DESTINATION:'destination'",
             "                    destination = IP_PREFIX:'0.0.0.0/0'))))))))",
             "    NEWLINE:'\\n')",
@@ -72019,18 +71839,18 @@
             "            NETWORK:'network'",
             "            (sn_virtual_router",
             "              VIRTUAL_ROUTER:'virtual-router'",
-            "              (sn_virtual_router_definition",
+            "              (vr_definition",
             "                name = (variable",
             "                  VARIABLE:'vr1')",
-            "                (snvr_routing_table",
+            "                (vr_routing_table",
             "                  ROUTING_TABLE:'routing-table'",
             "                  IP:'ip'",
             "                  STATIC_ROUTE:'static-route'",
             "                  name = (variable",
             "                    VARIABLE:'sr1')",
-            "                  (snvrrt_nexthop",
+            "                  (vrrt_nexthop",
             "                    NEXTHOP:'nexthop'",
-            "                    (snvrrtn_next_vr",
+            "                    (vrrtn_next_vr",
             "                      NEXT_VR:'next-vr'",
             "                      name = (variable",
             "                        VARIABLE:'vr2'))))))))))",
@@ -72048,10 +71868,10 @@
             "            NETWORK:'network'",
             "            (sn_virtual_router",
             "              VIRTUAL_ROUTER:'virtual-router'",
-            "              (sn_virtual_router_definition",
+            "              (vr_definition",
             "                name = (variable",
             "                  VARIABLE:'vr2')",
-            "                (snvr_interface",
+            "                (vr_interface",
             "                  INTERFACE:'interface'",
             "                  (variable_list",
             "                    (variable_list_item",
@@ -76273,73 +76093,73 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 13,
+              "Line" : 14,
               "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
               "Text" : "forward-error-correction auto"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 14,
+              "Line" : 15,
               "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
               "Text" : "lldp-admin txrx"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 15,
+              "Line" : 16,
               "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
               "Text" : "lldp-tlvmap 12304"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 17,
+              "Line" : 18,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "lldp-globals"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 20,
+              "Line" : 21,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "route-domain /Common/0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 29,
+              "Line" : 30,
               "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "allow-service all"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 30,
+              "Line" : 31,
               "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "traffic-group /Common/traffic-group-local-only"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 38,
+              "Line" : 39,
               "Parser_Context" : "[ns_address6 net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "address 1::1/64"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 41,
+              "Line" : 42,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "self-allow"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 50,
+              "Line" : 51,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "stp /Common/MYSTP"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 61,
+              "Line" : 62,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "stp-globals"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 71,
+              "Line" : 72,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "tunnels tunnel /Common/MYTUNNEL"
             }
@@ -76826,6 +76646,18 @@
         "configs/juniper_interfaces" : {
           "Parse warnings" : [
             {
+              "Comment" : "Unexpected vlan members range on non-trunk interface",
+              "Line" : 5,
+              "Parser_Context" : "[ife_vlan if_ethernet_switching i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "vlan members 1-1000"
+            },
+            {
+              "Comment" : "Unexpected vlan members range on non-trunk interface",
+              "Line" : 15,
+              "Parser_Context" : "[ife_vlan if_ethernet_switching i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "vlan members all"
+            },
+            {
               "Comment" : "This feature is not currently supported",
               "Line" : 19,
               "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
@@ -77047,8 +76879,6 @@
         "asa_ospf" : "PASSED",
         "asa_ssh" : "PASSED",
         "aws_configs" : "WARNINGS",
-        "banner" : "PASSED",
-        "banner_dos" : "PASSED",
         "bgp-allow" : "PASSED",
         "bgp-disable" : "PASSED",
         "bgp-enforce-first-as" : "WARNINGS",
@@ -77152,11 +76982,11 @@
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "WARNINGS",
-        "cumulus_nclu_bgp" : "WARNINGS",
+        "cumulus_nclu_bgp" : "PASSED",
         "cumulus_nclu_bgp_no_address_family" : "PASSED",
         "cumulus_nclu_bgp_no_remote_as" : "WARNINGS",
         "cumulus_nclu_bgp_no_router_id" : "PASSED",
-        "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "WARNINGS",
+        "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "PASSED",
         "cumulus_nclu_bond" : "PASSED",
         "cumulus_nclu_interface" : "PASSED",
         "cumulus_nclu_invalid_bonds" : "PASSED",
@@ -77189,6 +77019,8 @@
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
         "interfacemtu" : "PASSED",
+        "ios_banner" : "PASSED",
+        "ios_banner_dos" : "PASSED",
         "ios_bfd" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
@@ -77279,7 +77111,7 @@
         "paloalto_applications" : "PASSED",
         "paloalto_interfaces" : "WARNINGS",
         "paloalto_policy" : "PASSED",
-        "paloalto_zones" : "WARNINGS",
+        "paloalto_zones" : "PASSED",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
         "prefix_list_ipv4" : "PASSED",
@@ -77301,7 +77133,7 @@
         "variables" : "PASSED",
         "variables_dos" : "PASSED",
         "vlan_access_map4" : "PASSED",
-        "vmx4" : "WARNINGS",
+        "vmx4" : "PASSED",
         "vxlan" : "PASSED"
       },
       "definedStructures" : {
@@ -77658,8 +77490,6 @@
           }
         },
         "configs/asa_ssh" : { },
-        "configs/banner" : { },
-        "configs/banner_dos" : { },
         "configs/bgp_address_family" : {
           "bgp peer-group" : {
             "as1" : {
@@ -80758,19 +80588,20 @@
                 13,
                 14,
                 15,
-                16
+                16,
+                17
               ],
               "numReferrers" : 2
             },
             "2.0" : {
               "definitionLines" : [
-                66
+                67
               ],
               "numReferrers" : 1
             },
             "3.0" : {
               "definitionLines" : [
-                67
+                68
               ],
               "numReferrers" : 1
             }
@@ -80778,10 +80609,10 @@
           "route" : {
             "/Common/route1" : {
               "definitionLines" : [
-                33,
                 34,
                 35,
-                36
+                36,
+                37
               ],
               "numReferrers" : 1
             }
@@ -80789,21 +80620,21 @@
           "self" : {
             "/Common/MYSELF" : {
               "definitionLines" : [
-                27,
                 28,
                 29,
                 30,
                 31,
-                32
+                32,
+                33
               ],
               "numReferrers" : 1
             },
             "/Common/MYSELF6" : {
               "definitionLines" : [
-                37,
                 38,
                 39,
-                40
+                40,
+                41
               ],
               "numReferrers" : 1
             }
@@ -80811,13 +80642,13 @@
           "trunk" : {
             "trunk1" : {
               "definitionLines" : [
-                64,
                 65,
                 66,
                 67,
                 68,
                 69,
-                70
+                70,
+                71
               ],
               "numReferrers" : 0
             }
@@ -80825,12 +80656,12 @@
           "vlan" : {
             "/Common/MYVLAN" : {
               "definitionLines" : [
-                75,
                 76,
                 77,
                 78,
                 79,
-                80
+                80,
+                81
               ],
               "numReferrers" : 2
             }
@@ -81667,6 +81498,8 @@
             }
           }
         },
+        "configs/ios_banner" : { },
+        "configs/ios_banner_dos" : { },
         "configs/ios_bfd" : {
           "bfd-template" : {
             "GRE" : {
@@ -85112,12 +84945,6 @@
         "configs/asa_ssh" : [
           "asa_ssh"
         ],
-        "configs/banner" : [
-          "banner"
-        ],
-        "configs/banner_dos" : [
-          "banner_dos"
-        ],
         "configs/bgp_address_family" : [
           "bgp_address_family"
         ],
@@ -85528,6 +85355,12 @@
         ],
         "configs/interface_sdr" : [
           "interface_sdr"
+        ],
+        "configs/ios_banner" : [
+          "ios_banner"
+        ],
+        "configs/ios_banner_dos" : [
+          "ios_banner_dos"
         ],
         "configs/ios_bfd" : [
           "ios_bfd"
@@ -88506,46 +88339,46 @@
             },
             "2.0" : {
               "trunk interfaces interface" : [
-                66
+                67
               ]
             },
             "3.0" : {
               "trunk interfaces interface" : [
-                67
+                68
               ]
             }
           },
           "route" : {
             "/Common/route1" : {
               "route self-reference" : [
-                33
+                34
               ]
             }
           },
           "self" : {
             "/Common/MYSELF" : {
               "self self-reference" : [
-                27
+                28
               ]
             },
             "/Common/MYSELF6" : {
               "self self-reference" : [
-                37
+                38
               ]
             }
           },
           "vlan" : {
             "/Common/MYVLAN" : {
               "self vlan" : [
-                31,
-                39
+                32,
+                40
               ]
             }
           },
           "vlan member interface" : {
             "1.0" : {
               "vlan interface" : [
-                77
+                78
               ]
             }
           }
@@ -93514,20 +93347,8 @@
             }
           ]
         },
-        "cumulus_nclu_bgp" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot configure BGP session for vrf 'vrf1' because router-id is missing"
-            }
-          ]
-        },
         "cumulus_nclu_bgp_no_remote_as" : {
           "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot configure BGP session for vrf 'vrf1' because router-id is missing"
-            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Skipping invalidly configured BGP peer 1.1.1.1"
@@ -93535,14 +93356,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Skipping invalidly configured BGP peer 1.1.1.2"
-            }
-          ]
-        },
-        "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot configure BGP session for vrf 'default' because router-id is missing"
             }
           ]
         },
@@ -93671,10 +93484,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -93838,10 +93647,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Interface ethernet1/1.4 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
             },
             {
@@ -93850,15 +93655,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface loopback is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Interface loopback.1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface tunnel is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -93866,39 +93663,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface vlan is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Interface vlan.1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            }
-          ]
-        },
-        "paloalto_zones" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/2 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/3 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/4 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
-            }
-          ]
-        },
-        "vmx4" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS"
             }
           ]
         }
@@ -93948,8 +93713,6 @@
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
-        "configs/banner" : "PASSED",
-        "configs/banner_dos" : "PASSED",
         "configs/bgp_address_family" : "PASSED",
         "configs/bgp_default_originate_policy" : "PASSED",
         "configs/bgp_foundry" : "PASSED",
@@ -94088,6 +93851,8 @@
         "configs/interface_exit" : "PASSED",
         "configs/interface_name" : "PASSED",
         "configs/interface_sdr" : "PASSED",
+        "configs/ios_banner" : "PASSED",
+        "configs/ios_banner_dos" : "PASSED",
         "configs/ios_bfd" : "PASSED",
         "configs/ios_bgp" : "PASSED",
         "configs/ios_bgp_aggregate_address" : "PASSED",

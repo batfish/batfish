@@ -13,7 +13,7 @@ import org.junit.Test;
 public final class CommunitySetUnionTest {
 
   private static final CommunitySetUnion OBJ =
-      new CommunitySetUnion(new CommunitySetExprReference("a"), new CommunitySetExprReference("a"));
+      CommunitySetUnion.of(new CommunitySetExprReference("a"), new CommunitySetExprReference("a"));
 
   @Test
   public void testJacksonSerialization() throws IOException {
@@ -31,13 +31,13 @@ public final class CommunitySetUnionTest {
         .addEqualityGroup(
             OBJ,
             OBJ,
-            new CommunitySetUnion(
+            CommunitySetUnion.of(
                 new CommunitySetExprReference("a"), new CommunitySetExprReference("a")))
         .addEqualityGroup(
-            new CommunitySetUnion(
+            CommunitySetUnion.of(
                 new CommunitySetExprReference("b"), new CommunitySetExprReference("a")))
         .addEqualityGroup(
-            new CommunitySetUnion(
+            CommunitySetUnion.of(
                 new CommunitySetExprReference("b"), new CommunitySetExprReference("b")))
         .addEqualityGroup(new Object())
         .testEquals();

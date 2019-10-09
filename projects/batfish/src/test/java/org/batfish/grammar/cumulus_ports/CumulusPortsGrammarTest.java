@@ -8,8 +8,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.batfish.common.Warnings;
-import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishParseTreeWalker;
+import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Cumulus_ports_configurationContext;
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
@@ -34,10 +35,12 @@ public final class CumulusPortsGrammarTest {
   }
 
   private void parse(String input) {
-    Settings settings = new Settings();
-    settings.setDisableUnrecognized(true);
-    settings.setThrowOnLexerError(true);
-    settings.setThrowOnParserError(true);
+    GrammarSettings settings =
+        MockGrammarSettings.builder()
+            .setDisableUnrecognized(true)
+            .setThrowOnLexerError(true)
+            .setThrowOnParserError(true)
+            .build();
     CumulusPortsCombinedParser parser = new CumulusPortsCombinedParser(input, settings, 1, 0);
     Cumulus_ports_configurationContext ctxt = parser.parse();
     CumulusPortsConfigurationBuilder configurationBuilder =

@@ -1,9 +1,12 @@
 package org.batfish.grammar.cumulus_frr;
 
-import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
+import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
@@ -29,15 +32,19 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -51,9 +58,12 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.IpAsPathAccessList;
+import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -67,12 +77,9 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link CumulusFrrParser}. */
 public class CumulusFrrGrammarTest {
   private static final String FILENAME = "";
-  private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cumulus_frr/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
   private static CumulusNcluConfiguration CONFIG;
 
   @Before
@@ -105,17 +112,6 @@ public class CumulusFrrGrammarTest {
         .get(type.getDescription())
         .get(name)
         .get(usage.getDescription());
-  }
-
-  private static void parseVendorConfig(String filename) {
-    Settings settings = new Settings();
-    configureBatfishTestSettings(settings);
-    parseVendorConfig(filename, settings);
-  }
-
-  private static void parseVendorConfig(String filename, Settings settings) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
-    parseFromTextWithSettings(src, settings);
   }
 
   private static void parse(String src) {
@@ -160,6 +156,12 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamily_ipv4Unicast() {
     parse("router bgp 1\n address-family ipv4 unicast\n exit-address-family\n");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast());
+  }
+
+  @Test
+  public void testBgpAddressFamily_ipv4UnicastMaximumPaths() {
+    // do not crash
+    parse("router bgp 1\n address-family ipv4 unicast\n maximum-paths 4\nexit-address-family\n");
   }
 
   @Test
@@ -527,6 +529,53 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testRouteMapMatchAsPathAccessList() {
+    parseLines("route-map ROUTE_MAP permit 10", "match as-path AS_PATH_ACCESS_LIST");
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchCallExtraction() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\ncall SUB-MAP\n", name));
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getCall().getRouteMapName(), equalTo("SUB-MAP"));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapOnMatch() {
+    String name = "ROUTE-MAP-NAME";
+    parse(String.format("route-map %s permit 10\non-match next\n", name));
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertTrue(entry.getOnMatchNext());
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchAsPath() {
+    String routeMapName = "ROUTE-MAP-NAME";
+    String asPathName1 = "AS-PATH-1";
+    String asPathName2 = "AS-PATH-2";
+
+    // Second match as-path line should overwrite first.
+    parseLines(
+        String.format("route-map %s permit 10", routeMapName),
+        String.format("match as-path %s", asPathName1),
+        String.format("match as-path %s", asPathName2));
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(routeMapName).getEntries().get(10);
+    assertThat(entry.getMatchAsPath().getName(), equalTo(asPathName2));
+
+    // Both AS paths should be referenced.
+    assertThat(
+        getStructureReferences(IP_AS_PATH_ACCESS_LIST, asPathName1, ROUTE_MAP_MATCH_AS_PATH),
+        contains(2));
+    assertThat(
+        getStructureReferences(IP_AS_PATH_ACCESS_LIST, asPathName2, ROUTE_MAP_MATCH_AS_PATH),
+        contains(3));
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapMatchCommunity() {
     String name = "ROUTE-MAP-NAME";
 
@@ -587,6 +636,14 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrVrfRouteMapSetAsPath() {
+    String name = "ROUTE-MAP-NAME";
+    parse(String.format("route-map %s permit 10\nset as-path prepend 11111 22222 33333\n", name));
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getSetAsPath().getAsns(), contains(11111L, 22222L, 33333L));
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapSetMetric() {
     String name = "ROUTE-MAP-NAME";
 
@@ -634,6 +691,70 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrRouteMapMatchTagExtraction() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
+
+    RouteMapEntry c = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+
+    assertThat(c.getMatchTag().getTag(), equalTo(65555L));
+  }
+
+  @Test
+  public void testCumulusFrrRouteMapMatchTagConversion() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
+    Configuration c = CONFIG.toVendorIndependentConfigurations().get(0);
+    RoutingPolicy policy = c.getRoutingPolicies().get(name);
+
+    Builder routeBuilder =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setAdmin(1)
+            .setNextHopInterface("iface");
+    // NOTE: re-using the builder, order of asserts may matter
+    // With missing tag -- no match
+    assertFalse(policy.process(routeBuilder.build(), Bgpv4Route.builder(), null, "default", OUT));
+    // With tag -- match
+    assertTrue(
+        policy.process(
+            routeBuilder.setTag(65555L).build(), Bgpv4Route.builder(), null, "default", OUT));
+    // With different tag -- no match
+    assertFalse(
+        policy.process(
+            routeBuilder.setTag(65554L).build(), Bgpv4Route.builder(), null, "default", OUT));
+  }
+
+  @Test
+  public void testRouteMapSetAsPath() {
+    parseLines("route-map ROUTE_MAP permit 10", "set as-path prepend 11111 22222");
+  }
+
+  @Test
+  public void testCumulusFrrRouteMapSetLocalPref() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nset local-preference 200\n", name));
+
+    RouteMapEntry c = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+
+    assertThat(c.getSetLocalPreference().getLocalPreference(), equalTo(200L));
+  }
+
+  @Test
+  public void testCumulusFrrRouteMapSetTagPref() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nset tag 999\n", name));
+
+    RouteMapEntry c = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+
+    assertThat(c.getSetTag().getTag(), equalTo(999L));
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapSetIpNextHop() {
     String name = "ROUTE-MAP-NAME";
     String clause1 = "set ip next-hop 10.0.0.1";
@@ -654,6 +775,36 @@ public class CumulusFrrGrammarTest {
     assertThat(
         entry.getSetCommunity().getCommunities(),
         equalTo(ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2))));
+  }
+
+  @Test
+  public void testCumulusFrrIpAsPathAccessList() {
+    String name = "NAME";
+    long as1 = 11111;
+    long as2 = 22222;
+    parse(
+        String.format(
+            "ip as-path access-list %s permit %s\n" + "ip as-path access-list %s deny %s\n",
+            name, as1, name, as2));
+
+    // Check that config has the expected AS-path access list with the expected name and num lines
+    assertThat(CONFIG.getIpAsPathAccessLists().keySet(), contains(name));
+    IpAsPathAccessList asPathAccessList = CONFIG.getIpAsPathAccessLists().get(name);
+    assertThat(asPathAccessList.getName(), equalTo(name));
+    assertThat(asPathAccessList.getLines(), hasSize(2));
+
+    // Check that lines look as expected
+    IpAsPathAccessListLine line0 = asPathAccessList.getLines().get(0);
+    IpAsPathAccessListLine line1 = asPathAccessList.getLines().get(1);
+    assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getAction(), equalTo(LineAction.DENY));
+    assertThat(line0.getAsNum(), equalTo(as1));
+    assertThat(line1.getAsNum(), equalTo(as2));
+
+    // Check that the AS-path access list definition was registered
+    DefinedStructureInfo definedStructureInfo =
+        getDefinedStructureInfo(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name);
+    assertThat(definedStructureInfo.getDefinitionLines(), contains(1, 2));
   }
 
   @Test
@@ -683,6 +834,49 @@ public class CumulusFrrGrammarTest {
     assertThat(line2.getAction(), equalTo(LineAction.DENY));
     assertThat(line2.getLengthRange(), equalTo(new SubRange(27, 30)));
     assertThat(line2.getPrefix(), equalTo(Prefix.parse("10.0.1.2/24")));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixListNoSeq() {
+    String name = "NAME";
+    String prefix1 = "10.0.0.1/24";
+    String prefix2 = "10.0.1.2/24";
+    parse(
+        String.format(
+            "ip prefix-list %s seq 4 permit %s\n" + "ip prefix-list %s deny %s ge 27 le 30 \n",
+            name, prefix1, name, prefix2));
+    assertThat(CONFIG.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = CONFIG.getIpPrefixLists().get(name);
+    IpPrefixListLine line1 = prefixList.getLines().get(4L);
+    assertThat(line1.getLine(), equalTo(4L));
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
+
+    IpPrefixListLine line2 = prefixList.getLines().get(5L);
+    assertThat(line2.getLine(), equalTo(5L));
+    assertThat(line2.getAction(), equalTo(LineAction.DENY));
+    assertThat(line2.getLengthRange(), equalTo(new SubRange(27, 30)));
+    assertThat(line2.getPrefix(), equalTo(Prefix.parse("10.0.1.2/24")));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixListAny() {
+    String name = "NAME";
+    parse(String.format("ip prefix-list %s seq 5 permit any\n", name));
+    assertThat(CONFIG.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = CONFIG.getIpPrefixLists().get(name);
+    IpPrefixListLine line1 = prefixList.getLines().get(5L);
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.ZERO));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixListDescription() {
+    String name = "NAME";
+    // Don't crash
+    parse(String.format("ip prefix-list %s description FOO\n", name));
   }
 
   @Test
@@ -796,10 +990,9 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testInterface_NoInterface() {
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
-    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
-    assertThat(
-        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
-        equalTo("interface swp1 is not defined"));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains("swp1"));
+    assertThat(CONFIG.getInterfaces().get("swp1").getVrf(), equalTo("VRF"));
   }
 
   @Test
@@ -845,5 +1038,145 @@ public class CumulusFrrGrammarTest {
     parse("router ospf\n log-adjacency-changes detail\n");
     assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
     assertNotNull(CONFIG.getOspfProcess());
+  }
+
+  @Test
+  public void testInterface_ospf_area() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    i1.setVrf("VRF");
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
+  }
+
+  @Test
+  public void testInterface_ospf_authentication() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1\n ip ospf authentication message-digest\n");
+  }
+
+  @Test
+  public void testInterface_ospf_authentication_key() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1\n ip ospf message-digest-key 1 md5 <SCRUBBED>\n");
+  }
+
+  @Test
+  public void testInterface_ospf_p2p() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("swp1", i1);
+    parse("interface swp1\n ip ospf network point-to-point\n");
+    assertThat(i1.getOspf().getNetwork(), equalTo(OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Test
+  public void testRouterOspfPassiveInterface_NoInterface() {
+    parse("router ospf\n passive-interface lo\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("interface lo is not defined"));
+  }
+
+  @Test
+  public void testRouterOspfPassiveInterface() {
+    Interface iface = new Interface("lo", CumulusInterfaceType.PHYSICAL, null, null);
+    CONFIG.getInterfaces().put("lo", iface);
+    parse("router ospf\n passive-interface lo\n");
+    assertTrue(iface.getOspf().getPassive());
+  }
+
+  @Test
+  public void testCreatePhysicalInterfaceInFRR() {
+    String name = "eth1";
+    parse(String.format("interface %s\n", name));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains(name));
+    Interface i1 = CONFIG.getInterfaces().get(name);
+    assertThat(i1.getType(), equalTo(CumulusInterfaceType.PHYSICAL));
+  }
+
+  @Test
+  public void testCreateLoopbackInterfaceInFRR() {
+    String name = "lo";
+    parse(String.format("interface %s\n", name));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(CONFIG.getInterfaces().keySet(), contains(name));
+    Interface i1 = CONFIG.getInterfaces().get(name);
+    assertThat(i1.getType(), equalTo(CumulusInterfaceType.LOOPBACK));
+  }
+
+  @Test
+  public void testNoCreateOtherInterfaceInFRR() {
+    String name = "vlan1";
+    parse(String.format("interface %s\n", name));
+    assertThat(CONFIG.getWarnings().getParseWarnings(), hasSize(1));
+    assertThat(
+        CONFIG.getWarnings().getParseWarnings().get(0).getComment(),
+        equalTo("cannot recognize interface vlan1. Only support loopback and physical interfaces"));
+    assertThat(CONFIG.getInterfaces().keySet(), empty());
+  }
+
+  @Test
+  public void testSetInterfaceIpAddress() {
+    parseLines("interface eth1", "ip address 1.1.1.1/30");
+    assertThat(
+        CONFIG.getInterfaces().get("eth1").getIpAddresses(),
+        equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
+  }
+
+  @Test
+  public void testFRRDefaultTraditional() {
+    parse("frr defaults traditional\n");
+  }
+
+  @Test
+  public void testNoIpv6Forwarding() {
+    parse("no ipv6 forwarding\n");
+  }
+
+  @Test
+  public void testPasswordEncryption() {
+    parse("service password-encryption\n");
+  }
+
+  @Test
+  public void testLog() {
+    parse("log file /var/log/frr/frr.log\n");
+    parse("log commands\n");
+  }
+
+  @Test
+  public void testEnd() {
+    parseLines("frr version", "end");
+  }
+
+  @Test
+  public void testPasswordParsing() {
+    parseLines("password 8 geC4x9Mm5HYDE", "enable password 8 <SCRUBBED>");
+  }
+
+  @Test
+  public void testNextMultipleOfFive() {
+    assertThat(nextMultipleOfFive(null), equalTo(5L));
+    assertThat(nextMultipleOfFive(0L), equalTo(5L));
+    assertThat(nextMultipleOfFive(1L), equalTo(5L));
+    assertThat(nextMultipleOfFive(4L), equalTo(5L));
+    assertThat(nextMultipleOfFive(5L), equalTo(10L));
+    assertThat(nextMultipleOfFive(6L), equalTo(10L));
+  }
+
+  @Test
+  public void testBgpLogNeighborChanges() {
+    parseLines("router bgp 1", "bgp log-neighbor-changes");
+  }
+
+  @Test
+  public void testBgpConfederationId() {
+    parseLines("router bgp 65001", "bgp confederation identifier 100");
+    assertThat(CONFIG.getBgpProcess().getDefaultVrf().getConfederationId(), equalTo(100L));
   }
 }

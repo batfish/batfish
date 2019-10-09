@@ -26,6 +26,10 @@ public final class IpPrefixList implements Serializable {
     return _lines;
   }
 
+  public void addLine(IpPrefixListLine line) {
+    _lines.put(line.getLine(), line);
+  }
+
   public @Nonnull String getName() {
     return _name;
   }

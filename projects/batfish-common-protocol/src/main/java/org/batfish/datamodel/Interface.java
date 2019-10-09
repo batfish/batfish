@@ -1095,6 +1095,7 @@ public final class Interface extends ComparableStructure<String> {
     return _eigrp;
   }
 
+  /** VLAN for a L3 subinterface. */
   @JsonProperty(PROP_ENCAPSULATION_VLAN)
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
@@ -1382,6 +1383,7 @@ public final class Interface extends ComparableStructure<String> {
     return _tunnelConfig;
   }
 
+  /** VLAN for an IRB interface. */
   @JsonProperty(PROP_VLAN)
   public @Nullable Integer getVlan() {
     return _vlan;
@@ -1413,16 +1415,9 @@ public final class Interface extends ComparableStructure<String> {
     return _zoneName;
   }
 
-  public boolean isLoopback(ConfigurationFormat vendor) {
-    String name = _key.toLowerCase();
-    if (vendor == ConfigurationFormat.JUNIPER || vendor == ConfigurationFormat.FLAT_JUNIPER) {
-      if (!name.contains(".")) {
-        return false;
-      }
-    } else if (name.contains("longreach")) {
-      return false;
-    }
-    return name.startsWith("lo");
+  @JsonIgnore
+  public boolean isLoopback() {
+    return _interfaceType == InterfaceType.LOOPBACK;
   }
 
   @JsonProperty(PROP_ACCESS_VLAN)

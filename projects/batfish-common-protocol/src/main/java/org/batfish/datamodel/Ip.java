@@ -240,4 +240,8 @@ public class Ip implements Comparable<Ip>, Serializable {
   public boolean valid() {
     return 0L <= _ip && _ip <= 0xFFFFFFFFL;
   }
+
+  public Prefix toPrefix() {
+    return Prefix.create(this, Prefix.MAX_PREFIX_LENGTH);
+  }
 }

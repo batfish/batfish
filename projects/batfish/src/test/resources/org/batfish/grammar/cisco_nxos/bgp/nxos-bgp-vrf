@@ -1,0 +1,21 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+feature bgp
+!
+hostname nxos-bgp-vrf
+!
+vrf context bar
+!
+router bgp 1
+   address-family ipv4 unicast
+   vrf bar
+   bestpath as-path multipath-relax
+   router-id 1.1.1.1
+   neighbor 2.2.2.2 remote-as 2
+      address-family ipv4 unicast
+      disable-peer-as-check
+      local-as 1
+   neighbor 3.3.3.3 remote-as 3
+      local-as 1
+      address-family ipv4 unicast
+!

@@ -9,53 +9,19 @@ tokens {
   WORD
 }
 
-ADDRESS
+ACCESS_LIST
 :
-  'address'
-;
-
-AGENTX
-:
-  'agentx'
-;
-
-AGGREGATE_ADDRESS
-:
-  'aggregate-address'
-;
-
-AS_PATH
-:
-  'as-path'
-;
-
-BESTPATH
-:
-  'bestpath'
-;
-
-BFD
-:
-  'bfd' -> pushMode(M_Words)
-;
-
-COMMENT_LINE
-:
-  (
-    F_Whitespace
-  )* [!]
-  {lastTokenType() == NEWLINE || lastTokenType() == -1}?
-
-  F_NonNewline*
-  (
-    F_Newline+
-    | EOF
-  ) -> channel ( HIDDEN )
+  'access-list' -> pushMode(M_Word)
 ;
 
 ACTIVATE
 :
   'activate'
+;
+
+ADDRESS
+:
+  'address'
 ;
 
 ADDRESS_FAMILY
@@ -73,19 +39,90 @@ ADVERTISE_ALL_VNI
   'advertise-all-vni'
 ;
 
+AGENTX
+:
+  'agentx'
+;
+
+AGGREGATE_ADDRESS
+:
+  'aggregate-address'
+;
+
 ALWAYS_COMPARE_MED
 :
   'always-compare-med'
 ;
+
+ANY
+:
+  'any'
+;
+
+AREA
+:
+  'area'
+;
+
+AS_PATH
+:
+  'as-path'
+  {
+    if (lastTokenType() == MATCH) {
+        pushMode(M_Word);
+    }
+  }
+;
+
+AUTHENTICATION
+:
+  'authentication'
+;
+
+
+BESTPATH
+:
+  'bestpath'
+;
+
+BFD
+:
+  'bfd' -> pushMode(M_Words)
+;
+
 
 BGP
 :
   'bgp'
 ;
 
+CALL
+:
+  'call' -> pushMode(M_Word)
+;
+
 COLON
 :
   ':'
+;
+
+COMMANDS
+:
+  'commands'
+;
+
+COMMENT_LINE
+:
+  (
+    F_Whitespace
+  )* [!]
+  {lastTokenType() == NEWLINE || lastTokenType() == -1}?
+
+  F_NonNewline*
+  (
+    F_Newline+
+    | EOF
+  ) -> channel ( HIDDEN )
 ;
 
 COMMUNITY
@@ -106,6 +143,11 @@ COMMUNITY
 COMMUNITY_LIST
 :
   'community-list'
+;
+
+CONFEDERATION
+:
+  'confederation'
 ;
 
 CONNECTED
@@ -131,6 +173,16 @@ DENY
 DESCRIPTION
 :
   'description' -> pushMode ( M_Remark )
+;
+
+ENABLE
+:
+  'enable'
+;
+
+END
+:
+  'end'
 ;
 
 EVPN
@@ -168,6 +220,16 @@ EBGP_MULTIHOP
   'ebgp-multihop'
 ;
 
+FILE
+:
+  'file' -> pushMode(M_Remark)
+;
+
+FORWARDING
+:
+  'forwarding'
+;
+
 FRR
 :
   'frr'
@@ -181,6 +243,11 @@ GE
 HOSTNAME
 :
   'hostname' -> pushMode(M_Word)
+;
+
+IDENTIFIER
+:
+  'identifier'
 ;
 
 IN
@@ -236,6 +303,11 @@ IPV4
   'ipv4'
 ;
 
+IPV6
+:
+  'ipv6'
+;
+
 IP_ADDRESS
 :
   F_IpAddress
@@ -256,6 +328,11 @@ LE
   'le'
 ;
 
+LOCAL_PREFERENCE
+:
+  'local-preference'
+;
+
 LOG
 :
   'log'
@@ -266,9 +343,34 @@ LOG_ADJACENCY_CHANGES
   'log-adjacency-changes'
 ;
 
+LOG_NEIGHBOR_CHANGES
+:
+  'log-neighbor-changes'
+;
+
 LINE
 :
   'line'
+;
+
+MAXIMUM_PATHS
+:
+  'maximum-paths'
+;
+
+MESSAGE_DIGEST
+:
+  'message-digest'
+;
+
+MESSAGE_DIGEST_KEY
+:
+  'message-digest-key'
+;
+
+MD5
+:
+  'md5' -> pushMode(M_Remark)
 ;
 
 MULTIPATH_RELAX
@@ -286,9 +388,24 @@ NETWORK
   'network'
 ;
 
+NEXT
+:
+  'next'
+;
+
 NEXT_HOP_SELF
 :
   'next-hop-self'
+;
+
+NO
+:
+  'no'
+;
+
+ON_MATCH
+:
+  'on-match'
 ;
 
 OSPF
@@ -301,9 +418,19 @@ OUT
   'out'
 ;
 
+PASSIVE_INTERFACE
+:
+  'passive-interface' -> pushMode(M_Word)
+;
+
 PASSWORD
 :
   'password' -> pushMode(M_Remark)
+;
+
+PASSWORD_ENCRYPTION
+:
+  'password-encryption'
 ;
 
 PEER_GROUP
@@ -316,9 +443,19 @@ PERMIT
   'permit'
 ;
 
+POINT_TO_POINT
+:
+  'point-to-point'
+;
+
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
+;
+
+PREPEND
+:
+  'prepend'
 ;
 
 REDISTRIBUTE
@@ -394,6 +531,16 @@ SUBNET_MASK
 SYSLOG
 :
   'syslog'
+;
+
+TAG
+:
+  'tag'
+;
+
+TRADITIONAL
+:
+  'traditional'
 ;
 
 MATCH

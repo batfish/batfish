@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos-ospf-area
+feature privilege
+!
+interface Ethernet1
+ no switchport
+ ip ospf network point-to-point
+ no ip ospf passive-interface
+ ip router ospf 1 area 0.0.0.1
+!
+router ospf 1
+ passive-interface default
+ router-id 1.2.3.4
+!
+!
+

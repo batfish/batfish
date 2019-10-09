@@ -91,8 +91,7 @@ public class BgpSessionStatusAnswererTest {
     Ip remoteIp = Ip.parse("2.2.2.2");
 
     // Active peer missing local IP for which we're generating a row
-    BgpPeerConfigId peerId =
-        new BgpPeerConfigId("c1", "vrf1", Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "vrf1", remoteIp.toPrefix(), false);
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
             .setPeerAddress(remoteIp)
@@ -130,8 +129,7 @@ public class BgpSessionStatusAnswererTest {
     Ip remoteIp = Ip.parse("2.2.2.2");
 
     // Active peer for which we're generating a row
-    BgpPeerConfigId peerId =
-        new BgpPeerConfigId("c1", "vrf1", Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "vrf1", remoteIp.toPrefix(), false);
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
             .setLocalIp(localIp)
@@ -142,10 +140,11 @@ public class BgpSessionStatusAnswererTest {
             .build();
 
     // Remote active peer
-    BgpPeerConfigId remotePeerId =
-        new BgpPeerConfigId("c2", "vrf2", Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpPeerConfigId remotePeerId = new BgpPeerConfigId("c2", "vrf2", localIp.toPrefix(), false);
     BgpActivePeerConfig remotePeer =
         BgpActivePeerConfig.builder()
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
@@ -353,7 +352,7 @@ public class BgpSessionStatusAnswererTest {
   @Test
   public void testGetDynamicPeerRowTwoCompatiblePeers() {
     Ip localIp = Ip.parse("1.1.1.1");
-    Prefix localAddress = Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH);
+    Prefix localAddress = localIp.toPrefix();
     Prefix remotePrefix = Prefix.parse("2.2.2.0/24");
     LongSpace remoteAsns = LongSpace.of(Range.closed(2L, 3L));
 
@@ -459,8 +458,7 @@ public class BgpSessionStatusAnswererTest {
     Ip localIp = Ip.parse("1.1.1.1");
     Ip remoteIp = Ip.parse("2.2.2.2");
     BgpPeerConfigId peerXId =
-        new BgpPeerConfigId(
-            "c", DEFAULT_VRF_NAME, Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+        new BgpPeerConfigId("c", DEFAULT_VRF_NAME, remoteIp.toPrefix(), false);
     BgpActivePeerConfig peerX =
         BgpActivePeerConfig.builder()
             .setLocalIp(localIp)
@@ -472,16 +470,13 @@ public class BgpSessionStatusAnswererTest {
 
     // Two compatible (but unreachable) remote peers
     BgpPeerConfigId compat1Id =
-        new BgpPeerConfigId(
-            "c2", DEFAULT_VRF_NAME, Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+        new BgpPeerConfigId("c2", DEFAULT_VRF_NAME, remoteIp.toPrefix(), false);
     BgpPeerConfigId compat2Id =
-        new BgpPeerConfigId(
-            "c3", DEFAULT_VRF_NAME, Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+        new BgpPeerConfigId("c3", DEFAULT_VRF_NAME, remoteIp.toPrefix(), false);
 
     // One compatible AND reachable remote peer
     BgpPeerConfigId establishedId =
-        new BgpPeerConfigId(
-            "c4", DEFAULT_VRF_NAME, Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+        new BgpPeerConfigId("c4", DEFAULT_VRF_NAME, remoteIp.toPrefix(), false);
 
     // Recycle the same compatible remote config for all the remotes
     BgpActivePeerConfig remotePeer =
@@ -537,8 +532,7 @@ public class BgpSessionStatusAnswererTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
 
-    BgpPeerConfigId id1 =
-        new BgpPeerConfigId("c1", "vrf1", Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpPeerConfigId id1 = new BgpPeerConfigId("c1", "vrf1", ip2.toPrefix(), false);
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -547,8 +541,7 @@ public class BgpSessionStatusAnswererTest {
             .setRemoteAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    BgpPeerConfigId id2 =
-        new BgpPeerConfigId("c2", "vrf2", Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpPeerConfigId id2 = new BgpPeerConfigId("c2", "vrf2", ip1.toPrefix(), false);
     BgpActivePeerConfig peer2 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip2)

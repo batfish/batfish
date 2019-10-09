@@ -25,6 +25,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.VIRTUAL
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
@@ -47,10 +48,13 @@ import static org.batfish.representation.palo_alto.Zone.Type.TAP;
 import static org.batfish.representation.palo_alto.Zone.Type.VIRTUAL_WIRE;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -63,14 +67,43 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_install_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_prefContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_peer_group_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_peer_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_reject_default_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_router_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_peerContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_reflector_clientContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ebgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ibgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_as_formatContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_default_local_preferenceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_reflector_cluster_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgproa_aggregate_medContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprog_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprom_always_compare_medContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprom_deterministic_med_comparisonContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_authenticationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryptionContext;
@@ -79,10 +112,15 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_tagContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Port_numberContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Protocol_adContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_group_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_application_definitionContext;
@@ -91,15 +129,18 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_group_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsys_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_fqdnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
@@ -112,7 +153,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_router_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_tunnelContext;
@@ -125,6 +165,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniv_unitContext;
@@ -132,14 +173,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_display_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgi_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrtn_ipContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrtn_next_vrContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
@@ -161,6 +194,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.St_commentsContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
@@ -168,14 +202,43 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer2Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_tapContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_virtual_wireContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Uint16Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Uint32Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Uint8Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vlan_tagContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_routing_tableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ebgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ibgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ospf_extContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ospf_intContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ospfv3_extContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ospfv3_intContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ripContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_staticContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_static_ipv6Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrp_bgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_admin_distContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_metricContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_next_vrContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Yes_or_noContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.ApplicationBuiltIn;
 import org.batfish.representation.palo_alto.ApplicationGroup;
+import org.batfish.representation.palo_alto.BgpPeer;
+import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
+import org.batfish.representation.palo_alto.BgpPeerGroup;
+import org.batfish.representation.palo_alto.BgpVr;
+import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -190,32 +253,13 @@ import org.batfish.representation.palo_alto.ServiceGroup;
 import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
+import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
 import org.batfish.representation.palo_alto.Zone;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
-
-  private PaloAltoConfiguration _configuration;
-
-  private AddressGroup _currentAddressGroup;
-
-  private AddressObject _currentAddressObject;
-
-  private Application _currentApplication;
-
-  private ApplicationGroup _currentApplicationGroup;
-
-  private CryptoProfile _currentCrytoProfile;
-
-  private String _currentDeviceName;
-
-  private Interface _currentInterface;
-
-  private boolean _currentNtpServerPrimary;
-
-  private Interface _currentParentInterface;
 
   /** Indicates which rulebase that new rules go into. */
   private enum RulebaseId {
@@ -227,32 +271,35 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     POST
   }
 
+  private PaloAltoConfiguration _configuration;
+  private Vsys _defaultVsys;
+  private PaloAltoCombinedParser _parser;
+  private final String _text;
+  private final Warnings _w;
+
+  private AddressGroup _currentAddressGroup;
+  private AddressObject _currentAddressObject;
+  private Application _currentApplication;
+  private ApplicationGroup _currentApplicationGroup;
+  private BgpPeer _currentBgpPeer;
+  private BgpPeerGroup _currentBgpPeerGroup;
+  private BgpVr _currentBgpVr;
+  private CryptoProfile _currentCrytoProfile;
+  private String _currentDeviceName;
+  private Interface _currentInterface;
+  private boolean _currentNtpServerPrimary;
+  private Interface _currentParentInterface;
   private RulebaseId _currentRuleScope;
   private Rule _currentRule;
-
   private Service _currentService;
-
   private ServiceGroup _currentServiceGroup;
-
   private StaticRoute _currentStaticRoute;
-
   private SyslogServer _currentSyslogServer;
-
   private String _currentSyslogServerGroupName;
-
+  private Tag _currentTag;
   private VirtualRouter _currentVirtualRouter;
-
   private Vsys _currentVsys;
-
   private Zone _currentZone;
-
-  private Vsys _defaultVsys;
-
-  private PaloAltoCombinedParser _parser;
-
-  private final String _text;
-
-  private final Warnings _w;
 
   public PaloAltoConfigurationBuilder(
       PaloAltoCombinedParser parser, String text, Warnings warnings) {
@@ -269,13 +316,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return new BatfishException("Could not convert to " + typeName + ": " + txt);
   }
 
-  private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
-    return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
+  private static String convErrorMessage(Class<?> type) {
+    return String.format("Could not convert to %s", type.getSimpleName());
   }
 
   private <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
-    _w.redFlag(convErrorMessage(returnType, ctx));
+    warn(ctx, convErrorMessage(returnType));
     return defaultReturnValue;
   }
 
@@ -380,10 +427,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return convProblem(IkeHashingAlgorithm.class, ctx, null);
   }
 
-  private int toInteger(Token t) {
-    return Integer.parseInt(getText(t));
-  }
-
   private IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
       Cp_authenticationContext ctx) {
     if (ctx.MD5() != null) {
@@ -405,13 +448,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   /** Convert source or destination list item into an appropriate IpSpace */
   private RuleEndpoint toRuleEndpoint(Src_or_dst_list_itemContext ctx) {
     String text = getText(ctx);
-    if (ctx.ANY() != null) {
+    if (ctx.any != null) {
       return new RuleEndpoint(RuleEndpoint.Type.Any, text);
-    } else if (ctx.IP_ADDRESS() != null) {
+    } else if (ctx.address != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_ADDRESS, text);
-    } else if (ctx.IP_PREFIX() != null) {
+    } else if (ctx.prefix != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_PREFIX, text);
-    } else if (ctx.IP_RANGE() != null) {
+    } else if (ctx.range != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
     }
     return new RuleEndpoint(RuleEndpoint.Type.REFERENCE, text);
@@ -442,9 +485,159 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitBgp_enable(Bgp_enableContext ctx) {
+    _currentBgpVr.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgp_install_route(Bgp_install_routeContext ctx) {
+    _currentBgpVr.setInstallRoute(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgp_local_as(Bgp_local_asContext ctx) {
+    toAsn(ctx, ctx.asn, _currentBgpVr.getRoutingOptions().getAsFormat())
+        .ifPresent(_currentBgpVr::setLocalAs);
+  }
+
+  @Override
+  public void enterBgppg_definition(Bgppg_definitionContext ctx) {
+    _currentBgpPeerGroup =
+        toString(ctx, ctx.name)
+            .map(_currentBgpVr::getOrCreatePeerGroup)
+            .orElseGet(() -> new BgpPeerGroup("dummy")); // create dummy if the name is invalid.
+  }
+
+  @Override
+  public void exitBgppg_definition(Bgppg_definitionContext ctx) {
+    _currentBgpPeerGroup = null;
+  }
+
+  @Override
+  public void exitBgppg_enable(Bgppg_enableContext ctx) {
+    _currentBgpPeerGroup.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void enterBgppg_peer(Bgppg_peerContext ctx) {
+    _currentBgpPeer =
+        toString(ctx, ctx.name)
+            .map(_currentBgpPeerGroup::getOrCreatePeerGroup)
+            .orElseGet(() -> new BgpPeer("dummy")); // create dummy if the name is invalid.
+  }
+
+  @Override
+  public void exitBgppgp_enable(Bgppgp_enableContext ctx) {
+    _currentBgpPeer.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgppgp_la_interface(Bgppgp_la_interfaceContext ctx) {
+    String name = getText(ctx.name);
+    _currentBgpPeer.setLocalInterface(name);
+    _configuration.referenceStructure(
+        INTERFACE, name, BGP_PEER_LOCAL_ADDRESS_INTERFACE, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitBgppgp_la_ip(Bgppgp_la_ipContext ctx) {
+    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.interface_address());
+    _currentBgpPeer.setLocalAddress(address.getIp());
+  }
+
+  @Override
+  public void exitBgppgp_peer_address(Bgppgp_peer_addressContext ctx) {
+    toIp(ctx, ctx.addr, "BGP peer-address").ifPresent(_currentBgpPeer::setPeerAddress);
+  }
+
+  @Override
+  public void exitBgppgp_peer_as(Bgppgp_peer_asContext ctx) {
+    toAsn(ctx, ctx.asn, _currentBgpVr.getRoutingOptions().getAsFormat())
+        .ifPresent(_currentBgpPeer::setPeerAs);
+  }
+
+  @Override
+  public void exitBgppg_peer(Bgppg_peerContext ctx) {
+    _currentBgpPeer = null;
+  }
+
+  @Override
+  public void exitBgppgp_reflector_client(Bgppgp_reflector_clientContext ctx) {
+    if (ctx.CLIENT() != null) {
+      _currentBgpPeer.setReflectorClient(ReflectorClient.CLIENT);
+    } else if (ctx.MESHED_CLIENT() != null) {
+      _currentBgpPeer.setReflectorClient(ReflectorClient.MESHED_CLIENT);
+    } else {
+      assert ctx.NON_CLIENT() != null;
+      _currentBgpPeer.setReflectorClient(ReflectorClient.NON_CLIENT);
+    }
+  }
+
+  @Override
+  public void enterBgppgt_ebgp(Bgppgt_ebgpContext ctx) {
+    _currentBgpPeerGroup.updateAndGetEbgpType();
+  }
+
+  @Override
+  public void enterBgppgt_ibgp(Bgppgt_ibgpContext ctx) {
+    _currentBgpPeerGroup.updateAndGetIbgpType();
+  }
+
+  @Override
+  public void exitBgp_reject_default_route(Bgp_reject_default_routeContext ctx) {
+    _currentBgpVr.setRejectDefaultRoute(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgproa_aggregate_med(Bgproa_aggregate_medContext ctx) {
+    _currentBgpVr.getRoutingOptions().setAggregateMed(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgpro_as_format(Bgpro_as_formatContext ctx) {
+    if (ctx.TWO_BYTE() != null) {
+      _currentBgpVr.getRoutingOptions().setAsFormat(AsFormat.TWO_BYTE_AS);
+    } else {
+      assert ctx.FOUR_BYTE() != null;
+      _currentBgpVr.getRoutingOptions().setAsFormat(AsFormat.FOUR_BYTE_AS);
+    }
+  }
+
+  @Override
+  public void exitBgpro_default_local_preference(Bgpro_default_local_preferenceContext ctx) {
+    _currentBgpVr.getRoutingOptions().setDefaultLocalPreference(toLong(ctx.pref));
+  }
+
+  @Override
+  public void exitBgpro_reflector_cluster_id(Bgpro_reflector_cluster_idContext ctx) {
+    _currentBgpVr.getRoutingOptions().setReflectorClusterId(toIp(ctx.id));
+  }
+
+  @Override
+  public void exitBgprog_enable(Bgprog_enableContext ctx) {
+    _currentBgpVr.getRoutingOptions().setGracefulRestartEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgprom_always_compare_med(Bgprom_always_compare_medContext ctx) {
+    _currentBgpVr.getRoutingOptions().setAlwaysCompareMed(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgprom_deterministic_med_comparison(
+      Bgprom_deterministic_med_comparisonContext ctx) {
+    _currentBgpVr.getRoutingOptions().setDeterministicMedComparison(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgp_router_id(Bgp_router_idContext ctx) {
+    toIp(ctx, ctx.addr, "BGP router-id").ifPresent(_currentBgpVr::setRouterId);
+  }
+
+  @Override
   public void exitCp_authentication(Cp_authenticationContext ctx) {
     if (_currentCrytoProfile.getType() == Type.IKE) {
-      _w.redFlag("'authentication' is illegal for ike-crypto-profile");
+      warn(ctx, "'authentication' is illegal for ike-crypto-profile");
       return;
     }
     IpsecAuthenticationAlgorithm algo = toIpsecAuthenticationAlgorithm(ctx);
@@ -456,7 +649,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitCp_dh_group(Cp_dh_groupContext ctx) {
     if (_currentCrytoProfile.getType() == Type.GLOBAL_PROTECT_APP) {
-      _w.redFlag("'dh-group' is illegal for global-proptect-app-crypto-profile");
+      warn(ctx, "'dh-group' is illegal for global-proptect-app-crypto-profile");
       return;
     }
     DiffieHellmanGroup dhGroup = toDiffieHellmanGroup(ctx);
@@ -475,7 +668,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitCp_hash(Cp_hashContext ctx) {
     if (_currentCrytoProfile.getType() != Type.IKE) {
-      _w.redFlag("'hash' is illegal for non-Ike crypto profiles");
+      warn(ctx, "'hash' is illegal for non-Ike crypto profiles");
       return;
     }
     IkeHashingAlgorithm algo = toIkeHashingAlgorithm(ctx);
@@ -487,7 +680,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitCp_lifetime(Cp_lifetimeContext ctx) {
     if (_currentCrytoProfile.getType() == Type.GLOBAL_PROTECT_APP) {
-      _w.redFlag("'lifetime' is illegal for global-protect-app-crypto profile");
+      warn(ctx, "'lifetime' is illegal for global-protect-app-crypto profile");
       return;
     }
     int val = toInteger(ctx.val);
@@ -508,7 +701,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitIf_tag(If_tagContext ctx) {
-    _currentInterface.setTag(toInteger(ctx.tag));
+    toInteger(ctx, ctx.tag).ifPresent(_currentInterface::setTag);
   }
 
   @Override
@@ -542,10 +735,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void enterS_address_definition(S_address_definitionContext ctx) {
     String name = getText(ctx.name);
     if (_currentVsys.getAddressGroups().get(name) != null) {
-      _w.redFlag(
+      warn(
+          ctx,
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the object definition.",
               name));
+      _currentAddressObject = new AddressObject(name);
     } else {
       _currentAddressObject =
           _currentVsys.getAddressObjects().computeIfAbsent(name, AddressObject::new);
@@ -562,13 +757,47 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSa_tag(Sa_tagContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String tag = getText(var);
+      _currentAddressObject.getTags().add(tag);
+    }
+  }
+
+  @Override
+  public void exitSag_tag(Sag_tagContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String tag = getText(var);
+      _currentAddressGroup.getTags().add(tag);
+    }
+  }
+
+  @Override
+  public void enterS_tag(S_tagContext ctx) {
+    String name = getText(ctx.name);
+    _currentTag = _currentVsys.getTags().computeIfAbsent(name, Tag::new);
+  }
+
+  @Override
+  public void exitS_tag(S_tagContext ctx) {
+    _currentTag = null;
+  }
+
+  @Override
+  public void exitSt_comments(St_commentsContext ctx) {
+    _currentTag.setComments(getText(ctx.comments));
+  }
+
+  @Override
   public void enterS_address_group_definition(S_address_group_definitionContext ctx) {
     String name = getText(ctx.name);
     if (_currentVsys.getAddressObjects().get(name) != null) {
-      _w.redFlag(
+      warn(
+          ctx,
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the group definition.",
               name));
+      _currentAddressGroup = new AddressGroup(name);
     } else {
       _currentAddressGroup =
           _currentVsys.getAddressGroups().computeIfAbsent(name, AddressGroup::new);
@@ -648,65 +877,47 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_description(Sa_descriptionContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     _currentAddressObject.setDescription(getText(ctx.description));
   }
 
   @Override
   public void exitSa_fqdn(Sa_fqdnContext ctx) {
-    _w.redFlag("FQDN in address objects is not currently supported: " + getFullText(ctx));
+    warn(ctx, ctx.FQDN().getSymbol(), "FQDN in address objects is not currently supported");
   }
 
   @Override
   public void exitSa_ip_netmask(Sa_ip_netmaskContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
-    if (ctx.IP_ADDRESS() != null) {
-      _currentAddressObject.setIpSpace(Ip.parse(getText(ctx.IP_ADDRESS())).toIpSpace());
+    if (ctx.ip_address() != null) {
+      _currentAddressObject.setIpSpace(toIp(ctx.ip_address()).toIpSpace());
     } else if (ctx.IP_PREFIX() != null) {
       _currentAddressObject.setIpSpace(Prefix.parse(getText(ctx.IP_PREFIX())).toIpSpace());
     } else {
-      _w.redFlag("Cannot understand what follows 'ip-netmask' in " + getFullText(ctx));
+      warn(ctx, "Cannot understand what follows 'ip-netmask'");
     }
   }
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    if (_currentAddressObject == null) {
-      return;
-    }
     String[] ips = getText(ctx.IP_RANGE()).split("-");
     _currentAddressObject.setIpSpace(IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1])));
   }
 
   @Override
   public void exitSag_description(Sag_descriptionContext ctx) {
-    if (_currentAddressGroup == null) {
-      return;
-    }
     _currentAddressGroup.setDescription(getText(ctx.description));
   }
 
   @Override
   public void exitSag_dynamic(Sag_dynamicContext ctx) {
-    _w.redFlag("Dynamic address groups are not currently supported: " + getFullText(ctx));
+    warn(ctx, "Dynamic address groups are not currently supported");
   }
 
   @Override
   public void exitSag_static(Sag_staticContext ctx) {
-    if (_currentAddressGroup == null) {
-      return;
-    }
     for (VariableContext var : ctx.variable()) {
       String objectName = getText(var);
       if (objectName.equals(_currentAddressGroup.getName())) {
-        _w.redFlag(
-            String.format(
-                "The address group '%s' cannot contain itself: '%s'",
-                objectName, getFullText(ctx)));
+        warn(ctx, String.format("The address group '%s' cannot contain itself", objectName));
       } else {
         _currentAddressGroup.getMembers().add(objectName);
 
@@ -720,7 +931,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSds_default_gateway(Sds_default_gatewayContext ctx) {
-    _configuration.setMgmtIfaceGateway(Ip.parse(getText(ctx.IP_ADDRESS())));
+    _configuration.setMgmtIfaceGateway(toIp(ctx.ip_address()));
   }
 
   @Override
@@ -730,12 +941,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSds_ip_address(Sds_ip_addressContext ctx) {
-    _configuration.setMgmtIfaceAddress(Ip.parse(getText(ctx.IP_ADDRESS())));
+    _configuration.setMgmtIfaceAddress(toIp(ctx.ip_address()));
   }
 
   @Override
   public void enterSds_netmask(Sds_netmaskContext ctx) {
-    _configuration.setMgmtIfaceNetmask(Ip.parse(getText(ctx.IP_ADDRESS())));
+    _configuration.setMgmtIfaceNetmask(toIp(ctx.ip_address()));
   }
 
   @Override
@@ -809,7 +1020,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       if (_currentVsys.getImportedInterfaces().contains(name)) {
         _currentZone.getInterfaceNames().add(name);
       } else {
-        _w.redFlag("Cannot add an interface to a shared-gateway zone before it is imported");
+        warn(ctx, "Cannot add an interface to a shared-gateway zone before it is imported");
       }
       _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
@@ -823,7 +1034,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       if (!_currentDeviceName.equals(deviceName)) {
         /* Do not currently handle multiple device names, which presumably happens only if multiple
          * physical devices are configured from a single config */
-        _w.redFlag("Multiple devices encountered: " + deviceName);
+        warn(ctx, "Multiple devices encountered: " + deviceName);
       }
     }
   }
@@ -843,7 +1054,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSn_virtual_router_definition(Sn_virtual_router_definitionContext ctx) {
+  public void enterVr_definition(Vr_definitionContext ctx) {
     String name = getText(ctx.name);
     _currentVirtualRouter =
         _configuration.getVirtualRouters().computeIfAbsent(name, VirtualRouter::new);
@@ -853,7 +1064,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSn_virtual_router_definition(Sn_virtual_router_definitionContext ctx) {
+  public void exitVr_definition(Vr_definitionContext ctx) {
     _currentVirtualRouter = null;
   }
 
@@ -981,9 +1192,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSniel3_ip(Sniel3_ipContext ctx) {
-    ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse(getText(ctx.address));
-    _currentInterface.setAddress(address);
-    _currentInterface.getAllAddresses().add(address);
+    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
+    _currentInterface.addAddress(address);
   }
 
   @Override
@@ -1005,6 +1215,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSniel3_unit(Sniel3_unitContext ctx) {
     _currentInterface = _currentParentInterface;
+  }
+
+  @Override
+  public void exitSnil_ip(Snil_ipContext ctx) {
+    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
+    if (address.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+      warn(ctx, ctx.address, "Loopback ip address must be /32 or without mask");
+      return;
+    }
+    _currentInterface.addAddress(address);
   }
 
   @Override
@@ -1056,7 +1276,52 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSnvr_routing_table(Snvr_routing_tableContext ctx) {
+  public void exitVrad_ebgp(Vrad_ebgpContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setEbgp);
+  }
+
+  @Override
+  public void exitVrad_ibgp(Vrad_ibgpContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setIbgp);
+  }
+
+  @Override
+  public void exitVrad_ospf_ext(Vrad_ospf_extContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfExt);
+  }
+
+  @Override
+  public void exitVrad_ospf_int(Vrad_ospf_intContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfInt);
+  }
+
+  @Override
+  public void exitVrad_ospfv3_ext(Vrad_ospfv3_extContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfV3Ext);
+  }
+
+  @Override
+  public void exitVrad_ospfv3_int(Vrad_ospfv3_intContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfV3Int);
+  }
+
+  @Override
+  public void exitVrad_rip(Vrad_ripContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setRip);
+  }
+
+  @Override
+  public void exitVrad_static(Vrad_staticContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setStatic);
+  }
+
+  @Override
+  public void exitVrad_static_ipv6(Vrad_static_ipv6Context ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setStaticv6);
+  }
+
+  @Override
+  public void enterVr_routing_table(Vr_routing_tableContext ctx) {
     _currentStaticRoute =
         _currentVirtualRouter
             .getStaticRoutes()
@@ -1064,7 +1329,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnvr_interface(Snvr_interfaceContext ctx) {
+  public void exitVr_interface(Vr_interfaceContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String name = getText(var);
       _currentVirtualRouter.getInterfaceNames().add(name);
@@ -1074,22 +1339,32 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnvr_routing_table(Snvr_routing_tableContext ctx) {
+  public void exitVr_routing_table(Vr_routing_tableContext ctx) {
     _currentStaticRoute = null;
   }
 
   @Override
-  public void exitSnvrrt_admin_dist(Snvrrt_admin_distContext ctx) {
-    _currentStaticRoute.setAdminDistance(Integer.parseInt(getText(ctx.distance)));
+  public void enterVrp_bgp(Vrp_bgpContext ctx) {
+    _currentBgpVr = _currentVirtualRouter.getOrCreateBgp();
   }
 
   @Override
-  public void exitSnvrrt_destination(Snvrrt_destinationContext ctx) {
+  public void exitVrp_bgp(Vrp_bgpContext ctx) {
+    _currentBgpVr = null;
+  }
+
+  @Override
+  public void exitVrrt_admin_dist(Vrrt_admin_distContext ctx) {
+    toInteger(ctx, ctx.distance).ifPresent(_currentStaticRoute::setAdminDistance);
+  }
+
+  @Override
+  public void exitVrrt_destination(Vrrt_destinationContext ctx) {
     _currentStaticRoute.setDestination(Prefix.parse(getText(ctx.destination)));
   }
 
   @Override
-  public void exitSnvrrt_interface(Snvrrt_interfaceContext ctx) {
+  public void exitVrrt_interface(Vrrt_interfaceContext ctx) {
     String name = getText(ctx.iface);
     _currentStaticRoute.setNextHopInterface(name);
     _configuration.referenceStructure(
@@ -1097,17 +1372,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnvrrt_metric(Snvrrt_metricContext ctx) {
+  public void exitVrrt_metric(Vrrt_metricContext ctx) {
     _currentStaticRoute.setMetric(Integer.parseInt(getText(ctx.metric)));
   }
 
   @Override
-  public void exitSnvrrtn_ip(Snvrrtn_ipContext ctx) {
-    _currentStaticRoute.setNextHopIp(Ip.parse(getText(ctx.address)));
+  public void exitVrrtn_ip(Vrrtn_ipContext ctx) {
+    toIp(ctx, ctx.addr, "static route nexthop ip-address")
+        .ifPresent(_currentStaticRoute::setNextHopIp);
   }
 
   @Override
-  public void exitSnvrrtn_next_vr(Snvrrtn_next_vrContext ctx) {
+  public void exitVrrtn_next_vr(Vrrtn_next_vrContext ctx) {
     String name = getText(ctx.name);
     _currentStaticRoute.setNextVr(name);
     _configuration.referenceStructure(
@@ -1202,7 +1478,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrs_disabled(Srs_disabledContext ctx) {
-    _currentRule.setDisabled(ctx.YES() != null);
+    _currentRule.setDisabled(toBoolean(ctx.yn));
   }
 
   @Override
@@ -1221,12 +1497,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrs_negate_destination(Srs_negate_destinationContext ctx) {
-    _currentRule.setNegateDestination(ctx.YES() != null);
+    _currentRule.setNegateDestination(toBoolean(ctx.yn));
   }
 
   @Override
   public void exitSrs_negate_source(Srs_negate_sourceContext ctx) {
-    _currentRule.setNegateSource(ctx.YES() != null);
+    _currentRule.setNegateSource(toBoolean(ctx.yn));
   }
 
   @Override
@@ -1480,6 +1756,156 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return _configuration;
   }
 
+  private static boolean toBoolean(Yes_or_noContext ctx) {
+    if (ctx.YES() != null) {
+      return true;
+    }
+    assert ctx.NO() != null;
+    return false;
+  }
+
+  private static @Nonnull ConcreteInterfaceAddress toInterfaceAddress(
+      Interface_addressContext ctx) {
+    if (ctx.addr != null) {
+      // PAN allows implicit /32 in lots of places.
+      return ConcreteInterfaceAddress.create(toIp(ctx.addr), Prefix.MAX_PREFIX_LENGTH);
+    }
+    return ConcreteInterfaceAddress.parse(ctx.getText());
+  }
+
+  private static @Nonnull Ip toIp(Ip_addressContext ctx) {
+    return Ip.parse(ctx.getText());
+  }
+
+  private @Nonnull Optional<Ip> toIp(
+      ParserRuleContext ctx, Ip_address_or_slash32Context addr, String ipType) {
+    ConcreteInterfaceAddress ip = toInterfaceAddress(addr.addr);
+    if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
+      warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
+      return Optional.empty();
+    }
+    return Optional.of(ip.getIp());
+  }
+
+  /////////////////////////////////////////
+  ///// Range-aware type conversions. /////
+  /////////////////////////////////////////
+
+  private int toInteger(Port_numberContext ctx) {
+    return toInteger(ctx.uint16());
+  }
+
+  private int toInteger(Uint8Context t) {
+    return Integer.parseInt(getText(t));
+  }
+
+  private int toInteger(Uint16Context t) {
+    return Integer.parseInt(getText(t));
+  }
+
+  private static final IntegerSpace PROTOCOL_ADMIN_DISTANCE_SPACE =
+      IntegerSpace.of(Range.closed(10, 240));
+
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Protocol_adContext ad) {
+    return toIntegerInSpace(ctx, ad, PROTOCOL_ADMIN_DISTANCE_SPACE, "admin-dist");
+  }
+
+  private static final IntegerSpace VLAN_TAG_SPACE = IntegerSpace.of(Range.closed(1, 4094));
+
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Vlan_tagContext vlan) {
+    return toIntegerInSpace(ctx, vlan, VLAN_TAG_SPACE, "vlan/tag");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      _w.addWarning(
+          messageCtx,
+          getFullText(messageCtx),
+          _parser,
+          String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
+  private static final LongSpace BGP_2_BYTE_ASN_SPACE = LongSpace.of(Range.closed(1L, 65535L));
+  private static final LongSpace BGP_4_BYTE_ASN_SPACE = LongSpace.of(Range.closed(1L, 4294967295L));
+
+  private Optional<Long> toAsn(ParserRuleContext ctx, Bgp_asnContext asn, AsFormat fmt) {
+    if (fmt == AsFormat.TWO_BYTE_AS) {
+      return toLongInSpace(ctx, asn, BGP_2_BYTE_ASN_SPACE, "2-byte BGP AS number");
+    } else {
+      assert fmt == AsFormat.FOUR_BYTE_AS;
+      return toLongInSpace(ctx, asn, BGP_4_BYTE_ASN_SPACE, "4-byte BGP AS number");
+    }
+  }
+
+  private long toLong(Uint32Context t) {
+    return Long.parseLong(getText(t));
+  }
+
+  private static long toLong(Bgp_local_prefContext ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
+   * decimal integer to a {@link Long} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+    long num = Long.parseLong(ctx.getText());
+    if (!space.contains(num)) {
+      warn(
+          messageCtx,
+          ctx,
+          String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
+  private static final IntegerSpace BGP_PEER_GROUP_NAME_LENGTH_SPACE =
+      IntegerSpace.of(Range.closed(1, 31));
+
+  private @Nonnull Optional<String> toString(ParserRuleContext ctx, Bgp_peer_group_nameContext pg) {
+    return toStringWithLengthInSpace(ctx, pg, BGP_PEER_GROUP_NAME_LENGTH_SPACE, "bgp peer-group");
+  }
+
+  private static final IntegerSpace BGP_PEER_NAME_LENGTH_SPACE =
+      IntegerSpace.of(Range.closed(1, 31));
+
+  private @Nonnull Optional<String> toString(ParserRuleContext ctx, Bgp_peer_nameContext peer) {
+    return toStringWithLengthInSpace(ctx, peer, BGP_PEER_NAME_LENGTH_SPACE, "bgp peer");
+  }
+
+  /**
+   * Return the text of the provided {@code ctx} if its length is within the provided {@link
+   * IntegerSpace lengthSpace}, or else {@link Optional#empty}.
+   */
+  private @Nonnull Optional<String> toStringWithLengthInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace lengthSpace, String name) {
+    String text = ctx.getText();
+    if (!lengthSpace.contains(text.length())) {
+      _w.addWarning(
+          messageCtx,
+          getFullText(messageCtx),
+          _parser,
+          String.format(
+              "Expected %s with length in range %s, but got '%s'", text, lengthSpace, name));
+      return Optional.empty();
+    }
+    return Optional.of(text);
+  }
+
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
@@ -1497,5 +1923,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  private void warn(ParserRuleContext ctx, String message) {
+    _w.addWarning(ctx, getFullText(ctx), _parser, message);
+  }
+
+  private void warn(ParserRuleContext ctx, ParserRuleContext warnCtx, String message) {
+    warn(ctx, warnCtx.start, message);
+  }
+
+  private void warn(ParserRuleContext ctx, Token warnToken, String message) {
+    _w.addWarningOnLine(_parser.getLine(warnToken), ctx, getFullText(ctx), _parser, message);
   }
 }

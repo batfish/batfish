@@ -19,6 +19,15 @@ public final class CommunitySetExprEvaluator
   }
 
   @Override
+  public CommunitySet visitCommunityExprsSet(
+      CommunityExprsSet communityExprsSet, CommunityContext arg) {
+    return CommunitySet.of(
+        communityExprsSet.getExprs().stream()
+            .map(expr -> expr.accept(CommunityExprEvaluator.instance(), arg))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  @Override
   public @Nonnull CommunitySet visitCommunitySetDifference(
       CommunitySetDifference communitySetDifference, CommunityContext arg) {
     CommunitySet initial = communitySetDifference.getInitial().accept(this, arg);
@@ -51,11 +60,11 @@ public final class CommunitySetExprEvaluator
   @Override
   public @Nonnull CommunitySet visitCommunitySetUnion(
       CommunitySetUnion communitySetUnion, CommunityContext arg) {
-    return CommunitySet.of(
-        ImmutableSet.<Community>builder()
-            .addAll(communitySetUnion.getExpr1().accept(this, arg).getCommunities())
-            .addAll(communitySetUnion.getExpr2().accept(this, arg).getCommunities())
-            .build());
+    ImmutableSet.Builder<Community> builder = ImmutableSet.builder();
+    communitySetUnion
+        .getExprs()
+        .forEach(expr -> builder.addAll(expr.accept(this, arg).getCommunities()));
+    return CommunitySet.of(builder.build());
   }
 
   @Override
@@ -63,6 +72,8 @@ public final class CommunitySetExprEvaluator
       LiteralCommunitySet literalCommunitySet, CommunityContext arg) {
     return literalCommunitySet.getCommunitySet();
   }
+
+  private CommunitySetExprEvaluator() {}
 
   private static final CommunitySetExprEvaluator INSTANCE = new CommunitySetExprEvaluator();
 }

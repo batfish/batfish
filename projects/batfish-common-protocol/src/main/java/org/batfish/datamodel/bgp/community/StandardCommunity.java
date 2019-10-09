@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.math.BigInteger;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -57,6 +58,15 @@ public final class StandardCommunity extends Community {
   }
 
   @Nonnull
+  public static Optional<StandardCommunity> tryParse(String text) {
+    try {
+      return Optional.of(parse(text));
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
+    }
+  }
+
+  @Nonnull
   public static StandardCommunity of(long value) {
     return new StandardCommunity(value);
   }
@@ -68,14 +78,14 @@ public final class StandardCommunity extends Community {
     return new StandardCommunity((long) high << 16 | low);
   }
 
-  /** Return the lower 16 bits of the community value as an integer */
-  public int low() {
-    return (int) (_value & 0xFFFF);
+  /** Return the high 16 bits of the community value as an integer */
+  public int high() {
+    return (int) (_value >> 16);
   }
 
   /** Return the lower 16 bits of the community value as an integer */
-  public int high() {
-    return (int) (_value >> 16);
+  public int low() {
+    return (int) (_value & 0xFFFF);
   }
 
   @Override

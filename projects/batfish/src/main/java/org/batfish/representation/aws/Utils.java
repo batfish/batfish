@@ -124,7 +124,7 @@ final class Utils {
 
   @Nonnull
   static StaticRoute toStaticRoute(Ip targetIp, Ip nextHopIp) {
-    return toStaticRoute(Prefix.create(targetIp, Prefix.MAX_PREFIX_LENGTH), nextHopIp);
+    return toStaticRoute(targetIp.toPrefix(), nextHopIp);
   }
 
   @Nonnull
@@ -139,7 +139,7 @@ final class Utils {
 
   @Nonnull
   static StaticRoute toStaticRoute(Ip targetIp, Interface nextHopInterface) {
-    return toStaticRoute(Prefix.create(targetIp, Prefix.MAX_PREFIX_LENGTH), nextHopInterface);
+    return toStaticRoute(targetIp.toPrefix(), nextHopInterface);
   }
 
   @Nonnull

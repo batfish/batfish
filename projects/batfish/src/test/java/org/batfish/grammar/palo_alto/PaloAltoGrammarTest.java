@@ -1,11 +1,13 @@
 package org.batfish.grammar.palo_alto;
 
+import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -18,20 +20,24 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasNextVrf;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.grammar.VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER;
+import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
@@ -50,6 +56,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -58,8 +65,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -70,6 +79,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -77,6 +87,8 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -94,27 +106,38 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
-import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
+import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
+import org.batfish.representation.palo_alto.BgpPeer;
+import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
+import org.batfish.representation.palo_alto.BgpPeerGroup;
+import org.batfish.representation.palo_alto.BgpVr;
+import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.IbgpPeerGroupType;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
+import org.batfish.representation.palo_alto.Tag;
+import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -133,18 +156,49 @@ public final class PaloAltoGrammarTest {
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
-  private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname.toLowerCase());
+  private @Nonnull Configuration parseConfig(String hostname) {
+    try {
+      Map<String, Configuration> configs = parseTextConfigs(hostname);
+      assertThat(configs, hasKey(hostname));
+      return configs.get(hostname);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private PaloAltoConfiguration parsePaloAltoConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     PaloAltoControlPlaneExtractor extractor =
         new PaloAltoControlPlaneExtractor(src, parser, new Warnings());
+    extractor.processParseTree(tree);
+    PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
+    pac.setVendor(ConfigurationFormat.PALO_ALTO);
+    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+    pac.setFilename(TESTCONFIGS_PREFIX + hostname);
+    pac.setAnswerElement(answerElement);
+    return pac;
+  }
+
+  private @Nonnull PaloAltoConfiguration parseNestedConfig(String hostname) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
+    Warnings w = new Warnings();
+    BatfishLogger logger = new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false);
+    Flattener flattener =
+        Batfish.flatten(
+            src, logger, settings, w, PALO_ALTO_NESTED, BATFISH_FLATTENED_PALO_ALTO_HEADER);
+    String fileText = flattener.getFlattenedConfigurationText();
+    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
+    PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(fileText, settings, lineMap);
+    PaloAltoControlPlaneExtractor extractor =
+        new PaloAltoControlPlaneExtractor(fileText, paParser, w);
+    ParserRuleContext tree = Batfish.parse(paParser, logger, settings);
     extractor.processParseTree(tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
@@ -191,6 +245,30 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testTags() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("tags");
+
+    String tag1 = "vsys_tag";
+    String tag2 = "vsys_tag with spaces";
+    String sharedTag = "shared_tag";
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, Tag> tags = vsys.getTags();
+
+    Vsys sharedVsys = c.getShared();
+    Map<String, Tag> sharedTags = sharedVsys.getTags();
+
+    // Confirm vsys-specific tags are extracted correctly
+    assertThat(tags.keySet(), contains(tag1, tag2));
+    assertThat(tags.get(tag1).getComments(), equalTo("something"));
+    assertThat(tags.get(tag2).getComments(), equalTo("comments with spaces"));
+
+    // Confirm shared tags are extracted correctly
+    assertThat(sharedTags.keySet(), contains(sharedTag));
+    assertThat(sharedTags.get(sharedTag).getComments(), nullValue());
+  }
+
+  @Test
   public void testAddressGroups() {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-groups");
 
@@ -207,8 +285,9 @@ public final class PaloAltoGrammarTest {
         addressGroups.get("group0").getIpSpace(addressObjects, addressGroups),
         equalTo(EmptyIpSpace.INSTANCE));
 
-    // we parsed the description, addr3 is undefined but should not have been discarded
+    // we parsed the description and tag, addr3 is undefined but should not have been discarded
     assertThat(addressGroups.get("group1").getDescription(), equalTo("group1-desc"));
+    assertThat(addressGroups.get("group1").getTags(), contains("tag1"));
     assertThat(
         addressGroups.get("group1").getMembers(),
         equalTo(ImmutableSet.of("addr1", "addr2", "addr3")));
@@ -219,9 +298,11 @@ public final class PaloAltoGrammarTest {
                 addressObjects.get("addr2").getIpSpace(),
                 addressObjects.get("addr1").getIpSpace())));
 
-    // check that we parse multiple address objects on the same line correctly
+    // check that we parse multiple address objects and tags on the same line correctly
     assertThat(
         addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
+    assertThat(
+        addressGroups.get("group2").getTags(), containsInAnyOrder("tag2", "tag with spaces"));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
@@ -235,6 +316,30 @@ public final class PaloAltoGrammarTest {
         hasIpSpace(
             "group1",
             equalTo(addressGroups.get("group1").getIpSpace(addressObjects, addressGroups))));
+  }
+
+  // TODO: https://github.com/batfish/batfish/issues/4921
+  @Ignore
+  @Test
+  public void testAddressGroupHybrid() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-group-hybrid");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    Vsys sharedVsys = c.getShared();
+    Map<String, AddressObject> sharedAddressObjects = sharedVsys.getAddressObjects();
+
+    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group")));
+
+    // Confirm hybrid address-group contains both shared and vsys-specific addresses
+    assertThat(
+        addressGroups.get("group").getIpSpace(addressObjects, addressGroups),
+        equalTo(
+            AclIpSpace.union(
+                addressObjects.get("addr").getIpSpace(),
+                sharedAddressObjects.get("shared_addr").getIpSpace())));
   }
 
   @Test
@@ -266,7 +371,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testAddressObjectGroupInheritance() throws IOException {
+  public void testAddressObjectGroupInheritance() {
     String hostname = "address-object-group-inheritance";
     Configuration c = parseConfig(hostname);
 
@@ -333,15 +438,18 @@ public final class PaloAltoGrammarTest {
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
 
-    // check that we parsed description and prefix right
+    // check that we parsed description, tag, and prefix right
     // note that PA allows non-canonical prefixes
     assertThat(
         addressObjects.get("addr1").getIpSpace(),
         equalTo(Prefix.strict("10.1.1.0/24").toIpSpace()));
     assertThat(addressObjects.get("addr1").getDescription(), equalTo("addr1-desc"));
+    assertThat(addressObjects.get("addr1").getTags(), contains("tag1"));
 
-    // check that we parse the IP address right
+    // check that we parse the IP address and tags right
     assertThat(addressObjects.get("addr2").getIpSpace(), equalTo(Ip.parse("10.1.1.2").toIpSpace()));
+    assertThat(
+        addressObjects.get("addr2").getTags(), containsInAnyOrder("tag2", "tag with spaces"));
 
     // check that we parse the IP range right
     assertThat(
@@ -427,6 +535,56 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testBgpExtraction() {
+    PaloAltoConfiguration c = parseNestedConfig("bgp");
+    VirtualRouter vr = c.getVirtualRouters().get("BGP");
+    assertThat(vr, notNullValue());
+    BgpVr bgp = vr.getBgp();
+    assertThat(bgp, notNullValue());
+    assertThat(bgp.getEnable(), equalTo(Boolean.TRUE));
+    assertThat(bgp.getInstallRoute(), equalTo(Boolean.TRUE));
+    assertThat(bgp.getLocalAs(), equalTo(65001L));
+    assertThat(bgp.getRejectDefaultRoute(), equalTo(Boolean.FALSE));
+    assertThat(bgp.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(bgp.getRoutingOptions().getAggregateMed(), equalTo(Boolean.FALSE));
+    assertThat(bgp.getRoutingOptions().getAlwaysCompareMed(), equalTo(Boolean.TRUE));
+    assertThat(bgp.getRoutingOptions().getAsFormat(), equalTo(AsFormat.FOUR_BYTE_AS));
+    assertThat(bgp.getRoutingOptions().getDefaultLocalPreference(), equalTo(103L));
+    assertThat(bgp.getRoutingOptions().getDeterministicMedComparison(), equalTo(Boolean.FALSE));
+    assertThat(bgp.getRoutingOptions().getGracefulRestartEnable(), equalTo(Boolean.FALSE));
+    assertThat(bgp.getRoutingOptions().getReflectorClusterId(), equalTo(Ip.parse("1.2.3.5")));
+
+    assertThat(bgp.getPeerGroups().keySet(), contains("PG"));
+    BgpPeerGroup pg = bgp.getPeerGroups().get("PG");
+    assertThat(pg.getEnable(), equalTo(true));
+    assertThat(pg.getTypeAndOptions(), instanceOf(IbgpPeerGroupType.class));
+
+    assertThat(pg.getPeers().keySet(), contains("PEER"));
+    BgpPeer peer = pg.getOrCreatePeerGroup("PEER");
+    assertThat(peer.getEnable(), equalTo(true));
+    assertThat(peer.getLocalInterface(), equalTo("ethernet1/1"));
+    assertThat(peer.getLocalAddress(), equalTo(Ip.parse("1.2.3.6")));
+    assertThat(peer.getPeerAddress(), equalTo(Ip.parse("5.4.3.2")));
+    assertThat(peer.getPeerAs(), equalTo(54321L));
+    assertThat(peer.getReflectorClient(), equalTo(ReflectorClient.NON_CLIENT));
+  }
+
+  @Test
+  public void testBgpConversion() {
+    Configuration c = parseConfig("bgp");
+    assertThat(c, hasVrf("BGP", hasBgpProcess(any(BgpProcess.class))));
+    BgpProcess proc = c.getVrfs().get("BGP").getBgpProcess();
+    assertThat(proc, hasRouterId(Ip.parse("1.2.3.4")));
+    assertThat(proc.getActiveNeighbors().keySet(), contains(Prefix.parse("5.4.3.2/32")));
+    BgpActivePeerConfig peer = proc.getActiveNeighbors().get(Prefix.parse("5.4.3.2/32"));
+    assertThat(peer.getDescription(), equalTo("PEER"));
+    assertThat(peer.getGroup(), equalTo("PG"));
+    assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.2.3.6")));
+    assertThat(peer.getLocalAs(), equalTo(65001L));
+    assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65001)));
+  }
+
+  @Test
   public void testApplicationsBuiltinReference() throws IOException {
     String hostname = "applications-builtin";
     String filename = "configs/" + hostname;
@@ -448,14 +606,14 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testDnsServerInvalid() throws IOException {
+  public void testDnsServerInvalid() {
     _thrown.expect(BatfishException.class);
     // This should throw a BatfishException due to a malformed IP address
     parseConfig("dns-server-invalid");
   }
 
   @Test
-  public void testDnsServers() throws IOException {
+  public void testDnsServers() {
     Configuration c = parseConfig("dns-server");
 
     // Confirm both dns servers show up
@@ -463,7 +621,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testFilesystemConfigFormat() throws IOException {
+  public void testFilesystemConfigFormat() {
     String hostname = "config-filesystem-format";
     Configuration c = parseConfig(hostname);
 
@@ -501,7 +659,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testIgnoredLines() throws IOException {
+  public void testIgnoredLines() {
     // will fail if some lines don't parse
     parseConfig("ignored-lines");
   }
@@ -557,12 +715,13 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testInterface() throws IOException {
+  public void testInterface() {
     String hostname = "interface";
     String interfaceName1 = "ethernet1/1";
     String interfaceName2 = "ethernet1/2";
     String interfaceName3 = "ethernet1/3";
     String interfaceName311 = "ethernet1/3.11";
+    String loopback = "loopback";
     Configuration c = parseConfig(hostname);
 
     // Confirm interface MTU is extracted
@@ -574,6 +733,16 @@ public final class PaloAltoGrammarTest {
         hasInterface(
             interfaceName1,
             hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
+    assertThat(
+        c,
+        hasInterface(
+            loopback,
+            allOf(
+                hasAddress("7.7.7.7/32"),
+                hasAllAddresses(
+                    contains(
+                        ConcreteInterfaceAddress.parse("7.7.7.7/32"),
+                        ConcreteInterfaceAddress.parse("7.7.7.8/32"))))));
 
     // Confirm comments are extracted
     assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
@@ -588,7 +757,7 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceName311, not(isActive())));
 
     // Confirm tag extraction for units
-    assertThat(c, hasInterface(interfaceName311, hasVlan(11)));
+    assertThat(c, hasInterface(interfaceName311, hasEncapsulationVlan(11)));
 
     // Confirm types
     assertThat(c, hasInterface(interfaceName1, hasInterfaceType(InterfaceType.PHYSICAL)));
@@ -598,7 +767,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testInterfaceUnits() throws IOException {
+  public void testInterfaceUnits() {
     String hostname = "interface-units";
     String interfaceNameUnit1 = "ethernet1/1.1";
     String interfaceNameUnit2 = "ethernet1/1.2";
@@ -648,7 +817,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testInterfaceVirtualRouterAssignment() throws IOException {
+  public void testInterfaceVirtualRouterAssignment() {
     String hostname = "interface-virtual-router";
     Configuration c = parseConfig(hostname);
 
@@ -666,7 +835,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testLogSettingsSyslog() throws IOException {
+  public void testLogSettingsSyslog() {
     Configuration c = parseConfig("log-settings-syslog");
 
     // Confirm all the defined syslog servers show up in VI model
@@ -708,8 +877,8 @@ public final class PaloAltoGrammarTest {
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
-            ConfigurationFormat.PALO_ALTO_NESTED,
-            VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+            PALO_ALTO_NESTED,
+            BATFISH_FLATTENED_PALO_ALTO_HEADER);
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
     /*
      * Flattened config should be two lines: header line and set-hostname line
@@ -744,7 +913,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testNtpServers() throws IOException {
+  public void testNtpServers() {
     Configuration c = parseConfig("ntp-server");
 
     // Confirm both ntp servers show up
@@ -752,7 +921,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebaseWithPanorama() throws IOException {
+  public void testRulebaseWithPanorama() {
     String hostname = "panorama-rulebase";
     Configuration c = parseConfig(hostname);
 
@@ -798,7 +967,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebaseInApplicationWithPanorama() throws IOException {
+  public void testRulebaseInApplicationWithPanorama() {
     String hostname = "panorama-rulebase-applications";
     Configuration c = parseConfig(hostname);
 
@@ -847,7 +1016,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebase() throws IOException {
+  public void testRulebase() {
     String hostname = "rulebase";
     Configuration c = parseConfig(hostname);
 
@@ -885,7 +1054,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebaseService() throws IOException {
+  public void testRulebaseService() {
     String hostname = "rulebase-service";
     Configuration c = parseConfig(hostname);
 
@@ -907,7 +1076,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebaseDefault() throws IOException {
+  public void testRulebaseDefault() {
     String hostname = "rulebase-default";
     Configuration c = parseConfig(hostname);
 
@@ -934,7 +1103,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebaseIprange() throws IOException {
+  public void testRulebaseIprange() {
     String hostname = "rulebase-iprange";
     Configuration c = parseConfig(hostname);
 
@@ -998,7 +1167,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testVsysRulebase() throws IOException {
+  public void testVsysRulebase() {
     String hostname = "vsys-rulebase";
     Configuration c = parseConfig(hostname);
 
@@ -1045,6 +1214,17 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c, hasVrf(vr2Name, hasStaticRoutes(not(hasItem(hasPrefix(Prefix.strict("1.0.0.0/8")))))));
 
+    // static route with next hop specified as prefix
+    assertThat(
+        c,
+        hasVrf(
+            vr2Name,
+            hasStaticRoutes(
+                hasItem(
+                    allOf(
+                        hasPrefix(Prefix.strict("2.0.0.0/8")),
+                        hasNextHopIp(Ip.parse("2.2.2.2")))))));
+
     // assert static interface route reference
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -1072,7 +1252,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testStaticRouteDefaults() throws IOException {
+  public void testStaticRouteDefaults() {
     String hostname = "static-route-defaults";
     String vrName = "default";
     Configuration c = parseConfig(hostname);
@@ -1084,7 +1264,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testService() throws IOException {
+  public void testService() {
     String hostname = "service";
     Configuration c = parseConfig(hostname);
 
@@ -1171,7 +1351,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testServiceBuiltin() throws IOException {
+  public void testServiceBuiltin() {
     String hostname = "service-built-in";
     Configuration c = parseConfig(hostname);
 
@@ -1252,7 +1432,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testServiceBuiltinOverride() throws IOException {
+  public void testServiceBuiltinOverride() {
     String hostname = "service-built-in-override";
     Configuration c = parseConfig(hostname);
 
@@ -1361,7 +1541,31 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testVirtualRouterInterfaces() throws IOException {
+  public void testVirtualRouterExtraction() {
+    PaloAltoConfiguration c = parseNestedConfig("virtual-router");
+    VirtualRouter vr = c.getVirtualRouters().get("VR");
+    assertThat(vr, notNullValue());
+    AdminDistances ads = vr.getAdminDists();
+    assertThat(ads.getEbgp(), equalTo(21));
+    assertThat(ads.getIbgp(), equalTo(201));
+    assertThat(ads.getOspfExt(), equalTo(111));
+    assertThat(ads.getOspfInt(), equalTo(31));
+    assertThat(ads.getOspfV3Ext(), equalTo(112));
+    assertThat(ads.getOspfV3Int(), equalTo(32));
+    assertThat(ads.getRip(), equalTo(121));
+    assertThat(ads.getStatic(), equalTo(11));
+    assertThat(ads.getStaticv6(), equalTo(12));
+  }
+
+  @Test
+  public void testVirtualRouterConversion() {
+    Configuration c = parseConfig("virtual-router");
+    assertThat(c, hasVrf("VR", any(Vrf.class)));
+    // TODO: proper conversion test.
+  }
+
+  @Test
+  public void testVirtualRouterInterfaces() {
     String hostname = "virtual-router-interfaces";
     Configuration c = parseConfig(hostname);
 
@@ -1380,7 +1584,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testVsysService() throws IOException {
+  public void testVsysService() {
     String hostname = "vsys-service";
     Configuration c = parseConfig(hostname);
 

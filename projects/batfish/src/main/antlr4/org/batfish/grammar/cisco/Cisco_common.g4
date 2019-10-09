@@ -20,45 +20,6 @@ address_family_footer
    )?
 ;
 
-banner
-:
-   (
-      (
-         (
-            ESCAPE_C ~ESCAPE_C* ESCAPE_C
-         )
-         |
-         (
-            POUND ~POUND* POUND
-         )
-         |
-         (
-            NEWLINE ~( EOF_LITERAL | LINE_CADANT )* EOF_LITERAL
-         )
-         |
-         (
-            NEWLINE LINE_CADANT* END_CADANT
-         )
-         |
-         (
-            ASA_BANNER_LINE
-         )
-      )
-   ) NEWLINE?
-;
-
-banner_type
-:
-   ASDM
-   | CONFIG_SAVE
-   | EXEC
-   | INCOMING
-   | LOGIN
-   | MOTD
-   | PROMPT_TIMEOUT
-   | SLIP_PPP
-;
-
 bgp_asn
 :
     asn = DEC
@@ -216,36 +177,40 @@ int_expr
 
 interface_name
 :
-   (
-      name_prefix_alpha = M_Interface_PREFIX
+  name_prefix_alpha = M_Interface_PREFIX
+  (
+    (
       (
-         (
-            (
-               name_middle_parts += M_Interface_PREFIX
-            )? name_middle_parts += DEC
-            (
-               name_middle_parts += FORWARD_SLASH
-               | name_middle_parts += PERIOD
-               | name_middle_parts += COLON
-            )
-         )*
-         | name_middle_parts += MODULE
-      ) range?
-   )
-   |
-   (
+        name_middle_parts += M_Interface_PREFIX
+      )? name_middle_parts += DEC
       (
-         VARIABLE
-         | variable_interface_name DEC?
+        name_middle_parts += FORWARD_SLASH
+        | name_middle_parts += PERIOD
+        | name_middle_parts += COLON
       )
-      (
-         (
-            COLON
-            | FORWARD_SLASH
-            | PERIOD
-         ) DEC
-      )*
-   )
+    )*
+    | name_middle_parts += MODULE
+  ) range?
+;
+
+interface_name_unstructured
+:
+  (
+    VARIABLE
+    | variable_interface_name DEC?
+  )
+  (
+    (
+      COLON
+      | FORWARD_SLASH
+      | PERIOD
+    ) DEC
+  )*
+;
+
+ios_delimited_banner
+:
+  BANNER_DELIMITER_IOS body = BANNER_BODY? BANNER_DELIMITER_IOS
 ;
 
 ip_hostname

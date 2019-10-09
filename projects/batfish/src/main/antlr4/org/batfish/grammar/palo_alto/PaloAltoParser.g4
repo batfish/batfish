@@ -2,7 +2,25 @@ parser grammar PaloAltoParser;
 
 /* This is only needed if parser grammar is spread across files */
 import
-PaloAlto_address, PaloAlto_address_group, PaloAlto_application, PaloAlto_common, PaloAlto_deviceconfig, PaloAlto_interface, PaloAlto_network, PaloAlto_rulebase, PaloAlto_service, PaloAlto_service_group, PaloAlto_shared, PaloAlto_vsys, PaloAlto_zone;
+    PaloAlto_address,
+    PaloAlto_address_group,
+    PaloAlto_application,
+    PaloAlto_application_filter,
+    PaloAlto_bgp,
+    PaloAlto_common,
+    PaloAlto_deviceconfig,
+    PaloAlto_interface,
+    PaloAlto_network,
+    PaloAlto_ospf,
+    PaloAlto_rip,
+    PaloAlto_rulebase,
+    PaloAlto_service,
+    PaloAlto_service_group,
+    PaloAlto_shared,
+    PaloAlto_tag,
+    PaloAlto_virtual_router,
+    PaloAlto_vsys,
+    PaloAlto_zone;
 
 options {
     superClass = 'org.batfish.grammar.BatfishParser';
@@ -27,7 +45,6 @@ s_null
 :
     (
         MGT_CONFIG
-        | TAG
     )
     null_rest_of_line
 ;
@@ -60,6 +77,7 @@ statement_config_devices
     | s_rulebase
     | s_service
     | s_service_group
+    | s_tag
     | s_vsys
     | s_zone
 ;
@@ -78,10 +96,17 @@ set_line
     SET set_line_tail NEWLINE
 ;
 
+set_line_template
+:
+// TODO: do we need this if we have the applied template from other show commands?
+    TEMPLATE null_rest_of_line
+;
+
 set_line_tail
 :
     set_line_config_devices
     | set_line_config_general
+    | set_line_template
     | s_policy
 ;
 

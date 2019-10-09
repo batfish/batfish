@@ -11,7 +11,6 @@ public enum CiscoStructureType implements StructureType {
   BGP_NEIGHBOR_GROUP("bgp neighbor-group"),
   BGP_PEER_GROUP("bgp peer-group"),
   BGP_SESSION_GROUP("bgp session-group"),
-  BGP_TEMPLATE_PEER("bgp template peer"),
   BGP_TEMPLATE_PEER_POLICY("bgp template peer-policy"),
   BGP_TEMPLATE_PEER_SESSION("bgp template peer-session"),
   BGP_UNDECLARED_PEER("undeclared bgp peer"),

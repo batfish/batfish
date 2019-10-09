@@ -48,12 +48,16 @@ import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -65,6 +69,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -73,6 +78,8 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
@@ -953,7 +960,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
-    newIface.setVlan(iface.getTag());
+
+    if (iface.getType() == Interface.Type.LAYER3) {
+      newIface.setEncapsulationVlan(iface.getTag());
+    } else if (iface.getType() == Interface.Type.LAYER2) {
+      newIface.setAccessVlan(iface.getTag());
+    }
 
     Zone zone = iface.getZone();
     IpAccessList.Builder aclBuilder =
@@ -1000,6 +1012,113 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
               .build());
     }
     return newIface;
+  }
+
+  private void convertPeerGroup(BgpPeerGroup pg, BgpVr bgp, BgpProcess proc) {
+    if (!pg.getEnable()) {
+      return;
+    }
+
+    pg.getPeers().forEach((peerName, peer) -> convertPeer(peer, pg, bgp, proc));
+  }
+
+  private void convertPeer(BgpPeer peer, BgpPeerGroup pg, BgpVr bgp, BgpProcess proc) {
+    if (!peer.getEnable()) {
+      return;
+    }
+
+    if (peer.getPeerAddress() == null) {
+      _w.redFlag("Missing peer-address for peer %s; disabling it", peer.getName());
+      return;
+    }
+
+    assert bgp.getLocalAs() != null; // checked before this function is called.
+    long localAs = bgp.getLocalAs();
+    Long peerAs = peer.getPeerAs();
+
+    if (pg.getTypeAndOptions() instanceof IbgpPeerGroupType) {
+      peerAs = firstNonNull(peerAs, localAs);
+      // Peer AS must be unset or equal to Local AS.
+      if (localAs != peerAs) {
+        _w.redFlag(
+            String.format(
+                "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing it",
+                peer.getName(), peerAs, localAs));
+        peerAs = localAs;
+      }
+    } else if (pg.getTypeAndOptions() instanceof EbgpPeerGroupType) {
+      // Peer AS must be set and not equal to Local AS.
+      if (peerAs == null) {
+        _w.redFlag(
+            String.format("eBGP peer %s must have peer-as set; disabling it", peer.getName()));
+        return;
+      }
+      if (peerAs == localAs) {
+        _w.redFlag(
+            String.format(
+                "eBGP peer %s must have peer-as different from local-as; disabling it",
+                peer.getName()));
+        return;
+      }
+    } else {
+      assert true; // TODO figure out the default and handle separately.
+    }
+
+    BgpActivePeerConfig.Builder peerB =
+        BgpActivePeerConfig.builder()
+            .setBgpProcess(proc)
+            .setDescription(peer.getName())
+            .setGroup(pg.getName())
+            .setLocalAs(localAs)
+            .setPeerAddress(peer.getPeerAddress())
+            .setRemoteAs(peerAs);
+    if (peer.getLocalAddress() != null) {
+      peerB.setLocalIp(peer.getLocalAddress());
+    } else {
+      // Get the local address by choosing the IP on the specified interface.
+      Optional.ofNullable(peer.getLocalInterface())
+          .map(_interfaces::get)
+          .map(Interface::getAddress)
+          .map(ConcreteInterfaceAddress::getIp)
+          .ifPresent(peerB::setLocalIp);
+    }
+
+    // TODO
+    peerB.setIpv4UnicastAddressFamily(
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
+            .build());
+
+    peerB.build(); // automatically adds itself to the process
+  }
+
+  private Optional<BgpProcess> toBgpProcess(VirtualRouter vr) {
+    BgpVr bgp = vr.getBgp();
+    if (bgp == null || !firstNonNull(bgp.getEnable(), Boolean.FALSE)) {
+      return Optional.empty();
+    }
+
+    // Router ID must be configured manually or you cannot enable the router.
+    if (bgp.getRouterId() == null) {
+      _w.redFlag(
+          String.format("virtual-router %s bgp has no router-id; disabling it", vr.getName()));
+      return Optional.empty();
+    }
+
+    // Local AS must be configured manually or you cannot enable the router.
+    if (bgp.getLocalAs() == null) {
+      _w.redFlag(
+          String.format("virtual-router %s bgp has no local-as; disabling it", vr.getName()));
+      return Optional.empty();
+    }
+
+    BgpProcess proc =
+        new BgpProcess(
+            bgp.getRouterId(), vr.getAdminDists().getEbgp(), vr.getAdminDists().getIbgp());
+
+    bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc));
+
+    return Optional.of(proc);
   }
 
   /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
@@ -1057,6 +1176,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
     }
     vrf.setInterfaces(map);
+
+    // BGP
+    toBgpProcess(vr).ifPresent(vrf::setBgpProcess);
 
     return vrf;
   }
@@ -1140,11 +1262,45 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       if (iface.getVrf() == null) {
         orphanedInterfaces.put(iface.getName(), iface);
         iface.setVrf(nullVrf);
-        iface.setActive(false);
-        _w.redFlag(
-            String.format(
-                "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
-                iface.getName(), nullVrf.getName()));
+        if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
+          // This is a child interface. Just shut it down.
+          iface.setActive(false);
+          _w.redFlag(
+              String.format(
+                  "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
+                  iface.getName(), nullVrf.getName()));
+        } else {
+          // This is a parent interface. We can't shut it down, so instead we must just clear L2/L3
+          // data.
+          boolean warn = false;
+          if (iface.getAccessVlan() != null) {
+            warn = true;
+            iface.setAccessVlan(null);
+          }
+          if (iface.getAddress() != null) {
+            warn = true;
+            iface.setAddress(null);
+          }
+          if (!iface.getAllAddresses().isEmpty()) {
+            warn = true;
+            iface.setAllAddresses(ImmutableSortedSet.of());
+          }
+          if (!iface.getAllowedVlans().isEmpty()) {
+            warn = true;
+            iface.setAllowedVlans(IntegerSpace.EMPTY);
+          }
+          if (iface.getSwitchportMode() != SwitchportMode.NONE) {
+            warn = true;
+            iface.setSwitchportMode(SwitchportMode.NONE);
+          }
+          // Only warn if some L2/L3 data actually set.
+          if (warn) {
+            _w.redFlag(
+                String.format(
+                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3 data.",
+                    iface.getName(), nullVrf.getName()));
+          }
+        }
       }
     }
     if (orphanedInterfaces.size() > 0) {

@@ -2,9 +2,11 @@ package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -23,41 +25,83 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
     @Nonnull private final Set<T> _including;
     @Nonnull private final Set<T> _excluding;
     @Nonnull private final Collection<T> _allValues;
+    @Nonnull private final Map<T, Set<T>> _groupValues;
 
-    EnumValueSets(Collection<T> allValues) {
-      this(ImmutableSet.of(), ImmutableSet.of(), allValues);
+    EnumValueSets(Collection<T> allValues, Map<T, Set<T>> groupValues) {
+      this(ImmutableSet.of(), ImmutableSet.of(), allValues, groupValues);
     }
 
-    EnumValueSets(Set<T> including, Set<T> excluding, Collection<T> allValues) {
+    EnumValueSets(
+        Set<T> including, Set<T> excluding, Collection<T> allValues, Map<T, Set<T>> groupValues) {
       _including = ImmutableSet.copyOf(including);
       _excluding = ImmutableSet.copyOf(excluding);
       _allValues = allValues;
+      _groupValues = groupValues;
     }
 
     EnumValueSets<T> addIncluding(Set<T> values) {
       return new EnumValueSets<>(
           ImmutableSet.<T>builder().addAll(values).addAll(_including).build(),
           _excluding,
-          _allValues);
+          _allValues,
+          _groupValues);
     }
 
     EnumValueSets<T> addExcluding(Set<T> values) {
       return new EnumValueSets<>(
           _including,
           ImmutableSet.<T>builder().addAll(values).addAll(_excluding).build(),
-          _allValues);
+          _allValues,
+          _groupValues);
     }
 
+    /**
+     * Returns the list of values after subtracting excluded values from included values.
+     *
+     * <p>In the presence of groups, when overlapping values are presents in include and exclude
+     * sets, the semantics is that the most specific wins. E.g., (bgp, !ebgp) = (ibgp).
+     */
     Set<T> toValues() {
-      return Sets.difference(
-          _including.isEmpty() ? ImmutableSet.copyOf(_allValues) : _including, _excluding);
+      Set<T> including = _including.isEmpty() ? ImmutableSet.copyOf(_allValues) : _including;
+
+      Set<T> leftOverIncluding = computeLeftoverValues(including, _excluding);
+      Set<T> leftOverExcluding = computeLeftoverValues(_excluding, including);
+
+      return Sets.difference(leftOverIncluding, leftOverExcluding);
+    }
+
+    private Set<T> computeLeftoverValues(Set<T> set1, Set<T> set2) {
+
+      ImmutableSet.Builder<T> leftOverSet = ImmutableSet.builder();
+
+      for (T value1 : set1) {
+        if (_groupValues.containsKey(value1) && !set2.isEmpty()) {
+          Set<T> atoms1 = _groupValues.get(value1);
+          for (T value2 : set2) {
+            Set<T> atoms2 =
+                _groupValues.containsKey(value2)
+                    ? _groupValues.get(value2)
+                    : ImmutableSet.of(value2);
+            if (atoms1.containsAll(atoms2)) {
+              leftOverSet.addAll(Sets.difference(atoms1, atoms2));
+            } else {
+              leftOverSet.addAll(atoms1);
+            }
+          }
+        } else {
+          leftOverSet.add(value1);
+        }
+      }
+
+      return leftOverSet.build();
     }
 
     EnumValueSets<T> union(EnumValueSets<T> sets2) {
       return new EnumValueSets<>(
           Sets.union(_including, sets2._including),
           Sets.union(_excluding, sets2._excluding),
-          _allValues);
+          _allValues,
+          _groupValues);
     }
   }
 
@@ -68,9 +112,9 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
     @Nonnull private final Collection<T> _allValues;
     @Nonnull private final EnumValueSets<T> _enumValueSets;
 
-    EnumSetAstNodeToEnumValues(Collection<T> allValues) {
+    EnumSetAstNodeToEnumValues(Collection<T> allValues, Map<T, Set<T>> groupValues) {
       _allValues = allValues;
-      _enumValueSets = new EnumValueSets<>(allValues);
+      _enumValueSets = new EnumValueSets<>(allValues, groupValues);
     }
 
     @Nonnull
@@ -110,9 +154,25 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
   private final Collection<T> _allValues;
 
+  private final Map<T, Set<T>> _groupValues;
+
   ParboiledEnumSetSpecifier(EnumSetAstNode ast, Collection<T> allValues) {
+    this(ast, allValues, ImmutableMap.of());
+  }
+
+  @SuppressWarnings("unchecked")
+  ParboiledEnumSetSpecifier(EnumSetAstNode ast, Grammar grammar) {
+    this(
+        ast,
+        (Collection<T>) Grammar.getEnumValues(grammar),
+        (Map<T, Set<T>>) Grammar.getGroupValues(grammar));
+  }
+
+  private ParboiledEnumSetSpecifier(
+      EnumSetAstNode ast, Collection<T> allValues, Map<T, Set<T>> groupValues) {
     _ast = ast;
     _allValues = allValues;
+    _groupValues = groupValues;
   }
 
   /**
@@ -121,7 +181,6 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
    *
    * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
    */
-  @SuppressWarnings("unchecked")
   public static <T> ParboiledEnumSetSpecifier<T> parse(String input, Grammar grammar) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(Parser.instance().getInputRule(grammar)).run(input);
@@ -139,8 +198,7 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
         input,
         ast);
 
-    return new ParboiledEnumSetSpecifier<>(
-        (EnumSetAstNode) ast, (Collection<T>) Grammar.getEnumValues(grammar));
+    return new ParboiledEnumSetSpecifier<>((EnumSetAstNode) ast, grammar);
   }
 
   @Override
@@ -161,6 +219,6 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
   @Override
   public Set<T> resolve() {
-    return _ast.accept(new EnumSetAstNodeToEnumValues<>(_allValues)).toValues();
+    return _ast.accept(new EnumSetAstNodeToEnumValues<>(_allValues, _groupValues)).toValues();
   }
 }

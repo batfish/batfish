@@ -1,7 +1,11 @@
 lexer grammar PaloAltoLexer;
 
 options {
-   superClass = 'org.batfish.grammar.BatfishLexer';
+  superClass = 'org.batfish.grammar.BatfishLexer';
+}
+
+tokens {
+  WORD
 }
 
 @members {
@@ -10,6 +14,15 @@ options {
 
 // Keywords
 
+TWO_BYTE
+:
+    '2-byte'
+;
+
+FOUR_BYTE
+:
+    '4-byte'
+;
 
 ACTION
 :
@@ -29,6 +42,11 @@ ADDRESS_GROUP
 ADMIN_DIST
 :
     'admin-dist'
+;
+
+ADMIN_DISTS
+:
+    'admin-dists'
 ;
 
 AES_128_CBC
@@ -56,9 +74,24 @@ AES_256_GCM
     'aes-256-gcm'
 ;
 
+AGGREGATE
+:
+    'aggregate'
+;
+
+AGGREGATE_MED
+:
+    'aggregate-med'
+;
+
 ALLOW
 :
     'allow'
+;
+
+ALWAYS_COMPARE_MED
+:
+    'always-compare-med'
 ;
 
 ANY
@@ -71,14 +104,29 @@ APPLICATION
     'application'
 ;
 
+APPLICATION_FILTER
+:
+    'application-filter'
+;
+
 APPLICATION_GROUP
 :
     'application-group'
 ;
 
+AS_FORMAT
+:
+    'as-format'
+;
+
 AUTHENTICATION
 :
     'authentication'
+;
+
+AUTHENTICATION_PROFILE
+:
+    'authentication-profile'
 ;
 
 AUTHENTICATION_TYPE
@@ -106,14 +154,39 @@ CATEGORY
     'category'
 ;
 
+CERTIFICATE
+:
+    'certificate'
+;
+
+CERTIFICATE_PROFILE
+:
+    'certificate-profile'
+;
+
+CLIENT
+:
+    'client'
+;
+
 CLOSE_BRACKET
 :
     ']'
 ;
 
+COLOR
+:
+    'color'
+;
+
 COMMENT
 :
     'comment'
+;
+
+COMMENTS
+:
+    'comments'
 ;
 
 CONFIG
@@ -146,6 +219,11 @@ DEFAULT_GATEWAY
     'default-gateway'
 ;
 
+DEFAULT_LOCAL_PREFERENCE
+:
+    'default-local-preference'
+;
+
 DENY
 :
     'deny'
@@ -164,6 +242,11 @@ DESCRIPTION
 DESTINATION
 :
     'destination'
+;
+
+DETERMINISTIC_MED_COMPARISON
+:
+    'deterministic-med-comparison'
 ;
 
 DEVICES
@@ -216,6 +299,11 @@ DYNAMIC
     'dynamic'
 ;
 
+EBGP
+:
+    'ebgp'
+;
+
 ENABLE
 :
     'enable'
@@ -229,6 +317,21 @@ ENCRYPTION
 ESP
 :
     'esp'
+;
+
+EVASIVE
+:
+    'evasive'
+;
+
+EXCESSIVE_BANDWIDTH_USE
+:
+    'excessive-bandwidth-use'
+;
+
+EXPORT
+:
+    'export'
 ;
 
 EXTERNAL
@@ -261,6 +364,11 @@ GLOBAL_PROTECT_APP_CRYPTO_PROFILES
     'global-protect-app-crypto-profiles'
 ;
 
+GRACEFUL_RESTART
+:
+    'graceful-restart'
+;
+
 GROUP1
 :
     'group1'
@@ -291,6 +399,11 @@ GROUP20
     'group20'
 ;
 
+HAS_KNOWN_VULNERABILITIES
+:
+    'has-known-vulnerabilities'
+;
+
 HASH
 :
     'hash'
@@ -311,6 +424,11 @@ HOURS
     'hours'
 ;
 
+IBGP
+:
+    'ibgp'
+;
+
 ICMP
 :
     'icmp'
@@ -329,6 +447,11 @@ IKE_CRYPTO_PROFILES
 IMPORT
 :
     'import'
+;
+
+INSTALL_ROUTE
+:
+    'install-route'
 ;
 
 INTERFACE
@@ -381,6 +504,11 @@ LIFETIME
     'lifetime'
 ;
 
+LINK
+:
+    'link' -> pushMode ( M_Url )
+;
+
 LINK_STATE
 :
     'link-state'
@@ -389,6 +517,16 @@ LINK_STATE
 LLDP
 :
     'lldp'
+;
+
+LOCAL_ADDRESS
+:
+    'local-address'
+;
+
+LOCAL_AS
+:
+    'local-as'
 ;
 
 LOG_SETTINGS
@@ -404,6 +542,16 @@ LOOPBACK
 MD5
 :
     'md5'
+;
+
+MED
+:
+    'med'
+;
+
+MESHED_CLIENT
+:
+    'meshed-client'
 ;
 
 MINUTES
@@ -471,6 +619,11 @@ NO
     'no'
 ;
 
+NON_CLIENT
+:
+    'non-client'
+;
+
 NONE
 :
     'none'
@@ -496,6 +649,36 @@ OPEN_BRACKET
     '['
 ;
 
+OSPF
+:
+    'ospf'
+;
+
+OSPF_EXT
+:
+    'ospf-ext'
+;
+
+OSPF_INT
+:
+    'ospf-int'
+;
+
+OSPFV3
+:
+    'ospfv3'
+;
+
+OSPFV3_EXT
+:
+    'ospfv3-ext'
+;
+
+OSPFV3_INT
+:
+    'ospfv3-int'
+;
+
 PANORAMA
 :
     'panorama'
@@ -504,6 +687,31 @@ PANORAMA
 PANORAMA_SERVER
 :
     'panorama-server'
+;
+
+PEER
+:
+    'peer'
+;
+
+PEER_ADDRESS
+:
+    'peer-address'
+;
+
+PEER_AS
+:
+    'peer-as'
+;
+
+PEER_GROUP
+:
+    'peer-group'
+;
+
+PERVASIVE
+:
+    'pervasive'
 ;
 
 POLICY
@@ -541,6 +749,11 @@ PROFILES
     'profiles'
 ;
 
+PRONE_TO_MISUSE
+:
+    'prone-to-misuse'
+;
+
 PROTOCOL
 :
     'protocol'
@@ -549,6 +762,21 @@ PROTOCOL
 QOS
 :
     'qos'
+;
+
+REFLECTOR_CLIENT
+:
+    'reflector-client'
+;
+
+REFLECTOR_CLUSTER_ID
+:
+    'reflector-cluster-id'
+;
+
+REJECT_DEFAULT_ROUTE
+:
+    'reject-default-route'
 ;
 
 RESET_BOTH
@@ -564,6 +792,26 @@ RESET_CLIENT
 RESET_SERVER
 :
     'reset-server'
+;
+
+RIP
+:
+    'rip'
+;
+
+RISK
+:
+    'risk'
+;
+
+ROUTER_ID
+:
+    'router-id'
+;
+
+ROUTING_OPTIONS
+:
+    'routing-options'
 ;
 
 ROUTING_TABLE
@@ -609,6 +857,11 @@ SECURITY
 SERVER
 :
     'server'
+;
+
+SERVER_PROFILE
+:
+    'server-profile'
 ;
 
 SERVERS
@@ -686,9 +939,19 @@ STATIC
     'static'
 ;
 
+STATIC_IPV6
+:
+    'static-ipv6'
+;
+
 STATIC_ROUTE
 :
     'static-route'
+;
+
+SUBCATEGORY
+:
+    'subcategory'
 ;
 
 SYSLOG
@@ -716,6 +979,16 @@ TCP
     'tcp'
 ;
 
+TECHNOLOGY
+:
+    'technology'
+;
+
+TEMPLATE
+:
+    'template'
+;
+
 THREE_DES
 :
     '3des'
@@ -731,9 +1004,19 @@ TO
     'to'
 ;
 
+TRANSFERS_FILES
+:
+    'transfers-files'
+;
+
 TUNNEL
 :
     'tunnel'
+;
+
+TUNNELS_OTHER_APPS
+:
+    'tunnels-other-apps'
 ;
 
 TYPE
@@ -744,6 +1027,21 @@ TYPE
 UDP
 :
     'udp'
+;
+
+UINT8
+:
+  F_Uint8
+;
+
+UINT16
+:
+  F_Uint16
+;
+
+UINT32
+:
+  F_Uint32
 ;
 
 UNITS
@@ -764,6 +1062,11 @@ UPDATE_SCHEDULE
 UPDATE_SERVER
 :
     'update-server'
+;
+
+USED_BY_MALWARE
+:
+    'used-by-malware'
 ;
 
 VIRTUAL_ROUTER
@@ -811,11 +1114,6 @@ COMMA
 DASH
 :
     '-'
-;
-
-DEC
-:
-    F_Digit+
 ;
 
 DOUBLE_QUOTED_STRING
@@ -917,15 +1215,90 @@ F_Newline
 ;
 
 fragment
+F_NonNewlineChar
+:
+    ~[\r\n] // carriage return or line feed
+;
+
+fragment
 F_PositiveDigit
 :
   [1-9]
 ;
 
 fragment
-F_NonNewlineChar
+F_Uint8
 :
-    ~[\r\n] // carriage return or line feed
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
+;
+
+fragment
+F_Uint16
+:
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit?
+  | [1-5] F_Digit F_Digit F_Digit F_Digit
+  | '6' [0-4] F_Digit F_Digit F_Digit
+  | '65' [0-4] F_Digit F_Digit
+  | '655' [0-2] F_Digit
+  | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
+;
+
+fragment
+F_Url
+:
+  F_UrlStart F_UrlInner+
+;
+
+F_UrlStart
+:
+  [a-zA-Z]
+;
+
+F_UrlInner
+:
+  F_UrlInnerAlphaNum
+  | F_UrlInnerReserved
+  | F_UrlInnerUnreserved
+;
+
+F_UrlInnerAlphaNum
+:
+  [a-zA-Z0-9]
+;
+
+F_UrlInnerReserved
+:
+  [!*'();:@&=+$,/?%#[\]]
+;
+
+F_UrlInnerUnreserved
+:
+  [-_.~]
 ;
 
 fragment
@@ -941,4 +1314,20 @@ F_Variable_VarChar
 ;
 
 // Modes
-// Blank for now, not all lexers will require modes
+
+mode M_Url;
+
+M_Url_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Url_WORD
+:
+  F_Url -> type ( WORD ) , popMode
+;
+
+M_Url_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;

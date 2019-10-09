@@ -16,8 +16,7 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public final class PreprocessJuniperTest {
 
-  private static final String JUNIPER_TESTCONFIGS_PREFIX =
-      "org/batfish/grammar/juniper/testconfigs/";
+  private static final String JUNIPER_TESTCONFIGS_PREFIX = "org/batfish/main/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();

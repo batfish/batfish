@@ -48,6 +48,7 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -100,8 +101,6 @@ import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
-import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
-import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
@@ -1000,11 +999,26 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markAbstractStructure(
         F5BigipStructureType.MONITOR,
         F5BigipStructureUsage.POOL_MONITOR,
-        ImmutableList.of(F5BigipStructureType.MONITOR_HTTP, F5BigipStructureType.MONITOR_HTTPS));
+        ImmutableList.of(
+            F5BigipStructureType.MONITOR_DNS,
+            F5BigipStructureType.MONITOR_GATEWAY_ICMP,
+            F5BigipStructureType.MONITOR_HTTP,
+            F5BigipStructureType.MONITOR_HTTPS,
+            F5BigipStructureType.MONITOR_LDAP,
+            F5BigipStructureType.MONITOR_TCP));
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_DNS, F5BigipStructureUsage.MONITOR_DNS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_GATEWAY_ICMP,
+        F5BigipStructureUsage.MONITOR_GATEWAY_ICMP_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.MONITOR_HTTP, F5BigipStructureUsage.MONITOR_HTTP_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.MONITOR_HTTPS, F5BigipStructureUsage.MONITOR_HTTPS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_LDAP, F5BigipStructureUsage.MONITOR_LDAP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_TCP, F5BigipStructureUsage.MONITOR_TCP_DEFAULTS_FROM);
     markConcreteStructure(F5BigipStructureType.NODE, F5BigipStructureUsage.POOL_MEMBER);
     markConcreteStructure(
         F5BigipStructureType.OSPF_PROCESS, F5BigipStructureUsage.OSPF_PROCESS_SELF_REFERENCE);
@@ -1097,8 +1111,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // IPv6
       return;
     }
-    vlanIface.setAddress(address);
-    vlanIface.setAllAddresses(ImmutableSortedSet.of(address));
+    // keep the first address we encountered as primary
+    if (vlanIface.getAddress() == null) {
+      vlanIface.setAddress(address);
+    }
+    vlanIface.setAllAddresses(
+        ImmutableSortedSet.<InterfaceAddress>naturalOrder()
+            .addAll(vlanIface.getAllAddresses())
+            .add(address)
+            .build());
   }
 
   private void processVlanSettings(Vlan vlan) {
@@ -1381,7 +1402,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _c.getVendorFamily()
         .setF5Bigip(
             F5BigipFamily.builder()
-                .setPools(_pools)
+                .setPools(
+                    _pools.entrySet().stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(Entry::getKey, e -> toPool(e.getValue()))))
                 .setVirtuals(_virtuals)
                 .setVirtualAddresses(_virtualAddresses)
                 .build());
@@ -1542,6 +1566,26 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markStructures();
 
     return _c;
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.Pool toPool(Pool pool) {
+    return new org.batfish.datamodel.vendor_family.f5_bigip.Pool(
+        pool.getDescription(),
+        pool.getMembers().entrySet().stream()
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> toPoolMember(e.getValue()))),
+        pool.getMonitors(),
+        pool.getName());
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.PoolMember toPoolMember(
+      PoolMember poolMember) {
+    return new org.batfish.datamodel.vendor_family.f5_bigip.PoolMember(
+        poolMember.getAddress(),
+        poolMember.getAddress6(),
+        poolMember.getDescription(),
+        poolMember.getName(),
+        poolMember.getNode(),
+        poolMember.getPort());
   }
 
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(OspfProcess proc) {

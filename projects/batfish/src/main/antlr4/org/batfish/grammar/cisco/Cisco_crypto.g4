@@ -473,7 +473,7 @@ cisprf_local_address
     LOCAL_ADDRESS
     (
        IP_ADDRESS
-       | interface_name
+       | iname = interface_name_unstructured
     ) NEWLINE
 ;
 
@@ -535,7 +535,7 @@ ckr_local_address
    LOCAL_ADDRESS
    (
       IP_ADDRESS
-      | interface_name
+      | iname = interface_name_unstructured
    ) NEWLINE
 ;
 
@@ -872,6 +872,7 @@ dh_group
    | GROUP16
    | GROUP19
    | GROUP2
+   | GROUP20
    | GROUP21
    | GROUP24
    | GROUP5

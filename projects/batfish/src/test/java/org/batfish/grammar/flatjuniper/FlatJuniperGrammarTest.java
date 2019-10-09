@@ -311,6 +311,7 @@ import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.PatPool;
+import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
@@ -360,6 +361,17 @@ public final class FlatJuniperGrammarTest {
     return fb.build();
   }
 
+  private boolean routingPolicyPermitsRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
+    return routingPolicy.process(
+        route,
+        route instanceof Bgpv4Route
+            ? route.toBuilder()
+            : Bgpv4Route.builder().setNetwork(route.getNetwork()),
+        Ip.parse("192.0.2.1"),
+        DEFAULT_VRF_NAME,
+        Direction.OUT);
+  }
+
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
@@ -373,6 +385,7 @@ public final class FlatJuniperGrammarTest {
   private JuniperConfiguration parseJuniperConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
+    BatfishTestUtils.configureBatfishTestSettings(settings);
     FlatJuniperCombinedParser flatJuniperParser =
         new FlatJuniperCombinedParser(src, settings, null);
     FlatJuniperControlPlaneExtractor extractor =
@@ -776,13 +789,19 @@ public final class FlatJuniperGrammarTest {
 
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
-    BgpPeerConfig neighbor1 =
-        proc.getActiveNeighbors().get(Prefix.create(neighbor1Ip, Prefix.MAX_PREFIX_LENGTH));
-    BgpPeerConfig neighbor2 =
-        proc.getActiveNeighbors().get(Prefix.create(neighbor2Ip, Prefix.MAX_PREFIX_LENGTH));
+    BgpPeerConfig neighbor1 = proc.getActiveNeighbors().get(neighbor1Ip.toPrefix());
+    BgpPeerConfig neighbor2 = proc.getActiveNeighbors().get(neighbor2Ip.toPrefix());
 
     assertThat(neighbor1, hasClusterId(Ip.parse("3.3.3.3").asLong()));
     assertThat(neighbor2, hasClusterId(Ip.parse("1.1.1.1").asLong()));
+  }
+
+  @Test
+  public void testBgpConfederation() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-confederation");
+    RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
+    assertThat(ri.getConfederation(), equalTo(7L));
+    assertThat(ri.getConfederationMembers(), contains(65001L, 65002L, 65003L));
   }
 
   @Test
@@ -804,7 +823,11 @@ public final class FlatJuniperGrammarTest {
   public void testBgpMultipathMultipleAs() throws IOException {
     String testrigName = "multipath-multiple-as";
     List<String> configurationNames =
-        ImmutableList.of("multiple_as_disabled", "multiple_as_enabled", "multiple_as_mixed");
+        ImmutableList.of(
+            "multiple_as_disabled",
+            "multiple_as_enabled",
+            "multiple_as_mixed",
+            "multiple_as_mixed_conflict");
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -831,10 +854,17 @@ public final class FlatJuniperGrammarTest {
             .getDefaultVrf()
             .getBgpProcess()
             .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode mixedConflict =
+        configurations
+            .get("multiple_as_mixed_conflict")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
 
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+    assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(mixedConflict, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
   }
 
   /** Make sure bgp type internal properly sets remote as when non explicitly specified */
@@ -966,6 +996,39 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testPsFromCommunity() throws IOException {
+    Configuration c = parseConfig("community");
+
+    assertThat(c.getRoutingPolicies(), hasKey("match"));
+    RoutingPolicy rp = c.getRoutingPolicies().get("match");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    // deny route with communities only matching one element of named community
+    assertFalse(
+        routingPolicyPermitsRoute(
+            rp,
+            base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(0, 1))).build()));
+    // permit route with communities matching all elements of named community
+    assertTrue(
+        routingPolicyPermitsRoute(
+            rp,
+            base.toBuilder()
+                .setCommunities(
+                    ImmutableSet.of(
+                        StandardCommunity.of(0, 1),
+                        StandardCommunity.of(0, 2),
+                        StandardCommunity.of(1, 1),
+                        StandardCommunity.of(0, 3)))
+                .build()));
+  }
+
+  @Test
   public void testBgpDisable() throws IOException {
     // Config has "set protocols bgp disable"; no VI BGP process should be created
     String hostname = "bgp_disable";
@@ -1077,7 +1140,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilters() throws IOException {
+  public void testFirewallFilterReferences() throws IOException {
     String hostname = "firewall-filters";
     String filename = "configs/" + hostname;
 
@@ -1092,6 +1155,64 @@ public final class FlatJuniperGrammarTest {
 
     /* Confirm undefined reference is identified */
     assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "FILTER_UNDEF"));
+    assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "A"));
+    assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "B"));
+  }
+
+  @Test
+  public void testFirewallFilterExtraction() throws IOException {
+    JuniperConfiguration c = parseJuniperConfig("firewall-filters");
+    Map<String, org.batfish.representation.juniper.Interface> ifaces =
+        c.getMasterLogicalSystem().getInterfaces();
+
+    {
+      String parentName = "xe-0/0/0";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), equalTo("FILTER1"));
+      assertThat(iface.getIncomingFilterList(), nullValue());
+      assertThat(iface.getOutgoingFilter(), nullValue());
+      assertThat(iface.getOutgoingFilterList(), nullValue());
+    }
+    {
+      String parentName = "xe-0/0/1";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), equalTo("FILTER2"));
+      assertThat(iface.getIncomingFilterList(), nullValue());
+      assertThat(iface.getOutgoingFilter(), equalTo("FILTER2"));
+      assertThat(iface.getOutgoingFilterList(), nullValue());
+    }
+    {
+      String parentName = "xe-0/0/2";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), nullValue());
+      assertThat(iface.getIncomingFilterList(), nullValue());
+      assertThat(iface.getOutgoingFilter(), equalTo("FILTER_UNDEF"));
+      assertThat(iface.getOutgoingFilterList(), nullValue());
+    }
+    {
+      String parentName = "xe-0/0/3";
+      String unitName = parentName + ".0";
+      assertThat(ifaces, hasKey(parentName));
+      org.batfish.representation.juniper.Interface parent = ifaces.get(parentName);
+      assertThat(parent.getUnits(), hasKey(unitName));
+      org.batfish.representation.juniper.Interface iface = parent.getUnits().get(unitName);
+      assertThat(iface.getIncomingFilter(), nullValue());
+      assertThat(iface.getIncomingFilterList(), contains("A", "B"));
+      assertThat(iface.getOutgoingFilter(), nullValue());
+      assertThat(iface.getOutgoingFilterList(), contains("B", "A"));
+    }
   }
 
   @Test
@@ -2373,6 +2494,9 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(
         c, hasInterface("ge-0/3/0.0", hasAllowedVlans(IntegerSpace.of(new SubRange("1-5")))));
+    // Expecting an Interface in TRUNK mode with VLANs 6
+    assertThat(c, hasInterface("ge-0/3/0.1", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(c, hasInterface("ge-0/3/0.1", hasAllowedVlans(IntegerSpace.of(6))));
   }
 
   @Test

@@ -15,3 +15,8 @@ set interfaces xe-0/0/1 unit 0 family inet filter input FILTER2
 set interfaces xe-0/0/1 unit 0 family inet filter output FILTER2
 set interfaces xe-0/0/2 unit 0 family inet address 3.2.3.4/24
 set interfaces xe-0/0/2 unit 0 family inet filter output FILTER_UNDEF
+set interfaces xe-0/0/3 unit 0 family inet address 4.2.3.4/24
+set interfaces xe-0/0/3 unit 0 family inet filter input-list A
+set interfaces xe-0/0/3 unit 0 family inet filter input-list B
+set interfaces xe-0/0/3 unit 0 family inet filter output-list B
+set interfaces xe-0/0/3 unit 0 family inet filter output-list A

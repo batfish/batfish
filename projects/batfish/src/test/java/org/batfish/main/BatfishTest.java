@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -37,7 +39,6 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
@@ -221,22 +222,32 @@ public class BatfishTest {
   }
 
   @Test
-  public void testFlatten() throws IOException {
-    Path root = _folder.getRoot().toPath();
-    Path inputDir = root.resolve("input");
-    Path outputDir = root.resolve("output");
-    Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
-    Path outputFile = outputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
-    inputFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(
-        inputFile, CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/hierarchical"));
+  public void testInitSnapshotWithRuntimeData() throws IOException {
+    /*
+    Setup: Config rtr1 has interfaces Ethernet0, Ethernet1, and Ethernet2, all no shutdown.
+    Runtime data says Ethernet0 is line down and Ethernet1 is line up, no entry for Ethernet2.
+     */
+    String snapshotResourcePrefix = "org/batfish/main/snapshots/interface_blacklist";
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(TestrigText.builder().build(), _folder);
-    batfish.flatten(inputDir, outputDir);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(snapshotResourcePrefix, "rtr1")
+                .setRuntimeDataText(snapshotResourcePrefix)
+                .build(),
+            _folder);
+    Map<String, Interface> interfaces = batfish.loadConfigurations().get("rtr1").getAllInterfaces();
 
+    // Ethernet0 should be inactive and blacklisted
+    Interface ethernet0 = interfaces.get("Ethernet0");
+    assertTrue(ethernet0.getBlacklisted() && !ethernet0.getActive());
+
+    // Ensure other interfaces are active
     assertThat(
-        CommonUtil.readFile(outputFile),
-        equalTo(CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/flat")));
+        interfaces.entrySet().stream()
+            .filter(e -> e.getValue().getActive())
+            .map(Entry::getKey)
+            .collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder("Ethernet1", "Ethernet2"));
   }
 
   @Test
@@ -267,7 +278,7 @@ public class BatfishTest {
 
   @Test
   public void testMultipleBestVrrpCandidates() throws IOException {
-    String testrigResourcePrefix = "org/batfish/grammar/cisco/testrigs/vrrp_multiple_best";
+    String testrigResourcePrefix = "org/batfish/testrigs/vrrp_multiple_best";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
 
     Ip vrrpAddress = Ip.parse("1.0.0.10");

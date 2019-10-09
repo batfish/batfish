@@ -11,10 +11,17 @@ s_routemap
   ROUTE_MAP name = word action = line_action sequence =
   route_map_sequence NEWLINE
   (
-    rm_description
+    rm_call
+    | rm_description
     | rm_match
+    | rm_on_match
     | rm_set
   )*
+;
+
+rm_call
+:
+  CALL name = word NEWLINE
 ;
 
 rm_description
@@ -32,9 +39,11 @@ rm_match
 :
   MATCH
   (
-    rmm_community
+    rmm_as_path
+    | rmm_community
     | rmm_interface
     | rmm_ip
+    | rmm_tag
   )
 ;
 
@@ -42,6 +51,11 @@ route_map_sequence
 :
 // 0-65535
   uint32
+;
+
+rmm_as_path
+:
+  AS_PATH name = word NEWLINE
 ;
 
 rmm_community
@@ -53,9 +67,12 @@ rm_set
 :
   SET
   (
-    rms_metric
+    rms_as_path
     | rms_community
     | rms_ip
+    | rms_local_preference
+    | rms_metric
+    | rms_tag
   )
 ;
 
@@ -67,6 +84,11 @@ rms_metric
 rmm_ip
 :
   IP rmmip_address
+;
+
+rmm_tag
+:
+  TAG tag = uint32 NEWLINE
 ;
 
 rmmip_address
@@ -84,9 +106,24 @@ rmm_interface
   INTERFACE name = WORD NEWLINE
 ;
 
+rms_as_path
+:
+  AS_PATH PREPEND as_path = literal_as_path NEWLINE
+;
+
+rm_on_match
+:
+  ON_MATCH NEXT NEWLINE
+;
+
 rms_ip
 :
   IP rmsip_next_hop
+;
+
+rms_tag
+:
+  TAG tag = uint32 NEWLINE
 ;
 
 rmsip_next_hop
@@ -105,4 +142,9 @@ rmsipnh_literal
 rms_community
 :
   COMMUNITY communities += literal_standard_community+ NEWLINE
+;
+
+rms_local_preference
+:
+  LOCAL_PREFERENCE pref = uint32 NEWLINE
 ;

@@ -26,7 +26,7 @@ public final class LocalRoute extends AbstractRoute {
 
   public LocalRoute(ConcreteInterfaceAddress interfaceAddress, String nextHopInterface) {
     this(
-        Prefix.create(interfaceAddress.getIp(), Prefix.MAX_PREFIX_LENGTH),
+        interfaceAddress.getIp().toPrefix(),
         nextHopInterface,
         interfaceAddress.getNetworkBits(),
         0,

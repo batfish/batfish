@@ -22,19 +22,23 @@ public class ConnectedRouteMetadataTest {
         .addEqualityGroup(builder.setTag(3).build())
         .addEqualityGroup(builder.setAdmin(3).build())
         .addEqualityGroup(builder.setTag(1).build())
+        .addEqualityGroup(builder.setGenerateLocalRoutes(true).build())
+        .addEqualityGroup(builder.setAdmin(1).setGenerateLocalRoutes(true))
         .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
-    ConnectedRouteMetadata crm = ConnectedRouteMetadata.builder().setAdmin(2).setTag(1).build();
+    ConnectedRouteMetadata crm =
+        ConnectedRouteMetadata.builder().setAdmin(2).setGenerateLocalRoutes(true).setTag(1).build();
     assertThat(SerializationUtils.clone(crm), equalTo(crm));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
-    ConnectedRouteMetadata crm = ConnectedRouteMetadata.builder().setAdmin(2).setTag(1).build();
+    ConnectedRouteMetadata crm =
+        ConnectedRouteMetadata.builder().setAdmin(2).setGenerateLocalRoutes(true).setTag(1).build();
     assertThat(BatfishObjectMapper.clone(crm, ConnectedRouteMetadata.class), equalTo(crm));
   }
 }

@@ -164,7 +164,7 @@ public class RibDeltaTest {
             false);
     Bgpv4Route.Builder routeBuilder = new Bgpv4Route.Builder();
     routeBuilder
-        .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
+        .setNetwork(Ip.parse("1.1.1.1").toPrefix())
         .setProtocol(RoutingProtocol.IBGP)
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(Ip.parse("7.7.7.7"))
@@ -201,7 +201,7 @@ public class RibDeltaTest {
             false);
     Bgpv4Route r1 =
         new Bgpv4Route.Builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setProtocol(RoutingProtocol.IBGP)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("7.7.7.7"))
@@ -209,7 +209,7 @@ public class RibDeltaTest {
             .build();
     Bgpv4Route r2 =
         new Bgpv4Route.Builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
+            .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("7.7.7.7"))

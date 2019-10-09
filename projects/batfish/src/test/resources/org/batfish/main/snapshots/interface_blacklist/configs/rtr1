@@ -1,0 +1,11 @@
+!
+hostname rtr1
+!
+interface Ethernet0
+ no shutdown
+!
+interface Ethernet1
+ no shutdown
+!
+interface Ethernet2
+ no shutdown
