@@ -1,8 +1,15 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.AsSet.confed;
+import static org.batfish.datamodel.AsSet.confedEmpty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.testing.EqualsTester;
+import java.io.IOException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Tests of {@link AsSet} */
@@ -16,5 +23,35 @@ public class AsSetTest {
 
     // For set of ASNs, should return {asn1,asn2,...lastAsn}
     assertThat(AsSet.of(1, 2, 3).toString(), equalTo("{1,2,3}"));
+  }
+
+  @Test
+  public void testConfed() {
+    AsSet set = confedEmpty();
+    assertTrue(set.isEmpty());
+    assertTrue(set.isConfederationAsSet());
+
+    set = confed(1L);
+    assertFalse(set.isEmpty());
+    assertTrue(set.isConfederationAsSet());
+  }
+
+  @Test
+  public void testEquals() {
+    AsSet set = AsSet.of(1);
+    new EqualsTester()
+        .addEqualityGroup(set, set, AsSet.of(1))
+        .addEqualityGroup(AsSet.of(2))
+        .addEqualityGroup(confed(2))
+        .addEqualityGroup(new Object())
+        .testEquals();
+  }
+
+  @Test
+  public void testJsonSerialization() throws IOException {
+    AsSet set = AsSet.of(1);
+    assertThat(BatfishObjectMapper.clone(set, AsSet.class), equalTo(set));
+    set = AsSet.confed(1);
+    assertThat(BatfishObjectMapper.clone(set, AsSet.class), equalTo(set));
   }
 }

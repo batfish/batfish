@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Predicates;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -89,6 +90,14 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
             .collect(ImmutableList.toImmutableList()));
   }
 
+  /** Returns a new {@link AsPath} with all confederation {@link AsSet AS sets} removed */
+  public AsPath removeConfederations() {
+    return AsPath.of(
+        _asSets.stream()
+            .filter(asSet -> !asSet.isConfederationAsSet())
+            .collect(ImmutableList.toImmutableList()));
+  }
+
   @Override
   public int compareTo(AsPath rhs) {
     return Comparators.lexicographical(Ordering.<AsSet>natural()).compare(_asSets, rhs._asSets);
@@ -130,6 +139,11 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
 
   public int size() {
     return _asSets.size();
+  }
+
+  /** Return the length for this AS path as required for BGP path selection algorithm */
+  public int length() {
+    return (int) _asSets.stream().filter(Predicates.not(AsSet::isConfederationAsSet)).count();
   }
 
   @Override
