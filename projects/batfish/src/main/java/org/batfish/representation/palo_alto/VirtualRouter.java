@@ -16,6 +16,7 @@ public class VirtualRouter implements Serializable {
     _bgp = null;
     _interfaceNames = new TreeSet<>();
     _name = name;
+    _ospf = null;
     _staticRoutes = new TreeMap<>();
   }
 
@@ -32,6 +33,18 @@ public class VirtualRouter implements Serializable {
       _bgp = new BgpVr();
     }
     return _bgp;
+  }
+
+  @Nullable
+  public OspfVr getOspf() {
+    return _ospf;
+  }
+
+  public @Nonnull OspfVr getOrCreateOspf() {
+    if (_ospf == null) {
+      _ospf = new OspfVr();
+    }
+    return _ospf;
   }
 
   public NavigableSet<String> getInterfaceNames() {
@@ -52,5 +65,6 @@ public class VirtualRouter implements Serializable {
   private @Nullable BgpVr _bgp;
   private final NavigableSet<String> _interfaceNames;
   private final String _name;
+  private @Nullable OspfVr _ospf;
   private final Map<String, StaticRoute> _staticRoutes;
 }

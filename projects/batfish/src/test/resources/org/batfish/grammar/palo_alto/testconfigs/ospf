@@ -1,0 +1,15 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname ospf
+set network virtual-router vr1 protocol ospf router-id 0.0.0.0
+set network virtual-router vr1 protocol ospf area 1.1.1.1/32 type stub default-route advertise metric 12
+set network virtual-router vr1 protocol ospf area 1.1.1.1/32 type stub accept-summary yes
+set network virtual-router vr1 protocol ospf area 1.1.1.1/32 type stub default-route disable
+set network virtual-router vr1 protocol ospf area 2.2.2.2 type normal
+set network virtual-router vr1 protocol ospf area 3.3.3.3 type nssa default-route advertise metric 13
+set network virtual-router vr1 protocol ospf area 3.3.3.3 type nssa default-route advertise type ext-2
+set network virtual-router vr1 protocol ospf area 3.3.3.3 type nssa accept-summary no
+set network virtual-router vr1 protocol ospf enable yes
+set network virtual-router vr1 protocol ospf reject-default-route no
+set network virtual-router vr1 protocol ospf graceful-restart enable no
+set network virtual-router vr1 protocol ospf graceful-restart helper-enable no
+set network virtual-router vr1 protocol ospf graceful-restart strict-LSA-checking no
