@@ -56,6 +56,11 @@ ALWAYS
   'always'
 ;
 
+ANALYTICS
+:
+  'analytics'
+;
+
 AND
 :
   'and'
@@ -84,6 +89,21 @@ BUNDLE
 BUNDLE_SPEED
 :
   'bundle-speed'
+;
+
+CERTIFICATE_AUTHORITY
+:
+  'certificate-authority'
+;
+
+CLASSIFICATION
+:
+  'classification'
+;
+
+CLIENT_LDAP
+:
+  'client-ldap'
 ;
 
 CLIENT_SSL
@@ -121,6 +141,21 @@ DESTINATION
   'destination'
 ;
 
+DHCPV4
+:
+  'dhcpv4'
+;
+
+DHCPV6
+:
+  'dhcpv6'
+;
+
+DIAMETER
+:
+  'diameter'
+;
+
 DISABLED
 :
   'disabled'
@@ -146,9 +181,29 @@ ENTRIES
   'entries'
 ;
 
+FASTHTTP
+:
+  'fasthttp'
+;
+
+FASTL4
+:
+  'fastl4'
+;
+
+FIX
+:
+  'fix'
+;
+
 FORTY_G
 :
   '40G'
+;
+
+FTP
+:
+  'ftp'
 ;
 
 GATEWAY_ICMP
@@ -161,6 +216,11 @@ GLOBAL_SETTINGS
   'global-settings'
 ;
 
+GTP
+:
+  'gtp'
+;
+
 GW
 :
   'gw'
@@ -171,14 +231,39 @@ HOSTNAME
   'hostname'
 ;
 
+HTML
+:
+  'html'
+;
+
 HTTP
 :
   'http'
 ;
 
+HTTP_COMPRESSION
+:
+  'http-compression'
+;
+
+HTTP_PROXY_CONNECT
+:
+  'http-proxy-connect'
+;
+
+HTTP2
+:
+  'http2'
+;
+
 HTTPS
 :
   'https'
+;
+
+ICAP
+:
+  'icap'
 ;
 
 ICMP_ECHO
@@ -189,6 +274,11 @@ ICMP_ECHO
 IF
 :
   'if'
+;
+
+ILX
+:
+  'ilx'
 ;
 
 INTERFACE
@@ -209,6 +299,16 @@ IP_FORWARD
 IP_PROTOCOL
 :
   'ip-protocol'
+;
+
+IPOTHER
+:
+  'ipother'
+;
+
+IPSECALG
+:
+  'ipsecalg'
 ;
 
 IPV4
@@ -246,6 +346,11 @@ LTM
   'ltm'
 ;
 
+MAP_T
+:
+  'map-t'
+;
+
 MASK
 :
   'mask'
@@ -261,6 +366,11 @@ MEMBERS
   'members'
 ;
 
+MQTT
+:
+  'mqtt'
+;
+
 MONITOR
 :
   'monitor'
@@ -274,6 +384,11 @@ NEIGHBOR
 NET
 :
   'net'
+;
+
+NETFLOW
+:
+  'netflow'
 ;
 
 NETWORK
@@ -316,6 +431,11 @@ OUT
   'out'
 ;
 
+PCP
+:
+  'pcp'
+;
+
 PERMIT
 :
   'permit'
@@ -334,6 +454,11 @@ PERSISTENCE
 POOL
 :
   'pool'
+;
+
+PPTP
+:
+  'pptp'
 ;
 
 PREFIX
@@ -361,6 +486,16 @@ PROFILES
   'profiles'
 ;
 
+QOE
+:
+  'qoe'
+;
+
+RADIUS
+:
+  'radius'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -374,6 +509,26 @@ REJECT
 REMOTE_AS
 :
   'remote-as'
+;
+
+REQUEST_ADAPT
+:
+  'request-adapt'
+;
+
+REQUEST_LOG
+:
+  'request-log'
+;
+
+RESPONSE_ADAPT
+:
+  'response-adapt'
+;
+
+REWRITE
+:
+  'rewrite'
 ;
 
 ROUTE
@@ -406,6 +561,11 @@ ROUTING
   'routing'
 ;
 
+RTSP
+:
+  'rtsp'
+;
+
 RULE
 :
   'rule'
@@ -416,6 +576,11 @@ RULES
   'rules'
 ;
 
+SCTP
+:
+  'sctp'
+;
+
 SELECTIVE
 :
   'selective'
@@ -424,6 +589,11 @@ SELECTIVE
 SELF
 :
   'self'
+;
+
+SERVER_LDAP
+:
+  'server-ldap'
 ;
 
 SERVER_SSL
@@ -441,6 +611,16 @@ SET
   'set'
 ;
 
+SIP
+:
+  'sip'
+;
+
+SMTPS
+:
+  'smtps'
+;
+
 SNAT
 :
   'snat'
@@ -454,6 +634,11 @@ SNAT_TRANSLATION
 SNATPOOL
 :
   'snatpool'
+;
+
+SOCKS
+:
+  'socks'
 ;
 
 SOURCE
@@ -471,6 +656,16 @@ SOURCE_ADDRESS_TRANSLATION
   'source-address-translation'
 ;
 
+SPLITSESSIONCLIENT
+:
+  'splitsessionclient'
+;
+
+SPLITSESSIONSERVER
+:
+  'splitsessionserver'
+;
+
 SSL
 :
   'ssl'
@@ -479,6 +674,16 @@ SSL
 SSL_PROFILE
 :
   'ssl-profile'
+;
+
+STATISTICS
+:
+  'statistics'
+;
+
+STREAM
+:
+  'stream'
 ;
 
 SYS
@@ -494,6 +699,21 @@ TAG
 TCP
 :
   'tcp'
+;
+
+TCP_ANALYTICS
+:
+  'tcp-analytics'
+;
+
+TFTP
+:
+  'tftp'
+;
+
+TRAFFIC_ACCELERATION
+:
+  'traffic-acceleration'
 ;
 
 TRAFFIC_GROUP
@@ -564,6 +784,26 @@ VLANS_DISABLED
 VLANS_ENABLED
 :
   'vlans-enabled'
+;
+
+WEB_ACCELERATION
+:
+  'web-acceleration'
+;
+
+WEB_SECURITY
+:
+  'web-security'
+;
+
+WEBSOCKET
+:
+  'websocket'
+;
+
+XML
+:
+  'xml'
 ;
 
 // Complex tokens
