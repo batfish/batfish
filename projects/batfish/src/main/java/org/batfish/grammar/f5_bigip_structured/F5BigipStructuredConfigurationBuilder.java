@@ -78,6 +78,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_VLANS_VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VLAN_INTERFACE;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
@@ -88,8 +89,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -102,9 +105,11 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
+import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.IgnoredContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Imish_chunkContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_address_portContext;
@@ -401,6 +406,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable BgpNeighborAddressFamily _currentBgpNeighborAddressFamily;
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable BgpRedistributionPolicy _currentBgpRedistributionPolicy;
+  private IgnoredContext _currentIgnored;
   private @Nullable Interface _currentInterface;
   private @Nullable Node _currentNode;
   private @Nullable Pool _currentPool;
@@ -726,14 +732,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void enterNrre_entry(Nrre_entryContext ctx) {
     _currentRouteMapEntry =
         _currentRouteMap.getEntries().computeIfAbsent(toLong(ctx.num), RouteMapEntry::new);
-  }
-
-  @Override
-  public void enterUnrecognized(UnrecognizedContext ctx) {
-    _c.setUnrecognized(true);
-    if (_currentUnrecognized == null) {
-      _currentUnrecognized = ctx;
-    }
   }
 
   @Override
@@ -1583,8 +1581,33 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterIgnored(IgnoredContext ctx) {
+    if (_currentIgnored != null) {
+      return;
+    }
+    _currentIgnored = ctx;
+  }
+
+  @Override
+  public void exitIgnored(IgnoredContext ctx) {
+    if (_currentIgnored != ctx) {
+      return;
+    }
+    _currentIgnored = null;
+  }
+
+  @Override
+  public void enterUnrecognized(UnrecognizedContext ctx) {
+    if (_currentIgnored != null || _currentUnrecognized != null) {
+      return;
+    }
+    _c.setUnrecognized(true);
+    _currentUnrecognized = ctx;
+  }
+
+  @Override
   public void exitUnrecognized(UnrecognizedContext ctx) {
-    if (_currentUnrecognized != ctx) {
+    if (_currentIgnored != null || _currentUnrecognized != ctx) {
       return;
     }
     unrecognized(ctx);
@@ -1704,15 +1727,36 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private void unrecognized(UnrecognizedContext ctx) {
-    Token start = ctx.getStart();
-    int line = start.getLine();
-    _w.getParseWarnings()
-        .add(
-            new ParseWarning(
-                line,
-                getUnrecognizedLeadText(ctx),
-                ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
-                "This syntax is unrecognized"));
+    ParseWarning warning =
+        new ParseWarning(
+            ctx.getStart().getLine(),
+            getUnrecognizedLeadText(ctx),
+            ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
+            "This syntax is unrecognized");
+    unrecognized(warning, ctx);
+  }
+
+  private void unrecognized(ParseWarning warning, @Nullable ParserRuleContext ctx) {
+    // for testing
+    // TODO: reenable after fixing issues with refs
+    if (Boolean.FALSE && _parser.getSettings().getDisableUnrecognized()) {
+      try {
+        String warningStr = BatfishObjectMapper.writePrettyString(warning);
+        String parseTreeStr =
+            ctx != null
+                ? ParseTreePrettyPrinter.print(
+                    ctx, _parser, _parser.getSettings().getPrintParseTreeLineNums())
+                : "";
+        throw new BatfishException(
+            String.format(
+                "Forcing failure on unrecognized line: %s\n%s", warningStr, parseTreeStr));
+      } catch (JsonProcessingException e) {
+        throw new BatfishException("Failure describing unrecognized line", e);
+      }
+    }
+
+    _w.getParseWarnings().add(warning);
+    _c.setUnrecognized(true);
   }
 
   @Override
