@@ -50,6 +50,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
@@ -128,6 +129,7 @@ import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cumulus.RouteMapMatchTag;
+import org.batfish.representation.cumulus.RouteMapSetAsPath;
 import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
@@ -766,6 +768,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     // Could not find good docs for what this is. Guessing like a "continue" but punting for now.
     // TODO: conversion
     todo(ctx);
+  }
+
+  @Override
+  public void exitRms_as_path(Rms_as_pathContext ctx) {
+    List<Long> asns =
+        ctx.as_path.asns.stream().map(this::toLong).collect(ImmutableList.toImmutableList());
+    _currentRouteMapEntry.setSetAsPath(new RouteMapSetAsPath(asns));
   }
 
   @Override
