@@ -143,6 +143,8 @@ public class BgpSessionStatusAnswererTest {
     BgpPeerConfigId remotePeerId = new BgpPeerConfigId("c2", "vrf2", localIp.toPrefix(), false);
     BgpActivePeerConfig remotePeer =
         BgpActivePeerConfig.builder()
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
