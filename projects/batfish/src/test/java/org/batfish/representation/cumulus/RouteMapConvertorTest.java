@@ -43,7 +43,7 @@ public class RouteMapConvertorTest {
   private static RouteMapEntry ENTRY2;
   private static RouteMapEntry ENTRY3;
 
-  static {
+  private void initRouteMap() {
     /*
       if match entry1:
          goto match 3
@@ -52,7 +52,7 @@ public class RouteMapConvertorTest {
     ENTRY1 = new RouteMapEntry(10, LineAction.PERMIT);
     ENTRY1.setMatchTag(new RouteMapMatchTag(1));
     ENTRY1.setSetMetric(new RouteMapSetMetric(10));
-    ENTRY1.setContinue(30);
+    ENTRY1.setContinue(new RouteMapContinue(30));
 
     ENTRY2 = new RouteMapEntry(20, LineAction.DENY);
     ENTRY2.setMatchTag(new RouteMapMatchTag(2));
@@ -79,10 +79,28 @@ public class RouteMapConvertorTest {
     VC.setHostname(HOSTNAME);
     VC.setWarnings(W);
     C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_NCLU);
+    initRouteMap();
   }
 
   @Test
-  public void testToRouteMap_Continue() {
+  public void testToRouteMap_MatchContinueNext() {
+    // match entry1 then continue to next (i.e., entry2)
+    ENTRY1.setContinue(new RouteMapContinue(null));
+    ENTRY2.setMatchTag(new RouteMapMatchTag(1));
+    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
+    RoutingPolicy policy = convertor.toRouteMap();
+
+    Builder outputBuilder = Bgpv4Route.builder();
+    outputBuilder.setTag(1L);
+    Environment.Builder env = Environment.builder(C).setUseOutputAttributes(true);
+    Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+    // not match entry2, so metric is updated to 20
+    assertFalse(result.getBooleanValue());
+    assertThat(outputBuilder.getMetric(), equalTo(20L));
+  }
+
+  @Test
+  public void testToRouteMap_MatchContinue() {
     // match entry1 then continue to entry3
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     RoutingPolicy policy = convertor.toRouteMap();
@@ -97,7 +115,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToRouteMap_NotContinue() {
+  public void testToRouteMap_NotMatchContinue() {
     // match entry2
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     RoutingPolicy policy = convertor.toRouteMap();

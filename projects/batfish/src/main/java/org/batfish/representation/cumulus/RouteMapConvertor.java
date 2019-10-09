@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -29,7 +30,7 @@ class RouteMapConvertor {
   private RouteMap _routeMap;
   private Warnings _w;
 
-  private Map<Integer, Integer> _noMatchNextBySeq;
+  private Map<Integer, Integer> _nextSeqMap;
   private Set<Integer> _continueTargets;
 
   private static final Statement ROUTE_MAP_PERMIT_STATEMENT =
@@ -48,7 +49,7 @@ class RouteMapConvertor {
     _vc = vc;
     _w = w;
     _routeMap = routeMap;
-    _noMatchNextBySeq = computeNoMatchNextBySeq(routeMap);
+    _nextSeqMap = computeNoMatchNextBySeq(routeMap);
     _continueTargets = computeContinueTargets(routeMap);
   }
 
@@ -99,14 +100,17 @@ class RouteMapConvertor {
   }
 
   private Statement convertActionStatement(RouteMapEntry entry) {
-    Integer continueTarget = entry.getContinue();
+    RouteMapContinue continueTarget = entry.getContinue();
     Statement finalTrueStatement;
     if (continueTarget != null) {
-      if (_continueTargets.contains(entry.getContinue())) {
+      int continueNext =
+          Optional.ofNullable(continueTarget.getNext())
+              .orElse(_nextSeqMap.getOrDefault(entry.getNumber(), -1));
+      if (_continueTargets.contains(continueNext)) {
         // TODO: verify correct semantics: possibly, should add two statements in this case; first
         // should set default _action to permit/deny if this is a permit/deny entry, and second
         // should call policy for next entry.
-        finalTrueStatement = call(computeRoutingPolicyName(_routeMap.getName(), continueTarget));
+        finalTrueStatement = call(computeRoutingPolicyName(_routeMap.getName(), continueNext));
       } else {
         // invalid continue target, so just deny
         // TODO: verify actual behavior
@@ -140,7 +144,7 @@ class RouteMapConvertor {
             .collect(ImmutableList.toImmutableList());
 
     // final action if not matched
-    Integer noMatchNext = _noMatchNextBySeq.get(entry.getNumber());
+    Integer noMatchNext = _nextSeqMap.get(entry.getNumber());
     List<Statement> noMatchStatements =
         noMatchNext != null && _continueTargets.contains(noMatchNext)
             ? ImmutableList.of(call(computeRoutingPolicyName(_routeMap.getName(), noMatchNext)))
@@ -162,10 +166,13 @@ class RouteMapConvertor {
     return noMatchNextBySeqBuilder.build();
   }
 
-  private static Set<Integer> computeContinueTargets(RouteMap routeMap) {
+  private Set<Integer> computeContinueTargets(RouteMap routeMap) {
     return routeMap.getEntries().values().stream()
-        .map(RouteMapEntry::getContinue)
-        .filter(Objects::nonNull)
+        .filter(entry -> entry.getContinue() != null)
+        .map(
+            entry ->
+                Optional.ofNullable(entry.getContinue().getNext())
+                    .orElse(_nextSeqMap.getOrDefault(entry.getNumber(), -1)))
         .filter(routeMap.getEntries().keySet()::contains)
         .collect(ImmutableSet.toImmutableSet());
   }
