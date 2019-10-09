@@ -135,6 +135,8 @@ import org.batfish.representation.palo_alto.OspfAreaNormal;
 import org.batfish.representation.palo_alto.OspfAreaNssa;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfAreaStub;
+import org.batfish.representation.palo_alto.OspfInterface;
+import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.OspfVr;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
@@ -633,6 +635,19 @@ public final class PaloAltoGrammarTest {
     assertThat(nssaArea.getAcceptSummary(), equalTo(Boolean.FALSE));
     assertThat(nssaArea.getDefaultRouteType(), equalTo(DefaultRouteType.EXT_2));
     assertFalse(nssaArea.isDefaultRouteDisable());
+
+    String ifaceName = "ethernet1/3.5";
+    assertThat(ospfArea.getInterfaces(), hasKey(ifaceName));
+    OspfInterface ospfIface = ospfArea.getInterfaces().get(ifaceName);
+    assertThat(ospfIface.getEnable(), equalTo(Boolean.FALSE));
+    assertThat(ospfIface.getPassive(), equalTo(Boolean.FALSE));
+    assertThat(ospfIface.getMetric(), equalTo(10));
+    assertThat(ospfIface.getPriority(), equalTo(1));
+    assertThat(ospfIface.getHelloInterval(), equalTo(10));
+    assertThat(ospfIface.getDeadCounts(), equalTo(4));
+    assertThat(ospfIface.getRetransmitInterval(), equalTo(5));
+    assertThat(ospfIface.getTransitDelay(), equalTo(1));
+    assertThat(ospfIface.getLinkType(), equalTo(LinkType.BROADCAST));
   }
 
   @Test

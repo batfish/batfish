@@ -154,6 +154,11 @@ AUTO
     'auto'
 ;
 
+BFD
+:
+    'bfd'
+;
+
 BGP
 :
     'bgp'
@@ -162,6 +167,11 @@ BGP
 BOTNET
 :
     'botnet'
+;
+
+BROADCAST
+:
+    'broadcast'
 ;
 
 CATEGORY
@@ -227,6 +237,11 @@ DAMPENING_PROFILE
 DAYS
 :
     'days'
+;
+
+DEAD_COUNTS
+:
+    'dead-counts'
 ;
 
 DEFAULT_GATEWAY
@@ -399,6 +414,11 @@ GLOBAL_PROTECT_APP_CRYPTO_PROFILES
     'global-protect-app-crypto-profiles'
 ;
 
+GR_DELAY
+:
+    'gr-delay'
+;
+
 GRACEFUL_RESTART
 :
     'graceful-restart'
@@ -442,6 +462,11 @@ HAS_KNOWN_VULNERABILITIES
 HASH
 :
     'hash'
+;
+
+HELLO_INTERVAL
+:
+    'hello-interval'
 ;
 
 HELPER_ENABLE
@@ -552,6 +577,11 @@ LINK
 LINK_STATE
 :
     'link-state'
+;
+
+LINK_TYPE
+:
+    'link-type'
 ;
 
 LLDP
@@ -729,6 +759,16 @@ OSPFV3_INT
     'ospfv3-int'
 ;
 
+P2P
+:
+    'p2p'
+;
+
+P2MP
+:
+    'p2mp'
+;
+
 PANORAMA
 :
     'panorama'
@@ -737,6 +777,11 @@ PANORAMA
 PANORAMA_SERVER
 :
     'panorama-server'
+;
+
+PASSIVE
+:
+    'passive'
 ;
 
 PEER
@@ -794,6 +839,11 @@ PRIMARY_NTP_SERVER
     'primary-ntp-server'
 ;
 
+PRIORITY
+:
+    'priority'
+;
+
 PROFILES
 :
     'profiles'
@@ -842,6 +892,11 @@ RESET_CLIENT
 RESET_SERVER
 :
     'reset-server'
+;
+
+RETRANSMIT_INTERVAL
+:
+    'retransmit-interval'
 ;
 
 RIP
@@ -1067,6 +1122,11 @@ TO
 TRANSFERS_FILES
 :
     'transfers-files'
+;
+
+TRANSIT_DELAY
+:
+    'transit-delay'
 ;
 
 TUNNEL

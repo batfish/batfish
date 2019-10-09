@@ -120,6 +120,16 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_router_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfa_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_dead_countsContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_hello_intervalContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_link_typeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_metricContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_passiveContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_priorityContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_retransmit_intervalContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfai_transit_delayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfat_normalContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfat_nssaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfat_stubContext;
@@ -263,6 +273,8 @@ import org.batfish.representation.palo_alto.OspfAreaNormal;
 import org.batfish.representation.palo_alto.OspfAreaNssa;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfAreaStub;
+import org.batfish.representation.palo_alto.OspfInterface;
+import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.OspfVr;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
@@ -312,6 +324,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private boolean _currentNtpServerPrimary;
   private Interface _currentParentInterface;
   private OspfArea _currentOspfArea;
+  private OspfInterface _currentOspfInterface;
   private OspfAreaStub _currentOspfStubAreaType;
   private OspfAreaNssa _currentOspfNssaAreaType;
   private OspfVr _currentOspfVr;
@@ -742,6 +755,67 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitOspf_area(Ospf_areaContext ctx) {
     _currentOspfArea = null;
+  }
+
+  @Override
+  public void enterOspfa_interface(Ospfa_interfaceContext ctx) {
+    _currentOspfInterface = _currentOspfArea.getOrCreateOspfInterface(getText(ctx.name));
+  }
+
+  @Override
+  public void exitOspfai_enable(Ospfai_enableContext ctx) {
+    _currentOspfInterface.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitOspfai_hello_interval(Ospfai_hello_intervalContext ctx) {
+    _currentOspfInterface.setHelloInterval(toInteger(ctx.hello_interval.uint16()));
+  }
+
+  @Override
+  public void exitOspfai_link_type(Ospfai_link_typeContext ctx) {
+    if (ctx.BROADCAST() != null) {
+      _currentOspfInterface.setLinkType(LinkType.BROADCAST);
+    } else if (ctx.P2P() != null) {
+      _currentOspfInterface.setLinkType(LinkType.P2P);
+    } else if (ctx.P2MP() != null) {
+      _currentOspfInterface.setLinkType(LinkType.P2MP);
+    }
+  }
+
+  @Override
+  public void exitOspfai_metric(Ospfai_metricContext ctx) {
+    _currentOspfInterface.setMetric(toInteger(ctx.metric.uint8()));
+  }
+
+  @Override
+  public void exitOspfai_passive(Ospfai_passiveContext ctx) {
+    _currentOspfInterface.setPassive(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitOspfai_priority(Ospfai_priorityContext ctx) {
+    _currentOspfInterface.setPriority(toInteger(ctx.priority.uint8()));
+  }
+
+  @Override
+  public void exitOspfai_retransmit_interval(Ospfai_retransmit_intervalContext ctx) {
+    _currentOspfInterface.setRetransmitInterval(toInteger(ctx.retransmit_interval.uint16()));
+  }
+
+  @Override
+  public void exitOspfai_transit_delay(Ospfai_transit_delayContext ctx) {
+    _currentOspfInterface.setTransitDelay(toInteger(ctx.transit_delay.uint16()));
+  }
+
+  @Override
+  public void exitOspfa_interface(Ospfa_interfaceContext ctx) {
+    _currentOspfInterface = null;
+  }
+
+  @Override
+  public void exitOspfai_dead_counts(Ospfai_dead_countsContext ctx) {
+    _currentOspfInterface.setDeadCounts(toInteger(ctx.dead_counts.uint8()));
   }
 
   @Override
