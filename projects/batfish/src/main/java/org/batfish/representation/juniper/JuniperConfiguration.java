@@ -96,7 +96,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -1978,33 +1977,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
-        /* Handle explicit accept lines from this policy */
-        zoneAclLines.add(
-            new IpAccessListLine(
-                LineAction.PERMIT, new PermittedByAcl(e.getKey(), false), e.getKey() + "PERMIT"));
-        /* Handle explicit deny lines from this policy, this is needed so only unmatched lines fall-through to the next lines */
-        zoneAclLines.add(
-            new IpAccessListLine(
-                LineAction.DENY,
-                new NotMatchExpr(new PermittedByAcl(e.getKey(), true)),
-                e.getKey() + "DENY"));
+        IpAccessListLine.takingExplicitActionsOf(e.getKey()).forEach(zoneAclLines::add);
       }
     }
 
     /* Global policy if applicable */
     if (_masterLogicalSystem.getFirewallFilters().get(ACL_NAME_GLOBAL_POLICY) != null) {
-      /* Handle explicit accept lines for global policy */
-      zoneAclLines.add(
-          new IpAccessListLine(
-              LineAction.PERMIT,
-              new PermittedByAcl(ACL_NAME_GLOBAL_POLICY, false),
-              "GLOBAL_POLICY_ACCEPT"));
-      /* Handle explicit deny lines for global policy, this is needed so only unmatched lines fall-through to the next lines */
-      zoneAclLines.add(
-          new IpAccessListLine(
-              LineAction.DENY,
-              new NotMatchExpr(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY, true)),
-              "GLOBAL_POLICY_REJECT"));
+      /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
+      IpAccessListLine.takingExplicitActionsOf(ACL_NAME_GLOBAL_POLICY).forEach(zoneAclLines::add);
     }
 
     /* Add catch-all line with default action */
