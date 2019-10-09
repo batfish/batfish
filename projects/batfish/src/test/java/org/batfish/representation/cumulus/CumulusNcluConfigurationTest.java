@@ -53,11 +53,9 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Test;
@@ -831,7 +829,6 @@ public class CumulusNcluConfigurationTest {
         loopback.getAddresses(),
         equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
   }
-
 
   @Test
   public void testCreateVIInterfaceForLo_Bandwidth() {
