@@ -33,4 +33,14 @@ public final class IcmpLarge implements ScreenOption {
   public AclLineMatchExpr getAclLineMatchExpr() {
     return ACL_LINE_MATCH_EXPR;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof IcmpLarge;
+  }
+
+  @Override
+  public int hashCode() {
+    return IcmpLarge.class.getCanonicalName().hashCode();
+  }
 }

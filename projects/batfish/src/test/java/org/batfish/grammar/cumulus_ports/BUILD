@@ -16,6 +16,7 @@ junit_tests(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_ports",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_ports",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
     ],

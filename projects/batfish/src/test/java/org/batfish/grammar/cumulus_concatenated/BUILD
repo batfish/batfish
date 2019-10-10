@@ -21,6 +21,7 @@ junit_tests(
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_concatenated",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
         "@antlr4_runtime//:compile",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
     ],

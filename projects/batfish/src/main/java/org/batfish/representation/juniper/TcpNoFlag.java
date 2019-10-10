@@ -51,4 +51,14 @@ public final class TcpNoFlag implements ScreenOption {
   public AclLineMatchExpr getAclLineMatchExpr() {
     return ACL_LINE_MATCH_EXPR;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof TcpNoFlag;
+  }
+
+  @Override
+  public int hashCode() {
+    return TcpNoFlag.class.getCanonicalName().hashCode();
+  }
 }
