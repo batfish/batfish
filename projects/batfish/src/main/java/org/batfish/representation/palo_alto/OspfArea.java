@@ -1,11 +1,12 @@
 package org.batfish.representation.palo_alto;
 
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** Configuration of an OSPF area {@code network virtual-router NAME protocol ospf area AREA_ID}. */
-public class OspfArea {
+public class OspfArea implements Serializable {
 
   public OspfArea(Ip areaId) {
     _areaId = areaId;

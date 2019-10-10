@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -10,7 +11,7 @@ import org.batfish.datamodel.Ip;
  * Configuration of OSPF within a virtual-router. Config at {@code network virtual-router NAME
  * protocol ospf}.
  */
-public class OspfVr {
+public class OspfVr implements Serializable {
   /** From PAN admin UI - only shows in running config if checked (as yes). */
   private static final boolean DEFAULT_ENABLE = false;
   /** From PAN admin UI - only shows in running config if checked (as no). */

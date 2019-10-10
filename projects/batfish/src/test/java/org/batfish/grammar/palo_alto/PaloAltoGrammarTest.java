@@ -83,6 +83,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
@@ -188,6 +189,8 @@ public final class PaloAltoGrammarTest {
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
+    // crash if not serializable
+    pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
     return pac;
   }
