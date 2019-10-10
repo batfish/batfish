@@ -1147,13 +1147,8 @@ public class VirtualRouter implements Serializable {
           RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
           if (importPolicy != null) {
             acceptIncoming =
-                importPolicy.process(
-                    remoteRoute,
-                    transformedIncomingRouteBuilder,
-                    remoteIp,
-                    ourConfigId.getRemotePeerPrefix(),
-                    _name,
-                    IN);
+                importPolicy.processBgpRoute(
+                    remoteRoute, transformedIncomingRouteBuilder, sessionProperties, _name, IN);
           }
         }
         if (!acceptIncoming) {
