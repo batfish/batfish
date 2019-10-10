@@ -39,11 +39,12 @@ public final class NetworkNodeRolesResource {
     if (nodeRolesDataBean.roleMappings == null) {
       return true;
     }
-    List<String> names = nodeRolesDataBean.roleMappings.stream()
-        .map(bean -> bean.name)
-        .filter(Objects::nonNull)
-        .map(String::toLowerCase)
-        .collect(Collectors.toList());
+    List<String> names =
+        nodeRolesDataBean.roleMappings.stream()
+            .map(bean -> bean.name)
+            .filter(Objects::nonNull)
+            .map(String::toLowerCase)
+            .collect(Collectors.toList());
     return names.size() == ImmutableSet.copyOf(names).size();
   }
 
