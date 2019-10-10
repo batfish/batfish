@@ -60,20 +60,39 @@ public final class AddressGroup implements Serializable {
       return ImmutableSet.of();
     }
     alreadyTraversedGroups.add(_name);
-    Set<String> descendantObjects = new HashSet<>();
     if (_type == Type.STATIC) {
-      for (String member : _members) {
-        if (addressObjects.containsKey(member)) {
-          descendantObjects.add(member);
-        } else if (addressGroups.containsKey(member)) {
-          descendantObjects.addAll(
-              addressGroups
-                  .get(member)
-                  .getDescendantObjects(addressObjects, addressGroups, alreadyTraversedGroups));
-        }
-      }
+      return getStaticDescendantObjects(addressObjects, addressGroups, alreadyTraversedGroups);
     } else if (_type == Type.DYNAMIC) {
-      // TODO write this logic
+      return getDynamicDescendantObjects(addressObjects, addressGroups, alreadyTraversedGroups);
+    }
+    return ImmutableSet.of();
+  }
+
+  private Set<String> getDynamicDescendantObjects(
+      Map<String, AddressObject> addressObjects,
+      Map<String, AddressGroup> addressGroups,
+      Set<String> alreadyTraversedGroups) {
+    // Guaranteed by caller / type is dynamic
+    assert _filter != null;
+    String[] conjuncts = _filter.split("and");
+    // TODO flesh out logic
+    return ImmutableSet.of();
+  }
+
+  private Set<String> getStaticDescendantObjects(
+      Map<String, AddressObject> addressObjects,
+      Map<String, AddressGroup> addressGroups,
+      Set<String> alreadyTraversedGroups) {
+    Set<String> descendantObjects = new HashSet<>();
+    for (String member : _members) {
+      if (addressObjects.containsKey(member)) {
+        descendantObjects.add(member);
+      } else if (addressGroups.containsKey(member)) {
+        descendantObjects.addAll(
+            addressGroups
+                .get(member)
+                .getDescendantObjects(addressObjects, addressGroups, alreadyTraversedGroups));
+      }
     }
     return descendantObjects;
   }
