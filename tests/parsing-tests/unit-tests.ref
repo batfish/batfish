@@ -76331,22 +76331,6 @@
             }
           ]
         },
-        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 34,
-              "Parser_Context" : "[rb_bgp router_bgp s_router statement f5_bigip_imish_configuration]",
-              "Text" : "bgp confederation identifier 65001"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 35,
-              "Parser_Context" : "[rb_bgp router_bgp s_router statement f5_bigip_imish_configuration]",
-              "Text" : "bgp confederation peers 65002 65003"
-            }
-          ]
-        },
         "configs/foundry_access_list" : {
           "Parse warnings" : [
             {
