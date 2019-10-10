@@ -35,6 +35,7 @@ junit_tests(
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/representation/juniper",
         "@antlr4_runtime//:compile",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
     ],
