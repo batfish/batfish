@@ -541,6 +541,10 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getCall().getRouteMapName(), equalTo("SUB-MAP"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP, "SUB-MAP", CumulusStructureUsage.ROUTE_MAP_CALL),
+        contains(2));
   }
 
   @Test
