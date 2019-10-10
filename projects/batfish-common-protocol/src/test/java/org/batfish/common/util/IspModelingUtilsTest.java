@@ -181,11 +181,7 @@ public class IspModelingUtilsTest {
 
     Configuration ispConfiguration =
         IspModelingUtils.getIspConfigurationNode(
-            2L,
-            ispInfo,
-            ImmutableMap.of(),
-            new NetworkFactory(),
-            new BatfishLogger("output", false));
+            2L, ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
 
     assertThat(
         ispConfiguration,
@@ -234,8 +230,7 @@ public class IspModelingUtilsTest {
         new IspInfo(ImmutableList.of(interfaceAddress, interfaceAddress2), ImmutableList.of(peer));
     BatfishLogger logger = new BatfishLogger("debug", false);
     Configuration ispConfiguration =
-        IspModelingUtils.getIspConfigurationNode(
-            2L, ispInfo, ImmutableMap.of(), new NetworkFactory(), logger);
+        IspModelingUtils.getIspConfigurationNode(2L, ispInfo, new NetworkFactory(), logger);
 
     assertThat(ispConfiguration, nullValue());
 
