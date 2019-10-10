@@ -8,7 +8,7 @@ sys global-settings {
 !!! imish configuration starts here
 !
 router bgp 1
- redistribute kernel
+ redistribute connected
  neighbor 192.0.2.2 remote-as 2
 !
 end

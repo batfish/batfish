@@ -114,12 +114,26 @@ rb_null
   ) null_rest_of_line
 ;
 
-rb_redistribute_kernel
+rb_redistribute
 :
-  REDISTRIBUTE KERNEL
+  REDISTRIBUTE
+  (
+    rbr_kernel
+    | rbr_connected
+  ) NEWLINE
+;
+
+rbr_kernel
+:
+  KERNEL
   (
     ROUTE_MAP rm = word
-  )? NEWLINE
+  )?
+;
+
+rbr_connected
+:
+  CONNECTED
 ;
 
 router_bgp
@@ -133,7 +147,7 @@ router_bgp
     | rb_neighbor_peer_group
     | rb_no
     | rb_null
-    | rb_redistribute_kernel
+    | rb_redistribute
   )*
 ;
 
