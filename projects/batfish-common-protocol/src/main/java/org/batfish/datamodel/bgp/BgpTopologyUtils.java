@@ -491,7 +491,7 @@ public final class BgpTopologyUtils {
     // 1 to 1 match, inside *the same* confederation
     if (initiatorConfed != null
         && listenerConfed != null
-        && Objects.equals(initiatorConfed, listenerConfed)
+        && initiatorConfed.equals(listenerConfed)
         && listenerRemoteAsns.contains(initiatorLocalAs)
         && initiatorRemoteAsns.contains(listenerLocalAs)) {
       return new AsPair(initiatorLocalAs, listenerLocalAs);
