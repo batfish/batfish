@@ -7,8 +7,6 @@ import javax.annotation.Nullable;
 
 /** BGP confederation settings */
 public final class BgpConfederation implements Serializable {
-  private @Nullable Long _id;
-  private final List<Long> _peers;
 
   public BgpConfederation() {
     _peers = new ArrayList<>();
@@ -26,4 +24,7 @@ public final class BgpConfederation implements Serializable {
   public List<Long> getPeers() {
     return _peers;
   }
+
+  private @Nullable Long _id;
+  private final List<Long> _peers;
 }

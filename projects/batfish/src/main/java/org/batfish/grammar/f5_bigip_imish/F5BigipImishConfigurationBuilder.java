@@ -65,7 +65,6 @@ import org.batfish.representation.f5_bigip.AbstractBgpNeighbor;
 import org.batfish.representation.f5_bigip.AccessList;
 import org.batfish.representation.f5_bigip.AccessListLine;
 import org.batfish.representation.f5_bigip.AggregateAddress;
-import org.batfish.representation.f5_bigip.BgpConfederation;
 import org.batfish.representation.f5_bigip.BgpNeighbor;
 import org.batfish.representation.f5_bigip.BgpPeerGroup;
 import org.batfish.representation.f5_bigip.BgpProcess;
