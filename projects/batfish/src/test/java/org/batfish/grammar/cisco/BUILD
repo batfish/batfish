@@ -22,6 +22,7 @@ junit_tests(
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco",
         "@antlr4_runtime//:compile",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
     ],
