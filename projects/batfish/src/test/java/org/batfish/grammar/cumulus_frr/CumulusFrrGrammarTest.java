@@ -541,15 +541,28 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getCall().getRouteMapName(), equalTo("SUB-MAP"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP, "SUB-MAP", CumulusStructureUsage.ROUTE_MAP_CALL),
+        contains(2));
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapOnMatch() {
+  public void testCumulusFrrVrfRouteMapOnMatchNext() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\non-match next\n", name));
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertNotNull(entry.getContinue());
     assertNull(entry.getContinue().getNext());
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapOnMatchGoto() {
+    String name = "ROUTE-MAP-NAME";
+    parse(String.format("route-map %s permit 10\non-match goto 20\n", name));
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertNotNull(entry.getContinue());
+    assertThat(entry.getContinue().getNext(), equalTo(20));
   }
 
   @Test

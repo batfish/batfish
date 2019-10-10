@@ -240,6 +240,11 @@ GE
   'ge'
 ;
 
+GOTO
+:
+  'goto'
+;
+
 HOSTNAME
 :
   'hostname' -> pushMode(M_Word)

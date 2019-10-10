@@ -988,6 +988,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.BGP_NEIGHBOR, F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE);
     markConcreteStructure(
         F5BigipStructureType.BGP_PROCESS, F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE);
+    markConcreteStructure(F5BigipStructureType.DATA_GROUP_EXTERNAL);
+    markConcreteStructure(F5BigipStructureType.DATA_GROUP_INTERNAL);
     markConcreteStructure(
         F5BigipStructureType.IMISH_INTERFACE,
         F5BigipStructureUsage.IMISH_INTERFACE_SELF_REFERENCE,

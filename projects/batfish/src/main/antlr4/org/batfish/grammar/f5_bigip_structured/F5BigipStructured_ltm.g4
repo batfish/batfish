@@ -1,6 +1,9 @@
 parser grammar F5BigipStructured_ltm;
 
-import F5BigipStructured_common, F5BigipStructured_ltm_rule;
+import
+  F5BigipStructured_common,
+  F5BigipStructured_ltm_data_group,
+  F5BigipStructured_ltm_rule;
 
 options {
   tokenVocab = F5BigipStructuredLexer;
@@ -1671,7 +1674,8 @@ s_ltm
 :
   LTM
   (
-    l_monitor
+    l_data_group
+    | l_monitor
     | l_node
     | l_persistence
     | l_pool
