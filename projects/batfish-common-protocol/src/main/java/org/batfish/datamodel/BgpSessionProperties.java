@@ -273,7 +273,11 @@ public final class BgpSessionProperties {
    *     (listener to initiator) rather than forwards direction (initiator to listener)
    */
   public static BgpSessionProperties from(
-      BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
+      BgpPeerConfig initiator,
+      BgpPeerConfig listener,
+      boolean reverseDirection,
+      long initiatorLocalAs,
+      long listenerLocalAs) {
     Ip initiatorIp = initiator.getLocalIp();
     Ip listenerIp = listener.getLocalIp();
     if (listenerIp == null || listenerIp == Ip.AUTO) {
@@ -285,10 +289,6 @@ public final class BgpSessionProperties {
     }
     assert initiatorIp != null;
     assert listenerIp != null;
-
-    // Both local ASNs must be nonnull for BgpPeerConfig#hasCompatibleRemoteAsns to have passed.
-    long initiatorLocalAs = checkNotNull(initiator.getLocalAs());
-    long listenerLocalAs = checkNotNull(listener.getLocalAs());
 
     SessionType sessionType = getSessionType(initiator);
 
@@ -316,6 +316,29 @@ public final class BgpSessionProperties {
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType);
+  }
+
+  /**
+   * Create a set of new parameters based on session initiator and listener. This assumes that
+   * provided {@link BgpPeerConfig configs} are compatible.
+   *
+   * <p>For session parameters that are directional (e.g., IPs used), the {@code initiator} config
+   * will be used to fill in the {@code tail} values, unless {@code reverseDirection} is specified.
+   * Other parameters are derived from both peer configurations, emulating session negotiation.
+   *
+   * <p><b>Note</b> that some parameters (such as {@link #isEbgp()} will be determined based on the
+   * configuration of the initiator only.
+   *
+   * @param reverseDirection Whether to create the session properties for reverse direction
+   *     (listener to initiator) rather than forwards direction (initiator to listener)
+   */
+  public static BgpSessionProperties from(
+      BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
+
+    // Both local ASNs must be nonnull for BgpPeerConfig#hasCompatibleRemoteAsns to have passed.
+    long initiatorLocalAs = checkNotNull(initiator.getLocalAs());
+    long listenerLocalAs = checkNotNull(listener.getLocalAs());
+    return from(initiator, listener, reverseDirection, initiatorLocalAs, listenerLocalAs);
   }
 
   /** Computes whether two peers have compatible configuration to enable add-path */

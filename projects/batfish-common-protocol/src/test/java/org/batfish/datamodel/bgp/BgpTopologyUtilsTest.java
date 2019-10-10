@@ -1,11 +1,14 @@
 package org.batfish.datamodel.bgp;
 
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.computeAsPair;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -26,9 +29,11 @@ import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.AsPair;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -337,5 +342,37 @@ public class BgpTopologyUtilsTest {
             .getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
+  }
+
+  @Test
+  public void testComputeAsPair() {
+    // Misconfigured
+    assertThat(computeAsPair(null, null, ALL_AS_NUMBERS, 3L, null, ALL_AS_NUMBERS), nullValue());
+    assertThat(computeAsPair(1L, null, ALL_AS_NUMBERS, null, null, ALL_AS_NUMBERS), nullValue());
+    // Direct match
+    assertThat(
+        computeAsPair(1L, null, ALL_AS_NUMBERS, 2L, null, ALL_AS_NUMBERS),
+        equalTo(new AsPair(1, 2)));
+    assertThat(
+        computeAsPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(1)),
+        equalTo(new AsPair(1, 2)));
+    // Direct but no match
+    assertThat(computeAsPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(3)), nullValue());
+    // Confed match
+    assertThat(
+        computeAsPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(3L)),
+        equalTo(new AsPair(3, 4)));
+    // Local match preferred over confed match
+    assertThat(
+        computeAsPair(
+            1L,
+            3L,
+            LongSpace.of(4),
+            4L,
+            null,
+            LongSpace.builder().including(1L).including(3L).build()),
+        equalTo(new AsPair(1, 4)));
+    // Confed no match
+    assertThat(computeAsPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5)), nullValue());
   }
 }
