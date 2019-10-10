@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -7,7 +8,7 @@ import javax.annotation.Nullable;
  * Configuration of an OSPF interface within an OSPF area {@code network virtual-router NAME
  * protocol ospf area AREA_ID interface INTERFACE_NAME}.
  */
-public class OspfInterface {
+public class OspfInterface implements Serializable {
   public enum LinkType {
     BROADCAST,
     P2P,
