@@ -19,6 +19,10 @@ public void emit(Token token) {
 
 }
 
+tokens {
+  DOUBLE_QUOTED_STRING
+}
+
 // Keywords
 
 ACTION
@@ -116,6 +120,11 @@ COMMUNITY
   'community'
 ;
 
+DATA_GROUP
+:
+  'data-group'
+;
+
 DEFAULT
 :
   'default'
@@ -184,6 +193,11 @@ ENABLED
 ENTRIES
 :
   'entries'
+;
+
+EXTERNAL
+:
+  'external'
 ;
 
 FASTHTTP
@@ -294,6 +308,11 @@ INTERFACE
 INTERFACES
 :
   'interfaces'
+;
+
+INTERNAL
+:
+  'internal'
 ;
 
 IP_FORWARD
@@ -873,9 +892,9 @@ DEC
   F_Digit+
 ;
 
-DOUBLE_QUOTED_STRING
+DOUBLE_QUOTE
 :
-  '"' ~'"'* '"'
+  '"' -> more, pushMode(M_DoubleQuote)
 ;
 
 IMISH_CHUNK
@@ -1285,7 +1304,7 @@ F_Word
 fragment
 F_WordCharCommon
 :
-  ~[ \t\n\r{}[\]/:]
+  ~[ \t\n\r{}[\]/:"]
 ;
 
 fragment
@@ -1305,4 +1324,21 @@ fragment
 F_WordId
 :
   F_WordCharCommon+
+;
+
+mode M_DoubleQuote;
+
+M_DoubleQuote_BODY_CHAR
+:
+  ~'"' -> more
+;
+
+M_DoubleQuote_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTED_STRING), popMode
+;
+
+M_DoubleQuote_ESCAPED_DOUBLE_QUOTE
+:
+  '\\"' -> more
 ;
