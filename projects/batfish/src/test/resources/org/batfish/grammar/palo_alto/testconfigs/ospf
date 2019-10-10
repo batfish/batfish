@@ -28,3 +28,6 @@ set network virtual-router vr1 protocol ospf reject-default-route no
 set network virtual-router vr1 protocol ospf graceful-restart enable no
 set network virtual-router vr1 protocol ospf graceful-restart helper-enable no
 set network virtual-router vr1 protocol ospf graceful-restart strict-LSA-checking no
+set network virtual-router vr1 protocol ospf auth-profile apr1 password -AQ==Jan8Q2Hw3pnWb1afI9wBVOcGTjU=b1lCQOAbU
+set network virtual-router vr1 protocol ospf global-bfd profile bfd_pr1
+
