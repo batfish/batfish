@@ -4,8 +4,12 @@ import static org.batfish.common.util.HttpUtil.checkClientArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -33,15 +37,14 @@ public final class NetworkNodeRolesResource {
   @VisibleForTesting
   static boolean noDuplicateRoleMappings(NodeRolesDataBean nodeRolesDataBean) {
     if (nodeRolesDataBean.roleMappings == null) {
-      return false;
+      return true;
     }
-    long uniqueSize =
-        nodeRolesDataBean.roleMappings.stream()
-            .map(bean -> bean.name)
-            .map(String::toLowerCase)
-            .distinct()
-            .count();
-    return uniqueSize == nodeRolesDataBean.roleMappings.size();
+    List<String> names = nodeRolesDataBean.roleMappings.stream()
+        .map(bean -> bean.name)
+        .filter(Objects::nonNull)
+        .map(String::toLowerCase)
+        .collect(Collectors.toList());
+    return names.size() == ImmutableSet.copyOf(names).size();
   }
 
   private String _network;
