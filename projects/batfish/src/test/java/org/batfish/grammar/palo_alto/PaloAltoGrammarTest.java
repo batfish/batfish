@@ -335,7 +335,6 @@ public final class PaloAltoGrammarTest {
     assertThat(
         ag.getIpSpace(addressObjects, addressGroups),
         equalTo(addressObjects.get("addr1").getIpSpace()));
-    // TODO add conversion and IP space test too
   }
 
   @Test

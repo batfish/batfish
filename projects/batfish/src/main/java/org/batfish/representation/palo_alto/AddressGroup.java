@@ -101,8 +101,7 @@ public final class AddressGroup implements Serializable {
   }
 
   /** Returns descendant objects for a dynamic address-group. */
-  @VisibleForTesting
-  Set<String> getDynamicDescendantObjects(
+  private Set<String> getDynamicDescendantObjects(
       Map<String, AddressObject> addressObjects,
       Map<String, AddressGroup> addressGroups,
       Set<String> alreadyTraversedGroups) {
@@ -132,8 +131,8 @@ public final class AddressGroup implements Serializable {
     return descendantObjects;
   }
 
-  @VisibleForTesting
-  Set<String> getStaticDescendantObjects(
+  /** Returns descendant objects for a static address-group. */
+  private Set<String> getStaticDescendantObjects(
       Map<String, AddressObject> addressObjects,
       Map<String, AddressGroup> addressGroups,
       Set<String> alreadyTraversedGroups) {
