@@ -1299,7 +1299,7 @@
         "Filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Line" : 206,
         "Text" : "defaults-from /Common/clientssl",
-        "Parser_Context" : "[lprofcs_defaults_from lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[lprof_client_ssl_defaults_from lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -1684,7 +1684,7 @@
         "Filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Line" : 267,
         "Text" : "defaults-from /Common/serverssl",
-        "Parser_Context" : "[lprofss_defaults_from lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[lprof_server_ssl_defaults_from lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {

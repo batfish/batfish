@@ -65,12 +65,62 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTEN
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.POOL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PREFIX_LIST;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ANALYTICS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_CERTIFICATE_AUTHORITY;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_CLASSIFICATION;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_CLIENT_LDAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_CLIENT_SSL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_DHCPV4;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_DHCPV6;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_DIAMETER;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_DNS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_FASTHTTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_FASTL4;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_FIX;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_FTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_GTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_HTML;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_HTTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_HTTP2;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_HTTP_COMPRESSION;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_HTTP_PROXY_CONNECT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ICAP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ILX;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_IPOTHER;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_IPSECALG;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_MAP_T;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_MQTT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_NETFLOW;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_OCSP_STAPLING_PARAMS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ONE_CONNECT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_PCP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_PPTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_QOE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_RADIUS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_REQUEST_ADAPT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_REQUEST_LOG;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_RESPONSE_ADAPT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_REWRITE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_RTSP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SCTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SERVER_LDAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SERVER_SSL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SIP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SMTPS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SOCKS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SPLITSESSIONCLIENT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SPLITSESSIONSERVER;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_STATISTICS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_STREAM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TCP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TCP_ANALYTICS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TFTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TRAFFIC_ACCELERATION;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_UDP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_WEBSOCKET;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_WEB_ACCELERATION;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_WEB_SECURITY;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_XML;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.RULE;
@@ -1225,6 +1275,70 @@ public final class F5BigipStructuredGrammarTest {
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
+    // profile analytics
+    {
+      String undefined = "/Common/profile_analytics_undefined";
+      String unused = "/Common/profile_analytics_unused";
+      String used = "/Common/profile_analytics_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_ANALYTICS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_ANALYTICS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_ANALYTICS, used, 2));
+    }
+
+    // profile certificate-authority
+    {
+      String undefined = "/Common/profile_certificate_authority_undefined";
+      String unused = "/Common/profile_certificate_authority_unused";
+      String used = "/Common/profile_certificate_authority_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_CERTIFICATE_AUTHORITY, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_CERTIFICATE_AUTHORITY, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_CERTIFICATE_AUTHORITY, used, 2));
+    }
+
+    // profile classification
+    {
+      String undefined = "/Common/profile_classification_undefined";
+      String unused = "/Common/profile_classification_unused";
+      String used = "/Common/profile_classification_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_CLASSIFICATION, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_CLASSIFICATION, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_CLASSIFICATION, used, 2));
+    }
+
+    // profile client-ldap
+    {
+      String undefined = "/Common/profile_client_ldap_undefined";
+      String unused = "/Common/profile_client_ldap_unused";
+      String used = "/Common/profile_client_ldap_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_CLIENT_LDAP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_CLIENT_LDAP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_CLIENT_LDAP, used, 2));
+    }
+
     // profile client-ssl
     {
       String undefined = "/Common/profile_client_ssl_undefined";
@@ -1239,6 +1353,198 @@ public final class F5BigipStructuredGrammarTest {
 
       // detect all structure references
       assertThat(ans, hasNumReferrers(file, PROFILE_CLIENT_SSL, used, 2));
+    }
+
+    // profile dhcpv4
+    {
+      String undefined = "/Common/profile_dhcpv4_undefined";
+      String unused = "/Common/profile_dhcpv4_unused";
+      String used = "/Common/profile_dhcpv4_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_DHCPV4, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_DHCPV4, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_DHCPV4, used, 2));
+    }
+
+    // profile dhcpv6
+    {
+      String undefined = "/Common/profile_dhcpv6_undefined";
+      String unused = "/Common/profile_dhcpv6_unused";
+      String used = "/Common/profile_dhcpv6_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_DHCPV6, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_DHCPV6, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_DHCPV6, used, 2));
+    }
+
+    // profile diameter
+    {
+      String undefined = "/Common/profile_diameter_undefined";
+      String unused = "/Common/profile_diameter_unused";
+      String used = "/Common/profile_diameter_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_DIAMETER, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_DIAMETER, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_DIAMETER, used, 2));
+    }
+
+    // profile dns
+    {
+      String undefined = "/Common/profile_dns_undefined";
+      String unused = "/Common/profile_dns_unused";
+      String used = "/Common/profile_dns_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_DNS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_DNS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_DNS, used, 2));
+    }
+
+    // profile fasthttp
+    {
+      String undefined = "/Common/profile_fasthttp_undefined";
+      String unused = "/Common/profile_fasthttp_unused";
+      String used = "/Common/profile_fasthttp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_FASTHTTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_FASTHTTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_FASTHTTP, used, 2));
+    }
+
+    // profile fastl4
+    {
+      String undefined = "/Common/profile_fastl4_undefined";
+      String unused = "/Common/profile_fastl4_unused";
+      String used = "/Common/profile_fastl4_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_FASTL4, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_FASTL4, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_FASTL4, used, 2));
+    }
+
+    // profile fix
+    {
+      String undefined = "/Common/profile_fix_undefined";
+      String unused = "/Common/profile_fix_unused";
+      String used = "/Common/profile_fix_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_FIX, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_FIX, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_FIX, used, 2));
+    }
+
+    // profile ftp
+    {
+      String undefined = "/Common/profile_ftp_undefined";
+      String unused = "/Common/profile_ftp_unused";
+      String used = "/Common/profile_ftp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_FTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_FTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_FTP, used, 2));
+    }
+
+    // profile gtp
+    {
+      String undefined = "/Common/profile_gtp_undefined";
+      String unused = "/Common/profile_gtp_unused";
+      String used = "/Common/profile_gtp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_GTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_GTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_GTP, used, 2));
+    }
+
+    // profile html
+    {
+      String undefined = "/Common/profile_html_undefined";
+      String unused = "/Common/profile_html_unused";
+      String used = "/Common/profile_html_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_HTML, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTML, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTML, used, 2));
+    }
+
+    // profile http2
+    {
+      String undefined = "/Common/profile_http2_undefined";
+      String unused = "/Common/profile_http2_unused";
+      String used = "/Common/profile_http2_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_HTTP2, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP2, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP2, used, 2));
+    }
+
+    // profile http-compression
+    {
+      String undefined = "/Common/profile_http_compression_undefined";
+      String unused = "/Common/profile_http_compression_unused";
+      String used = "/Common/profile_http_compression_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_HTTP_COMPRESSION, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP_COMPRESSION, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP_COMPRESSION, used, 2));
     }
 
     // profile http
@@ -1257,6 +1563,118 @@ public final class F5BigipStructuredGrammarTest {
       assertThat(ans, hasNumReferrers(file, PROFILE_HTTP, used, 2));
     }
 
+    // profile http-proxy-connect
+    {
+      String undefined = "/Common/profile_http_proxy_connect_undefined";
+      String unused = "/Common/profile_http_proxy_connect_unused";
+      String used = "/Common/profile_http_proxy_connect_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_HTTP_PROXY_CONNECT, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP_PROXY_CONNECT, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP_PROXY_CONNECT, used, 2));
+    }
+
+    // profile icap
+    {
+      String undefined = "/Common/profile_icap_undefined";
+      String unused = "/Common/profile_icap_unused";
+      String used = "/Common/profile_icap_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_ICAP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_ICAP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_ICAP, used, 2));
+    }
+
+    // profile ilx
+    {
+      String undefined = "/Common/profile_ilx_undefined";
+      String unused = "/Common/profile_ilx_unused";
+      String used = "/Common/profile_ilx_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_ILX, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_ILX, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_ILX, used, 2));
+    }
+
+    // profile ipother
+    {
+      String undefined = "/Common/profile_ipother_undefined";
+      String unused = "/Common/profile_ipother_unused";
+      String used = "/Common/profile_ipother_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_IPOTHER, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_IPOTHER, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_IPOTHER, used, 2));
+    }
+
+    // profile ipsecalg
+    {
+      String undefined = "/Common/profile_ipsecalg_undefined";
+      String unused = "/Common/profile_ipsecalg_unused";
+      String used = "/Common/profile_ipsecalg_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_IPSECALG, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_IPSECALG, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_IPSECALG, used, 2));
+    }
+
+    // profile map-t
+    {
+      String undefined = "/Common/profile_map_t_undefined";
+      String unused = "/Common/profile_map_t_unused";
+      String used = "/Common/profile_map_t_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_MAP_T, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_MAP_T, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_MAP_T, used, 2));
+    }
+
+    // profile mqtt
+    {
+      String undefined = "/Common/profile_mqtt_undefined";
+      String unused = "/Common/profile_mqtt_unused";
+      String used = "/Common/profile_mqtt_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_MQTT, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_MQTT, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_MQTT, used, 2));
+    }
+
     // profile ocsp-stapling-params
     {
       String undefined = "/Common/profile_ocsp_stapling_params_undefined";
@@ -1271,6 +1689,22 @@ public final class F5BigipStructuredGrammarTest {
 
       // detect all structure references
       assertThat(ans, hasNumReferrers(file, PROFILE_OCSP_STAPLING_PARAMS, used, 2));
+    }
+
+    // profile netflow
+    {
+      String undefined = "/Common/profile_netflow_undefined";
+      String unused = "/Common/profile_netflow_unused";
+      String used = "/Common/profile_netflow_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_NETFLOW, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_NETFLOW, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_NETFLOW, used, 2));
     }
 
     // profile one-connect
@@ -1289,6 +1723,182 @@ public final class F5BigipStructuredGrammarTest {
       assertThat(ans, hasNumReferrers(file, PROFILE_ONE_CONNECT, used, 2));
     }
 
+    // profile pcp
+    {
+      String undefined = "/Common/profile_pcp_undefined";
+      String unused = "/Common/profile_pcp_unused";
+      String used = "/Common/profile_pcp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_PCP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_PCP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_PCP, used, 2));
+    }
+
+    // profile pptp
+    {
+      String undefined = "/Common/profile_pptp_undefined";
+      String unused = "/Common/profile_pptp_unused";
+      String used = "/Common/profile_pptp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_PPTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_PPTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_PPTP, used, 2));
+    }
+
+    // profile qoe
+    {
+      String undefined = "/Common/profile_qoe_undefined";
+      String unused = "/Common/profile_qoe_unused";
+      String used = "/Common/profile_qoe_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_QOE, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_QOE, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_QOE, used, 2));
+    }
+
+    // profile radius
+    {
+      String undefined = "/Common/profile_radius_undefined";
+      String unused = "/Common/profile_radius_unused";
+      String used = "/Common/profile_radius_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_RADIUS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_RADIUS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_RADIUS, used, 2));
+    }
+
+    // profile request-adapt
+    {
+      String undefined = "/Common/profile_request_adapt_undefined";
+      String unused = "/Common/profile_request_adapt_unused";
+      String used = "/Common/profile_request_adapt_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_REQUEST_ADAPT, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_REQUEST_ADAPT, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_REQUEST_ADAPT, used, 2));
+    }
+
+    // profile request-log
+    {
+      String undefined = "/Common/profile_request_log_undefined";
+      String unused = "/Common/profile_request_log_unused";
+      String used = "/Common/profile_request_log_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_REQUEST_LOG, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_REQUEST_LOG, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_REQUEST_LOG, used, 2));
+    }
+
+    // profile response-adapt
+    {
+      String undefined = "/Common/profile_response_adapt_undefined";
+      String unused = "/Common/profile_response_adapt_unused";
+      String used = "/Common/profile_response_adapt_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_RESPONSE_ADAPT, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_RESPONSE_ADAPT, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_RESPONSE_ADAPT, used, 2));
+    }
+
+    // profile rewrite
+    {
+      String undefined = "/Common/profile_rewrite_undefined";
+      String unused = "/Common/profile_rewrite_unused";
+      String used = "/Common/profile_rewrite_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_REWRITE, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_REWRITE, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_REWRITE, used, 2));
+    }
+
+    // profile rtsp
+    {
+      String undefined = "/Common/profile_rtsp_undefined";
+      String unused = "/Common/profile_rtsp_unused";
+      String used = "/Common/profile_rtsp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_RTSP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_RTSP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_RTSP, used, 2));
+    }
+
+    // profile sctp
+    {
+      String undefined = "/Common/profile_sctp_undefined";
+      String unused = "/Common/profile_sctp_unused";
+      String used = "/Common/profile_sctp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SCTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SCTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SCTP, used, 2));
+    }
+
+    // profile server-ldap
+    {
+      String undefined = "/Common/profile_server_ldap_undefined";
+      String unused = "/Common/profile_server_ldap_unused";
+      String used = "/Common/profile_server_ldap_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SERVER_LDAP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SERVER_LDAP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SERVER_LDAP, used, 2));
+    }
+
     // profile server-ssl
     {
       String undefined = "/Common/profile_server_ssl_undefined";
@@ -1305,6 +1915,134 @@ public final class F5BigipStructuredGrammarTest {
       assertThat(ans, hasNumReferrers(file, PROFILE_SERVER_SSL, used, 3));
     }
 
+    // profile sip
+    {
+      String undefined = "/Common/profile_sip_undefined";
+      String unused = "/Common/profile_sip_unused";
+      String used = "/Common/profile_sip_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SIP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SIP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SIP, used, 2));
+    }
+
+    // profile smtps
+    {
+      String undefined = "/Common/profile_smtps_undefined";
+      String unused = "/Common/profile_smtps_unused";
+      String used = "/Common/profile_smtps_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SMTPS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SMTPS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SMTPS, used, 2));
+    }
+
+    // profile socks
+    {
+      String undefined = "/Common/profile_socks_undefined";
+      String unused = "/Common/profile_socks_unused";
+      String used = "/Common/profile_socks_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SOCKS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SOCKS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SOCKS, used, 2));
+    }
+
+    // profile splitsessionclient
+    {
+      String undefined = "/Common/profile_splitsessionclient_undefined";
+      String unused = "/Common/profile_splitsessionclient_unused";
+      String used = "/Common/profile_splitsessionclient_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SPLITSESSIONCLIENT, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SPLITSESSIONCLIENT, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SPLITSESSIONCLIENT, used, 2));
+    }
+
+    // profile splitsessionserver
+    {
+      String undefined = "/Common/profile_splitsessionserver_undefined";
+      String unused = "/Common/profile_splitsessionserver_unused";
+      String used = "/Common/profile_splitsessionserver_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SPLITSESSIONSERVER, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SPLITSESSIONSERVER, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SPLITSESSIONSERVER, used, 2));
+    }
+
+    // profile statistics
+    {
+      String undefined = "/Common/profile_statistics_undefined";
+      String unused = "/Common/profile_statistics_unused";
+      String used = "/Common/profile_statistics_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_STATISTICS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_STATISTICS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_STATISTICS, used, 2));
+    }
+
+    // profile stream
+    {
+      String undefined = "/Common/profile_stream_undefined";
+      String unused = "/Common/profile_stream_unused";
+      String used = "/Common/profile_stream_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_STREAM, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_STREAM, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_STREAM, used, 2));
+    }
+
+    // profile tcp-analytics
+    {
+      String undefined = "/Common/profile_tcp_analytics_undefined";
+      String unused = "/Common/profile_tcp_analytics_unused";
+      String used = "/Common/profile_tcp_analytics_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_TCP_ANALYTICS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_TCP_ANALYTICS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_TCP_ANALYTICS, used, 2));
+    }
+
     // profile tcp
     {
       String undefined = "/Common/profile_tcp_undefined";
@@ -1319,6 +2057,118 @@ public final class F5BigipStructuredGrammarTest {
 
       // detect all structure references
       assertThat(ans, hasNumReferrers(file, PROFILE_TCP, used, 2));
+    }
+
+    // profile tftp
+    {
+      String undefined = "/Common/profile_tftp_undefined";
+      String unused = "/Common/profile_tftp_unused";
+      String used = "/Common/profile_tftp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_TFTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_TFTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_TFTP, used, 2));
+    }
+
+    // profile traffic-acceleration
+    {
+      String undefined = "/Common/profile_traffic_acceleration_undefined";
+      String unused = "/Common/profile_traffic_acceleration_unused";
+      String used = "/Common/profile_traffic_acceleration_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_TRAFFIC_ACCELERATION, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_TRAFFIC_ACCELERATION, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_TRAFFIC_ACCELERATION, used, 2));
+    }
+
+    // profile udp
+    {
+      String undefined = "/Common/profile_udp_undefined";
+      String unused = "/Common/profile_udp_unused";
+      String used = "/Common/profile_udp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_UDP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_UDP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_UDP, used, 2));
+    }
+
+    // profile web-acceleration
+    {
+      String undefined = "/Common/profile_web_acceleration_undefined";
+      String unused = "/Common/profile_web_acceleration_unused";
+      String used = "/Common/profile_web_acceleration_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_WEB_ACCELERATION, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_WEB_ACCELERATION, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_WEB_ACCELERATION, used, 2));
+    }
+
+    // profile web-security
+    {
+      String undefined = "/Common/profile_web_security_undefined";
+      String unused = "/Common/profile_web_security_unused";
+      String used = "/Common/profile_web_security_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_WEB_SECURITY, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_WEB_SECURITY, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_WEB_SECURITY, used, 2));
+    }
+
+    // profile websocket
+    {
+      String undefined = "/Common/profile_websocket_undefined";
+      String unused = "/Common/profile_websocket_unused";
+      String used = "/Common/profile_websocket_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_WEBSOCKET, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_WEBSOCKET, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_WEBSOCKET, used, 2));
+    }
+
+    // profile xml
+    {
+      String undefined = "/Common/profile_xml_undefined";
+      String unused = "/Common/profile_xml_unused";
+      String used = "/Common/profile_xml_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_XML, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_XML, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_XML, used, 2));
     }
 
     assertNoUndefinedReferencesToBuiltins(
