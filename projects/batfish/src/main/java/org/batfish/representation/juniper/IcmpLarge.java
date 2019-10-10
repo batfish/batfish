@@ -39,7 +39,8 @@ public final class IcmpLarge implements ScreenOption {
     return obj instanceof IcmpLarge;
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return IcmpLarge.class.getCanonicalName().hashCode();
   }
 }
