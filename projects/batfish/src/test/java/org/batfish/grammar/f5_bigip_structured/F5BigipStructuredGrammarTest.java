@@ -133,6 +133,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN_MEMBER_INTERFACE;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -147,7 +148,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -930,8 +930,16 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRuleParsing() {
-    assertNotNull(parseVendorConfig("f5_bigip_structured_ltm_rule"));
+  public void testRuleDefinitions() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_rule";
+    String file = "configs/" + hostname;
+    _disableUnrecognized = true;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    assertThat(
+        ans.getDefinedStructures().get(file).get(F5BigipStructureType.RULE.getDescription()),
+        aMapWithSize(3));
   }
 
   @Test
