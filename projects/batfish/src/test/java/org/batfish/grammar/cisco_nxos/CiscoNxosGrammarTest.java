@@ -3856,6 +3856,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpPimParsing() throws IOException {
+    // Assert that it parses.
+    parseConfig("nxos_ip_pim");
+  }
+
+  @Test
   public void testIpPrefixListConversion() throws IOException {
     String hostname = "nxos_ip_prefix_list";
     Configuration c = parseConfig(hostname);

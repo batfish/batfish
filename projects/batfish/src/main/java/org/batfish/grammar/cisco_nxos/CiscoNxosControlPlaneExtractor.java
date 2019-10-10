@@ -110,6 +110,9 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_PREFIX_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.LINE_VTY_ACCESS_CLASS_IN;
@@ -383,6 +386,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipp_rp_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipp_rp_candidateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipt_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_addressContext;
@@ -2176,6 +2180,34 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       }
       _c.referenceStructure(
           ROUTE_MAP, map.get(), IP_PIM_RP_ADDRESS_ROUTE_MAP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitIpp_rp_candidate(Ipp_rp_candidateContext ctx) {
+    toString(ctx, ctx.interface_name())
+        .ifPresent(
+            name ->
+                _c.referenceStructure(
+                    INTERFACE,
+                    name,
+                    IP_PIM_RP_CANDIDATE_INTERFACE,
+                    ctx.interface_name().getStart().getLine()));
+    if (ctx.pl != null) {
+      toString(ctx, ctx.pl)
+          .ifPresent(
+              name ->
+                  _c.referenceStructure(
+                      IP_PREFIX_LIST,
+                      name,
+                      IP_PIM_RP_CANDIDATE_PREFIX_LIST,
+                      ctx.pl.getStart().getLine()));
+    } else if (ctx.rm != null) {
+      toString(ctx, ctx.rm)
+          .ifPresent(
+              name ->
+                  _c.referenceStructure(
+                      ROUTE_MAP, name, IP_PIM_RP_CANDIDATE_ROUTE_MAP, ctx.rm.getStart().getLine()));
     }
   }
 
