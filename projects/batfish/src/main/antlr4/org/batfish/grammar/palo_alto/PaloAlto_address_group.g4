@@ -29,8 +29,12 @@ sag_description
 
 sag_dynamic
 :
-    DYNAMIC
-    null_rest_of_line
+    DYNAMIC sagd_filter?
+;
+
+sagd_filter
+:
+    FILTER filter = variable
 ;
 
 sag_static
