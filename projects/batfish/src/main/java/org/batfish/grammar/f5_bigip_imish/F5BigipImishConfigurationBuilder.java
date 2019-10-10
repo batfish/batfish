@@ -1,6 +1,7 @@
 package org.batfish.grammar.f5_bigip_imish;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -64,6 +65,7 @@ import org.batfish.representation.f5_bigip.AbstractBgpNeighbor;
 import org.batfish.representation.f5_bigip.AccessList;
 import org.batfish.representation.f5_bigip.AccessListLine;
 import org.batfish.representation.f5_bigip.AggregateAddress;
+import org.batfish.representation.f5_bigip.BgpConfederation;
 import org.batfish.representation.f5_bigip.BgpNeighbor;
 import org.batfish.representation.f5_bigip.BgpPeerGroup;
 import org.batfish.representation.f5_bigip.BgpProcess;
@@ -326,12 +328,24 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRbbc_identifier(Rbbc_identifierContext ctx) {
-    todo(ctx.getParent().getParent());
+    long id = toLong(ctx.id);
+    _currentBgpProcess.setConfederation(new BgpConfederation(id));
   }
 
   @Override
   public void exitRbbc_peers(Rbbc_peersContext ctx) {
-    todo(ctx.getParent().getParent());
+    if (_currentBgpProcess.getConfederation() == null) {
+      _w.redFlag(
+          String.format(
+              "Confederation is not defined for BGP process %s", _currentBgpProcess.getName()));
+      return;
+    }
+
+    List<Long> peers = _currentBgpProcess.getConfederation().getPeers();
+    for (Uint32Context c : ctx.peers) {
+      Long peer = toLong(c);
+      peers.add(peer);
+    }
   }
 
   @Override

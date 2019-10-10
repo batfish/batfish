@@ -23,6 +23,7 @@ public final class BgpProcess implements Serializable {
   private final @Nonnull Map<String, BgpNeighbor> _neighbors;
   private final @Nonnull Map<String, BgpPeerGroup> _peerGroups;
   private @Nullable Ip _routerId;
+  private @Nullable BgpConfederation _confederation;
 
   public BgpProcess(String name) {
     _name = name;
@@ -87,5 +88,14 @@ public final class BgpProcess implements Serializable {
 
   public void setRouterId(Ip routerId) {
     _routerId = routerId;
+  }
+
+  @Nullable
+  public BgpConfederation getConfederation() {
+    return _confederation;
+  }
+
+  public void setConfederation(@Nullable BgpConfederation confederation) {
+    _confederation = confederation;
   }
 }
