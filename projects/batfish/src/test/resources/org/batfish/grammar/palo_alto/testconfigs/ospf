@@ -8,6 +8,21 @@ set network virtual-router vr1 protocol ospf area 2.2.2.2 type normal
 set network virtual-router vr1 protocol ospf area 3.3.3.3 type nssa default-route advertise metric 13
 set network virtual-router vr1 protocol ospf area 3.3.3.3 type nssa default-route advertise type ext-2
 set network virtual-router vr1 protocol ospf area 3.3.3.3 type nssa accept-summary no
+
+# putting ethernet1/3.5 in area 3.3.3.3
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 enable no
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 passive no
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 metric 10
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 priority 1
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 hello-interval 10
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 dead-counts 4
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 retransmit-interval 5
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 transit-delay 1
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 link-type broadcast
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 bfd profile bfd_profile
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 authentication auth_profile
+set network virtual-router vr1 protocol ospf area 3.3.3.3 interface ethernet1/3.5 gr-delay 10
+
 set network virtual-router vr1 protocol ospf enable yes
 set network virtual-router vr1 protocol ospf reject-default-route no
 set network virtual-router vr1 protocol ospf graceful-restart enable no
