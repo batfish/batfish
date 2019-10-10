@@ -39,13 +39,12 @@ public final class AddressGroup implements Serializable {
 
   @Nonnull private final Set<String> _tags;
 
-  private Type _type;
+  @Nullable private Type _type;
 
   public AddressGroup(String name) {
     _name = name;
     _members = new TreeSet<>();
     _tags = new HashSet<>();
-    _type = null;
   }
 
   /**
@@ -196,6 +195,7 @@ public final class AddressGroup implements Serializable {
     return _tags;
   }
 
+  @Nullable
   public Type getType() {
     return _type;
   }
