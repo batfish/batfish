@@ -113,7 +113,21 @@ rms_as_path
 
 rm_on_match
 :
-  ON_MATCH NEXT NEWLINE
+  ON_MATCH
+  (
+    rmom_next
+    | rmom_goto
+  ) NEWLINE
+;
+
+rmom_next
+:
+  NEXT
+;
+
+rmom_goto
+:
+  GOTO seq=uint32
 ;
 
 rms_ip
