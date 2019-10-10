@@ -648,7 +648,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     assert ourBgpConfig.getEvpnAddressFamily() != null;
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     BgpSessionProperties sessionProperties = getSessionProperties(_topology, edge);
-    Ip remoteIp = sessionProperties.getTailIp();
     EvpnRib<R> targetRib = getRib(clazz, sessionProperties.isEbgp() ? RibType.EBGP : RibType.IBGP);
     RibDelta.Builder<R> toAdvertise = RibDelta.builder();
     RibDelta.Builder<R> toMerge = RibDelta.builder();
@@ -677,13 +676,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
         if (importPolicy != null) {
           acceptIncoming =
-              importPolicy.process(
-                  route,
-                  transformedBuilder,
-                  remoteIp,
-                  ourConfigId.getRemotePeerPrefix(),
-                  _vrfName,
-                  IN);
+              importPolicy.processBgpRoute(
+                  route, transformedBuilder, sessionProperties, _vrfName, IN);
         }
       }
       if (!acceptIncoming) {
@@ -861,18 +855,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       return Optional.empty();
     }
 
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    Ip remoteIp = sessionProperties.getTailIp();
-
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
-        exportPolicy.process(
+        exportPolicy.processBgpRoute(
             exportCandidate,
             transformedOutgoingRouteBuilder,
-            remoteIp,
-            ourConfigId.getRemotePeerPrefix(),
+            sessionProperties,
             ourConfigId.getVrfName(),
             Direction.OUT);
+
+    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+    Ip remoteIp = sessionProperties.getTailIp();
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
@@ -889,7 +882,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpProtocolHelper.transformBgpRoutePostExport(
         transformedOutgoingRouteBuilder,
         sessionProperties.isEbgp(),
-        ourConfig.getLocalAs(),
+        sessionProperties.getHeadAs(),
         sessionProperties.getHeadIp(),
         exportCandidate.getNextHopIp());
     // Successfully exported route
@@ -943,18 +936,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 _process.getAdminCost(protocol),
                 protocol);
 
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    Ip remoteIp = sessionProperties.getHeadIp();
-
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
-        exportPolicy.process(
+        exportPolicy.processBgpRoute(
             exportCandidate,
             transformedOutgoingRouteBuilder,
-            remoteIp,
-            ourConfigId.getRemotePeerPrefix(),
+            sessionProperties,
             ourConfigId.getVrfName(),
             Direction.OUT);
+
+    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+    Ip remoteIp = sessionProperties.getHeadIp();
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
@@ -972,7 +964,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpProtocolHelper.transformBgpRoutePostExport(
         transformedOutgoingRouteBuilder,
         sessionProperties.isEbgp(),
-        ourConfig.getLocalAs(),
+        sessionProperties.getHeadAs(),
         sessionProperties.getHeadIp(),
         sessionProperties.getHeadIp());
 
