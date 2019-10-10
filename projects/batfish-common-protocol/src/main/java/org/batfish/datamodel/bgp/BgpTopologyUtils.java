@@ -265,10 +265,8 @@ public final class BgpTopologyUtils {
     assert asPair != null;
     BgpSessionProperties edgeToCandidate =
         BgpSessionProperties.from(p1, remotePeer, false, asPair.getLocalAs(), asPair.getRemoteAs());
-    AsPair reverseAsPair = asPair.reverse();
     BgpSessionProperties edgeFromCandidate =
-        BgpSessionProperties.from(
-            p1, remotePeer, true, reverseAsPair.getLocalAs(), reverseAsPair.getRemoteAs());
+        BgpSessionProperties.from(p1, remotePeer, true, asPair.getLocalAs(), asPair.getRemoteAs());
     graph.putEdgeValue(id1, id2, edgeToCandidate);
     graph.putEdgeValue(id2, id1, edgeFromCandidate);
   }
@@ -518,10 +516,6 @@ public final class BgpTopologyUtils {
 
     public long getRemoteAs() {
       return _remoteAs;
-    }
-
-    public AsPair reverse() {
-      return new AsPair(_remoteAs, _localAs);
     }
 
     @Override
