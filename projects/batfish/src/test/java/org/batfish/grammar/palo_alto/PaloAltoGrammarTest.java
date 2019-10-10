@@ -318,6 +318,20 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testAddressGroupDynamic() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-group-dynamic");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+
+    // Confirm filter was attached to the dynamic address-group
+    assertThat(addressGroups.keySet(), contains("group"));
+    assertThat(addressGroups.get("group").getType(), equalTo(AddressGroup.Type.DYNAMIC));
+    assertThat(addressGroups.get("group").getFilter(), equalTo("'tagA' and tag1"));
+    // TODO add conversion and IP space test too
+  }
+
+  @Test
   public void testAddressGroupsNested() {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-groups-nested");
 

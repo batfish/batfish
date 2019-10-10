@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
@@ -16,7 +17,20 @@ import org.batfish.datamodel.IpSpace;
 /** Represents a Palo Alto address group */
 public final class AddressGroup implements Serializable {
 
-  private String _description;
+  /**
+   * Type of this address-group. Dynamic groups rely on a filter, which combines tags to determine
+   * address objects (or groups) that are part of this group. Static groups have explicitly defined
+   * member address objects (or groups). Empty address-groups have neither.
+   */
+  public enum Type {
+    DYNAMIC,
+    EMPTY,
+    STATIC
+  }
+
+  @Nullable private String _description;
+
+  @Nullable private String _filter;
 
   private final Set<String> _members;
 
@@ -24,14 +38,17 @@ public final class AddressGroup implements Serializable {
 
   @Nonnull private final Set<String> _tags;
 
+  private Type _type;
+
   public AddressGroup(String name) {
     _name = name;
     _members = new TreeSet<>();
     _tags = new HashSet<>();
+    _type = Type.EMPTY;
   }
 
   /**
-   * Returns all address objects that are directly or indirectly containted in this group. Accounts
+   * Returns all address objects that are directly or indirectly contained in this group. Accounts
    * for circular group references.
    */
   @VisibleForTesting
@@ -44,15 +61,19 @@ public final class AddressGroup implements Serializable {
     }
     alreadyTraversedGroups.add(_name);
     Set<String> descendantObjects = new HashSet<>();
-    for (String member : _members) {
-      if (addressObjects.containsKey(member)) {
-        descendantObjects.add(member);
-      } else if (addressGroups.containsKey(member)) {
-        descendantObjects.addAll(
-            addressGroups
-                .get(member)
-                .getDescendantObjects(addressObjects, addressGroups, alreadyTraversedGroups));
+    if (_type == Type.STATIC) {
+      for (String member : _members) {
+        if (addressObjects.containsKey(member)) {
+          descendantObjects.add(member);
+        } else if (addressGroups.containsKey(member)) {
+          descendantObjects.addAll(
+              addressGroups
+                  .get(member)
+                  .getDescendantObjects(addressObjects, addressGroups, alreadyTraversedGroups));
+        }
       }
+    } else if (_type == Type.DYNAMIC) {
+      // TODO write this logic
     }
     return descendantObjects;
   }
@@ -73,8 +94,21 @@ public final class AddressGroup implements Serializable {
     return space == null ? EmptyIpSpace.INSTANCE : space;
   }
 
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
+  }
+
+  public @Nullable String getFilter() {
+    return _filter;
+  }
+
+  /** Add a member to the set of member address objects for this static address-group. */
+  public void addMember(String member) {
+    if (_type != Type.STATIC) {
+      _type = Type.STATIC;
+      _filter = null;
+    }
+    _members.add(member);
   }
 
   public Set<String> getMembers() {
@@ -90,7 +124,20 @@ public final class AddressGroup implements Serializable {
     return _tags;
   }
 
+  public Type getType() {
+    return _type;
+  }
+
   public void setDescription(String description) {
     _description = description;
+  }
+
+  /** Set filter for this dynamic address-group. */
+  public void setFilter(String filter) {
+    if (_type != Type.DYNAMIC) {
+      _type = Type.DYNAMIC;
+      _members.clear();
+    }
+    _filter = filter;
   }
 }
