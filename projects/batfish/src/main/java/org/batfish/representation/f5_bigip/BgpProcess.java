@@ -98,4 +98,11 @@ public final class BgpProcess implements Serializable {
   public void setConfederation(@Nullable BgpConfederation confederation) {
     _confederation = confederation;
   }
+
+  public BgpConfederation getOrCreateConfederation() {
+    if (_confederation == null) {
+      _confederation = new BgpConfederation();
+    }
+    return _confederation;
+  }
 }

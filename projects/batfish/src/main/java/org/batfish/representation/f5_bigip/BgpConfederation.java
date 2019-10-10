@@ -3,19 +3,24 @@ package org.batfish.representation.f5_bigip;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /** BGP confederation settings */
-public class BgpConfederation implements Serializable {
-  private final long _id;
+public final class BgpConfederation implements Serializable {
+  private @Nullable Long _id;
   private final List<Long> _peers;
 
-  public BgpConfederation(long id) {
-    _id = id;
+  public BgpConfederation() {
     _peers = new ArrayList<>();
   }
 
-  public long getId() {
+  @Nullable
+  public Long getId() {
     return _id;
+  }
+
+  public void setId(@Nullable Long id) {
+    _id = id;
   }
 
   public List<Long> getPeers() {

@@ -329,19 +329,12 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @Override
   public void exitRbbc_identifier(Rbbc_identifierContext ctx) {
     long id = toLong(ctx.id);
-    _currentBgpProcess.setConfederation(new BgpConfederation(id));
+    _currentBgpProcess.getOrCreateConfederation().setId(id);
   }
 
   @Override
   public void exitRbbc_peers(Rbbc_peersContext ctx) {
-    if (_currentBgpProcess.getConfederation() == null) {
-      _w.redFlag(
-          String.format(
-              "Confederation is not defined for BGP process %s", _currentBgpProcess.getName()));
-      return;
-    }
-
-    List<Long> peers = _currentBgpProcess.getConfederation().getPeers();
+    List<Long> peers = _currentBgpProcess.getOrCreateConfederation().getPeers();
     for (Uint32Context c : ctx.peers) {
       Long peer = toLong(c);
       peers.add(peer);
