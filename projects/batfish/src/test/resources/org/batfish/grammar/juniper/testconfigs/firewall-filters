@@ -5,7 +5,7 @@ set firewall filter FILTER1 term TERM from source-address 1.2.3.6
 set firewall filter FILTER1 term TERM then accept
 set firewall filter FILTER2 term TERM from source-address 1.2.3.6
 set firewall filter FILTER2 term TERM from source-address 1.2.3.5
-set firewall filter FILTER2 term TERM then accept
+set firewall filter FILTER2 term TERM then reject
 set firewall filter FILTER_UNUSED term TERM from source-address 1.2.3.6
 set firewall filter FILTER_UNUSED term TERM then accept
 set interfaces xe-0/0/0 unit 0 family inet address 1.2.3.4/24
@@ -16,7 +16,7 @@ set interfaces xe-0/0/1 unit 0 family inet filter output FILTER2
 set interfaces xe-0/0/2 unit 0 family inet address 3.2.3.4/24
 set interfaces xe-0/0/2 unit 0 family inet filter output FILTER_UNDEF
 set interfaces xe-0/0/3 unit 0 family inet address 4.2.3.4/24
-set interfaces xe-0/0/3 unit 0 family inet filter input-list A
-set interfaces xe-0/0/3 unit 0 family inet filter input-list B
-set interfaces xe-0/0/3 unit 0 family inet filter output-list B
-set interfaces xe-0/0/3 unit 0 family inet filter output-list A
+set interfaces xe-0/0/3 unit 0 family inet filter input-list FILTER1
+set interfaces xe-0/0/3 unit 0 family inet filter input-list FILTER2
+set interfaces xe-0/0/3 unit 0 family inet filter output-list FILTER2
+set interfaces xe-0/0/3 unit 0 family inet filter output-list FILTER1

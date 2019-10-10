@@ -20,21 +20,21 @@ public final class Zone implements Serializable {
 
   private AddressBookType _addressBookType;
 
-  private FirewallFilter _fromHostFilter;
+  private ConcreteFirewallFilter _fromHostFilter;
 
   private final Map<String, FirewallFilter> _fromZonePolicies;
 
-  private final FirewallFilter _inboundFilter;
+  private final ConcreteFirewallFilter _inboundFilter;
 
-  private final Map<String, FirewallFilter> _inboundInterfaceFilters;
+  private final Map<String, ConcreteFirewallFilter> _inboundInterfaceFilters;
 
   private final List<String> _interfaces;
 
   private final String _name;
 
-  private FirewallFilter _toHostFilter;
+  private ConcreteFirewallFilter _toHostFilter;
 
-  private final Map<String, FirewallFilter> _toZonePolicies;
+  private final Map<String, ConcreteFirewallFilter> _toZonePolicies;
 
   private final Set<String> _screens;
 
@@ -42,7 +42,7 @@ public final class Zone implements Serializable {
     _name = name;
     _addressBook = globalAddressBook;
     _addressBookType = AddressBookType.GLOBAL;
-    _inboundFilter = new FirewallFilter("~INBOUND_ZONE_FILTER~" + name, Family.INET);
+    _inboundFilter = new ConcreteFirewallFilter("~INBOUND_ZONE_FILTER~" + name, Family.INET);
     _inboundInterfaceFilters = new TreeMap<>();
     _interfaces = new ArrayList<>();
     _fromZonePolicies = new TreeMap<>();
@@ -69,7 +69,7 @@ public final class Zone implements Serializable {
     return _addressBookType;
   }
 
-  public FirewallFilter getFromHostFilter() {
+  public ConcreteFirewallFilter getFromHostFilter() {
     return _fromHostFilter;
   }
 
@@ -81,11 +81,11 @@ public final class Zone implements Serializable {
     return _screens;
   }
 
-  public FirewallFilter getInboundFilter() {
+  public ConcreteFirewallFilter getInboundFilter() {
     return _inboundFilter;
   }
 
-  public Map<String, FirewallFilter> getInboundInterfaceFilters() {
+  public Map<String, ConcreteFirewallFilter> getInboundInterfaceFilters() {
     return _inboundInterfaceFilters;
   }
 
@@ -97,19 +97,19 @@ public final class Zone implements Serializable {
     return _name;
   }
 
-  public FirewallFilter getToHostFilter() {
+  public ConcreteFirewallFilter getToHostFilter() {
     return _toHostFilter;
   }
 
-  public Map<String, FirewallFilter> getToZonePolicies() {
+  public Map<String, ConcreteFirewallFilter> getToZonePolicies() {
     return _toZonePolicies;
   }
 
-  public void setFromHostFilter(FirewallFilter fromHostFilter) {
+  public void setFromHostFilter(ConcreteFirewallFilter fromHostFilter) {
     _fromHostFilter = fromHostFilter;
   }
 
-  public void setToHostFilter(FirewallFilter toHostFilter) {
+  public void setToHostFilter(ConcreteFirewallFilter toHostFilter) {
     _toHostFilter = toHostFilter;
   }
 }
