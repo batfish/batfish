@@ -1040,29 +1040,200 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.PROFILE,
         F5BigipStructureUsage.VIRTUAL_PROFILE,
         ImmutableList.of(
+            F5BigipStructureType.PROFILE_ANALYTICS,
+            F5BigipStructureType.PROFILE_CERTIFICATE_AUTHORITY,
+            F5BigipStructureType.PROFILE_CLASSIFICATION,
+            F5BigipStructureType.PROFILE_CLIENT_LDAP,
             F5BigipStructureType.PROFILE_CLIENT_SSL,
+            F5BigipStructureType.PROFILE_DHCPV4,
+            F5BigipStructureType.PROFILE_DHCPV6,
+            F5BigipStructureType.PROFILE_DIAMETER,
+            F5BigipStructureType.PROFILE_DNS,
+            F5BigipStructureType.PROFILE_FASTHTTP,
+            F5BigipStructureType.PROFILE_FASTL4,
+            F5BigipStructureType.PROFILE_FIX,
+            F5BigipStructureType.PROFILE_FTP,
+            F5BigipStructureType.PROFILE_GTP,
+            F5BigipStructureType.PROFILE_HTML,
+            F5BigipStructureType.PROFILE_HTTP2,
+            F5BigipStructureType.PROFILE_HTTP_COMPRESSION,
             F5BigipStructureType.PROFILE_HTTP,
-            F5BigipStructureType.PROFILE_ONE_CONNECT,
+            F5BigipStructureType.PROFILE_HTTP_PROXY_CONNECT,
+            F5BigipStructureType.PROFILE_ICAP,
+            F5BigipStructureType.PROFILE_ILX,
+            F5BigipStructureType.PROFILE_IPOTHER,
+            F5BigipStructureType.PROFILE_IPSECALG,
+            F5BigipStructureType.PROFILE_MAP_T,
+            F5BigipStructureType.PROFILE_MQTT,
+            F5BigipStructureType.PROFILE_NETFLOW,
             F5BigipStructureType.PROFILE_OCSP_STAPLING_PARAMS,
+            F5BigipStructureType.PROFILE_ONE_CONNECT,
+            F5BigipStructureType.PROFILE_PCP,
+            F5BigipStructureType.PROFILE_PPTP,
+            F5BigipStructureType.PROFILE_QOE,
+            F5BigipStructureType.PROFILE_RADIUS,
+            F5BigipStructureType.PROFILE_REQUEST_ADAPT,
+            F5BigipStructureType.PROFILE_REQUEST_LOG,
+            F5BigipStructureType.PROFILE_RESPONSE_ADAPT,
+            F5BigipStructureType.PROFILE_REWRITE,
+            F5BigipStructureType.PROFILE_RTSP,
+            F5BigipStructureType.PROFILE_SCTP,
+            F5BigipStructureType.PROFILE_SERVER_LDAP,
             F5BigipStructureType.PROFILE_SERVER_SSL,
-            F5BigipStructureType.PROFILE_TCP));
+            F5BigipStructureType.PROFILE_SIP,
+            F5BigipStructureType.PROFILE_SMTPS,
+            F5BigipStructureType.PROFILE_SOCKS,
+            F5BigipStructureType.PROFILE_SPLITSESSIONCLIENT,
+            F5BigipStructureType.PROFILE_SPLITSESSIONSERVER,
+            F5BigipStructureType.PROFILE_STATISTICS,
+            F5BigipStructureType.PROFILE_STREAM,
+            F5BigipStructureType.PROFILE_TCP_ANALYTICS,
+            F5BigipStructureType.PROFILE_TCP,
+            F5BigipStructureType.PROFILE_TFTP,
+            F5BigipStructureType.PROFILE_TRAFFIC_ACCELERATION,
+            F5BigipStructureType.PROFILE_UDP,
+            F5BigipStructureType.PROFILE_WEB_ACCELERATION,
+            F5BigipStructureType.PROFILE_WEB_SECURITY,
+            F5BigipStructureType.PROFILE_WEBSOCKET,
+            F5BigipStructureType.PROFILE_XML));
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_ANALYTICS,
+        F5BigipStructureUsage.PROFILE_ANALYTICS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_CERTIFICATE_AUTHORITY,
+        F5BigipStructureUsage.PROFILE_CERTIFICATE_AUTHORITY_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_CLASSIFICATION,
+        F5BigipStructureUsage.PROFILE_CLASSIFICATION_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_CLIENT_LDAP,
+        F5BigipStructureUsage.PROFILE_CLIENT_LDAP_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.PROFILE_CLIENT_SSL,
         F5BigipStructureUsage.PROFILE_CLIENT_SSL_DEFAULTS_FROM);
     markConcreteStructure(
+        F5BigipStructureType.PROFILE_DHCPV4, F5BigipStructureUsage.PROFILE_DHCPV4_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_DHCPV6, F5BigipStructureUsage.PROFILE_DHCPV6_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_DIAMETER,
+        F5BigipStructureUsage.PROFILE_DIAMETER_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_DNS, F5BigipStructureUsage.PROFILE_DNS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_FASTHTTP,
+        F5BigipStructureUsage.PROFILE_FASTHTTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_FASTL4, F5BigipStructureUsage.PROFILE_FASTL4_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_FIX, F5BigipStructureUsage.PROFILE_FIX_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_FTP, F5BigipStructureUsage.PROFILE_FTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_GTP, F5BigipStructureUsage.PROFILE_GTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_HTML, F5BigipStructureUsage.PROFILE_HTML_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_HTTP2, F5BigipStructureUsage.PROFILE_HTTP2_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_HTTP_COMPRESSION,
+        F5BigipStructureUsage.PROFILE_HTTP_COMPRESSION_DEFAULTS_FROM);
+    markConcreteStructure(
         F5BigipStructureType.PROFILE_HTTP, F5BigipStructureUsage.PROFILE_HTTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_HTTP_PROXY_CONNECT,
+        F5BigipStructureUsage.PROFILE_HTTP_PROXY_CONNECT_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_ICAP, F5BigipStructureUsage.PROFILE_ICAP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_ILX, F5BigipStructureUsage.PROFILE_ILX_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_IPOTHER, F5BigipStructureUsage.PROFILE_IPOTHER_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_IPSECALG,
+        F5BigipStructureUsage.PROFILE_IPSECALG_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_MAP_T, F5BigipStructureUsage.PROFILE_MAP_T_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_MQTT, F5BigipStructureUsage.PROFILE_MQTT_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_NETFLOW, F5BigipStructureUsage.PROFILE_NETFLOW_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_OCSP_STAPLING_PARAMS,
+        F5BigipStructureUsage.PROFILE_OCSP_STAPLING_PARAMS_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.PROFILE_ONE_CONNECT,
         F5BigipStructureUsage.PROFILE_ONE_CONNECT_DEFAULTS_FROM);
     markConcreteStructure(
-        F5BigipStructureType.PROFILE_OCSP_STAPLING_PARAMS,
-        F5BigipStructureUsage.PROFILE_OCSP_STAPLING_PARAMS_DEFAULTS_FROM);
+        F5BigipStructureType.PROFILE_PCP, F5BigipStructureUsage.PROFILE_PCP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_PPTP, F5BigipStructureUsage.PROFILE_PPTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_QOE, F5BigipStructureUsage.PROFILE_QOE_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_RADIUS, F5BigipStructureUsage.PROFILE_RADIUS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_REQUEST_ADAPT,
+        F5BigipStructureUsage.PROFILE_REQUEST_ADAPT_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_REQUEST_LOG,
+        F5BigipStructureUsage.PROFILE_REQUEST_LOG_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_RESPONSE_ADAPT,
+        F5BigipStructureUsage.PROFILE_RESPONSE_ADAPT_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_REWRITE, F5BigipStructureUsage.PROFILE_REWRITE_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_RTSP, F5BigipStructureUsage.PROFILE_RTSP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_SCTP, F5BigipStructureUsage.PROFILE_SCTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_SERVER_LDAP,
+        F5BigipStructureUsage.PROFILE_SERVER_LDAP_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.PROFILE_SERVER_SSL,
         F5BigipStructureUsage.MONITOR_HTTPS_SSL_PROFILE,
         F5BigipStructureUsage.PROFILE_SERVER_SSL_DEFAULTS_FROM);
     markConcreteStructure(
+        F5BigipStructureType.PROFILE_SIP, F5BigipStructureUsage.PROFILE_SIP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_SMTPS, F5BigipStructureUsage.PROFILE_SMTPS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_SOCKS, F5BigipStructureUsage.PROFILE_SOCKS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_SPLITSESSIONCLIENT,
+        F5BigipStructureUsage.PROFILE_SPLITSESSIONCLIENT_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_SPLITSESSIONSERVER,
+        F5BigipStructureUsage.PROFILE_SPLITSESSIONSERVER_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_STATISTICS,
+        F5BigipStructureUsage.PROFILE_STATISTICS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_STREAM, F5BigipStructureUsage.PROFILE_STREAM_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_TCP_ANALYTICS,
+        F5BigipStructureUsage.PROFILE_TCP_ANALYTICS_DEFAULTS_FROM);
+    markConcreteStructure(
         F5BigipStructureType.PROFILE_TCP, F5BigipStructureUsage.PROFILE_TCP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_TFTP, F5BigipStructureUsage.PROFILE_TFTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_TRAFFIC_ACCELERATION,
+        F5BigipStructureUsage.PROFILE_TRAFFIC_ACCELERATION_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_UDP, F5BigipStructureUsage.PROFILE_UDP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_WEB_ACCELERATION,
+        F5BigipStructureUsage.PROFILE_WEB_ACCELERATION_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_WEB_SECURITY,
+        F5BigipStructureUsage.PROFILE_WEB_SECURITY_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_WEBSOCKET,
+        F5BigipStructureUsage.PROFILE_WEBSOCKET_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_XML, F5BigipStructureUsage.PROFILE_XML_DEFAULTS_FROM);
     markConcreteStructure(F5BigipStructureType.ROUTE, F5BigipStructureUsage.ROUTE_SELF_REFERENCE);
     markConcreteStructure(
         F5BigipStructureType.ROUTE_MAP,
