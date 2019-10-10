@@ -26,7 +26,6 @@ public final class AddressGroup implements Serializable {
    */
   public enum Type {
     DYNAMIC,
-    EMPTY,
     STATIC
   }
 
@@ -46,7 +45,7 @@ public final class AddressGroup implements Serializable {
     _name = name;
     _members = new TreeSet<>();
     _tags = new HashSet<>();
-    _type = Type.EMPTY;
+    _type = null;
   }
 
   /**
@@ -177,6 +176,7 @@ public final class AddressGroup implements Serializable {
   /** Add a member to the set of member address objects for this static address-group. */
   public void addMember(String member) {
     if (_type != Type.STATIC) {
+      // Handle the case where a dynamic address-group is replaced by a static one
       _type = Type.STATIC;
       _filter = null;
     }
@@ -207,6 +207,7 @@ public final class AddressGroup implements Serializable {
   /** Set filter for this dynamic address-group. */
   public void setFilter(String filter) {
     if (_type != Type.DYNAMIC) {
+      // Handle the case where a static address-group is replaced by a dynamic one
       _type = Type.DYNAMIC;
       _members.clear();
     }
