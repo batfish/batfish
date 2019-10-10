@@ -80,6 +80,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
@@ -1119,6 +1120,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc));
 
     return Optional.of(proc);
+  }
+
+  private Optional<OspfProcess> toOspfProcess(VirtualRouter vr) {
+    OspfVr ospf = vr.getOspf();
+    if (ospf == null || !ospf.isEnable()) {
+      return Optional.empty();
+    }
+
+    // Router ID must be configured manually or you cannot enable the router.
+    if (ospf.getRouterId() == null) {
+      _w.redFlag(
+          String.format("virtual-router %s ospf has no router-id; disabling it", vr.getName()));
+      return Optional.empty();
+    }
   }
 
   /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
