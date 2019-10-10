@@ -88,6 +88,29 @@ ltm virtual /Common/virtual_used {
     pool /Common/pool_used
     pool /Common/pool_undefined
     profiles {
+        # analytics
+        /Common/analytics { } #builtin
+        /Common/profile_analytics_used { }
+        /Common/profile_analytics_undefined { }
+
+        # certificate-authority
+        /Common/certificateauthority { } #builtin
+        /Common/profile_certificate_authority_used { }
+        /Common/profile_certificate_authority_undefined { }
+
+        # classification
+        /Common/classification { } #builtin
+        /Common/classification_apm_swg { } #builtin
+        /Common/classification_pem { } #builtin
+        /Common/profile_classification_used { }
+        /Common/profile_classification_undefined { }
+
+        # client-ldap
+        /Common/clientldap { } #builtin
+        /Common/profile_client_ldap_used { }
+        /Common/profile_client_ldap_undefined { }
+
+        # client-ssl
         /Common/clientssl { } #builtin
         /Common/clientssl-insecure-compatible { } #builtin
         /Common/clientssl-secure { } #builtin
@@ -96,17 +119,192 @@ ltm virtual /Common/virtual_used {
         /Common/wom-default-clientssl { } #builtin
         /Common/profile_client_ssl_used { }
         /Common/profile_client_ssl_undefined { }
+
+        # dhcpv4
+        /Common/dhcpv4 { } #builtin
+        /Common/dhcpv4_fwd { } #builtin
+        /Common/dhcpv6 { } #builtin
+        /Common/dhcpv6_fwd { } #builtin
+        /Common/profile_dhcpv4_used { }
+        /Common/profile_dhcpv4_undefined { }
+
+        # dhcpv6
+        /Common/dhcpv4 { } #builtin
+        /Common/dhcpv4_fwd { } #builtin
+        /Common/dhcpv6 { } #builtin
+        /Common/dhcpv6_fwd { } #builtin
+        /Common/profile_dhcpv6_used { }
+        /Common/profile_dhcpv6_undefined { }
+
+        # diameter
+        /Common/diameter { } #builtin
+        /Common/profile_diameter_used { }
+        /Common/profile_diameter_undefined { }
+
+        # dns
+        /Common/dns { } #builtin
+        /Common/profile_dns_used { }
+        /Common/profile_dns_undefined { }
+
+        # fasthttp
+        /Common/fasthttp { } #builtin
+        /Common/profile_fasthttp_used { }
+        /Common/profile_fasthttp_undefined { }
+
+        # fastl4
+        /Common/apm-forwarding-fastL4 { } #builtin
+        /Common/fastL4 { } #builtin
+        /Common/full-acceleration { } #builtin
+        /Common/profile_fastl4_used { }
+        /Common/profile_fastl4_undefined { }
+
+        # fix
+        /Common/fix { } #builtin
+        /Common/profile_fix_used { }
+        /Common/profile_fix_undefined { }
+
+        # ftp
+        /Common/ftp { } #builtin
+        /Common/profile_ftp_used { }
+        /Common/profile_ftp_undefined { }
+
+        # gtp
+        /Common/gtp { } #builtin
+        /Common/profile_gtp_used { }
+        /Common/profile_gtp_undefined { }
+
+        # html
+        /Common/html { } #builtin
+        /Common/profile_html_used { }
+        /Common/profile_html_undefined { }
+
+        # http
         /Common/http { } #builtin
         /Common/http-explicit { } #builtin
         /Common/http-transparent { } #builtin
         /Common/profile_http_used { }
         /Common/profile_http_undefined { }
+
+        # http2
+        /Common/http2 { } #builtin
+        /Common/profile_http2_used { }
+        /Common/profile_http2_undefined { }
+
+        # http-compression
+        /Common/httpcompression { } #builtin
+        /Common/wan-optimized-compression { } #builtin
+        /Common/profile_http_compression_used { }
+        /Common/profile_http_compression_undefined { }
+
+        # http-proxy-connect
+        /Common/http-proxy-connect { } #builtin
+        /Common/profile_http_proxy_connect_used { }
+        /Common/profile_http_proxy_connect_undefined { }
+
+        # icap
+        /Common/icap { } #builtin
+        /Common/profile_icap_used { }
+        /Common/profile_icap_undefined { }
+
+        # ilx
+        /Common/ilx { } #builtin
+        /Common/profile_ilx_used { }
+        /Common/profile_ilx_undefined { }
+
+        # ipother
+        /Common/ipother { } #builtin
+        /Common/profile_ipother_used { }
+        /Common/profile_ipother_undefined { }
+
+        # ipsecalg
+        /Common/ipsecalg { } #builtin
+        /Common/profile_ipsecalg_used { }
+        /Common/profile_ipsecalg_undefined { }
+
+        # map-t
+        /Common/mapt { } #builtin
+        /Common/profile_map_t_used { }
+        /Common/profile_map_t_undefined { }
+
+        # mqtt
+        /Common/mqtt { } #builtin
+        /Common/profile_mqtt_used { }
+        /Common/profile_mqtt_undefined { }
+
+        # netflow
+        /Common/netflow { } #builtin
+        /Common/profile_netflow_used { }
+        /Common/profile_netflow_undefined { }
+
+        # ocsp-stapling-params
         # No builtin profile for ocsp-stapling-params
         /Common/profile_ocsp_stapling_params_used { }
         /Common/profile_ocsp_stapling_params_undefined { }
+
+        # one-connect
         /Common/oneconnect { } #builtin
         /Common/profile_one_connect_used { }
         /Common/profile_one_connect_undefined { }
+
+        # pcp
+        /Common/pcp { } #builtin
+        /Common/profile_pcp_used { }
+        /Common/profile_pcp_undefined { }
+
+        # pptp
+        /Common/pptp { } #builtin
+        /Common/profile_pptp_used { }
+        /Common/profile_pptp_undefined { }
+
+        # qoe
+        /Common/qoe { } #builtin
+        /Common/profile_qoe_used { }
+        /Common/profile_qoe_undefined { }
+
+        # radius
+        /Common/radiusLB { } #builtin
+        /Common/radiusLB-subscriber-aware { } #builtin
+        /Common/profile_radius_used { }
+        /Common/profile_radius_undefined { }
+
+        # request-adapt
+        /Common/requestadapt { } #builtin
+        /Common/profile_request_adapt_used { }
+        /Common/profile_request_adapt_undefined { }
+
+        # request-log
+        /Common/request-log { } #builtin
+        /Common/profile_request_log_used { }
+        /Common/profile_request_log_undefined { }
+
+        # response-adapt
+        /Common/responseadapt { } #builtin
+        /Common/profile_response_adapt_used { }
+        /Common/profile_response_adapt_undefined { }
+
+        # rewrite
+        /Common/rewrite { } #builtin
+        /Common/rewrite-portal { } #builtin
+        /Common/rewrite-uri-translation { } #builtin
+        /Common/profile_rewrite_used { }
+        /Common/profile_rewrite_undefined { }
+
+        # rtsp
+        /Common/rtsp { } #builtin
+        /Common/profile_rtsp_used { }
+        /Common/profile_rtsp_undefined { }
+
+        # sctp
+        /Common/sctp { } #builtin
+        /Common/profile_sctp_used { }
+        /Common/profile_sctp_undefined { }
+
+        # server-ldap
+        /Common/serverldap { } #builtin
+        /Common/profile_server_ldap_used { }
+        /Common/profile_server_ldap_undefined { }
+
+        # server-ssl
         /Common/apm-default-serverssl { } #builtin
         /Common/crypto-client-default-serverssl { } #builtin
         /Common/pcoip-default-serverssl { } #builtin
@@ -116,6 +314,44 @@ ltm virtual /Common/virtual_used {
         /Common/wom-default-serverssl { } #builtin
         /Common/profile_server_ssl_used { }
         /Common/profile_server_ssl_undefined { }
+
+        # sip
+        /Common/sip { } #builtin
+        /Common/profile_sip_used { }
+        /Common/profile_sip_undefined { }
+
+        # smtps
+        /Common/smtps { } #builtin
+        /Common/profile_smtps_used { }
+        /Common/profile_smtps_undefined { }
+
+        # socks
+        /Common/socks { } #builtin
+        /Common/profile_socks_used { }
+        /Common/profile_socks_undefined { }
+
+        # splitsessionclient
+        /Common/splitsessionclient { } #builtin
+        /Common/profile_splitsessionclient_used { }
+        /Common/profile_splitsessionclient_undefined { }
+
+        # splitsessionserver
+        /Common/splitsessionserver { } #builtin
+        /Common/profile_splitsessionserver_used { }
+        /Common/profile_splitsessionserver_undefined { }
+
+        # statistics
+        /Common/stats { } #builtin
+        /Common/profile_statistics_used { }
+        /Common/profile_statistics_undefined { }
+
+        # stream
+        /Common/stream { } #builtin
+        /Common/profile_stream_used { }
+        /Common/profile_stream_undefined { }
+
+        # tcp
+        /Common/apm-forwarding-client-tcp { } #builtin
         /Common/apm-forwarding-server-tcp { } #builtin
         /Common/f5-tcp-lan { } #builtin
         /Common/f5-tcp-mobile { } #builtin
@@ -128,12 +364,61 @@ ltm virtual /Common/virtual_used {
         /Common/tcp-legacy { } #builtin
         /Common/tcp-mobile-optimized { } #builtin
         /Common/tcp-wan-optimized { } #builtin
-        /Common/wam-tcp-lan-optimized { } #builtin
-        /Common/wam-tcp-wan-optimized { } #builtin
         /Common/wom-tcp-lan-optimized { } #builtin
         /Common/wom-tcp-wan-optimized { } #builtin
         /Common/profile_tcp_used { }
         /Common/profile_tcp_undefined { }
+
+        # tcp-analytics
+        /Common/tcp-analytics { } #builtin
+        /Common/profile_tcp_analytics_used { }
+        /Common/profile_tcp_analytics_undefined { }
+
+        # tftp
+        /Common/tftp { } #builtin
+        /Common/profile_tftp_used { }
+        /Common/profile_tftp_undefined { }
+
+        # traffic-acceleration
+        /Common/traffic-acceleration { } #builtin
+        /Common/profile_traffic_acceleration_used { }
+        /Common/profile_traffic_acceleration_undefined { }
+
+        # udp
+        /Common/udp { } #builtin
+        /Common/udp_decrement_ttl { } #builtin
+        /Common/udp_gtm_dns { } #builtin
+        /Common/udp_preserve_ttl { } #builtin
+        /Common/profile_udp_used { }
+        /Common/profile_udp_undefined { }
+
+        # web-acceleration
+        /Common/apm-enduser-if-cache { } #builtin
+        /Common/optimized-acceleration { } #builtin
+        /Common/optimized-caching { } #builtin
+        /Common/webacceleration { } #builtin
+        /Common/websecurity { } #builtin
+        /Common/profile_web_acceleration_used { }
+        /Common/profile_web_acceleration_undefined { }
+
+        # web-security
+        /Common/apm-enduser-if-cache { } #builtin
+        /Common/optimized-acceleration { } #builtin
+        /Common/optimized-caching { } #builtin
+        /Common/webacceleration { } #builtin
+        /Common/websecurity { } #builtin
+        /Common/profile_web_security_used { }
+        /Common/profile_web_security_undefined { }
+
+        # websocket
+        /Common/websocket { } #builtin
+        /Common/profile_websocket_used { }
+        /Common/profile_websocket_undefined { }
+
+        # xml
+        /Common/xml { } #builtin
+        /Common/profile_xml_used { }
+        /Common/profile_xml_undefined { }
     }
     rules {
         /Common/rule_used
@@ -188,33 +473,394 @@ ltm persistence ssl /Common/persistence_ssl_unused {
     defaults-from /Common/persistence_ssl_undefined
     defaults-from /Common/persistence_ssl_used
 }
+# analytics
+ltm profile analytics /Common/profile_analytics_used { }
+ltm profile analytics /Common/profile_analytics_unused {
+    defaults-from /Common/profile_analytics_undefined
+    defaults-from /Common/profile_analytics_used
+}
+
+# certificate-authority
+ltm profile certificate-authority /Common/profile_certificate_authority_used { }
+ltm profile certificate-authority /Common/profile_certificate_authority_unused {
+    defaults-from /Common/profile_certificate_authority_undefined
+    defaults-from /Common/profile_certificate_authority_used
+}
+
+# classification
+ltm profile classification /Common/profile_classification_used { }
+ltm profile classification /Common/profile_classification_unused {
+    defaults-from /Common/profile_classification_undefined
+    defaults-from /Common/profile_classification_used
+}
+
+# client-ldap
+ltm profile client-ldap /Common/profile_client_ldap_used { }
+ltm profile client-ldap /Common/profile_client_ldap_unused {
+    defaults-from /Common/profile_client_ldap_undefined
+    defaults-from /Common/profile_client_ldap_used
+}
+
+# client-ssl
 ltm profile client-ssl /Common/profile_client_ssl_used { }
 ltm profile client-ssl /Common/profile_client_ssl_unused {
     defaults-from /Common/profile_client_ssl_undefined
     defaults-from /Common/profile_client_ssl_used
 }
+
+# dhcpv4
+ltm profile dhcpv4 /Common/profile_dhcpv4_used { }
+ltm profile dhcpv4 /Common/profile_dhcpv4_unused {
+    defaults-from /Common/profile_dhcpv4_undefined
+    defaults-from /Common/profile_dhcpv4_used
+}
+
+# dhcpv6
+ltm profile dhcpv6 /Common/profile_dhcpv6_used { }
+ltm profile dhcpv6 /Common/profile_dhcpv6_unused {
+    defaults-from /Common/profile_dhcpv6_undefined
+    defaults-from /Common/profile_dhcpv6_used
+}
+
+# diameter
+ltm profile diameter /Common/profile_diameter_used { }
+ltm profile diameter /Common/profile_diameter_unused {
+    defaults-from /Common/profile_diameter_undefined
+    defaults-from /Common/profile_diameter_used
+}
+
+# dns
+ltm profile dns /Common/profile_dns_used { }
+ltm profile dns /Common/profile_dns_unused {
+    defaults-from /Common/profile_dns_undefined
+    defaults-from /Common/profile_dns_used
+}
+
+# fasthttp
+ltm profile fasthttp /Common/profile_fasthttp_used { }
+ltm profile fasthttp /Common/profile_fasthttp_unused {
+    defaults-from /Common/profile_fasthttp_undefined
+    defaults-from /Common/profile_fasthttp_used
+}
+
+# fastl4
+ltm profile fastl4 /Common/profile_fastl4_used { }
+ltm profile fastl4 /Common/profile_fastl4_unused {
+    defaults-from /Common/profile_fastl4_undefined
+    defaults-from /Common/profile_fastl4_used
+}
+
+# fix
+ltm profile fix /Common/profile_fix_used { }
+ltm profile fix /Common/profile_fix_unused {
+    defaults-from /Common/profile_fix_undefined
+    defaults-from /Common/profile_fix_used
+}
+
+# ftp
+ltm profile ftp /Common/profile_ftp_used { }
+ltm profile ftp /Common/profile_ftp_unused {
+    defaults-from /Common/profile_ftp_undefined
+    defaults-from /Common/profile_ftp_used
+}
+
+# gtp
+ltm profile gtp /Common/profile_gtp_used { }
+ltm profile gtp /Common/profile_gtp_unused {
+    defaults-from /Common/profile_gtp_undefined
+    defaults-from /Common/profile_gtp_used
+}
+
+# html
+ltm profile html /Common/profile_html_used { }
+ltm profile html /Common/profile_html_unused {
+    defaults-from /Common/profile_html_undefined
+    defaults-from /Common/profile_html_used
+}
+
+# http
 ltm profile http /Common/profile_http_used { }
 ltm profile http /Common/profile_http_unused {
     defaults-from /Common/profile_http_undefined
     defaults-from /Common/profile_http_used
 }
+
+# http2
+ltm profile http2 /Common/profile_http2_used { }
+ltm profile http2 /Common/profile_http2_unused {
+    defaults-from /Common/profile_http2_undefined
+    defaults-from /Common/profile_http2_used
+}
+
+# http-compression
+ltm profile http-compression /Common/profile_http_compression_used { }
+ltm profile http-compression /Common/profile_http_compression_unused {
+    defaults-from /Common/profile_http_compression_undefined
+    defaults-from /Common/profile_http_compression_used
+}
+
+# http-proxy-connect
+ltm profile http-proxy-connect /Common/profile_http_proxy_connect_used { }
+ltm profile http-proxy-connect /Common/profile_http_proxy_connect_unused {
+    defaults-from /Common/profile_http_proxy_connect_undefined
+    defaults-from /Common/profile_http_proxy_connect_used
+}
+
+# icap
+ltm profile icap /Common/profile_icap_used { }
+ltm profile icap /Common/profile_icap_unused {
+    defaults-from /Common/profile_icap_undefined
+    defaults-from /Common/profile_icap_used
+}
+
+# ilx
+ltm profile ilx /Common/profile_ilx_used { }
+ltm profile ilx /Common/profile_ilx_unused {
+    defaults-from /Common/profile_ilx_undefined
+    defaults-from /Common/profile_ilx_used
+}
+
+# ipother
+ltm profile ipother /Common/profile_ipother_used { }
+ltm profile ipother /Common/profile_ipother_unused {
+    defaults-from /Common/profile_ipother_undefined
+    defaults-from /Common/profile_ipother_used
+}
+
+# ipsecalg
+ltm profile ipsecalg /Common/profile_ipsecalg_used { }
+ltm profile ipsecalg /Common/profile_ipsecalg_unused {
+    defaults-from /Common/profile_ipsecalg_undefined
+    defaults-from /Common/profile_ipsecalg_used
+}
+
+# map-t
+ltm profile map-t /Common/profile_map_t_used { }
+ltm profile map-t /Common/profile_map_t_unused {
+    defaults-from /Common/profile_map_t_undefined
+    defaults-from /Common/profile_map_t_used
+}
+
+# mqtt
+ltm profile mqtt /Common/profile_mqtt_used { }
+ltm profile mqtt /Common/profile_mqtt_unused {
+    defaults-from /Common/profile_mqtt_undefined
+    defaults-from /Common/profile_mqtt_used
+}
+
+# netflow
+ltm profile netflow /Common/profile_netflow_used { }
+ltm profile netflow /Common/profile_netflow_unused {
+    defaults-from /Common/profile_netflow_undefined
+    defaults-from /Common/profile_netflow_used
+}
+
+# ocsp-stapling-params
 ltm profile ocsp-stapling-params /Common/profile_ocsp_stapling_params_used { }
 ltm profile ocsp-stapling-params /Common/profile_ocsp_stapling_params_unused {
     defaults-from /Common/profile_ocsp_stapling_params_undefined
     defaults-from /Common/profile_ocsp_stapling_params_used
 }
+
+# one-connect
 ltm profile one-connect /Common/profile_one_connect_used { }
 ltm profile one-connect /Common/profile_one_connect_unused {
     defaults-from /Common/profile_one_connect_undefined
     defaults-from /Common/profile_one_connect_used
 }
+
+# pcp
+ltm profile pcp /Common/profile_pcp_used { }
+ltm profile pcp /Common/profile_pcp_unused {
+    defaults-from /Common/profile_pcp_undefined
+    defaults-from /Common/profile_pcp_used
+}
+
+# pptp
+ltm profile pptp /Common/profile_pptp_used { }
+ltm profile pptp /Common/profile_pptp_unused {
+    defaults-from /Common/profile_pptp_undefined
+    defaults-from /Common/profile_pptp_used
+}
+
+# qoe
+ltm profile qoe /Common/profile_qoe_used { }
+ltm profile qoe /Common/profile_qoe_unused {
+    defaults-from /Common/profile_qoe_undefined
+    defaults-from /Common/profile_qoe_used
+}
+
+# radius
+ltm profile radius /Common/profile_radius_used { }
+ltm profile radius /Common/profile_radius_unused {
+    defaults-from /Common/profile_radius_undefined
+    defaults-from /Common/profile_radius_used
+}
+
+# request-adapt
+ltm profile request-adapt /Common/profile_request_adapt_used { }
+ltm profile request-adapt /Common/profile_request_adapt_unused {
+    defaults-from /Common/profile_request_adapt_undefined
+    defaults-from /Common/profile_request_adapt_used
+}
+
+# request-log
+ltm profile request-log /Common/profile_request_log_used { }
+ltm profile request-log /Common/profile_request_log_unused {
+    defaults-from /Common/profile_request_log_undefined
+    defaults-from /Common/profile_request_log_used
+}
+
+# response-adapt
+ltm profile response-adapt /Common/profile_response_adapt_used { }
+ltm profile response-adapt /Common/profile_response_adapt_unused {
+    defaults-from /Common/profile_response_adapt_undefined
+    defaults-from /Common/profile_response_adapt_used
+}
+
+# rewrite
+ltm profile rewrite /Common/profile_rewrite_used { }
+ltm profile rewrite /Common/profile_rewrite_unused {
+    defaults-from /Common/profile_rewrite_undefined
+    defaults-from /Common/profile_rewrite_used
+}
+
+# rtsp
+ltm profile rtsp /Common/profile_rtsp_used { }
+ltm profile rtsp /Common/profile_rtsp_unused {
+    defaults-from /Common/profile_rtsp_undefined
+    defaults-from /Common/profile_rtsp_used
+}
+
+# sctp
+ltm profile sctp /Common/profile_sctp_used { }
+ltm profile sctp /Common/profile_sctp_unused {
+    defaults-from /Common/profile_sctp_undefined
+    defaults-from /Common/profile_sctp_used
+}
+
+# server-ldap
+ltm profile server-ldap /Common/profile_server_ldap_used { }
+ltm profile server-ldap /Common/profile_server_ldap_unused {
+    defaults-from /Common/profile_server_ldap_undefined
+    defaults-from /Common/profile_server_ldap_used
+}
+
+# server-ssl
 ltm profile server-ssl /Common/profile_server_ssl_used { }
 ltm profile server-ssl /Common/profile_server_ssl_unused {
     defaults-from /Common/profile_server_ssl_undefined
     defaults-from /Common/profile_server_ssl_used
 }
+
+# sip
+ltm profile sip /Common/profile_sip_used { }
+ltm profile sip /Common/profile_sip_unused {
+    defaults-from /Common/profile_sip_undefined
+    defaults-from /Common/profile_sip_used
+}
+
+# smtps
+ltm profile smtps /Common/profile_smtps_used { }
+ltm profile smtps /Common/profile_smtps_unused {
+    defaults-from /Common/profile_smtps_undefined
+    defaults-from /Common/profile_smtps_used
+}
+
+# socks
+ltm profile socks /Common/profile_socks_used { }
+ltm profile socks /Common/profile_socks_unused {
+    defaults-from /Common/profile_socks_undefined
+    defaults-from /Common/profile_socks_used
+}
+
+# splitsessionclient
+ltm profile splitsessionclient /Common/profile_splitsessionclient_used { }
+ltm profile splitsessionclient /Common/profile_splitsessionclient_unused {
+    defaults-from /Common/profile_splitsessionclient_undefined
+    defaults-from /Common/profile_splitsessionclient_used
+}
+
+# splitsessionserver
+ltm profile splitsessionserver /Common/profile_splitsessionserver_used { }
+ltm profile splitsessionserver /Common/profile_splitsessionserver_unused {
+    defaults-from /Common/profile_splitsessionserver_undefined
+    defaults-from /Common/profile_splitsessionserver_used
+}
+
+# statistics
+ltm profile statistics /Common/profile_statistics_used { }
+ltm profile statistics /Common/profile_statistics_unused {
+    defaults-from /Common/profile_statistics_undefined
+    defaults-from /Common/profile_statistics_used
+}
+
+# stream
+ltm profile stream /Common/profile_stream_used { }
+ltm profile stream /Common/profile_stream_unused {
+    defaults-from /Common/profile_stream_undefined
+    defaults-from /Common/profile_stream_used
+}
+
+# tcp
 ltm profile tcp /Common/profile_tcp_used { }
 ltm profile tcp /Common/profile_tcp_unused {
     defaults-from /Common/profile_tcp_undefined
     defaults-from /Common/profile_tcp_used
+}
+
+# tcp-analytics
+ltm profile tcp-analytics /Common/profile_tcp_analytics_used { }
+ltm profile tcp-analytics /Common/profile_tcp_analytics_unused {
+    defaults-from /Common/profile_tcp_analytics_undefined
+    defaults-from /Common/profile_tcp_analytics_used
+}
+
+# tftp
+ltm profile tftp /Common/profile_tftp_used { }
+ltm profile tftp /Common/profile_tftp_unused {
+    defaults-from /Common/profile_tftp_undefined
+    defaults-from /Common/profile_tftp_used
+}
+
+# traffic-acceleration
+ltm profile traffic-acceleration /Common/profile_traffic_acceleration_used { }
+ltm profile traffic-acceleration /Common/profile_traffic_acceleration_unused {
+    defaults-from /Common/profile_traffic_acceleration_undefined
+    defaults-from /Common/profile_traffic_acceleration_used
+}
+
+# udp
+ltm profile udp /Common/profile_udp_used { }
+ltm profile udp /Common/profile_udp_unused {
+    defaults-from /Common/profile_udp_undefined
+    defaults-from /Common/profile_udp_used
+}
+
+# web-acceleration
+ltm profile web-acceleration /Common/profile_web_acceleration_used { }
+ltm profile web-acceleration /Common/profile_web_acceleration_unused {
+    defaults-from /Common/profile_web_acceleration_undefined
+    defaults-from /Common/profile_web_acceleration_used
+}
+
+# web-security
+ltm profile web-security /Common/profile_web_security_used { }
+ltm profile web-security /Common/profile_web_security_unused {
+    defaults-from /Common/profile_web_security_undefined
+    defaults-from /Common/profile_web_security_used
+}
+
+# websocket
+ltm profile websocket /Common/profile_websocket_used { }
+ltm profile websocket /Common/profile_websocket_unused {
+    defaults-from /Common/profile_websocket_undefined
+    defaults-from /Common/profile_websocket_used
+}
+
+# xml
+ltm profile xml /Common/profile_xml_used { }
+ltm profile xml /Common/profile_xml_unused {
+    defaults-from /Common/profile_xml_undefined
+    defaults-from /Common/profile_xml_used
 }

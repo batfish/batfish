@@ -11,6 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Enumeration of built-in ltm profile tcp configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinProfileTcp implements BuiltinProfile {
+  APM_FORWARDING_CLIENT_TCP("apm-forwarding-client-tcp"),
   APM_FORWARDING_SERVER_TCP("apm-forwarding-server-tcp"),
   F5_TCP_LAN("f5-tcp-lan"),
   F5_TCP_MOBILE("f5-tcp-mobile"),
@@ -23,8 +24,6 @@ public enum BuiltinProfileTcp implements BuiltinProfile {
   TCP_LEGACY("tcp-legacy"),
   TCP_MOBILE_OPTIMIZED("tcp-mobile-optimized"),
   TCP_WAN_OPTIMIZED("tcp-wan-optimized"),
-  WAM_TCP_LAN_OPTIMIZED("wam-tcp-lan-optimized"),
-  WAM_TCP_WAN_OPTIMIZED("wam-tcp-wan-optimized"),
   WOM_TCP_LAN_OPTIMIZED("wom-tcp-lan-optimized"),
   WOM_TCP_WAN_OPTIMIZED("wom-tcp-wan-optimized");
 
