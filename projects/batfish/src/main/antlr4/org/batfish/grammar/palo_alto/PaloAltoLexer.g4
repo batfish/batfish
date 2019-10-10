@@ -399,6 +399,11 @@ ETHERNET
     'ethernet'
 ;
 
+FILTER
+:
+    'filter'
+;
+
 FQDN
 :
     'fqdn'

@@ -163,9 +163,9 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_tagContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sagd_filterContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
@@ -991,6 +991,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSagd_filter(Sagd_filterContext ctx) {
+    _currentAddressGroup.setFilter(getText(ctx.filter));
+  }
+
+  @Override
   public void enterS_tag(S_tagContext ctx) {
     String name = getText(ctx.name);
     _currentTag = _currentVsys.getTags().computeIfAbsent(name, Tag::new);
@@ -1126,18 +1131,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSag_dynamic(Sag_dynamicContext ctx) {
-    warn(ctx, "Dynamic address groups are not currently supported");
-  }
-
-  @Override
   public void exitSag_static(Sag_staticContext ctx) {
     for (VariableContext var : ctx.variable()) {
       String objectName = getText(var);
       if (objectName.equals(_currentAddressGroup.getName())) {
         warn(ctx, String.format("The address group '%s' cannot contain itself", objectName));
       } else {
-        _currentAddressGroup.getMembers().add(objectName);
+        _currentAddressGroup.addMember(objectName);
 
         // Use constructed name so same-named defs across vsys are unique
         String uniqueName = computeObjectName(_currentVsys.getName(), objectName);
