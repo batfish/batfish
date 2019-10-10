@@ -18,6 +18,8 @@ import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.Layer2Edge;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -344,35 +346,51 @@ public class BgpTopologyUtilsTest {
     assertThat(bgpTopology.edges(), empty());
   }
 
+  private static void assertPair(
+      @Nullable Long initiatorLocalAs,
+      @Nullable Long initiatorConfed,
+      @Nonnull LongSpace initiatorRemoteAsns,
+      @Nullable Long listenerLocalAs,
+      @Nullable Long listenerConfed,
+      @Nonnull LongSpace listenerRemoteAsns,
+      @Nullable AsPair result) {
+    assertThat(
+        computeAsPair(
+            initiatorLocalAs,
+            initiatorConfed,
+            initiatorRemoteAsns,
+            listenerLocalAs,
+            listenerConfed,
+            listenerRemoteAsns),
+        result != null ? equalTo(result) : nullValue());
+    assertThat(
+        computeAsPair(
+            listenerLocalAs,
+            listenerConfed,
+            listenerRemoteAsns,
+            initiatorLocalAs,
+            initiatorConfed,
+            initiatorRemoteAsns),
+        result != null ? equalTo(result.reverse()) : nullValue());
+  }
+
   @Test
   public void testComputeAsPair() {
     // Misconfigured
-    assertThat(computeAsPair(null, null, ALL_AS_NUMBERS, 3L, null, ALL_AS_NUMBERS), nullValue());
-    assertThat(computeAsPair(1L, null, ALL_AS_NUMBERS, null, null, ALL_AS_NUMBERS), nullValue());
+    assertPair(null, null, ALL_AS_NUMBERS, 3L, null, ALL_AS_NUMBERS, null);
+    assertPair(1L, null, ALL_AS_NUMBERS, null, null, ALL_AS_NUMBERS, null);
     // Direct match
-    assertThat(
-        computeAsPair(1L, null, ALL_AS_NUMBERS, 2L, null, ALL_AS_NUMBERS),
-        equalTo(new AsPair(1, 2)));
-    assertThat(
-        computeAsPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(1)),
-        equalTo(new AsPair(1, 2)));
+    assertPair(1L, null, ALL_AS_NUMBERS, 2L, null, ALL_AS_NUMBERS, new AsPair(1, 2));
+    assertPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(1), new AsPair(1, 2));
     // Direct but no match
-    assertThat(computeAsPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(3)), nullValue());
+    assertPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(3), null);
+    // Direct match inside same confederation
+    assertPair(1L, 55L, LongSpace.of(2), 2L, 55L, LongSpace.of(1), new AsPair(1, 2));
+    // No match across confederations, but confederation match
+    assertPair(1L, 55L, LongSpace.of(56), 2L, 56L, LongSpace.of(55), new AsPair(55, 56));
     // Confed match
-    assertThat(
-        computeAsPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(3L)),
-        equalTo(new AsPair(3, 4)));
-    // Local match preferred over confed match
-    assertThat(
-        computeAsPair(
-            1L,
-            3L,
-            LongSpace.of(4),
-            4L,
-            null,
-            LongSpace.builder().including(1L).including(3L).build()),
-        equalTo(new AsPair(1, 4)));
+    assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(3L), new AsPair(3, 4));
     // Confed no match
-    assertThat(computeAsPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5)), nullValue());
+    assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
   }
 }

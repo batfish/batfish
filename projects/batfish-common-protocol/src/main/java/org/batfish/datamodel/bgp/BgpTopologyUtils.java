@@ -3,6 +3,7 @@ package org.batfish.datamodel.bgp;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -480,10 +481,28 @@ public final class BgpTopologyUtils {
       return null; // This is plainly a misconfiguration. No session.
     }
     // Note: order of evaluation matters.
-    // Simple case: 1 to 1 match
+    // Simple case: 1 to 1 match, no confederation config
     if (listenerRemoteAsns.contains(initiatorLocalAs)
+        && initiatorRemoteAsns.contains(listenerLocalAs)
+        && initiatorConfed == null
+        && listenerConfed == null) {
+      return new AsPair(initiatorLocalAs, listenerLocalAs);
+    }
+    // 1 to 1 match, inside *the same* confederation
+    if (initiatorConfed != null
+        && listenerConfed != null
+        && Objects.equals(initiatorConfed, listenerConfed)
+        && listenerRemoteAsns.contains(initiatorLocalAs)
         && initiatorRemoteAsns.contains(listenerLocalAs)) {
       return new AsPair(initiatorLocalAs, listenerLocalAs);
+    }
+    // Both peers inside *different* confederations, must use external identifier only
+    if (initiatorConfed != null
+        && listenerConfed != null
+        && !Objects.equals(initiatorConfed, listenerConfed)
+        && listenerRemoteAsns.contains(initiatorConfed)
+        && initiatorRemoteAsns.contains(listenerConfed)) {
+      return new AsPair(initiatorConfed, listenerConfed);
     }
     // Initiator is inside a confederation
     if (initiatorConfed != null
@@ -516,6 +535,18 @@ public final class BgpTopologyUtils {
 
     public long getRemoteAs() {
       return _remoteAs;
+    }
+
+    public AsPair reverse() {
+      return new AsPair(_remoteAs, _localAs);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .add("localAs", _localAs)
+          .add("remoteAs", _remoteAs)
+          .toString();
     }
 
     @Override

@@ -37,8 +37,8 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
  *   <li>For this session to be created, two configurations must be deemed compatible.
  *   <li>Some properties of the session are directional (such as head/tail IPs) and therefore must
  *       be reciprocal if the edge is reversed. Others are negotiated by devices and therefore must
- *       be equal in both directions. See {@link #from(BgpPeerConfig, BgpPeerConfig, boolean)} for
- *       more details.
+ *       be equal in both directions. See {@link #from(BgpPeerConfig, BgpPeerConfig, boolean, long,
+ *       long)} for more details.
  * </ul>
  */
 @ParametersAreNonnullByDefault
@@ -262,9 +262,7 @@ public final class BgpSessionProperties {
    * Create a set of new parameters based on session initiator and listener. This assumes that
    * provided {@link BgpPeerConfig configs} are compatible.
    *
-   * <p>For session parameters that are directional (e.g., IPs used), the {@code initiator} config
-   * will be used to fill in the {@code tail} values, unless {@code reverseDirection} is specified.
-   * Other parameters are derived from both peer configurations, emulating session negotiation.
+   * <p>For session parameters that are directional (e.g., IPs used), complicated inference is made.
    *
    * <p><b>Note</b> that some parameters (such as {@link #isEbgp()} will be determined based on the
    * configuration of the initiator only.
@@ -318,20 +316,7 @@ public final class BgpSessionProperties {
         sessionType);
   }
 
-  /**
-   * Create a set of new parameters based on session initiator and listener. This assumes that
-   * provided {@link BgpPeerConfig configs} are compatible.
-   *
-   * <p>For session parameters that are directional (e.g., IPs used), the {@code initiator} config
-   * will be used to fill in the {@code tail} values, unless {@code reverseDirection} is specified.
-   * Other parameters are derived from both peer configurations, emulating session negotiation.
-   *
-   * <p><b>Note</b> that some parameters (such as {@link #isEbgp()} will be determined based on the
-   * configuration of the initiator only.
-   *
-   * @param reverseDirection Whether to create the session properties for reverse direction
-   *     (listener to initiator) rather than forwards direction (initiator to listener)
-   */
+  /** For test use only. */
   public static BgpSessionProperties from(
       BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
 
