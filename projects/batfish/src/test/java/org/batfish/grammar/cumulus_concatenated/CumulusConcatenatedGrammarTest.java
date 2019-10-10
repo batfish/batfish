@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.SortedMap;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
@@ -50,7 +51,7 @@ public class CumulusConcatenatedGrammarTest {
         new CumulusConcatenatedControlPlaneExtractor(
             src, new Warnings(), "", settings, null, false);
     extractor.processParseTree(tree);
-    return (CumulusNcluConfiguration) extractor.getVendorConfiguration();
+    return SerializationUtils.clone((CumulusNcluConfiguration) extractor.getVendorConfiguration());
   }
 
   private static CumulusNcluConfiguration parse(String src) {
