@@ -806,6 +806,11 @@ WEBSOCKET
   'websocket'
 ;
 
+WHEN
+:
+  'when'
+;
+
 XML
 :
   'xml'
