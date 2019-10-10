@@ -72,7 +72,7 @@ public class JuniperConfigurationTest {
   @Test
   public void testToIpAccessList() {
     JuniperConfiguration config = createConfig();
-    FirewallFilter filter = new FirewallFilter("filter", Family.INET);
+    ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
     IpAccessList emptyAcl = config.toIpAccessList(filter);
 
     FwTerm term = new FwTerm("term");
