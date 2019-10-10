@@ -444,8 +444,7 @@ public final class CiscoNxosGrammarTest {
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
-    SerializationUtils.clone(vendorConfiguration);
-    return vendorConfiguration;
+    return SerializationUtils.clone(vendorConfiguration);
   }
 
   private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {

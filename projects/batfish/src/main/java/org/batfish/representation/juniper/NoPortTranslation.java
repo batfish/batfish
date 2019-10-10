@@ -17,4 +17,14 @@ public class NoPortTranslation implements PortAddressTranslation, Serializable {
       TransformationType type, PortField field) {
     return Optional.empty();
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof NoPortTranslation;
+  }
+
+  @Override
+  public int hashCode() {
+    return NoPortTranslation.class.getCanonicalName().hashCode();
+  }
 }

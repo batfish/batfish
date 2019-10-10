@@ -175,6 +175,7 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
@@ -400,7 +401,7 @@ public final class FlatJuniperGrammarTest {
         Batfish.parse(
             flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(tree);
-    return (JuniperConfiguration) extractor.getVendorConfiguration();
+    return SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
