@@ -51,6 +51,7 @@ vrp_ospf
         ospf_area
         | ospf_enable
         | ospf_graceful_restart
+        | ospf_null
         | ospf_reject_default_route
         | ospf_router_id
     )
@@ -89,6 +90,16 @@ ospf_graceful_restart
         | ospfgr_strict_lsa_checking
     )
 ;
+
+ospf_null
+:
+    (
+        AUTH_PROFILE
+        | GLOBAL_BFD
+    )
+    null_rest_of_line
+;
+
 
 ospf_reject_default_route
 :

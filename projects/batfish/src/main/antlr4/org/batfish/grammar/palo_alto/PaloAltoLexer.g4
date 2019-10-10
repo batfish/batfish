@@ -134,6 +134,11 @@ AS_FORMAT
     'as-format'
 ;
 
+AUTH_PROFILE
+:
+    'auth-profile'
+;
+
 AUTHENTICATION
 :
     'authentication'
@@ -407,6 +412,11 @@ FROM
 GATEWAY
 :
     'gateway'
+;
+
+GLOBAL_BFD
+:
+    'global-bfd'
 ;
 
 GLOBAL_PROTECT_APP_CRYPTO_PROFILES
