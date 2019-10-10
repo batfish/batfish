@@ -168,6 +168,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -333,7 +334,7 @@ public final class F5BigipStructuredGrammarTest {
     F5BigipConfiguration vendorConfiguration =
         (F5BigipConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
-    return vendorConfiguration;
+    return SerializationUtils.clone(vendorConfiguration);
   }
 
   private static @Nonnull IpAccessListToBdd toBDD() {
