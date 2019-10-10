@@ -44,12 +44,13 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communi
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_on_matchContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_gotoContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_nextContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
@@ -764,8 +765,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitRm_on_match(Rm_on_matchContext ctx) {
+  public void exitRmom_next(Rmom_nextContext ctx) {
     _currentRouteMapEntry.setContinue(new RouteMapContinue(null));
+  }
+
+  @Override
+  public void exitRmom_goto(Rmom_gotoContext ctx) {
+    int seq = Integer.parseInt(ctx.seq.getText());
+    _currentRouteMapEntry.setContinue(new RouteMapContinue(seq));
   }
 
   @Override
