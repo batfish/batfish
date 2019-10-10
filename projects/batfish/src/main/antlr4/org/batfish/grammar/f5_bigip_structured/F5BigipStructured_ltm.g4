@@ -1,6 +1,6 @@
 parser grammar F5BigipStructured_ltm;
 
-import F5BigipStructured_common;
+import F5BigipStructured_common, F5BigipStructured_ltm_rule;
 
 options {
   tokenVocab = F5BigipStructuredLexer;
@@ -372,14 +372,6 @@ lprof_tcp
 lproft_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
-;
-
-l_rule
-:
-  RULE name = structure_name BRACE_LEFT
-  (
-    NEWLINE unrecognized*
-  )? BRACE_RIGHT NEWLINE
 ;
 
 l_snat

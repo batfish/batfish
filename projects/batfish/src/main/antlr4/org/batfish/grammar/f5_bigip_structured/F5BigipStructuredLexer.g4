@@ -571,6 +571,11 @@ VLANS_ENABLED
   'vlans-enabled'
 ;
 
+WHEN
+:
+  'when'
+;
+
 // Complex tokens
 
 BRACE_LEFT
