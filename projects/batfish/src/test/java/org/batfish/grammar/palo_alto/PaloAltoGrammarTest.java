@@ -189,9 +189,9 @@ public final class PaloAltoGrammarTest {
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
-    pac.setAnswerElement(answerElement);
     // crash if not serializable
-    SerializationUtils.clone(pac);
+    pac = SerializationUtils.clone(pac);
+    pac.setAnswerElement(answerElement);
     return pac;
   }
 
