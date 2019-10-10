@@ -137,7 +137,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sagd_filterContext;
@@ -915,11 +914,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSag_description(Sag_descriptionContext ctx) {
     _currentAddressGroup.setDescription(getText(ctx.description));
-  }
-
-  @Override
-  public void exitSag_dynamic(Sag_dynamicContext ctx) {
-    warn(ctx, "Dynamic address groups are not currently supported");
   }
 
   @Override
