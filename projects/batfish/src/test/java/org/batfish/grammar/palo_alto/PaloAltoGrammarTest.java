@@ -322,12 +322,19 @@ public final class PaloAltoGrammarTest {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-group-dynamic");
 
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
     Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
 
     // Confirm filter was attached to the dynamic address-group
     assertThat(addressGroups.keySet(), contains("group"));
-    assertThat(addressGroups.get("group").getType(), equalTo(AddressGroup.Type.DYNAMIC));
-    assertThat(addressGroups.get("group").getFilter(), equalTo("'tagA' and tag1"));
+    AddressGroup ag = addressGroups.get("group");
+    assertThat(ag.getType(), equalTo(AddressGroup.Type.DYNAMIC));
+    assertThat(ag.getFilter(), equalTo("'tagA' and tag1"));
+
+    // Confirm the filter resolves to the correct IpSpace, containing only the one matching address
+    assertThat(
+        ag.getIpSpace(addressObjects, addressGroups),
+        equalTo(addressObjects.get("addr1").getIpSpace()));
     // TODO add conversion and IP space test too
   }
 

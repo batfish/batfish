@@ -3,8 +3,10 @@ package org.batfish.representation.palo_alto;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -68,18 +70,70 @@ public final class AddressGroup implements Serializable {
     return ImmutableSet.of();
   }
 
-  private Set<String> getDynamicDescendantObjects(
+  /** Remove enclosing single-quotes from the provided text, if applicable. */
+  static String unquote(String text) {
+    if (text.length() < 2) {
+      return text;
+    }
+    char leading = text.charAt(0);
+    char trailing = text.charAt(text.length() - 1);
+    if (leading == '\'' && leading == trailing) {
+      return text.substring(1, text.length() - 1);
+    }
+    return text;
+  }
+
+  /** Helper to convert simple filter containing tag conjuncts to an array of conjuncts. */
+  @VisibleForTesting
+  static Set<String> getFilterConjuncts(String filter) {
+    return Arrays.stream(filter.split(" and "))
+        .map(AddressGroup::unquote)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /**
+   * Helper to check if the specified object tags match the specified dynamic address-group's filter
+   * conjuncts. Note: we only handle basic conjuncts for now, no support for parenthesis or
+   * disjuncts.
+   */
+  private static boolean matchesFilter(Set<String> objectTags, Set<String> filterConjuncts) {
+    return objectTags.containsAll(filterConjuncts);
+  }
+
+  /** Returns descendant objects for a dynamic address-group. */
+  @VisibleForTesting
+  Set<String> getDynamicDescendantObjects(
       Map<String, AddressObject> addressObjects,
       Map<String, AddressGroup> addressGroups,
       Set<String> alreadyTraversedGroups) {
-    // Guaranteed by caller / type is dynamic
+    // Guaranteed by caller / address-group type is dynamic
     assert _filter != null;
-    String[] conjuncts = _filter.split("and");
-    // TODO flesh out logic
-    return ImmutableSet.of();
+    // Note: we only handle basic conjuncts for now, no support for parenthesis or disjuncts
+    Set<String> conjuncts = getFilterConjuncts(_filter);
+
+    Set<String> descendantObjects = new HashSet<>();
+    // Check address objects
+    for (Entry<String, AddressObject> entry : addressObjects.entrySet()) {
+      AddressObject ao = entry.getValue();
+      String name = entry.getKey();
+      if (matchesFilter(ao.getTags(), conjuncts)) {
+        descendantObjects.add(name);
+      }
+    }
+
+    // Check address-group objects
+    for (Entry<String, AddressGroup> entry : addressGroups.entrySet()) {
+      AddressGroup ag = entry.getValue();
+      if (matchesFilter(ag.getTags(), conjuncts)) {
+        descendantObjects.addAll(
+            ag.getDescendantObjects(addressObjects, addressGroups, alreadyTraversedGroups));
+      }
+    }
+    return descendantObjects;
   }
 
-  private Set<String> getStaticDescendantObjects(
+  @VisibleForTesting
+  Set<String> getStaticDescendantObjects(
       Map<String, AddressObject> addressObjects,
       Map<String, AddressGroup> addressGroups,
       Set<String> alreadyTraversedGroups) {
