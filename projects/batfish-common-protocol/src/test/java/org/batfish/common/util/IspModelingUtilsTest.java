@@ -138,6 +138,24 @@ public class IspModelingUtilsTest {
   }
 
   @Test
+  public void testPreferConfederationAs() {
+    BgpActivePeerConfig bgpActivePeerConfig =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setRemoteAs(1L)
+            .setLocalIp(Ip.parse("2.2.2.2"))
+            .setLocalAs(2L)
+            .setConfederation(1000L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    BgpActivePeerConfig reversedPeer = IspModelingUtils.getBgpPeerOnIsp(bgpActivePeerConfig);
+    assertThat(reversedPeer.getPeerAddress(), equalTo(Ip.parse("2.2.2.2")));
+    assertThat(reversedPeer.getLocalIp(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(reversedPeer, allOf(hasLocalAs(1L), hasRemoteAs(1000L)));
+  }
+
+  @Test
   public void testIsValidBgpPeer() {
     Set<Ip> validLocalIps = ImmutableSet.of(Ip.parse("3.3.3.3"));
     BgpActivePeerConfig invalidPeer =
