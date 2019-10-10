@@ -29,6 +29,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Names;
 
+/**
+ * Deprecated in favor of {@link NodeRolesData}.
+ */
 @ParametersAreNonnullByDefault
 public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
