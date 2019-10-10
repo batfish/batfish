@@ -1,6 +1,8 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -10,6 +12,17 @@ public class OspfArea implements Serializable {
 
   public OspfArea(Ip areaId) {
     _areaId = areaId;
+    _interfaces = new HashMap<>();
+  }
+
+  @Nonnull
+  public OspfInterface getOrCreateOspfInterface(String ifaceName) {
+    return _interfaces.computeIfAbsent(ifaceName, OspfInterface::new);
+  }
+
+  @Nonnull
+  public Map<String, OspfInterface> getInterfaces() {
+    return _interfaces;
   }
 
   @Nullable
@@ -31,5 +44,6 @@ public class OspfArea implements Serializable {
   }
 
   private @Nonnull Ip _areaId;
+  private @Nonnull Map<String, OspfInterface> _interfaces;
   private @Nullable OspfAreaTypeSettings _typeSettings;
 }
