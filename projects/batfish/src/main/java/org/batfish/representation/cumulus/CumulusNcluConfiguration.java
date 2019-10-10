@@ -877,7 +877,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void convertRouteMaps() {
-    _routeMaps.forEach((name, routeMap) -> _c.getRoutingPolicies().put(name, toRouteMap(routeMap)));
+    _routeMaps.forEach(
+        (name, routeMap) -> new RouteMapConvertor(_c, this, routeMap, _w).toRouteMap());
   }
 
   private void convertSubinterfaces() {
@@ -1127,22 +1128,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   @Override
   public void setVendor(ConfigurationFormat format) {}
-
-  private @Nonnull List<Statement> toActions(RouteMapEntry entry) {
-    ImmutableList.Builder<Statement> builder = ImmutableList.builder();
-    entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
-    // Call statement is executed after all set statements.
-    // http://docs.frrouting.org/en/latest/routemap.html#route-maps
-    RouteMapCall callStmt = entry.getCall();
-    if (callStmt != null && _routeMaps.containsKey(callStmt.getRouteMapName())) {
-      builder.add(
-          new If(
-              new CallExpr(callStmt.getRouteMapName()),
-              ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-              ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
-    }
-    return builder.add(toStatement(entry.getAction())).build();
-  }
 
   /**
    * Returns {@link org.batfish.datamodel.BgpProcess} for named {@code bgpVrf} if valid, or else
@@ -1440,14 +1425,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _vxlans = ImmutableMap.copyOf(vxlans);
   }
 
-  private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
-    return new Conjunction(
-        entry
-            .getMatches()
-            .map(match -> match.toBooleanExpr(_c, this, _w))
-            .collect(ImmutableList.toImmutableList()));
-  }
-
   private @Nonnull org.batfish.datamodel.Interface toInterface(Bond bond) {
     String name = bond.getName();
     org.batfish.datamodel.Interface newIface =
@@ -1548,17 +1525,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  @VisibleForTesting
-  @Nonnull
-  RoutingPolicy toRouteMap(RouteMap routeMap) {
-    RoutingPolicy.Builder builder =
-        RoutingPolicy.builder().setName(routeMap.getName()).setOwner(_c);
-    routeMap.getEntries().values().stream()
-        .map(this::toRoutingPolicyStatement)
-        .forEach(builder::addStatement);
-    return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
-  }
-
   /**
    * Convert AS number and VXLAN ID to an extended route target community. If the AS number is a
    * 4-byte as, only the lower 2 bytes are used.
@@ -1570,21 +1536,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @Nonnull
   private ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
     return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
-  }
-
-  private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {
-    return new If(toGuard(entry), toActions(entry));
-  }
-
-  private @Nonnull Statement toStatement(LineAction action) {
-    switch (action) {
-      case PERMIT:
-        return Statements.ReturnTrue.toStaticStatement();
-      case DENY:
-        return Statements.ReturnFalse.toStaticStatement();
-      default:
-        throw new IllegalArgumentException(String.format("Invalid action: %s", action));
-    }
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {

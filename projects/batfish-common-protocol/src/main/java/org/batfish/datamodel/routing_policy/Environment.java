@@ -16,6 +16,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -33,7 +34,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 
 public class Environment {
   /**
-   * Initalizes an {@link Environment} builder using a {@link Configuration} as the source of
+   * Initializes an {@link Environment} builder using a {@link Configuration} as the source of
    * several fields.
    */
   public static Builder builder(@Nonnull Configuration c) {
@@ -71,69 +72,43 @@ public class Environment {
   }
 
   private final Map<String, AsPathAccessList> _asPathAccessLists;
-
   private BgpProcess _bgpProcess;
-
+  @Nullable private final BgpSessionProperties _bgpSessionProperties;
   private boolean _buffered;
-
   private boolean _callExprContext;
-
   private boolean _callStatementContext;
-
   private final Map<String, CommunityList> _communityLists;
-
   private final Map<String, CommunityMatchExpr> _communityMatchExprs;
   private final Map<String, CommunitySetExpr> _communitySetExprs;
   private final Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
   private final Map<String, CommunitySet> _communitySets;
-
   private boolean _defaultAction;
-
   private String _defaultPolicy;
-
   private final Direction _direction;
-
   @Nullable private final EigrpProcess _eigrpProcess;
-
   private boolean _error;
-
   private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
-
   private final Map<String, IpAccessList> _ipAccessLists;
-
   private final Map<String, Ip6AccessList> _ip6AccessLists;
-
   private boolean _localDefaultAction;
-
   private final AbstractRoute _originalRoute;
-
   @Nullable private final AbstractRoute6 _originalRoute6;
-
   private final AbstractRouteBuilder<?, ?> _outputRoute;
-
   private final Map<String, RoutingPolicy> _routingPolicies;
-
   @Nullable private final Ip _peerAddress;
-
   @Nullable private final Prefix _peerPrefix;
-
   private boolean _readFromIntermediateBgpAttributes;
-
   private final Map<String, Route6FilterList> _route6FilterLists;
-
   private final Map<String, RouteFilterList> _routeFilterLists;
-
   @Nullable private final String _routeSourceVrf;
-
   private final boolean _useOutputAttributes;
-
   private boolean _writeToIntermediateBgpAttributes;
-
   private Boolean _suppressed;
 
   private Environment(
       Map<String, AsPathAccessList> asPathAccessLists,
       BgpProcess bgpProcess,
+      BgpSessionProperties bgpSessionProperties,
       boolean buffered,
       boolean callExprContext,
       boolean callStatementContext,
@@ -164,6 +139,7 @@ public class Environment {
       boolean writeToIntermediateBgpAttributes) {
     _asPathAccessLists = asPathAccessLists;
     _bgpProcess = bgpProcess;
+    _bgpSessionProperties = bgpSessionProperties;
     _buffered = buffered;
     _callExprContext = callExprContext;
     _callStatementContext = callStatementContext;
@@ -204,6 +180,15 @@ public class Environment {
 
   public BgpProcess getBgpProcess() {
     return _bgpProcess;
+  }
+
+  /**
+   * The {@link BgpSessionProperties} representing the session <em>from</em> the remote node
+   * <em>to</em> the node processing the policy. (Note direction is unintuitive for route exports.)
+   */
+  @Nullable
+  public BgpSessionProperties getBgpSessionProperties() {
+    return _bgpSessionProperties;
   }
 
   public boolean getBuffered() {
@@ -369,6 +354,7 @@ public class Environment {
   public static final class Builder {
     private Map<String, AsPathAccessList> _asPathAccessLists;
     private BgpProcess _bgpProcess;
+    private BgpSessionProperties _bgpSessionProperties;
     private boolean _buffered;
     private boolean _callExprContext;
     private boolean _callStatementContext;
@@ -407,6 +393,11 @@ public class Environment {
 
     public Builder setBgpProcess(BgpProcess bgpProcess) {
       _bgpProcess = bgpProcess;
+      return this;
+    }
+
+    public Builder setBgpSessionProperties(BgpSessionProperties bgpSessionProperties) {
+      _bgpSessionProperties = bgpSessionProperties;
       return this;
     }
 
@@ -545,6 +536,7 @@ public class Environment {
       return new Environment(
           firstNonNull(_asPathAccessLists, ImmutableMap.of()),
           _bgpProcess,
+          _bgpSessionProperties,
           _buffered,
           _callExprContext,
           _callStatementContext,

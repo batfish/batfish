@@ -44,12 +44,13 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communi
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_on_matchContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_gotoContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_nextContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
@@ -123,6 +124,7 @@ import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
+import org.batfish.representation.cumulus.RouteMapContinue;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchAsPath;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
@@ -763,11 +765,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void enterRm_on_match(Rm_on_matchContext ctx) {
-    _currentRouteMapEntry.setOnMatchNext(true);
-    // Could not find good docs for what this is. Guessing like a "continue" but punting for now.
-    // TODO: conversion
-    todo(ctx);
+  public void exitRmom_next(Rmom_nextContext ctx) {
+    _currentRouteMapEntry.setContinue(new RouteMapContinue(null));
+  }
+
+  @Override
+  public void exitRmom_goto(Rmom_gotoContext ctx) {
+    int seq = Integer.parseInt(ctx.seq.getText());
+    _currentRouteMapEntry.setContinue(new RouteMapContinue(seq));
   }
 
   @Override

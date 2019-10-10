@@ -1,14 +1,18 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
 /** A line in an IpAccessList */
@@ -112,6 +116,22 @@ public final class IpAccessListLine implements Serializable {
 
   public static IpAccessListLine rejectingHeaderSpace(String name, HeaderSpace headerSpace) {
     return rejecting(name, new MatchHeaderSpace(headerSpace));
+  }
+
+  /**
+   * Returns the {@link IpAccessListLine lines} necessary to take the explicit actions of the named
+   * ACL.
+   */
+  public static Stream<IpAccessListLine> takingExplicitActionsOf(String aclName) {
+    return Stream.of(
+        IpAccessListLine.accepting()
+            .setMatchCondition(new PermittedByAcl(aclName, false))
+            .setName(aclName + "-EXPLICTLY-PERMITTED")
+            .build(),
+        IpAccessListLine.rejecting()
+            .setMatchCondition(not(new PermittedByAcl(aclName, true)))
+            .setName(aclName + "-EXPLICTLY-DENIED")
+            .build());
   }
 
   private final LineAction _action;
