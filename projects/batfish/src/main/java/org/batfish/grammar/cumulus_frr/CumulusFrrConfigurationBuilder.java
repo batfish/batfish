@@ -123,6 +123,7 @@ import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
+import org.batfish.representation.cumulus.RouteMapContinue;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchAsPath;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
@@ -763,11 +764,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void enterRm_on_match(Rm_on_matchContext ctx) {
-    _currentRouteMapEntry.setOnMatchNext(true);
-    // Could not find good docs for what this is. Guessing like a "continue" but punting for now.
-    // TODO: conversion
-    todo(ctx);
+  public void exitRm_on_match(Rm_on_matchContext ctx) {
+    _currentRouteMapEntry.setContinue(new RouteMapContinue(null));
   }
 
   @Override
