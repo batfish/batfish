@@ -3,6 +3,8 @@ package org.batfish.grammar.f5_bigip_structured;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.DATA_GROUP_EXTERNAL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.DATA_GROUP_INTERNAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_DNS;
@@ -91,6 +93,8 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIG
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.DATA_GROUP_EXTERNAL_SELF_REFERENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.DATA_GROUP_INTERNAL_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_DNS_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_GATEWAY_ICMP_DEFAULTS_FROM;
@@ -226,6 +230,8 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_snat_tr
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_snatpoolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_virtualContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_virtual_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ldg_externalContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ldg_internalContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_dnsContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_gateway_icmpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_httpContext;
@@ -594,9 +600,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   private static @Nonnull String unquote(String text) {
     if (text.length() < 2 || text.charAt(0) != '"' || text.charAt(text.length() - 1) != '"') {
+      // not quoted
       return text;
     } else {
-      return text.substring(1, text.length() - 1);
+      return text.substring(1, text.length() - 1).replace("\\\"", "\"");
     }
   }
 
@@ -651,6 +658,24 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterF5_bigip_structured_configuration(F5_bigip_structured_configurationContext ctx) {
     _c = new F5BigipConfiguration();
+  }
+
+  @Override
+  public void enterLdg_external(Ldg_externalContext ctx) {
+    String name = toName(ctx.name);
+    _c.defineStructure(DATA_GROUP_EXTERNAL, name, ctx);
+    _c.referenceStructure(
+        DATA_GROUP_EXTERNAL, name, DATA_GROUP_EXTERNAL_SELF_REFERENCE, ctx.getStart().getLine());
+    todo(ctx);
+  }
+
+  @Override
+  public void enterLdg_internal(Ldg_internalContext ctx) {
+    String name = toName(ctx.name);
+    _c.defineStructure(DATA_GROUP_INTERNAL, name, ctx);
+    _c.referenceStructure(
+        DATA_GROUP_INTERNAL, name, DATA_GROUP_INTERNAL_SELF_REFERENCE, ctx.getStart().getLine());
+    todo(ctx);
   }
 
   @Override

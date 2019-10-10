@@ -50,6 +50,7 @@ import static org.batfish.datamodel.transformation.TransformationEvaluator.eval;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.DATA_GROUP_INTERNAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_DNS;
@@ -671,6 +672,22 @@ public final class F5BigipStructuredGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(Prefix.strict("10.0.3.2/32"), hasLocalIp(nullValue())))));
+  }
+
+  @Test
+  public void testDataGroupDefinitions() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_data_group";
+    String file = "configs/" + hostname;
+    _disableUnrecognized = true;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(
+        ans.getDefinedStructures().get(file).get(DATA_GROUP_INTERNAL.getDescription()),
+        aMapWithSize(2));
+    assertThat(ans, hasNumReferrers(file, DATA_GROUP_INTERNAL, "/Common/complex", 1));
+    assertThat(ans, hasNumReferrers(file, DATA_GROUP_INTERNAL, "/Common/simple", 1));
   }
 
   @Test

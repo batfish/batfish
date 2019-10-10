@@ -1,0 +1,26 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_ltm_data_group
+}
+
+# contains escaped double-quote, newline in quoted string
+ltm data-group internal /Common/complex {
+    records {
+        a {
+            data "foo \"bar\"
+            baz"
+        }
+    }
+    type string
+}
+
+# dead simple. should not be skipped
+ltm data-group internal /Common/simple {
+    records {
+        a {
+            data "hello"
+        }
+    }
+    type string
+}
