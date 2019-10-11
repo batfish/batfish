@@ -77,6 +77,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
@@ -227,7 +228,7 @@ public final class CumulusNcluGrammarTest {
         notNullValue());
     VendorConfiguration vc = extractor.getVendorConfiguration();
     assertThat(vc, instanceOf(CumulusNcluConfiguration.class));
-    return (CumulusNcluConfiguration) vc;
+    return SerializationUtils.clone((CumulusNcluConfiguration) vc);
   }
 
   @Test

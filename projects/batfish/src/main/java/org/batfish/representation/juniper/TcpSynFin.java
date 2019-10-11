@@ -39,4 +39,14 @@ public final class TcpSynFin implements ScreenOption {
   public AclLineMatchExpr getAclLineMatchExpr() {
     return ACL_LINE_MATCH_EXPR;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof TcpSynFin;
+  }
+
+  @Override
+  public int hashCode() {
+    return TcpSynFin.class.getCanonicalName().hashCode();
+  }
 }

@@ -99,8 +99,7 @@ public class AristaGrammarTest {
         (CiscoConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
-    SerializationUtils.clone(vendorConfiguration);
-    return vendorConfiguration;
+    return SerializationUtils.clone(vendorConfiguration);
   }
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)

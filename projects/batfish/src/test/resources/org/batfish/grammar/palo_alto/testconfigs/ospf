@@ -1,0 +1,54 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname ospf
+
+set network interface ethernet ethernet1/3 layer3 units ethernet1/3.5 comment "unit 5"
+set network interface ethernet ethernet1/3 layer3 units ethernet1/3.5 ip 1.1.1.3/24
+set network virtual-router vr1 interface ethernet1/3.5
+set network interface ethernet ethernet1/3 layer3 units ethernet1/3.4 ip 1.1.1.4/24
+set network virtual-router vr1 interface ethernet1/3.4
+
+set network virtual-router vr1 protocol ospf router-id 0.0.0.0
+set network virtual-router vr1 protocol ospf area 0.0.0.1/32 type stub default-route advertise metric 12
+set network virtual-router vr1 protocol ospf area 0.0.0.1/32 type stub accept-summary yes
+set network virtual-router vr1 protocol ospf area 0.0.0.1/32 type stub default-route disable
+set network virtual-router vr1 protocol ospf area 0.0.0.2 type normal
+set network virtual-router vr1 protocol ospf area 0.0.0.3 type nssa default-route advertise metric 13
+set network virtual-router vr1 protocol ospf area 0.0.0.3 type nssa default-route advertise type ext-2
+set network virtual-router vr1 protocol ospf area 0.0.0.3 type nssa accept-summary no
+
+# putting ethernet1/3.4 in area 0.0.0.1
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 enable yes
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 passive yes
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 metric 14
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 priority 2
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 hello-interval 15
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 dead-counts 8
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 retransmit-interval 16
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 transit-delay 23
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 link-type p2p
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 bfd profile bfd_profile
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 authentication auth_profile
+set network virtual-router vr1 protocol ospf area 0.0.0.1 interface ethernet1/3.4 gr-delay 10
+
+# putting ethernet1/3.5 in area 0.0.0.3
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 enable no
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 passive no
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 metric 10
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 priority 1
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 hello-interval 10
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 dead-counts 4
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 retransmit-interval 5
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 transit-delay 1
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 link-type broadcast
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 bfd profile bfd_profile
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 authentication auth_profile
+set network virtual-router vr1 protocol ospf area 0.0.0.3 interface ethernet1/3.5 gr-delay 10
+
+set network virtual-router vr1 protocol ospf enable yes
+set network virtual-router vr1 protocol ospf reject-default-route no
+set network virtual-router vr1 protocol ospf graceful-restart enable no
+set network virtual-router vr1 protocol ospf graceful-restart helper-enable no
+set network virtual-router vr1 protocol ospf graceful-restart strict-LSA-checking no
+set network virtual-router vr1 protocol ospf auth-profile apr1 password -AQ==Jan8Q2Hw3pnWb1afI9wBVOcGTjU=b1lCQOAbU
+set network virtual-router vr1 protocol ospf global-bfd profile bfd_pr1
+

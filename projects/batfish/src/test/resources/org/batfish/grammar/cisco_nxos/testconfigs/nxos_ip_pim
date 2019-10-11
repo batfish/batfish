@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_pim
+!
+feature pim
+!
+ip pim rp-address 1.2.3.4 route-map foo bidir override
+ip pim rp-address 1.2.3.4 bidir override
+ip pim rp-address 1.2.3.4 bidir
+ip pim rp-address 1.2.3.4 override
+ip pim rp-candidate loopback1 group-list 225.0.0.0/8
+ip pim rp-candidate loopback1 prefix-list PL
+ip pim rp-candidate loopback1 route-map RM

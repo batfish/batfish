@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
@@ -162,7 +163,7 @@ public final class IspModelingUtils {
     Map<Long, IspInfo> asnToIspInfos =
         combineIspConfigurations(configurations, ispConfigurations, warnings);
 
-    return createInternetAndIspNodes(asnToIspInfos, configurations, nf, logger);
+    return createInternetAndIspNodes(asnToIspInfos, nf, logger);
   }
 
   @VisibleForTesting
@@ -204,16 +205,12 @@ public final class IspModelingUtils {
   }
 
   private static Map<String, Configuration> createInternetAndIspNodes(
-      Map<Long, IspInfo> asnToIspInfos,
-      Map<String, Configuration> configurations,
-      NetworkFactory nf,
-      BatfishLogger logger) {
+      Map<Long, IspInfo> asnToIspInfos, NetworkFactory nf, BatfishLogger logger) {
     Map<String, Configuration> ispConfigurations =
         asnToIspInfos.entrySet().stream()
             .map(
                 asnIspInfo ->
-                    getIspConfigurationNode(
-                        asnIspInfo.getKey(), asnIspInfo.getValue(), configurations, nf, logger))
+                    getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), nf, logger))
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
     // not proceeding if no ISPs were created
@@ -411,11 +408,7 @@ public final class IspModelingUtils {
   @VisibleForTesting
   @Nullable
   static Configuration getIspConfigurationNode(
-      Long asn,
-      IspInfo ispInfo,
-      Map<String, Configuration> configurations,
-      NetworkFactory nf,
-      BatfishLogger logger) {
+      Long asn, IspInfo ispInfo, NetworkFactory nf, BatfishLogger logger) {
     if (ispInfo.getBgpActivePeerConfigs().isEmpty()
         || ispInfo.getInterfaceAddresses().isEmpty()
         || ispInfo.getInterfaceAddresses().size() != ispInfo.getBgpActivePeerConfigs().size()) {
@@ -570,7 +563,9 @@ public final class IspModelingUtils {
   static BgpActivePeerConfig getBgpPeerOnIsp(BgpActivePeerConfig bgpActivePeerConfig) {
     return BgpActivePeerConfig.builder()
         .setPeerAddress(bgpActivePeerConfig.getLocalIp())
-        .setRemoteAs(bgpActivePeerConfig.getLocalAs())
+        .setRemoteAs(
+            firstNonNull(
+                bgpActivePeerConfig.getConfederationAsn(), bgpActivePeerConfig.getLocalAs()))
         .setLocalIp(bgpActivePeerConfig.getPeerAddress())
         .setLocalAs(bgpActivePeerConfig.getRemoteAsns().least())
         .setIpv4UnicastAddressFamily(

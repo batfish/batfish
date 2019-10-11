@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class FwTerm implements Serializable {
@@ -48,7 +49,7 @@ public final class FwTerm implements Serializable {
     return _fromIpOptions;
   }
 
-  public @Nullable FwFromIpOptions getOrCreateFromIpOptions() {
+  public @Nonnull FwFromIpOptions getOrCreateFromIpOptions() {
     if (_fromIpOptions == null) {
       _fromIpOptions = new FwFromIpOptions();
     }

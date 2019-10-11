@@ -39,4 +39,14 @@ public final class TcpFinNoAck implements ScreenOption {
   public AclLineMatchExpr getAclLineMatchExpr() {
     return ACL_LINE_MATCH_EXPR;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof TcpFinNoAck;
+  }
+
+  @Override
+  public int hashCode() {
+    return TcpFinNoAck.class.getCanonicalName().hashCode();
+  }
 }

@@ -200,12 +200,23 @@ ip_pim
   PIM
   (
     ipp_rp_address
+    | ipp_rp_candidate
   )
 ;
 
 ipp_rp_address
 :
   RP_ADDRESS ip = ip_address (ROUTE_MAP map = route_map_name)? BIDIR? OVERRIDE? NEWLINE
+;
+
+ipp_rp_candidate
+:
+  RP_CANDIDATE interface_name
+  (
+    GROUP_LIST ip_prefix
+    | PREFIX_LIST pl = ip_prefix_list_name
+    | ROUTE_MAP rm = route_map_name
+  ) NEWLINE
 ;
 
 ip_sla

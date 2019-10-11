@@ -96,12 +96,12 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -339,6 +339,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         mg.setLocalAs(routingInstanceAs);
       }
     }
+
+    // Global confederation config
+    Long confederation = routingInstance.getConfederation();
+    if (confederation != null && !routingInstance.getConfederationMembers().isEmpty()) {
+      proc.setConfederation(
+          new BgpConfederation(confederation, routingInstance.getConfederationMembers()));
+    }
+
     // Set default authentication algorithm if missing
     if (mg.getAuthenticationAlgorithm() == null) {
       mg.setAuthenticationAlgorithm(DEFAULT_BGP_AUTHENTICATION_ALGORITHM);
@@ -385,6 +393,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else {
         neighbor.setClusterId(routerId.asLong());
       }
+
+      neighbor.setConfederation(routingInstance.getConfederation());
 
       boolean ibgp = Objects.equals(remoteAs, ig.getLocalAs());
 
@@ -1857,7 +1867,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     IpAccessList screenAcl =
         _c.getIpAccessLists().computeIfAbsent(screenAclName, x -> buildScreensPerInterface(iface));
     // merge screen options to incoming filter
-    // but keep both originial filters in the config, so we can run search filter queris on them
+    // but keep both original filters in the config, so we can run search filter queries on them
     String inAclName = iface.getIncomingFilter();
     IpAccessList inAcl = inAclName != null ? _c.getIpAccessLists().get(inAclName) : null;
 
@@ -1978,33 +1988,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
-        /* Handle explicit accept lines from this policy */
-        zoneAclLines.add(
-            new IpAccessListLine(
-                LineAction.PERMIT, new PermittedByAcl(e.getKey(), false), e.getKey() + "PERMIT"));
-        /* Handle explicit deny lines from this policy, this is needed so only unmatched lines fall-through to the next lines */
-        zoneAclLines.add(
-            new IpAccessListLine(
-                LineAction.DENY,
-                new NotMatchExpr(new PermittedByAcl(e.getKey(), true)),
-                e.getKey() + "DENY"));
+        IpAccessListLine.takingExplicitActionsOf(e.getKey()).forEach(zoneAclLines::add);
       }
     }
 
     /* Global policy if applicable */
     if (_masterLogicalSystem.getFirewallFilters().get(ACL_NAME_GLOBAL_POLICY) != null) {
-      /* Handle explicit accept lines for global policy */
-      zoneAclLines.add(
-          new IpAccessListLine(
-              LineAction.PERMIT,
-              new PermittedByAcl(ACL_NAME_GLOBAL_POLICY, false),
-              "GLOBAL_POLICY_ACCEPT"));
-      /* Handle explicit deny lines for global policy, this is needed so only unmatched lines fall-through to the next lines */
-      zoneAclLines.add(
-          new IpAccessListLine(
-              LineAction.DENY,
-              new NotMatchExpr(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY, true)),
-              "GLOBAL_POLICY_REJECT"));
+      /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
+      IpAccessListLine.takingExplicitActionsOf(ACL_NAME_GLOBAL_POLICY).forEach(zoneAclLines::add);
     }
 
     /* Add catch-all line with default action */
@@ -2107,22 +2098,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /** Convert a firewallFilter into an equivalent ACL. */
-  IpAccessList toIpAccessList(FirewallFilter filter) throws VendorConversionException {
-    String name = filter.getName();
+  IpAccessList toIpAccessList(FirewallFilter f) throws VendorConversionException {
+    String name = f.getName();
     AclLineMatchExpr matchSrcInterface = null;
 
-    /*
-     * If srcInterfaces (from-zone) are filtered (this is the case for security policies), then
-     * need to make a match condition for that
-     */
-    String zoneName = filter.getFromZone();
-    if (zoneName != null) {
-      matchSrcInterface =
-          new MatchSrcInterface(_masterLogicalSystem.getZones().get(zoneName).getInterfaces());
-    }
+    if (f instanceof ConcreteFirewallFilter) {
+      ConcreteFirewallFilter filter = (ConcreteFirewallFilter) f;
+      /*
+       * If srcInterfaces (from-zone) are filtered (this is the case for security policies), then
+       * need to make a match condition for that
+       */
+      String zoneName = filter.getFromZone();
+      if (zoneName != null) {
+        matchSrcInterface =
+            new MatchSrcInterface(_masterLogicalSystem.getZones().get(zoneName).getInterfaces());
+      }
 
-    /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
-    return fwTermsToIpAccessList(name, filter.getTerms().values(), matchSrcInterface);
+      /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
+      return fwTermsToIpAccessList(name, filter.getTerms().values(), matchSrcInterface);
+    } else {
+      assert f instanceof CompositeFirewallFilter;
+      CompositeFirewallFilter filter = (CompositeFirewallFilter) f;
+      ImmutableList.Builder<IpAccessListLine> lines = ImmutableList.builder();
+      for (FirewallFilter inner : filter.getInner()) {
+        IpAccessListLine.takingExplicitActionsOf(inner.getName()).forEach(lines::add);
+      }
+      return IpAccessList.builder().setName(filter.getName()).setLines(lines.build()).build();
+    }
   }
 
   @Nullable
@@ -2340,6 +2342,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * filter-based forwarding, in Juniper parlance).
    */
   private PacketPolicy toPacketPolicy(FirewallFilter filter) {
+    if (filter instanceof ConcreteFirewallFilter) {
+      return toPacketPolicy((ConcreteFirewallFilter) filter);
+    } else {
+      assert filter instanceof CompositeFirewallFilter;
+      return toPacketPolicy((CompositeFirewallFilter) filter);
+    }
+  }
+
+  /**
+   * Makes a composite {@link PacketPolicy} by (recursively) flattening the statements from all
+   * inner packet policies.
+   */
+  private PacketPolicy toPacketPolicy(CompositeFirewallFilter filter) {
+    List<org.batfish.datamodel.packet_policy.Statement> concatenatedStatememnts =
+        filter.getInner().stream()
+            .map(this::toPacketPolicy)
+            .flatMap(p -> p.getStatements().stream())
+            .collect(ImmutableList.toImmutableList());
+    // Make the policy, with an implicit deny all at the end as the default action
+    return new PacketPolicy(filter.getName(), concatenatedStatememnts, new Return(Drop.instance()));
+  }
+
+  private PacketPolicy toPacketPolicy(ConcreteFirewallFilter filter) {
     ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> builder =
         ImmutableList.builder();
     for (Entry<String, FwTerm> e : filter.getTerms().entrySet()) {
@@ -2716,33 +2741,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                                   new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription())));
             });
 
-    // TODO: instead make both IpAccessList and Ip6AccessList instances from
-    // such firewall filters
-    // remove ipv6 lines from firewall filters
-    for (FirewallFilter filter : _masterLogicalSystem.getFirewallFilters().values()) {
-      Set<String> toRemove = new HashSet<>();
-      for (Entry<String, FwTerm> e2 : filter.getTerms().entrySet()) {
-        String termName = e2.getKey();
-        FwTerm term = e2.getValue();
-        if (term.getIpv6()) {
-          toRemove.add(termName);
-        }
-      }
-      for (String termName : toRemove) {
-        filter.getTerms().remove(termName);
-      }
-    }
-
-    // remove empty firewall filters (ipv6-only filters)
-    Map<String, FirewallFilter> allFilters =
-        new LinkedHashMap<>(_masterLogicalSystem.getFirewallFilters());
-    for (Entry<String, FirewallFilter> e : allFilters.entrySet()) {
-      String name = e.getKey();
-      FirewallFilter filter = e.getValue();
-      if (filter.getTerms().size() == 0) {
-        _masterLogicalSystem.getFirewallFilters().remove(name);
-      }
-    }
+    // Preprocess filters to do things like handle IPv6, combine filter input-/output-lists
+    preprocessFilters();
 
     // convert firewall filters to ipaccesslists
     for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
@@ -3161,6 +3161,84 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _c;
   }
 
+  private void preprocessFilters() {
+    _masterLogicalSystem.getInterfaces().values().stream()
+        .flatMap(i -> Stream.concat(Stream.of(i), i.getUnits().values().stream()))
+        .forEach(this::handleFilterLists);
+
+    // Remove ipv6 lines from firewall filters
+    //    TODO: instead make both IpAccessList and Ip6AccessList instances
+    for (FirewallFilter aFilter : _masterLogicalSystem.getFirewallFilters().values()) {
+      if (aFilter instanceof CompositeFirewallFilter) {
+        // Terms will be handled transitively.
+        continue;
+      }
+      assert aFilter instanceof ConcreteFirewallFilter;
+      ConcreteFirewallFilter filter = (ConcreteFirewallFilter) aFilter;
+      Set<String> toRemove = new HashSet<>();
+      for (Entry<String, FwTerm> e2 : filter.getTerms().entrySet()) {
+        String termName = e2.getKey();
+        FwTerm term = e2.getValue();
+        if (term.getIpv6()) {
+          toRemove.add(termName);
+        }
+      }
+      for (String termName : toRemove) {
+        filter.getTerms().remove(termName);
+      }
+    }
+
+    // remove empty firewall filters (ipv6-only filters)
+    Map<String, FirewallFilter> allFilters =
+        new LinkedHashMap<>(_masterLogicalSystem.getFirewallFilters());
+    for (Entry<String, FirewallFilter> e : allFilters.entrySet()) {
+      String name = e.getKey();
+      FirewallFilter aFilter = e.getValue();
+      if (aFilter instanceof CompositeFirewallFilter) {
+        continue;
+      }
+      assert aFilter instanceof ConcreteFirewallFilter;
+      ConcreteFirewallFilter filter = (ConcreteFirewallFilter) aFilter;
+      if (filter.getTerms().size() == 0) {
+        _masterLogicalSystem.getFirewallFilters().remove(name);
+      }
+    }
+  }
+
+  /** Converts a filter input-list or output-list into a {@link FirewallFilter}. */
+  private void handleFilterLists(Interface i) {
+    if (i.getIncomingFilterList() != null) {
+      i.setIncomingFilter(
+          generateCompositeInterfaceFilter(i.getIncomingFilterList(), i.getName() + "-i"));
+    }
+    if (i.getOutgoingFilterList() != null) {
+      i.setOutgoingFilter(
+          generateCompositeInterfaceFilter(i.getOutgoingFilterList(), i.getName() + "-o"));
+    }
+  }
+
+  /**
+   * Generates a {@link FirewallFilter} and stores it in the {@link #_masterLogicalSystem}. Returns
+   * the name of the generated filter.
+   */
+  private @Nonnull String generateCompositeInterfaceFilter(
+      @Nonnull List<String> outgoingFilterList, @Nonnull String name) {
+    List<FirewallFilter> filtered =
+        outgoingFilterList.stream()
+            .map(fname -> _masterLogicalSystem.getFirewallFilters().get(fname))
+            .filter(Objects::nonNull) // undefined ref
+            .collect(ImmutableList.toImmutableList());
+    FirewallFilter filter;
+    if (!filtered.isEmpty()) {
+      filter = new CompositeFirewallFilter(name, filtered);
+    } else {
+      // No defined terms, instead generate an empty filter which will default-deny.
+      filter = new ConcreteFirewallFilter(name, Family.INET);
+    }
+    _masterLogicalSystem.getFirewallFilters().put(filter.getName(), filter);
+    return filter.getName();
+  }
+
   private void warnIllegalNamedCommunitiesUsedForSet() {
     getOrCreateNamedCommunitiesUsedForSet().stream()
         .filter(Predicates.not(_c.getCommunitySets()::containsKey))
@@ -3375,7 +3453,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     newZone.setInboundInterfaceFiltersNames(new TreeMap<>());
-    for (Entry<String, FirewallFilter> e : zone.getInboundInterfaceFilters().entrySet()) {
+    for (Entry<String, ConcreteFirewallFilter> e : zone.getInboundInterfaceFilters().entrySet()) {
       String inboundInterfaceName = e.getKey();
       FirewallFilter inboundInterfaceFilter = e.getValue();
       String inboundInterfaceFilterName = inboundInterfaceFilter.getName();
@@ -3384,7 +3462,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     newZone.setToZonePoliciesNames(new TreeMap<>());
-    for (Entry<String, FirewallFilter> e : zone.getToZonePolicies().entrySet()) {
+    for (Entry<String, ConcreteFirewallFilter> e : zone.getToZonePolicies().entrySet()) {
       String toZoneName = e.getKey();
       FirewallFilter toZoneFilter = e.getValue();
       String toZoneFilterName = toZoneFilter.getName();
