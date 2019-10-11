@@ -108,6 +108,7 @@ import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
+import org.batfish.representation.f5_bigip.RouteMapSetIpNextHop;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
 import org.batfish.vendor.VendorConfiguration;
@@ -1071,6 +1072,10 @@ public final class F5BigipImishGrammarTest {
   @Test
   public void testRouteMapSetNextHop() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_next_hop");
-    assertNotNull(vc);
+    assertNotNull(vc.getRouteMaps().get("rm1"));
+    assertNotNull(vc.getRouteMaps().get("rm1").getEntries().get(10L));
+    RouteMapSetIpNextHop set = vc.getRouteMaps().get("rm1").getEntries().get(10L).getSetIpNextHop();
+    assertNotNull(set);
+    assertThat(set.getNextHop(), equalTo(Ip.parse("1.2.3.4")));
   }
 }
