@@ -194,6 +194,11 @@ CONFIG
     'config'
 ;
 
+CONNECTION_OPTIONS
+:
+    'connection-options'
+;
+
 CONTENT_PREVIEW
 :
     'content-preview'
@@ -449,6 +454,11 @@ IMPORT
     'import'
 ;
 
+INCOMING_BGP_CONNECTION
+:
+    'incoming-bgp-connection'
+;
+
 INSTALL_ROUTE
 :
     'install-route'
@@ -527,6 +537,11 @@ LOCAL_ADDRESS
 LOCAL_AS
 :
     'local-as'
+;
+
+LOCAL_PORT
+:
+    'local-port'
 ;
 
 LOG_SETTINGS
@@ -679,6 +694,11 @@ OSPFV3_INT
     'ospfv3-int'
 ;
 
+OUTGOING_BGP_CONNECTION
+:
+    'outgoing-bgp-connection'
+;
+
 PANORAMA
 :
     'panorama'
@@ -777,6 +797,11 @@ REFLECTOR_CLUSTER_ID
 REJECT_DEFAULT_ROUTE
 :
     'reject-default-route'
+;
+
+REMOTE_PORT
+:
+    'remote-port'
 ;
 
 RESET_BOTH
