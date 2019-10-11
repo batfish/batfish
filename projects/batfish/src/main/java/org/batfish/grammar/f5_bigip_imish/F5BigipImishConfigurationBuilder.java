@@ -380,7 +380,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
           F5BigipStructureUsage.BGP_REDISTRIBUTE_KERNEL_ROUTE_MAP,
           ctx.rm.getStart().getLine());
     }
-
     _currentBgpProcess
         .getIpv4AddressFamily()
         .getRedistributionPolicies()

@@ -120,7 +120,7 @@ rb_redistribute
   (
     rbr_kernel
     | rbr_connected
-  ) NEWLINE
+  )
 ;
 
 rbr_kernel
@@ -129,11 +129,12 @@ rbr_kernel
   (
     ROUTE_MAP rm = word
   )?
+  NEWLINE
 ;
 
 rbr_connected
 :
-  CONNECTED
+  CONNECTED NEWLINE
 ;
 
 router_bgp
