@@ -32,7 +32,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.parboiled.Grammar;
@@ -565,19 +564,14 @@ public final class AutoCompleteUtils {
         case NODE_ROLE_DIMENSION_NAME:
           {
             checkNodeRolesData(nodeRolesData, network);
-            suggestions =
-                stringAutoComplete(
-                    query,
-                    nodeRolesData.getNodeRoleDimensions().stream()
-                        .map(NodeRoleDimension::getName)
-                        .collect(Collectors.toSet()));
+            suggestions = stringAutoComplete(query, nodeRolesData.toNodeRoleDimensions().keySet());
             break;
           }
         case NODE_ROLE_NAME:
           {
             checkNodeRolesData(nodeRolesData, network);
             ImmutableSet<String> roles =
-                nodeRolesData.getNodeRoleDimensions().stream()
+                nodeRolesData.toNodeRoleDimensions().values().stream()
                     .flatMap(d -> d.roleNamesFor(completionMetadata.getNodes()).stream())
                     .collect(ImmutableSet.toImmutableSet());
             suggestions = stringAutoComplete(query, roles);

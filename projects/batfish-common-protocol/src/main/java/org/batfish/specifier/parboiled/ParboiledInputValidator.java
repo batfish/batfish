@@ -87,7 +87,7 @@ public final class ParboiledInputValidator {
     @Nonnull
     @Override
     public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
-      return _nodeRolesData.getNodeRoleDimension(dimension);
+      return _nodeRolesData.nodeRoleDimensionFor(dimension);
     }
 
     @Override

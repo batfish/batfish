@@ -3,6 +3,7 @@ package org.batfish.role;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsFirst;
 
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -27,6 +29,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Names;
 
+/** Deprecated in favor of {@link NodeRolesData}. */
 @ParametersAreNonnullByDefault
 public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
@@ -36,22 +39,14 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
     private List<RoleDimensionMapping> _roleDimensionMappings;
 
-    private Type _type;
-
     private Builder() {
       _roleDimensionMappings = ImmutableList.of();
-      _type = NodeRoleDimension.Type.CUSTOM;
     }
 
     public @Nonnull NodeRoleDimension build() {
       checkArgument(_name != null, "Name of node role dimension cannot be null");
-      checkArgument(
-          _type != NodeRoleDimension.Type.AUTO || _name.startsWith(AUTO_DIMENSION_PREFIX),
-          "Name for a AUTO role dimension must begin with: %s",
-          AUTO_DIMENSION_PREFIX);
       Names.checkName(_name, "role dimension", Names.Type.REFERENCE_OBJECT);
-      return new NodeRoleDimension(
-          _name, firstNonNull(_type, NodeRoleDimension.Type.CUSTOM), _roleDimensionMappings);
+      return new NodeRoleDimension(_name, _roleDimensionMappings);
     }
 
     public @Nonnull Builder setName(String name) {
@@ -61,11 +56,6 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
     public @Nonnull Builder setRoleDimensionMappings(List<RoleDimensionMapping> mappings) {
       _roleDimensionMappings = ImmutableList.copyOf(mappings);
-      return this;
-    }
-
-    public @Nonnull Builder setType(Type type) {
-      _type = type;
       return this;
     }
   }
@@ -79,11 +69,6 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
     return new Builder().setName(name);
   }
 
-  public enum Type {
-    AUTO,
-    CUSTOM
-  }
-
   public static final String AUTO_DIMENSION_PREFIX = "auto";
 
   public static final String AUTO_DIMENSION_PRIMARY = "auto0";
@@ -91,7 +76,6 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   private static final String PROP_ROLES = "roles";
   private static final String PROP_ROLE_REGEXES = "roleRegexes";
   private static final String PROP_ROLE_DIMENSION_MAPPINGS = "roleDimensionMappings";
-  private static final String PROP_TYPE = "type";
 
   @Nonnull private final String _name;
 
@@ -104,11 +88,8 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    */
   @Nonnull private final List<RoleDimensionMapping> _roleDimensionMappings;
 
-  @Nonnull private final Type _type;
-
-  private NodeRoleDimension(String name, Type type, List<RoleDimensionMapping> mappings) {
+  private NodeRoleDimension(String name, List<RoleDimensionMapping> mappings) {
     _name = name;
-    _type = type;
     _roleDimensionMappings = mappings;
   }
 
@@ -118,7 +99,6 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    * @param name the name of the dimension
    * @param roles for backward-compatibility with an older format for node role dimensions, a list
    *     of node roles is accepted and each is converted into a role dimension mapping (see below)
-   * @param type whether the dimension was automatically generated or user-provided
    * @param roleRegexes for backward-compatibility with an older format for node role dimensions, a
    *     list of role regexes is accepted **but has no effect on the produced node role dimension**
    * @param mappings a list of role dimension mappings, which specify how to identify role names for
@@ -129,25 +109,18 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   private static @Nonnull NodeRoleDimension create(
       @Nullable @JsonProperty(PROP_NAME) String name,
       @Nullable @JsonProperty(PROP_ROLES) List<NodeRole> roles,
-      @Nullable @JsonProperty(PROP_TYPE) Type type,
       @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> roleRegexes,
       @Nullable @JsonProperty(PROP_ROLE_DIMENSION_MAPPINGS) List<RoleDimensionMapping> mappings) {
     checkArgument(name != null, "Name of node role cannot be null");
-    checkArgument(
-        type != NodeRoleDimension.Type.AUTO || name.startsWith(AUTO_DIMENSION_PREFIX),
-        "Name for a AUTO role dimension must begin with: %s",
-        AUTO_DIMENSION_PREFIX);
     List<RoleDimensionMapping> rdMaps =
         new LinkedList<>(firstNonNull(mappings, ImmutableList.of()));
     List<NodeRole> nodeRoles = firstNonNull(roles, ImmutableList.of());
     rdMaps.addAll(nodeRoles.stream().map(RoleDimensionMapping::new).collect(Collectors.toList()));
-    return new NodeRoleDimension(
-        name, firstNonNull(type, NodeRoleDimension.Type.CUSTOM), ImmutableList.copyOf(rdMaps));
+    return new NodeRoleDimension(name, ImmutableList.copyOf(rdMaps));
   }
 
   private static final Comparator<NodeRoleDimension> COMPARATOR =
       comparing(NodeRoleDimension::getName)
-          .thenComparing(NodeRoleDimension::getType)
           .thenComparing(
               NodeRoleDimension::getRoleDimensionMappings,
               nullsFirst(Comparators.lexicographical(RoleDimensionMapping::compareTo)));
@@ -166,14 +139,12 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
       return false;
     }
     NodeRoleDimension other = (NodeRoleDimension) o;
-    return _name.equals(other._name)
-        && _roleDimensionMappings.equals(other._roleDimensionMappings)
-        && _type == other._type;
+    return _name.equals(other._name) && _roleDimensionMappings.equals(other._roleDimensionMappings);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name, _roleDimensionMappings, _type.ordinal());
+    return Objects.hash(_name, _roleDimensionMappings);
   }
 
   @JsonProperty(PROP_NAME)
@@ -194,11 +165,6 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    */
   public Set<String> roleNamesFor(Set<String> nodeNames) {
     return createRoleNodesMap(nodeNames).keySet();
-  }
-
-  @JsonProperty(PROP_TYPE)
-  public @Nonnull Type getType() {
-    return _type;
   }
 
   /**
@@ -241,12 +207,30 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
     return roleNamesFor(ImmutableSortedSet.of(nodeName)).contains(roleName);
   }
 
+  /**
+   * Convert this node role dimension into an equivalent list of role mappings.
+   *
+   * @return the role mappings
+   */
+  public List<RoleMapping> toRoleMappings() {
+    List<RoleMapping> mappings = new LinkedList<>();
+    for (RoleDimensionMapping rdMap : _roleDimensionMappings) {
+      mappings.add(
+          new RoleMapping(
+              null,
+              rdMap.getRegex(),
+              ImmutableMap.of(_name, rdMap.getGroups()),
+              ImmutableMap.of(_name, rdMap.getCanonicalRoleNames()),
+              rdMap.getCaseSensitive()));
+    }
+    return copyOf(mappings);
+  }
+
   @Override
   public String toString() {
     return toStringHelper(getClass())
         .add(PROP_NAME, _name)
         .add(PROP_ROLE_DIMENSION_MAPPINGS, _roleDimensionMappings)
-        .add(PROP_TYPE, _type)
         .toString();
   }
 }
