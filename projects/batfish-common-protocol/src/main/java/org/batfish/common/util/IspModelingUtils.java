@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
@@ -562,7 +563,9 @@ public final class IspModelingUtils {
   static BgpActivePeerConfig getBgpPeerOnIsp(BgpActivePeerConfig bgpActivePeerConfig) {
     return BgpActivePeerConfig.builder()
         .setPeerAddress(bgpActivePeerConfig.getLocalIp())
-        .setRemoteAs(bgpActivePeerConfig.getLocalAs())
+        .setRemoteAs(
+            firstNonNull(
+                bgpActivePeerConfig.getConfederationAsn(), bgpActivePeerConfig.getLocalAs()))
         .setLocalIp(bgpActivePeerConfig.getPeerAddress())
         .setLocalAs(bgpActivePeerConfig.getRemoteAsns().least())
         .setIpv4UnicastAddressFamily(
