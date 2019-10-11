@@ -1,16 +1,15 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
-import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
@@ -73,20 +72,9 @@ public final class AutoAs extends AsExpr {
       as = asSets.iterator().next().getAsns().first();
     } else {
       assert direction == Direction.OUT;
-      if (proc == null) {
-        throw new BatfishException("Expected BGP process");
-      }
-      Ip peerAddress = environment.getPeerAddress();
-      if (peerAddress == null) {
-        throw new BatfishException("Expected a peer address");
-      }
-      Prefix peerPrefix = peerAddress.toPrefix();
-      // TODO: support passive, interface neighbors via session instead
-      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(peerPrefix);
-      if (neighbor == null) {
-        throw new BatfishException("Expected a peer with address: " + peerAddress);
-      }
-      as = neighbor.getLocalAs();
+      BgpSessionProperties sessionProps = environment.getBgpSessionProperties();
+      checkState(sessionProps != null, "Expected BGP session properties");
+      as = sessionProps.getHeadAs();
     }
     return as;
   }
