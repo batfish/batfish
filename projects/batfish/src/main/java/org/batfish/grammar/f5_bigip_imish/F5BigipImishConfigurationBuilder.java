@@ -1,6 +1,7 @@
 package org.batfish.grammar.f5_bigip_imish;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -327,12 +328,17 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRbbc_identifier(Rbbc_identifierContext ctx) {
-    todo(ctx.getParent().getParent());
+    long id = toLong(ctx.id);
+    _currentBgpProcess.getOrCreateConfederation().setId(id);
   }
 
   @Override
   public void exitRbbc_peers(Rbbc_peersContext ctx) {
-    todo(ctx.getParent().getParent());
+    List<Long> peers = _currentBgpProcess.getOrCreateConfederation().getPeers();
+    for (Uint32Context c : ctx.peers) {
+      Long peer = toLong(c);
+      peers.add(peer);
+    }
   }
 
   @Override
