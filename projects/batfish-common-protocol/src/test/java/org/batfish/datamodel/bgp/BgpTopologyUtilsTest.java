@@ -1,11 +1,14 @@
 package org.batfish.datamodel.bgp;
 
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.computeAsPair;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -15,6 +18,8 @@ import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.Layer2Edge;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -26,9 +31,11 @@ import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.AsPair;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -337,5 +344,54 @@ public class BgpTopologyUtilsTest {
             .getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
+  }
+
+  private static void assertPair(
+      @Nullable Long initiatorLocalAs,
+      @Nullable Long initiatorConfed,
+      @Nonnull LongSpace initiatorRemoteAsns,
+      @Nullable Long listenerLocalAs,
+      @Nullable Long listenerConfed,
+      @Nonnull LongSpace listenerRemoteAsns,
+      @Nullable AsPair result) {
+    assertThat(
+        computeAsPair(
+            initiatorLocalAs,
+            initiatorConfed,
+            initiatorRemoteAsns,
+            listenerLocalAs,
+            listenerConfed,
+            listenerRemoteAsns),
+        result != null ? equalTo(result) : nullValue());
+    assertThat(
+        computeAsPair(
+            listenerLocalAs,
+            listenerConfed,
+            listenerRemoteAsns,
+            initiatorLocalAs,
+            initiatorConfed,
+            initiatorRemoteAsns),
+        result != null ? equalTo(result.reverse()) : nullValue());
+  }
+
+  @Test
+  public void testComputeAsPair() {
+    // Misconfigured
+    assertPair(null, null, ALL_AS_NUMBERS, 3L, null, ALL_AS_NUMBERS, null);
+    assertPair(1L, null, ALL_AS_NUMBERS, null, null, ALL_AS_NUMBERS, null);
+    // Direct match
+    assertPair(1L, null, ALL_AS_NUMBERS, 2L, null, ALL_AS_NUMBERS, new AsPair(1, 2));
+    assertPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(1), new AsPair(1, 2));
+    // Direct but no match
+    assertPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(3), null);
+    // Direct match inside same confederation
+    assertPair(1L, 55L, LongSpace.of(2), 2L, 55L, LongSpace.of(1), new AsPair(1, 2));
+    // No match across confederations, but confederation match
+    assertPair(1L, 55L, LongSpace.of(56), 2L, 56L, LongSpace.of(55), new AsPair(55, 56));
+    // Confed match
+    assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(3L), new AsPair(3, 4));
+    // Confed no match
+    assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
+    assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(5), null);
   }
 }

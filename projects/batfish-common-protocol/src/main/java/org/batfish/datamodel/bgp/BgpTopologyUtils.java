@@ -3,6 +3,7 @@ package org.batfish.datamodel.bgp;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -35,6 +36,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
@@ -253,8 +255,19 @@ public final class BgpTopologyUtils {
       MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph,
       NetworkConfigurations networkConfigurations) {
     BgpPeerConfig remotePeer = Objects.requireNonNull(networkConfigurations.getBgpPeerConfig(id2));
-    BgpSessionProperties edgeToCandidate = BgpSessionProperties.from(p1, remotePeer, false);
-    BgpSessionProperties edgeFromCandidate = BgpSessionProperties.from(p1, remotePeer, true);
+    AsPair asPair =
+        computeAsPair(
+            p1.getLocalAs(),
+            p1.getConfederationAsn(),
+            p1.getRemoteAsns(),
+            remotePeer.getLocalAs(),
+            remotePeer.getConfederationAsn(),
+            remotePeer.getRemoteAsns());
+    assert asPair != null;
+    BgpSessionProperties edgeToCandidate =
+        BgpSessionProperties.from(p1, remotePeer, false, asPair.getLocalAs(), asPair.getRemoteAs());
+    BgpSessionProperties edgeFromCandidate =
+        BgpSessionProperties.from(p1, remotePeer, true, asPair.getLocalAs(), asPair.getRemoteAs());
     graph.putEdgeValue(id1, id2, edgeToCandidate);
     graph.putEdgeValue(id2, id1, edgeFromCandidate);
   }
@@ -303,9 +316,17 @@ public final class BgpTopologyUtils {
     }
     // Ensure candidate exists and has compatible local and remote AS
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
-    if (candidate == null
-        || !neighbor.hasCompatibleRemoteAsns(candidate.getLocalAs())
-        || !candidate.hasCompatibleRemoteAsns(neighbor.getLocalAs())) {
+    if (candidate == null) {
+      return false;
+    }
+    if (computeAsPair(
+            neighbor.getLocalAs(),
+            neighbor.getConfederationAsn(),
+            neighbor.getRemoteAsns(),
+            candidate.getLocalAs(),
+            candidate.getConfederationAsn(),
+            candidate.getRemoteAsns())
+        == null) {
       return false;
     }
     switch (candidateId.getType()) {
@@ -342,8 +363,14 @@ public final class BgpTopologyUtils {
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     return candidate instanceof BgpUnnumberedPeerConfig
         && !neighborHostname.equals(candidateId.getHostname())
-        && neighbor.hasCompatibleRemoteAsns(candidate.getLocalAs())
-        && candidate.hasCompatibleRemoteAsns(neighbor.getLocalAs());
+        && computeAsPair(
+                neighbor.getLocalAs(),
+                neighbor.getConfederationAsn(),
+                neighbor.getRemoteAsns(),
+                candidate.getLocalAs(),
+                candidate.getConfederationAsn(),
+                candidate.getRemoteAsns())
+            != null;
   }
 
   /**
@@ -439,6 +466,114 @@ public final class BgpTopologyUtils {
                   && hops.get(hops.size() - 1).getNode().getName().equals(initiatorNode)
                   && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
             });
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static AsPair computeAsPair(
+      @Nullable Long initiatorLocalAs,
+      @Nullable Long initiatorConfed,
+      @Nonnull LongSpace initiatorRemoteAsns,
+      @Nullable Long listenerLocalAs,
+      @Nullable Long listenerConfed,
+      @Nonnull LongSpace listenerRemoteAsns) {
+    if (initiatorLocalAs == null || listenerLocalAs == null) {
+      return null; // This is plainly a misconfiguration. No session.
+    }
+    // Simple case: no confederation config
+    if (initiatorConfed == null && listenerConfed == null) {
+      // Note: order of evaluation matters.
+      if (listenerRemoteAsns.contains(initiatorLocalAs)
+          && initiatorRemoteAsns.contains(listenerLocalAs)) {
+        return new AsPair(initiatorLocalAs, listenerLocalAs);
+      } else {
+        return null;
+      }
+    }
+    // Confederation config is present on both peers
+    if (initiatorConfed != null && listenerConfed != null) {
+      // both peers inside *the same* confederation
+      if (initiatorConfed.equals(listenerConfed)) {
+        if (listenerRemoteAsns.contains(initiatorLocalAs)
+            && initiatorRemoteAsns.contains(listenerLocalAs)) {
+          return new AsPair(initiatorLocalAs, listenerLocalAs);
+        } else {
+          return null;
+        }
+      } else {
+        // Both peers inside *different* confederations, must use external identifier only
+        if (listenerRemoteAsns.contains(initiatorConfed)
+            && initiatorRemoteAsns.contains(listenerConfed)) {
+          return new AsPair(initiatorConfed, listenerConfed);
+        } else {
+          return null;
+        }
+      }
+    }
+    // Initiator is inside a confederation
+    if (initiatorConfed != null) {
+      if (listenerRemoteAsns.contains(initiatorConfed)
+          && initiatorRemoteAsns.contains(listenerLocalAs)) {
+        return new AsPair(initiatorConfed, listenerLocalAs);
+      } else {
+        return null;
+      }
+    } else {
+      // Listener is inside a confederation
+      if (listenerRemoteAsns.contains(initiatorLocalAs)
+          && initiatorRemoteAsns.contains(listenerConfed)) {
+        return new AsPair(initiatorLocalAs, listenerConfed);
+      }
+    }
+    return null;
+  }
+
+  @VisibleForTesting
+  static final class AsPair {
+    private final long _localAs;
+    private final long _remoteAs;
+
+    AsPair(long localAs, long remoteAs) {
+      _localAs = localAs;
+      _remoteAs = remoteAs;
+    }
+
+    public long getLocalAs() {
+      return _localAs;
+    }
+
+    public long getRemoteAs() {
+      return _remoteAs;
+    }
+
+    public AsPair reverse() {
+      return new AsPair(_remoteAs, _localAs);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .add("localAs", _localAs)
+          .add("remoteAs", _remoteAs)
+          .toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof AsPair)) {
+        return false;
+      }
+      AsPair asPair = (AsPair) o;
+      return _localAs == asPair._localAs && _remoteAs == asPair._remoteAs;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_localAs, _remoteAs);
+    }
   }
 
   private BgpTopologyUtils() {}
