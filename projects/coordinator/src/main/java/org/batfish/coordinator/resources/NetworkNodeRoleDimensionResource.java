@@ -3,9 +3,11 @@ package org.batfish.coordinator.resources;
 import static org.batfish.common.util.HttpUtil.checkClientArgument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -17,6 +19,7 @@ import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.RoleMapping;
 
 /**
  * The {@link NetworkNodeRoleDimensionResource} is a resource for servicing client API calls for
@@ -43,24 +46,53 @@ public final class NetworkNodeRoleDimensionResource {
     if (nodeRolesData == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    Optional<NodeRoleDimension> dimension = nodeRolesData.getNodeRoleDimension(_dimension);
+    Optional<NodeRoleDimension> dimension = nodeRolesData.nodeRoleDimensionFor(_dimension);
     if (!dimension.isPresent()) {
       return Response.status(Status.NOT_FOUND).build();
     }
     if (!Main.getWorkMgr()
-        .putNetworkNodeRoles(
-            NodeRolesData.builder()
-                .setDefaultDimension(nodeRolesData.getDefaultDimension())
-                .setRoleDimensions(
-                    nodeRolesData.getNodeRoleDimensions().stream()
-                        .filter(dim -> !dim.getName().equalsIgnoreCase(dimension.get().getName()))
-                        .collect(ImmutableList.toImmutableList()))
-                .build(),
-            _network)) {
+        .putNetworkNodeRoles(delDimensionFromNodeRolesData(_dimension, nodeRolesData), _network)) {
       // if network was deleted while we were working
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().build();
+  }
+
+  private NodeRolesData delDimensionFromNodeRolesData(
+      String dimension, NodeRolesData nodeRolesData) {
+    return NodeRolesData.builder()
+        .setDefaultDimension(nodeRolesData.getDefaultDimension())
+        .setType(nodeRolesData.getType())
+        .setRoleMappings(
+            nodeRolesData.getRoleMappings().stream()
+                .map(m -> delDimensionFromRoleMapping(dimension, m))
+                .filter(Objects::nonNull)
+                .collect(ImmutableList.toImmutableList()))
+        .build();
+  }
+
+  private RoleMapping delDimensionFromRoleMapping(String dimension, RoleMapping m) {
+    RoleMapping result =
+        new RoleMapping(
+            m.getName().orElse(null),
+            m.getRegex(),
+            delDimensionFromMap(dimension, m.getRoleDimensionsGroups()),
+            delDimensionFromMap(dimension, m.getCanonicalRoleNames()),
+            m.getCaseSensitive());
+    if (result.getRoleDimensionsGroups().isEmpty()) {
+      // this role mapping is useless so let's delete it entirely
+      return null;
+    } else {
+      return result;
+    }
+  }
+
+  private <V> Map<String, V> delDimensionFromMap(String dimension, Map<String, V> map) {
+    return map.entrySet().stream()
+        .filter(e -> !e.getKey().equalsIgnoreCase(dimension))
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Map.Entry<String, V>::getKey, Map.Entry<String, V>::getValue));
   }
 
   @GET
@@ -69,7 +101,7 @@ public final class NetworkNodeRoleDimensionResource {
     if (nodeRolesData == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    Optional<NodeRoleDimension> dimension = nodeRolesData.getNodeRoleDimension(_dimension);
+    Optional<NodeRoleDimension> dimension = nodeRolesData.nodeRoleDimensionFor(_dimension);
     if (!dimension.isPresent()) {
       return Response.status(Status.NOT_FOUND).build();
     }
@@ -87,17 +119,17 @@ public final class NetworkNodeRoleDimensionResource {
     if (nodeRolesData == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
+    // delete any old version of this dimension
+    NodeRolesData cleanedNRD = delDimensionFromNodeRolesData(dimBean.name, nodeRolesData);
     if (!Main.getWorkMgr()
         .putNetworkNodeRoles(
             NodeRolesData.builder()
-                .setDefaultDimension(nodeRolesData.getDefaultDimension())
-                .setRoleDimensions(
-                    ImmutableList.<NodeRoleDimension>builder()
-                        .addAll(
-                            nodeRolesData.getNodeRoleDimensions().stream()
-                                .filter(d -> !d.getName().equalsIgnoreCase(dimBean.name))
-                                .collect(Collectors.toList()))
-                        .add(dimBean.toNodeRoleDimension())
+                .setDefaultDimension(cleanedNRD.getDefaultDimension())
+                .setType(cleanedNRD.getType())
+                .setRoleMappings(
+                    ImmutableList.<RoleMapping>builder()
+                        .addAll(cleanedNRD.getRoleMappings())
+                        .addAll(dimBean.toNodeRoleDimension().toRoleMappings())
                         .build())
                 .build(),
             _network)) {

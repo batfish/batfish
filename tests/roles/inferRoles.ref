@@ -16,8 +16,7 @@
             ],
             "regex" : "\\p{Alpha}+\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+"
           }
-        ],
-        "type" : "AUTO"
+        ]
       },
       {
         "name" : "auto1",
@@ -29,8 +28,7 @@
             ],
             "regex" : "(\\p{Alpha}+)\\p{Digit}+\\p{Alpha}+\\p{Digit}+"
           }
-        ],
-        "type" : "AUTO"
+        ]
       }
     ]
   }

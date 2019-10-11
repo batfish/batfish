@@ -25,7 +25,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.RoleEdge;
 import org.batfish.datamodel.Topology;
-import org.batfish.role.NodeRoleDimension.Type;
 
 public final class InferRoles {
   private static class PreTokenizedString {
@@ -181,6 +180,10 @@ public final class InferRoles {
     return "(" + s + ")";
   }
 
+  /* TODO: Since all of these role dimensions are based on one underlying regex,
+   * it should be possible to produce a single RoleMapping instead, which would
+   * directly fit the new format for node roles data.
+   */
   public List<NodeRoleDimension> inferRoles() {
 
     if (_nodes.isEmpty()) {
@@ -580,7 +583,6 @@ public final class InferRoles {
   private NodeRoleDimension regexToNodeRoleDimension(String regex, String dimName) {
     return NodeRoleDimension.builder()
         .setName(dimName)
-        .setType(Type.AUTO)
         .setRoleDimensionMappings(
             ImmutableList.of(new RoleDimensionMapping(regex, null, null, _caseSensitive)))
         .build();

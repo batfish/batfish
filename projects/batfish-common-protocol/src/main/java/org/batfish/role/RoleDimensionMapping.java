@@ -30,6 +30,8 @@ import org.batfish.common.BatfishException;
 /**
  * Objects of this class represent a way to map node names to role names for a particular role
  * dimension, via a regular expression.
+ *
+ * <p>Deprecated in favor of {@link RoleMapping}.
  */
 @ParametersAreNonnullByDefault
 public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
