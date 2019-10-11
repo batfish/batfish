@@ -82,6 +82,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -233,6 +234,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       @Nullable RoutingPolicy importRoutingPolicy) {
     BgpUnnumberedPeerConfig.builder()
         .setBgpProcess(newProc)
+        .setConfederation(bgpVrf.getConfederationId())
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
@@ -315,6 +317,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       Configuration c) {
     BgpActivePeerConfig.builder()
         .setBgpProcess(newProc)
+        .setConfederation(bgpVrf.getConfederationId())
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
@@ -1152,6 +1155,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     newProc.setMultipathIbgp(true);
     if (firstNonNull(bgpVrf.getAsPathMultipathRelax(), Boolean.FALSE)) {
       newProc.setMultipathEquivalentAsPathMatchMode(PATH_LENGTH);
+    }
+    Long confederationId = _bgpProcess.getDefaultVrf().getConfederationId();
+    Long asn = _bgpProcess.getDefaultVrf().getAutonomousSystem();
+    if (confederationId != null && asn != null) {
+      // TODO: there probably is another way to define confederation members
+      newProc.setConfederation(new BgpConfederation(confederationId, ImmutableSet.of(asn)));
     }
 
     BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
