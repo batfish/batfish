@@ -64,6 +64,8 @@ rbn_common
     | rbn_null
     | rbn_remote_as
     | rbn_route_map_out
+    | rbn_password
+    | rbn_update_source
   )
 ;
 
@@ -75,6 +77,11 @@ rbn_description
 rbn_next_hop_self
 :
   NEXT_HOP_SELF NEWLINE
+;
+
+rbn_password
+:
+  PASSWORD password = DESCRIPTION_LINE NEWLINE
 ;
 
 rbn_peer_group
@@ -93,8 +100,6 @@ rbn_null
     CAPABILITY
     | FALL_OVER
     | MAXIMUM_PREFIX
-    | PASSWORD
-    | UPDATE_SOURCE
   ) null_rest_of_line
 ;
 
@@ -106,6 +111,22 @@ rbn_remote_as
 rbn_route_map_out
 :
   ROUTE_MAP name = word OUT NEWLINE
+;
+
+rbn_update_source
+:
+  rbn_update_source_ip
+  | rbn_update_source_interface
+;
+
+rbn_update_source_ip
+:
+  UPDATE_SOURCE ip = IP_ADDRESS NEWLINE
+;
+
+rbn_update_source_interface
+:
+  UPDATE_SOURCE name = word NEWLINE
 ;
 
 rb_null
