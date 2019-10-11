@@ -15,6 +15,10 @@ public class OspfInterface implements Serializable {
     P2MP
   }
 
+  // Palo-Alto's UI populates these if left empty
+  public static final int DEFAULT_HELLO_INTERVAL_SECS = 10;
+  public static final int DEFAULT_DEAD_COUNT = 4;
+
   public OspfInterface(String name) {
     _name = name;
   }
