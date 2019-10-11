@@ -76334,16 +76334,6 @@
             }
           ]
         },
-        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 56,
-              "Parser_Context" : "[rbn_update_source_interface rbn_update_source rbn_common rb_neighbor_ipv4 router_bgp s_router statement f5_bigip_imish_configuration]",
-              "Text" : "update-source us1"
-            }
-          ]
-        },
         "configs/foundry_access_list" : {
           "Parse warnings" : [
             {
@@ -88459,6 +88449,13 @@
             "65500" : {
               "bgp process self-reference" : [
                 32
+              ]
+            }
+          },
+          "interface" : {
+            "us1" : {
+              "bgp neighbor update-source" : [
+                56
               ]
             }
           },
