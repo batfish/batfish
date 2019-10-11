@@ -3158,7 +3158,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     _c.computeRoutingPolicySources(_w);
 
-    return _c;
+    if (_c.getHostname().equals("edg-001")) {
+      int i = 7;
+    }
+      return _c;
   }
 
   private void preprocessFilters() {
