@@ -3583,19 +3583,12 @@ public final class FlatJuniperGrammarTest {
   public void testLocalRouteExportBgp() {
     Configuration c = parseConfig("local-route-export-bgp");
 
-    String peer1Vrf = "peer1Vrf";
     RoutingPolicy peer1RejectAllLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("1.0.0.1/32")));
-
-    String peer2Vrf = "peer2Vrf";
     RoutingPolicy peer2RejectPtpLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("2.0.0.1/32")));
-
-    String peer3Vrf = "peer3Vrf";
     RoutingPolicy peer3RejectLanLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("3.0.0.1/32")));
-
-    String peer4Vrf = "peer3Vrf";
     RoutingPolicy peer4AllowAllLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("4.0.0.1/32")));
 

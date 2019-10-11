@@ -6521,7 +6521,6 @@ public final class CiscoGrammarTest {
     Prefix prefix11 = Prefix.parse("11.0.0.0/8");
     Bgpv4Route route10 = builder.setNetwork(prefix10).build();
     Bgpv4Route route11 = builder.setNetwork(prefix11).build();
-    Ip peerAddress = Ip.parse("2.2.2.2");
 
     assertThat(
         c,
