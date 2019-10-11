@@ -35,6 +35,11 @@ ADDRESS
   'address'
 ;
 
+ADVERTISEMENT_INTERVAL
+:
+  'advertisement-interval'
+;
+
 AGGREGATE_ADDRESS
 :
   'aggregate-address'

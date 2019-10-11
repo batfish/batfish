@@ -95,6 +95,7 @@ rbn_null
     | MAXIMUM_PREFIX
     | PASSWORD
     | UPDATE_SOURCE
+    | ADVERTISEMENT_INTERVAL
   ) null_rest_of_line
 ;
 
