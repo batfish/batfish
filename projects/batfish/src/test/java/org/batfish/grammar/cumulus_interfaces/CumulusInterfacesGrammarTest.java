@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Set;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -39,20 +40,23 @@ import org.junit.Test;
 /** Test of {@link CumulusInterfacesParser}. */
 public class CumulusInterfacesGrammarTest {
   private static final String FILENAME = "";
-  private static CumulusNcluConfiguration CONFIG;
+  private static CumulusNcluConfiguration _config;
+  private static ConvertConfigurationAnswerElement _ccae;
+  private static Warnings _warnings;
 
   @Before
   public void setup() {
-    CONFIG = new CumulusNcluConfiguration();
-    CONFIG.setFilename(FILENAME);
-    CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
-    CONFIG.setWarnings(new Warnings());
+    _config = new CumulusNcluConfiguration();
+    _ccae = new ConvertConfigurationAnswerElement();
+    _warnings = new Warnings();
+    _config.setFilename(FILENAME);
+    _config.setAnswerElement(_ccae);
+    _config.setWarnings(_warnings);
   }
 
   private static DefinedStructureInfo getDefinedStructureInfo(
       CumulusStructureType type, String name) {
-    return CONFIG
-        .getAnswerElement()
+    return _ccae
         .getDefinedStructures()
         .get(FILENAME)
         .getOrDefault(type.getDescription(), ImmutableSortedMap.of())
@@ -63,8 +67,8 @@ public class CumulusInterfacesGrammarTest {
       CumulusStructureType type, String name, CumulusStructureUsage usage) {
     // The config keeps reference data in a private variable, and only copies into the answer
     // element when you set it.
-    CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
-    return CONFIG
+    _config.setAnswerElement(new ConvertConfigurationAnswerElement());
+    return _config
         .getAnswerElement()
         .getReferencedStructures()
         .get(FILENAME)
@@ -84,8 +88,9 @@ public class CumulusInterfacesGrammarTest {
         new CumulusInterfacesCombinedParser(input, settings, 1, 0);
     Cumulus_interfaces_configurationContext ctxt = parser.parse();
     CumulusInterfacesConfigurationBuilder configurationBuilder =
-        new CumulusInterfacesConfigurationBuilder(CONFIG, parser, input, CONFIG.getWarnings());
+        new CumulusInterfacesConfigurationBuilder(_config, parser, input, _warnings);
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
+    _config = SerializationUtils.clone(_config);
     return configurationBuilder.getInterfaces();
   }
 
@@ -150,8 +155,8 @@ public class CumulusInterfacesGrammarTest {
         containsInAnyOrder("i2", "i3", "i4"));
 
     // swp1 is inferred to be a bond
-    assertThat(CONFIG.getInterfaces().keySet(), not(contains("swp1")));
-    assertThat(CONFIG.getBonds().keySet(), contains("swp1"));
+    assertThat(_config.getInterfaces().keySet(), not(contains("swp1")));
+    assertThat(_config.getBonds().keySet(), contains("swp1"));
   }
 
   @Test
@@ -241,13 +246,13 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceBridgeVlanAware_no() {
     parse("iface bridge\n bridge-vlan-aware no\n");
-    assertThat(CONFIG.getWarnings().getParseWarnings().size(), equalTo(1));
+    assertThat(_warnings.getParseWarnings().size(), equalTo(1));
   }
 
   @Test
   public void testIfaceBridgeVlanAware_yes() {
     parse("iface bridge\n bridge-vlan-aware yes\n");
-    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
+    assertThat(_warnings.getParseWarnings(), empty());
   }
 
   @Test
@@ -383,7 +388,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testLoopback() {
     parse("iface lo inet loopback\n");
-    assertTrue(CONFIG.getLoopback().getConfigured());
+    assertTrue(_config.getLoopback().getConfigured());
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.LOOPBACK, "lo").getDefinitionLines(),
         contains(1));
@@ -397,14 +402,14 @@ public class CumulusInterfacesGrammarTest {
   public void testLoopbackAddress() {
     parse("iface lo inet loopback\n address 1.2.3.4/24\n");
     assertThat(
-        CONFIG.getLoopback().getAddresses(),
+        _config.getLoopback().getAddresses(),
         contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
   }
 
   @Test
   public void testLoopbackClagdVxlanAnycastIp() {
     parse("iface lo inet loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
-    assertThat(CONFIG.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(_config.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test

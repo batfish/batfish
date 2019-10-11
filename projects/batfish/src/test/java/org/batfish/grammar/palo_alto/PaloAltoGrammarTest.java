@@ -83,6 +83,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
@@ -135,6 +136,8 @@ import org.batfish.representation.palo_alto.OspfAreaNormal;
 import org.batfish.representation.palo_alto.OspfAreaNssa;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfAreaStub;
+import org.batfish.representation.palo_alto.OspfInterface;
+import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.OspfVr;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
@@ -188,6 +191,8 @@ public final class PaloAltoGrammarTest {
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
+    // crash if not serializable
+    pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
     return pac;
   }
@@ -348,6 +353,26 @@ public final class PaloAltoGrammarTest {
             AclIpSpace.union(
                 addressObjects.get("addr").getIpSpace(),
                 sharedAddressObjects.get("shared_addr").getIpSpace())));
+  }
+
+  @Test
+  public void testAddressGroupDynamic() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-group-dynamic");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+
+    // Confirm filter was attached to the dynamic address-group
+    assertThat(addressGroups.keySet(), contains("group"));
+    AddressGroup ag = addressGroups.get("group");
+    assertThat(ag.getType(), equalTo(AddressGroup.Type.DYNAMIC));
+    assertThat(ag.getFilter(), equalTo("'tagA' and tag1"));
+
+    // Confirm the filter resolves to the correct IpSpace, containing only the one matching address
+    assertThat(
+        ag.getIpSpace(addressObjects, addressGroups),
+        equalTo(addressObjects.get("addr1").getIpSpace()));
   }
 
   @Test
@@ -633,6 +658,19 @@ public final class PaloAltoGrammarTest {
     assertThat(nssaArea.getAcceptSummary(), equalTo(Boolean.FALSE));
     assertThat(nssaArea.getDefaultRouteType(), equalTo(DefaultRouteType.EXT_2));
     assertFalse(nssaArea.isDefaultRouteDisable());
+
+    String ifaceName = "ethernet1/3.5";
+    assertThat(ospfArea.getInterfaces(), hasKey(ifaceName));
+    OspfInterface ospfIface = ospfArea.getInterfaces().get(ifaceName);
+    assertThat(ospfIface.getEnable(), equalTo(Boolean.FALSE));
+    assertThat(ospfIface.getPassive(), equalTo(Boolean.FALSE));
+    assertThat(ospfIface.getMetric(), equalTo(10));
+    assertThat(ospfIface.getPriority(), equalTo(1));
+    assertThat(ospfIface.getHelloInterval(), equalTo(10));
+    assertThat(ospfIface.getDeadCounts(), equalTo(4));
+    assertThat(ospfIface.getRetransmitInterval(), equalTo(5));
+    assertThat(ospfIface.getTransitDelay(), equalTo(1));
+    assertThat(ospfIface.getLinkType(), equalTo(LinkType.BROADCAST));
   }
 
   @Test

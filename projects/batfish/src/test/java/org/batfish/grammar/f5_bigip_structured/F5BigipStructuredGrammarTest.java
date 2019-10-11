@@ -50,6 +50,7 @@ import static org.batfish.datamodel.transformation.TransformationEvaluator.eval;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.DATA_GROUP_INTERNAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_DNS;
@@ -133,6 +134,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN_MEMBER_INTERFACE;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -147,7 +149,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -168,6 +169,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -333,7 +335,7 @@ public final class F5BigipStructuredGrammarTest {
     F5BigipConfiguration vendorConfiguration =
         (F5BigipConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
-    return vendorConfiguration;
+    return SerializationUtils.clone(vendorConfiguration);
   }
 
   private static @Nonnull IpAccessListToBdd toBDD() {
@@ -674,6 +676,22 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testDataGroupDefinitions() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_data_group";
+    String file = "configs/" + hostname;
+    _disableUnrecognized = true;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(
+        ans.getDefinedStructures().get(file).get(DATA_GROUP_INTERNAL.getDescription()),
+        aMapWithSize(2));
+    assertThat(ans, hasNumReferrers(file, DATA_GROUP_INTERNAL, "/Common/complex", 1));
+    assertThat(ans, hasNumReferrers(file, DATA_GROUP_INTERNAL, "/Common/simple", 1));
+  }
+
+  @Test
   public void testDnat() throws IOException {
     String snapshotName = "dnat";
     String natHostname = "f5_bigip_structured_dnat";
@@ -930,8 +948,16 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRuleParsing() {
-    assertNotNull(parseVendorConfig("f5_bigip_structured_ltm_rule"));
+  public void testRuleDefinitions() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_rule";
+    String file = "configs/" + hostname;
+    _disableUnrecognized = true;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    assertThat(
+        ans.getDefinedStructures().get(file).get(F5BigipStructureType.RULE.getDescription()),
+        aMapWithSize(3));
   }
 
   @Test

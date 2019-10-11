@@ -988,6 +988,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.BGP_NEIGHBOR, F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE);
     markConcreteStructure(
         F5BigipStructureType.BGP_PROCESS, F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE);
+    markConcreteStructure(F5BigipStructureType.DATA_GROUP_EXTERNAL);
+    markConcreteStructure(F5BigipStructureType.DATA_GROUP_INTERNAL);
     markConcreteStructure(
         F5BigipStructureType.IMISH_INTERFACE,
         F5BigipStructureUsage.IMISH_INTERFACE_SELF_REFERENCE,
@@ -1242,7 +1244,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT,
         F5BigipStructureUsage.BGP_PEER_GROUP_ROUTE_MAP_OUT,
         F5BigipStructureUsage.BGP_REDISTRIBUTE_KERNEL_ROUTE_MAP);
-    markConcreteStructure(F5BigipStructureType.RULE, F5BigipStructureUsage.VIRTUAL_RULES_RULE);
+    markConcreteStructure(F5BigipStructureType.RULE);
     markConcreteStructure(F5BigipStructureType.SELF, F5BigipStructureUsage.SELF_SELF_REFERENCE);
     markConcreteStructure(F5BigipStructureType.SNAT, F5BigipStructureUsage.SNAT_SELF_REFERENCE);
     markConcreteStructure(

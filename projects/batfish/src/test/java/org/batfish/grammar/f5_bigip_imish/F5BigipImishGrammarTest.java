@@ -377,8 +377,13 @@ public final class F5BigipImishGrammarTest {
 
   @Test
   public void testBgpConfederationExtraction() {
-    // TODO: test extraction
-    assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_confederation"));
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_confederation");
+    assertThat(vc.getBgpProcesses().get("65001").getConfederation().getId(), equalTo(65010L));
+    assertThat(vc.getBgpProcesses(), hasKeys("65001"));
+    assertNotNull(vc.getBgpProcesses().get("65001").getConfederation());
+    assertThat(vc.getBgpProcesses().get("65001").getConfederation().getId(), equalTo(65010L));
+    assertThat(
+        vc.getBgpProcesses().get("65001").getConfederation().getPeers(), contains(65012L, 65013L));
   }
 
   @Test
@@ -451,6 +456,12 @@ public final class F5BigipImishGrammarTest {
     RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
 
     assertRejectsKernelRoute(rp, peerAddress);
+  }
+
+  @Test
+  public void testBgpConnectedRouteRedistributionNoRouteMap() throws IOException {
+    // TODO: extraction
+    assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_redistribute_connected_no_route_map"));
   }
 
   @Test

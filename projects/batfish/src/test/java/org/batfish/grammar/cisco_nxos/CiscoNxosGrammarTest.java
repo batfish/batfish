@@ -446,8 +446,7 @@ public final class CiscoNxosGrammarTest {
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
-    SerializationUtils.clone(vendorConfiguration);
-    return vendorConfiguration;
+    return SerializationUtils.clone(vendorConfiguration);
   }
 
   private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
@@ -3864,6 +3863,12 @@ public final class CiscoNxosGrammarTest {
                 ImmutableList.of("192.0.2.2", "192.0.2.1", "dead:beef::1"),
                 "management",
                 ImmutableList.of("192.0.2.3"))));
+  }
+
+  @Test
+  public void testIpPimParsing() throws IOException {
+    // Assert that it parses.
+    parseConfig("nxos_ip_pim");
   }
 
   @Test

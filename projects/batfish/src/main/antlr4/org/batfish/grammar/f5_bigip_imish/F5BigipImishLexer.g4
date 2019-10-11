@@ -347,6 +347,11 @@ COMMENT_TAIL
   '!' F_NonNewlineChar* -> channel ( HIDDEN )
 ;
 
+CONNECTED
+:
+  'connected'
+;
+
 DEC
 :
   F_Digit+

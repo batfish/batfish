@@ -53,4 +53,14 @@ public final class NatRuleThenInterface implements NatRuleThen, Serializable {
 
     return builder.build();
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof NatRuleThenInterface;
+  }
+
+  @Override
+  public int hashCode() {
+    return NatRuleThenInterface.class.getCanonicalName().hashCode();
+  }
 }
