@@ -1,16 +1,14 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
@@ -30,25 +28,14 @@ public final class AutoAs extends AsExpr {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    return true;
+    return obj instanceof AutoAs;
   }
 
   @Override
   public long evaluate(Environment environment) {
-    BgpProcess proc = environment.getBgpProcess();
     Direction direction = environment.getDirection();
-    long as;
     if (direction == Direction.IN) {
-      AsPath asPath = null;
+      AsPath asPath;
       if (environment.getUseOutputAttributes()
           && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
         BgpRoute.Builder<?, ?> bgpRouteBuilder =
@@ -65,30 +52,17 @@ public final class AutoAs extends AsExpr {
       // really should not receive empty as-path in route from neighbor
       List<AsSet> asSets = asPath.getAsSets();
       assert !asSets.isEmpty();
-      SortedSet<Long> asesInSet = asSets.iterator().next().getAsns();
+      SortedSet<Long> firstAsSetAsns = asSets.get(0).getAsns();
       // TODO: see if clients of AsExpr should really be provided the entire AsSet instead of a
       // single AS
-      assert asesInSet.size() == 1;
+      assert firstAsSetAsns.size() == 1;
       // for now, arbitrarily use lowest AS in set
-      as = asSets.iterator().next().getAsns().first();
-    } else {
-      assert direction == Direction.OUT;
-      if (proc == null) {
-        throw new BatfishException("Expected BGP process");
-      }
-      Ip peerAddress = environment.getPeerAddress();
-      if (peerAddress == null) {
-        throw new BatfishException("Expected a peer address");
-      }
-      Prefix peerPrefix = peerAddress.toPrefix();
-      // TODO: support passive, interface neighbors via session instead
-      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(peerPrefix);
-      if (neighbor == null) {
-        throw new BatfishException("Expected a peer with address: " + peerAddress);
-      }
-      as = neighbor.getLocalAs();
+      return firstAsSetAsns.first();
     }
-    return as;
+    assert direction == Direction.OUT;
+    BgpSessionProperties sessionProps = environment.getBgpSessionProperties();
+    checkState(sessionProps != null, "Expected BGP session properties");
+    return sessionProps.getHeadAs();
   }
 
   @Override
