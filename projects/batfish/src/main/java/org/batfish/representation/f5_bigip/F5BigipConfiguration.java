@@ -817,22 +817,43 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // Also skip if we are missing AS information.
       return null;
     }
-    String updateSourceInterface = neighbor.getUpdateSource();
-    if (!isEbgpSingleHop(proc, neighbor) && updateSourceInterface != null) {
-      org.batfish.datamodel.Interface sourceInterface =
-          _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
-      if (sourceInterface != null) {
-        ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
-        if (address != null) {
-          return address.getIp();
-        } else {
-          _w.redFlag(
-              String.format(
-                  "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip address",
-                  neighbor.getName(), updateSourceInterface));
-        }
+
+    UpdateSource updateSource = neighbor.getUpdateSource();
+    if (updateSource != null) {
+      UpdateSourceVisitor<Ip> visitor =
+          new UpdateSourceVisitor<Ip>() {
+            @Override
+            public Ip visitUpdateSourceIp(UpdateSourceIp updateSourceIp) {
+              return updateSourceIp.getIp();
+            }
+
+            @Override
+            public Ip visitUpdateSourceInterface(UpdateSourceInterface updateSourceInterface) {
+              if (!isEbgpSingleHop(proc, neighbor)) {
+                String sourceInterfaceName = updateSourceInterface.getName();
+                org.batfish.datamodel.Interface sourceInterface =
+                    _c.getDefaultVrf().getInterfaces().get(sourceInterfaceName);
+                if (sourceInterface != null) {
+                  ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
+                  if (address != null) {
+                    return address.getIp();
+                  } else {
+                    _w.redFlag(
+                        String.format(
+                            "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip address",
+                            neighbor.getName(), updateSourceInterface));
+                  }
+                }
+              }
+              return null;
+            }
+          };
+      Ip sourceIp = updateSource.accept(visitor);
+      if (sourceIp != null) {
+        return sourceIp;
       }
     }
+
     // Either the neighbor is eBGP single-hop, or no update-source was specified, or we failed to
     // get IP from update-source.
     // So try to get IP of an interface in same network as neighbor address.

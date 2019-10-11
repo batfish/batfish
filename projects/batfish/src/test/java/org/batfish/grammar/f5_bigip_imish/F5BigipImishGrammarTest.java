@@ -65,6 +65,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -110,6 +111,9 @@ import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
+import org.batfish.representation.f5_bigip.UpdateSource;
+import org.batfish.representation.f5_bigip.UpdateSourceInterface;
+import org.batfish.representation.f5_bigip.UpdateSourceIp;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1060,6 +1064,37 @@ public final class F5BigipImishGrammarTest {
     assertThat(set, notNullValue());
     assertThat(set.getOrigin(), equalTo(OriginType.IGP));
     assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
+  }
+
+  @Test
+  public void testBgpNeighborUpdateSourceExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_neighbor_update_source");
+    assertNotNull(vc.getBgpProcesses().get("65001"));
+    assertNotNull(vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.1.10"));
+    UpdateSource updateSource =
+        vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.1.10").getUpdateSource();
+    assertThat(updateSource, instanceOf(UpdateSourceIp.class));
+    assertThat(((UpdateSourceIp) updateSource).getIp(), equalTo(Ip.parse("10.0.1.1")));
+
+    assertNotNull(vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.2.10"));
+    updateSource =
+        vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.2.10").getUpdateSource();
+    assertThat(updateSource, instanceOf(UpdateSourceInterface.class));
+    assertThat(((UpdateSourceInterface) updateSource).getName(), equalTo("vlan1"));
+  }
+
+  @Test
+  public void testBgpNeighborUpdateSourceConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_neighbor_update_source");
+    BgpActivePeerConfig peer1 =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.1.10/32"));
+    assertNotNull(peer1);
+    assertThat(peer1.getLocalIp(), equalTo(Ip.parse("10.0.1.1")));
+
+    BgpActivePeerConfig peer2 =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.2.10/32"));
+    assertNotNull(peer2);
+    assertThat(peer2.getLocalIp(), equalTo(Ip.parse("10.0.2.1")));
   }
 
   private @Nonnull IpAccessListToBdd toBDD() {

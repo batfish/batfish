@@ -15,7 +15,7 @@ public abstract class AbstractBgpNeighbor implements Serializable {
   private final @Nonnull String _name;
   private @Nullable Boolean _nextHopSelf;
   private @Nullable Long _remoteAs;
-  private @Nullable String _updateSource;
+  private @Nullable UpdateSource _updateSource;
 
   public AbstractBgpNeighbor(String name) {
     _name = name;
@@ -47,7 +47,7 @@ public abstract class AbstractBgpNeighbor implements Serializable {
     return _remoteAs;
   }
 
-  public final @Nullable String getUpdateSource() {
+  public final @Nullable UpdateSource getUpdateSource() {
     return _updateSource;
   }
 
@@ -63,7 +63,7 @@ public abstract class AbstractBgpNeighbor implements Serializable {
     _remoteAs = remoteAs;
   }
 
-  public final void setUpdateSource(@Nullable String updateSource) {
+  public final void setUpdateSource(@Nullable UpdateSource updateSource) {
     _updateSource = updateSource;
   }
 }

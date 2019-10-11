@@ -1,0 +1,32 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_bgp_neighbor_update_source
+}
+
+net self /Common/10.0.2.1/24 {
+    address 10.0.2.1/24
+    allow-service {
+        default
+    }
+    traffic-group /Common/traffic-group-local-only
+    vlan vlan1
+}
+
+net vlan vlan1 {
+    interfaces {
+        1.1 { }
+    }
+}
+
+!
+!!! imish configuration starts here
+!
+interface vlan1
+!
+router bgp 65001
+ bgp router-id 10.0.1.1
+ neighbor 10.0.1.10 remote-as 65001
+ neighbor 10.0.1.10 update-source 10.0.1.1
+ neighbor 10.0.2.10 remote-as 65001
+ neighbor 10.0.2.10 update-source vlan1
