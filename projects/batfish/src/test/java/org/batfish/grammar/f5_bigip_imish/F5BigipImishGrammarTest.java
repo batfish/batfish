@@ -108,6 +108,7 @@ import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
+import org.batfish.representation.f5_bigip.RouteMapSetIpNextHop;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
 import org.batfish.vendor.VendorConfiguration;
@@ -1041,5 +1042,30 @@ public final class F5BigipImishGrammarTest {
     BDDPacket pkt = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
     return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
+  }
+
+  @Test
+  public void testRouteMapSetNextHopExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_next_hop");
+    assertNotNull(vc.getRouteMaps().get("rm1"));
+
+    RouteMapEntry entry = vc.getRouteMaps().get("rm1").getEntries().get(10L);
+    assertNotNull(entry);
+    RouteMapSetIpNextHop set = entry.getSetIpNextHop();
+    assertNotNull(set);
+    assertThat(set.getNextHop(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
+  }
+
+  @Test
+  public void testRouteMapSetNextHopConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_route_map_set_next_hop");
+    String rpName = "rm1";
+
+    assertThat(c.getRoutingPolicies(), hasKeys(rpName));
+
+    assertThat(
+        processBgpRouteNoPeerContext(c.getRoutingPolicies().get(rpName)),
+        hasNextHopIp(Ip.parse("1.2.3.4")));
   }
 }
