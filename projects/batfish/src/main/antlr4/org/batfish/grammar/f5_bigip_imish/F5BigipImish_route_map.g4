@@ -39,7 +39,7 @@ rm_set
     rms_community
     | rms_metric
     | rms_origin
-    | rms_next_hop
+    | rms_ip
   )
 ;
 
@@ -58,9 +58,14 @@ rms_origin
   ORIGIN origin = origin_type NEWLINE
 ;
 
+rms_ip
+:
+  IP rms_next_hop
+;
+
 rms_next_hop
 :
-  IP NEXT_HOP ip = IP_ADDRESS PRIMARY NEWLINE
+  NEXT_HOP ip = IP_ADDRESS PRIMARY? NEWLINE
 ;
 
 standard_community

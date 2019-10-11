@@ -620,9 +620,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   public void exitRms_next_hop(Rms_next_hopContext ctx) {
     Ip ip = Ip.parse(ctx.ip.getText());
     _currentRouteMapEntry.setSetIpNextHop(new RouteMapSetIpNextHop(ip));
-    if (ctx.PRIMARY() != null) {
-      _w.redFlag("The keyword primary is current ignored.");
-    }
   }
 
   @Override
