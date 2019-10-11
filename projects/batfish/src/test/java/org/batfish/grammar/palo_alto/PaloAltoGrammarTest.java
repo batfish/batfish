@@ -671,7 +671,8 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testOspfConversion() {
     String processId = "~OSPF_PROCESS_0.0.0.0";
-    String ifaceName = "ethernet1/3.5";
+    String ifaceName34 = "ethernet1/3.4";
+    String ifaceName35 = "ethernet1/3.5";
 
     Configuration c = parseConfig("ospf");
 
@@ -684,8 +685,14 @@ public final class PaloAltoGrammarTest {
     assertThat(ospfProcess, OspfProcessMatchers.hasRouterId(equalTo(Ip.parse("0.0.0.0."))));
 
     // areas
-    assertThat(ospfProcess, hasArea(1L, hasStub(hasSuppressType3(false))));
-    assertThat(ospfProcess, hasArea(2L, hasStubType(equalTo(StubType.NONE))));
+    assertThat(
+        ospfProcess,
+        hasArea(
+            1L,
+            allOf(
+                hasStub(hasSuppressType3(false)),
+                OspfAreaMatchers.hasInterfaces(equalTo(ImmutableSortedSet.of(ifaceName34))))));
+    assertThat(ospfProcess, hasArea(2L, allOf(hasStubType(equalTo(StubType.NONE)))));
     assertThat(
         ospfProcess,
         hasArea(
@@ -695,16 +702,29 @@ public final class PaloAltoGrammarTest {
                     allOf(
                         hasDefaultOriginateType(OspfDefaultOriginateType.EXTERNAL_TYPE2),
                         NssaSettingsMatchers.hasSuppressType3(true))),
-                OspfAreaMatchers.hasInterfaces(equalTo(ImmutableSortedSet.of("ethernet1/3.5"))))));
+                OspfAreaMatchers.hasInterfaces(equalTo(ImmutableSortedSet.of(ifaceName35))))));
 
     // interface
     assertThat(
-        c.getAllInterfaces().get(ifaceName).getOspfSettings(),
+        c.getAllInterfaces().get(ifaceName34).getOspfSettings(),
+        equalTo(
+            OspfInterfaceSettings.builder()
+                .setAreaName(1L)
+                .setCost(14)
+                .setDeadInterval(8 * 15)
+                .setEnabled(true)
+                .setHelloInterval(15)
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .setPassive(true)
+                .setProcess(processId)
+                .build()));
+    assertThat(
+        c.getAllInterfaces().get(ifaceName35).getOspfSettings(),
         equalTo(
             OspfInterfaceSettings.builder()
                 .setAreaName(3L)
                 .setCost(10)
-                .setDeadInterval(40)
+                .setDeadInterval(4 * 10)
                 .setEnabled(false)
                 .setHelloInterval(10)
                 .setNetworkType(OspfNetworkType.BROADCAST)

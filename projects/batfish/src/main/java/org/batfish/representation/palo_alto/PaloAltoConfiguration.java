@@ -10,8 +10,6 @@ import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
-import static org.batfish.representation.palo_alto.OspfInterface.DEFAULT_DEAD_COUNT;
-import static org.batfish.representation.palo_alto.OspfInterface.DEFAULT_HELLO_INTERVAL_SECS;
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
@@ -1145,7 +1143,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Router ID is ensured to be present by the CLI/UI
     if (ospf.getRouterId() == null) {
       _w.redFlag(
-          String.format("virtual-router %s ospf has no router-id; disabling it", vr.getName()));
+          String.format("Virtual-router %s ospf has no router-id; disabling it.", vr.getName()));
       return Optional.empty();
     }
     OspfProcess.Builder ospfProcessBuilder = OspfProcess.builder();
@@ -1256,10 +1254,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         && networkType != org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT) {
       ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
     }
-    int helloInterval = firstNonNull(vsOspfIface.getHelloInterval(), DEFAULT_HELLO_INTERVAL_SECS);
-    int deadCount = firstNonNull(vsOspfIface.getDeadCounts(), DEFAULT_DEAD_COUNT);
-    ospfSettings.setHelloInterval(helloInterval);
-    ospfSettings.setDeadInterval(helloInterval * deadCount);
+    ospfSettings.setHelloInterval(vsOspfIface.getHelloInterval());
+    ospfSettings.setDeadInterval(vsOspfIface.getHelloInterval() * vsOspfIface.getDeadCounts());
     viIface.setOspfSettings(ospfSettings.build());
   }
 

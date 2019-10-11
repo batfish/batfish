@@ -15,20 +15,28 @@ public class OspfInterface implements Serializable {
     P2MP
   }
 
-  // Palo-Alto's UI populates these if left empty
-  public static final int DEFAULT_HELLO_INTERVAL_SECS = 10;
-  public static final int DEFAULT_DEAD_COUNT = 4;
+  /** From PAN admin UI - sets hello interval to 10 if not set by the user */
+  private static final int DEFAULT_HELLO_INTERVAL_SECS = 10;
+
+  /** From PAN admin UI - sets dead counts to 4 if not set by the user */
+  private static final int DEFAULT_DEAD_COUNTS = 4;
+
+  /** From PAN admin UI - sets link type to BROADCAST if not explicitly changes by the user. */
+  private static final LinkType DEFAULT_LINK_TYPE = LinkType.BROADCAST;
 
   public OspfInterface(String name) {
     _name = name;
+    _linkType = DEFAULT_LINK_TYPE;
+    _helloInterval = DEFAULT_HELLO_INTERVAL_SECS;
+    _deadCounts = DEFAULT_DEAD_COUNTS;
   }
 
-  @Nullable
+  @Nonnull
   public Integer getDeadCounts() {
     return _deadCounts;
   }
 
-  public void setDeadCounts(@Nullable Integer deadCounts) {
+  public void setDeadCounts(@Nonnull Integer deadCounts) {
     _deadCounts = deadCounts;
   }
 
@@ -41,21 +49,21 @@ public class OspfInterface implements Serializable {
     _enable = enable;
   }
 
-  @Nullable
+  @Nonnull
   public LinkType getLinkType() {
     return _linkType;
   }
 
-  public void setLinkType(@Nullable LinkType linkType) {
+  public void setLinkType(@Nonnull LinkType linkType) {
     _linkType = linkType;
   }
 
-  @Nullable
+  @Nonnull
   public Integer getHelloInterval() {
     return _helloInterval;
   }
 
-  public void setHelloInterval(@Nullable Integer helloInterval) {
+  public void setHelloInterval(@Nonnull Integer helloInterval) {
     _helloInterval = helloInterval;
   }
 
@@ -118,10 +126,10 @@ public class OspfInterface implements Serializable {
   //////////////////////////////////////////
   ///// Private implementation details /////
   //////////////////////////////////////////
-  @Nullable private Integer _deadCounts;
+  @Nonnull private Integer _deadCounts;
   @Nullable private Boolean _enable;
-  @Nullable private LinkType _linkType;
-  @Nullable private Integer _helloInterval;
+  @Nonnull private LinkType _linkType;
+  @Nonnull private Integer _helloInterval;
   @Nullable private Integer _metric;
   @Nonnull private String _name;
   @Nullable private Boolean _passive;
