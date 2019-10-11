@@ -654,6 +654,16 @@ public final class CiscoNxosGrammarTest {
             originalRoute, outputRouteBuilder, ebgpSession, "default", Direction.OUT);
     assertTrue(shouldExportToEbgp);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(originalNhip));
+
+    // Original route has unset next hop IP: sets output route nhip to head IP of session props
+    outputRouteBuilder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+    Bgpv4Route noNhipRoute =
+        originalRoute.toBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP).build();
+    boolean shouldExportToEbgpUnsetNextHop =
+        nhipUnchangedPolicy.processBgpRoute(
+            noNhipRoute, outputRouteBuilder, ebgpSession, "default", Direction.OUT);
+    assertTrue(shouldExportToEbgpUnsetNextHop);
+    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(sessionPropsHeadIp));
   }
 
   @Test
