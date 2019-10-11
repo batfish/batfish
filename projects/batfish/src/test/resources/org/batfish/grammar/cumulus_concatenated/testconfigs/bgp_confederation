@@ -1,0 +1,7 @@
+bgp_confederation
+# This file describes the network interfaces
+# ports.conf --
+frr version test
+router bgp 65000
+  bgp confederation identifier 12
+  neighbor 1.1.1.1 remote-as 65001

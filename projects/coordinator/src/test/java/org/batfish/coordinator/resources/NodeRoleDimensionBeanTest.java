@@ -39,7 +39,6 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
         bean.roleDimensionMappings,
         equalTo(ImmutableList.of(new RoleDimensionMappingBean(rdMapping))));
     assertThat(bean.snapshot, equalTo(snapshot));
-    assertThat(bean.type, equalTo(NodeRoleDimension.Type.CUSTOM));
   }
 
   @Test

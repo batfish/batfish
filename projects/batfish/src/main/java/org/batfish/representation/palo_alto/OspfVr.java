@@ -12,6 +12,8 @@ import org.batfish.datamodel.Ip;
  * protocol ospf}.
  */
 public class OspfVr implements Serializable {
+  public static final int DEFAULT_LOOPBACK_OSPF_COST = 1;
+
   /** From PAN admin UI - only shows in running config if checked (as yes). */
   private static final boolean DEFAULT_ENABLE = false;
   /** From PAN admin UI - only shows in running config if checked (as no). */
