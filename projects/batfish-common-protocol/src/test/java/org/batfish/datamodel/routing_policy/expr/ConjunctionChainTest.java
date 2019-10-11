@@ -86,7 +86,7 @@ public class ConjunctionChainTest {
     c.setVrfs(
         ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
     c.setRoutingPolicies(policies);
-    return Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+    return Environment.builder(c)
         .setDefaultPolicy(defaultPolicy)
         .setOriginalRoute(route)
         .setOutputRoute(route.toBuilder())

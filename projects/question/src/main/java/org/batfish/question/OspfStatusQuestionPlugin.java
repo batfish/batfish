@@ -169,11 +169,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
                                 Prefix.create(address.getIp(), address.getNetworkBits()),
                                 interfaceName);
                         if (exportPolicy.process(
-                            route,
-                            OspfExternalRoute.builder(),
-                            null,
-                            vrf.getName(),
-                            Direction.OUT)) {
+                            route, OspfExternalRoute.builder(), Direction.OUT)) {
                           exported = true;
                         }
                       }

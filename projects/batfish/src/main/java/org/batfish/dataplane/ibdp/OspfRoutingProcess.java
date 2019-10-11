@@ -286,7 +286,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     // if routingPolicy denies the input route, set the route as non-routing to prevent it from
     // going in the main RIB
     routeBuilder.setNonRouting(
-        !routingPolicy.process(routeBuilder.build(), routeBuilder, null, vrfName, Direction.IN));
+        !routingPolicy.process(routeBuilder.build(), routeBuilder, Direction.IN));
   }
 
   @Nonnull
@@ -1289,9 +1289,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     // Prepare the builder
     OspfExternalRoute.Builder outputRouteBuilder = OspfExternalRoute.builder();
     // Export based on the policy result of processing the potentialExportRoute
-    boolean accept =
-        exportPolicy.process(
-            potentialExportRoute, outputRouteBuilder, null, _vrfName, Direction.OUT);
+    boolean accept = exportPolicy.process(potentialExportRoute, outputRouteBuilder, Direction.OUT);
     if (!accept) {
       return Optional.empty();
     }

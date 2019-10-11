@@ -108,6 +108,7 @@ import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
+import org.batfish.representation.f5_bigip.RouteMapSetIpNextHop;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
 import org.batfish.vendor.VendorConfiguration;
@@ -127,28 +128,14 @@ public final class F5BigipImishGrammarTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private void assertAcceptsKernelRoute(RoutingPolicy rp, Ip peerAddress) {
+  private void assertAcceptsKernelRoute(RoutingPolicy rp) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
-    assertTrue(
-        rp.process(
-            new KernelRoute(Prefix.ZERO),
-            outputBuilder,
-            peerAddress,
-            peerAddress.toPrefix(),
-            Configuration.DEFAULT_VRF_NAME,
-            Direction.OUT));
+    assertTrue(rp.process(new KernelRoute(Prefix.ZERO), outputBuilder, Direction.OUT));
   }
 
-  private void assertRejectsKernelRoute(RoutingPolicy rp, Ip peerAddress) {
+  private void assertRejectsKernelRoute(RoutingPolicy rp) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
-    assertFalse(
-        rp.process(
-            new KernelRoute(Prefix.ZERO),
-            outputBuilder,
-            peerAddress,
-            peerAddress.toPrefix(),
-            Configuration.DEFAULT_VRF_NAME,
-            Direction.OUT));
+    assertFalse(rp.process(new KernelRoute(Prefix.ZERO), outputBuilder, Direction.OUT));
   }
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
@@ -224,25 +211,14 @@ public final class F5BigipImishGrammarTest {
       RoutingPolicy rp1, BgpSessionProperties sessionProps) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
     assertTrue(
-        rp1.processBgpRoute(
-            makeBgpRoute(Prefix.ZERO),
-            outputBuilder,
-            sessionProps,
-            Configuration.DEFAULT_VRF_NAME,
-            Direction.OUT));
+        rp1.processBgpRoute(makeBgpRoute(Prefix.ZERO), outputBuilder, sessionProps, Direction.OUT));
     return outputBuilder.build();
   }
 
   /** Processes a BGP route through the given policy without providing specific peer data. */
   private @Nonnull Bgpv4Route processBgpRouteNoPeerContext(RoutingPolicy rp1) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
-    assertTrue(
-        rp1.process(
-            makeBgpRoute(Prefix.ZERO),
-            outputBuilder,
-            null,
-            Configuration.DEFAULT_VRF_NAME,
-            Direction.OUT));
+    assertTrue(rp1.process(makeBgpRoute(Prefix.ZERO), outputBuilder, Direction.OUT));
     return outputBuilder.build();
   }
 
@@ -429,7 +405,7 @@ public final class F5BigipImishGrammarTest {
 
     RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
 
-    assertAcceptsKernelRoute(rp, peerAddress);
+    assertAcceptsKernelRoute(rp);
   }
 
   @Test
@@ -442,7 +418,7 @@ public final class F5BigipImishGrammarTest {
 
     RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
 
-    assertAcceptsKernelRoute(rp, peerAddress);
+    assertAcceptsKernelRoute(rp);
   }
 
   @Test
@@ -455,7 +431,7 @@ public final class F5BigipImishGrammarTest {
 
     RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
 
-    assertRejectsKernelRoute(rp, peerAddress);
+    assertRejectsKernelRoute(rp);
   }
 
   @Test
@@ -592,7 +568,7 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -607,7 +583,7 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -622,7 +598,7 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -635,7 +611,7 @@ public final class F5BigipImishGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -648,7 +624,7 @@ public final class F5BigipImishGrammarTest {
       assertFalse(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(connectedRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -661,7 +637,7 @@ public final class F5BigipImishGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(connectedRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -674,7 +650,7 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(kernelRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -689,7 +665,7 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(kernelRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -881,7 +857,7 @@ public final class F5BigipImishGrammarTest {
         c.getRoutingPolicies()
             .get(acceptAllName)
             .call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
@@ -896,7 +872,7 @@ public final class F5BigipImishGrammarTest {
     assertTrue(
         "rm1 denies prefix 10.0.0.0/24 (via 10)",
         !rm1.call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
@@ -912,7 +888,7 @@ public final class F5BigipImishGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     Environment acceptedPrefixEnvironment =
-        Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+        Environment.builder(c)
             .setDirection(Direction.OUT)
             .setOutputRoute(outputRoute)
             .setOriginalRoute(acceptedRoute)
@@ -928,7 +904,7 @@ public final class F5BigipImishGrammarTest {
     assertTrue(
         "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",
         !rm1.call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.2.0/24"), "/Common/outint"))
@@ -945,9 +921,9 @@ public final class F5BigipImishGrammarTest {
     assertThat(c.getRoutingPolicies(), hasKeys(rp1Name, rp2Name));
 
     // (default route) accepted
-    assertAcceptsKernelRoute(c.getRoutingPolicies().get(rp1Name), Ip.ZERO);
+    assertAcceptsKernelRoute(c.getRoutingPolicies().get(rp1Name));
     // (default route) rejected
-    assertRejectsKernelRoute(c.getRoutingPolicies().get(rp2Name), Ip.ZERO);
+    assertRejectsKernelRoute(c.getRoutingPolicies().get(rp2Name));
   }
 
   @Test
@@ -1072,5 +1048,30 @@ public final class F5BigipImishGrammarTest {
     BDDPacket pkt = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
     return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
+  }
+
+  @Test
+  public void testRouteMapSetNextHopExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_next_hop");
+    assertNotNull(vc.getRouteMaps().get("rm1"));
+
+    RouteMapEntry entry = vc.getRouteMaps().get("rm1").getEntries().get(10L);
+    assertNotNull(entry);
+    RouteMapSetIpNextHop set = entry.getSetIpNextHop();
+    assertNotNull(set);
+    assertThat(set.getNextHop(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
+  }
+
+  @Test
+  public void testRouteMapSetNextHopConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_route_map_set_next_hop");
+    String rpName = "rm1";
+
+    assertThat(c.getRoutingPolicies(), hasKeys(rpName));
+
+    assertThat(
+        processBgpRouteNoPeerContext(c.getRoutingPolicies().get(rpName)),
+        hasNextHopIp(Ip.parse("1.2.3.4")));
   }
 }
