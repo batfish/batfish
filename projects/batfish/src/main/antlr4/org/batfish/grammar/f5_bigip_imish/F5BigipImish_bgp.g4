@@ -93,6 +93,7 @@ rbn_null
     CAPABILITY
     | FALL_OVER
     | MAXIMUM_PREFIX
+    | PASSWORD
     | UPDATE_SOURCE
   ) null_rest_of_line
 ;

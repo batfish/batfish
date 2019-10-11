@@ -255,6 +255,11 @@ PASSIVE_INTERFACE
   'passive-interface'
 ;
 
+PASSWORD
+:
+  'password'
+;
+
 PEER_GROUP
 :
   'peer-group'
