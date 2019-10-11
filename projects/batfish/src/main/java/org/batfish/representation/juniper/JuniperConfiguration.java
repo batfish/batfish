@@ -101,6 +101,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -338,6 +339,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         mg.setLocalAs(routingInstanceAs);
       }
     }
+
+    // Global confederation config
+    Long confederation = routingInstance.getConfederation();
+    if (confederation != null && !routingInstance.getConfederationMembers().isEmpty()) {
+      proc.setConfederation(
+          new BgpConfederation(confederation, routingInstance.getConfederationMembers()));
+    }
+
     // Set default authentication algorithm if missing
     if (mg.getAuthenticationAlgorithm() == null) {
       mg.setAuthenticationAlgorithm(DEFAULT_BGP_AUTHENTICATION_ALGORITHM);
@@ -384,6 +393,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else {
         neighbor.setClusterId(routerId.asLong());
       }
+
+      neighbor.setConfederation(routingInstance.getConfederation());
 
       boolean ibgp = Objects.equals(remoteAs, ig.getLocalAs());
 
