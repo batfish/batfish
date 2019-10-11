@@ -220,6 +220,11 @@ NETWORK
   'network'
 ;
 
+NEXT_HOP
+:
+  'next-hop'
+;
+
 NEXT_HOP_SELF
 :
   'next-hop-self'
@@ -258,6 +263,11 @@ PASSIVE_INTERFACE
 PASSWORD
 :
   'password'
+;
+
+PRIMARY
+:
+  'primary'
 ;
 
 PEER_GROUP

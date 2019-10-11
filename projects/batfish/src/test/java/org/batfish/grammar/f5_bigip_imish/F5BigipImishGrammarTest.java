@@ -1067,4 +1067,10 @@ public final class F5BigipImishGrammarTest {
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
     return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
   }
+
+  @Test
+  public void testRouteMapSetNextHop() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_next_hop");
+    assertNotNull(vc);
+  }
 }
