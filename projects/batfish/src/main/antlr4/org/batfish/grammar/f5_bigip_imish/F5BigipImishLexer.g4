@@ -255,6 +255,11 @@ PASSIVE_INTERFACE
   'passive-interface'
 ;
 
+PASSWORD
+:
+  'password'
+;
+
 PEER_GROUP
 :
   'peer-group'
@@ -345,6 +350,11 @@ COMMENT_LINE
 COMMENT_TAIL
 :
   '!' F_NonNewlineChar* -> channel ( HIDDEN )
+;
+
+CONNECTED
+:
+  'connected'
 ;
 
 DEC

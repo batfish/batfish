@@ -93,6 +93,7 @@ rbn_null
     CAPABILITY
     | FALL_OVER
     | MAXIMUM_PREFIX
+    | PASSWORD
     | UPDATE_SOURCE
   ) null_rest_of_line
 ;
@@ -114,12 +115,27 @@ rb_null
   ) null_rest_of_line
 ;
 
-rb_redistribute_kernel
+rb_redistribute
 :
-  REDISTRIBUTE KERNEL
+  REDISTRIBUTE
+  (
+    rbr_kernel
+    | rbr_connected
+  )
+;
+
+rbr_kernel
+:
+  KERNEL
   (
     ROUTE_MAP rm = word
-  )? NEWLINE
+  )?
+  NEWLINE
+;
+
+rbr_connected
+:
+  CONNECTED NEWLINE
 ;
 
 router_bgp
@@ -133,7 +149,7 @@ router_bgp
     | rb_neighbor_peer_group
     | rb_no
     | rb_null
-    | rb_redistribute_kernel
+    | rb_redistribute
   )*
 ;
 

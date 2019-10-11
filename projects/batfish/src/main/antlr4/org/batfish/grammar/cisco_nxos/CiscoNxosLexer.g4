@@ -1608,6 +1608,11 @@ GROUP
   }
 ;
 
+GROUP_LIST
+:
+  'group-list'
+;
+
 GROUP_TIMEOUT
 :
   'group-timeout'
@@ -3736,6 +3741,11 @@ ROUTINE
 RP_ADDRESS
 :
   'rp-address'
+;
+
+RP_CANDIDATE
+:
+  'rp-candidate'
 ;
 
 RPF_FAILURE

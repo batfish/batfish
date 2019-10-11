@@ -18,6 +18,11 @@ empty_list
   BRACE_LEFT BRACE_RIGHT
 ;
 
+ignored
+:
+  unrecognized
+;
+
 ip_address
 :
   IP_ADDRESS
@@ -91,7 +96,12 @@ unrecognized
 
 u_if
 :
-  IF u_word_list
+  IF u_word_list u_word_list u_elseif*
+;
+
+u_elseif
+:
+  ELSEIF u_word_list u_word_list
 ;
 
 u_list
@@ -107,7 +117,7 @@ u_word
 
 u_word_list
 :
-  BRACE_LEFT u_word+ BRACE_RIGHT
+  BRACE_LEFT NEWLINE? (u_word NEWLINE?)+ BRACE_RIGHT
 ;
 
 uint16

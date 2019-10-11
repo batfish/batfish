@@ -1,0 +1,11 @@
+set deviceconfig system hostname address-group-dynamic
+
+set address addr1 ip-netmask 1.0.0.1
+set address addr1 tag [ tag1 tagA]
+set address addr2 ip-netmask 1.0.0.2
+set address addr2 tag [ tag2 tagA]
+set address addr3 ip-netmask 2.0.0.1
+set address addr3 tag tag1
+
+# Filter matches only addr1
+set address-group group dynamic filter "'tagA' and tag1"

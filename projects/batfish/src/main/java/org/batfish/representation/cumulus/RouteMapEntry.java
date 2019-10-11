@@ -14,6 +14,7 @@ public final class RouteMapEntry implements Serializable {
 
   private final @Nonnull LineAction _action;
   private @Nullable RouteMapCall _call;
+  private @Nullable RouteMapContinue _continue;
   private @Nullable RouteMapMatchAsPath _matchAsPath;
   private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
@@ -22,8 +23,7 @@ public final class RouteMapEntry implements Serializable {
   private final int _number;
   private @Nullable String _description;
 
-  private @Nullable Boolean _onMatchNext;
-
+  private @Nullable RouteMapSetAsPath _setAsPath;
   private @Nullable RouteMapSetMetric _setMetric;
   private @Nullable RouteMapSetIpNextHopLiteral _setIpNextHop;
   private @Nullable RouteMapSetCommunity _setCommunity;
@@ -88,19 +88,15 @@ public final class RouteMapEntry implements Serializable {
     return _description;
   }
 
-  @Nullable
-  public Boolean getOnMatchNext() {
-    return _onMatchNext;
-  }
-
-  public void setOnMatchNext(@Nullable Boolean onMatchNext) {
-    this._onMatchNext = onMatchNext;
-  }
-
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
-    return Stream.of(_setMetric, _setIpNextHop, _setCommunity, _setLocalPreference, _setTag)
+    return Stream.of(
+            _setAsPath, _setMetric, _setIpNextHop, _setCommunity, _setLocalPreference, _setTag)
         .filter(Objects::nonNull);
+  }
+
+  public @Nullable RouteMapSetAsPath getSetAsPath() {
+    return _setAsPath;
   }
 
   public @Nullable RouteMapSetMetric getSetMetric() {
@@ -136,6 +132,10 @@ public final class RouteMapEntry implements Serializable {
     _description = description;
   }
 
+  public void setSetAsPath(@Nullable RouteMapSetAsPath setAsPath) {
+    _setAsPath = setAsPath;
+  }
+
   public void setSetIpNextHop(@Nullable RouteMapSetIpNextHopLiteral setIpNextHop) {
     _setIpNextHop = setIpNextHop;
   }
@@ -164,5 +164,14 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetTag(@Nullable RouteMapSetTag setTag) {
     _setTag = setTag;
+  }
+
+  @Nullable
+  public RouteMapContinue getContinue() {
+    return _continue;
+  }
+
+  public void setContinue(@Nullable RouteMapContinue aContinue) {
+    _continue = aContinue;
   }
 }

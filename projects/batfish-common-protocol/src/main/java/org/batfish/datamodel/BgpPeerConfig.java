@@ -31,6 +31,7 @@ public abstract class BgpPeerConfig implements Serializable {
   static final String PROP_APPLIED_RIB_GROUP = "appliedRibGroup";
   static final String PROP_AUTHENTICATION_SETTINGS = "authenticationSettings";
   static final String PROP_CLUSTER_ID = "clusterId";
+  static final String PROP_CONFEDERATION_AS = "confederationAs";
   static final String PROP_DEFAULT_METRIC = "defaultMetric";
   static final String PROP_DESCRIPTION = "description";
   static final String PROP_EBGP_MULTIHOP = "ebgpMultihop";
@@ -47,6 +48,8 @@ public abstract class BgpPeerConfig implements Serializable {
   @Nullable private final BgpAuthenticationSettings _authenticationSettings;
   /** The cluster id associated with this peer to be used in route reflection */
   @Nullable private final Long _clusterId;
+
+  @Nullable private final Long _confederationAsn;
   /** The default metric associated with routes sent to this peer */
   private final int _defaultMetric;
 
@@ -80,6 +83,7 @@ public abstract class BgpPeerConfig implements Serializable {
       @Nullable RibGroup appliedRibGroup,
       @Nullable BgpAuthenticationSettings authenticationSettings,
       @Nullable Long clusterId,
+      @Nullable Long confederationAsn,
       int defaultMetric,
       @Nullable String description,
       boolean ebgpMultihop,
@@ -94,6 +98,7 @@ public abstract class BgpPeerConfig implements Serializable {
     _appliedRibGroup = appliedRibGroup;
     _authenticationSettings = authenticationSettings;
     _clusterId = clusterId;
+    _confederationAsn = confederationAsn;
     _defaultMetric = defaultMetric;
     _description = description;
     _ebgpMultihop = ebgpMultihop;
@@ -105,11 +110,6 @@ public abstract class BgpPeerConfig implements Serializable {
     _remoteAsns = firstNonNull(remoteAsns, ALL_AS_NUMBERS);
     _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
     _evpnAddressFamily = evpnAddressFamily;
-  }
-
-  /** Check whether the given AS number matches this peer's remote AS numbers. */
-  public boolean hasCompatibleRemoteAsns(@Nullable Long asNumber) {
-    return asNumber != null && _remoteAsns.contains(asNumber);
   }
 
   /** Return the {@link RibGroup} applied to this config */
@@ -130,6 +130,13 @@ public abstract class BgpPeerConfig implements Serializable {
   @Nullable
   public Long getClusterId() {
     return _clusterId;
+  }
+
+  /** Confederation AS number. Only present if the peer is inside a BGP confederation */
+  @Nullable
+  @JsonProperty(PROP_CONFEDERATION_AS)
+  public Long getConfederationAsn() {
+    return _confederationAsn;
   }
 
   /** Default MED for routes sent to this neighbor */
@@ -262,6 +269,7 @@ public abstract class BgpPeerConfig implements Serializable {
         && Objects.equals(_appliedRibGroup, that._appliedRibGroup)
         && Objects.equals(_authenticationSettings, that._authenticationSettings)
         && Objects.equals(_clusterId, that._clusterId)
+        && Objects.equals(_confederationAsn, that._confederationAsn)
         && Objects.equals(_description, that._description)
         && Objects.equals(_generatedRoutes, that._generatedRoutes)
         && Objects.equals(_group, that._group)
@@ -278,6 +286,7 @@ public abstract class BgpPeerConfig implements Serializable {
         _appliedRibGroup,
         _authenticationSettings,
         _clusterId,
+        _confederationAsn,
         _defaultMetric,
         _description,
         _ebgpMultihop,
@@ -297,6 +306,7 @@ public abstract class BgpPeerConfig implements Serializable {
         .add("_appliedRibGroup", _appliedRibGroup)
         .add("_authenticationSettings", _authenticationSettings)
         .add("_clusterId", _clusterId)
+        .add("_confederationAsn", _confederationAsn)
         .add("_defaultMetric", _defaultMetric)
         .add("_description", _description)
         .add("_ebgpMultihop", _ebgpMultihop)
@@ -316,6 +326,7 @@ public abstract class BgpPeerConfig implements Serializable {
     @Nullable protected BgpAuthenticationSettings _authenticationSettings;
     @Nullable protected BgpProcess _bgpProcess;
     protected Long _clusterId;
+    @Nullable protected Long _confederation;
     protected int _defaultMetric;
     protected String _description;
     protected boolean _ebgpMultihop;
@@ -364,6 +375,11 @@ public abstract class BgpPeerConfig implements Serializable {
 
     public S setClusterId(Long clusterId) {
       _clusterId = clusterId;
+      return getThis();
+    }
+
+    public S setConfederation(@Nullable Long confederation) {
+      _confederation = confederation;
       return getThis();
     }
 

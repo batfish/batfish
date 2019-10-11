@@ -4,10 +4,9 @@ import static org.batfish.datamodel.BgpSessionProperties.getAddressFamilyInterse
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -29,41 +28,55 @@ public class BgpSessionPropertiesTest {
   public void testSessionCreation() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
+    long as1 = 1;
+    long as2 = 2;
+    Ipv4UnicastAddressFamily addressFamily =
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setAdvertiseInactive(true).build())
+            .build();
     BgpActivePeerConfig p1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
-            .setLocalAs(1L)
-            .setRemoteAs(2L)
+            .setLocalAs(as1)
+            .setRemoteAs(as2)
             .setPeerAddress(ip2)
-            .setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilyCapabilities(
-                        AddressFamilyCapabilities.builder().setAdvertiseInactive(true).build())
-                    .build())
+            .setIpv4UnicastAddressFamily(addressFamily)
             .build();
     BgpActivePeerConfig p2 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip2)
-            .setLocalAs(1L)
-            .setRemoteAs(2L)
+            .setLocalAs(as2)
+            .setRemoteAs(as1)
             .setPeerAddress(ip1)
-            .setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilyCapabilities(
-                        AddressFamilyCapabilities.builder().setAdvertiseInactive(true).build())
-                    .build())
+            .setIpv4UnicastAddressFamily(addressFamily)
             .build();
     BgpSessionProperties session = BgpSessionProperties.from(p1, p2, false);
-    assertTrue(session.getAdvertiseInactive());
-    assertFalse(session.getAdvertiseExternal());
+
+    BgpSessionProperties expectedSession =
+        BgpSessionProperties.builder()
+            .setAddressFamilies(ImmutableList.of(addressFamily.getType()))
+            .setTailAs(as1)
+            .setHeadAs(as2)
+            .setTailIp(ip1)
+            .setHeadIp(ip2)
+            .setSessionType(SessionType.EBGP_SINGLEHOP)
+            .setRouteExchangeSettings(
+                // Add paths false, advertise external false, advertise inactive true
+                ImmutableMap.of(addressFamily.getType(), new RouteExchange(false, false, true)))
+            .build();
+    assertThat(session, equalTo(expectedSession));
   }
 
   @Test
   public void testEquals() {
     Builder builder = BgpSessionProperties.builder();
+    long headAs = 1;
+    long tailAs = 3;
     Ip headIp = Ip.parse("1.1.1.1");
     Ip tailIp = Ip.parse("2.2.2.2");
-    BgpSessionProperties bsp = builder.setTailIp(tailIp).setHeadIp(headIp).build();
+    BgpSessionProperties bsp =
+        builder.setTailAs(tailAs).setHeadAs(headAs).setTailIp(tailIp).setHeadIp(headIp).build();
     new EqualsTester()
         .addEqualityGroup(bsp, bsp, builder.build())
         .addEqualityGroup(
@@ -72,6 +85,8 @@ public class BgpSessionPropertiesTest {
                     ImmutableMap.of(Type.IPV4_UNICAST, new RouteExchange(true, false, true)))
                 .build())
         .addEqualityGroup(builder.setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST)).build())
+        .addEqualityGroup(builder.setHeadAs(headAs + 1).build())
+        .addEqualityGroup(builder.setTailAs(tailAs + 1).build())
         // note the head/tail swap
         .addEqualityGroup(builder.setHeadIp(tailIp).build())
         .addEqualityGroup(builder.setTailIp(headIp).build())
@@ -89,6 +104,8 @@ public class BgpSessionPropertiesTest {
             .setAddressFamilies(EnumSet.allOf(Type.class))
             .setRouteExchangeSettings(
                 ImmutableMap.of(Type.IPV4_UNICAST, new RouteExchange(true, false, true)))
+            .setTailAs(1L)
+            .setHeadAs(2L)
             .setTailIp(tailIp)
             .setHeadIp(headIp)
             .setSessionType(SessionType.EBGP_MULTIHOP)

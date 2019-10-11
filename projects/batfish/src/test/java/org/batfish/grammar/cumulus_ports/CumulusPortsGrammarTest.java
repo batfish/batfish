@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
@@ -46,6 +47,7 @@ public final class CumulusPortsGrammarTest {
     CumulusPortsConfigurationBuilder configurationBuilder =
         new CumulusPortsConfigurationBuilder(_config, parser, _warnings);
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
+    _config = SerializationUtils.clone(_config);
   }
 
   @Test

@@ -24,6 +24,11 @@ FOUR_BYTE
     '4-byte'
 ;
 
+ACCEPT_SUMMARY
+:
+    'accept-summary'
+;
+
 ACTION
 :
     'action'
@@ -47,6 +52,11 @@ ADMIN_DIST
 ADMIN_DISTS
 :
     'admin-dists'
+;
+
+ADVERTISE
+:
+    'advertise'
 ;
 
 AES_128_CBC
@@ -114,9 +124,19 @@ APPLICATION_GROUP
     'application-group'
 ;
 
+AREA
+:
+    'area'
+;
+
 AS_FORMAT
 :
     'as-format'
+;
+
+AUTH_PROFILE
+:
+    'auth-profile'
 ;
 
 AUTHENTICATION
@@ -139,6 +159,11 @@ AUTO
     'auto'
 ;
 
+BFD
+:
+    'bfd'
+;
+
 BGP
 :
     'bgp'
@@ -147,6 +172,11 @@ BGP
 BOTNET
 :
     'botnet'
+;
+
+BROADCAST
+:
+    'broadcast'
 ;
 
 CATEGORY
@@ -167,11 +197,6 @@ CERTIFICATE_PROFILE
 CLIENT
 :
     'client'
-;
-
-CLOSE_BRACKET
-:
-    ']'
 ;
 
 COLOR
@@ -219,6 +244,11 @@ DAYS
     'days'
 ;
 
+DEAD_COUNTS
+:
+    'dead-counts'
+;
+
 DEFAULT_GATEWAY
 :
     'default-gateway'
@@ -227,6 +257,11 @@ DEFAULT_GATEWAY
 DEFAULT_LOCAL_PREFERENCE
 :
     'default-local-preference'
+;
+
+DEFAULT_ROUTE
+:
+    'default-route'
 ;
 
 DENY
@@ -267,6 +302,11 @@ DEVICECONFIG
 DH_GROUP
 :
     'dh-group'
+;
+
+DISABLE
+:
+    'disable'
 ;
 
 DISABLED
@@ -339,6 +379,16 @@ EXPORT
     'export'
 ;
 
+EXT_1
+:
+    'ext-1'
+;
+
+EXT_2
+:
+    'ext-2'
+;
+
 EXTERNAL
 :
     'external'
@@ -347,6 +397,11 @@ EXTERNAL
 ETHERNET
 :
     'ethernet'
+;
+
+FILTER
+:
+    'filter'
 ;
 
 FQDN
@@ -364,9 +419,19 @@ GATEWAY
     'gateway'
 ;
 
+GLOBAL_BFD
+:
+    'global-bfd'
+;
+
 GLOBAL_PROTECT_APP_CRYPTO_PROFILES
 :
     'global-protect-app-crypto-profiles'
+;
+
+GR_DELAY
+:
+    'gr-delay'
 ;
 
 GRACEFUL_RESTART
@@ -412,6 +477,16 @@ HAS_KNOWN_VULNERABILITIES
 HASH
 :
     'hash'
+;
+
+HELLO_INTERVAL
+:
+    'hello-interval'
+;
+
+HELPER_ENABLE
+:
+    'helper-enable'
 ;
 
 HIP_PROFILES
@@ -522,6 +597,11 @@ LINK
 LINK_STATE
 :
     'link-state'
+;
+
+LINK_TYPE
+:
+    'link-type'
 ;
 
 LLDP
@@ -644,6 +724,16 @@ NONE
     'none'
 ;
 
+NORMAL
+:
+    'normal'
+;
+
+NSSA
+:
+    'nssa'
+;
+
 NTP_SERVER_ADDRESS
 :
     'ntp-server-address'
@@ -657,11 +747,6 @@ NTP_SERVERS
 NULL
 :
     'null'
-;
-
-OPEN_BRACKET
-:
-    '['
 ;
 
 OSPF
@@ -699,6 +784,16 @@ OUTGOING_BGP_CONNECTION
     'outgoing-bgp-connection'
 ;
 
+P2P
+:
+    'p2p'
+;
+
+P2MP
+:
+    'p2mp'
+;
+
 PANORAMA
 :
     'panorama'
@@ -707,6 +802,11 @@ PANORAMA
 PANORAMA_SERVER
 :
     'panorama-server'
+;
+
+PASSIVE
+:
+    'passive'
 ;
 
 PEER
@@ -764,6 +864,11 @@ PRIMARY_NTP_SERVER
     'primary-ntp-server'
 ;
 
+PRIORITY
+:
+    'priority'
+;
+
 PROFILES
 :
     'profiles'
@@ -817,6 +922,11 @@ RESET_CLIENT
 RESET_SERVER
 :
     'reset-server'
+;
+
+RETRANSMIT_INTERVAL
+:
+    'retransmit-interval'
 ;
 
 RIP
@@ -974,6 +1084,16 @@ STATIC_ROUTE
     'static-route'
 ;
 
+STRICT_LSA_CHECKING
+:
+    'strict-LSA-checking'
+;
+
+STUB
+:
+    'stub'
+;
+
 SUBCATEGORY
 :
     'subcategory'
@@ -1034,6 +1154,11 @@ TRANSFERS_FILES
     'transfers-files'
 ;
 
+TRANSIT_DELAY
+:
+    'transit-delay'
+;
+
 TUNNEL
 :
     'tunnel'
@@ -1052,21 +1177,6 @@ TYPE
 UDP
 :
     'udp'
-;
-
-UINT8
-:
-  F_Uint8
-;
-
-UINT16
-:
-  F_Uint16
-;
-
-UINT32
-:
-  F_Uint32
 ;
 
 UNITS
@@ -1131,6 +1241,11 @@ ZONE
 
 // Complex tokens
 
+CLOSE_BRACKET
+:
+    ']'
+;
+
 COMMA
 :
     ','
@@ -1175,6 +1290,11 @@ NEWLINE
     F_Newline+
 ;
 
+OPEN_BRACKET
+:
+    '['
+;
+
 RANGE
 :
     F_Digit+ '-' F_Digit+
@@ -1183,6 +1303,21 @@ RANGE
 SINGLE_QUOTED_STRING
 :
     '\'' ~'\''* '\''
+;
+
+UINT8
+:
+    F_Uint8
+;
+
+UINT16
+:
+    F_Uint16
+;
+
+UINT32
+:
+    F_Uint32
 ;
 
 VARIABLE
@@ -1200,11 +1335,11 @@ WS
 fragment
 F_DecByte
 :
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
+    F_Digit
+    | F_PositiveDigit F_Digit
+    | '1' F_Digit F_Digit
+    | '2' [0-4] F_Digit
+    | '25' [0-5]
 ;
 
 fragment
@@ -1228,9 +1363,9 @@ F_IpPrefix
 fragment
 F_IpPrefixLength
 :
-  F_Digit
-  | [12] F_Digit
-  | [3] [012]
+    F_Digit
+    | [12] F_Digit
+    | [3] [012]
 ;
 
 fragment
@@ -1248,82 +1383,82 @@ F_NonNewlineChar
 fragment
 F_PositiveDigit
 :
-  [1-9]
+    [1-9]
 ;
 
 fragment
 F_Uint8
 :
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
+    F_Digit
+    | F_PositiveDigit F_Digit
+    | '1' F_Digit F_Digit
+    | '2' [0-4] F_Digit
+    | '25' [0-5]
 ;
 
 fragment
 F_Uint16
 :
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit?
-  | [1-5] F_Digit F_Digit F_Digit F_Digit
-  | '6' [0-4] F_Digit F_Digit F_Digit
-  | '65' [0-4] F_Digit F_Digit
-  | '655' [0-2] F_Digit
-  | '6553' [0-5]
+    F_Digit
+    | F_PositiveDigit F_Digit F_Digit? F_Digit?
+    | [1-5] F_Digit F_Digit F_Digit F_Digit
+    | '6' [0-4] F_Digit F_Digit F_Digit
+    | '65' [0-4] F_Digit F_Digit
+    | '655' [0-2] F_Digit
+    | '6553' [0-5]
 ;
 
 fragment
 F_Uint32
 :
 // 0-4294967295
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
-  F_Digit? F_Digit?
-  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  F_Digit
-  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
-  | '429496' [0-6] F_Digit F_Digit F_Digit
-  | '4294967' [0-1] F_Digit F_Digit
-  | '42949672' [0-8] F_Digit
-  | '429496729' [0-5]
+    F_Digit
+    | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+    F_Digit? F_Digit?
+    | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    F_Digit
+    | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+    | '429496' [0-6] F_Digit F_Digit F_Digit
+    | '4294967' [0-1] F_Digit F_Digit
+    | '42949672' [0-8] F_Digit
+    | '429496729' [0-5]
 ;
 
 fragment
 F_Url
 :
-  F_UrlStart F_UrlInner+
+    F_UrlStart F_UrlInner+
 ;
 
 F_UrlStart
 :
-  [a-zA-Z]
+    [a-zA-Z]
 ;
 
 F_UrlInner
 :
-  F_UrlInnerAlphaNum
-  | F_UrlInnerReserved
-  | F_UrlInnerUnreserved
+    F_UrlInnerAlphaNum
+    | F_UrlInnerReserved
+    | F_UrlInnerUnreserved
 ;
 
 F_UrlInnerAlphaNum
 :
-  [a-zA-Z0-9]
+    [a-zA-Z0-9]
 ;
 
 F_UrlInnerReserved
 :
-  [!*'();:@&=+$,/?%#[\]]
+    [!*'();:@&=+$,/?%#[\]]
 ;
 
 F_UrlInnerUnreserved
 :
-  [-_.~]
+    [-_.~]
 ;
 
 fragment
@@ -1344,15 +1479,15 @@ mode M_Url;
 
 M_Url_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_Url_WORD
 :
-  F_Url -> type ( WORD ) , popMode
+    F_Url -> type ( WORD ) , popMode
 ;
 
 M_Url_WS
 :
-  F_Whitespace+ -> channel ( HIDDEN )
+    F_Whitespace+ -> channel ( HIDDEN )
 ;

@@ -89,8 +89,7 @@ public final class NxosOspfTest {
     assertThat(vendorConfiguration, notNullValue());
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
-    SerializationUtils.clone(vendorConfiguration);
-    return vendorConfiguration;
+    return SerializationUtils.clone(vendorConfiguration);
   }
 
   @Test

@@ -1,6 +1,9 @@
 parser grammar F5BigipStructured_ltm;
 
-import F5BigipStructured_common;
+import
+  F5BigipStructured_common,
+  F5BigipStructured_ltm_data_group,
+  F5BigipStructured_ltm_rule;
 
 options {
   tokenVocab = F5BigipStructuredLexer;
@@ -262,14 +265,132 @@ l_profile
 :
   PROFILE
   (
-    lprof_client_ssl
+    lprof_analytics
+    | lprof_certificate_authority
+    | lprof_classification
+    | lprof_client_ldap
+    | lprof_client_ssl
+    | lprof_dhcpv4
+    | lprof_dhcpv6
+    | lprof_diameter
+    | lprof_dns
+    | lprof_fasthttp
+    | lprof_fastl4
+    | lprof_fix
+    | lprof_ftp
+    | lprof_gtp
+    | lprof_html
+    | lprof_http2
+    | lprof_http_compression
     | lprof_http
+    | lprof_http_proxy_connect
+    | lprof_icap
+    | lprof_ilx
+    | lprof_ipother
+    | lprof_ipsecalg
+    | lprof_map_t
+    | lprof_mqtt
+    | lprof_netflow
     | lprof_ocsp_stapling_params
     | lprof_one_connect
+    | lprof_pcp
+    | lprof_pptp
+    | lprof_qoe
+    | lprof_radius
+    | lprof_request_adapt
+    | lprof_request_log
+    | lprof_response_adapt
+    | lprof_rewrite
+    | lprof_rtsp
+    | lprof_sctp
+    | lprof_server_ldap
     | lprof_server_ssl
+    | lprof_sip
+    | lprof_smtps
+    | lprof_socks
+    | lprof_splitsessionclient
+    | lprof_splitsessionserver
+    | lprof_statistics
+    | lprof_stream
+    | lprof_tcp_analytics
     | lprof_tcp
+    | lprof_tftp
+    | lprof_traffic_acceleration
+    | lprof_udp
+    | lprof_web_acceleration
+    | lprof_web_security
+    | lprof_websocket
+    | lprof_xml
     | unrecognized
   )
+;
+
+lprof_analytics
+:
+  ANALYTICS name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_analytics_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_analytics_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_certificate_authority
+:
+  CERTIFICATE_AUTHORITY name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_certificate_authority_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_certificate_authority_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_classification
+:
+  CLASSIFICATION name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_classification_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_classification_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_client_ldap
+:
+  CLIENT_LDAP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_client_ldap_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_client_ldap_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lprof_client_ssl
@@ -278,13 +399,217 @@ lprof_client_ssl
   (
     NEWLINE
     (
-      lprofcs_defaults_from
+      lprof_client_ssl_defaults_from
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
-lprofcs_defaults_from
+lprof_client_ssl_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_dhcpv4
+:
+  DHCPV4 name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_dhcpv4_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_dhcpv4_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_dhcpv6
+:
+  DHCPV6 name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_dhcpv6_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_dhcpv6_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_diameter
+:
+  DIAMETER name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_diameter_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_diameter_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_dns
+:
+  DNS name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_dns_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_dns_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_fasthttp
+:
+  FASTHTTP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_fasthttp_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_fasthttp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_fastl4
+:
+  FASTL4 name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_fastl4_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_fastl4_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_fix
+:
+  FIX name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_fix_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_fix_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_ftp
+:
+  FTP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_ftp_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_ftp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_gtp
+:
+  GTP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_gtp_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_gtp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_html
+:
+  HTML name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_html_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_html_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_http2
+:
+  HTTP2 name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_http2_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_http2_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_http_compression
+:
+  HTTP_COMPRESSION name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_http_compression_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_http_compression_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
@@ -295,13 +620,149 @@ lprof_http
   (
     NEWLINE
     (
-      lprofh_defaults_from
+      lprof_http_defaults_from
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
-lprofh_defaults_from
+lprof_http_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_http_proxy_connect
+:
+  HTTP_PROXY_CONNECT name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_http_proxy_connect_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_http_proxy_connect_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_icap
+:
+  ICAP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_icap_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_icap_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_ilx
+:
+  ILX name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_ilx_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_ilx_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_ipother
+:
+  IPOTHER name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_ipother_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_ipother_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_ipsecalg
+:
+  IPSECALG name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_ipsecalg_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_ipsecalg_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_map_t
+:
+  MAP_T name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_map_t_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_map_t_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_mqtt
+:
+  MQTT name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_mqtt_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_mqtt_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_netflow
+:
+  NETFLOW name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_netflow_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_netflow_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
@@ -312,13 +773,13 @@ lprof_ocsp_stapling_params
   (
     NEWLINE
     (
-      lprofoc_defaults_from
+      lprof_ocsp_stapling_params_defaults_from
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
-lprofoc_defaults_from
+lprof_ocsp_stapling_params_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
@@ -329,13 +790,200 @@ lprof_one_connect
   (
     NEWLINE
     (
-      lprofon_defaults_from
+      lprof_one_connect_defaults_from
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
-lprofon_defaults_from
+lprof_one_connect_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_pcp
+:
+  PCP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_pcp_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_pcp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_pptp
+:
+  PPTP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_pptp_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_pptp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_qoe
+:
+  QOE name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_qoe_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_qoe_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_radius
+:
+  RADIUS name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_radius_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_radius_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_request_adapt
+:
+  REQUEST_ADAPT name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_request_adapt_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_request_adapt_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_request_log
+:
+  REQUEST_LOG name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_request_log_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_request_log_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_response_adapt
+:
+  RESPONSE_ADAPT name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_response_adapt_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_response_adapt_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_rewrite
+:
+  REWRITE name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_rewrite_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_rewrite_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_rtsp
+:
+  RTSP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_rtsp_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_rtsp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_sctp
+:
+  SCTP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_sctp_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_sctp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_server_ldap
+:
+  SERVER_LDAP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_server_ldap_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_server_ldap_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
@@ -346,13 +994,149 @@ lprof_server_ssl
   (
     NEWLINE
     (
-      lprofss_defaults_from
+      lprof_server_ssl_defaults_from
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
-lprofss_defaults_from
+lprof_server_ssl_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_sip
+:
+  SIP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_sip_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_sip_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_smtps
+:
+  SMTPS name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_smtps_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_smtps_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_socks
+:
+  SOCKS name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_socks_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_socks_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_splitsessionclient
+:
+  SPLITSESSIONCLIENT name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_splitsessionclient_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_splitsessionclient_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_splitsessionserver
+:
+  SPLITSESSIONSERVER name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_splitsessionserver_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_splitsessionserver_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_statistics
+:
+  STATISTICS name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_statistics_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_statistics_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_stream
+:
+  STREAM name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_stream_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_stream_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_tcp_analytics
+:
+  TCP_ANALYTICS name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_tcp_analytics_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_tcp_analytics_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
@@ -363,23 +1147,134 @@ lprof_tcp
   (
     NEWLINE
     (
-      lproft_defaults_from
+      lprof_tcp_defaults_from
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
-lproft_defaults_from
+lprof_tcp_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
-l_rule
+lprof_tftp
 :
-  RULE name = structure_name BRACE_LEFT
+  TFTP name = structure_name BRACE_LEFT
   (
-    NEWLINE unrecognized*
+    NEWLINE
+    (
+      lprof_tftp_defaults_from
+      | unrecognized
+    )*
   )? BRACE_RIGHT NEWLINE
+;
+
+lprof_tftp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_traffic_acceleration
+:
+  TRAFFIC_ACCELERATION name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_traffic_acceleration_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_traffic_acceleration_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_udp
+:
+  UDP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_udp_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_udp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_web_acceleration
+:
+  WEB_ACCELERATION name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_web_acceleration_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_web_acceleration_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_web_security
+:
+  WEB_SECURITY name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_web_security_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_web_security_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_websocket
+:
+  WEBSOCKET name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_websocket_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_websocket_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_xml
+:
+  XML name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lprof_xml_defaults_from
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lprof_xml_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 l_snat
@@ -779,7 +1674,8 @@ s_ltm
 :
   LTM
   (
-    l_monitor
+    l_data_group
+    | l_monitor
     | l_node
     | l_persistence
     | l_pool

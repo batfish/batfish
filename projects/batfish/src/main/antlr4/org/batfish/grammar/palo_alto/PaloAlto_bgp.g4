@@ -164,12 +164,12 @@ bgppgp_la_interface
 
 bgppgp_la_ip
 :
-    IP interface_address
+    IP addr = interface_address
 ;
 
 bgppgp_peer_address
 :
-    PEER_ADDRESS IP address = ip_address
+    PEER_ADDRESS IP addr = ip_address_or_slash32
 ;
 
 bgppgp_peer_as
@@ -229,7 +229,7 @@ bgp_reject_default_route
 
 bgp_router_id
 :
-    ROUTER_ID address = interface_address
+    ROUTER_ID addr = ip_address_or_slash32
 ;
 
 bgp_routing_options

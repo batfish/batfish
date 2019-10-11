@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,8 +37,8 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
  *   <li>For this session to be created, two configurations must be deemed compatible.
  *   <li>Some properties of the session are directional (such as head/tail IPs) and therefore must
  *       be reciprocal if the edge is reversed. Others are negotiated by devices and therefore must
- *       be equal in both directions. See {@link #from(BgpPeerConfig, BgpPeerConfig, boolean)} for
- *       more details.
+ *       be equal in both directions. See {@link #from(BgpPeerConfig, BgpPeerConfig, boolean, long,
+ *       long)} for more details.
  * </ul>
  */
 @ParametersAreNonnullByDefault
@@ -47,24 +48,32 @@ public final class BgpSessionProperties {
   private static final String PROP_ADDRESS_FAMILIES = "addressFamilies";
   private static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
   private static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
+  private static final String PROP_HEAD_AS = "headAs";
   private static final String PROP_HEAD_IP = "headIp";
   private static final String PROP_ROUTE_EXCHANGE = "routeExchange";
   private static final String PROP_SESSION_TYPE = "sessionType";
+  private static final String PROP_TAIL_AS = "tailAs";
   private static final String PROP_TAIL_IP = "tailIp";
 
   @JsonCreator
   private static @Nonnull BgpSessionProperties create(
       @JsonProperty(PROP_ADDRESS_FAMILIES) @Nullable Collection<Type> addressFamilies,
+      @JsonProperty(PROP_HEAD_AS) @Nullable Long headAs,
       @JsonProperty(PROP_HEAD_IP) @Nullable Ip headIp,
       @JsonProperty(PROP_ROUTE_EXCHANGE) @Nullable
           Map<AddressFamily.Type, RouteExchange> routeExchange,
       @JsonProperty(PROP_SESSION_TYPE) @Nullable SessionType sessionType,
+      @JsonProperty(PROP_TAIL_AS) @Nullable Long tailAs,
       @JsonProperty(PROP_TAIL_IP) @Nullable Ip tailIp) {
+    checkArgument(tailAs != null, "Missing %s", PROP_TAIL_AS);
+    checkArgument(headAs != null, "Missing %s", PROP_HEAD_AS);
     checkArgument(headIp != null, "Missing %s", PROP_HEAD_IP);
     checkArgument(tailIp != null, "Missing %s", PROP_TAIL_IP);
     return new BgpSessionProperties(
         firstNonNull(addressFamilies, ImmutableSet.of()),
         firstNonNull(routeExchange, ImmutableMap.of()),
+        tailAs,
+        headAs,
         tailIp,
         headIp,
         firstNonNull(sessionType, SessionType.UNSET));
@@ -73,6 +82,8 @@ public final class BgpSessionProperties {
   public static final class Builder {
 
     @Nullable private Collection<EvpnAddressFamily.Type> _addressFamilies;
+    private @Nullable Long _tailAs;
+    private @Nullable Long _headAs;
     private @Nullable Ip _tailIp;
     private @Nullable Ip _headIp;
     private @Nonnull Map<AddressFamily.Type, RouteExchange> _routeExchangeSettings;
@@ -86,9 +97,13 @@ public final class BgpSessionProperties {
     public @Nonnull BgpSessionProperties build() {
       checkArgument(_headIp != null, "Missing %s", PROP_HEAD_IP);
       checkArgument(_tailIp != null, "Missing %s", PROP_TAIL_IP);
+      checkArgument(_tailAs != null, "Missing %s", PROP_TAIL_AS);
+      checkArgument(_headAs != null, "Missing %s", PROP_HEAD_AS);
       return new BgpSessionProperties(
           firstNonNull(_addressFamilies, ImmutableSet.of()),
           _routeExchangeSettings,
+          _tailAs,
+          _headAs,
           _tailIp,
           _headIp,
           _sessionType);
@@ -97,6 +112,16 @@ public final class BgpSessionProperties {
     @Nonnull
     public Builder setAddressFamilies(Collection<Type> addressFamilies) {
       _addressFamilies = addressFamilies;
+      return this;
+    }
+
+    public Builder setTailAs(long tailAs) {
+      _tailAs = tailAs;
+      return this;
+    }
+
+    public Builder setHeadAs(long headAs) {
+      _headAs = headAs;
       return this;
     }
 
@@ -126,6 +151,8 @@ public final class BgpSessionProperties {
   }
 
   @Nonnull private final Set<AddressFamily.Type> _addressFamilies;
+  private final long _tailAs;
+  private final long _headAs;
   @Nonnull private final Ip _tailIp;
   @Nonnull private final Ip _headIp;
   private final SessionType _sessionType;
@@ -134,11 +161,15 @@ public final class BgpSessionProperties {
   private BgpSessionProperties(
       Collection<Type> addressFamilies,
       Map<Type, RouteExchange> routeExchangeSettings,
+      long tailAs,
+      long headAs,
       Ip tailIp,
       Ip headIp,
       SessionType sessionType) {
     _addressFamilies = Sets.immutableEnumSet(addressFamilies);
     _routeExchangeSettings = ImmutableMap.copyOf(routeExchangeSettings);
+    _tailAs = tailAs;
+    _headAs = headAs;
     _tailIp = tailIp;
     _headIp = headIp;
     _sessionType = sessionType;
@@ -178,6 +209,16 @@ public final class BgpSessionProperties {
   @JsonIgnore
   public boolean isEbgp() {
     return SessionType.isEbgp(_sessionType);
+  }
+
+  @JsonProperty(PROP_TAIL_AS)
+  public long getTailAs() {
+    return _tailAs;
+  }
+
+  @JsonProperty(PROP_HEAD_AS)
+  public long getHeadAs() {
+    return _headAs;
   }
 
   /** IP of local peer for this session */
@@ -221,9 +262,7 @@ public final class BgpSessionProperties {
    * Create a set of new parameters based on session initiator and listener. This assumes that
    * provided {@link BgpPeerConfig configs} are compatible.
    *
-   * <p>For session parameters that are directional (e.g., IPs used), the {@code initiator} config
-   * will be used to fill in the {@code tail} values, unless {@code reverseDirection} is specified.
-   * Other parameters are derived from both peer configurations, emulating session negotiation.
+   * <p>For session parameters that are directional (e.g., IPs used), complicated inference is made.
    *
    * <p><b>Note</b> that some parameters (such as {@link #isEbgp()} will be determined based on the
    * configuration of the initiator only.
@@ -232,7 +271,11 @@ public final class BgpSessionProperties {
    *     (listener to initiator) rather than forwards direction (initiator to listener)
    */
   public static BgpSessionProperties from(
-      BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
+      BgpPeerConfig initiator,
+      BgpPeerConfig listener,
+      boolean reverseDirection,
+      long initiatorLocalAs,
+      long listenerLocalAs) {
     Ip initiatorIp = initiator.getLocalIp();
     Ip listenerIp = listener.getLocalIp();
     if (listenerIp == null || listenerIp == Ip.AUTO) {
@@ -266,9 +309,22 @@ public final class BgpSessionProperties {
                             .getAddressFamilyCapabilities()
                             .getAdvertiseInactive()))
             : ImmutableMap.of(),
+        reverseDirection ? listenerLocalAs : initiatorLocalAs,
+        reverseDirection ? initiatorLocalAs : listenerLocalAs,
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType);
+  }
+
+  /** For test use only. */
+  @VisibleForTesting
+  public static BgpSessionProperties from(
+      BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
+
+    // Both local ASNs must be nonnull for BgpPeerConfig#hasCompatibleRemoteAsns to have passed.
+    long initiatorLocalAs = checkNotNull(initiator.getLocalAs());
+    long listenerLocalAs = checkNotNull(listener.getLocalAs());
+    return from(initiator, listener, reverseDirection, initiatorLocalAs, listenerLocalAs);
   }
 
   /** Computes whether two peers have compatible configuration to enable add-path */
@@ -331,7 +387,9 @@ public final class BgpSessionProperties {
       return false;
     }
     BgpSessionProperties that = (BgpSessionProperties) o;
-    return _headIp.equals(that._headIp)
+    return _headAs == that._headAs
+        && _tailAs == that._tailAs
+        && _headIp.equals(that._headIp)
         && _tailIp.equals(that._tailIp)
         && _sessionType == that._sessionType
         && _routeExchangeSettings.equals(that._routeExchangeSettings)
@@ -341,7 +399,13 @@ public final class BgpSessionProperties {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _addressFamilies, _routeExchangeSettings, _headIp, _tailIp, _sessionType.ordinal());
+        _addressFamilies,
+        _routeExchangeSettings,
+        _headAs,
+        _tailAs,
+        _headIp,
+        _tailIp,
+        _sessionType.ordinal());
   }
 
   /** Different types of BGP sessions */

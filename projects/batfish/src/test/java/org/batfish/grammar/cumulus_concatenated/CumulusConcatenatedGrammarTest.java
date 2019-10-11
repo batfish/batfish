@@ -1,26 +1,35 @@
 package org.batfish.grammar.cumulus_concatenated;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.SortedMap;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -50,7 +59,7 @@ public class CumulusConcatenatedGrammarTest {
         new CumulusConcatenatedControlPlaneExtractor(
             src, new Warnings(), "", settings, null, false);
     extractor.processParseTree(tree);
-    return (CumulusNcluConfiguration) extractor.getVendorConfiguration();
+    return SerializationUtils.clone((CumulusNcluConfiguration) extractor.getVendorConfiguration());
   }
 
   private static CumulusNcluConfiguration parse(String src) {
@@ -87,15 +96,22 @@ public class CumulusConcatenatedGrammarTest {
     return config;
   }
 
-  private SortedMap<String, Configuration> parseTextConfigs(String... configurationNames)
-      throws IOException {
+  private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.parseTextConfigs(_folder, names);
+    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
-  private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
-    return BatfishTestUtils.getBatfish(parseTextConfigs(configurationNames), _folder);
+  private SortedMap<String, Configuration> parseTextConfigs(String... configurationNames)
+      throws IOException {
+    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+  }
+
+  private @Nonnull Configuration parseConfig(String hostname) throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs(hostname);
+    String canonicalHostname = hostname.toLowerCase();
+    assertThat(configs, hasEntry(equalTo(canonicalHostname), hasHostname(canonicalHostname)));
+    return configs.get(canonicalHostname);
   }
 
   @Test
@@ -165,5 +181,16 @@ public class CumulusConcatenatedGrammarTest {
             "  vni 1000",
             "exit-vrf");
     assertThat(c.getVrfs().get("vrf1").getVni(), equalTo(1000));
+  }
+
+  @Test
+  public void testBgpConfederationConversion() throws IOException {
+    Configuration c = parseConfig("bgp_confederation");
+    BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
+    assertThat(
+        bgpProcess.getConfederation(), equalTo(new BgpConfederation(12, ImmutableSet.of(65000L))));
+    BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+    assertThat(neighbor.getConfederationAsn(), equalTo(12L));
+    assertThat(neighbor.getLocalAs(), equalTo(65000L));
   }
 }

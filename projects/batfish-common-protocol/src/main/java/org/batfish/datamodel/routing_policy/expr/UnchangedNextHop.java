@@ -1,14 +1,10 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-
-import java.util.Objects;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LongSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** Implements BGP next-hop unchanged semantics */
@@ -30,27 +26,21 @@ public class UnchangedNextHop extends NextHopExpr {
   @Override
   @Nullable
   public Ip getNextHopIp(Environment environment) {
-    // applies only to BGP to BGP transformations
+    // applies only to BGP-to-BGP transformations
     if (!(environment.getOriginalRoute() instanceof BgpRoute<?, ?>)) {
       return null;
     }
-    Prefix peerPrefix = environment.getPeerPrefix();
-    if (peerPrefix == null) {
+    // No operation for IBGP
+    BgpSessionProperties sessionProperties = environment.getBgpSessionProperties();
+    if (sessionProperties == null || !sessionProperties.isEbgp()) {
       return null;
     }
-    // TODO: extend to dynamic and unnumbered neighbors
-    BgpActivePeerConfig activeNeighbor =
-        environment.getBgpProcess().getActiveNeighbors().get(peerPrefix);
-    if (activeNeighbor == null || Objects.isNull(activeNeighbor.getLocalAs())) {
-      return null;
+    // Preserve original NHIP if present
+    Ip originalRouteNextHop = environment.getOriginalRoute().getNextHopIp();
+    if (originalRouteNextHop != null && originalRouteNextHop != Route.UNSET_ROUTE_NEXT_HOP_IP) {
+      return originalRouteNextHop;
     }
-    if (!activeNeighbor.getRemoteAsns().equals(LongSpace.of(activeNeighbor.getLocalAs()))) {
-      // if eBGP preserve original NHIP if present
-      return firstNonNull(
-          environment.getOriginalRoute().getNextHopIp(), activeNeighbor.getLocalIp());
-    }
-    // no operation for iBGP
-    return null;
+    return sessionProperties.getHeadIp();
   }
 
   @Override

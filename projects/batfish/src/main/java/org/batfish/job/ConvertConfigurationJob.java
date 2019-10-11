@@ -4,11 +4,13 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,6 +26,7 @@ import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -111,6 +114,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
+    verifyInterfaces(c, w);
+
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
     c.setCommunityLists(verifyAndToImmutableMap(c.getCommunityLists(), CommunityList::getName, w));
@@ -134,6 +139,23 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   private static void verifyCommunityStructures(Configuration c) {
     // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
     CommunityStructuresVerifier.verify(c);
+  }
+
+  /** Warns on and removes interfaces with VI-invalid settings. */
+  private static void verifyInterfaces(Configuration c, Warnings w) {
+    Set<String> inInterfaces = ImmutableSet.copyOf(c.getAllInterfaces().keySet());
+    for (String name : inInterfaces) {
+      Interface i = c.getAllInterfaces().get(name);
+      // VI invariant: switchport is true iff SwitchportMode is not NONE.
+      boolean hasSwitchportMode = i.getSwitchportMode() != SwitchportMode.NONE;
+      if (hasSwitchportMode != i.getSwitchport()) {
+        w.redFlag(
+            String.format(
+                "Interface %s has switchport %s but switchport mode %s",
+                name, i.getSwitchport(), i.getSwitchportMode()));
+        c.getAllInterfaces().remove(name);
+      }
+    }
   }
 
   /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */

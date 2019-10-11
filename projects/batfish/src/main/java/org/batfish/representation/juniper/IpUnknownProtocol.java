@@ -35,4 +35,14 @@ public final class IpUnknownProtocol implements ScreenOption {
   public AclLineMatchExpr getAclLineMatchExpr() {
     return ACL_LINE_MATCH_EXPR;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof IpUnknownProtocol;
+  }
+
+  @Override
+  public int hashCode() {
+    return IpUnknownProtocol.class.getCanonicalName().hashCode();
+  }
 }
