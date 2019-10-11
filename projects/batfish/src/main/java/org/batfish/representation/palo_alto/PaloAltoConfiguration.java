@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
@@ -24,6 +25,7 @@ import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.Streams;
 import com.google.common.collect.TreeMultiset;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -970,6 +972,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     Zone zone = iface.getZone();
     IpAccessList.Builder aclBuilder =
         IpAccessList.builder().setOwner(_c).setName(computeOutgoingFilterName(iface.getName()));
+    List<IpAccessListLine> aclLines = new ArrayList<>();
     Optional<Vsys> sharedGatewayOptional =
         _sharedGateways.values().stream()
             .filter(sg -> sg.getImportedInterfaces().contains(name))
@@ -977,40 +980,30 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     if (sharedGatewayOptional.isPresent()) {
       Vsys sharedGateway = sharedGatewayOptional.get();
       String sgName = sharedGateway.getName();
-      newIface.setOutgoingFilter(
-          aclBuilder
-              .setLines(
-                  ImmutableList.of(
-                      accepting(
-                          permittedByAcl(
-                              computeOutgoingFilterName(computeObjectName(sgName, sgName))))))
-              .build());
+      aclLines.add(
+          accepting(permittedByAcl(computeOutgoingFilterName(computeObjectName(sgName, sgName)))));
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               true, sharedGateway.getImportedInterfaces(), null, null));
     } else if (zone != null) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
-        newIface.setOutgoingFilter(
-            aclBuilder
-                .setLines(
-                    ImmutableList.of(
-                        accepting(
-                            permittedByAcl(
-                                computeOutgoingFilterName(
-                                    computeObjectName(zone.getVsys().getName(), zone.getName()))))))
-                .build());
+        aclLines.add(
+            accepting(
+                permittedByAcl(
+                    computeOutgoingFilterName(
+                        computeObjectName(zone.getVsys().getName(), zone.getName())))));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface
-      newIface.setOutgoingFilter(
-          aclBuilder
-              .setLines(
-                  ImmutableList.of(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE)))
-              .build());
+      aclLines.add(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
     }
+
+    // Assume traffic originating from the device is allowed out the interface
+    aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
+    newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     return newIface;
   }
 

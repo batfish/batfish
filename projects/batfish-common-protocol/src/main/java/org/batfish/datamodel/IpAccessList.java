@@ -45,6 +45,11 @@ public class IpAccessList implements Serializable {
       return ipAccessList;
     }
 
+    public Builder appendLines(List<IpAccessListLine> lines) {
+      _lines.addAll(lines);
+      return this;
+    }
+
     public Builder setLines(List<IpAccessListLine> lines) {
       _lines = lines;
       return this;
