@@ -100,9 +100,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
 
-    boolean permit =
-        policy.process(
-            inputRoute, outputRoute, null, null, Configuration.DEFAULT_VRF_NAME, _direction);
+    boolean permit = policy.process(inputRoute, outputRoute, _direction);
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
         inputRoute,

@@ -14,16 +14,13 @@ import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.eigrp.EigrpProcess;
@@ -57,22 +54,12 @@ public class Environment {
                 || format == ConfigurationFormat.FLAT_JUNIPER);
   }
 
-  /**
-   * Initalizes an {@link Environment} builder using a {@link Configuration} and a {@link
-   * org.batfish.datamodel.Vrf} as the source of several fields. The vrf determines which {@link
-   * BgpProcess} to put into the environment.
-   */
-  public static Builder builder(@Nonnull Configuration c, String vrf) {
-    return builder(c).setBgpProcess(c.getVrfs().get(vrf).getBgpProcess());
-  }
-
   public enum Direction {
     IN,
     OUT
   }
 
   private final Map<String, AsPathAccessList> _asPathAccessLists;
-  private BgpProcess _bgpProcess;
   @Nullable private final BgpSessionProperties _bgpSessionProperties;
   private boolean _buffered;
   private boolean _callExprContext;
@@ -95,8 +82,6 @@ public class Environment {
   @Nullable private final AbstractRoute6 _originalRoute6;
   private final AbstractRouteBuilder<?, ?> _outputRoute;
   private final Map<String, RoutingPolicy> _routingPolicies;
-  @Nullable private final Ip _peerAddress;
-  @Nullable private final Prefix _peerPrefix;
   private boolean _readFromIntermediateBgpAttributes;
   private final Map<String, Route6FilterList> _route6FilterLists;
   private final Map<String, RouteFilterList> _routeFilterLists;
@@ -107,7 +92,6 @@ public class Environment {
 
   private Environment(
       Map<String, AsPathAccessList> asPathAccessLists,
-      BgpProcess bgpProcess,
       BgpSessionProperties bgpSessionProperties,
       boolean buffered,
       boolean callExprContext,
@@ -130,15 +114,12 @@ public class Environment {
       AbstractRouteDecorator originalRoute,
       @Nullable AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
-      @Nullable Ip peerAddress,
-      @Nullable Prefix peerPrefix,
       boolean readFromIntermediateBgpAttributes,
       Map<String, Route6FilterList> route6FilterLists,
       Map<String, RouteFilterList> routeFilterLists,
       boolean useOutputAttributes,
       boolean writeToIntermediateBgpAttributes) {
     _asPathAccessLists = asPathAccessLists;
-    _bgpProcess = bgpProcess;
     _bgpSessionProperties = bgpSessionProperties;
     _buffered = buffered;
     _callExprContext = callExprContext;
@@ -161,8 +142,6 @@ public class Environment {
     _originalRoute = originalRoute == null ? null : originalRoute.getAbstractRoute();
     _originalRoute6 = originalRoute6;
     _outputRoute = outputRoute;
-    _peerAddress = peerAddress;
-    _peerPrefix = peerPrefix;
     _readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
     _route6FilterLists = route6FilterLists;
     _routeFilterLists = routeFilterLists;
@@ -176,10 +155,6 @@ public class Environment {
 
   public Map<String, AsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
-  }
-
-  public BgpProcess getBgpProcess() {
-    return _bgpProcess;
   }
 
   /**
@@ -277,16 +252,6 @@ public class Environment {
     return _outputRoute;
   }
 
-  @Nullable
-  public Ip getPeerAddress() {
-    return _peerAddress;
-  }
-
-  @Nullable
-  public Prefix getPeerPrefix() {
-    return _peerPrefix;
-  }
-
   public boolean getReadFromIntermediateBgpAttributes() {
     return _readFromIntermediateBgpAttributes;
   }
@@ -353,7 +318,6 @@ public class Environment {
 
   public static final class Builder {
     private Map<String, AsPathAccessList> _asPathAccessLists;
-    private BgpProcess _bgpProcess;
     private BgpSessionProperties _bgpSessionProperties;
     private boolean _buffered;
     private boolean _callExprContext;
@@ -376,8 +340,6 @@ public class Environment {
     private AbstractRouteDecorator _originalRoute;
     private AbstractRoute6 _originalRoute6;
     private AbstractRouteBuilder<?, ?> _outputRoute;
-    @Nullable private Ip _peerAddress;
-    @Nullable private Prefix _peerPrefix;
     private boolean _readFromIntermediateBgpAttributes;
     private Map<String, Route6FilterList> _route6FilterLists;
     private Map<String, RouteFilterList> _routeFilterLists;
@@ -388,11 +350,6 @@ public class Environment {
 
     public Builder setAsPathAccessLists(Map<String, AsPathAccessList> asPathAccessLists) {
       _asPathAccessLists = toImmutableMap(asPathAccessLists);
-      return this;
-    }
-
-    public Builder setBgpProcess(BgpProcess bgpProcess) {
-      _bgpProcess = bgpProcess;
       return this;
     }
 
@@ -507,16 +464,6 @@ public class Environment {
       return this;
     }
 
-    public Builder setPeerAddress(@Nullable Ip peerAddress) {
-      _peerAddress = peerAddress;
-      return this;
-    }
-
-    public Builder setPeerPrefix(@Nullable Prefix peerPrefix) {
-      _peerPrefix = peerPrefix;
-      return this;
-    }
-
     public Builder setReadFromIntermediateBgpAttributes(boolean readFromIntermediateBgpAttributes) {
       _readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
       return this;
@@ -535,7 +482,6 @@ public class Environment {
       }
       return new Environment(
           firstNonNull(_asPathAccessLists, ImmutableMap.of()),
-          _bgpProcess,
           _bgpSessionProperties,
           _buffered,
           _callExprContext,
@@ -558,8 +504,6 @@ public class Environment {
           _originalRoute,
           _originalRoute6,
           _outputRoute,
-          _peerAddress,
-          _peerPrefix,
           _readFromIntermediateBgpAttributes,
           firstNonNull(_route6FilterLists, ImmutableMap.of()),
           firstNonNull(_routeFilterLists, ImmutableMap.of()),

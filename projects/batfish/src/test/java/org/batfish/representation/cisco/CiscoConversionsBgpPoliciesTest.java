@@ -119,15 +119,9 @@ public class CiscoConversionsBgpPoliciesTest {
     Bgpv4Route permitted = r.setNetwork(PERMITTED_PREFIX).build();
     Bgpv4Route denied = r.setNetwork(DENIED_PREFIX).build();
     Bgpv4Route unmatched = r.setNetwork(Prefix.parse("3.3.3.0/24")).build();
-    assertThat(
-        p.process(permitted, permitted.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
-        equalTo(true));
-    assertThat(
-        p.process(denied, denied.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
-        equalTo(false));
-    assertThat(
-        p.process(unmatched, unmatched.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
-        equalTo(false));
+    assertThat(p.process(permitted, permitted.toBuilder(), direction), equalTo(true));
+    assertThat(p.process(denied, denied.toBuilder(), direction), equalTo(false));
+    assertThat(p.process(unmatched, unmatched.toBuilder(), direction), equalTo(false));
   }
 
   /**
@@ -145,15 +139,9 @@ public class CiscoConversionsBgpPoliciesTest {
     Bgpv4Route permitted = r.setCommunities(PERMITTED_COMMUNITY_SET).build();
     Bgpv4Route denied = r.setCommunities(DENIED_COMMUNITY_SET).build();
     Bgpv4Route unmatched = r.setCommunities(ImmutableSet.of(StandardCommunity.of(30L))).build();
-    assertThat(
-        p.process(permitted, permitted.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
-        equalTo(true));
-    assertThat(
-        p.process(denied, denied.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
-        equalTo(false));
-    assertThat(
-        p.process(unmatched, unmatched.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
-        equalTo(false));
+    assertThat(p.process(permitted, permitted.toBuilder(), direction), equalTo(true));
+    assertThat(p.process(denied, denied.toBuilder(), direction), equalTo(false));
+    assertThat(p.process(unmatched, unmatched.toBuilder(), direction), equalTo(false));
   }
 
   @Test
@@ -183,9 +171,7 @@ public class CiscoConversionsBgpPoliciesTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP)
             .setNetwork(Prefix.parse("5.6.7.0/24"));
-    assertThat(
-        bgpExportPolicy.process(r.build(), r, PEER_ADDRESS, DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(true));
+    assertThat(bgpExportPolicy.process(r.build(), r, Direction.OUT), equalTo(true));
   }
 
   @Test

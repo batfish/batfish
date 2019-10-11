@@ -57,7 +57,7 @@ public class MatchProtocolTest {
     nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
 
     MatchProtocol mp = new MatchProtocol(RoutingProtocol.CONNECTED, RoutingProtocol.ISIS_L1);
-    Environment.Builder eb = Environment.builder(c, Configuration.DEFAULT_VRF_NAME);
+    Environment.Builder eb = Environment.builder(c);
 
     StaticRoute staticR =
         StaticRoute.builder()

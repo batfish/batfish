@@ -159,8 +159,6 @@ public final class CumulusNcluGrammarTest {
         routingPolicy.process(
             new ConnectedRoute(network, "dummy"),
             Bgpv4Route.builder().setNetwork(network),
-            Ip.parse("192.0.2.1"),
-            DEFAULT_VRF_NAME,
             Direction.OUT));
   }
 
@@ -169,8 +167,6 @@ public final class CumulusNcluGrammarTest {
         routingPolicy.process(
             new ConnectedRoute(network, "dummy"),
             Bgpv4Route.builder().setNetwork(network),
-            Ip.parse("192.0.2.1"),
-            DEFAULT_VRF_NAME,
             Direction.OUT));
   }
 
@@ -356,7 +352,7 @@ public final class CumulusNcluGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(new ConnectedRoute(Prefix.parse("10.0.0.1/32"), "foo"))
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -369,7 +365,7 @@ public final class CumulusNcluGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c, DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(new ConnectedRoute(Prefix.parse("10.0.0.2/32"), "foo"))
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -382,7 +378,7 @@ public final class CumulusNcluGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(new ConnectedRoute(Prefix.parse("192.0.2.1/32"), "foo"))
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -395,7 +391,7 @@ public final class CumulusNcluGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(makeBgpRoute(Prefix.parse("10.0.0.5/32")))
                       .setOutputRoute(outputBuilder)
                       .build())
