@@ -475,7 +475,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -490,7 +490,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -505,7 +505,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -518,7 +518,7 @@ public final class F5BigipStructuredGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -531,7 +531,7 @@ public final class F5BigipStructuredGrammarTest {
       assertFalse(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(connectedRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -544,7 +544,7 @@ public final class F5BigipStructuredGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(connectedRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -557,7 +557,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(kernelRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -572,7 +572,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(kernelRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -2244,7 +2244,7 @@ public final class F5BigipStructuredGrammarTest {
         c.getRoutingPolicies()
             .get(acceptAllName)
             .call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
@@ -2259,7 +2259,7 @@ public final class F5BigipStructuredGrammarTest {
     assertTrue(
         "rm1 denies prefix 10.0.0.0/24 (via 10)",
         !rm1.call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
@@ -2275,7 +2275,7 @@ public final class F5BigipStructuredGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     Environment acceptedPrefixEnvironment =
-        Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+        Environment.builder(c)
             .setDirection(Direction.OUT)
             .setOutputRoute(outputRoute)
             .setOriginalRoute(acceptedRoute)
@@ -2291,7 +2291,7 @@ public final class F5BigipStructuredGrammarTest {
     assertTrue(
         "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",
         !rm1.call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.2.0/24"), "/Common/outint"))

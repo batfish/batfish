@@ -676,8 +676,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
         if (importPolicy != null) {
           acceptIncoming =
-              importPolicy.processBgpRoute(
-                  route, transformedBuilder, sessionProperties, _vrfName, IN);
+              importPolicy.processBgpRoute(route, transformedBuilder, sessionProperties, IN);
         }
       }
       if (!acceptIncoming) {
@@ -858,11 +857,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
         exportPolicy.processBgpRoute(
-            exportCandidate,
-            transformedOutgoingRouteBuilder,
-            sessionProperties,
-            ourConfigId.getVrfName(),
-            Direction.OUT);
+            exportCandidate, transformedOutgoingRouteBuilder, sessionProperties, Direction.OUT);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getTailIp();
@@ -939,11 +934,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
         exportPolicy.processBgpRoute(
-            exportCandidate,
-            transformedOutgoingRouteBuilder,
-            sessionProperties,
-            ourConfigId.getVrfName(),
-            Direction.OUT);
+            exportCandidate, transformedOutgoingRouteBuilder, sessionProperties, Direction.OUT);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getHeadIp();
