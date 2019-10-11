@@ -246,6 +246,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -809,6 +810,18 @@ public final class FlatJuniperGrammarTest {
     RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
     assertThat(ri.getConfederation(), equalTo(7L));
     assertThat(ri.getConfederationMembers(), contains(65001L, 65002L, 65003L));
+  }
+
+  @Test
+  public void testBgpConfederationConversion() {
+    Configuration c = parseConfig("bgp-confederation");
+    BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
+    assertThat(
+        bgpProcess.getConfederation(),
+        equalTo(new BgpConfederation(7L, ImmutableSet.of(65001L, 65002L, 65003L))));
+    assertThat(
+        bgpProcess.getActiveNeighbors().get(Prefix.parse("1.1.1.1/32")).getConfederationAsn(),
+        equalTo(7L));
   }
 
   @Test

@@ -256,6 +256,10 @@ public class BgpProcess implements Serializable {
     return _confederation;
   }
 
+  public void setConfederation(@Nullable BgpConfederation confederation) {
+    _confederation = confederation;
+  }
+
   /** Returns the admin cost for eBGP routes in this process */
   @JsonProperty(PROP_EBGP_ADMIN_COST)
   private int getEbgpAdminCost() {
