@@ -53,9 +53,9 @@ public class AddCommunityTest {
     nf.vrfBuilder().setName("vrf").setOwner(c).build();
     AddCommunity ac = new AddCommunity(new LiteralCommunity(StandardCommunity.of(1L)));
     // Test does not crash on non-bgp route
-    ac.execute(Environment.builder(c, "vrf").setOutputRoute(ConnectedRoute.builder()).build());
+    ac.execute(Environment.builder(c).setOutputRoute(ConnectedRoute.builder()).build());
     // Test sets community on BGP route
-    Environment e = Environment.builder(c, "vrf").setOutputRoute(Bgpv4Route.builder()).build();
+    Environment e = Environment.builder(c).setOutputRoute(Bgpv4Route.builder()).build();
     ac.execute(e);
     assertThat(
         ((Bgpv4Route.Builder) e.getOutputRoute()).getCommunities(),

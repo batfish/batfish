@@ -308,7 +308,7 @@ public class VirtualRouter implements Serializable {
         .map(
             route -> {
               AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
-              boolean accept = policy.process(route, builder, null, _name, IN);
+              boolean accept = policy.process(route, builder, IN);
               return accept ? new AnnotatedRoute<AbstractRoute>(builder.build(), _name) : null;
             })
         .filter(Objects::nonNull)
@@ -693,12 +693,7 @@ public class VirtualRouter implements Serializable {
           if (importPolicy != null) {
             // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
             acceptIncoming =
-                importPolicy.process(
-                    transformedOutgoingRoute,
-                    transformedIncomingRouteBuilder,
-                    advert.getSrcIp(),
-                    _name,
-                    IN);
+                importPolicy.process(transformedOutgoingRoute, transformedIncomingRouteBuilder, IN);
           }
         }
         if (acceptIncoming) {
@@ -1148,7 +1143,7 @@ public class VirtualRouter implements Serializable {
           if (importPolicy != null) {
             acceptIncoming =
                 importPolicy.processBgpRoute(
-                    remoteRoute, transformedIncomingRouteBuilder, sessionProperties, _name, IN);
+                    remoteRoute, transformedIncomingRouteBuilder, sessionProperties, IN);
           }
         }
         if (!acceptIncoming) {
@@ -1873,7 +1868,7 @@ public class VirtualRouter implements Serializable {
                   ra -> {
                     AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
                     AbstractRouteBuilder<?, ?> routeBuilder = annotatedRoute.getRoute().toBuilder();
-                    if (policy.process(annotatedRoute, routeBuilder, null, _name, IN)) {
+                    if (policy.process(annotatedRoute, routeBuilder, IN)) {
                       // Preserve original route's source VRF
                       return ra.toBuilder()
                           .setRoute(
