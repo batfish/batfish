@@ -317,6 +317,7 @@ public final class BgpSessionProperties {
   }
 
   /** For test use only. */
+  @VisibleForTesting
   public static BgpSessionProperties from(
       BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
 
