@@ -199,11 +199,6 @@ CLIENT
     'client'
 ;
 
-CLOSE_BRACKET
-:
-    ']'
-;
-
 COLOR
 :
     'color'
@@ -739,11 +734,6 @@ NULL
     'null'
 ;
 
-OPEN_BRACKET
-:
-    '['
-;
-
 OSPF
 :
     'ospf'
@@ -1164,21 +1154,6 @@ UDP
     'udp'
 ;
 
-UINT8
-:
-  F_Uint8
-;
-
-UINT16
-:
-  F_Uint16
-;
-
-UINT32
-:
-  F_Uint32
-;
-
 UNITS
 :
     'units'
@@ -1241,6 +1216,11 @@ ZONE
 
 // Complex tokens
 
+CLOSE_BRACKET
+:
+    ']'
+;
+
 COMMA
 :
     ','
@@ -1285,6 +1265,11 @@ NEWLINE
     F_Newline+
 ;
 
+OPEN_BRACKET
+:
+    '['
+;
+
 RANGE
 :
     F_Digit+ '-' F_Digit+
@@ -1293,6 +1278,21 @@ RANGE
 SINGLE_QUOTED_STRING
 :
     '\'' ~'\''* '\''
+;
+
+UINT8
+:
+    F_Uint8
+;
+
+UINT16
+:
+    F_Uint16
+;
+
+UINT32
+:
+    F_Uint32
 ;
 
 VARIABLE
@@ -1310,11 +1310,11 @@ WS
 fragment
 F_DecByte
 :
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
+    F_Digit
+    | F_PositiveDigit F_Digit
+    | '1' F_Digit F_Digit
+    | '2' [0-4] F_Digit
+    | '25' [0-5]
 ;
 
 fragment
@@ -1338,9 +1338,9 @@ F_IpPrefix
 fragment
 F_IpPrefixLength
 :
-  F_Digit
-  | [12] F_Digit
-  | [3] [012]
+    F_Digit
+    | [12] F_Digit
+    | [3] [012]
 ;
 
 fragment
@@ -1358,82 +1358,82 @@ F_NonNewlineChar
 fragment
 F_PositiveDigit
 :
-  [1-9]
+    [1-9]
 ;
 
 fragment
 F_Uint8
 :
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
+    F_Digit
+    | F_PositiveDigit F_Digit
+    | '1' F_Digit F_Digit
+    | '2' [0-4] F_Digit
+    | '25' [0-5]
 ;
 
 fragment
 F_Uint16
 :
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit?
-  | [1-5] F_Digit F_Digit F_Digit F_Digit
-  | '6' [0-4] F_Digit F_Digit F_Digit
-  | '65' [0-4] F_Digit F_Digit
-  | '655' [0-2] F_Digit
-  | '6553' [0-5]
+    F_Digit
+    | F_PositiveDigit F_Digit F_Digit? F_Digit?
+    | [1-5] F_Digit F_Digit F_Digit F_Digit
+    | '6' [0-4] F_Digit F_Digit F_Digit
+    | '65' [0-4] F_Digit F_Digit
+    | '655' [0-2] F_Digit
+    | '6553' [0-5]
 ;
 
 fragment
 F_Uint32
 :
 // 0-4294967295
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
-  F_Digit? F_Digit?
-  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  F_Digit
-  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
-  | '429496' [0-6] F_Digit F_Digit F_Digit
-  | '4294967' [0-1] F_Digit F_Digit
-  | '42949672' [0-8] F_Digit
-  | '429496729' [0-5]
+    F_Digit
+    | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+    F_Digit? F_Digit?
+    | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    F_Digit
+    | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+    | '429496' [0-6] F_Digit F_Digit F_Digit
+    | '4294967' [0-1] F_Digit F_Digit
+    | '42949672' [0-8] F_Digit
+    | '429496729' [0-5]
 ;
 
 fragment
 F_Url
 :
-  F_UrlStart F_UrlInner+
+    F_UrlStart F_UrlInner+
 ;
 
 F_UrlStart
 :
-  [a-zA-Z]
+    [a-zA-Z]
 ;
 
 F_UrlInner
 :
-  F_UrlInnerAlphaNum
-  | F_UrlInnerReserved
-  | F_UrlInnerUnreserved
+    F_UrlInnerAlphaNum
+    | F_UrlInnerReserved
+    | F_UrlInnerUnreserved
 ;
 
 F_UrlInnerAlphaNum
 :
-  [a-zA-Z0-9]
+    [a-zA-Z0-9]
 ;
 
 F_UrlInnerReserved
 :
-  [!*'();:@&=+$,/?%#[\]]
+    [!*'();:@&=+$,/?%#[\]]
 ;
 
 F_UrlInnerUnreserved
 :
-  [-_.~]
+    [-_.~]
 ;
 
 fragment
@@ -1454,15 +1454,15 @@ mode M_Url;
 
 M_Url_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_Url_WORD
 :
-  F_Url -> type ( WORD ) , popMode
+    F_Url -> type ( WORD ) , popMode
 ;
 
 M_Url_WS
 :
-  F_Whitespace+ -> channel ( HIDDEN )
+    F_Whitespace+ -> channel ( HIDDEN )
 ;
