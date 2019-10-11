@@ -6,3 +6,5 @@ set routing-options autonomous-system 1
 set routing-options confederation 5 members 65001
 set routing-options confederation 5 members 65002
 set routing-options confederation 7 members 65003
+# Need at least one valid peer for converions to kick in
+set protocols bgp group GROUP neighbor 1.1.1.1 peer-as 2

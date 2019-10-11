@@ -5080,7 +5080,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     // number. So confederation members should not make it into data model when confederation number
     // is not set.
     ctx.member.forEach(mctx -> _currentRoutingInstance.getConfederationMembers().add(toLong(mctx)));
-    todo(ctx);
   }
 
   @Override
