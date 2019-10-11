@@ -630,6 +630,10 @@ public final class PaloAltoGrammarTest {
     assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.2.3.6")));
     assertThat(peer.getLocalAs(), equalTo(65001L));
     assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65001)));
+    // BgpRoutingProcess requires an export policy be present
+    String exportPolicyName = peer.getIpv4UnicastAddressFamily().getExportPolicy();
+    assertThat(exportPolicyName, not(nullValue()));
+    assertThat(c.getRoutingPolicies().get(exportPolicyName), not(nullValue()));
   }
 
   @Test
