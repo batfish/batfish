@@ -34,7 +34,6 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_router_idCon
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv4Context;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv6Context;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_peer_groupContext;
-import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_redistribute_kernelContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbbc_identifierContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbbc_peersContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_descriptionContext;
@@ -43,6 +42,8 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_groupConte
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_group_assignContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_remote_asContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_map_outContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbr_connectedContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbr_kernelContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_addressContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_address_prefix_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
@@ -369,7 +370,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
-  public void exitRb_redistribute_kernel(Rb_redistribute_kernelContext ctx) {
+  public void exitRbr_kernel(Rbr_kernelContext ctx) {
     String routeMapName = null;
     if (ctx.rm != null) {
       routeMapName = ctx.rm.getText();
@@ -384,6 +385,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
         .getRedistributionPolicies()
         .computeIfAbsent(F5BigipRoutingProtocol.KERNEL, BgpRedistributionPolicy::new)
         .setRouteMap(routeMapName);
+  }
+
+  @Override
+  public void exitRbr_connected(Rbr_connectedContext ctx) {
+    todo(ctx);
   }
 
   @Override

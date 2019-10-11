@@ -440,6 +440,12 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpConnectedRouteRedistributionNoRouteMap() throws IOException {
+    // TODO: extraction
+    assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_redistribute_connected_no_route_map"));
+  }
+
+  @Test
   public void testBgpNextHopSelfConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_next_hop_self");
 
