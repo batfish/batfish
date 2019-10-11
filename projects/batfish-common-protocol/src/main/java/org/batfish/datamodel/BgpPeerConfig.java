@@ -134,6 +134,7 @@ public abstract class BgpPeerConfig implements Serializable {
 
   /** Confederation AS number. Only present if the peer is inside a BGP confederation */
   @Nullable
+  @JsonProperty(PROP_CONFEDERATION_AS)
   public Long getConfederationAsn() {
     return _confederationAsn;
   }

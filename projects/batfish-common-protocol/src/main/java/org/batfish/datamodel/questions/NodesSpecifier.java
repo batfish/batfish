@@ -181,9 +181,7 @@ public class NodesSpecifier {
       if (parts.length == 3 || (parts.length == 2 && finalQuery.endsWith(":"))) {
         String roleDimension = parts[1];
         Optional<NodeRoleDimension> optDimension =
-            nodeRoleData.getNodeRoleDimensions().stream()
-                .filter(dim -> dim.getName().equals(roleDimension))
-                .findAny();
+            Optional.ofNullable(nodeRoleData.toNodeRoleDimensions().get(roleDimension));
         if (optDimension.isPresent()) {
           NodeRoleDimension dimension = optDimension.get();
           String roleDimensionPrefix = "ROLE:" + dimension.getName() + ":";
@@ -210,7 +208,7 @@ public class NodesSpecifier {
       } else {
         String roleDimPrefix = finalQuery.equalsIgnoreCase("ROLE:") ? "" : parts[1];
         suggestions.addAll(
-            nodeRoleData.getNodeRoleDimensions().stream()
+            nodeRoleData.toNodeRoleDimensions().values().stream()
                 .filter(dim -> dim.getName().startsWith(roleDimPrefix))
                 .map(
                     dim ->

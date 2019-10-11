@@ -10,6 +10,7 @@ import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 
@@ -17,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
@@ -26,6 +28,7 @@ import com.google.common.collect.TreeMultiset;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +44,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -80,6 +84,15 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.ospf.NssaSettings;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.StubSettings;
+import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
+import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
@@ -1121,6 +1134,147 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return Optional.of(proc);
   }
 
+  private Optional<OspfProcess> toOspfProcess(VirtualRouter vr, Vrf vrf) {
+    OspfVr ospf = vr.getOspf();
+    if (ospf == null || !ospf.isEnable()) {
+      return Optional.empty();
+    }
+
+    // Router ID is ensured to be present by the CLI/UI
+    if (ospf.getRouterId() == null) {
+      _w.redFlag(
+          String.format("Virtual-router %s ospf has no router-id; disabling it.", vr.getName()));
+      return Optional.empty();
+    }
+    OspfProcess.Builder ospfProcessBuilder = OspfProcess.builder();
+    ospfProcessBuilder.setRouterId(ospf.getRouterId());
+    String processId = String.format("~OSPF_PROCESS_%s", ospf.getRouterId());
+    ospfProcessBuilder
+        .setProcessId(processId)
+        .setAreas(
+            ospf.getAreas().values().stream()
+                .map(area -> toOspfArea(area, vrf, processId))
+                .collect(
+                    ImmutableSortedMap.toImmutableSortedMap(
+                        Comparator.naturalOrder(), OspfArea::getAreaNumber, Function.identity())));
+    // Setting reference bandwidth to an arbitrary value to avoid builder crash
+    ospfProcessBuilder.setReferenceBandwidth(1D);
+    return Optional.of(ospfProcessBuilder.build());
+  }
+
+  private @Nonnull OspfArea toOspfArea(
+      org.batfish.representation.palo_alto.OspfArea vsArea, Vrf vrf, String ospfProcessName) {
+    OspfArea.Builder viAreaBuilder = OspfArea.builder().setNumber(vsArea.getAreaId().asLong());
+    if (vsArea.getTypeSettings() != null) {
+      vsArea
+          .getTypeSettings()
+          .accept(
+              new OspfAreaTypeSettingsVisitor<Void>() {
+                @Override
+                public Void visitOspfAreaNssa(OspfAreaNssa ospfAreaNssa) {
+                  assert ospfAreaNssa.getAcceptSummary()
+                      != null; // Palo Alto always has explicit setting for this
+                  viAreaBuilder.setNssa(
+                      NssaSettings.builder()
+                          .setDefaultOriginateType(
+                              // PAN enforces either of these two values
+                              ospfAreaNssa.getDefaultRouteType() == DefaultRouteType.EXT_1
+                                  ? OspfDefaultOriginateType.EXTERNAL_TYPE1
+                                  : OspfDefaultOriginateType.EXTERNAL_TYPE2)
+                          .setSuppressType3(!ospfAreaNssa.getAcceptSummary())
+                          .build());
+                  return null;
+                }
+
+                @Override
+                public Void visitOspfAreaStub(OspfAreaStub ospfAreaStub) {
+                  assert ospfAreaStub.getAcceptSummary()
+                      != null; // Palo Alto always has explicit setting for this
+                  viAreaBuilder.setStub(
+                      StubSettings.builder()
+                          .setSuppressType3(!ospfAreaStub.getAcceptSummary())
+                          .build());
+                  return null;
+                }
+
+                @Override
+                public Void visitOspfAreaNormal(OspfAreaNormal ospfAreaNormal) {
+                  return null;
+                }
+              });
+    }
+    viAreaBuilder.setInterfaces(computeAreaInterfaces(vrf, vsArea, ospfProcessName));
+    return viAreaBuilder.build();
+  }
+
+  private @Nonnull Set<String> computeAreaInterfaces(
+      Vrf vrf, org.batfish.representation.palo_alto.OspfArea vsArea, String ospfProcessName) {
+    ImmutableSet.Builder<String> ospfIfaceNames = ImmutableSet.builder();
+    Ip vsAreaId = vsArea.getAreaId();
+    Map<String, org.batfish.datamodel.Interface> viInterfaces = vrf.getInterfaces();
+    vsArea
+        .getInterfaces()
+        .values()
+        .forEach(
+            ospfVsIface -> {
+              org.batfish.datamodel.Interface viIface = viInterfaces.get(ospfVsIface.getName());
+              if (viIface == null) {
+                _w.redFlag(
+                    String.format(
+                        "OSPF area %s refers a non-existent interface %s",
+                        vsAreaId, ospfVsIface.getName()));
+                return;
+              }
+              ospfIfaceNames.add(viIface.getName());
+              finalizeInterfaceOspfSettings(
+                  viIface, vsAreaId.asLong(), ospfProcessName, ospfVsIface);
+            });
+    return ospfIfaceNames.build();
+  }
+
+  private void finalizeInterfaceOspfSettings(
+      org.batfish.datamodel.Interface viIface,
+      long areaId,
+      String processName,
+      OspfInterface vsOspfIface) {
+    // (enable = yes or no)  and (passive = yes or no should be explicitly configured
+    assert vsOspfIface.getEnable() != null;
+    assert vsOspfIface.getPassive() != null;
+    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
+    ospfSettings.setCost(vsOspfIface.getMetric());
+    ospfSettings.setPassive(vsOspfIface.getPassive());
+    ospfSettings.setEnabled(vsOspfIface.getEnable());
+    ospfSettings.setAreaName(areaId);
+    ospfSettings.setProcess(processName);
+    ospfSettings.setPassive(vsOspfIface.getPassive());
+    OspfNetworkType networkType = toNetworkType(vsOspfIface.getLinkType());
+    ospfSettings.setNetworkType(networkType);
+    if (vsOspfIface.getMetric() == null
+        && viIface.isLoopback()
+        && networkType != org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT) {
+      ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
+    }
+    ospfSettings.setHelloInterval(vsOspfIface.getHelloInterval());
+    ospfSettings.setDeadInterval(vsOspfIface.getHelloInterval() * vsOspfIface.getDeadCounts());
+    viIface.setOspfSettings(ospfSettings.build());
+  }
+
+  @Nullable
+  private OspfNetworkType toNetworkType(@Nullable LinkType linkType) {
+    if (linkType == null) {
+      return null;
+    }
+    if (linkType == LinkType.BROADCAST) {
+      return OspfNetworkType.BROADCAST;
+    } else if (linkType == LinkType.P2P) {
+      return OspfNetworkType.POINT_TO_POINT;
+    } else if (linkType == LinkType.P2MP) {
+      return OspfNetworkType.POINT_TO_MULTIPOINT;
+    } else {
+      return null;
+    }
+  }
+
   /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
   private Vrf toVrf(VirtualRouter vr) {
     String vrfName = vr.getName();
@@ -1179,6 +1333,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     // BGP
     toBgpProcess(vr).ifPresent(vrf::setBgpProcess);
+    // OSPF
+    toOspfProcess(vr, vrf).ifPresent(vrf::addOspfProcess);
 
     return vrf;
   }
