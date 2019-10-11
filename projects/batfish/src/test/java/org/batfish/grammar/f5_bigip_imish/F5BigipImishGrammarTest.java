@@ -65,6 +65,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
@@ -219,14 +220,27 @@ public final class F5BigipImishGrammarTest {
     return (F5BigipConfiguration) vc;
   }
 
-  private @Nonnull Bgpv4Route processBgpRoute(RoutingPolicy rp1, Ip peerAddress) {
+  private @Nonnull Bgpv4Route processBgpRoute(
+      RoutingPolicy rp1, BgpSessionProperties sessionProps) {
+    Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    assertTrue(
+        rp1.processBgpRoute(
+            makeBgpRoute(Prefix.ZERO),
+            outputBuilder,
+            sessionProps,
+            Configuration.DEFAULT_VRF_NAME,
+            Direction.OUT));
+    return outputBuilder.build();
+  }
+
+  /** Processes a BGP route through the given policy without providing specific peer data. */
+  private @Nonnull Bgpv4Route processBgpRouteNoPeerContext(RoutingPolicy rp1) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
     assertTrue(
         rp1.process(
             makeBgpRoute(Prefix.ZERO),
             outputBuilder,
-            peerAddress,
-            peerAddress.toPrefix(),
+            null,
             Configuration.DEFAULT_VRF_NAME,
             Direction.OUT));
     return outputBuilder.build();
@@ -455,12 +469,9 @@ public final class F5BigipImishGrammarTest {
     Configuration c = parseConfig("f5_bigip_imish_bgp_next_hop_self");
 
     Ip localIp = Ip.parse("192.0.2.254");
-    String peer1 = "192.0.2.1";
-    String peer2 = "192.0.2.2";
-    String peer3 = "192.0.2.3";
-    Ip peer1Ip = Ip.parse(peer1);
-    Ip peer2Ip = Ip.parse(peer2);
-    Ip peer3Ip = Ip.parse(peer3);
+    Ip peer1Ip = Ip.parse("192.0.2.1");
+    Ip peer2Ip = Ip.parse("192.0.2.2");
+    Ip peer3Ip = Ip.parse("192.0.2.3");
     Prefix peer1Prefix = peer1Ip.toPrefix();
     Prefix peer2Prefix = peer2Ip.toPrefix();
     Prefix peer3Prefix = peer3Ip.toPrefix();
@@ -475,14 +486,20 @@ public final class F5BigipImishGrammarTest {
     RoutingPolicy rp3 =
         c.getRoutingPolicies().get(computeBgpPeerExportPolicyName("65501", peer3Ip));
 
+    BgpSessionProperties.Builder sessionProps =
+        BgpSessionProperties.builder().setHeadAs(65501).setTailAs(65501).setHeadIp(localIp);
+    BgpSessionProperties fromPeer1 = sessionProps.setTailIp(peer1Ip).build();
+    BgpSessionProperties fromPeer2 = sessionProps.setTailIp(peer2Ip).build();
+    BgpSessionProperties fromPeer3 = sessionProps.setTailIp(peer3Ip).build();
+
     // 192.0.2.1 with next-hop-self should use next-hop-ip of interface
-    assertThat(processBgpRoute(rp1, peer1Ip), hasNextHopIp(equalTo(localIp)));
+    assertThat(processBgpRoute(rp1, fromPeer1), hasNextHopIp(equalTo(localIp)));
 
     // 192.0.2.2 with next-hop-self inherited from pg1 should use next-hop-ip of interface
-    assertThat(processBgpRoute(rp2, peer2Ip), hasNextHopIp(equalTo(localIp)));
+    assertThat(processBgpRoute(rp2, fromPeer2), hasNextHopIp(equalTo(localIp)));
 
     // 192.0.2.3 without next-hop-self should leave next-hop-ip unset for dp engine to handle
-    assertThat(processBgpRoute(rp3, peer3Ip), hasNextHopIp(equalTo(UNSET_ROUTE_NEXT_HOP_IP)));
+    assertThat(processBgpRoute(rp3, fromPeer3), hasNextHopIp(equalTo(UNSET_ROUTE_NEXT_HOP_IP)));
   }
 
   @Test
@@ -990,7 +1007,7 @@ public final class F5BigipImishGrammarTest {
 
     assertThat(c.getRoutingPolicies(), hasKeys(rpName));
 
-    assertThat(processBgpRoute(c.getRoutingPolicies().get(rpName), Ip.ZERO), hasMetric(50L));
+    assertThat(processBgpRouteNoPeerContext(c.getRoutingPolicies().get(rpName)), hasMetric(50L));
   }
 
   @Test
@@ -1021,7 +1038,7 @@ public final class F5BigipImishGrammarTest {
     assertThat(c.getRoutingPolicies(), hasKeys(rpName));
 
     assertThat(
-        processBgpRoute(c.getRoutingPolicies().get(rpName), Ip.ZERO),
+        processBgpRouteNoPeerContext(c.getRoutingPolicies().get(rpName)),
         hasOriginType(OriginType.IGP));
   }
 
