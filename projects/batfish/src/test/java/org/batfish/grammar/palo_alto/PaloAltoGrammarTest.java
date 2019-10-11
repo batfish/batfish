@@ -31,7 +31,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasNextVrf;
+import static org.batfish.datamodel.matchers.StubSettingsMatchers.hasSuppressType3;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
@@ -77,6 +83,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -114,6 +121,14 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
+import org.batfish.datamodel.matchers.NssaSettingsMatchers;
+import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.matchers.OspfProcessMatchers;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.StubType;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
@@ -629,7 +644,7 @@ public final class PaloAltoGrammarTest {
     assertTrue(ospf.isEnable());
     assertFalse(ospf.isRejectDefaultRoute());
 
-    Ip areaId = Ip.parse("1.1.1.1");
+    Ip areaId = Ip.parse("0.0.0.1");
     assertThat(ospf.getAreas(), hasKey(areaId));
     OspfArea ospfArea = ospf.getAreas().get(areaId);
     assertThat(ospfArea.getAreaId(), equalTo(areaId));
@@ -640,14 +655,14 @@ public final class PaloAltoGrammarTest {
     assertThat(stubArea.getAcceptSummary(), equalTo(Boolean.TRUE));
     assertTrue(stubArea.isDefaultRouteDisable());
 
-    areaId = Ip.parse("2.2.2.2");
+    areaId = Ip.parse("0.0.0.2");
     assertThat(ospf.getAreas(), hasKey(areaId));
     ospfArea = ospf.getAreas().get(areaId);
     assertThat(ospfArea.getAreaId(), equalTo(areaId));
     assertThat(ospfArea.getTypeSettings(), not(nullValue()));
     assertThat(ospfArea.getTypeSettings(), instanceOf(OspfAreaNormal.class));
 
-    areaId = Ip.parse("3.3.3.3");
+    areaId = Ip.parse("0.0.0.3");
     assertThat(ospf.getAreas(), hasKey(areaId));
     ospfArea = ospf.getAreas().get(areaId);
     assertThat(ospfArea.getAreaId(), equalTo(areaId));
@@ -671,6 +686,71 @@ public final class PaloAltoGrammarTest {
     assertThat(ospfIface.getRetransmitInterval(), equalTo(5));
     assertThat(ospfIface.getTransitDelay(), equalTo(1));
     assertThat(ospfIface.getLinkType(), equalTo(LinkType.BROADCAST));
+  }
+
+  @Test
+  public void testOspfConversion() {
+    String processId = "~OSPF_PROCESS_0.0.0.0";
+    String ifaceName34 = "ethernet1/3.4";
+    String ifaceName35 = "ethernet1/3.5";
+
+    Configuration c = parseConfig("ospf");
+
+    // process
+    assertThat(c.getVrfs(), hasKey("vr1"));
+    assertThat(c.getVrfs().get("vr1").getOspfProcesses(), hasKey(processId));
+
+    OspfProcess ospfProcess = c.getVrfs().get("vr1").getOspfProcesses().get(processId);
+
+    assertThat(ospfProcess, OspfProcessMatchers.hasRouterId(equalTo(Ip.parse("0.0.0.0."))));
+
+    // areas
+    assertThat(
+        ospfProcess,
+        hasArea(
+            1L,
+            allOf(
+                hasStub(hasSuppressType3(false)),
+                OspfAreaMatchers.hasInterfaces(equalTo(ImmutableSortedSet.of(ifaceName34))))));
+    assertThat(ospfProcess, hasArea(2L, allOf(hasStubType(equalTo(StubType.NONE)))));
+    assertThat(
+        ospfProcess,
+        hasArea(
+            3L,
+            allOf(
+                hasNssa(
+                    allOf(
+                        hasDefaultOriginateType(OspfDefaultOriginateType.EXTERNAL_TYPE2),
+                        NssaSettingsMatchers.hasSuppressType3(true))),
+                OspfAreaMatchers.hasInterfaces(equalTo(ImmutableSortedSet.of(ifaceName35))))));
+
+    // interface
+    assertThat(
+        c.getAllInterfaces().get(ifaceName34).getOspfSettings(),
+        equalTo(
+            OspfInterfaceSettings.builder()
+                .setAreaName(1L)
+                .setCost(14)
+                .setDeadInterval(8 * 15)
+                .setEnabled(true)
+                .setHelloInterval(15)
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .setPassive(true)
+                .setProcess(processId)
+                .build()));
+    assertThat(
+        c.getAllInterfaces().get(ifaceName35).getOspfSettings(),
+        equalTo(
+            OspfInterfaceSettings.builder()
+                .setAreaName(3L)
+                .setCost(10)
+                .setDeadInterval(4 * 10)
+                .setEnabled(false)
+                .setHelloInterval(10)
+                .setNetworkType(OspfNetworkType.BROADCAST)
+                .setPassive(false)
+                .setProcess(processId)
+                .build()));
   }
 
   @Test
