@@ -47724,9 +47724,9 @@
             "          ip = IP_ADDRESS:'10.0.0.1'",
             "          (rbn_common",
             "            (rbn_update_source",
-            "              (rbn_update_source_peer_group",
+            "              (rbn_update_source_interface",
             "                UPDATE_SOURCE:'update-source'",
-            "                name = (peer_group_name",
+            "                name = (word",
             "                  WORD:'us1')",
             "                NEWLINE:'\\n'))))",
             "        (rb_redistribute",
@@ -76339,7 +76339,7 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 56,
-              "Parser_Context" : "[rbn_update_source_peer_group rbn_update_source rbn_common rb_neighbor_ipv4 router_bgp s_router statement f5_bigip_imish_configuration]",
+              "Parser_Context" : "[rbn_update_source_interface rbn_update_source rbn_common rb_neighbor_ipv4 router_bgp s_router statement f5_bigip_imish_configuration]",
               "Text" : "update-source us1"
             }
           ]

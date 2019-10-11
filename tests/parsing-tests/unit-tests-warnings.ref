@@ -2202,7 +2202,7 @@
         "Filename" : "configs/f5_bigip/f5_bigip_structured_with_imish",
         "Line" : 56,
         "Text" : "update-source us1",
-        "Parser_Context" : "[rbn_update_source_peer_group rbn_update_source rbn_common rb_neighbor_ipv4 router_bgp s_router statement f5_bigip_imish_configuration]",
+        "Parser_Context" : "[rbn_update_source_interface rbn_update_source rbn_common rb_neighbor_ipv4 router_bgp s_router statement f5_bigip_imish_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {

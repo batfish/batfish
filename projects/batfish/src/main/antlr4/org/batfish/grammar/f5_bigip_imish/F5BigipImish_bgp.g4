@@ -116,7 +116,7 @@ rbn_route_map_out
 rbn_update_source
 :
   rbn_update_source_ip
-  | rbn_update_source_peer_group
+  | rbn_update_source_interface
 ;
 
 rbn_update_source_ip
@@ -124,9 +124,9 @@ rbn_update_source_ip
   UPDATE_SOURCE ip = IP_ADDRESS NEWLINE
 ;
 
-rbn_update_source_peer_group
+rbn_update_source_interface
 :
-  UPDATE_SOURCE name = peer_group_name NEWLINE
+  UPDATE_SOURCE name = word NEWLINE
 ;
 
 rb_null
