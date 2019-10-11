@@ -1070,12 +1070,27 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetNextHop() {
+  public void testRouteMapSetNextHopExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_next_hop");
     assertNotNull(vc.getRouteMaps().get("rm1"));
-    assertNotNull(vc.getRouteMaps().get("rm1").getEntries().get(10L));
-    RouteMapSetIpNextHop set = vc.getRouteMaps().get("rm1").getEntries().get(10L).getSetIpNextHop();
+
+    RouteMapEntry entry = vc.getRouteMaps().get("rm1").getEntries().get(10L);
+    assertNotNull(entry);
+    RouteMapSetIpNextHop set = entry.getSetIpNextHop();
     assertNotNull(set);
     assertThat(set.getNextHop(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
+  }
+
+  @Test
+  public void testRouteMapSetNextHopConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_route_map_set_next_hop");
+    String rpName = "rm1";
+
+    assertThat(c.getRoutingPolicies(), hasKeys(rpName));
+
+    assertThat(
+        processBgpRouteNoPeerContext(c.getRoutingPolicies().get(rpName)),
+        hasNextHopIp(Ip.parse("1.2.3.4")));
   }
 }
