@@ -47723,10 +47723,11 @@
             "          NEIGHBOR:'neighbor'",
             "          ip = IP_ADDRESS:'10.0.0.1'",
             "          (rbn_common",
-            "            (rbn_null",
-            "              UPDATE_SOURCE:'update-source'",
-            "              (null_rest_of_line",
-            "                WORD:'us1'",
+            "            (rbn_update_source",
+            "              (rbn_update_source_peer_group",
+            "                UPDATE_SOURCE:'update-source'",
+            "                name = (peer_group_name",
+            "                  WORD:'us1')",
             "                NEWLINE:'\\n'))))",
             "        (rb_redistribute",
             "          REDISTRIBUTE:'redistribute'",
@@ -76330,6 +76331,16 @@
               "Line" : 109,
               "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
               "Text" : "turboflex profile-config"
+            }
+          ]
+        },
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 56,
+              "Parser_Context" : "[rbn_update_source_peer_group rbn_update_source rbn_common rb_neighbor_ipv4 router_bgp s_router statement f5_bigip_imish_configuration]",
+              "Text" : "update-source us1"
             }
           ]
         },

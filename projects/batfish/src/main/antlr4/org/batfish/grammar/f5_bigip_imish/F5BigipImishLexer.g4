@@ -257,7 +257,7 @@ PASSIVE_INTERFACE
 
 PASSWORD
 :
-  'password'
+  'password' -> pushMode ( M_Description )
 ;
 
 PEER_GROUP
