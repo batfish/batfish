@@ -432,28 +432,18 @@ public final class CiscoGrammarTest {
   private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
     assertFalse(
         routingPolicy.process(
-            route,
-            Bgpv4Route.builder().setNetwork(route.getNetwork()),
-            Ip.parse("192.0.2.1"),
-            DEFAULT_VRF_NAME,
-            Direction.OUT));
+            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private void assertRoutingPolicyPermitsRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
     assertTrue(
         routingPolicy.process(
-            route,
-            Bgpv4Route.builder().setNetwork(route.getNetwork()),
-            Ip.parse("192.0.2.1"),
-            DEFAULT_VRF_NAME,
-            Direction.OUT));
+            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
     Bgpv4Route.Builder builder = route.toBuilder();
-    assertTrue(
-        routingPolicy.process(
-            route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.IN));
+    assertTrue(routingPolicy.process(route, builder, Direction.IN));
     return builder.build();
   }
 
@@ -1758,9 +1748,7 @@ public final class CiscoGrammarTest {
     assertNotNull(originalRoute);
 
     // Check if routingPolicy accepts EIGRP route and sets correct metric from original route
-    assertTrue(
-        routingPolicy.process(
-            originalRoute, outputRouteBuilder, null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertTrue(routingPolicy.process(originalRoute, outputRouteBuilder, Direction.OUT));
     assertThat(outputRouteBuilder.build(), hasEigrpMetric(originalRoute.getEigrpMetric()));
   }
 
@@ -1793,7 +1781,6 @@ public final class CiscoGrammarTest {
         routingPolicy.process(
             new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
             outputRouteBuilder,
-            DEFAULT_VRF_NAME,
             eigrpProcess,
             Direction.OUT));
     assertThat(
@@ -1810,7 +1797,6 @@ public final class CiscoGrammarTest {
             new RipInternalRoute(
                 Prefix.parse("2.2.2.2/32"), Ip.parse("3.3.3.3"), 1, 1, Route.UNSET_ROUTE_TAG),
             outputRouteBuilder,
-            DEFAULT_VRF_NAME,
             eigrpProcess,
             Direction.OUT));
 
@@ -1824,7 +1810,6 @@ public final class CiscoGrammarTest {
                 .setArea(1L)
                 .build(),
             outputRouteBuilder,
-            DEFAULT_VRF_NAME,
             eigrpProcess,
             Direction.OUT));
     assertThat(
@@ -2732,8 +2717,6 @@ public final class CiscoGrammarTest {
                 .setDestinationAsn(5L)
                 .build(),
             EigrpExternalRoute.builder(),
-            null,
-            "default",
             Direction.OUT));
     // a route redistributed from router EIGRP 2 and denied by distribute list
     assertFalse(
@@ -2745,8 +2728,6 @@ public final class CiscoGrammarTest {
                 .setDestinationAsn(5L)
                 .build(),
             EigrpExternalRoute.builder(),
-            null,
-            "default",
             Direction.OUT));
     // a route redistributed internally from router EIGRP 1 and allowed by distribute list
     assertTrue(
@@ -2757,8 +2738,6 @@ public final class CiscoGrammarTest {
                 .setProcessAsn(1L)
                 .build(),
             EigrpExternalRoute.builder(),
-            null,
-            "default",
             Direction.OUT));
     // a route matching distribute list but does not have the correct ASN so falls through till the
     // end and
@@ -2772,8 +2751,6 @@ public final class CiscoGrammarTest {
                 .setDestinationAsn(5L)
                 .build(),
             EigrpExternalRoute.builder(),
-            null,
-            "default",
             Direction.OUT));
   }
 
@@ -2920,22 +2897,16 @@ public final class CiscoGrammarTest {
         routingPolicy0.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
-            null,
-            "default",
             Direction.IN));
     assertFalse(
         routingPolicy0.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
-            null,
-            "default",
             Direction.IN));
     assertTrue(
         routingPolicy0.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("3.3.3.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
-            null,
-            "default",
             Direction.IN));
 
     assertThat(
@@ -2982,15 +2953,11 @@ public final class CiscoGrammarTest {
         routingPolicy.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
-            null,
-            "default",
             Direction.IN));
     assertTrue(
         routingPolicy.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
-            null,
-            "default",
             Direction.IN));
   }
 
@@ -3023,15 +2990,11 @@ public final class CiscoGrammarTest {
         routingPolicy.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
-            null,
-            "default",
             Direction.IN));
     assertFalse(
         routingPolicy.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
-            null,
-            "default",
             Direction.IN));
   }
 
@@ -3213,36 +3176,16 @@ public final class CiscoGrammarTest {
     Bgpv4Route permittedRoute = r.setNetwork(permittedPrefix).build();
     Bgpv4Route unmatchedRoute = r.setNetwork(Prefix.parse("10.1.0.0/16")).build();
     assertThat(
-        importPolicy.process(
-            permittedRoute,
-            permittedRoute.toBuilder(),
-            peerAddress,
-            DEFAULT_VRF_NAME,
-            Direction.IN),
+        importPolicy.process(permittedRoute, permittedRoute.toBuilder(), Direction.IN),
         equalTo(true));
     assertThat(
-        exportPolicy.process(
-            permittedRoute,
-            permittedRoute.toBuilder(),
-            peerAddress,
-            DEFAULT_VRF_NAME,
-            Direction.OUT),
+        exportPolicy.process(permittedRoute, permittedRoute.toBuilder(), Direction.OUT),
         equalTo(true));
     assertThat(
-        importPolicy.process(
-            unmatchedRoute,
-            unmatchedRoute.toBuilder(),
-            peerAddress,
-            DEFAULT_VRF_NAME,
-            Direction.IN),
+        importPolicy.process(unmatchedRoute, unmatchedRoute.toBuilder(), Direction.IN),
         equalTo(false));
     assertThat(
-        exportPolicy.process(
-            unmatchedRoute,
-            unmatchedRoute.toBuilder(),
-            peerAddress,
-            DEFAULT_VRF_NAME,
-            Direction.OUT),
+        exportPolicy.process(unmatchedRoute, unmatchedRoute.toBuilder(), Direction.OUT),
         equalTo(false));
   }
 
@@ -3281,9 +3224,7 @@ public final class CiscoGrammarTest {
             .build();
     Bgpv4Route.Builder transformedRoute = r.toBuilder();
 
-    assertThat(
-        setWeightPolicy.process(r, transformedRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.IN),
-        equalTo(true));
+    assertThat(setWeightPolicy.process(r, transformedRoute, Direction.IN), equalTo(true));
     assertThat(transformedRoute.build(), hasWeight(20));
   }
 
@@ -3429,12 +3370,9 @@ public final class CiscoGrammarTest {
     // The route-policy accepts and rejects the same prefixes.
     RoutingPolicy rp = c.getRoutingPolicies().get("rp_ip");
     assertThat(rp, notNullValue());
-    assertTrue(
-        rp.process(permittedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
-    assertTrue(
-        rp.process(permittedRoute2, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
-    assertFalse(
-        rp.process(rejectedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertTrue(rp.process(permittedRoute, Bgpv4Route.builder(), Direction.OUT));
+    assertTrue(rp.process(permittedRoute2, Bgpv4Route.builder(), Direction.OUT));
+    assertFalse(rp.process(rejectedRoute, Bgpv4Route.builder(), Direction.OUT));
 
     // The BGP peer export policy also accepts and rejects the same prefixes.
     BgpActivePeerConfig bgpCfg =
@@ -3444,15 +3382,9 @@ public final class CiscoGrammarTest {
         c.getRoutingPolicies().get(bgpCfg.getIpv4UnicastAddressFamily().getExportPolicy());
     assertThat(bgpRpOut, notNullValue());
 
-    assertTrue(
-        bgpRpOut.process(
-            permittedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
-    assertTrue(
-        bgpRpOut.process(
-            permittedRoute2, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
-    assertFalse(
-        bgpRpOut.process(
-            rejectedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertTrue(bgpRpOut.process(permittedRoute, Bgpv4Route.builder(), Direction.OUT));
+    assertTrue(bgpRpOut.process(permittedRoute2, Bgpv4Route.builder(), Direction.OUT));
+    assertFalse(bgpRpOut.process(rejectedRoute, Bgpv4Route.builder(), Direction.OUT));
   }
 
   @Test
@@ -6604,45 +6536,45 @@ public final class CiscoGrammarTest {
         "Route 10/8 permitted",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+            .process(route10, Bgpv4Route.builder(), Direction.OUT));
     assertFalse(
         "Route 11/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+            .process(route11, Bgpv4Route.builder(), Direction.OUT));
 
     assertFalse(
         "Route 10/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_deny_permit")
-            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+            .process(route10, Bgpv4Route.builder(), Direction.OUT));
     assertFalse(
         "Route 11/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+            .process(route11, Bgpv4Route.builder(), Direction.OUT));
 
     assertFalse(
         "Route 10/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_deny")
-            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+            .process(route10, Bgpv4Route.builder(), Direction.OUT));
     assertFalse(
         "Route 11/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+            .process(route11, Bgpv4Route.builder(), Direction.OUT));
 
     assertFalse(
         "Route 10/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_deny_deny")
-            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+            .process(route10, Bgpv4Route.builder(), Direction.OUT));
     assertFalse(
         "Route 11/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+            .process(route11, Bgpv4Route.builder(), Direction.OUT));
   }
 
   @Test
@@ -6701,7 +6633,6 @@ public final class CiscoGrammarTest {
             .process(
                 new ConnectedRoute(Prefix.ZERO, "dummy", 0),
                 EigrpExternalRoute.builder(),
-                DEFAULT_VRF_NAME,
                 org.batfish.datamodel.eigrp.EigrpProcess.builder()
                     .setAsNumber(1)
                     .setMode(EigrpProcessMode.CLASSIC)

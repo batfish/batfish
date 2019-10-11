@@ -735,15 +735,11 @@ public class CumulusFrrGrammarTest {
             .setNextHopInterface("iface");
     // NOTE: re-using the builder, order of asserts may matter
     // With missing tag -- no match
-    assertFalse(policy.process(routeBuilder.build(), Bgpv4Route.builder(), null, "default", OUT));
+    assertFalse(policy.process(routeBuilder.build(), Bgpv4Route.builder(), OUT));
     // With tag -- match
-    assertTrue(
-        policy.process(
-            routeBuilder.setTag(65555L).build(), Bgpv4Route.builder(), null, "default", OUT));
+    assertTrue(policy.process(routeBuilder.setTag(65555L).build(), Bgpv4Route.builder(), OUT));
     // With different tag -- no match
-    assertFalse(
-        policy.process(
-            routeBuilder.setTag(65554L).build(), Bgpv4Route.builder(), null, "default", OUT));
+    assertFalse(policy.process(routeBuilder.setTag(65554L).build(), Bgpv4Route.builder(), OUT));
   }
 
   @Test

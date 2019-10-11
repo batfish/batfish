@@ -46,7 +46,7 @@ public class GeneratedRouteHelper {
 
     // Find first matching route among candidates
     for (AnnotatedRoute<AbstractRoute> contributingCandidate : contributingRoutes) {
-      if (policy.process(contributingCandidate, grb, null, vrfName, Direction.OUT)) {
+      if (policy.process(contributingCandidate, grb, Direction.OUT)) {
         if (!generatedRoute.getDiscard()) {
           grb.setNextHopIp(contributingCandidate.getAbstractRoute().getNextHopIp());
         }
