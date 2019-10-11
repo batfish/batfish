@@ -480,41 +480,50 @@ public final class BgpTopologyUtils {
     if (initiatorLocalAs == null || listenerLocalAs == null) {
       return null; // This is plainly a misconfiguration. No session.
     }
-    // Note: order of evaluation matters.
-    // Simple case: 1 to 1 match, no confederation config
-    if (listenerRemoteAsns.contains(initiatorLocalAs)
-        && initiatorRemoteAsns.contains(listenerLocalAs)
-        && initiatorConfed == null
-        && listenerConfed == null) {
-      return new AsPair(initiatorLocalAs, listenerLocalAs);
+    // Simple case: no confederation config
+    if (initiatorConfed == null && listenerConfed == null) {
+      // Note: order of evaluation matters.
+      if (listenerRemoteAsns.contains(initiatorLocalAs)
+          && initiatorRemoteAsns.contains(listenerLocalAs)) {
+        return new AsPair(initiatorLocalAs, listenerLocalAs);
+      } else {
+        return null;
+      }
     }
-    // 1 to 1 match, inside *the same* confederation
-    if (initiatorConfed != null
-        && listenerConfed != null
-        && initiatorConfed.equals(listenerConfed)
-        && listenerRemoteAsns.contains(initiatorLocalAs)
-        && initiatorRemoteAsns.contains(listenerLocalAs)) {
-      return new AsPair(initiatorLocalAs, listenerLocalAs);
-    }
-    // Both peers inside *different* confederations, must use external identifier only
-    if (initiatorConfed != null
-        && listenerConfed != null
-        && !Objects.equals(initiatorConfed, listenerConfed)
-        && listenerRemoteAsns.contains(initiatorConfed)
-        && initiatorRemoteAsns.contains(listenerConfed)) {
-      return new AsPair(initiatorConfed, listenerConfed);
+    // Confederation config is present on both peers
+    if (initiatorConfed != null && listenerConfed != null) {
+      // both peers inside *the same* confederation
+      if (initiatorConfed.equals(listenerConfed)) {
+        if (listenerRemoteAsns.contains(initiatorLocalAs)
+            && initiatorRemoteAsns.contains(listenerLocalAs)) {
+          return new AsPair(initiatorLocalAs, listenerLocalAs);
+        } else {
+          return null;
+        }
+      } else {
+        // Both peers inside *different* confederations, must use external identifier only
+        if (listenerRemoteAsns.contains(initiatorConfed)
+            && initiatorRemoteAsns.contains(listenerConfed)) {
+          return new AsPair(initiatorConfed, listenerConfed);
+        } else {
+          return null;
+        }
+      }
     }
     // Initiator is inside a confederation
-    if (initiatorConfed != null
-        && listenerRemoteAsns.contains(initiatorConfed)
-        && initiatorRemoteAsns.contains(listenerLocalAs)) {
-      return new AsPair(initiatorConfed, listenerLocalAs);
-    }
-    // Listener is inside a confederation
-    if (listenerConfed != null
-        && listenerRemoteAsns.contains(initiatorLocalAs)
-        && initiatorRemoteAsns.contains(listenerConfed)) {
-      return new AsPair(initiatorLocalAs, listenerConfed);
+    if (initiatorConfed != null) {
+      if (listenerRemoteAsns.contains(initiatorConfed)
+          && initiatorRemoteAsns.contains(listenerLocalAs)) {
+        return new AsPair(initiatorConfed, listenerLocalAs);
+      } else {
+        return null;
+      }
+    } else {
+      // Listener is inside a confederation
+      if (listenerRemoteAsns.contains(initiatorLocalAs)
+          && initiatorRemoteAsns.contains(listenerConfed)) {
+        return new AsPair(initiatorLocalAs, listenerConfed);
+      }
     }
     return null;
   }

@@ -392,5 +392,6 @@ public class BgpTopologyUtilsTest {
     assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(3L), new AsPair(3, 4));
     // Confed no match
     assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
+    assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(5), null);
   }
 }
