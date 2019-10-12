@@ -1038,6 +1038,12 @@ public final class F5BigipImishGrammarTest {
     assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
   }
 
+  @Test
+  public void testBgpNeighborNull() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_neighbor_null");
+    assertNotNull(vc);
+  }
+
   private @Nonnull IpAccessListToBdd toBDD() {
     BDDPacket pkt = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
