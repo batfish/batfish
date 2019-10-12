@@ -1015,7 +1015,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     if (!aclLines.isEmpty()) {
-      // For interfaces with security rules, assume traffic originating from the device is allowed out
+      // For interfaces with security rules, assume traffic originating from the device is allowed
+      // out
       // the interface
       // TODO this isn't tested and may not line up with actual device behavior, but is in place to
       // allow things like BGP sessions to come up
