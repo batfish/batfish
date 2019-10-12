@@ -1303,8 +1303,10 @@ public final class PaloAltoGrammarTest {
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.SERVICE, serviceName, 1));
-    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z1Name, 2));
-    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z2Name, 2));
+    // 2 references in rules, 2 references from associated interfaces
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z1Name, 4));
+    // 2 references in rules, 1 reference from associated interface
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z2Name, 3));
 
     // Confirm undefined references are detected
     assertThat(
