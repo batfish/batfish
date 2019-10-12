@@ -8,19 +8,153 @@ options {
 
 l_rule
 :
-  RULE name = structure_name BRACE_LEFT
+  RULE_SPECIAL name = structure_name BRACE_LEFT
   (
-    NEWLINE lr_when*
+    NEWLINE when*
   )? BRACE_RIGHT NEWLINE
 ;
 
-lr_when
+when
 :
-  WHEN event = word args += word* BRACE_LEFT
+  WHEN w_event BRACE_LEFT
   (
-    NEWLINE
-    (
-      ignored
-    )*
+    NEWLINE WS? command_sequence? WS?
   )? BRACE_RIGHT NEWLINE
+;
+
+w_event
+:
+  EVENT
+;
+
+command_sequence
+:
+  commands += command
+  (
+    command_separator commands += command
+  )* command_separator?
+;
+
+command
+:
+  COMMENT* words+=i_word (WS words+=i_word)*
+;
+
+command_separator
+:
+  WS?
+  (
+    SEMICOLON
+    | NEWLINE
+  ) WS?
+;
+
+command_substitution
+:
+  BRACKET_LEFT command_sequence? BRACKET_RIGHT
+;
+
+variable_substitution
+:
+  DOLLAR
+  (
+    ivs_braces
+    | ivs_name
+  )
+;
+
+ivs_braces
+:
+  BRACE_LEFT braced_variable_name BRACE_RIGHT
+;
+
+braced_variable_name
+:
+  CHARS
+;
+
+ivs_name
+:
+  scalar_variable_name index = variable_index?
+;
+
+scalar_variable_name
+:
+  CHARS
+;
+
+variable_index
+:
+  PAREN_LEFT i_word PAREN_RIGHT
+;
+
+i_word
+:
+  segments+=iw_segment+
+;
+
+iw_segment
+:
+  iws_braces
+  | iws_chars
+  | command_substitution
+  | iws_double_quotes
+  | backslash_substitution
+  | variable_substitution
+;
+
+iws_braces
+:
+  BRACE_LEFT iwsb_segment+ BRACE_RIGHT
+;
+
+iwsb_segment
+:
+  iws_braces
+  | iwsbs_chars
+  | iwsbs_escape_sequence
+;
+
+iwsbs_chars
+:
+  CHARS
+;
+
+iwsbs_escape_sequence
+:
+  BACKSLASH_NEWLINE_WS
+;
+
+iws_chars
+:
+  CHARS
+;
+
+iws_double_quotes
+:
+  DOUBLE_QUOTE iwsd_segment* DOUBLE_QUOTE
+;
+
+iwsd_segment
+:
+  iwsds_chars
+  | command_substitution
+  | backslash_substitution
+  | variable_substitution
+  // may occur when breaking out of nested lexer mode
+  | NEWLINE
+  | WS
+;
+
+iwsds_chars
+:
+  CHARS
+;
+
+backslash_substitution
+:
+  BACKSLASH_CARRIAGE_RETURN
+  | BACKSLASH_CHAR
+  | BACKSLASH_NEWLINE
+  | BACKSLASH_NEWLINE_WS
 ;

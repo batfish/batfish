@@ -31,6 +31,5 @@ statement
   s_ltm
   | s_net
   | s_sys
-  | unrecognized
 ;
 
