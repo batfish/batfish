@@ -1442,8 +1442,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               (prefix6, bgpNetwork6) -> {
                 int prefixLen = prefix6.getPrefixLength();
                 Route6FilterLine line =
-                    new Route6FilterLine(
-                        LineAction.PERMIT, prefix6, new SubRange(prefixLen, prefixLen));
+                    new Route6FilterLine(LineAction.PERMIT, prefix6, SubRange.singleton(prefixLen));
                 localFilter6.addLine(line);
                 String mapName = bgpNetwork6.getRouteMapName();
                 if (mapName != null) {

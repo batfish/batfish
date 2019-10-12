@@ -297,7 +297,7 @@ public final class F5BigipImishGrammarTest {
                         .inPrefixRange(
                             new PrefixRange(
                                 Prefix.strict("192.0.2.128/32"),
-                                new SubRange(Prefix.MAX_PREFIX_LENGTH, Prefix.MAX_PREFIX_LENGTH)))
+                                SubRange.singleton(Prefix.MAX_PREFIX_LENGTH)))
                         .not())));
   }
 
@@ -826,7 +826,7 @@ public final class F5BigipImishGrammarTest {
     assertThat(plLe10.getLengthRange(), equalTo(new SubRange(16, 24)));
     assertThat(plGe10.getLengthRange(), equalTo(new SubRange(24, 32)));
     assertThat(plGeLe10.getLengthRange(), equalTo(new SubRange(24, 28)));
-    assertThat(plDeny10.getLengthRange(), equalTo(new SubRange(32, 32)));
+    assertThat(plDeny10.getLengthRange(), equalTo(SubRange.singleton(32)));
     assertThat(plDeny20.getLengthRange(), equalTo(new SubRange(16, 32)));
   }
 

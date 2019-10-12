@@ -138,7 +138,7 @@ public final class Common {
         new MatchPrefixSet(
             DestinationNetwork.instance(),
             new ExplicitPrefixSet(
-                new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))));
+                new PrefixSpace(new PrefixRange(Prefix.ZERO, SubRange.singleton(0)))));
     ret.setComment("match default route");
     return ret;
   }
@@ -148,7 +148,7 @@ public final class Common {
         new MatchPrefix6Set(
             new DestinationNetwork6(),
             new ExplicitPrefix6Set(
-                new Prefix6Space(new Prefix6Range(Prefix6.ZERO, new SubRange(0, 0)))));
+                new Prefix6Space(new Prefix6Range(Prefix6.ZERO, SubRange.singleton(0)))));
     ret.setComment("match default route");
     return ret;
   }
