@@ -27,6 +27,8 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRES
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2_INTERFACE_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_DESTINATION;
@@ -37,8 +39,10 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_T
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TAP_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_SELF_REFERENCE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_WIRE_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VSYS_IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
@@ -1241,6 +1245,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         warn(ctx, "Cannot add an interface to a shared-gateway zone before it is imported");
       }
       _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // at this point)
+      // Use constructed object name so same-named refs across vsys are unique
+      String zoneName = computeObjectName(_currentVsys.getName(), _currentZone.getName());
+      _configuration.referenceStructure(ZONE, zoneName, LAYER3_INTERFACE_ZONE, getLine(var.start));
     }
   }
 
@@ -1947,6 +1956,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String name = getText(var);
       _currentZone.getInterfaceNames().add(name);
       _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // at this point)
+      // Use constructed object name so same-named refs across vsys are unique
+      String zoneName = computeObjectName(_currentVsys.getName(), _currentZone.getName());
+      _configuration.referenceStructure(ZONE, zoneName, LAYER2_INTERFACE_ZONE, getLine(var.start));
     }
   }
 
@@ -1957,6 +1971,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String name = getText(var);
       _currentZone.getInterfaceNames().add(name);
       _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // at this point)
+      // Use constructed object name so same-named refs across vsys are unique
+      String zoneName = computeObjectName(_currentVsys.getName(), _currentZone.getName());
+      _configuration.referenceStructure(ZONE, zoneName, LAYER3_INTERFACE_ZONE, getLine(var.start));
     }
   }
 
@@ -1967,6 +1986,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String name = getText(var);
       _currentZone.getInterfaceNames().add(name);
       _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // at this point)
+      // Use constructed object name so same-named refs across vsys are unique
+      String zoneName = computeObjectName(_currentVsys.getName(), _currentZone.getName());
+      _configuration.referenceStructure(ZONE, zoneName, TAP_INTERFACE_ZONE, getLine(var.start));
     }
   }
 
@@ -1977,6 +2001,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String name = getText(var);
       _currentZone.getInterfaceNames().add(name);
       _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // at this point)
+      // Use constructed object name so same-named refs across vsys are unique
+      String zoneName = computeObjectName(_currentVsys.getName(), _currentZone.getName());
+      _configuration.referenceStructure(
+          ZONE, zoneName, VIRTUAL_WIRE_INTERFACE_ZONE, getLine(var.start));
     }
   }
 

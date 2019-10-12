@@ -1907,6 +1907,12 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 1));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/2", 1));
 
+    // Confirm zone containing interfaces is referenced
+    assertThat(ccae, hasNumReferrers(filename, ZONE, z1Name, 2));
+
+    // Confirm zone not containing interfaces is not referenced
+    assertThat(ccae, hasNumReferrers(filename, ZONE, zEmptyName, 0));
+
     // Confirm zones contain the correct interfaces
     assertThat(
         c, hasZone(z1Name, hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
