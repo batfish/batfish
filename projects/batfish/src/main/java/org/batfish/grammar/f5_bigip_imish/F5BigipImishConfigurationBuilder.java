@@ -576,7 +576,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     String name = ctx.name.getText();
     _currentAbstractNeighbor.setUpdateSource(new UpdateSourceInterface(name));
     _c.referenceStructure(
-        F5BigipStructureType.INTERFACE,
+        F5BigipStructureType.IMISH_INTERFACE,
         name,
         F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
         ctx.name.getStart().getLine());
