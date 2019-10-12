@@ -1,6 +1,5 @@
 package org.batfish.representation.f5_bigip;
 
-import java.io.Serializable;
 import javax.annotation.Nonnull;
 
 /** BGP neighbor update source interface setting */
