@@ -32399,7 +32399,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "outgoingFilter" : "~ethernet1/1~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -32447,7 +32446,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "outgoingFilter" : "~ethernet1/3~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -32468,7 +32466,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "outgoingFilter" : "~ethernet1/4~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -32500,9 +32497,6 @@
               }
             ]
           },
-          "~ethernet1/1~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1~OUTGOING_FILTER~"
-          },
           "~ethernet1/2~OUTGOING_FILTER~" : {
             "name" : "~ethernet1/2~OUTGOING_FILTER~",
             "lines" : [
@@ -32521,12 +32515,6 @@
                 }
               }
             ]
-          },
-          "~ethernet1/3~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/3~OUTGOING_FILTER~"
-          },
-          "~ethernet1/4~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/4~OUTGOING_FILTER~"
           },
           "~zl3~vsys10~OUTGOING_FILTER~" : {
             "name" : "~zl3~vsys10~OUTGOING_FILTER~",

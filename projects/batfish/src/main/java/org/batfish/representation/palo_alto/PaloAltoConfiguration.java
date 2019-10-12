@@ -1020,8 +1020,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // allow things like BGP sessions to come up
     if (!aclLines.isEmpty()) {
       aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
+      newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
-    newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     return newIface;
   }
 
