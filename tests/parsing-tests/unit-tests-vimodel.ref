@@ -32501,15 +32501,7 @@
             ]
           },
           "~ethernet1/1~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                }
-              }
-            ]
+            "name" : "~ethernet1/1~OUTGOING_FILTER~"
           },
           "~ethernet1/2~OUTGOING_FILTER~" : {
             "name" : "~ethernet1/2~OUTGOING_FILTER~",
@@ -32531,26 +32523,10 @@
             ]
           },
           "~ethernet1/3~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/3~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                }
-              }
-            ]
+            "name" : "~ethernet1/3~OUTGOING_FILTER~"
           },
           "~ethernet1/4~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/4~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                }
-              }
-            ]
+            "name" : "~ethernet1/4~OUTGOING_FILTER~"
           },
           "~zl3~vsys10~OUTGOING_FILTER~" : {
             "name" : "~zl3~vsys10~OUTGOING_FILTER~",
