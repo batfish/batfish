@@ -1015,6 +1015,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Assume traffic originating from the device is allowed out the interface
+    // TODO this isn't tested and may not line up with actual device behavior, but is in place to
+    // allow things like BGP sessions to come up
     aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
     newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     return newIface;
