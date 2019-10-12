@@ -1077,6 +1077,11 @@ public final class F5BigipImishGrammarTest {
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.2.10/32"));
     assertNotNull(peer2);
     assertThat(peer2.getLocalIp(), equalTo(Ip.parse("10.0.2.1")));
+
+    BgpActivePeerConfig peer3 =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.3.10/32"));
+    assertNotNull(peer3);
+    assertNull(peer3.getLocalIp());
   }
 
   private @Nonnull IpAccessListToBdd toBDD() {

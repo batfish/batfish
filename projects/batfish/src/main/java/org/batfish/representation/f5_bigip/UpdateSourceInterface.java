@@ -4,7 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 
 /** BGP neighbor update source interface setting */
-public final class UpdateSourceInterface implements UpdateSource, Serializable {
+public final class UpdateSourceInterface implements UpdateSource {
 
   public UpdateSourceInterface(String name) {
     _name = name;

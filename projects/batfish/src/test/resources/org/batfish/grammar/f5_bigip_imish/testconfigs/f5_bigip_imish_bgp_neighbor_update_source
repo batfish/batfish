@@ -30,3 +30,5 @@ router bgp 65001
  neighbor 10.0.1.10 update-source 10.0.1.1
  neighbor 10.0.2.10 remote-as 65001
  neighbor 10.0.2.10 update-source vlan1
+ neighbor 10.0.3.10 remote-as 65001
+ neighbor 10.0.3.10 update-source vlan2
