@@ -1043,6 +1043,12 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpNeighborNull() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_neighbor_null");
+    assertNotNull(vc);
+  }
+
+  @Test
   public void testBgpNeighborUpdateSourceExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_neighbor_update_source");
     assertNotNull(vc.getBgpProcesses().get("65001"));
