@@ -59,6 +59,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_LOCAL_PREF = "Local_Pref";
   static final String COL_COMMUNITIES = "Communities";
   static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
+  static final String COL_ORIGIN_TYPE = "Origin_Type";
 
   // EVPN BGP only
   static final String COL_ROUTE_DISTINGUISHER = "Route_Distinguisher";
@@ -226,6 +227,13 @@ public class RoutesAnswerer extends Answerer {
                     Schema.STRING,
                     "Route's Origin protocol",
                     Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_ORIGIN_TYPE,
+                    Schema.STRING,
+                    "Route's Origin type",
+                    Boolean.FALSE,
                     Boolean.TRUE));
         break;
       case BGP:
@@ -268,6 +276,13 @@ public class RoutesAnswerer extends Answerer {
                     COL_ORIGIN_PROTOCOL,
                     Schema.STRING,
                     "Route's Origin protocol",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_ORIGIN_TYPE,
+                    Schema.STRING,
+                    "Route's Origin type",
                     Boolean.FALSE,
                     Boolean.TRUE));
         break;
@@ -439,6 +454,20 @@ public class RoutesAnswerer extends Answerer {
                 COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
                 Schema.STRING,
                 "Route's Origin protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ORIGIN_TYPE,
+                Schema.STRING,
+                "Route's Origin type",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
+                Schema.STRING,
+                "Route's Origin type",
                 Boolean.FALSE,
                 Boolean.TRUE));
         break;
