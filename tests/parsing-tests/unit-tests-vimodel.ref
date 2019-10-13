@@ -29514,6 +29514,24 @@
                 ]
               }
             ]
+          },
+          "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~" : {
+            "name" : "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
+                "tag" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.AsnValue",
+                  "as" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.RemoteAs"
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                "calledPolicyName" : "IN_BBB"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -29553,6 +29571,7 @@
                       "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                    "importPolicy" : "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 1,
