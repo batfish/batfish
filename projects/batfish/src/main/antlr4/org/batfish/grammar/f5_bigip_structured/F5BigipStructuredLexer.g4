@@ -65,6 +65,11 @@ ACTIVATE
   'activate'
 ;
 
+ADAPTIVE
+:
+  'adaptive'
+;
+
 ADDRESS
 :
   'address'
@@ -75,9 +80,24 @@ ADDRESS_FAMILY
   'address-family'
 ;
 
+ALERT_TIMEOUT
+:
+  'alert-timeout'
+;
+
 ALL
 :
   'all'
+;
+
+ALLOW_DYNAMIC_RECORD_SIZING
+:
+  'allow-dynamic-record-sizing'
+;
+
+ALLOW_NON_SSL
+:
+  'allow-non-ssl'
 ;
 
 ALLOW_SERVICE
@@ -105,6 +125,11 @@ ANY
   'any'
 ;
 
+APP_SERVICE
+:
+  'app-service'
+;
+
 ARP
 :
   'arp'
@@ -125,9 +150,69 @@ BUNDLE_SPEED
   'bundle-speed'
 ;
 
+CACHE_SIZE
+:
+  'cache-size'
+;
+
+CACHE_TIMEOUT
+:
+  'cache-timeout'
+;
+
+CAPABILITY
+:
+  'capability'
+;
+
+CERT
+:
+  'cert'
+;
+
+CERT_EXTENSION_INCLUDES
+:
+  'cert-extension-includes'
+;
+
+CERT_KEY_CHAIN
+:
+  'cert-key-chain'
+;
+
+CERT_LIFESPAN
+:
+  'cert-lifespan'
+;
+
+CERT_LOOKUP_BY_IPADDR_PORT
+:
+  'cert-lookup-by-ipaddr-port'
+;
+
 CERTIFICATE_AUTHORITY
 :
   'certificate-authority'
+;
+
+CHAIN
+:
+  'chain'
+;
+
+CIPHER_GROUP
+:
+  'cipher-group'
+;
+
+CIPHERLIST
+:
+  'cipherlist'
+;
+
+CIPHERS
+:
+  'ciphers'
 ;
 
 CLASSIFICATION
@@ -150,6 +235,11 @@ COMMUNITY
   'community'
 ;
 
+COMPATIBILITY
+:
+  'compatibility'
+;
+
 DATA_GROUP
 :
   'data-group'
@@ -158,6 +248,11 @@ DATA_GROUP
 DEFAULT
 :
   'default'
+;
+
+DEFAULT_NODE_MONITOR
+:
+  'default-node-monitor'
 ;
 
 DEFAULTS_FROM
@@ -205,6 +300,16 @@ DNS
   'dns'
 ;
 
+DNS_RESOLVER
+:
+  'dns-resolver'
+;
+
+DYNAD
+:
+  'dynad'
+;
+
 EBGP_MULTIHOP
 :
   'ebgp-multihop'
@@ -225,6 +330,11 @@ EXTERNAL
   'external'
 ;
 
+FALL_OVER
+:
+  'fall-over'
+;
+
 FASTHTTP
 :
   'fasthttp'
@@ -235,14 +345,39 @@ FASTL4
   'fastl4'
 ;
 
+FDB
+:
+  'fdb'
+;
+
+FEATURE_MODULE
+:
+  'feature-module'
+;
+
 FIX
 :
   'fix'
 ;
 
+FOLDER
+:
+  'folder'
+;
+
 FORTY_G
 :
   '40G'
+;
+
+FORWARD_ERROR_CORRECTION
+:
+  'forward-error-correction'
+;
+
+FPGA
+:
+  'fpga'
 ;
 
 FTP
@@ -255,6 +390,11 @@ GATEWAY_ICMP
   'gateway-icmp'
 ;
 
+GENERIC_ALERT
+:
+  'generic-alert'
+;
+
 GLOBAL_SETTINGS
 :
   'global-settings'
@@ -265,9 +405,24 @@ GTP
   'gtp'
 ;
 
+GUI_SECURITY_BANNER_TEXT
+:
+  'gui-security-banner-text'
+;
+
+GUI_SETUP
+:
+  'gui-setup'
+;
+
 GW
 :
   'gw'
+;
+
+HANDSHAKE_TIMEOUT
+:
+  'handshake-timeout'
 ;
 
 HOSTNAME
@@ -300,6 +455,11 @@ HTTP2
   'http2'
 ;
 
+HTTPD
+:
+  'httpd'
+;
+
 HTTPS
 :
   'https'
@@ -313,6 +473,21 @@ ICAP
 ICMP_ECHO
 :
   'icmp-echo'
+;
+
+IDLE_TIMEOUT_OVERRIDE
+:
+  'idle-timeout-override'
+;
+
+IFILE
+:
+  'ifile'
+;
+
+INHERIT_CERTKEYCHAIN
+:
+  'inherit-certkeychain'
 ;
 
 ILX
@@ -333,6 +508,16 @@ INTERFACES
 INTERNAL
 :
   'internal'
+;
+
+INTERVAL
+:
+  'interval'
+;
+
+IP_DSCP
+:
+  'ip-dscp'
 ;
 
 IP_FORWARD
@@ -370,6 +555,11 @@ KERNEL
   'kernel'
 ;
 
+KEY
+:
+  'key'
+;
+
 LACP
 :
   'lacp'
@@ -380,6 +570,31 @@ LDAP
   'ldap'
 ;
 
+LIMIT_TYPE
+:
+  'limit-type'
+;
+
+LLDP_ADMIN
+:
+  'lldp-admin'
+;
+
+LLDP_GLOBALS
+:
+  'lldp-globals'
+;
+
+LLDP_TLVMAP
+:
+  'lldp-tlvmap'
+;
+
+LOAD_BALANCING_MODE
+:
+  'load-balancing-mode'
+;
+
 LOCAL_AS
 :
   'local-as'
@@ -388,6 +603,21 @@ LOCAL_AS
 LTM
 :
   'ltm'
+;
+
+MANAGEMENT_DHCP
+:
+  'management-dhcp'
+;
+
+MANAGEMENT_IP
+:
+  'management-ip'
+;
+
+MANAGEMENT_ROUTE
+:
+  'management-route'
 ;
 
 MAP_T
@@ -405,9 +635,79 @@ MATCH
   'match'
 ;
 
+MATCH_ACROSS_POOLS
+:
+  'match-across-pools'
+;
+
+MATCH_ACROSS_SERVICES
+:
+  'match-across-services'
+;
+
+MATCH_ACROSS_VIRTUALS
+:
+  'match-across-virtuals'
+;
+
+MAX_ACTIVE_HANDSHAKES
+:
+  'max-active-handshakes'
+;
+
+MAX_AGE
+:
+  'max-age'
+;
+
+MAX_AGGREGATE_RENEGOTIATION_PER_MINUTE
+:
+  'max-aggregate-renegotiation-per-minute'
+;
+
+MAX_RENEGOTIATIONS_PER_MINUTE
+:
+  'max-renegotiations-per-minute'
+;
+
+MAX_REUSE
+:
+  'max-reuse'
+;
+
+MAX_SIZE
+:
+  'max-size'
+;
+
+MAXIMUM_PREFIX
+:
+  'maximum-prefix'
+;
+
+MAXIMUM_RECORD_SIZE
+:
+  'maximum-record-size'
+;
+
 MEMBERS
 :
   'members'
+;
+
+MIN_ACTIVE_MEMBERS
+:
+  'min-active-members'
+;
+
+MOD_SSL_METHODS
+:
+  'mod-ssl-methods'
+;
+
+MODE
+:
+  'mode'
 ;
 
 MQTT
@@ -450,6 +750,11 @@ NTP
   'ntp'
 ;
 
+OCSP_STAPLING
+:
+  'ocsp-stapling'
+;
+
 OCSP_STAPLING_PARAMS
 :
   'ocsp-stapling-params'
@@ -465,6 +770,11 @@ ONE_HUNDRED_G
   '100G'
 ;
 
+OPTIONS
+:
+  'options'
+;
+
 ORIGINS
 :
   'origins'
@@ -475,9 +785,24 @@ OUT
   'out'
 ;
 
+OVERRIDE_CONNECTION_LIMIT
+:
+  'override-connection-limit'
+;
+
 PCP
 :
   'pcp'
+;
+
+PASSPHRASE
+:
+  'passphrase'
+;
+
+PEER_NO_RENEGOTIATE_TIMEOUT
+:
+  'peer-no-renegotiate-timeout'
 ;
 
 PERMIT
@@ -520,6 +845,11 @@ PREFIX_LIST
   'prefix-list'
 ;
 
+PRIORITY_GROUP
+:
+  'priority-group'
+;
+
 PROFILE
 :
   'profile'
@@ -530,6 +860,31 @@ PROFILES
   'profiles'
 ;
 
+PROVISION
+:
+  'provision'
+;
+
+PROXY_CA_CERT
+:
+  'proxy-ca-cert'
+;
+
+PROXY_CA_KEY
+:
+  'proxy-ca-key'
+;
+
+PROXY_SSL
+:
+  'proxy-ssl'
+;
+
+PROXY_SSL_PASSTHROUGH
+:
+  'proxy-ssl-passthrough'
+;
+
 QOE
 :
   'qoe'
@@ -538,6 +893,16 @@ QOE
 RADIUS
 :
   'radius'
+;
+
+RECV
+:
+  'recv'
+;
+
+RECV_DISABLE
+:
+  'recv-disable'
 ;
 
 REDISTRIBUTE
@@ -555,6 +920,26 @@ REMOTE_AS
   'remote-as'
 ;
 
+RENEGOTIATE_MAX_RECORD_DELAY
+:
+  'renegotiate-max-record-delay'
+;
+
+RENEGOTIATE_PERIOD
+:
+  'renegotiate-period'
+;
+
+RENEGOTIATE_SIZE
+:
+  'renegotiate-size'
+;
+
+RENEGOTIATION
+:
+  'renegotiation'
+;
+
 REQUEST_ADAPT
 :
   'request-adapt'
@@ -563,6 +948,11 @@ REQUEST_ADAPT
 REQUEST_LOG
 :
   'request-log'
+;
+
+RESPONDER_URL
+:
+  'responder-url'
 ;
 
 RESPONSE_ADAPT
@@ -631,6 +1021,11 @@ SCTP
   'sctp'
 ;
 
+SECURE_RENEGOTIATION
+:
+  'secure-renegotiation'
+;
+
 SECURITY
 :
   'security'
@@ -646,9 +1041,24 @@ SELF
   'self'
 ;
 
+SELF_ALLOW
+:
+  'self-allow'
+;
+
+SEND
+:
+  'send'
+;
+
 SERVER_LDAP
 :
   'server-ldap'
+;
+
+SERVER_NAME
+:
+  'server-name'
 ;
 
 SERVER_SSL
@@ -661,14 +1071,49 @@ SERVERS
   'servers'
 ;
 
+SERVICE_DOWN_ACTION
+:
+  'service-down-action'
+;
+
+SESSION_MIRRORING
+:
+  'session-mirroring'
+;
+
+SESSION_TICKET
+:
+  'session-ticket'
+;
+
+SESSION_TICKET_TIMEOUT
+:
+  'session-ticket-timeout'
+;
+
 SET
 :
   'set'
 ;
 
+SFLOW
+:
+  'sflow'
+;
+
+SIGN_HASH
+:
+  'sign-hash'
+;
+
 SIP
 :
   'sip'
+;
+
+SLOW_RAMP_TIME
+:
+  'slow-ramp-time'
 ;
 
 SMTPS
@@ -691,6 +1136,21 @@ SNATPOOL
   'snatpool'
 ;
 
+SNI_DEFAULT
+:
+  'sni-default'
+;
+
+SNI_REQUIRE
+:
+  'sni-require'
+;
+
+SNMP
+:
+  'snmp'
+;
+
 SOCKS
 :
   'socks'
@@ -711,6 +1171,11 @@ SOURCE_ADDRESS_TRANSLATION
   'source-address-translation'
 ;
 
+SOURCE_MASK
+:
+  'source-mask'
+;
+
 SPLITSESSIONCLIENT
 :
   'splitsessionclient'
@@ -726,9 +1191,24 @@ SSL
   'ssl'
 ;
 
+SSL_FORWARD_PROXY
+:
+  'ssl-forward-proxy'
+;
+
+SSL_FORWARD_PROXY_BYPASS
+:
+  'ssl-forward-proxy-bypass'
+;
+
 SSL_PROFILE
 :
   'ssl-profile'
+;
+
+SSL_SIGN_HASH
+:
+  'ssl-sign-hash'
 ;
 
 STATISTICS
@@ -736,9 +1216,29 @@ STATISTICS
   'statistics'
 ;
 
+STATUS_AGE
+:
+  'status-age'
+;
+
+STP
+:
+  'stp'
+;
+
+STP_GLOBALS
+:
+  'stp-globals'
+;
+
 STREAM
 :
   'stream'
+;
+
+STRICT_RESUME
+:
+  'strict-resume'
 ;
 
 SYS
@@ -766,6 +1266,21 @@ TFTP
   'tftp'
 ;
 
+TIME_UNTIL_UP
+:
+  'time-until-up'
+;
+
+TIMEOUT
+:
+  'timeout'
+;
+
+TIMEZONE
+:
+  'timezone'
+;
+
 TRAFFIC_ACCELERATION
 :
   'traffic-acceleration'
@@ -791,6 +1306,21 @@ TRUNK
   'trunk'
 ;
 
+TRUSTED_RESPONDERS
+:
+  'trusted-responders'
+;
+
+TUNNELS
+:
+  'tunnels'
+;
+
+TURBOFLEX
+:
+  'turboflex'
+;
+
 TYPE
 :
   'type'
@@ -799,6 +1329,11 @@ TYPE
 UDP
 :
   'udp'
+;
+
+UNCLEAN_SHUTDOWN
+:
+  'unclean-shutdown'
 ;
 
 UPDATE_SOURCE

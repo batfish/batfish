@@ -24,6 +24,7 @@ net_interface
       | ni_description
       | ni_disabled
       | ni_enabled
+      | ni_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -107,7 +108,22 @@ ns_address6
 
 ns_allow_service
 :
-  ALLOW_SERVICE ALL NEWLINE
+  ALLOW_SERVICE
+  (
+    nsas_all
+    | nsas_specific
+  )
+;
+
+nsas_all
+:
+  ALL NEWLINE
+;
+
+nsas_specific
+:
+// list
+  ignored
 ;
 
 ns_traffic_group
@@ -189,6 +205,15 @@ ni_enabled
   ENABLED NEWLINE
 ;
 
+ni_null
+:
+  (
+    FORWARD_ERROR_CORRECTION
+    | LLDP_ADMIN
+    | LLDP_TLVMAP
+  ) ignored
+;
+
 nv_interfaces
 :
   INTERFACES BRACE_LEFT
@@ -215,11 +240,40 @@ s_net
   NET
   (
     net_interface
+    | net_null
     | net_route
+    | net_route_domain
     | net_routing
     | net_self
+    | net_self_allow
     | net_trunk
+    | net_tunnels
     | net_vlan
     | unrecognized
   )
+;
+
+net_null
+:
+  (
+    FDB
+    | LLDP_GLOBALS
+    | STP
+    | STP_GLOBALS
+  ) ignored
+;
+
+net_route_domain
+:
+  ROUTE_DOMAIN ignored
+;
+
+net_self_allow
+:
+  SELF_ALLOW ignored
+;
+
+net_tunnels
+:
+  TUNNELS ignored
 ;

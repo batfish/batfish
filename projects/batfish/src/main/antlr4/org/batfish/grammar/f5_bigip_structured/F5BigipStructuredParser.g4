@@ -36,5 +36,5 @@ statement
 
 s_security
 :
-  SECURITY unrecognized
+  SECURITY ignored
 ;

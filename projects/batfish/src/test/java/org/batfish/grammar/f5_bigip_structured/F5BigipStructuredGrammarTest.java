@@ -345,7 +345,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   // TODO: switch to true when tests are fixed
-  private static boolean DEFAULT_DISABLE_UNRECOGNIZED = false;
+  private static boolean DEFAULT_DISABLE_UNRECOGNIZED = true;
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -679,7 +679,6 @@ public final class F5BigipStructuredGrammarTest {
   public void testDataGroupDefinitions() throws IOException {
     String hostname = "f5_bigip_structured_ltm_data_group";
     String file = "configs/" + hostname;
-    _disableUnrecognized = true;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -951,7 +950,6 @@ public final class F5BigipStructuredGrammarTest {
   public void testRuleDefinitions() throws IOException {
     String hostname = "f5_bigip_structured_ltm_rule";
     String file = "configs/" + hostname;
-    _disableUnrecognized = true;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
