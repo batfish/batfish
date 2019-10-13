@@ -15,6 +15,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
@@ -264,6 +265,7 @@ public class RoutesAnswererTest {
             COL_LOCAL_PREF,
             COL_COMMUNITIES,
             COL_ORIGIN_PROTOCOL,
+            COL_ORIGIN_TYPE,
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.BGP).getColumnMetadata();
@@ -291,6 +293,7 @@ public class RoutesAnswererTest {
             COL_LOCAL_PREF,
             COL_COMMUNITIES,
             COL_ORIGIN_PROTOCOL,
+            COL_ORIGIN_TYPE,
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.EVPN).getColumnMetadata();
@@ -377,6 +380,8 @@ public class RoutesAnswererTest {
         COL_DELTA_PREFIX + COL_COMMUNITIES,
         COL_BASE_PREFIX + COL_ORIGIN_PROTOCOL,
         COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
+        COL_BASE_PREFIX + COL_ORIGIN_TYPE,
+        COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
         COL_BASE_PREFIX + COL_TAG,
         COL_DELTA_PREFIX + COL_TAG);
 
@@ -398,6 +403,8 @@ public class RoutesAnswererTest {
         Schema.LONG,
         Schema.list(Schema.STRING),
         Schema.list(Schema.STRING),
+        Schema.STRING,
+        Schema.STRING,
         Schema.STRING,
         Schema.STRING,
         Schema.INTEGER,
