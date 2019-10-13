@@ -20,7 +20,7 @@ import org.batfish.common.topology.ValueEdge;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 
-/** A topology representing all BGP peerings. */
+/** A topology representing all valid BGP peerings. */
 @ParametersAreNonnullByDefault
 public final class BgpTopology {
 

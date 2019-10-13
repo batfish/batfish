@@ -41,6 +41,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.CandidateBgpTopology.Annotation;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
@@ -49,7 +50,9 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 /** Utility functions for computing BGP topology */
 public final class BgpTopologyUtils {
   /**
-   * Compute the BGP topology -- a network of {@link BgpPeerConfig}s connected by {@link
+   * For tests only.
+   *
+   * <p>Compute the BGP topology -- a network of {@link BgpPeerConfig}s connected by {@link
    * BgpSessionProperties}. See {@link #initBgpTopology(Map, Map, boolean, boolean,
    * TracerouteEngine, Layer2Topology)} for more details.
    *
@@ -60,6 +63,7 @@ public final class BgpTopologyUtils {
    *     you want this to be {@code false}.
    * @return A {@link BgpTopology} representing all BGP peerings.
    */
+  @VisibleForTesting
   public static @Nonnull BgpTopology initBgpTopology(
       Map<String, Configuration> configurations,
       Map<Ip, Map<String, Set<String>>> ipOwners,
@@ -178,6 +182,20 @@ public final class BgpTopologyUtils {
       }
       return new BgpTopology(graph);
     }
+  }
+
+  @Nonnull
+  public static CandidateBgpTopology computeCandidateTopology(
+      Map<String, Configuration> configurations,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
+      Layer2Topology layer2Topology) {
+    // Wrap existing functions, for now
+    BgpTopology t = initBgpTopology(configurations, ipVrfOwners, true, false, null, layer2Topology);
+    MutableValueGraph<BgpPeerConfigId, Annotation> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    t.getGraph().nodes().forEach(graph::addNode);
+    t.getGraph().edges().forEach(p -> graph.putEdgeValue(p.nodeU(), p.nodeV(), new Annotation()));
+    return new CandidateBgpTopology(graph);
   }
 
   private static void addActivePeerEdges(

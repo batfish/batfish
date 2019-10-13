@@ -6,6 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.CandidateBgpTopology;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -23,6 +24,13 @@ public interface TopologyProvider {
    */
   @Nonnull
   BgpTopology getBgpTopology(NetworkSnapshot snapshot);
+
+  /**
+   * Returns the {@link CandidateBgpTopology} for a given snapshot. Candidate topology may include
+   * misconfigured and orphaned peers, as well edges for sessions that can't be established
+   */
+  @Nonnull
+  CandidateBgpTopology getCandidateBgpTopology(NetworkSnapshot snapshot);
 
   /**
    * Return the {@link IpsecTopology} for a given {@link NetworkSnapshot} which just contains the

@@ -3,7 +3,6 @@ package org.batfish.question.bgpsessionstatus;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.ValueGraph;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -19,6 +18,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.CandidateBgpTopology;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.table.Row;
@@ -53,7 +53,7 @@ public final class BgpSessionAnswererUtils {
       BgpActivePeerConfig activePeerConfig,
       SessionType sessionType,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology) {
+      CandidateBgpTopology configuredBgpTopology) {
     ConfiguredSessionStatus brokenStatus = getLocallyBrokenStatus(activePeerConfig, sessionType);
     if (brokenStatus != null) {
       return brokenStatus;
@@ -69,9 +69,9 @@ public final class BgpSessionAnswererUtils {
       return ConfiguredSessionStatus.INVALID_LOCAL_IP;
     } else if (!ipVrfOwners.containsKey(remoteIp)) {
       return ConfiguredSessionStatus.UNKNOWN_REMOTE;
-    } else if (configuredBgpTopology.adjacentNodes(peerId).isEmpty()) {
+    } else if (configuredBgpTopology.getGraph().adjacentNodes(peerId).isEmpty()) {
       return ConfiguredSessionStatus.HALF_OPEN;
-    } else if (configuredBgpTopology.outDegree(peerId) > 1) {
+    } else if (configuredBgpTopology.getGraph().outDegree(peerId) > 1) {
       return ConfiguredSessionStatus.MULTIPLE_REMOTES;
     }
     return ConfiguredSessionStatus.UNIQUE_MATCH;
@@ -80,16 +80,16 @@ public final class BgpSessionAnswererUtils {
   static @Nonnull ConfiguredSessionStatus getConfiguredStatus(
       BgpPeerConfigId bgpPeerConfigId,
       BgpUnnumberedPeerConfig unnumPeerConfig,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology) {
+      CandidateBgpTopology configuredBgpTopology) {
     // Not checking for local interface because that's nonnull (for now at least, we're not aware of
     // a way to configure an unnumbered peer without an interface)
     if (unnumPeerConfig.getLocalAs() == null) {
       return ConfiguredSessionStatus.NO_LOCAL_AS;
     } else if (unnumPeerConfig.getRemoteAsns().isEmpty()) {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
-    } else if (configuredBgpTopology.adjacentNodes(bgpPeerConfigId).isEmpty()) {
+    } else if (configuredBgpTopology.getGraph().adjacentNodes(bgpPeerConfigId).isEmpty()) {
       return ConfiguredSessionStatus.HALF_OPEN;
-    } else if (configuredBgpTopology.outDegree(bgpPeerConfigId) > 1) {
+    } else if (configuredBgpTopology.getGraph().outDegree(bgpPeerConfigId) > 1) {
       return ConfiguredSessionStatus.MULTIPLE_REMOTES;
     }
     return ConfiguredSessionStatus.UNIQUE_MATCH;

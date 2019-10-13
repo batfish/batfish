@@ -32,7 +32,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -46,7 +45,8 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
-import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.bgp.CandidateBgpTopology;
+import org.batfish.datamodel.bgp.CandidateBgpTopology.Annotation;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpSessionStatus;
@@ -100,7 +100,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
           new ColumnMetadata(
               COL_ESTABLISHED_STATUS, Schema.STRING, "Established status", false, true));
 
-  private static final Map<String, ColumnMetadata> METADATA_MAP = toColumnMap(COLUMN_METADATA);
+  @VisibleForTesting
+  static final Map<String, ColumnMetadata> METADATA_MAP = toColumnMap(COLUMN_METADATA);
 
   /** Answerer for the BGP Session status question (new version). */
   public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
@@ -127,16 +128,9 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
         _batfish.getTopologyProvider().getIpOwners(_batfish.getNetworkSnapshot()).getIpVrfOwners();
-    Layer2Topology layer2Topology =
-        _batfish
-            .getTopologyProvider()
-            .getLayer2Topology(_batfish.getNetworkSnapshot())
-            .orElse(null);
 
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipVrfOwners, true, layer2Topology)
-            .getGraph();
-
+    CandidateBgpTopology configuredTopology =
+        _batfish.getTopologyProvider().getCandidateBgpTopology(_batfish.getNetworkSnapshot());
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology =
         _batfish.getTopologyProvider().getBgpTopology(_batfish.getNetworkSnapshot()).getGraph();
 
@@ -182,7 +176,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology,
+      CandidateBgpTopology configuredTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology) {
     SessionType type = getSessionType(activePeer);
 
@@ -205,7 +199,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       status = NOT_ESTABLISHED;
       // This peer has a unique match, but it's unreachable. Show that remote peer's node.
       String remoteNodeName =
-          configuredTopology.adjacentNodes(activeId).iterator().next().getHostname();
+          configuredTopology.getGraph().adjacentNodes(activeId).iterator().next().getHostname();
       remoteNode = new Node(remoteNodeName);
     }
     return Row.builder(METADATA_MAP)
@@ -229,7 +223,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       BgpPeerConfigId passiveId,
       BgpPassivePeerConfig passivePeer,
       NetworkConfigurations nc,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology,
+      CandidateBgpTopology configuredTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology) {
     // Start row with base columns. Need to add status.
     // If there are compatible peers, will also add remote node and replace:
@@ -255,7 +249,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     }
 
     // Find all correctly configured remote peers compatible with this peer
-    Set<BgpPeerConfigId> compatibleRemotes = configuredTopology.adjacentNodes(passiveId);
+    Set<BgpPeerConfigId> compatibleRemotes = configuredTopology.getGraph().adjacentNodes(passiveId);
 
     // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
     if (compatibleRemotes.isEmpty()) {
@@ -273,19 +267,20 @@ public class BgpSessionStatusAnswerer extends Answerer {
     return compatibleRemotes.stream()
         .map(
             remoteId -> {
-              BgpSessionProperties sessionProps =
-                  configuredTopology.edgeValue(passiveId, remoteId).orElse(null);
-              assert sessionProps != null;
+              Annotation edge =
+                  configuredTopology.getGraph().edgeValue(passiveId, remoteId).orElse(null);
+              assert edge != null;
               BgpActivePeerConfig activeRemote = nc.getBgpPointToPointPeerConfig(remoteId);
               assert activeRemote != null;
               BgpSessionStatus status =
                   establishedRemotes.contains(remoteId) ? ESTABLISHED : NOT_ESTABLISHED;
               return rb.put(COL_ESTABLISHED_STATUS, status)
-                  .put(COL_LOCAL_IP, sessionProps.getTailIp())
+                  .put(COL_LOCAL_IP, activeRemote.getPeerAddress())
                   .put(COL_REMOTE_AS, LongSpace.of(activeRemote.getLocalAs()).toString())
                   .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
-                  .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, sessionProps.getHeadIp()))
-                  .put(COL_SESSION_TYPE, sessionProps.getSessionType())
+                  .put(
+                      COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activeRemote.getLocalIp()))
+                  .put(COL_SESSION_TYPE, getSessionType(activeRemote))
                   .build();
             })
         .collect(ImmutableList.toImmutableList());
@@ -296,7 +291,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
   static Row getUnnumberedPeerRow(
       BgpPeerConfigId unnumId,
       BgpUnnumberedPeerConfig unnumPeer,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology,
+      CandidateBgpTopology configuredTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology) {
     BgpSessionStatus status = NOT_COMPATIBLE;
     BgpPeerConfigId remoteId = null;
@@ -306,7 +301,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       remoteId = establishedTopology.adjacentNodes(unnumId).iterator().next();
     } else if (getConfiguredStatus(unnumId, unnumPeer, configuredTopology) == UNIQUE_MATCH) {
       status = NOT_ESTABLISHED;
-      remoteId = configuredTopology.adjacentNodes(unnumId).iterator().next();
+      remoteId = configuredTopology.getGraph().adjacentNodes(unnumId).iterator().next();
     }
 
     // If there's enough info to identify a remote peer, get remote node and interface

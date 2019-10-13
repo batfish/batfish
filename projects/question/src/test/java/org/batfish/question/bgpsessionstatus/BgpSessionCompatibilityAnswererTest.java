@@ -13,6 +13,7 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_VRF;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COLUMN_METADATA;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_CONFIGURED_STATUS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.METADATA_MAP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.createMetadata;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.getActivePeerRow;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.getPassivePeerRows;
@@ -48,7 +49,6 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpPeerConfigId.BgpPeerConfigType;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -62,6 +62,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.CandidateBgpTopology;
+import org.batfish.datamodel.bgp.CandidateBgpTopology.Annotation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
@@ -109,7 +111,7 @@ public class BgpSessionCompatibilityAnswererTest {
 
     Row row = getActivePeerRow(peerId, peer, ImmutableMap.of(), null);
     Row expected =
-        Row.builder()
+        Row.builder(METADATA_MAP)
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_LOCAL_IP)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, null)
@@ -157,16 +159,14 @@ public class BgpSessionCompatibilityAnswererTest {
             remoteIp,
             ImmutableMap.of("c2", ImmutableSet.of("vrf2")));
 
-    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+    MutableValueGraph<BgpPeerConfigId, Annotation> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    bgpTopology.putEdgeValue(
-        peerId, remotePeerId, BgpSessionProperties.from(peer, remotePeer, false));
-    bgpTopology.putEdgeValue(
-        remotePeerId, peerId, BgpSessionProperties.from(peer, remotePeer, true));
+    bgpTopology.putEdgeValue(peerId, remotePeerId, new Annotation());
+    bgpTopology.putEdgeValue(remotePeerId, peerId, new Annotation());
 
-    Row row = getActivePeerRow(peerId, peer, ipVrfOwners, bgpTopology);
+    Row row = getActivePeerRow(peerId, peer, ipVrfOwners, new CandidateBgpTopology(bgpTopology));
     Row expected =
-        Row.builder()
+        Row.builder(METADATA_MAP)
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, localIp)
@@ -198,7 +198,7 @@ public class BgpSessionCompatibilityAnswererTest {
 
     List<Row> rows = getPassivePeerRows(peerId, peer, null, null);
     Row expected =
-        Row.builder()
+        Row.builder(METADATA_MAP)
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_REMOTE_AS)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
@@ -230,13 +230,13 @@ public class BgpSessionCompatibilityAnswererTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+    MutableValueGraph<BgpPeerConfigId, Annotation> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     bgpTopology.addNode(peerId);
 
-    List<Row> rows = getPassivePeerRows(peerId, peer, null, bgpTopology);
+    List<Row> rows = getPassivePeerRows(peerId, peer, null, new CandidateBgpTopology(bgpTopology));
     Row expected =
-        Row.builder()
+        Row.builder(METADATA_MAP)
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_MATCH_FOUND)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
@@ -292,12 +292,12 @@ public class BgpSessionCompatibilityAnswererTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+    MutableValueGraph<BgpPeerConfigId, Annotation> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    bgpTopology.putEdgeValue(peerId, remote1Id, BgpSessionProperties.from(remote1, peer, true));
-    bgpTopology.putEdgeValue(remote1Id, peerId, BgpSessionProperties.from(remote1, peer, false));
-    bgpTopology.putEdgeValue(peerId, remote2Id, BgpSessionProperties.from(remote2, peer, true));
-    bgpTopology.putEdgeValue(remote2Id, peerId, BgpSessionProperties.from(remote2, peer, false));
+    bgpTopology.putEdgeValue(peerId, remote1Id, new Annotation());
+    bgpTopology.putEdgeValue(remote1Id, peerId, new Annotation());
+    bgpTopology.putEdgeValue(peerId, remote2Id, new Annotation());
+    bgpTopology.putEdgeValue(remote2Id, peerId, new Annotation());
 
     // Build configs for remote peers because answerer needs to look up peers from peer IDs
     NetworkConfigurations nc =
@@ -305,10 +305,10 @@ public class BgpSessionCompatibilityAnswererTest {
             createConfigurations(
                 ImmutableList.of(remote1Id, remote2Id), ImmutableList.of(remote1, remote2)));
 
-    List<Row> rows = getPassivePeerRows(peerId, peer, nc, bgpTopology);
+    List<Row> rows = getPassivePeerRows(peerId, peer, nc, new CandidateBgpTopology(bgpTopology));
 
     Row.RowBuilder expectedRowBuilder =
-        Row.builder()
+        Row.builder(METADATA_MAP)
             // Columns that should be the same in both rows
             .put(COL_LOCAL_AS, 1L)
             .put(COL_LOCAL_IP, localIp)
@@ -320,13 +320,13 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_REMOTE_INTERFACE, null);
     Row expected1 =
         expectedRowBuilder
-            .put(COL_REMOTE_AS, "2")
+            .put(COL_REMOTE_AS, 2L)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remote1Ip))
             .put(COL_REMOTE_NODE, new Node("c2"))
             .build();
     Row expected2 =
         expectedRowBuilder
-            .put(COL_REMOTE_AS, "3")
+            .put(COL_REMOTE_AS, 3L)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remote2Ip))
             .put(COL_REMOTE_NODE, new Node("c3"))
             .build();
@@ -346,7 +346,7 @@ public class BgpSessionCompatibilityAnswererTest {
 
     Row row = getUnnumberedPeerRow(peerId, peer, null);
     Row expected =
-        Row.builder()
+        Row.builder(METADATA_MAP)
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_REMOTE_AS)
             .put(COL_LOCAL_INTERFACE, NodeInterfacePair.of("c1", "iface"))
             .put(COL_LOCAL_IP, null)
@@ -388,14 +388,14 @@ public class BgpSessionCompatibilityAnswererTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+    MutableValueGraph<BgpPeerConfigId, Annotation> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    bgpTopology.putEdgeValue(peerId, remoteId, BgpSessionProperties.from(remote, peer, false));
-    bgpTopology.putEdgeValue(remoteId, peerId, BgpSessionProperties.from(remote, peer, true));
+    bgpTopology.putEdgeValue(peerId, remoteId, new Annotation());
+    bgpTopology.putEdgeValue(remoteId, peerId, new Annotation());
 
-    Row row = getUnnumberedPeerRow(peerId, peer, bgpTopology);
+    Row row = getUnnumberedPeerRow(peerId, peer, new CandidateBgpTopology(bgpTopology));
     Row expected =
-        Row.builder()
+        Row.builder(METADATA_MAP)
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
             .put(COL_LOCAL_INTERFACE, NodeInterfacePair.of("c1", "iface"))
             .put(COL_LOCAL_IP, null)
@@ -441,7 +441,7 @@ public class BgpSessionCompatibilityAnswererTest {
 
     // Rows that will appear if no filters are applied
     Row.RowBuilder expectedRowBuilder =
-        Row.builder()
+        Row.builder(METADATA_MAP)
             // Columns that will be the same in both rows
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
             .put(COL_LOCAL_INTERFACE, null)
@@ -569,6 +569,11 @@ public class BgpSessionCompatibilityAnswererTest {
 
     public MockBatfish(SortedMap<String, Configuration> configs) {
       _configs = configs;
+    }
+
+    @Override
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+      return _configs;
     }
 
     @Override

@@ -34,6 +34,8 @@ import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.bgp.CandidateBgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ipsec.IpsecTopology;
@@ -136,6 +138,15 @@ public class IBatfishTestAdapter implements IBatfish {
     @Override
     public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public CandidateBgpTopology getCandidateBgpTopology(NetworkSnapshot snapshot) {
+      return BgpTopologyUtils.computeCandidateTopology(
+          _batfish.loadConfigurations(_batfish.getNetworkSnapshot()),
+          getIpOwners(_batfish.getNetworkSnapshot()).getIpVrfOwners(),
+          getInitialLayer2Topology(_batfish.getNetworkSnapshot()).orElse(null));
     }
 
     @Override

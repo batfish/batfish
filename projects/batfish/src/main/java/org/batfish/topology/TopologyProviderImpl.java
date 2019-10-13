@@ -24,6 +24,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.bgp.CandidateBgpTopology;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
@@ -93,6 +95,12 @@ public final class TopologyProviderImpl implements TopologyProvider {
   @Override
   public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
     return _initialVxlanTopologies.getUnchecked(snapshot);
+  }
+
+  @Nonnull
+  @Override
+  public CandidateBgpTopology getCandidateBgpTopology(NetworkSnapshot snapshot) {
+    return _candidateBgpTopologies.getUnchecked(snapshot);
   }
 
   @Override
@@ -207,6 +215,18 @@ public final class TopologyProviderImpl implements TopologyProvider {
       CacheBuilder.newBuilder()
           .maximumSize(MAX_CACHED_SNAPSHOTS)
           .build(CacheLoader.from(this::computeVxlanTopology));
+
+  private final LoadingCache<NetworkSnapshot, CandidateBgpTopology> _candidateBgpTopologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeCandidateBgpTopology));
+
+  private CandidateBgpTopology computeCandidateBgpTopology(NetworkSnapshot snapshot) {
+    return BgpTopologyUtils.computeCandidateTopology(
+        _batfish.loadConfigurations(),
+        getIpOwners(snapshot).getIpVrfOwners(),
+        getInitialLayer2Topology(snapshot).orElse(null));
+  }
 
   private @Nonnull IpOwners computeIpOwners(NetworkSnapshot snapshot) {
     try (ActiveSpan span =
