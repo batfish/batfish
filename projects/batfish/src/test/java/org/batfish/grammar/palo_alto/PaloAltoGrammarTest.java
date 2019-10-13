@@ -1210,6 +1210,7 @@ public final class PaloAltoGrammarTest {
     Flow z1ToZ1rejectedService = createFlow("1.1.2.2", "1.1.1.2", IpProtocol.TCP, 1, 999);
     Flow z2ToZ1permitted = createFlow("1.1.4.255", "1.1.1.2");
     Flow noZoneToZ1rejected = createFlow("1.1.3.2", "1.1.1.2");
+    Flow fromDevicePermitted = createFlow("1.1.1.1", "1.1.1.2");
 
     // Confirm flow matching deny rule is rejected
     assertThat(
@@ -1231,6 +1232,9 @@ public final class PaloAltoGrammarTest {
     // Confirm flow from an unzoned interface is rejected
     assertThat(
         c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1rejected, if3name, c))));
+
+    // Confirm flow from the device itself is permitted
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(fromDevicePermitted, null, c))));
   }
 
   @Test

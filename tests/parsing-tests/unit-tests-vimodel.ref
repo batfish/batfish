@@ -32191,6 +32191,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32203,6 +32209,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32215,6 +32227,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32227,6 +32245,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32239,6 +32263,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32251,6 +32281,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32263,6 +32299,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32275,6 +32317,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32287,6 +32335,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           }
@@ -32452,6 +32506,12 @@
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
                   "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
                   "defaultAccept" : false
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
             ]
