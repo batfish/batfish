@@ -6,7 +6,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class LiteralOrigin extends OriginExpr {
+/** Represents a specific constant {@link OriginType}. */
+public final class LiteralOrigin extends OriginExpr {
   private static final String PROP_ORIGIN_TYPE = "originType";
 
   @Nullable private Long _asNum;
@@ -25,25 +26,11 @@ public class LiteralOrigin extends OriginExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof LiteralOrigin)) {
       return false;
     }
     LiteralOrigin other = (LiteralOrigin) obj;
-    if (_asNum == null) {
-      if (other._asNum != null) {
-        return false;
-      }
-    } else if (!_asNum.equals(other._asNum)) {
-      return false;
-    }
-    if (_originType != other._originType) {
-      return false;
-    }
-    return true;
+    return _originType == other._originType;
   }
 
   @Override
@@ -63,11 +50,7 @@ public class LiteralOrigin extends OriginExpr {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_asNum == null) ? 0 : _asNum.hashCode());
-    result = prime * result + ((_originType == null) ? 0 : _originType.ordinal());
-    return result;
+    return _originType.ordinal();
   }
 
   public void setAsNum(@Nullable Long asNum) {
