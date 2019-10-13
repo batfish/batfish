@@ -659,7 +659,10 @@ final class Conversions {
     return ExtendedCommunity.target(asn & 0xFFFFL, vni);
   }
 
-  /** Create and return an export policy from a list of statements */
+  /**
+   * Create and return an export policy from a list of statements. The policy is auto-added to the
+   * given {@link Configuration}.
+   */
   private static RoutingPolicy createExportPolicyFromStatements(
       String policyName, List<Statement> statements, Configuration configuration) {
     return RoutingPolicy.builder()
@@ -669,6 +672,10 @@ final class Conversions {
         .build();
   }
 
+  /**
+   * Create and return an import policy for the given address family. The policy is auto-added to
+   * the given {@link Configuration}.
+   */
   private static RoutingPolicy createNeighborImportPolicy(
       Configuration c, String policyName, BgpVrfNeighborAddressFamilyConfiguration af) {
     RoutingPolicy.Builder ret = RoutingPolicy.builder().setOwner(c).setName(policyName);
