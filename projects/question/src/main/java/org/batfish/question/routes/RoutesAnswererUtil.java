@@ -14,6 +14,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
@@ -317,6 +318,7 @@ public class RoutesAnswererUtil {
                 .map(Community::toString)
                 .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
+        .put(COL_ORIGIN_TYPE, bgpv4Route.getOriginType())
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .build();
   }
@@ -343,6 +345,7 @@ public class RoutesAnswererUtil {
             COL_COMMUNITIES,
             evpnRoute.getCommunities().stream().map(Community::toString).collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, evpnRoute.getSrcProtocol())
+        .put(COL_ORIGIN_TYPE, evpnRoute.getOriginType())
         .put(COL_TAG, evpnRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : evpnRoute.getTag())
         .put(COL_ROUTE_DISTINGUISHER, evpnRoute.getRouteDistinguisher())
         .build();
@@ -478,6 +481,9 @@ public class RoutesAnswererUtil {
         .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_ORIGIN_PROTOCOL,
             routeRowAttribute != null ? routeRowAttribute.getOriginProtocol() : null)
+        .put(
+            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_ORIGIN_TYPE,
+            routeRowAttribute != null ? routeRowAttribute.getOriginType() : null)
         .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_TAG,
             routeRowAttribute != null ? routeRowAttribute.getTag() : null);
@@ -676,6 +682,7 @@ public class RoutesAnswererUtil {
                                                     route.getCommunities().stream()
                                                         .map(Community::toString)
                                                         .collect(toImmutableList()))
+                                                .setOriginType(route.getOriginType())
                                                 .setTag(
                                                     route.getTag() == Route.UNSET_ROUTE_TAG
                                                         ? null
