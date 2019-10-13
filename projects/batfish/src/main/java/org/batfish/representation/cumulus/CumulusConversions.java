@@ -59,7 +59,7 @@ public final class CumulusConversions {
     we.setPostTrueStatements(
         ImmutableList.of(
             Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
-            new SetOrigin(new LiteralOrigin(originType, null))));
+            new SetOrigin(new LiteralOrigin(originType))));
     return we;
   }
 

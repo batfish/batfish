@@ -188,8 +188,7 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new SetLocalPreference(new LiteralLong(1L)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetMetric(new LiteralLong(1L)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetNextHop(DiscardNextHop.INSTANCE).accept(STATEMENT_VERIFIER, ctx));
-    assertNull(
-        new SetOrigin(new LiteralOrigin(OriginType.EGP, null)).accept(STATEMENT_VERIFIER, ctx));
+    assertNull(new SetOrigin(new LiteralOrigin(OriginType.EGP)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetOspfMetricType(OspfMetricType.E1).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetTag(new LiteralLong(1L)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetVarMetricType("a").accept(STATEMENT_VERIFIER, ctx));

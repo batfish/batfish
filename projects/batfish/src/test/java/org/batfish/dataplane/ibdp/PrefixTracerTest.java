@@ -85,7 +85,7 @@ public class PrefixTracerTest {
         nf.routingPolicyBuilder()
             .setStatements(
                 ImmutableList.of(
-                    new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                    new SetOrigin(new LiteralOrigin(OriginType.IGP)),
                     blockExport
                         ? Statements.ExitReject.toStaticStatement()
                         : Statements.ExitAccept.toStaticStatement()))

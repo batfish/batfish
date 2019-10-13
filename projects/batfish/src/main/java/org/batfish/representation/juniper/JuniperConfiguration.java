@@ -364,7 +364,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         new If(
             new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
             ImmutableList.of(),
-            ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null))));
+            ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP))));
 
     /*
      * Juniper allows setting BGP communities for static routes. Rather than add communities to VI

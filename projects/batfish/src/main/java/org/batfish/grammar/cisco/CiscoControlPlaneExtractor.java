@@ -1282,7 +1282,6 @@ import org.batfish.representation.cisco.RouteMapSetCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityListLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
-import org.batfish.representation.cisco.RouteMapSetLine;
 import org.batfish.representation.cisco.RouteMapSetLocalPreferenceLine;
 import org.batfish.representation.cisco.RouteMapSetMetricEigrpLine;
 import org.batfish.representation.cisco.RouteMapSetMetricLine;
@@ -10131,9 +10130,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
-    OriginExpr originExpr = toOriginExpr(ctx.origin_expr_literal());
-    RouteMapSetLine line = new RouteMapSetOriginTypeLine(originExpr);
-    _currentRouteMapClause.addSetLine(line);
+    toOriginExpr(ctx.origin_expr_literal())
+        .ifPresent(expr -> _currentRouteMapClause.addSetLine(new RouteMapSetOriginTypeLine(expr)));
   }
 
   @Override
@@ -11849,29 +11847,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private OriginExpr toOriginExpr(Origin_expr_literalContext ctx) {
-    OriginType originType;
-    Long asNum = null;
-    LiteralOrigin originExpr;
+  private Optional<OriginExpr> toOriginExpr(Origin_expr_literalContext ctx) {
     if (ctx.IGP() != null) {
-      originType = OriginType.IGP;
+      return Optional.of(new LiteralOrigin(OriginType.IGP));
     } else if (ctx.INCOMPLETE() != null) {
-      originType = OriginType.INCOMPLETE;
+      return Optional.of(new LiteralOrigin(OriginType.INCOMPLETE));
     } else if (ctx.bgp_asn() != null) {
-      asNum = toAsNum(ctx.bgp_asn());
-      originType = OriginType.IGP;
+      todo(ctx);
+      return Optional.empty();
     } else {
       throw convError(OriginExpr.class, ctx);
     }
-    originExpr = new LiteralOrigin(originType, asNum);
-    return originExpr;
   }
 
-  private OriginExpr toOriginExpr(Origin_exprContext ctx) {
+  private Optional<OriginExpr> toOriginExpr(Origin_exprContext ctx) {
     if (ctx.origin_expr_literal() != null) {
       return toOriginExpr(ctx.origin_expr_literal());
     } else if (ctx.RP_VARIABLE() != null) {
-      return new VarOrigin(ctx.RP_VARIABLE().getText());
+      return Optional.of(new VarOrigin(ctx.RP_VARIABLE().getText()));
     } else {
       throw convError(OriginExpr.class, ctx);
     }

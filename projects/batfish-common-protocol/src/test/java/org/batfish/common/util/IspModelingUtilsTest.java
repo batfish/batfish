@@ -556,7 +556,7 @@ public class IspModelingUtilsTest {
                                     DestinationNetwork.instance(),
                                     new ExplicitPrefixSet(prefixSpace)))),
                         ImmutableList.of(
-                            new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+                            new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE)),
                             Statements.ExitAccept.toStaticStatement()))))
             .build();
     assertThat(internetRoutingPolicy, equalTo(expectedRoutingPolicy));
