@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cisco_nxos.Vrf.MAC_VRF_OFFSET;
 
@@ -15,7 +16,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -40,13 +40,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Prefix6Range;
-import org.batfish.datamodel.Prefix6Space;
-import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
@@ -56,23 +50,22 @@ import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.AsnValue;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.RemoteAs;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
@@ -84,32 +77,11 @@ import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfigu
 @ParametersAreNonnullByDefault
 final class Conversions {
 
-  /** Matches the IPv4 default route. */
-  static final MatchPrefixSet MATCH_DEFAULT_ROUTE;
-
-  /** Matches the IPv6 default route. */
-  static final MatchPrefix6Set MATCH_DEFAULT_ROUTE6;
-
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE;
 
   static {
-    MATCH_DEFAULT_ROUTE =
-        new MatchPrefixSet(
-            DestinationNetwork.instance(),
-            new ExplicitPrefixSet(
-                new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))));
-    MATCH_DEFAULT_ROUTE.setComment("match default route");
-
-    NOT_DEFAULT_ROUTE = new Not(MATCH_DEFAULT_ROUTE);
-
-    MATCH_DEFAULT_ROUTE6 =
-        new MatchPrefix6Set(
-            new DestinationNetwork6(),
-            new ExplicitPrefix6Set(
-                new Prefix6Space(
-                    Collections.singleton(new Prefix6Range(Prefix6.ZERO, new SubRange(0, 0))))));
-    MATCH_DEFAULT_ROUTE6.setComment("match default route");
+    NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
   }
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
@@ -374,41 +346,34 @@ final class Conversions {
     @Nullable
     BgpVrfNeighborAddressFamilyConfiguration naf4 = neighbor.getIpv4UnicastAddressFamily();
     @Nullable BgpVrfIpv4AddressFamilyConfiguration af4 = vrfConfig.getIpv4UnicastAddressFamily();
-    Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder = Ipv4UnicastAddressFamily.builder();
 
-    // Statements for export policy
-    List<Statement> exportStatements = ImmutableList.of();
     if (naf4 != null) {
-      ipv4FamilyBuilder.setAddressFamilyCapabilities(
-          getAddressFamilyCapabilities(naf4, af4 != null && af4.getSuppressInactive()));
+      // import policy
+      RoutingPolicy importPolicy =
+          createNeighborImportPolicy(
+              c,
+              generatedBgpPeerImportPolicyName(
+                  vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
+              naf4);
 
-      // set import policy
-      String inboundMap = naf4.getInboundRouteMap();
-      ipv4FamilyBuilder
-          .setImportPolicy(
-              inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)
-                  ? inboundMap
-                  : null)
-          .setRouteReflectorClient(firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
+      // export policy
+      RoutingPolicy exportPolicy =
+          createExportPolicyFromStatements(
+              generatedBgpPeerExportPolicyName(
+                  vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
+              getExportStatementsForIpv4(c, naf4, neighbor, newNeighborBuilder, vrf.getName()),
+              c);
 
-      exportStatements =
-          getExportStatementsForIpv4(c, naf4, neighbor, newNeighborBuilder, vrf.getName());
-    } else if (neighbor.getRemovePrivateAs() != null) {
-      // TODO(handle different types of RemovePrivateAs)
-      exportStatements = ImmutableList.of(RemovePrivateAs.toStaticStatement());
+      Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder =
+          Ipv4UnicastAddressFamily.builder()
+              .setAddressFamilyCapabilities(
+                  getAddressFamilyCapabilities(naf4, af4 != null && af4.getSuppressInactive()))
+              .setExportPolicy(exportPolicy.getName())
+              .setImportPolicy(importPolicy.getName())
+              .setRouteReflectorClient(firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
+
+      newNeighborBuilder.setIpv4UnicastAddressFamily(ipv4FamilyBuilder.build());
     }
-
-    // Export policy
-    RoutingPolicy exportPolicy =
-        createExportPolicyFromStatements(
-            generatedBgpPeerExportPolicyName(
-                vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
-            exportStatements,
-            c);
-    c.getRoutingPolicies().put(exportPolicy.getName(), exportPolicy);
-    ipv4FamilyBuilder.setExportPolicy(exportPolicy.getName());
-
-    newNeighborBuilder.setIpv4UnicastAddressFamily(ipv4FamilyBuilder.build());
 
     @Nullable
     BgpVrfNeighborAddressFamilyConfiguration neighborL2VpnAf = neighbor.getL2VpnEvpnAddressFamily();
@@ -440,14 +405,13 @@ final class Conversions {
     evpnFamilyBuilder.setL3Vnis(getL3VniConfigs(c, vrf, proc, localAs, vsConfig, warnings));
 
     if (neighborL2VpnAf != null || vrfL2VpnAf != null) {
-      exportStatements = getExportStatementsForEvpn(c, neighborL2VpnAf, neighbor);
-      exportPolicy =
+      List<Statement> evpnStatements = getExportStatementsForEvpn(c, neighborL2VpnAf, neighbor);
+      RoutingPolicy exportPolicy =
           createExportPolicyFromStatements(
               generatedBgpPeerEvpnExportPolicyName(
                   vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
-              exportStatements,
+              evpnStatements,
               c);
-      c.getRoutingPolicies().put(exportPolicy.getName(), exportPolicy);
       newNeighborBuilder.setEvpnAddressFamily(
           evpnFamilyBuilder.setExportPolicy(exportPolicy.getName()).build());
     }
@@ -695,12 +659,39 @@ final class Conversions {
     return ExtendedCommunity.target(asn & 0xFFFFL, vni);
   }
 
-  /** Create and return an export policy from a list of statements */
+  /**
+   * Create and return an export policy from a list of statements. The policy is auto-added to the
+   * given {@link Configuration}.
+   */
   private static RoutingPolicy createExportPolicyFromStatements(
       String policyName, List<Statement> statements, Configuration configuration) {
-    RoutingPolicy exportPolicy = new RoutingPolicy(policyName, configuration);
-    exportPolicy.setStatements(statements);
-    return exportPolicy;
+    return RoutingPolicy.builder()
+        .setOwner(configuration)
+        .setName(policyName)
+        .setStatements(statements)
+        .build();
+  }
+
+  /**
+   * Create and return an import policy for the given address family. The policy is auto-added to
+   * the given {@link Configuration}.
+   */
+  private static RoutingPolicy createNeighborImportPolicy(
+      Configuration c, String policyName, BgpVrfNeighborAddressFamilyConfiguration af) {
+    RoutingPolicy.Builder ret = RoutingPolicy.builder().setOwner(c).setName(policyName);
+
+    // NX-OS applies peer tag at import.
+    ret.addStatement(new SetTag(AsnValue.of(RemoteAs.instance())));
+
+    if (af.getInboundRouteMap() != null) {
+      // Call inbound route-map if set.
+      ret.addStatement(new CallStatement(af.getInboundRouteMap()));
+    } else {
+      // Accept everything if not.
+      ret.addStatement(Statements.ExitAccept.toStaticStatement());
+    }
+
+    return ret.build();
   }
 
   /** Get address family capabilities for IPv4 and L2VPN address families */
@@ -825,7 +816,8 @@ final class Conversions {
               new If(
                   new Conjunction(
                       ImmutableList.of(
-                          MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))),
+                          Common.matchDefaultRoute(),
+                          new MatchProtocol(RoutingProtocol.AGGREGATE))),
                   ImmutableList.of(
                       new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
                       Statements.ReturnTrue.toStaticStatement())))

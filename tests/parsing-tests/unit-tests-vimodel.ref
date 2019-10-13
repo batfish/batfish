@@ -29514,6 +29514,24 @@
                 ]
               }
             ]
+          },
+          "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~" : {
+            "name" : "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
+                "tag" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.AsnValue",
+                  "as" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.RemoteAs"
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                "calledPolicyName" : "IN_BBB"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -29553,6 +29571,7 @@
                       "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                    "importPolicy" : "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 1,
@@ -32191,6 +32210,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32203,6 +32228,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32215,6 +32246,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32227,6 +32264,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32239,6 +32282,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32251,6 +32300,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32263,6 +32318,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32275,6 +32336,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           },
@@ -32287,6 +32354,12 @@
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Not in a zone"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                }
               }
             ]
           }
@@ -32452,6 +32525,12 @@
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
                   "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
                   "defaultAccept" : false
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
             ]
