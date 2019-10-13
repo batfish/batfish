@@ -520,7 +520,7 @@ public final class IspModelingUtils {
                 new MatchPrefixSet(
                     DestinationNetwork.instance(), new ExplicitPrefixSet(prefixSpace)))),
         ImmutableList.of(
-            new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+            new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE)),
             Statements.ExitAccept.toStaticStatement()));
   }
 

@@ -795,7 +795,7 @@ final class Conversions {
                           Common.matchDefaultRoute(),
                           new MatchProtocol(RoutingProtocol.AGGREGATE))),
                   ImmutableList.of(
-                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                      new SetOrigin(new LiteralOrigin(OriginType.IGP)),
                       Statements.ReturnTrue.toStaticStatement())))
           .addStatement(Statements.ReturnFalse.toStaticStatement())
           .build();

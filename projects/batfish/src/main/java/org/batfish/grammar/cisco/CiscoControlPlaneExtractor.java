@@ -11863,7 +11863,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw convError(OriginExpr.class, ctx);
     }
-    originExpr = new LiteralOrigin(originType, asNum);
+    originExpr = new LiteralOrigin(originType);
     return originExpr;
   }
 

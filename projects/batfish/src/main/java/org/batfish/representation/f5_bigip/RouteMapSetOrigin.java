@@ -27,6 +27,6 @@ public class RouteMapSetOrigin implements RouteMapSet {
   @Override
   public @Nonnull Stream<Statement> toStatements(
       Configuration c, F5BigipConfiguration vc, Warnings w) {
-    return Stream.of(new SetOrigin(new LiteralOrigin(_origin, null)));
+    return Stream.of(new SetOrigin(new LiteralOrigin(_origin)));
   }
 }

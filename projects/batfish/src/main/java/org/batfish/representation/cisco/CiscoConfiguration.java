@@ -659,7 +659,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     we.setPostTrueStatements(
         ImmutableList.of(
             Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
-            new SetOrigin(new LiteralOrigin(originType, null))));
+            new SetOrigin(new LiteralOrigin(originType))));
     return we;
   }
 

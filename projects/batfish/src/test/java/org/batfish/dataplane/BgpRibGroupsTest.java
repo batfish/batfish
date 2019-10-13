@@ -114,7 +114,7 @@ public class BgpRibGroupsTest {
                     new If(
                         new MatchProtocol(RoutingProtocol.STATIC),
                         ImmutableList.of(
-                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                            new SetOrigin(new LiteralOrigin(OriginType.IGP)),
                             Statements.ReturnTrue.toStaticStatement()))));
     rpb.setOwner(c2).build();
     rpb.setOwner(c3).build();
@@ -124,7 +124,7 @@ public class BgpRibGroupsTest {
         .setName(EXPORT_ALL)
         .setStatements(
             ImmutableList.of(
-                new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+                new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE)),
                 Statements.ReturnTrue.toStaticStatement()))
         .setOwner(c1)
         .build();

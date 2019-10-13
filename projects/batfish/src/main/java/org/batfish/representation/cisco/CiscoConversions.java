@@ -613,8 +613,7 @@ public class CiscoConversions {
             new LiteralOrigin(
                 c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
                     ? OriginType.IGP
-                    : OriginType.INCOMPLETE,
-                null));
+                    : OriginType.INCOMPLETE));
     List<Statement> defaultRouteExportStatements;
     if (defaultOriginateExportMapName == null
         || !c.getRoutingPolicies().keySet().contains(defaultOriginateExportMapName)) {

@@ -20,29 +20,29 @@ import org.junit.Test;
 public class SetOriginTest {
   @Test
   public void testEquals() {
-    SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
+    SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE));
     new EqualsTester()
-        .addEqualityGroup(so, so, new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L)))
-        .addEqualityGroup(new SetOrigin(new LiteralOrigin(OriginType.IGP, 1L)))
+        .addEqualityGroup(so, so, new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE)))
+        .addEqualityGroup(new SetOrigin(new LiteralOrigin(OriginType.IGP)))
         .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
-    SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
+    SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE));
     assertThat(SerializationUtils.clone(so), equalTo(so));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
-    SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
+    SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE));
     assertThat(BatfishObjectMapper.clone(so, SetOrigin.class), equalTo(so));
   }
 
   @Test
   public void testExecuteNonBgpRoute() {
-    SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
+    SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE));
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()

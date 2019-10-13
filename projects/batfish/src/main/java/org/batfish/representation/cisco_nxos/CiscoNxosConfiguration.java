@@ -313,7 +313,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     we.setPostTrueStatements(
         ImmutableList.of(
             Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
-            new SetOrigin(new LiteralOrigin(originType, null))));
+            new SetOrigin(new LiteralOrigin(originType))));
     return we;
   }
 
@@ -3084,7 +3084,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
           @Override
           public Stream<Statement> visitRouteMapSetOrigin(RouteMapSetOrigin routeMapSetOrigin) {
-            return Stream.of(new SetOrigin(new LiteralOrigin(routeMapSetOrigin.getOrigin(), null)));
+            return Stream.of(new SetOrigin(new LiteralOrigin(routeMapSetOrigin.getOrigin())));
           }
 
           @Override
