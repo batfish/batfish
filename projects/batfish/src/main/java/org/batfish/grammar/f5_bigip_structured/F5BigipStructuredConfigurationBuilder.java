@@ -15,6 +15,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_L
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_TCP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.NODE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_COOKIE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SOURCE_ADDR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SSL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.POOL;
@@ -103,6 +104,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_HTTP_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_LDAP_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_TCP_DEFAULTS_FROM;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PERSISTENCE_COOKIE_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PERSISTENCE_SSL_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.POOL_MEMBER;
@@ -249,6 +251,8 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ln_addres
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ln_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lp_descriptionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lp_monitorContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_cookieContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_cookie_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_source_addrContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_sslContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpersa_defaults_fromContext;
@@ -784,15 +788,57 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterLper_cookie(Lper_cookieContext ctx) {
+    String name = toName(ctx.name);
+    _c.defineStructure(PERSISTENCE_COOKIE, name, ctx);
+  }
+
+  @Override
+  public void exitLper_cookie_defaults_from(Lper_cookie_defaults_fromContext ctx) {
+    String name = toName(ctx.name);
+    if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
+      _c.referenceStructure(
+          PERSISTENCE_COOKIE,
+          name,
+          PERSISTENCE_COOKIE_DEFAULTS_FROM,
+          ctx.name.getStart().getLine());
+    }
+    todo(ctx);
+  }
+
+  @Override
   public void enterLper_source_addr(Lper_source_addrContext ctx) {
     String name = toName(ctx.name);
     _c.defineStructure(PERSISTENCE_SOURCE_ADDR, name, ctx);
   }
 
   @Override
+  public void exitLpersa_defaults_from(Lpersa_defaults_fromContext ctx) {
+    String name = toName(ctx.name);
+    if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
+      _c.referenceStructure(
+          PERSISTENCE_SOURCE_ADDR,
+          name,
+          PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM,
+          ctx.name.getStart().getLine());
+    }
+    todo(ctx);
+  }
+
+  @Override
   public void enterLper_ssl(Lper_sslContext ctx) {
     String name = toName(ctx.name);
     _c.defineStructure(PERSISTENCE_SSL, name, ctx);
+  }
+
+  @Override
+  public void exitLperss_defaults_from(Lperss_defaults_fromContext ctx) {
+    String name = toName(ctx.name);
+    if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
+      _c.referenceStructure(
+          PERSISTENCE_SSL, name, PERSISTENCE_SSL_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
@@ -2064,29 +2110,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
       }
       _currentPool.getMonitors().add(name);
     }
-  }
-
-  @Override
-  public void exitLpersa_defaults_from(Lpersa_defaults_fromContext ctx) {
-    String name = toName(ctx.name);
-    if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
-      _c.referenceStructure(
-          PERSISTENCE_SOURCE_ADDR,
-          name,
-          PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM,
-          ctx.name.getStart().getLine());
-    }
-    todo(ctx);
-  }
-
-  @Override
-  public void exitLperss_defaults_from(Lperss_defaults_fromContext ctx) {
-    String name = toName(ctx.name);
-    if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
-      _c.referenceStructure(
-          PERSISTENCE_SSL, name, PERSISTENCE_SSL_DEFAULTS_FROM, ctx.name.getStart().getLine());
-    }
-    todo(ctx);
   }
 
   @Override

@@ -208,6 +208,11 @@ COMPATIBILITY
   'compatibility'
 ;
 
+COOKIE
+:
+  'cookie'
+;
+
 DATA_GROUP
 :
   'data-group'
@@ -291,6 +296,11 @@ ENABLED
 ENTRIES
 :
   'entries'
+;
+
+EXPIRATION
+:
+  'expiration'
 ;
 
 EXTERNAL
