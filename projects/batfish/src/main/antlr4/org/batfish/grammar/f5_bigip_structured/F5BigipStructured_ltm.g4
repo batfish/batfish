@@ -1908,7 +1908,7 @@ s_ltm
     | l_snatpool
     | l_virtual
     | l_virtual_address
-//    | unrecognized
+    | unrecognized
   )
 ;
 
