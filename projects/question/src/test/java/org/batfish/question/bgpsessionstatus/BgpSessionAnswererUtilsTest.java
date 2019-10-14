@@ -129,7 +129,6 @@ public final class BgpSessionAnswererUtilsTest {
     Ip unnumIp = Ip.parse("169.254.0.1");
     peer = peerBuilder.setLocalIp(unnumIp).build();
     BgpPeerConfigId id2 = new BgpPeerConfigId("c2", "vrf", "iface2");
-    BgpUnnumberedPeerConfig peer2 = peerBuilder.setPeerInterface("iface2").build();
     topology.addNode(id2);
     topology.putEdgeValue(id, id2, new Annotation());
     topology.putEdgeValue(id2, id, new Annotation());
@@ -139,7 +138,6 @@ public final class BgpSessionAnswererUtilsTest {
 
     // With multiple edges, status should be MULTIPLE_REMOTES
     BgpPeerConfigId id3 = new BgpPeerConfigId("c3", "vrf", "iface3");
-    BgpUnnumberedPeerConfig peer3 = peerBuilder.setPeerInterface("iface3").build();
     topology.addNode(id3);
     topology.putEdgeValue(id, id3, new Annotation());
     topology.putEdgeValue(id3, id, new Annotation());

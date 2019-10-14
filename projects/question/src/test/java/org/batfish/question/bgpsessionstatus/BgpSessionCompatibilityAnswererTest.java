@@ -145,13 +145,6 @@ public class BgpSessionCompatibilityAnswererTest {
 
     // Remote active peer
     BgpPeerConfigId remotePeerId = new BgpPeerConfigId("c2", "vrf2", localIp.toPrefix(), false);
-    BgpActivePeerConfig remotePeer =
-        BgpActivePeerConfig.builder()
-            .setLocalAs(2L)
-            .setRemoteAs(1L)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
-            .build();
-
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
         ImmutableMap.of(
             localIp,
@@ -379,15 +372,6 @@ public class BgpSessionCompatibilityAnswererTest {
 
     // Remote unnumbered peer
     BgpPeerConfigId remoteId = new BgpPeerConfigId("c2", "vrf2", "iface2");
-    BgpUnnumberedPeerConfig remote =
-        BgpUnnumberedPeerConfig.builder()
-            .setPeerInterface("iface2")
-            .setLocalAs(2L)
-            .setRemoteAs(1L)
-            .setLocalIp(unnumIp)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
-            .build();
-
     MutableValueGraph<BgpPeerConfigId, Annotation> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     bgpTopology.putEdgeValue(peerId, remoteId, new Annotation());
