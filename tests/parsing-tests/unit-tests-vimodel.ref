@@ -32309,6 +32309,14 @@
           }
         }
       },
+      "paloalto_nat" : {
+        "configurationFormat" : "PALO_ALTO_NESTED",
+        "name" : "paloalto_nat",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
       "paloalto_policy" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
         "name" : "paloalto_policy",
