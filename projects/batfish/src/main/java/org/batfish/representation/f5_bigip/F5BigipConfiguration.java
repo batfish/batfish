@@ -4,6 +4,8 @@ import static com.google.common.base.Predicates.notNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -20,6 +22,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.Streams;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -43,6 +46,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
@@ -62,6 +67,8 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -81,8 +88,11 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -1348,12 +1358,25 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     /*
      * Create common BGP export policy. This policy encompasses:
+     * - aggregate address
      * - redistribution from other protocols
      */
     RoutingPolicy.Builder bgpCommonExportPolicy =
         RoutingPolicy.builder()
             .setOwner(_c)
             .setName(computeBgpCommonExportPolicyName(proc.getName()));
+
+    // Never export routes suppressed because they are more specific than summary-only aggregate
+    Stream<Prefix> summaryOnlyNetworks =
+        proc.getAggregateAddresses().entrySet().stream()
+            .filter(e -> e.getValue().getSummaryOnly())
+            .map(Entry::getKey);
+    If suppressSummaryOnly =
+        suppressSummarizedPrefixes(_c, _c.getDefaultVrf().getName(), summaryOnlyNetworks);
+    if (suppressSummaryOnly != null) {
+      bgpCommonExportPolicy.addStatement(suppressSummaryOnly);
+    }
+
     // The body of the export policy is a huge disjunction over many reasons routes may be exported.
     Disjunction routesShouldBeExported = new Disjunction();
     bgpCommonExportPolicy.addStatement(
@@ -1361,8 +1384,37 @@ public class F5BigipConfiguration extends VendorConfiguration {
             routesShouldBeExported,
             ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
             ImmutableList.of()));
+
     // This list of reasons to export a route will be built up over the remainder of this function.
     List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+
+    // distribute aggregate routes
+    for (Entry<Prefix, AggregateAddress> e : proc.getAggregateAddresses().entrySet()) {
+      Prefix prefix = e.getKey();
+
+      RoutingPolicy genPolicy = generateGenerationPolicy(_c, _c.getDefaultVrf().getName(), prefix);
+
+      Builder gr =
+          GeneratedRoute.builder()
+              .setNetwork(prefix)
+              .setGenerationPolicy(genPolicy.getName())
+              .setDiscard(true);
+
+      // Conditions to generate this route
+      List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
+      exportAggregateConditions.add(
+          new MatchPrefixSet(
+              DestinationNetwork.instance(),
+              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
+      exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+
+      exportAggregateConditions.add(
+          bgpRedistributeWithEnvironmentExpr(BooleanExprs.TRUE, OriginType.IGP));
+
+      _c.getDefaultVrf().getGeneratedRoutes().add(gr.build());
+      // Do export a generated aggregate.
+      exportConditions.add(new Conjunction(exportAggregateConditions));
+    }
 
     // Finally, the export policy ends with returning false: do not export unmatched routes.
     bgpCommonExportPolicy.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
