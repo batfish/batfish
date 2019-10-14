@@ -26,6 +26,7 @@ public enum F5BigipStructureType implements StructureType {
   OSPF_PROCESS("router ospf"),
   PEER_GROUP("peer-group"),
   PERSISTENCE("persistence"),
+  PERSISTENCE_COOKIE("persistence cookie"),
   PERSISTENCE_SOURCE_ADDR("persistence source-addr"),
   PERSISTENCE_SSL("persistence ssl"),
   POOL("pool"),

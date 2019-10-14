@@ -1027,12 +1027,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.PERSISTENCE,
         F5BigipStructureUsage.VIRTUAL_PERSIST_PERSISTENCE,
         ImmutableList.of(
-            F5BigipStructureType.PERSISTENCE_SOURCE_ADDR, F5BigipStructureType.PERSISTENCE_SSL));
-    markConcreteStructure(
-        F5BigipStructureType.PERSISTENCE_SOURCE_ADDR,
-        F5BigipStructureUsage.PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM);
-    markConcreteStructure(
-        F5BigipStructureType.PERSISTENCE_SSL, F5BigipStructureUsage.PERSISTENCE_SSL_DEFAULTS_FROM);
+            F5BigipStructureType.PERSISTENCE_COOKIE,
+            F5BigipStructureType.PERSISTENCE_SOURCE_ADDR,
+            F5BigipStructureType.PERSISTENCE_SSL));
+    markConcreteStructure(F5BigipStructureType.PERSISTENCE_COOKIE);
+    markConcreteStructure(F5BigipStructureType.PERSISTENCE_SOURCE_ADDR);
+    markConcreteStructure(F5BigipStructureType.PERSISTENCE_SSL);
     markConcreteStructure(F5BigipStructureType.POOL, F5BigipStructureUsage.VIRTUAL_POOL);
     markConcreteStructure(
         F5BigipStructureType.PREFIX_LIST,
