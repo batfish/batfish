@@ -46,10 +46,12 @@ import static org.batfish.grammar.VendorConfigurationFormatDetector.BATFISH_FLAT
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
@@ -541,9 +543,7 @@ public final class PaloAltoGrammarTest {
 
     // Confirm undefined reference is detected
     assertThat(
-        ccae2,
-        hasUndefinedReference(
-            filename2, PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT, "addr3"));
+        ccae2, hasUndefinedReference(filename2, PaloAltoStructureType.ADDRESS_LIKE, "addr3"));
   }
 
   @Test
@@ -798,6 +798,19 @@ public final class PaloAltoGrammarTest {
 
     // Confirm both dns servers show up
     assertThat(c.getDnsServers(), containsInAnyOrder("1.9.10.99", "100.199.200.255"));
+  }
+
+  @Test
+  public void testExternalList() throws IOException {
+    String hostname = "external-list";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, EXTERNAL_LIST, computeObjectName(PANORAMA_VSYS_NAME, "MY_LIST"), 1));
   }
 
   @Test
