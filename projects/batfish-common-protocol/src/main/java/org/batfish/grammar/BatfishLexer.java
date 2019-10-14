@@ -94,4 +94,10 @@ public abstract class BatfishLexer extends Lexer {
   public void setRecoveryStrategy(@Nullable BatfishLexerRecoveryStrategy recoveryStrategy) {
     _recoveryStrategy = recoveryStrategy;
   }
+
+  /** Unconsume the text for current token and emit nothing. */
+  protected final void less() {
+    _input.seek(this._tokenStartCharIndex);
+    _type = SKIP;
+  }
 }
