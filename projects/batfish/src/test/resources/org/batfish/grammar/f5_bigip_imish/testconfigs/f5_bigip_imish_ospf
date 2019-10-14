@@ -21,7 +21,7 @@ net self /Common/10.0.1.1/30 {
         default
     }
     traffic-group /Common/traffic-group-local-only
-    vlan /Common/vlan_active
+    vlan /Common/vlan_active_nbma
 }
 net self /Common/10.0.2.1/30 {
     address 10.0.2.1/30
@@ -30,6 +30,14 @@ net self /Common/10.0.2.1/30 {
     }
     traffic-group /Common/traffic-group-local-only
     vlan /Common/vlan_passive
+}
+net self /Common/10.0.3.1/30 {
+    address 10.0.3.1/30
+    allow-service {
+        default
+    }
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/vlan_active
 }
 
 
@@ -42,6 +50,11 @@ net self-allow {
 net vlan /Common/vlan_active {
     interfaces {
         1.1 { }
+    }
+}
+net vlan /Common/vlan_active_nbma {
+    interfaces {
+        1.2 { }
     }
 }
 net vlan /Common/vlan_passive {
@@ -61,6 +74,8 @@ security firewall rule-list /Common/_sys_self_allow_defaults {
 
 !
 interface vlan_active
+!
+interface vlan_active_nbma
  ip ospf network non-broadcast
 !
 interface vlan_passive
@@ -70,5 +85,6 @@ router ospf 1
  passive-interface vlan_passive
  network 10.0.1.0/30 area 0
  network 10.0.2.0/30 area 0
+ network 10.0.3.0/30 area 0
  neighbor 10.0.1.2
 !

@@ -753,12 +753,28 @@ public final class F5BigipImishGrammarTest {
     {
       OspfArea area = proc.getAreas().get(0L);
       assertThat(
-          area.getInterfaces(), containsInAnyOrder("/Common/vlan_active", "/Common/vlan_passive"));
+          area.getInterfaces(),
+          containsInAnyOrder(
+              "/Common/vlan_active", "/Common/vlan_active_nbma", "/Common/vlan_passive"));
     }
 
-    assertThat(c.getAllInterfaces(), hasKeys("/Common/vlan_active", "/Common/vlan_passive"));
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys("/Common/vlan_active", "/Common/vlan_active_nbma", "/Common/vlan_passive"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_active");
+      OspfInterfaceSettings ospf = iface.getOspfSettings();
+      assertNotNull(ospf);
+      assertTrue(ospf.getEnabled());
+      assertThat(ospf.getAreaName(), equalTo(0L));
+      assertThat(
+          ospf.getNetworkType(), equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
+      assertFalse(ospf.getPassive());
+      assertThat(ospf.getHelloInterval(), equalTo(10));
+      assertThat(ospf.getDeadInterval(), equalTo(40));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_active_nbma");
       OspfInterfaceSettings ospf = iface.getOspfSettings();
       assertNotNull(ospf);
       assertTrue(ospf.getEnabled());
@@ -767,6 +783,8 @@ public final class F5BigipImishGrammarTest {
           ospf.getNetworkType(),
           equalTo(org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS));
       assertFalse(ospf.getPassive());
+      assertThat(ospf.getHelloInterval(), equalTo(30));
+      assertThat(ospf.getDeadInterval(), equalTo(120));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_passive");
