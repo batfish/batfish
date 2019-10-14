@@ -1331,8 +1331,10 @@ public final class PaloAltoGrammarTest {
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.SERVICE, serviceName, 1));
-    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z1Name, 2));
-    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z2Name, 2));
+    // 2 references in rules, 2 references from associated interfaces
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z1Name, 4));
+    // 2 references in rules, 1 reference from associated interface
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ZONE, z2Name, 3));
 
     // Confirm undefined references are detected
     assertThat(
@@ -1934,6 +1936,12 @@ public final class PaloAltoGrammarTest {
     // Confirm interface references in zones are recorded properly
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 1));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/2", 1));
+
+    // Confirm zone containing interfaces is referenced
+    assertThat(ccae, hasNumReferrers(filename, ZONE, z1Name, 2));
+
+    // Confirm zone not containing interfaces is not referenced
+    assertThat(ccae, hasNumReferrers(filename, ZONE, zEmptyName, 0));
 
     // Confirm zones contain the correct interfaces
     assertThat(
