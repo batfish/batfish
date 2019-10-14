@@ -46,6 +46,7 @@ import static org.batfish.grammar.VendorConfigurationFormatDetector.BATFISH_FLAT
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
@@ -801,11 +802,15 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testExternalList() throws IOException {
-    String filename = "external-list";
-    Batfish batfish = getBatfishForConfigurationNames(filename);
+    String hostname = "external-list";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    hasNumReferrers(filename, EXTERNAL_LIST, "MY_LIST", 1);
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, EXTERNAL_LIST, computeObjectName(PANORAMA_VSYS_NAME, "MY_LIST"), 1));
   }
 
   @Test
