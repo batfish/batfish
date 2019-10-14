@@ -957,7 +957,7 @@ public final class F5BigipStructuredGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
     assertThat(
         ans.getDefinedStructures().get(file).get(F5BigipStructureType.RULE.getDescription()),
-        aMapWithSize(3));
+        aMapWithSize(5));
   }
 
   @Test

@@ -871,29 +871,29 @@
       {
         "Filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Line" : 6,
-        "Text" : "ltm global-settings connection",
-        "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
+        "Text" : "global-settings connection",
+        "Parser_Context" : "[unrecognized s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Line" : 9,
-        "Text" : "ltm global-settings rule",
-        "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
+        "Text" : "global-settings rule",
+        "Parser_Context" : "[unrecognized s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Line" : 10,
-        "Text" : "ltm default-node-monitor",
-        "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
+        "Text" : "default-node-monitor",
+        "Parser_Context" : "[unrecognized s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Line" : 13,
-        "Text" : "ltm ifile /Common/SOME_FILE",
-        "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
+        "Text" : "ifile /Common/SOME_FILE",
+        "Parser_Context" : "[unrecognized s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {

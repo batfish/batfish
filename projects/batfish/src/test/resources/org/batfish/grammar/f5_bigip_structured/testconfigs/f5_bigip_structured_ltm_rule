@@ -34,3 +34,21 @@ ltm rule /Common/empty_when {
 when HTTP_REQUEST {
 }
 }
+
+ltm rule /Common/nested_braces {
+when CLIENT_ACCEPTED priority 1 {
+  if {[catch {scan [virtual name] {/a/b_%[^_]_%s} b c}]} { }
+}
+}
+
+ltm rule /Common/SOME_RULE4 {
+when CLIENT_ACCEPTED {
+    set tcp_done [clock clicks -milliseconds]
+}
+
+when CLIENTSSL_HANDSHAKE {
+   set tls_done [clock clicks -milliseconds]
+   set delta [expr {$tls_done - $tcp_done}]
+      log local0. "TLS handshake took $delta milliseconds for Client IP is [IP::client_addr]"
+}
+}
