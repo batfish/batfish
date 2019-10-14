@@ -393,5 +393,9 @@ public class BgpTopologyUtilsTest {
     // Confed no match
     assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
     assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(5), null);
+    // Listener implicitly matches initiaor confed, listener shares AS with initiator
+    assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(1L), new AsPair(1, 1));
+    // Initiator implicitly matches listener confed, initiator shares AS with listener
+    assertPair(1L, null, LongSpace.of(1L), 1L, 3L, LongSpace.of(1L), new AsPair(1, 1));
   }
 }
