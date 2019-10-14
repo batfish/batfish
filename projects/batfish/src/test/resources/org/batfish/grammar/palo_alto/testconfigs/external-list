@@ -1,0 +1,40 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname external-list;
+  }
+}
+policy {
+  panorama {
+    external-list {
+      MY_LIST {
+        type {
+          ip {
+            recurring {
+              hourly;
+            }
+            auth {
+              username user;
+              password pass;
+            }
+            certificate-profile ENTRUST-ROOT;
+            url block-me.com;
+          }
+        }
+      }
+    }
+    post-rulebase {
+      security {
+        rules {
+          MYRULE {
+            to OUTSIDE;
+            from OUTSIDE;
+            source any;
+            destination MY_LIST;
+            service any;
+          }
+        }
+      }
+    }
+  }
+}
