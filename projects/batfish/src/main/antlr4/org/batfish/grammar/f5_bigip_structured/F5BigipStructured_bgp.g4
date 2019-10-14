@@ -15,6 +15,8 @@ nr_bgp
       nrb_address_family
       | nrb_local_as
       | nrb_neighbor
+      | nrb_null
+      | nrb_profile
       | nrb_router_id
       | nrb_router_id6
       | unrecognized
@@ -118,6 +120,7 @@ nrbn_name
       nrbnn_address_family
       | nrbnn_description
       | nrbnn_ebgp_multihop
+      | nrbnn_null
       | nrbnn_remote_as
       | nrbnn_update_source
       | unrecognized
@@ -165,12 +168,21 @@ nrbnnaf_ipv6
 nrbnnaf_common
 :
   nrbnnafc_activate
+  | nrbnnafc_null
   | nrbnnafc_route_map
 ;
 
 nrbnnafc_activate
 :
   ACTIVATE DISABLED NEWLINE
+;
+
+nrbnnafc_null
+:
+  (
+    CAPABILITY
+    | MAXIMUM_PREFIX
+  ) ignored
 ;
 
 nrbnnafc_route_map
@@ -199,6 +211,13 @@ nrbnn_ebgp_multihop
   EBGP_MULTIHOP count = uint16 NEWLINE
 ;
 
+nrbnn_null
+:
+  (
+    FALL_OVER
+  ) ignored
+;
+
 nrbnn_remote_as
 :
   REMOTE_AS as = uint32 NEWLINE
@@ -207,6 +226,18 @@ nrbnn_remote_as
 nrbnn_update_source
 :
   UPDATE_SOURCE name = structure_name NEWLINE
+;
+
+nrb_null
+:
+  (
+    ROUTE_DOMAIN
+  ) ignored
+;
+
+nrb_profile
+:
+  PROFILE ignored
 ;
 
 nrb_router_id

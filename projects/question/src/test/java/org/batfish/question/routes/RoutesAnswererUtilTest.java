@@ -576,6 +576,7 @@ public class RoutesAnswererUtilTest {
                     .setMetric(30L)
                     .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
                     .setLocalPreference(1L)
+                    .setOriginType(OriginType.IGP)
                     .build()),
             new RouteRowSecondaryKey(Ip.parse("1.1.1.3"), "bgp"),
             ImmutableSortedSet.of(
@@ -584,6 +585,7 @@ public class RoutesAnswererUtilTest {
                     .setMetric(20L)
                     .setLocalPreference(1L)
                     .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
+                    .setOriginType(OriginType.IGP)
                     .build()));
     // matching the secondary key
     assertThat(innerGroup, equalTo(expectedInnerMap));

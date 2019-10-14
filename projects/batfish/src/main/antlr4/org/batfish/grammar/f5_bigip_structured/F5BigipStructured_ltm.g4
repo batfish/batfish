@@ -64,6 +64,7 @@ lm_http
     NEWLINE
     (
       lmh_defaults_from
+      | lmh_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -74,6 +75,21 @@ lmh_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+lmh_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | INTERVAL
+    | IP_DSCP
+    | RECV
+    | RECV_DISABLE
+    | SEND
+    | TIME_UNTIL_UP
+    | TIMEOUT
+  ) ignored
+;
+
 lm_https
 :
   HTTPS name = structure_name BRACE_LEFT
@@ -81,6 +97,7 @@ lm_https
     NEWLINE
     (
       lmhs_defaults_from
+      | lmhs_null
       | lmhs_ssl_profile
       | unrecognized
     )*
@@ -90,6 +107,23 @@ lm_https
 lmhs_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lmhs_null
+:
+  (
+    ADAPTIVE
+    | CIPHERLIST
+    | COMPATIBILITY
+    | DESTINATION
+    | INTERVAL
+    | IP_DSCP
+    | RECV
+    | RECV_DISABLE
+    | SEND
+    | TIME_UNTIL_UP
+    | TIMEOUT
+  ) ignored
 ;
 
 lmhs_ssl_profile
@@ -153,6 +187,15 @@ ln_address6
   ADDRESS address = ipv6_address NEWLINE
 ;
 
+l_null
+:
+  (
+    DEFAULT_NODE_MONITOR
+    | GLOBAL_SETTINGS
+    | IFILE
+  ) ignored
+;
+
 l_persistence
 :
   PERSISTENCE
@@ -163,6 +206,13 @@ l_persistence
   )
 ;
 
+lper_null
+:
+  (
+    APP_SERVICE
+  ) ignored
+;
+
 lper_source_addr
 :
   SOURCE_ADDR name = structure_name BRACE_LEFT
@@ -170,6 +220,7 @@ lper_source_addr
     NEWLINE
     (
       lpersa_defaults_from
+      | lpersa_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -180,6 +231,14 @@ lpersa_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+lpersa_null
+:
+  (
+    APP_SERVICE
+    | TIMEOUT
+  ) ignored
+;
+
 lper_ssl
 :
   SSL name = structure_name BRACE_LEFT
@@ -187,6 +246,7 @@ lper_ssl
     NEWLINE
     (
       lperss_defaults_from
+      | lperss_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -195,6 +255,18 @@ lper_ssl
 lperss_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lperss_null
+:
+  (
+    APP_SERVICE
+    | MATCH_ACROSS_POOLS
+    | MATCH_ACROSS_SERVICES
+    | MATCH_ACROSS_VIRTUALS
+    | OVERRIDE_CONNECTION_LIMIT
+    | TIMEOUT
+  ) ignored
 ;
 
 l_pool
@@ -206,6 +278,7 @@ l_pool
       lp_description
       | lp_members
       | lp_monitor
+      | lp_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -233,6 +306,7 @@ lpm_member
       lpmm_address
       | lpmm_address6
       | lpmm_description
+      | lpmm_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -259,6 +333,23 @@ lp_monitor
 lpmm_description
 :
   DESCRIPTION text = word NEWLINE
+;
+
+lpmm_null
+:
+  (
+    PRIORITY_GROUP
+  ) ignored
+;
+
+lp_null
+:
+  (
+    LOAD_BALANCING_MODE
+    | MIN_ACTIVE_MEMBERS
+    | SERVICE_DOWN_ACTION
+    | SLOW_RAMP_TIME
+  ) ignored
 ;
 
 l_profile
@@ -400,6 +491,7 @@ lprof_client_ssl
     NEWLINE
     (
       lprof_client_ssl_defaults_from
+      | lprof_client_ssl_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -408,6 +500,60 @@ lprof_client_ssl
 lprof_client_ssl_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_client_ssl_null
+:
+  (
+    ALERT_TIMEOUT
+    | ALLOW_DYNAMIC_RECORD_SIZING
+    | ALLOW_NON_SSL
+    | APP_SERVICE
+    | CACHE_SIZE
+    | CACHE_TIMEOUT
+    | CERT
+    | CERT_EXTENSION_INCLUDES
+    | CERT_KEY_CHAIN
+    | CERT_LIFESPAN
+    | CERT_LOOKUP_BY_IPADDR_PORT
+    | CHAIN
+    | CIPHER_GROUP
+    | CIPHERS
+    | GENERIC_ALERT
+    | HANDSHAKE_TIMEOUT
+    | INHERIT_CERTKEYCHAIN
+    | KEY
+    | MAX_ACTIVE_HANDSHAKES
+    | MAX_AGGREGATE_RENEGOTIATION_PER_MINUTE
+    | MAX_RENEGOTIATIONS_PER_MINUTE
+    | MAXIMUM_RECORD_SIZE
+    | MOD_SSL_METHODS
+    | MODE
+    | OCSP_STAPLING
+    | OPTIONS
+    | PASSPHRASE
+    | PEER_NO_RENEGOTIATE_TIMEOUT
+    | PROXY_CA_CERT
+    | PROXY_CA_KEY
+    | PROXY_SSL
+    | PROXY_SSL_PASSTHROUGH
+    | RENEGOTIATE_MAX_RECORD_DELAY
+    | RENEGOTIATE_PERIOD
+    | RENEGOTIATE_SIZE
+    | RENEGOTIATION
+    | SECURE_RENEGOTIATION
+    | SERVER_NAME
+    | SESSION_MIRRORING
+    | SESSION_TICKET
+    | SESSION_TICKET_TIMEOUT
+    | SNI_DEFAULT
+    | SNI_REQUIRE
+    | SSL_FORWARD_PROXY
+    | SSL_FORWARD_PROXY_BYPASS
+    | SSL_SIGN_HASH
+    | STRICT_RESUME
+    | UNCLEAN_SHUTDOWN
+  ) ignored
 ;
 
 lprof_dhcpv4
@@ -774,6 +920,7 @@ lprof_ocsp_stapling_params
     NEWLINE
     (
       lprof_ocsp_stapling_params_defaults_from
+      | lprof_ocsp_stapling_params_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -784,6 +931,17 @@ lprof_ocsp_stapling_params_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+lprof_ocsp_stapling_params_null
+:
+  (
+    DNS_RESOLVER
+    | RESPONDER_URL
+    | SIGN_HASH
+    | STATUS_AGE
+    | TRUSTED_RESPONDERS
+  ) ignored
+;
+
 lprof_one_connect
 :
   ONE_CONNECT name = structure_name BRACE_LEFT
@@ -791,6 +949,7 @@ lprof_one_connect
     NEWLINE
     (
       lprof_one_connect_defaults_from
+      | lprof_one_connect_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -799,6 +958,19 @@ lprof_one_connect
 lprof_one_connect_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_one_connect_null
+:
+  (
+    APP_SERVICE
+    | IDLE_TIMEOUT_OVERRIDE
+    | LIMIT_TYPE
+    | MAX_AGE
+    | MAX_REUSE
+    | MAX_SIZE
+    | SOURCE_MASK
+  ) ignored
 ;
 
 lprof_pcp
@@ -995,6 +1167,7 @@ lprof_server_ssl
     NEWLINE
     (
       lprof_server_ssl_defaults_from
+      | lprof_server_ssl_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -1003,6 +1176,43 @@ lprof_server_ssl
 lprof_server_ssl_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_server_ssl_null
+:
+  (
+    ALERT_TIMEOUT
+    | APP_SERVICE
+    | CACHE_SIZE
+    | CACHE_TIMEOUT
+    | CERT
+    | CHAIN
+    | CIPHER_GROUP
+    | CIPHERS
+    | GENERIC_ALERT
+    | HANDSHAKE_TIMEOUT
+    | KEY
+    | MAX_ACTIVE_HANDSHAKES
+    | MOD_SSL_METHODS
+    | MODE
+    | OPTIONS
+    | PROXY_SSL
+    | PROXY_SSL_PASSTHROUGH
+    | RENEGOTIATE_PERIOD
+    | RENEGOTIATE_SIZE
+    | RENEGOTIATION
+    | SECURE_RENEGOTIATION
+    | SERVER_NAME
+    | SESSION_MIRRORING
+    | SESSION_TICKET
+    | SNI_DEFAULT
+    | SNI_REQUIRE
+    | SSL_FORWARD_PROXY
+    | SSL_FORWARD_PROXY_BYPASS
+    | SSL_SIGN_HASH
+    | STRICT_RESUME
+    | UNCLEAN_SHUTDOWN
+  ) ignored
 ;
 
 lprof_sip
@@ -1486,8 +1696,19 @@ lvp_persistence
 :
   name = structure_name BRACE_LEFT
   (
-    NEWLINE unrecognized*
+    NEWLINE
+    (
+      lvpp_null
+      | unrecognized
+    )*
   )? BRACE_RIGHT NEWLINE
+;
+
+lvpp_null
+:
+  (
+    DEFAULT
+  ) ignored
 ;
 
 lv_pool
@@ -1677,6 +1898,7 @@ s_ltm
     l_data_group
     | l_monitor
     | l_node
+    | l_null
     | l_persistence
     | l_pool
     | l_profile
@@ -1686,6 +1908,7 @@ s_ltm
     | l_snatpool
     | l_virtual
     | l_virtual_address
+    | unrecognized
   )
 ;
 

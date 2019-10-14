@@ -14,6 +14,7 @@ import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Route;
 
 /**
@@ -38,6 +39,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nullable private final String _originProtocol;
 
+  @Nullable private final OriginType _originType;
+
   @Nullable private final Long _tag;
 
   private RouteRowAttribute(
@@ -49,6 +52,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Long localPreference,
       List<String> communities,
       String originalProtocol,
+      OriginType originType,
       Long tag) {
     _nextHop = nextHop;
     _nextHopInterface = nextHopInterface;
@@ -58,6 +62,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _localPreference = localPreference;
     _communities = firstNonNull(communities, ImmutableList.of());
     _originProtocol = originalProtocol;
+    _originType = originType;
     _tag = tag;
   }
 
@@ -102,6 +107,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nullable
+  public OriginType getOriginType() {
+    return _originType;
+  }
+
+  @Nullable
   public Long getTag() {
     return _tag;
   }
@@ -118,6 +128,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
           .thenComparing(RouteRowAttribute::getLocalPreference, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getOriginProtocol, nullsLast(String::compareTo))
+          .thenComparing(RouteRowAttribute::getOriginType, nullsLast(OriginType::compareTo))
           .thenComparing(RouteRowAttribute::getTag, nullsLast(Long::compareTo))
           .thenComparing(
               routeRowAttribute -> routeRowAttribute.getCommunities().toString(),
@@ -145,6 +156,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         && Objects.equals(_localPreference, that._localPreference)
         && Objects.equals(_communities, that._communities)
         && Objects.equals(_originProtocol, that._originProtocol)
+        && Objects.equals(_originType, that._originType)
         && Objects.equals(_tag, that._tag);
   }
 
@@ -159,6 +171,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _localPreference,
         _communities,
         _originProtocol,
+        _originType,
         _tag);
   }
 
@@ -179,6 +192,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     @Nullable private List<String> _communities;
 
     @Nullable private String _originProtocol;
+    @Nullable private OriginType _originType;
 
     @Nullable private Long _tag;
 
@@ -195,6 +209,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _localPreference,
           _communities,
           _originProtocol,
+          _originType,
           _tag);
     }
 
@@ -223,11 +238,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
-    public Builder setOriginProtocol(String originProtocol) {
-      _originProtocol = originProtocol;
-      return this;
-    }
-
     public Builder setNextHop(String nextHop) {
       _nextHop = nextHop;
       return this;
@@ -235,6 +245,16 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setNextHopInterface(String nextHopInterface) {
       _nextHopInterface = nextHopInterface;
+      return this;
+    }
+
+    public Builder setOriginProtocol(String originProtocol) {
+      _originProtocol = originProtocol;
+      return this;
+    }
+
+    public Builder setOriginType(OriginType originType) {
+      _originType = originType;
       return this;
     }
 

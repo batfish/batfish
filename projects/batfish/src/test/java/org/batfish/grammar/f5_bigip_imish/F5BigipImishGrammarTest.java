@@ -301,7 +301,7 @@ public final class F5BigipImishGrammarTest {
                         .inPrefixRange(
                             new PrefixRange(
                                 Prefix.strict("192.0.2.128/32"),
-                                new SubRange(Prefix.MAX_PREFIX_LENGTH, Prefix.MAX_PREFIX_LENGTH)))
+                                SubRange.singleton(Prefix.MAX_PREFIX_LENGTH)))
                         .not())));
   }
 
@@ -830,7 +830,7 @@ public final class F5BigipImishGrammarTest {
     assertThat(plLe10.getLengthRange(), equalTo(new SubRange(16, 24)));
     assertThat(plGe10.getLengthRange(), equalTo(new SubRange(24, 32)));
     assertThat(plGeLe10.getLengthRange(), equalTo(new SubRange(24, 28)));
-    assertThat(plDeny10.getLengthRange(), equalTo(new SubRange(32, 32)));
+    assertThat(plDeny10.getLengthRange(), equalTo(SubRange.singleton(32)));
     assertThat(plDeny20.getLengthRange(), equalTo(new SubRange(16, 32)));
   }
 
@@ -1081,7 +1081,14 @@ public final class F5BigipImishGrammarTest {
     BgpActivePeerConfig peer3 =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.3.10/32"));
     assertNotNull(peer3);
+    // cannot infer a local IP for this neighbor since no interface in this subnet
     assertNull(peer3.getLocalIp());
+
+    BgpActivePeerConfig peer4 =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.4.10/32"));
+    assertNotNull(peer4);
+    // get the default IP (i.e., an interface address in the same subnet)
+    assertThat(peer4.getLocalIp(), equalTo(Ip.parse("10.0.4.1")));
   }
 
   private @Nonnull IpAccessListToBdd toBDD() {

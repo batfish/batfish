@@ -10,6 +10,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
+        "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_structured/parsing:f5_bigip_structured_base",
         "@antlr4_runtime//:compile",
     ],
 )

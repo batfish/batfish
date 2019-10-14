@@ -14,6 +14,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
@@ -2226,12 +2227,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       ImmutableList.of(call(routeMapName))));
             });
 
-    // Then try orginating default route (either always or from RIB route not covered above)
+    // Then try originating default route (either always or from RIB route not covered above)
     if (defaultOriginate != null) {
-      BooleanExpr matchDefaultNetwork =
-          new MatchPrefixSet(
-              DestinationNetwork.instance(),
-              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO))));
       BooleanExpr guard;
       if (defaultOriginate.getAlways()) {
         builder.setGeneratedRoutes(
@@ -2239,11 +2236,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         guard =
             new Conjunction(
                 ImmutableList.<BooleanExpr>builder()
-                    .add(matchDefaultNetwork)
+                    .add(matchDefaultRoute())
                     .add(new MatchProtocol(RoutingProtocol.AGGREGATE))
                     .build());
       } else {
-        guard = matchDefaultNetwork;
+        guard = matchDefaultRoute();
       }
       ImmutableList.Builder<Statement> defaultOriginateStatements = ImmutableList.builder();
       Optional.ofNullable(defaultOriginate.getRouteMap())
