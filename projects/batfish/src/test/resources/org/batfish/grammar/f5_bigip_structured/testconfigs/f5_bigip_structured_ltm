@@ -138,6 +138,11 @@ Connection: Close
     time-until-up 0
     timeout 16
 }
+ltm persistence cookie /Common/persistence_cookie {
+    app-service none
+    defaults-from /Common/cookie
+    expiration 0
+}
 ltm persistence source-addr /Common/SOME_PERSISTENCE_SOURCE_ADDR {
     app-service none
     defaults-from /Common/source_addr

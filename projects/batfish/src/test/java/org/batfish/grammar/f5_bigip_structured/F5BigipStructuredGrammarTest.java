@@ -61,6 +61,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_L
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_TCP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.NODE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_COOKIE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SOURCE_ADDR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SSL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.POOL;
@@ -1133,6 +1134,22 @@ public final class F5BigipStructuredGrammarTest {
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
+    // persistence cookie
+    {
+      String undefined = "/Common/persistence_cookie_undefined";
+      String unused = "/Common/persistence_cookie_unused";
+      String used = "/Common/persistence_cookie_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE_COOKIE, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_COOKIE, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_COOKIE, used, 2));
+    }
+
     // persistence source-addr
     {
       String undefined = "/Common/persistence_source_addr_undefined";
@@ -1167,7 +1184,7 @@ public final class F5BigipStructuredGrammarTest {
 
     assertNoUndefinedReferencesToBuiltins(
         ans,
-        Stream.of(PERSISTENCE, PERSISTENCE_SOURCE_ADDR, PERSISTENCE_SSL),
+        Stream.of(PERSISTENCE, PERSISTENCE_COOKIE, PERSISTENCE_SOURCE_ADDR, PERSISTENCE_SSL),
         BuiltinPersistence::getBuiltinPersistence);
   }
 
