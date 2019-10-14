@@ -13,6 +13,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -1524,15 +1525,21 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // First, handle those which may or may not be referencing objects (e.g. "1.2.3.4" may be IP
     // address or a named object)
     markAbstractStructureFromUnknownNamespace(
-        PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE,
-        ImmutableList.of(PaloAltoStructureType.ADDRESS_GROUP, PaloAltoStructureType.ADDRESS_OBJECT),
+        PaloAltoStructureType.ADDRESS_LIKE_OR_NONE,
+        ImmutableList.of(
+            PaloAltoStructureType.ADDRESS_GROUP,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            EXTERNAL_LIST),
         true,
         PaloAltoStructureUsage.RULE_DESTINATION,
         PaloAltoStructureUsage.RULE_SOURCE);
     // Next, handle address object references which are definitely referencing objects
     markAbstractStructureFromUnknownNamespace(
-        PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT,
-        ImmutableList.of(PaloAltoStructureType.ADDRESS_GROUP, PaloAltoStructureType.ADDRESS_OBJECT),
+        PaloAltoStructureType.ADDRESS_LIKE,
+        ImmutableList.of(
+            PaloAltoStructureType.ADDRESS_GROUP,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            PaloAltoStructureType.EXTERNAL_LIST),
         PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
         PaloAltoStructureUsage.RULE_DESTINATION,
         PaloAltoStructureUsage.RULE_SOURCE);

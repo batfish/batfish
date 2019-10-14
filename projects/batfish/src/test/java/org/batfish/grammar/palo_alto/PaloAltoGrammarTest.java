@@ -541,9 +541,7 @@ public final class PaloAltoGrammarTest {
 
     // Confirm undefined reference is detected
     assertThat(
-        ccae2,
-        hasUndefinedReference(
-            filename2, PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT, "addr3"));
+        ccae2, hasUndefinedReference(filename2, PaloAltoStructureType.ADDRESS_LIKE, "addr3"));
   }
 
   @Test
@@ -798,6 +796,12 @@ public final class PaloAltoGrammarTest {
 
     // Confirm both dns servers show up
     assertThat(c.getDnsServers(), containsInAnyOrder("1.9.10.99", "100.199.200.255"));
+  }
+
+  @Test
+  public void testExternalList() {
+    // don't crash
+    parseNestedConfig("external-list");
   }
 
   @Test

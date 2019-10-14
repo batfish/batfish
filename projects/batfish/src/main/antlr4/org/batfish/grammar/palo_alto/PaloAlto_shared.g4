@@ -23,10 +23,75 @@ ss_common
     | s_application
     | s_application_filter
     | s_application_group
+    | s_external_filter
     | s_service
     | s_service_group
     | s_tag
     | ss_log_settings
+;
+
+s_external_filter
+:
+    EXTERNAL_LIST name = variable
+    (
+      sef_type
+    )
+;
+
+sef_type
+:
+    TYPE
+    (
+      seft_ip
+    )
+;
+
+seft_ip
+:
+    IP
+    (
+      seftip_auth
+      | seftip_certificate_profile
+      | seftip_recurring
+      | seftip_url
+    )
+;
+
+seftip_auth
+:
+    AUTH
+    (
+      seftipa_password
+      | seftipa_username
+    )
+;
+
+seftipa_username
+:
+    USERNAME null_rest_of_line
+;
+
+seftipa_password
+:
+    PASSWORD null_rest_of_line
+;
+
+seftip_certificate_profile
+:
+    CERTIFICATE_PROFILE name = variable
+;
+
+seftip_recurring
+:
+    RECURRING
+    (
+      HOURLY
+    )
+;
+
+seftip_url
+:
+    URL url = null_rest_of_line
 ;
 
 ss_log_settings
