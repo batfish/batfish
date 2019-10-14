@@ -50,6 +50,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
@@ -799,9 +800,12 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testExternalList() {
-    // don't crash
-    parseNestedConfig("external-list");
+  public void testExternalList() throws IOException {
+    String filename = "external-list";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    hasNumReferrers(filename, EXTERNAL_LIST, "MY_LIST", 1);
   }
 
   @Test

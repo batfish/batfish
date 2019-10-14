@@ -23,65 +23,65 @@ ss_common
     | s_application
     | s_application_filter
     | s_application_group
-    | s_external_filter
+    | s_external_list
     | s_service
     | s_service_group
     | s_tag
     | ss_log_settings
 ;
 
-s_external_filter
+s_external_list
 :
     EXTERNAL_LIST name = variable
     (
-      sef_type
+      sel_type
     )
 ;
 
-sef_type
+sel_type
 :
     TYPE
     (
-      seft_ip
+      selt_ip
     )
 ;
 
-seft_ip
+selt_ip
 :
     IP
     (
-      seftip_auth
-      | seftip_certificate_profile
-      | seftip_recurring
-      | seftip_url
+      seltip_auth
+      | seltip_certificate_profile
+      | seltip_recurring
+      | seltip_url
     )
 ;
 
-seftip_auth
+seltip_auth
 :
     AUTH
     (
-      seftipa_password
-      | seftipa_username
+      seltipa_password
+      | seltipa_username
     )
 ;
 
-seftipa_username
+seltipa_username
 :
     USERNAME null_rest_of_line
 ;
 
-seftipa_password
+seltipa_password
 :
     PASSWORD null_rest_of_line
 ;
 
-seftip_certificate_profile
+seltip_certificate_profile
 :
     CERTIFICATE_PROFILE name = variable
 ;
 
-seftip_recurring
+seltip_recurring
 :
     RECURRING
     (
@@ -89,7 +89,7 @@ seftip_recurring
     )
 ;
 
-seftip_url
+seltip_url
 :
     URL url = null_rest_of_line
 ;

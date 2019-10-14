@@ -154,7 +154,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Protocol_adContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_group_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_application_definitionContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.S_external_filterContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_external_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_definitionContext;
@@ -182,7 +182,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Seft_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Selt_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
@@ -327,7 +327,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private BgpVr _currentBgpVr;
   private CryptoProfile _currentCrytoProfile;
   private String _currentDeviceName;
-  private String _currentExternalFilterName;
+  private String _currentExternalListName;
   private Interface _currentInterface;
   private boolean _currentNtpServerPrimary;
   private Interface _currentParentInterface;
@@ -1219,19 +1219,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterS_external_filter(S_external_filterContext ctx) {
-    _currentExternalFilterName = getFullText(ctx.name);
+  public void enterS_external_list(S_external_listContext ctx) {
+    _currentExternalListName = getFullText(ctx.name);
   }
 
   @Override
-  public void exitS_external_filter(S_external_filterContext ctx) {
-    _currentExternalFilterName = null;
+  public void exitS_external_list(S_external_listContext ctx) {
+    _currentExternalListName = null;
   }
 
   @Override
-  public void exitSeft_ip(Seft_ipContext ctx) {
+  public void exitSelt_ip(Selt_ipContext ctx) {
     _configuration.defineStructure(
-        EXTERNAL_LIST, computeObjectName(_currentVsys.getName(), _currentExternalFilterName), ctx);
+        EXTERNAL_LIST, computeObjectName(_currentVsys.getName(), _currentExternalListName), ctx);
   }
 
   @Override

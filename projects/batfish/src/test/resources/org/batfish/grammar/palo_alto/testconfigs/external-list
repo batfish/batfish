@@ -23,5 +23,18 @@ policy {
         }
       }
     }
+    post-rulebase {
+      security {
+        rules {
+          MYRULE {
+            to OUTSIDE;
+            from OUTSIDE;
+            source any;
+            destination MY_LIST;
+            service any;
+          }
+        }
+      }
+    }
   }
 }

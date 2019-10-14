@@ -13,7 +13,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
-import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -1529,7 +1528,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.of(
             PaloAltoStructureType.ADDRESS_GROUP,
             PaloAltoStructureType.ADDRESS_OBJECT,
-            EXTERNAL_LIST),
+            PaloAltoStructureType.EXTERNAL_LIST),
         true,
         PaloAltoStructureUsage.RULE_DESTINATION,
         PaloAltoStructureUsage.RULE_SOURCE);
