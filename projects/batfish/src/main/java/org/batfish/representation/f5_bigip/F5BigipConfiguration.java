@@ -809,6 +809,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _trunks;
   }
 
+  /**
+   * Get the local IP of the bgp session.
+   *
+   * <p>1. sanity check: neighbor address and AS, and local AS should all be defined.
+   *
+   * <p>2. If update-source is specified: 1) if it is update-source ip_address, then use this
+   * ip_address 2) if it is update-source interface_name, then use the address of this interface
+   *
+   * <p>3. If update-source is not specified, use the interface address which is in the same subnet
+   * of the neighbor IP
+   *
+   * <p>4. Otherwise, return null
+   */
   private @Nullable Ip getUpdateSource(BgpProcess proc, BgpNeighbor neighbor) {
     Ip neighborAddress = neighbor.getAddress();
     if (neighborAddress == null || proc.getLocalAs() == null || neighbor.getRemoteAs() == null) {
@@ -816,22 +829,43 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // Also skip if we are missing AS information.
       return null;
     }
-    String updateSourceInterface = neighbor.getUpdateSource();
-    if (!isEbgpSingleHop(proc, neighbor) && updateSourceInterface != null) {
-      org.batfish.datamodel.Interface sourceInterface =
-          _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
-      if (sourceInterface != null) {
-        ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
-        if (address != null) {
-          return address.getIp();
-        } else {
-          _w.redFlag(
-              String.format(
-                  "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip address",
-                  neighbor.getName(), updateSourceInterface));
-        }
+
+    UpdateSource updateSource = neighbor.getUpdateSource();
+    if (updateSource != null) {
+      UpdateSourceVisitor<Ip> visitor =
+          new UpdateSourceVisitor<Ip>() {
+            @Override
+            public Ip visitUpdateSourceIp(UpdateSourceIp updateSourceIp) {
+              return updateSourceIp.getIp();
+            }
+
+            @Override
+            public Ip visitUpdateSourceInterface(UpdateSourceInterface updateSourceInterface) {
+              if (!isEbgpSingleHop(proc, neighbor)) {
+                String sourceInterfaceName = updateSourceInterface.getName();
+                org.batfish.datamodel.Interface sourceInterface =
+                    _c.getDefaultVrf().getInterfaces().get(sourceInterfaceName);
+                if (sourceInterface != null) {
+                  ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
+                  if (address != null) {
+                    return address.getIp();
+                  } else {
+                    _w.redFlag(
+                        String.format(
+                            "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip address",
+                            neighbor.getName(), updateSourceInterface));
+                  }
+                }
+              }
+              return null;
+            }
+          };
+      Ip sourceIp = updateSource.accept(visitor);
+      if (sourceIp != null) {
+        return sourceIp;
       }
     }
+
     // Either the neighbor is eBGP single-hop, or no update-source was specified, or we failed to
     // get IP from update-source.
     // So try to get IP of an interface in same network as neighbor address.

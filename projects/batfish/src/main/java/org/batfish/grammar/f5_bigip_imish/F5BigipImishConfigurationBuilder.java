@@ -92,6 +92,8 @@ import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
 import org.batfish.representation.f5_bigip.RouteMapSetIpNextHop;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
+import org.batfish.representation.f5_bigip.UpdateSourceInterface;
+import org.batfish.representation.f5_bigip.UpdateSourceIp;
 
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
 
@@ -566,12 +568,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRbn_update_source_ip(Rbn_update_source_ipContext ctx) {
-    todo(ctx);
+    _currentAbstractNeighbor.setUpdateSource(new UpdateSourceIp(Ip.parse(ctx.ip.getText())));
   }
 
   @Override
   public void exitRbn_update_source_interface(Rbn_update_source_interfaceContext ctx) {
-    todo(ctx);
+    String name = ctx.name.getText();
+    _currentAbstractNeighbor.setUpdateSource(new UpdateSourceInterface(name));
+    _c.referenceStructure(
+        F5BigipStructureType.IMISH_INTERFACE,
+        name,
+        F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
+        ctx.name.getStart().getLine());
   }
 
   @Override

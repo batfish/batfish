@@ -518,6 +518,7 @@ import org.batfish.representation.f5_bigip.Snat;
 import org.batfish.representation.f5_bigip.SnatPool;
 import org.batfish.representation.f5_bigip.SnatTranslation;
 import org.batfish.representation.f5_bigip.Trunk;
+import org.batfish.representation.f5_bigip.UpdateSourceInterface;
 import org.batfish.representation.f5_bigip.Vlan;
 import org.batfish.representation.f5_bigip.VlanInterface;
 
@@ -2536,7 +2537,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void exitNrbnn_update_source(Nrbnn_update_sourceContext ctx) {
     String name = toName(ctx.name);
     _c.referenceStructure(VLAN, name, BGP_NEIGHBOR_UPDATE_SOURCE, ctx.name.getStart().getLine());
-    _currentBgpNeighbor.setUpdateSource(name);
+    _currentBgpNeighbor.setUpdateSource(new UpdateSourceInterface(name));
   }
 
   @Override
