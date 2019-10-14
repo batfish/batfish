@@ -369,8 +369,6 @@ public final class FlatJuniperGrammarTest {
         route instanceof Bgpv4Route
             ? route.toBuilder()
             : Bgpv4Route.builder().setNetwork(route.getNetwork()),
-        Ip.parse("192.0.2.1"),
-        DEFAULT_VRF_NAME,
         Direction.OUT);
   }
 
@@ -448,16 +446,16 @@ public final class FlatJuniperGrammarTest {
                         IpAccessListLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                .setSrcPorts(ImmutableList.of(new SubRange(1, 1)))
+                                .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
                                 .build()),
                         IpAccessListLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(new SubRange(2, 2)))
+                                .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                 .build()),
                         IpAccessListLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(new SubRange(3, 3)))
+                                .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                 .build()))))));
 
@@ -571,15 +569,15 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         IpAccessListLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(new SubRange(1, 1)))
+                                .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
                                 .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                .setSrcPorts(ImmutableList.of(new SubRange(2, 2)))
+                                .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
                                 .build()),
                         IpAccessListLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(new SubRange(3, 3)))
+                                .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                .setSrcPorts(ImmutableList.of(new SubRange(4, 4)))
+                                .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
                                 .build()))))));
   }
 
@@ -913,7 +911,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p1.process(cr, b1, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
+    p1.process(cr, b1, Direction.OUT);
     Bgpv4Route br1 = b1.build();
 
     assertThat(
@@ -933,7 +931,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p2.process(cr, b2, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
+    p2.process(cr, b2, Direction.OUT);
     Bgpv4Route br2 = b2.build();
 
     assertThat(
@@ -949,7 +947,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p3.process(cr, b3, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
+    p3.process(cr, b3, Direction.OUT);
     Bgpv4Route br3 = b3.build();
 
     assertThat(br3.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
@@ -970,7 +968,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p4.process(cr, b4, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
+    p4.process(cr, b4, Direction.OUT);
     Bgpv4Route br4 = b4.build();
 
     assertThat(
@@ -991,7 +989,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p5.process(cr, b5, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
+    p5.process(cr, b5, Direction.OUT);
     Bgpv4Route br5 = b5.build();
 
     assertThat(
@@ -1009,7 +1007,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p6.process(cr, b6, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
+    p6.process(cr, b6, Direction.OUT);
     Bgpv4Route br6 = b6.build();
 
     assertThat(br6.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
@@ -1974,12 +1972,8 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy rp2 = config.getRoutingPolicies().get(ar2.getGenerationPolicy());
     ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
     ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
-    assertThat(
-        rp2.process(cr31, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(false));
-    assertThat(
-        rp2.process(cr32, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(true));
+    assertThat(rp2.process(cr31, Bgpv4Route.builder(), Direction.OUT), equalTo(false));
+    assertThat(rp2.process(cr32, Bgpv4Route.builder(), Direction.OUT), equalTo(true));
 
     // all should be discard routes
     assertThat(ar1.getDiscard(), equalTo(true));
@@ -1991,23 +1985,17 @@ public final class FlatJuniperGrammarTest {
     // falls through without changing default, so accept
     RoutingPolicy rp4 = config.getRoutingPolicies().get(ar4.getGenerationPolicy());
     ConnectedRoute cr4 = new ConnectedRoute(Prefix.parse("4.0.0.0/32"), "blah");
-    assertThat(
-        rp4.process(cr4, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(true));
+    assertThat(rp4.process(cr4, Bgpv4Route.builder(), Direction.OUT), equalTo(true));
 
     // rejects first, so reject
     RoutingPolicy rp5 = config.getRoutingPolicies().get(ar5.getGenerationPolicy());
     ConnectedRoute cr5 = new ConnectedRoute(Prefix.parse("5.0.0.0/32"), "blah");
-    assertThat(
-        rp5.process(cr5, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(false));
+    assertThat(rp5.process(cr5, Bgpv4Route.builder(), Direction.OUT), equalTo(false));
 
     // accepts first, so accept
     RoutingPolicy rp6 = config.getRoutingPolicies().get(ar6.getGenerationPolicy());
     ConnectedRoute cr6 = new ConnectedRoute(Prefix.parse("6.0.0.0/32"), "blah");
-    assertThat(
-        rp6.process(cr6, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(true));
+    assertThat(rp6.process(cr6, Bgpv4Route.builder(), Direction.OUT), equalTo(true));
   }
 
   @Test
@@ -2111,12 +2099,8 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy rp2 = config.getRoutingPolicies().get(gr2.getGenerationPolicy());
     ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
     ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
-    assertThat(
-        rp2.process(cr31, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(false));
-    assertThat(
-        rp2.process(cr32, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(true));
+    assertThat(rp2.process(cr31, Bgpv4Route.builder(), Direction.OUT), equalTo(false));
+    assertThat(rp2.process(cr32, Bgpv4Route.builder(), Direction.OUT), equalTo(true));
 
     // none should be discard routes
     assertThat(gr1.getDiscard(), equalTo(false));
@@ -3173,7 +3157,7 @@ public final class FlatJuniperGrammarTest {
           c.getRoutingPolicies()
               .get("POLICY-NAME")
               .call(
-                  Environment.builder(c, DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(new ConnectedRoute(p, "nextHop"))
                       .build());
       assertThat(result.getBooleanValue(), equalTo(true));
@@ -3184,7 +3168,7 @@ public final class FlatJuniperGrammarTest {
         c.getRoutingPolicies()
             .get("POLICY-NAME")
             .call(
-                Environment.builder(c, DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setOriginalRoute(
                         StaticRoute.builder()
                             .setAdministrativeCost(0)
@@ -3198,7 +3182,7 @@ public final class FlatJuniperGrammarTest {
         c.getRoutingPolicies()
             .get("POLICY-NAME")
             .call(
-                Environment.builder(c, DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.0/24"), "nextHop"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
@@ -3248,9 +3232,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(result.getBooleanValue(), equalTo(false));
     result =
         familyPolicy.call(
-            Environment.builder(c, DEFAULT_VRF_NAME)
-                .setOriginalRoute6(new GeneratedRoute6(Prefix6.ZERO))
-                .build());
+            Environment.builder(c).setOriginalRoute6(new GeneratedRoute6(Prefix6.ZERO)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
 
     /*
@@ -3393,22 +3375,16 @@ public final class FlatJuniperGrammarTest {
     */
     RoutingPolicy tagPolicy = c.getRoutingPolicies().get("TAG_POLICY");
     srb = StaticRoute.builder().setAdministrativeCost(100).setNetwork(testPrefix);
-    result =
-        tagPolicy.call(
-            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(1L)).build());
+    result = tagPolicy.call(Environment.builder(c).setOutputRoute(srb.setTag(1L)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
-    result =
-        tagPolicy.call(
-            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(2L)).build());
+    result = tagPolicy.call(Environment.builder(c).setOutputRoute(srb.setTag(2L)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
-    result =
-        tagPolicy.call(
-            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(3L)).build());
+    result = tagPolicy.call(Environment.builder(c).setOutputRoute(srb.setTag(3L)).build());
     assertThat(result.getBooleanValue(), equalTo(false));
   }
 
   private static Environment envWithRoute(Configuration c, AbstractRoute route) {
-    return Environment.builder(c, DEFAULT_VRF_NAME).setOriginalRoute(route).build();
+    return Environment.builder(c).setOriginalRoute(route).build();
   }
 
   @Test
@@ -3607,19 +3583,12 @@ public final class FlatJuniperGrammarTest {
   public void testLocalRouteExportBgp() {
     Configuration c = parseConfig("local-route-export-bgp");
 
-    String peer1Vrf = "peer1Vrf";
     RoutingPolicy peer1RejectAllLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("1.0.0.1/32")));
-
-    String peer2Vrf = "peer2Vrf";
     RoutingPolicy peer2RejectPtpLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("2.0.0.1/32")));
-
-    String peer3Vrf = "peer3Vrf";
     RoutingPolicy peer3RejectLanLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("3.0.0.1/32")));
-
-    String peer4Vrf = "peer3Vrf";
     RoutingPolicy peer4AllowAllLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("4.0.0.1/32")));
 
@@ -3629,7 +3598,7 @@ public final class FlatJuniperGrammarTest {
         new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.0/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
-    Environment.Builder eb = Environment.builder(c, peer1Vrf).setDirection(Direction.OUT);
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
     assertThat(
         peer1RejectAllLocal
             .call(
@@ -3643,7 +3612,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(false));
 
-    eb = Environment.builder(c, peer2Vrf).setDirection(Direction.OUT);
+    eb = Environment.builder(c).setDirection(Direction.OUT);
     assertThat(
         peer2RejectPtpLocal
             .call(
@@ -3657,7 +3626,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(true));
 
-    eb = Environment.builder(c, peer3Vrf).setDirection(Direction.OUT);
+    eb = Environment.builder(c).setDirection(Direction.OUT);
     assertThat(
         peer3RejectLanLocal
             .call(
@@ -3671,7 +3640,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(false));
 
-    eb = Environment.builder(c, peer4Vrf).setDirection(Direction.OUT);
+    eb = Environment.builder(c).setDirection(Direction.OUT);
     assertThat(
         peer4AllowAllLocal
             .call(
@@ -3711,7 +3680,7 @@ public final class FlatJuniperGrammarTest {
         new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.0/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
-    Environment.Builder eb = Environment.builder(c, vrf1).setDirection(Direction.OUT);
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
     assertThat(
         vrf1RejectAllLocal
             .call(
@@ -3729,7 +3698,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(false));
 
-    eb = Environment.builder(c, vrf2).setDirection(Direction.OUT);
+    eb = Environment.builder(c).setDirection(Direction.OUT);
     assertThat(
         vrf2RejectPtpLocal
             .call(
@@ -3747,7 +3716,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(true));
 
-    eb = Environment.builder(c, vrf3).setDirection(Direction.OUT);
+    eb = Environment.builder(c).setDirection(Direction.OUT);
     assertThat(
         vrf3RejectLanLocal
             .call(
@@ -3765,7 +3734,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(false));
 
-    eb = Environment.builder(c, vrf4).setDirection(Direction.OUT);
+    eb = Environment.builder(c).setDirection(Direction.OUT);
     assertThat(
         vrf4AllowAllLocal
             .call(
@@ -3802,7 +3771,8 @@ public final class FlatJuniperGrammarTest {
     Ip pool2End = Ip.parse("10.10.10.20");
 
     Transformation ruleSetRIRule1Transformation =
-        when(match(HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(5, 5))).build()))
+        when(match(
+                HeaderSpace.builder().setSrcPorts(ImmutableList.of(SubRange.singleton(5))).build()))
             .apply(NOOP_DEST_NAT)
             .build();
 
@@ -3831,7 +3801,7 @@ public final class FlatJuniperGrammarTest {
                 HeaderSpace.builder()
                     .setDstIps(new IpSpaceReference("global~NAME"))
                     .setDstPorts(ImmutableList.of(new SubRange(100, 200)))
-                    .setSrcPorts(ImmutableList.of(new SubRange(80, 80)))
+                    .setSrcPorts(ImmutableList.of(SubRange.singleton(80)))
                     .setSrcIps(new IpSpaceReference("global~SA-NAME"))
                     .build()))
             .apply(NOOP_DEST_NAT)
@@ -3839,7 +3809,8 @@ public final class FlatJuniperGrammarTest {
             .build();
 
     Transformation ruleSetIfaceRule3Transformation =
-        when(match(HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(6, 6))).build()))
+        when(match(
+                HeaderSpace.builder().setSrcPorts(ImmutableList.of(SubRange.singleton(6))).build()))
             .apply(NOOP_DEST_NAT)
             .setOrElse(ruleSetZoneRule1Transformation)
             .build();
@@ -4299,17 +4270,17 @@ public final class FlatJuniperGrammarTest {
         RouteFilterListMatchers.hasLines(
             containsInAnyOrder(
                 new RouteFilterLine(
-                    LineAction.PERMIT, Prefix.parse("1.2.0.0/16"), new SubRange(16, 16)),
+                    LineAction.PERMIT, Prefix.parse("1.2.0.0/16"), SubRange.singleton(16)),
                 new RouteFilterLine(
                     LineAction.PERMIT, Prefix.parse("1.2.0.0/16"), new SubRange(17, 32)),
                 new RouteFilterLine(
-                    LineAction.PERMIT, Prefix.parse("1.7.0.0/16"), new SubRange(16, 16)),
+                    LineAction.PERMIT, Prefix.parse("1.7.0.0/16"), SubRange.singleton(16)),
                 new RouteFilterLine(
-                    LineAction.PERMIT, Prefix.parse("1.7.0.0/17"), new SubRange(17, 17)),
+                    LineAction.PERMIT, Prefix.parse("1.7.0.0/17"), SubRange.singleton(17)),
                 new RouteFilterLine(
                     LineAction.PERMIT,
                     IpWildcard.parse("1.0.0.0:0.255.0.255"),
-                    new SubRange(16, 16)))));
+                    SubRange.singleton(16)))));
   }
 
   @Test
@@ -4353,7 +4324,7 @@ public final class FlatJuniperGrammarTest {
     ConnectedRoute connectedRouteMaskInvalidLength =
         new ConnectedRoute(Prefix.parse("1.9.3.9/17"), "nhinttest");
 
-    Environment.Builder eb = Environment.builder(c, "vrf1").setDirection(Direction.IN);
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
 
     assertThat(
         policyExact.call(eb.setOriginalRoute(connectedRouteExact).build()).getBooleanValue(),
@@ -4549,7 +4520,7 @@ public final class FlatJuniperGrammarTest {
               .getRoutingPolicies()
               .get("POLICY-NAME")
               .call(
-                  Environment.builder(config, DEFAULT_VRF_NAME)
+                  Environment.builder(config)
                       .setOriginalRoute(new ConnectedRoute(p, "iface"))
                       .build());
       assertThat(result.getBooleanValue(), equalTo(true));
@@ -4561,7 +4532,7 @@ public final class FlatJuniperGrammarTest {
             .getRoutingPolicies()
             .get("POLICY-NAME")
             .call(
-                Environment.builder(config, DEFAULT_VRF_NAME)
+                Environment.builder(config)
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.3/24"), "iface"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
@@ -4572,7 +4543,7 @@ public final class FlatJuniperGrammarTest {
             .getRoutingPolicies()
             .get("POLICY-NAME")
             .call(
-                Environment.builder(config, DEFAULT_VRF_NAME)
+                Environment.builder(config)
                     .setOriginalRoute(
                         StaticRoute.builder()
                             .setNextHopInterface("iface")
@@ -4758,20 +4729,13 @@ public final class FlatJuniperGrammarTest {
         c.getRoutingPolicies().get(defaultVrf.getCrossVrfImportPolicy());
     StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setAdmin(5).build();
     assertThat(
-        instanceImportPolicy.process(
-            new AnnotatedRoute<>(sr, "VRF1"), null, null, DEFAULT_VRF_NAME, null),
-        equalTo(true));
+        instanceImportPolicy.process(new AnnotatedRoute<>(sr, "VRF1"), null, null), equalTo(true));
     assertThat(
-        instanceImportPolicy.process(
-            new AnnotatedRoute<>(sr, "VRF2"), null, null, DEFAULT_VRF_NAME, null),
-        equalTo(false));
+        instanceImportPolicy.process(new AnnotatedRoute<>(sr, "VRF2"), null, null), equalTo(false));
     assertThat(
-        instanceImportPolicy.process(
-            new AnnotatedRoute<>(sr, "VRF3"), null, null, DEFAULT_VRF_NAME, null),
-        equalTo(true));
+        instanceImportPolicy.process(new AnnotatedRoute<>(sr, "VRF3"), null, null), equalTo(true));
     assertThat(
-        instanceImportPolicy.process(
-            new AnnotatedRoute<>(sr, "ANOTHER_VRF"), null, null, DEFAULT_VRF_NAME, null),
+        instanceImportPolicy.process(new AnnotatedRoute<>(sr, "ANOTHER_VRF"), null, null),
         equalTo(false));
 
     /*

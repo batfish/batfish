@@ -24,10 +24,8 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -190,37 +188,20 @@ public class RoutingPolicy implements Serializable {
     return _statements;
   }
 
+  /** @return True if the policy accepts the route. */
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
-      Ip peerAddress,
-      String vrf,
       Direction direction) {
-    return process(inputRoute, outputRoute, peerAddress, null, vrf, direction);
-  }
-
-  /**
-   * @param peerAddress The address of a known peer.
-   * @param peerPrefix The address of an unknown peer. Used for dynamic BGP.
-   * @return True if the policy accepts the route.
-   */
-  public boolean process(
-      AbstractRouteDecorator inputRoute,
-      AbstractRouteBuilder<?, ?> outputRoute,
-      @Nullable Ip peerAddress,
-      @Nullable Prefix peerPrefix,
-      String vrf,
-      Direction direction) {
-    return process(inputRoute, outputRoute, peerAddress, peerPrefix, null, null, vrf, direction);
+    return process(inputRoute, outputRoute, null, null, direction);
   }
 
   public boolean process(
       @Nonnull AbstractRouteDecorator inputRoute,
       @Nonnull AbstractRouteBuilder<?, ?> outputRoute,
-      @Nonnull String vrf,
       @Nonnull EigrpProcess eigrpProcess,
       Direction direction) {
-    return process(inputRoute, outputRoute, null, null, null, eigrpProcess, vrf, direction);
+    return process(inputRoute, outputRoute, null, eigrpProcess, direction);
   }
 
   /**
@@ -231,46 +212,30 @@ public class RoutingPolicy implements Serializable {
    * @param sessionProperties {@link BgpSessionProperties} representing the session <em>from</em>
    *     the remote node <em>to</em> the node processing the policy (regardless of whether this
    *     policy is currently being used for import or export)
-   * @param vrf Name of VRF where this policy resides
    * @param direction {@link Direction} in which route is being sent
    */
   public boolean processBgpRoute(
       AbstractRouteDecorator inputRoute,
       BgpRoute.Builder<?, ?> outputRoute,
       BgpSessionProperties sessionProperties,
-      String vrf,
       Direction direction) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
-    Ip peerAddress = sessionProperties.getTailIp();
-    return process(
-        inputRoute,
-        outputRoute,
-        peerAddress,
-        peerAddress.toPrefix(),
-        sessionProperties,
-        null,
-        vrf,
-        direction);
+    return process(inputRoute, outputRoute, sessionProperties, null, direction);
   }
 
   private boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
-      @Nullable Ip peerAddress,
-      @Nullable Prefix peerPrefix,
       @Nullable BgpSessionProperties bgpSessionProperties,
       @Nullable EigrpProcess eigrpProcess,
-      String vrf,
       Direction direction) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
-        Environment.builder(_owner, vrf)
+        Environment.builder(_owner)
             .setBgpSessionProperties(bgpSessionProperties)
             .setOriginalRoute(inputRoute)
             .setOutputRoute(outputRoute)
-            .setPeerAddress(peerAddress)
             .setDirection(direction)
-            .setPeerPrefix(peerPrefix)
             .setEigrpProcess(eigrpProcess)
             .build();
     Result result = call(environment);

@@ -452,28 +452,18 @@ public final class CiscoNxosGrammarTest {
   private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
     assertFalse(
         routingPolicy.process(
-            route,
-            Bgpv4Route.builder().setNetwork(route.getNetwork()),
-            Ip.parse("192.0.2.1"),
-            DEFAULT_VRF_NAME,
-            Direction.OUT));
+            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private void assertRoutingPolicyPermitsRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
     assertTrue(
         routingPolicy.process(
-            route,
-            Bgpv4Route.builder().setNetwork(route.getNetwork()),
-            Ip.parse("192.0.2.1"),
-            DEFAULT_VRF_NAME,
-            Direction.OUT));
+            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
     Bgpv4Route.Builder builder = route.toBuilder();
-    assertTrue(
-        routingPolicy.process(
-            route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.IN));
+    assertTrue(routingPolicy.process(route, builder, Direction.IN));
     return builder.build();
   }
 
@@ -486,9 +476,7 @@ public final class CiscoNxosGrammarTest {
             .setArea(456L)
             .setCostToAdvertiser(789L)
             .setAdvertiser("n1");
-    assertTrue(
-        routingPolicy.process(
-            route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.OUT));
+    assertTrue(routingPolicy.process(route, builder, Direction.OUT));
     return builder.build();
   }
 
@@ -644,14 +632,14 @@ public final class CiscoNxosGrammarTest {
     // No operation for IBGP
     boolean shouldExportToIbgp =
         nhipUnchangedPolicy.processBgpRoute(
-            originalRoute, outputRouteBuilder, ibgpSession, "default", Direction.OUT);
+            originalRoute, outputRouteBuilder, ibgpSession, Direction.OUT);
     assertTrue(shouldExportToIbgp);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
 
     // Preserves original route's next hop IP for EBGP
     boolean shouldExportToEbgp =
         nhipUnchangedPolicy.processBgpRoute(
-            originalRoute, outputRouteBuilder, ebgpSession, "default", Direction.OUT);
+            originalRoute, outputRouteBuilder, ebgpSession, Direction.OUT);
     assertTrue(shouldExportToEbgp);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(originalNhip));
 
@@ -661,7 +649,7 @@ public final class CiscoNxosGrammarTest {
         originalRoute.toBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP).build();
     boolean shouldExportToEbgpUnsetNextHop =
         nhipUnchangedPolicy.processBgpRoute(
-            noNhipRoute, outputRouteBuilder, ebgpSession, "default", Direction.OUT);
+            noNhipRoute, outputRouteBuilder, ebgpSession, Direction.OUT);
     assertTrue(shouldExportToEbgpUnsetNextHop);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(sessionPropsHeadIp));
   }
@@ -3924,7 +3912,7 @@ public final class CiscoNxosGrammarTest {
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(24, 24)));
+      assertThat(line.getLengthRange(), equalTo(SubRange.singleton(24)));
       assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
 
       line = lines.next();
@@ -3998,7 +3986,7 @@ public final class CiscoNxosGrammarTest {
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(24, 24)));
+      assertThat(line.getLengthRange(), equalTo(SubRange.singleton(24)));
       assertThat(line.getLine(), equalTo(10L));
       assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
 
@@ -4089,7 +4077,7 @@ public final class CiscoNxosGrammarTest {
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(120, 120)));
+      assertThat(line.getLengthRange(), equalTo(SubRange.singleton(120)));
       assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
 
       line = lines.next();
@@ -4163,7 +4151,7 @@ public final class CiscoNxosGrammarTest {
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(120, 120)));
+      assertThat(line.getLengthRange(), equalTo(SubRange.singleton(120)));
       assertThat(line.getLine(), equalTo(10L));
       assertThat(line.getPrefix6(), equalTo(Prefix6.parse("10:10::/112")));
 
@@ -4669,7 +4657,7 @@ public final class CiscoNxosGrammarTest {
         assertTrue(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
-                .process(staticInputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
+                .process(staticInputRoute, outputRoute, Direction.OUT));
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
       }
       {
@@ -4682,18 +4670,12 @@ public final class CiscoNxosGrammarTest {
         assertFalse(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
-                .process(
-                    staticInputRoute,
-                    OspfExternalRoute.builder(),
-                    Ip.ZERO,
-                    DEFAULT_VRF_NAME,
-                    Direction.OUT));
+                .process(staticInputRoute, OspfExternalRoute.builder(), Direction.OUT));
         // accept generated route
         assertTrue(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
-                .process(
-                    generatedInputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
+                .process(generatedInputRoute, outputRoute, Direction.OUT));
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
       }
       {
@@ -4706,7 +4688,7 @@ public final class CiscoNxosGrammarTest {
         assertTrue(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
-                .process(staticInputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
+                .process(staticInputRoute, outputRoute, Direction.OUT));
         // assign E2 metric-type from route-map
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
       }
@@ -4720,18 +4702,12 @@ public final class CiscoNxosGrammarTest {
         assertFalse(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
-                .process(
-                    staticInputRoute,
-                    OspfExternalRoute.builder(),
-                    Ip.ZERO,
-                    DEFAULT_VRF_NAME,
-                    Direction.OUT));
+                .process(staticInputRoute, OspfExternalRoute.builder(), Direction.OUT));
         // accept generated route
         assertTrue(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
-                .process(
-                    generatedInputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
+                .process(generatedInputRoute, outputRoute, Direction.OUT));
         // assign E2 metric-type from route-map
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
       }
@@ -4802,7 +4778,7 @@ public final class CiscoNxosGrammarTest {
       assertTrue(
           c.getRoutingPolicies()
               .get(proc.getExportPolicy())
-              .process(inputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
+              .process(inputRoute, outputRoute, Direction.OUT));
       assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
     }
     // TODO: convert and test OSPF redistribute maximum-prefix
@@ -4819,7 +4795,7 @@ public final class CiscoNxosGrammarTest {
       assertTrue(
           c.getRoutingPolicies()
               .get(proc.getExportPolicy())
-              .process(inputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
+              .process(inputRoute, outputRoute, Direction.OUT));
       assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
     }
     {

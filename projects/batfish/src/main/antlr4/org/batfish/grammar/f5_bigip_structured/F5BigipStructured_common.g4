@@ -18,11 +18,6 @@ empty_list
   BRACE_LEFT BRACE_RIGHT
 ;
 
-ignored
-:
-  unrecognized
-;
-
 ip_address
 :
   IP_ADDRESS
@@ -85,23 +80,20 @@ structure_name_with_port
   )
 ;
 
+/* 
+ * An ignored fragment of syntax.
+ * Must always be preceded by at least one token on line in which it appears.
+ */
+ignored
+:
+  u_word* list? NEWLINE
+;
+
+
 /* An unrecognized fragment of syntax. When used, MUST be LAST alternative */
 unrecognized
 :
-  (
-    u_if
-    | last_word = u_word+
-  ) list? NEWLINE
-;
-
-u_if
-:
-  IF u_word_list u_word_list u_elseif*
-;
-
-u_elseif
-:
-  ELSEIF u_word_list u_word_list
+  last_word = u_word+ list? NEWLINE
 ;
 
 u_list
@@ -141,7 +133,7 @@ vlan_id
 word
 :
   ~( BRACE_LEFT | BRACE_RIGHT | BRACKET_LEFT | BRACKET_RIGHT | IMISH_CHUNK |
-  NEWLINE )
+  RULE_SPECIAL | NEWLINE )
 ;
 
 word_id
