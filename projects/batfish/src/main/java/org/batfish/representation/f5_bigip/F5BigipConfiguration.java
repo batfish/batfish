@@ -809,6 +809,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _trunks;
   }
 
+  /**
+   * Get the local IP of the bgp session.
+   *
+   * <p>1. sanity check: neighbor address and AS, and local AS should all be defined.
+   *
+   * <p>2. If update-source is specified: 1) if it is update-source ip_address, then use this
+   * ip_address 2) if it is update-source interface_name, then use the address of this interface
+   *
+   * <p>3. If update-source is not specified, use the interface address which is in the same subnet
+   * of the neighbor IP
+   *
+   * <p>4. Otherwise, return null
+   */
   private @Nullable Ip getUpdateSource(BgpProcess proc, BgpNeighbor neighbor) {
     Ip neighborAddress = neighbor.getAddress();
     if (neighborAddress == null || proc.getLocalAs() == null || neighbor.getRemoteAs() == null) {

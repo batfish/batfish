@@ -48,4 +48,4 @@ router bgp 65001
  neighbor 10.0.3.10 remote-as 65001
  neighbor 10.0.3.10 update-source vlan2
  neighbor 10.0.4.10 remote-as 65001
- neighbor 10.0.4.10 update-source vlan2
+ neighbor 10.0.4.10 update-source vlan4
