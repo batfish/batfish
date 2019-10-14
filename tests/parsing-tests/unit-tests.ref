@@ -83386,7 +83386,7 @@
                 42,
                 43
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "zl3~vsys10" : {
               "definitionLines" : [
@@ -83394,7 +83394,7 @@
                 47,
                 48
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "ztap~vsys10" : {
               "definitionLines" : [
@@ -83402,7 +83402,7 @@
                 52,
                 53
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "zvirtual-wire~vsys10" : {
               "definitionLines" : [
@@ -83410,7 +83410,7 @@
                 57,
                 58
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -89733,6 +89733,28 @@
                 32
               ],
               "zone network layer3" : [
+                58
+              ]
+            }
+          },
+          "zone" : {
+            "zl2~vsys10" : {
+              "zone network layer2" : [
+                43
+              ]
+            },
+            "zl3~vsys10" : {
+              "zone network layer3" : [
+                48
+              ]
+            },
+            "ztap~vsys10" : {
+              "zone network tap" : [
+                53
+              ]
+            },
+            "zvirtual-wire~vsys10" : {
+              "zone network virtual-wire" : [
                 58
               ]
             }
