@@ -1,26 +1,56 @@
 lexer grammar F5BigipStructuredLexer;
 
 options {
-  superClass = 'org.batfish.grammar.BatfishLexer';
-}
-
-@members {
-// Java code to end up in F5BigipStructuredLexer.java goes here
-
-private int lastTokenType = -1;
-
-@Override
-public void emit(Token token) {
-    super.emit(token);
-    if (token.getChannel() != HIDDEN) {
-       lastTokenType = token.getType();
-    }
-}
-
+  superClass = 'org.batfish.grammar.f5_bigip_structured.parsing.F5BigipStructuredBaseLexer';
 }
 
 tokens {
-  DOUBLE_QUOTED_STRING
+  ARRAY,
+  ASTERISK,
+  BACKSLASH_CARRIAGE_RETURN,
+  BACKSLASH_CHAR,
+  BACKSLASH_NEWLINE,
+  BACKSLASH_NEWLINE_WS,
+  BANG,
+  BREAK,
+  CASE,
+  CHARS,
+  COMMENT,
+  DASH,
+  DOLLAR,
+  DOUBLE_QUOTED_STRING,
+  ELSE,
+  ELSEIF,
+  EQ,
+  EVENT,
+  EXISTS,
+  EXPR,
+  FORWARD_SLASH,
+  IDENTIFIER,
+  IF,
+  NE,
+  OP_AND,
+  OP_EQ,
+  OP_EXP,
+  OP_GE,
+  OP_GT,
+  OP_LE,
+  OP_LT,
+  OP_NE,
+  OP_OR,
+  PAREN_LEFT,
+  PAREN_RIGHT,
+  PERCENT,
+  PLUS,
+  PUTS,
+  RULE_SPECIAL,
+  SIZE,
+  SWITCH,
+  THEN,
+  VALUE_INTEGER,
+  VALUE_DOUBLE,
+  VALUE_STRING,
+  WHEN
 }
 
 // Keywords
@@ -180,11 +210,6 @@ EBGP_MULTIHOP
   'ebgp-multihop'
 ;
 
-ELSEIF
-:
-  'elseif'
-;
-
 ENABLED
 :
   'enabled'
@@ -288,11 +313,6 @@ ICAP
 ICMP_ECHO
 :
   'icmp-echo'
-;
-
-IF
-:
-  'if'
 ;
 
 ILX
@@ -593,6 +613,12 @@ RTSP
 RULE
 :
   'rule'
+  {
+    if (lastTokenType() == LTM && secondToLastTokenType() == NEWLINE) {
+      setLtmRuleDeclaration();
+      setType(RULE_SPECIAL);
+    }
+  }
 ;
 
 RULES
@@ -603,6 +629,11 @@ RULES
 SCTP
 :
   'sctp'
+;
+
+SECURITY
+:
+  'security'
 ;
 
 SELECTIVE
@@ -825,11 +856,6 @@ WEBSOCKET
   'websocket'
 ;
 
-WHEN
-:
-  'when'
-;
-
 XML
 :
   'xml'
@@ -840,6 +866,12 @@ XML
 BRACE_LEFT
 :
   '{'
+  {
+    if (isLtmRuleDeclaration()) {
+      pushMode(M_Irule);
+      unsetLtmRuleDeclaration();
+    }
+  }
 ;
 
 BRACE_RIGHT
@@ -862,7 +894,7 @@ COMMENT_LINE
   (
     F_Whitespace
   )* '#'
-  {lastTokenType == NEWLINE || lastTokenType == -1}?
+  {lastTokenType() == NEWLINE || lastTokenType() == -1}?
 
   F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
 ;
@@ -900,7 +932,7 @@ DOUBLE_QUOTE
 IMISH_CHUNK
 :
   '!'
-  {lastTokenType == NEWLINE}?
+  {lastTokenType() == NEWLINE}?
 
   F_NonNewlineChar* F_Newline+ F_Anything*
 ;
@@ -998,6 +1030,22 @@ fragment
 F_Digit
 :
   [0-9]
+;
+
+fragment
+F_BackslashChar
+:
+  ~[0-9abfnrtvxuU\r\n]
+;
+
+fragment
+F_BackslashNewlineWhitespace
+:
+  '\\' F_Newline
+  (
+    F_Newline
+    | F_Whitespace
+  )*
 ;
 
 fragment
@@ -1243,6 +1291,12 @@ F_StandardCommunity
 ;
 
 fragment
+F_TclIdentifier
+:
+  [a-zA-Z_] [a-zA-Z0-9_]*
+;
+
+fragment
 F_Uint16
 :
 // 0-65535
@@ -1341,4 +1395,197 @@ M_DoubleQuote_DOUBLE_QUOTE
 M_DoubleQuote_ESCAPED_DOUBLE_QUOTE
 :
   '\\"' -> more
+;
+
+mode M_Irule;
+
+M_Irule_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), popMode
+;
+
+M_Irule_COMMENT
+:
+  '#' F_NonNewlineChar* F_Newline+ -> channel(HIDDEN)
+;
+
+M_Irule_NEWLINE
+:
+  F_Newline+ -> type(NEWLINE)
+;
+
+M_Irule_WHEN
+:
+  'when' -> type(WHEN), pushMode(M_Event)
+;
+
+M_Irule_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_Event;
+
+M_Event_EVENT
+:
+  ~'{'+ -> type(EVENT) 
+;
+
+M_Event_BRACE_LEFT
+:
+  '{' -> type(BRACE_LEFT), mode(M_Command)
+;
+
+mode M_Command;
+
+M_Command_BRACE_LEFT
+:
+  '{' -> pushMode(M_BracedSegment), type(BRACE_LEFT)
+;
+
+M_Command_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), popMode
+;
+
+M_Command_BRACKET_LEFT
+:
+  '[' -> type ( BRACKET_LEFT ) , pushMode ( M_Command )
+;
+
+M_Command_BRACKET_RIGHT
+:
+  ']' -> type ( BRACKET_RIGHT ) , popMode
+;
+
+M_Command_CHARS
+:
+  ~[ \t\r\n\\{}[\]$"]+ -> type(CHARS)
+;
+
+M_Command_COMMENT
+:
+  '#' F_NonNewlineChar* F_Newline -> type(COMMENT)
+;
+
+M_Command_DOLLAR
+:
+  '$' -> type(DOLLAR), pushMode(M_VariableSubstitution)
+;
+
+M_Command_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuotedSegment)
+;
+
+M_Command_NEWLINE
+:
+  F_Newline+ -> type(NEWLINE)
+;
+
+M_Command_WS
+:
+  [ \t]+ -> type(WS)
+;
+
+mode M_BracedSegment;
+
+M_BracedSegment_CHARS
+:
+  ~[{}]+ -> type(CHARS)
+;
+
+M_BracedSegment_BACKSLASH_NEWLINE_WS
+:
+  F_BackslashNewlineWhitespace -> type(BACKSLASH_NEWLINE_WS)
+;
+
+M_BracedSegment_BRACE_LEFT
+:
+  '{' -> pushMode(M_BracedSegment), type(BRACE_LEFT)
+;
+
+M_BracedSegment_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), popMode
+;
+
+mode M_DoubleQuotedSegment;
+
+M_DoubleQuotedSegment_CHARS
+:
+  ~[["$\\]+ -> type(CHARS)
+;
+
+M_DoubleQuotedSegment_BACKSLASH_CHAR
+:
+  '\\' F_BackslashChar -> type(BACKSLASH_CHAR)
+;
+
+M_DoubleQuotedSegment_BACKSLASH_NEWLINE
+:
+  '\\n' -> type(BACKSLASH_NEWLINE)
+;
+
+M_DoubleQuotedSegment_BACKSLASH_NEWLINE_WS
+:
+  F_BackslashNewlineWhitespace -> type(BACKSLASH_NEWLINE_WS)
+;
+
+M_DoubleQuotedSegment_BRACKET_LEFT
+:
+  '[' -> type(BRACKET_LEFT), pushMode(M_Command)
+;
+
+M_DoubleQuotedSegment_DOLLAR
+:
+  '$' -> type(DOLLAR), pushMode(M_VariableSubstitution)
+;
+
+M_DoubleQuotedSegment_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), popMode
+;
+
+mode M_VariableSubstitution;
+
+M_VariableSubstitution_BRACE_LEFT
+:
+  '{' -> type(BRACE_LEFT), pushMode(M_BracedVariableSubstitution)
+;
+
+M_VariableSubstitution_CHARS
+:
+  [0-9A-Za-z_]+
+  (
+    '::' [0-9A-Za-z_]+
+  )* -> type(CHARS)
+;
+
+M_VariableSubstitution_DOLLAR
+:
+// kinda screwed here
+  '$' -> type(DOLLAR), popMode
+;
+
+M_VariableSubstitution_NEWLINE
+:
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_VariableSubstitution_WS
+:
+  F_Whitespace+ -> type(WS), popMode
+;
+
+mode M_BracedVariableSubstitution;
+
+M_BracedVariableSubstitution_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), popMode
+;
+
+M_BracedVariableSubstitution_CHARS
+:
+  ~'}'+ -> type(CHARS)
 ;

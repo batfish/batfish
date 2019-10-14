@@ -30,7 +30,11 @@ statement
 :
   s_ltm
   | s_net
+  | s_security
   | s_sys
-  | unrecognized
 ;
 
+s_security
+:
+  SECURITY unrecognized
+;

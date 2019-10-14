@@ -2718,12 +2718,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private @Nonnull String getUnrecognizedLeadText(UnrecognizedContext ctx) {
-    if (ctx.u_if() != null) {
-      return ctx.u_if().getText();
-    } else {
-      return _text.substring(
-          ctx.getStart().getStartIndex(), ctx.last_word.getStop().getStopIndex() + 1);
-    }
+    return _text.substring(
+        ctx.getStart().getStartIndex(), ctx.last_word.getStop().getStopIndex() + 1);
   }
 
   private @Nullable Long toCommunity(Standard_communityContext ctx) {
