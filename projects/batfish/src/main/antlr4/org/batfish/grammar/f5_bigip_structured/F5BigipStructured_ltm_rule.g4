@@ -10,7 +10,22 @@ l_rule
 :
   RULE_SPECIAL name = structure_name BRACE_LEFT
   (
-    NEWLINE when*
+    NEWLINE
+    (
+      proc
+      | when
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+proc
+:
+  PROC name = CHARS BRACE_LEFT
+  (
+    args += CHARS
+  )* BRACE_RIGHT BRACE_LEFT
+  (
+    NEWLINE command_sequence?
   )? BRACE_RIGHT NEWLINE
 ;
 
@@ -18,7 +33,7 @@ when
 :
   WHEN w_event BRACE_LEFT
   (
-    NEWLINE WS? command_sequence? WS?
+    NEWLINE command_sequence?
   )? BRACE_RIGHT NEWLINE
 ;
 
@@ -29,24 +44,32 @@ w_event
 
 command_sequence
 :
-  commands += command
+  whitespace? command_separator*
   (
-    command_separator commands += command
-  )* command_separator?
+    commands += command command_separator+
+  )* commands += command whitespace? command_separator*
 ;
 
 command
 :
-  COMMENT* words+=i_word (WS words+=i_word)*
+  words += i_word
+  (
+    WS words += i_word
+  )*
 ;
 
 command_separator
 :
-  WS?
+  whitespace?
   (
     SEMICOLON
     | NEWLINE
-  ) WS?
+  ) whitespace?
+;
+
+whitespace
+:
+  (COMMENT | WS)+
 ;
 
 command_substitution

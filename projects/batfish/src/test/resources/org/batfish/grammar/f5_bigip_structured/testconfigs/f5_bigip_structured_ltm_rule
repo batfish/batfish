@@ -52,3 +52,41 @@ when CLIENTSSL_HANDSHAKE {
       log local0. "TLS handshake took $delta milliseconds for Client IP is [IP::client_addr]"
 }
 }
+
+ltm rule /Common/comment_ws_if {
+when HTTP_REQUEST {
+# foo
+  if { a } {
+  }
+}
+}
+
+ltm rule /Common/ws_set {
+when HTTP_REQUEST {
+  set a 0
+}
+}
+
+ltm rule /Common/varsub_close_bracket {
+when HTTP_REQUEST {
+  set a [URI::decode [string range $p [string q / $r] end]]
+}
+}
+
+ltm rule /Common/quote_varsub_escapequote {
+when HTTP_RESPONSE {
+  a "ua=\"$ua\" b"
+}
+}
+
+ltm rule /Common/proc_single_command {
+proc a { b c } {
+  a b
+}
+}
+
+ltm rule /Common/space_close_bracket {
+when HTTP_REQUEST {
+  set a [b  ]
+}
+}
