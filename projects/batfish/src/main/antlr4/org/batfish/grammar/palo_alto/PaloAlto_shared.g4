@@ -91,7 +91,7 @@ seltip_recurring
 
 seltip_url
 :
-    URL url = null_rest_of_line
+    URL url = variable
 ;
 
 ss_log_settings
