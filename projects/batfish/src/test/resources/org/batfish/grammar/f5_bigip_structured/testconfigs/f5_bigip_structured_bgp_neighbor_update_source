@@ -90,11 +90,11 @@ net routing bgp /Common/bgp1 {
         }
         10.0.0.4 {
             remote-as 1
-            update/source /Common/undefined_vlan
+            update-source /Common/undefined_vlan
         }
         10.0.0.5 {
             remote-as 1
-            update/source /Common/vlan4
+            update-source /Common/vlan4
         }
         10.0.3.2 {
             remote-as 1
