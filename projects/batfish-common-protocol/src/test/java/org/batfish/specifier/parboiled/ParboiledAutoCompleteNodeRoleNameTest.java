@@ -38,16 +38,19 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
 
   private static NodeRolesData testNodeRolesData =
       NodeRolesData.builder()
-          .setRoleDimensions(
+          .setRoleMappings(
               ImmutableList.of(
-                  NodeRoleDimension.builder("dim1")
-                      .setRoleDimensionMappings(
-                          ImmutableList.of(new RoleDimensionMapping("(r1.+)")))
-                      .build(),
-                  NodeRoleDimension.builder("dim2")
-                      .setRoleDimensionMappings(
-                          ImmutableList.of(new RoleDimensionMapping("(r2.+)")))
-                      .build()))
+                      NodeRoleDimension.builder("dim1")
+                          .setRoleDimensionMappings(
+                              ImmutableList.of(new RoleDimensionMapping("(r1.+)")))
+                          .build(),
+                      NodeRoleDimension.builder("dim2")
+                          .setRoleDimensionMappings(
+                              ImmutableList.of(new RoleDimensionMapping("(r2.+)")))
+                          .build())
+                  .stream()
+                  .flatMap(d -> d.toRoleMappings().stream())
+                  .collect(ImmutableList.toImmutableList()))
           .build();
 
   private static ParboiledAutoComplete getPAC() {

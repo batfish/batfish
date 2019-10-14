@@ -39,16 +39,20 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbbc_identifierCont
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbbc_peersContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_descriptionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_next_hop_selfContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_passwordContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_group_assignContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_remote_asContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_map_outContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_update_source_interfaceContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_update_source_ipContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbr_connectedContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbr_kernelContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_addressContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_address_prefix_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_metricContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_next_hopContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_originContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ro_neighborContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ro_networkContext;
@@ -85,6 +89,7 @@ import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
 import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
+import org.batfish.representation.f5_bigip.RouteMapSetIpNextHop;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
 
@@ -433,6 +438,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void enterRbn_password(Rbn_passwordContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitRbn_peer_group_assign(Rbn_peer_group_assignContext ctx) {
     String peerGroupName = ctx.name.getText();
     _c.referenceStructure(
@@ -555,6 +565,16 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitRbn_update_source_ip(Rbn_update_source_ipContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRbn_update_source_interface(Rbn_update_source_interfaceContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitRmm_ip_address(Rmm_ip_addressContext ctx) {
     String name = ctx.name.getText();
     _c.referenceStructure(
@@ -594,6 +614,12 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @Override
   public void exitRms_origin(Rms_originContext ctx) {
     _currentRouteMapEntry.setSetOrigin(new RouteMapSetOrigin(toOriginType(ctx.origin)));
+  }
+
+  @Override
+  public void exitRms_next_hop(Rms_next_hopContext ctx) {
+    Ip ip = Ip.parse(ctx.ip.getText());
+    _currentRouteMapEntry.setSetIpNextHop(new RouteMapSetIpNextHop(ip));
   }
 
   @Override

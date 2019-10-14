@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
@@ -26,6 +27,7 @@ import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.Streams;
 import com.google.common.collect.TreeMultiset;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -73,6 +75,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -84,6 +87,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily.Builder;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -91,6 +95,10 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubSettings;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.Zone.Type;
@@ -270,6 +278,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {
     _vendor = format;
+  }
+
+  static String computePeerExportPolicyName(Prefix remoteAddress) {
+    return "~PEER_EXPORT_POLICY:" + remoteAddress + "~";
   }
 
   // Visible for testing
@@ -983,6 +995,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     Zone zone = iface.getZone();
     IpAccessList.Builder aclBuilder =
         IpAccessList.builder().setOwner(_c).setName(computeOutgoingFilterName(iface.getName()));
+    List<IpAccessListLine> aclLines = new ArrayList<>();
     Optional<Vsys> sharedGatewayOptional =
         _sharedGateways.values().stream()
             .filter(sg -> sg.getImportedInterfaces().contains(name))
@@ -990,39 +1003,35 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     if (sharedGatewayOptional.isPresent()) {
       Vsys sharedGateway = sharedGatewayOptional.get();
       String sgName = sharedGateway.getName();
-      newIface.setOutgoingFilter(
-          aclBuilder
-              .setLines(
-                  ImmutableList.of(
-                      accepting(
-                          permittedByAcl(
-                              computeOutgoingFilterName(computeObjectName(sgName, sgName))))))
-              .build());
+      aclLines.add(
+          accepting(permittedByAcl(computeOutgoingFilterName(computeObjectName(sgName, sgName)))));
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               true, sharedGateway.getImportedInterfaces(), null, null));
     } else if (zone != null) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
-        newIface.setOutgoingFilter(
-            aclBuilder
-                .setLines(
-                    ImmutableList.of(
-                        accepting(
-                            permittedByAcl(
-                                computeOutgoingFilterName(
-                                    computeObjectName(zone.getVsys().getName(), zone.getName()))))))
-                .build());
+        aclLines.add(
+            accepting(
+                permittedByAcl(
+                    computeOutgoingFilterName(
+                        computeObjectName(zone.getVsys().getName(), zone.getName())))));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface
-      newIface.setOutgoingFilter(
-          aclBuilder
-              .setLines(
-                  ImmutableList.of(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE)))
-              .build());
+      aclLines.add(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
+    }
+
+    if (!aclLines.isEmpty()) {
+      // For interfaces with security rules, assume traffic originating from the device is allowed
+      // out
+      // the interface
+      // TODO this isn't tested and may not line up with actual device behavior, but is in place to
+      // allow things like BGP sessions to come up
+      aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
+      newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
     return newIface;
   }
@@ -1097,10 +1106,24 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // TODO
-    peerB.setIpv4UnicastAddressFamily(
+    Builder ipv4af =
         Ipv4UnicastAddressFamily.builder()
-            .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
-            .build());
+            .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build());
+
+    // BGP routing process expects an export policy to be attached to Ipv4UnicastAddressFamily
+    // TODO flesh out correct export policy, this is just a placeholder allowing BGP
+    String peerExportPolicyName = computePeerExportPolicyName(peer.getPeerAddress().toPrefix());
+    RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
+    peerExportPolicy
+        .getStatements()
+        .add(
+            new If(
+                new MatchProtocol(RoutingProtocol.IBGP, RoutingProtocol.BGP),
+                ImmutableList.of(Statements.ReturnTrue.toStaticStatement())));
+    _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+    ipv4af.setExportPolicy(peerExportPolicyName);
+
+    peerB.setIpv4UnicastAddressFamily(ipv4af.build());
 
     peerB.build(); // automatically adds itself to the process
   }

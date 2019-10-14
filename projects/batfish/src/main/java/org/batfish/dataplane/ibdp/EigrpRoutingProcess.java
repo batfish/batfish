@@ -490,8 +490,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   private boolean allowedByExportPolicy(
       EigrpNeighborConfigId neighborConfigId, EigrpRoute eigrpRoute) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
-    return exportPolicy.process(
-        eigrpRoute, eigrpRoute.toBuilder(), _vrfName, _process, Direction.OUT);
+    return exportPolicy.process(eigrpRoute, eigrpRoute.toBuilder(), _process, Direction.OUT);
   }
 
   /** External */
@@ -499,7 +498,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       EigrpNeighborConfigId neighborConfigId, EigrpRoute route) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
     EigrpExternalRoute.Builder builder = (EigrpExternalRoute.Builder) route.toBuilder();
-    boolean allowed = exportPolicy.process(route, builder, null, _vrfName, Direction.OUT);
+    boolean allowed = exportPolicy.process(route, builder, Direction.OUT);
     return allowed ? Optional.of(builder.build()) : Optional.empty();
   }
 
@@ -533,8 +532,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       outputRouteBuilder.setEigrpMetric(((EigrpRoute) unannotatedPotentialRoute).getEigrpMetric());
     }
 
-    if (!exportPolicy.process(
-        potentialExportRoute, outputRouteBuilder, _vrfName, _process, Direction.OUT)) {
+    if (!exportPolicy.process(potentialExportRoute, outputRouteBuilder, _process, Direction.OUT)) {
       return null;
     }
     outputRouteBuilder.setAdmin(_defaultExternalAdminCost);

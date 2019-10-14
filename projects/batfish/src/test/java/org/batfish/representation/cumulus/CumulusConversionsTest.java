@@ -53,7 +53,7 @@ public final class CumulusConversionsTest {
     RoutingPolicy policy =
         RoutingPolicy.builder(_nf).setOwner(_c).setStatements(ImmutableList.of(statement)).build();
     Environment env =
-        Environment.builder(_c, _v.getName())
+        Environment.builder(_c)
             .setOriginalRoute(
                 Bgpv4Route.builder()
                     .setNetwork(Prefix.parse(network))
@@ -93,7 +93,7 @@ public final class CumulusConversionsTest {
   private boolean value(RoutingPolicy policy, Prefix network) {
     return policy
         .call(
-            Environment.builder(_c, _v.getName())
+            Environment.builder(_c)
                 .setOriginalRoute(
                     StaticRoute.builder().setAdministrativeCost(0).setNetwork(network).build())
                 .build())
@@ -111,7 +111,7 @@ public final class CumulusConversionsTest {
     // longer not exported
     {
       Environment env =
-          Environment.builder(_c, _v.getName())
+          Environment.builder(_c)
               .setOriginalRoute(
                   GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.3.4/32")).build())
               .build();
@@ -121,7 +121,7 @@ public final class CumulusConversionsTest {
     // shorter not exported
     {
       Environment env =
-          Environment.builder(_c, _v.getName())
+          Environment.builder(_c)
               .setOriginalRoute(
                   GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.0.0/16")).build())
               .build();
@@ -131,7 +131,7 @@ public final class CumulusConversionsTest {
     // exact match exported
     {
       Environment env =
-          Environment.builder(_c, _v.getName())
+          Environment.builder(_c)
               .setOriginalRoute(
                   GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.3.0/24")).build())
               .build();

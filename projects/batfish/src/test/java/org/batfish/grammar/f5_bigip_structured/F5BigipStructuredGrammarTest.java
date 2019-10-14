@@ -345,7 +345,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   // TODO: switch to true when tests are fixed
-  private static boolean DEFAULT_DISABLE_UNRECOGNIZED = false;
+  private static boolean DEFAULT_DISABLE_UNRECOGNIZED = true;
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -475,7 +475,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -490,7 +490,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -505,7 +505,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -518,7 +518,7 @@ public final class F5BigipStructuredGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(bgpv4RouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -531,7 +531,7 @@ public final class F5BigipStructuredGrammarTest {
       assertFalse(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(connectedRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -544,7 +544,7 @@ public final class F5BigipStructuredGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(connectedRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -557,7 +557,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(kernelRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -572,7 +572,7 @@ public final class F5BigipStructuredGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                  Environment.builder(c)
                       .setOriginalRoute(kernelRoute)
                       .setOutputRoute(outputBuilder)
                       .build())
@@ -679,7 +679,6 @@ public final class F5BigipStructuredGrammarTest {
   public void testDataGroupDefinitions() throws IOException {
     String hostname = "f5_bigip_structured_ltm_data_group";
     String file = "configs/" + hostname;
-    _disableUnrecognized = true;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -951,13 +950,12 @@ public final class F5BigipStructuredGrammarTest {
   public void testRuleDefinitions() throws IOException {
     String hostname = "f5_bigip_structured_ltm_rule";
     String file = "configs/" + hostname;
-    _disableUnrecognized = true;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
     assertThat(
         ans.getDefinedStructures().get(file).get(F5BigipStructureType.RULE.getDescription()),
-        aMapWithSize(3));
+        aMapWithSize(5));
   }
 
   @Test
@@ -2244,7 +2242,7 @@ public final class F5BigipStructuredGrammarTest {
         c.getRoutingPolicies()
             .get(acceptAllName)
             .call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
@@ -2259,7 +2257,7 @@ public final class F5BigipStructuredGrammarTest {
     assertTrue(
         "rm1 denies prefix 10.0.0.0/24 (via 10)",
         !rm1.call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
@@ -2275,7 +2273,7 @@ public final class F5BigipStructuredGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     Environment acceptedPrefixEnvironment =
-        Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+        Environment.builder(c)
             .setDirection(Direction.OUT)
             .setOutputRoute(outputRoute)
             .setOriginalRoute(acceptedRoute)
@@ -2291,7 +2289,7 @@ public final class F5BigipStructuredGrammarTest {
     assertTrue(
         "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",
         !rm1.call(
-                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
+                Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.2.0/24"), "/Common/outint"))

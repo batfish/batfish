@@ -70,7 +70,11 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
-    NodeRoleDimension nodeRoleDimension = NodeRoleDimension.builder().setName(dimension).build();
+    NodeRoleDimension nodeRoleDimension =
+        NodeRoleDimension.builder()
+            .setName(dimension)
+            .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
+            .build();
     Main.getWorkMgr()
         .putNetworkNodeRoles(
             NodeRolesData.builder().setRoleDimensions(ImmutableList.of(nodeRoleDimension)).build(),
@@ -79,7 +83,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        Main.getWorkMgr().getNetworkNodeRoles(network).getNodeRoleDimension(dimension).isPresent(),
+        Main.getWorkMgr().getNetworkNodeRoles(network).nodeRoleDimensionFor(dimension).isPresent(),
         equalTo(false));
 
     // deleting again should fail
@@ -112,7 +116,11 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
-    NodeRoleDimension nodeRoleDimension = NodeRoleDimension.builder().setName(dimension).build();
+    NodeRoleDimension nodeRoleDimension =
+        NodeRoleDimension.builder()
+            .setName(dimension)
+            .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
+            .build();
     Main.getWorkMgr()
         .putNetworkNodeRoles(
             NodeRolesData.builder().setRoleDimensions(ImmutableList.of(nodeRoleDimension)).build(),
@@ -145,14 +153,18 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     Main.getWorkMgr().initNetwork(network, null);
 
     NodeRoleDimensionBean dimBean =
-        new NodeRoleDimensionBean(NodeRoleDimension.builder(dimension).build(), null);
+        new NodeRoleDimensionBean(
+            NodeRoleDimension.builder(dimension)
+                .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
+                .build(),
+            null);
     Response response =
         getNodeRoleDimensionTarget(network, dimension)
             .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
 
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     NodeRolesData nrData = Main.getWorkMgr().getNetworkNodeRoles(network);
-    assertThat(nrData.getNodeRoleDimension(dimension).isPresent(), equalTo(true));
+    assertThat(nrData.nodeRoleDimensionFor(dimension).isPresent(), equalTo(true));
 
     // put again should succeed and have new content
     RoleDimensionMapping rdMapping = new RoleDimensionMapping("\\(.*\\)");
@@ -162,7 +174,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
             .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
     assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
     NodeRoleDimension dim2 =
-        Main.getWorkMgr().getNetworkNodeRoles(network).getNodeRoleDimension(dimension).get();
+        Main.getWorkMgr().getNetworkNodeRoles(network).nodeRoleDimensionFor(dimension).get();
     assertThat(dim2.getRoleDimensionMappings(), equalTo(ImmutableList.of(rdMapping)));
   }
 }

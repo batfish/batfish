@@ -1,26 +1,56 @@
 lexer grammar F5BigipStructuredLexer;
 
 options {
-  superClass = 'org.batfish.grammar.BatfishLexer';
-}
-
-@members {
-// Java code to end up in F5BigipStructuredLexer.java goes here
-
-private int lastTokenType = -1;
-
-@Override
-public void emit(Token token) {
-    super.emit(token);
-    if (token.getChannel() != HIDDEN) {
-       lastTokenType = token.getType();
-    }
-}
-
+  superClass = 'org.batfish.grammar.f5_bigip_structured.parsing.F5BigipStructuredBaseLexer';
 }
 
 tokens {
-  DOUBLE_QUOTED_STRING
+  ARRAY,
+  ASTERISK,
+  BACKSLASH_CARRIAGE_RETURN,
+  BACKSLASH_CHAR,
+  BACKSLASH_NEWLINE,
+  BACKSLASH_NEWLINE_WS,
+  BANG,
+  BREAK,
+  CASE,
+  CHARS,
+  COMMENT,
+  DASH,
+  DOLLAR,
+  DOUBLE_QUOTED_STRING,
+  ELSE,
+  ELSEIF,
+  EQ,
+  EVENT,
+  EXISTS,
+  EXPR,
+  FORWARD_SLASH,
+  IDENTIFIER,
+  IF,
+  NE,
+  OP_AND,
+  OP_EQ,
+  OP_EXP,
+  OP_GE,
+  OP_GT,
+  OP_LE,
+  OP_LT,
+  OP_NE,
+  OP_OR,
+  PAREN_LEFT,
+  PAREN_RIGHT,
+  PERCENT,
+  PLUS,
+  PUTS,
+  RULE_SPECIAL,
+  SIZE,
+  SWITCH,
+  THEN,
+  VALUE_INTEGER,
+  VALUE_DOUBLE,
+  VALUE_STRING,
+  WHEN
 }
 
 // Keywords
@@ -35,6 +65,11 @@ ACTIVATE
   'activate'
 ;
 
+ADAPTIVE
+:
+  'adaptive'
+;
+
 ADDRESS
 :
   'address'
@@ -45,9 +80,24 @@ ADDRESS_FAMILY
   'address-family'
 ;
 
+ALERT_TIMEOUT
+:
+  'alert-timeout'
+;
+
 ALL
 :
   'all'
+;
+
+ALLOW_DYNAMIC_RECORD_SIZING
+:
+  'allow-dynamic-record-sizing'
+;
+
+ALLOW_NON_SSL
+:
+  'allow-non-ssl'
 ;
 
 ALLOW_SERVICE
@@ -75,6 +125,11 @@ ANY
   'any'
 ;
 
+APP_SERVICE
+:
+  'app-service'
+;
+
 ARP
 :
   'arp'
@@ -95,9 +150,69 @@ BUNDLE_SPEED
   'bundle-speed'
 ;
 
+CACHE_SIZE
+:
+  'cache-size'
+;
+
+CACHE_TIMEOUT
+:
+  'cache-timeout'
+;
+
+CAPABILITY
+:
+  'capability'
+;
+
+CERT
+:
+  'cert'
+;
+
+CERT_EXTENSION_INCLUDES
+:
+  'cert-extension-includes'
+;
+
+CERT_KEY_CHAIN
+:
+  'cert-key-chain'
+;
+
+CERT_LIFESPAN
+:
+  'cert-lifespan'
+;
+
+CERT_LOOKUP_BY_IPADDR_PORT
+:
+  'cert-lookup-by-ipaddr-port'
+;
+
 CERTIFICATE_AUTHORITY
 :
   'certificate-authority'
+;
+
+CHAIN
+:
+  'chain'
+;
+
+CIPHER_GROUP
+:
+  'cipher-group'
+;
+
+CIPHERLIST
+:
+  'cipherlist'
+;
+
+CIPHERS
+:
+  'ciphers'
 ;
 
 CLASSIFICATION
@@ -120,6 +235,11 @@ COMMUNITY
   'community'
 ;
 
+COMPATIBILITY
+:
+  'compatibility'
+;
+
 DATA_GROUP
 :
   'data-group'
@@ -128,6 +248,11 @@ DATA_GROUP
 DEFAULT
 :
   'default'
+;
+
+DEFAULT_NODE_MONITOR
+:
+  'default-node-monitor'
 ;
 
 DEFAULTS_FROM
@@ -175,14 +300,19 @@ DNS
   'dns'
 ;
 
+DNS_RESOLVER
+:
+  'dns-resolver'
+;
+
+DYNAD
+:
+  'dynad'
+;
+
 EBGP_MULTIHOP
 :
   'ebgp-multihop'
-;
-
-ELSEIF
-:
-  'elseif'
 ;
 
 ENABLED
@@ -200,6 +330,11 @@ EXTERNAL
   'external'
 ;
 
+FALL_OVER
+:
+  'fall-over'
+;
+
 FASTHTTP
 :
   'fasthttp'
@@ -210,14 +345,39 @@ FASTL4
   'fastl4'
 ;
 
+FDB
+:
+  'fdb'
+;
+
+FEATURE_MODULE
+:
+  'feature-module'
+;
+
 FIX
 :
   'fix'
 ;
 
+FOLDER
+:
+  'folder'
+;
+
 FORTY_G
 :
   '40G'
+;
+
+FORWARD_ERROR_CORRECTION
+:
+  'forward-error-correction'
+;
+
+FPGA
+:
+  'fpga'
 ;
 
 FTP
@@ -230,6 +390,11 @@ GATEWAY_ICMP
   'gateway-icmp'
 ;
 
+GENERIC_ALERT
+:
+  'generic-alert'
+;
+
 GLOBAL_SETTINGS
 :
   'global-settings'
@@ -240,9 +405,24 @@ GTP
   'gtp'
 ;
 
+GUI_SECURITY_BANNER_TEXT
+:
+  'gui-security-banner-text'
+;
+
+GUI_SETUP
+:
+  'gui-setup'
+;
+
 GW
 :
   'gw'
+;
+
+HANDSHAKE_TIMEOUT
+:
+  'handshake-timeout'
 ;
 
 HOSTNAME
@@ -275,6 +455,11 @@ HTTP2
   'http2'
 ;
 
+HTTPD
+:
+  'httpd'
+;
+
 HTTPS
 :
   'https'
@@ -290,9 +475,19 @@ ICMP_ECHO
   'icmp-echo'
 ;
 
-IF
+IDLE_TIMEOUT_OVERRIDE
 :
-  'if'
+  'idle-timeout-override'
+;
+
+IFILE
+:
+  'ifile'
+;
+
+INHERIT_CERTKEYCHAIN
+:
+  'inherit-certkeychain'
 ;
 
 ILX
@@ -313,6 +508,16 @@ INTERFACES
 INTERNAL
 :
   'internal'
+;
+
+INTERVAL
+:
+  'interval'
+;
+
+IP_DSCP
+:
+  'ip-dscp'
 ;
 
 IP_FORWARD
@@ -350,6 +555,11 @@ KERNEL
   'kernel'
 ;
 
+KEY
+:
+  'key'
+;
+
 LACP
 :
   'lacp'
@@ -360,6 +570,31 @@ LDAP
   'ldap'
 ;
 
+LIMIT_TYPE
+:
+  'limit-type'
+;
+
+LLDP_ADMIN
+:
+  'lldp-admin'
+;
+
+LLDP_GLOBALS
+:
+  'lldp-globals'
+;
+
+LLDP_TLVMAP
+:
+  'lldp-tlvmap'
+;
+
+LOAD_BALANCING_MODE
+:
+  'load-balancing-mode'
+;
+
 LOCAL_AS
 :
   'local-as'
@@ -368,6 +603,21 @@ LOCAL_AS
 LTM
 :
   'ltm'
+;
+
+MANAGEMENT_DHCP
+:
+  'management-dhcp'
+;
+
+MANAGEMENT_IP
+:
+  'management-ip'
+;
+
+MANAGEMENT_ROUTE
+:
+  'management-route'
 ;
 
 MAP_T
@@ -385,9 +635,79 @@ MATCH
   'match'
 ;
 
+MATCH_ACROSS_POOLS
+:
+  'match-across-pools'
+;
+
+MATCH_ACROSS_SERVICES
+:
+  'match-across-services'
+;
+
+MATCH_ACROSS_VIRTUALS
+:
+  'match-across-virtuals'
+;
+
+MAX_ACTIVE_HANDSHAKES
+:
+  'max-active-handshakes'
+;
+
+MAX_AGE
+:
+  'max-age'
+;
+
+MAX_AGGREGATE_RENEGOTIATION_PER_MINUTE
+:
+  'max-aggregate-renegotiation-per-minute'
+;
+
+MAX_RENEGOTIATIONS_PER_MINUTE
+:
+  'max-renegotiations-per-minute'
+;
+
+MAX_REUSE
+:
+  'max-reuse'
+;
+
+MAX_SIZE
+:
+  'max-size'
+;
+
+MAXIMUM_PREFIX
+:
+  'maximum-prefix'
+;
+
+MAXIMUM_RECORD_SIZE
+:
+  'maximum-record-size'
+;
+
 MEMBERS
 :
   'members'
+;
+
+MIN_ACTIVE_MEMBERS
+:
+  'min-active-members'
+;
+
+MOD_SSL_METHODS
+:
+  'mod-ssl-methods'
+;
+
+MODE
+:
+  'mode'
 ;
 
 MQTT
@@ -430,6 +750,11 @@ NTP
   'ntp'
 ;
 
+OCSP_STAPLING
+:
+  'ocsp-stapling'
+;
+
 OCSP_STAPLING_PARAMS
 :
   'ocsp-stapling-params'
@@ -445,6 +770,11 @@ ONE_HUNDRED_G
   '100G'
 ;
 
+OPTIONS
+:
+  'options'
+;
+
 ORIGINS
 :
   'origins'
@@ -455,9 +785,24 @@ OUT
   'out'
 ;
 
+OVERRIDE_CONNECTION_LIMIT
+:
+  'override-connection-limit'
+;
+
 PCP
 :
   'pcp'
+;
+
+PASSPHRASE
+:
+  'passphrase'
+;
+
+PEER_NO_RENEGOTIATE_TIMEOUT
+:
+  'peer-no-renegotiate-timeout'
 ;
 
 PERMIT
@@ -500,6 +845,11 @@ PREFIX_LIST
   'prefix-list'
 ;
 
+PRIORITY_GROUP
+:
+  'priority-group'
+;
+
 PROFILE
 :
   'profile'
@@ -510,6 +860,31 @@ PROFILES
   'profiles'
 ;
 
+PROVISION
+:
+  'provision'
+;
+
+PROXY_CA_CERT
+:
+  'proxy-ca-cert'
+;
+
+PROXY_CA_KEY
+:
+  'proxy-ca-key'
+;
+
+PROXY_SSL
+:
+  'proxy-ssl'
+;
+
+PROXY_SSL_PASSTHROUGH
+:
+  'proxy-ssl-passthrough'
+;
+
 QOE
 :
   'qoe'
@@ -518,6 +893,16 @@ QOE
 RADIUS
 :
   'radius'
+;
+
+RECV
+:
+  'recv'
+;
+
+RECV_DISABLE
+:
+  'recv-disable'
 ;
 
 REDISTRIBUTE
@@ -535,6 +920,26 @@ REMOTE_AS
   'remote-as'
 ;
 
+RENEGOTIATE_MAX_RECORD_DELAY
+:
+  'renegotiate-max-record-delay'
+;
+
+RENEGOTIATE_PERIOD
+:
+  'renegotiate-period'
+;
+
+RENEGOTIATE_SIZE
+:
+  'renegotiate-size'
+;
+
+RENEGOTIATION
+:
+  'renegotiation'
+;
+
 REQUEST_ADAPT
 :
   'request-adapt'
@@ -543,6 +948,11 @@ REQUEST_ADAPT
 REQUEST_LOG
 :
   'request-log'
+;
+
+RESPONDER_URL
+:
+  'responder-url'
 ;
 
 RESPONSE_ADAPT
@@ -593,6 +1003,12 @@ RTSP
 RULE
 :
   'rule'
+  {
+    if (lastTokenType() == LTM && secondToLastTokenType() == NEWLINE) {
+      setLtmRuleDeclaration();
+      setType(RULE_SPECIAL);
+    }
+  }
 ;
 
 RULES
@@ -605,6 +1021,16 @@ SCTP
   'sctp'
 ;
 
+SECURE_RENEGOTIATION
+:
+  'secure-renegotiation'
+;
+
+SECURITY
+:
+  'security'
+;
+
 SELECTIVE
 :
   'selective'
@@ -615,9 +1041,24 @@ SELF
   'self'
 ;
 
+SELF_ALLOW
+:
+  'self-allow'
+;
+
+SEND
+:
+  'send'
+;
+
 SERVER_LDAP
 :
   'server-ldap'
+;
+
+SERVER_NAME
+:
+  'server-name'
 ;
 
 SERVER_SSL
@@ -630,14 +1071,49 @@ SERVERS
   'servers'
 ;
 
+SERVICE_DOWN_ACTION
+:
+  'service-down-action'
+;
+
+SESSION_MIRRORING
+:
+  'session-mirroring'
+;
+
+SESSION_TICKET
+:
+  'session-ticket'
+;
+
+SESSION_TICKET_TIMEOUT
+:
+  'session-ticket-timeout'
+;
+
 SET
 :
   'set'
 ;
 
+SFLOW
+:
+  'sflow'
+;
+
+SIGN_HASH
+:
+  'sign-hash'
+;
+
 SIP
 :
   'sip'
+;
+
+SLOW_RAMP_TIME
+:
+  'slow-ramp-time'
 ;
 
 SMTPS
@@ -660,6 +1136,21 @@ SNATPOOL
   'snatpool'
 ;
 
+SNI_DEFAULT
+:
+  'sni-default'
+;
+
+SNI_REQUIRE
+:
+  'sni-require'
+;
+
+SNMP
+:
+  'snmp'
+;
+
 SOCKS
 :
   'socks'
@@ -680,6 +1171,11 @@ SOURCE_ADDRESS_TRANSLATION
   'source-address-translation'
 ;
 
+SOURCE_MASK
+:
+  'source-mask'
+;
+
 SPLITSESSIONCLIENT
 :
   'splitsessionclient'
@@ -695,9 +1191,24 @@ SSL
   'ssl'
 ;
 
+SSL_FORWARD_PROXY
+:
+  'ssl-forward-proxy'
+;
+
+SSL_FORWARD_PROXY_BYPASS
+:
+  'ssl-forward-proxy-bypass'
+;
+
 SSL_PROFILE
 :
   'ssl-profile'
+;
+
+SSL_SIGN_HASH
+:
+  'ssl-sign-hash'
 ;
 
 STATISTICS
@@ -705,9 +1216,29 @@ STATISTICS
   'statistics'
 ;
 
+STATUS_AGE
+:
+  'status-age'
+;
+
+STP
+:
+  'stp'
+;
+
+STP_GLOBALS
+:
+  'stp-globals'
+;
+
 STREAM
 :
   'stream'
+;
+
+STRICT_RESUME
+:
+  'strict-resume'
 ;
 
 SYS
@@ -735,6 +1266,21 @@ TFTP
   'tftp'
 ;
 
+TIME_UNTIL_UP
+:
+  'time-until-up'
+;
+
+TIMEOUT
+:
+  'timeout'
+;
+
+TIMEZONE
+:
+  'timezone'
+;
+
 TRAFFIC_ACCELERATION
 :
   'traffic-acceleration'
@@ -760,6 +1306,21 @@ TRUNK
   'trunk'
 ;
 
+TRUSTED_RESPONDERS
+:
+  'trusted-responders'
+;
+
+TUNNELS
+:
+  'tunnels'
+;
+
+TURBOFLEX
+:
+  'turboflex'
+;
+
 TYPE
 :
   'type'
@@ -768,6 +1329,11 @@ TYPE
 UDP
 :
   'udp'
+;
+
+UNCLEAN_SHUTDOWN
+:
+  'unclean-shutdown'
 ;
 
 UPDATE_SOURCE
@@ -825,11 +1391,6 @@ WEBSOCKET
   'websocket'
 ;
 
-WHEN
-:
-  'when'
-;
-
 XML
 :
   'xml'
@@ -840,6 +1401,12 @@ XML
 BRACE_LEFT
 :
   '{'
+  {
+    if (isLtmRuleDeclaration()) {
+      pushMode(M_Irule);
+      unsetLtmRuleDeclaration();
+    }
+  }
 ;
 
 BRACE_RIGHT
@@ -862,7 +1429,7 @@ COMMENT_LINE
   (
     F_Whitespace
   )* '#'
-  {lastTokenType == NEWLINE || lastTokenType == -1}?
+  {lastTokenType() == NEWLINE || lastTokenType() == -1}?
 
   F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
 ;
@@ -900,7 +1467,7 @@ DOUBLE_QUOTE
 IMISH_CHUNK
 :
   '!'
-  {lastTokenType == NEWLINE}?
+  {lastTokenType() == NEWLINE}?
 
   F_NonNewlineChar* F_Newline+ F_Anything*
 ;
@@ -998,6 +1565,22 @@ fragment
 F_Digit
 :
   [0-9]
+;
+
+fragment
+F_BackslashChar
+:
+  ~[0-9abfnrtvxuU\r\n]
+;
+
+fragment
+F_BackslashNewlineWhitespace
+:
+  '\\' F_Newline
+  (
+    F_Newline
+    | F_Whitespace
+  )*
 ;
 
 fragment
@@ -1243,6 +1826,12 @@ F_StandardCommunity
 ;
 
 fragment
+F_TclIdentifier
+:
+  [a-zA-Z_] [a-zA-Z0-9_]*
+;
+
+fragment
 F_Uint16
 :
 // 0-65535
@@ -1341,4 +1930,197 @@ M_DoubleQuote_DOUBLE_QUOTE
 M_DoubleQuote_ESCAPED_DOUBLE_QUOTE
 :
   '\\"' -> more
+;
+
+mode M_Irule;
+
+M_Irule_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), popMode
+;
+
+M_Irule_COMMENT
+:
+  '#' F_NonNewlineChar* F_Newline+ -> channel(HIDDEN)
+;
+
+M_Irule_NEWLINE
+:
+  F_Newline+ -> type(NEWLINE)
+;
+
+M_Irule_WHEN
+:
+  'when' -> type(WHEN), pushMode(M_Event)
+;
+
+M_Irule_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_Event;
+
+M_Event_EVENT
+:
+  ~'{'+ -> type(EVENT) 
+;
+
+M_Event_BRACE_LEFT
+:
+  '{' -> type(BRACE_LEFT), mode(M_Command)
+;
+
+mode M_Command;
+
+M_Command_BRACE_LEFT
+:
+  '{' -> pushMode(M_BracedSegment), type(BRACE_LEFT)
+;
+
+M_Command_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), popMode
+;
+
+M_Command_BRACKET_LEFT
+:
+  '[' -> type ( BRACKET_LEFT ) , pushMode ( M_Command )
+;
+
+M_Command_BRACKET_RIGHT
+:
+  ']' -> type ( BRACKET_RIGHT ) , popMode
+;
+
+M_Command_CHARS
+:
+  ~[ \t\r\n\\{}[\]$"]+ -> type(CHARS)
+;
+
+M_Command_COMMENT
+:
+  '#' F_NonNewlineChar* F_Newline -> type(COMMENT)
+;
+
+M_Command_DOLLAR
+:
+  '$' -> type(DOLLAR), pushMode(M_VariableSubstitution)
+;
+
+M_Command_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuotedSegment)
+;
+
+M_Command_NEWLINE
+:
+  F_Newline+ -> type(NEWLINE)
+;
+
+M_Command_WS
+:
+  [ \t]+ -> type(WS)
+;
+
+mode M_BracedSegment;
+
+M_BracedSegment_CHARS
+:
+  ~[{}]+ -> type(CHARS)
+;
+
+M_BracedSegment_BACKSLASH_NEWLINE_WS
+:
+  F_BackslashNewlineWhitespace -> type(BACKSLASH_NEWLINE_WS)
+;
+
+M_BracedSegment_BRACE_LEFT
+:
+  '{' -> pushMode(M_BracedSegment), type(BRACE_LEFT)
+;
+
+M_BracedSegment_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), popMode
+;
+
+mode M_DoubleQuotedSegment;
+
+M_DoubleQuotedSegment_CHARS
+:
+  ~[["$\\]+ -> type(CHARS)
+;
+
+M_DoubleQuotedSegment_BACKSLASH_CHAR
+:
+  '\\' F_BackslashChar -> type(BACKSLASH_CHAR)
+;
+
+M_DoubleQuotedSegment_BACKSLASH_NEWLINE
+:
+  '\\n' -> type(BACKSLASH_NEWLINE)
+;
+
+M_DoubleQuotedSegment_BACKSLASH_NEWLINE_WS
+:
+  F_BackslashNewlineWhitespace -> type(BACKSLASH_NEWLINE_WS)
+;
+
+M_DoubleQuotedSegment_BRACKET_LEFT
+:
+  '[' -> type(BRACKET_LEFT), pushMode(M_Command)
+;
+
+M_DoubleQuotedSegment_DOLLAR
+:
+  '$' -> type(DOLLAR), pushMode(M_VariableSubstitution)
+;
+
+M_DoubleQuotedSegment_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), popMode
+;
+
+mode M_VariableSubstitution;
+
+M_VariableSubstitution_BRACE_LEFT
+:
+  '{' -> type(BRACE_LEFT), pushMode(M_BracedVariableSubstitution)
+;
+
+M_VariableSubstitution_CHARS
+:
+  [0-9A-Za-z_]+
+  (
+    '::' [0-9A-Za-z_]+
+  )* -> type(CHARS)
+;
+
+M_VariableSubstitution_DOLLAR
+:
+// kinda screwed here
+  '$' -> type(DOLLAR), popMode
+;
+
+M_VariableSubstitution_NEWLINE
+:
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_VariableSubstitution_WS
+:
+  F_Whitespace+ -> type(WS), popMode
+;
+
+mode M_BracedVariableSubstitution;
+
+M_BracedVariableSubstitution_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), popMode
+;
+
+M_BracedVariableSubstitution_CHARS
+:
+  ~'}'+ -> type(CHARS)
 ;
