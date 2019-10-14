@@ -386,7 +386,9 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_for
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_protocolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_mask6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_maskContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_persistContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_poolContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_profilesContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_profiles_profileContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_rejectContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_source6Context;
@@ -408,8 +410,11 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvsat_poo
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_routeContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_route_domainContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_selfContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_self_allowContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_trunkContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_tunnelsContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ni_bundleContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ni_descriptionContext;
@@ -419,6 +424,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_bgpCon
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_route_mapContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_local_asContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_profileContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_router_id6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_router_idContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv4Context;
@@ -462,10 +468,16 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_le
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_list_actionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_advertisement_modeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_map_actionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.S_securityContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sgs_hostnameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Standard_communityContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Structure_nameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Structure_name_with_portContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_dnsContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_management_ipContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_management_routeContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_ntpContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_snmpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Uint16Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.UnrecognizedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Vlan_idContext;
@@ -1760,12 +1772,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLv_profiles(Lv_profilesContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void enterLv_profiles_profile(Lv_profiles_profileContext ctx) {
     String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(PROFILE, name, VIRTUAL_PROFILE, ctx.name.getStart().getLine());
     }
-    todo(ctx);
   }
 
   @Override
@@ -1797,6 +1813,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterNet_route_domain(Net_route_domainContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void enterNet_self(Net_selfContext ctx) {
     String name = toName(ctx.name);
     _c.defineStructure(SELF, name, ctx);
@@ -1805,10 +1826,20 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterNet_self_allow(Net_self_allowContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void enterNet_trunk(Net_trunkContext ctx) {
     String name = toName(ctx.name);
     _c.defineStructure(F5BigipStructureType.TRUNK, name, ctx);
     _currentTrunk = _c.getTrunks().computeIfAbsent(name, Trunk::new);
+  }
+
+  @Override
+  public void enterNet_tunnels(Net_tunnelsContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -2330,13 +2361,17 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLv_persist(Lv_persistContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitLvp_persistence(Lvp_persistenceContext ctx) {
     String name = toName(ctx.name);
     if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
       _c.referenceStructure(
           PERSISTENCE, name, VIRTUAL_PERSIST_PERSISTENCE, ctx.name.getStart().getLine());
     }
-    todo(ctx);
   }
 
   @Override
@@ -2411,6 +2446,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNrb_local_as(Nrb_local_asContext ctx) {
     _currentBgpProcess.setLocalAs(toLong(ctx.as));
+  }
+
+  @Override
+  public void exitNrb_profile(Nrb_profileContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -2658,9 +2698,39 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitS_security(S_securityContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitSgs_hostname(Sgs_hostnameContext ctx) {
     String hostname = unquote(ctx.hostname.getText()).toLowerCase();
     _c.setHostname(hostname);
+  }
+
+  @Override
+  public void exitSys_dns(Sys_dnsContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void enterSys_management_ip(Sys_management_ipContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSys_management_route(Sys_management_routeContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSys_ntp(Sys_ntpContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSys_snmp(Sys_snmpContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -2731,7 +2801,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
+    // Just print first line of unsupported feature
+    _w.todo(ctx, getFullText(ctx).split("\n", -1)[0], _parser);
   }
 
   private @Nullable IpProtocol toIpProtocol(Ip_protocolContext ctx) {
@@ -2817,8 +2888,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   private void unrecognized(ParseWarning warning, @Nullable ParserRuleContext ctx) {
     // for testing
-    // TODO: reenable after fixing issues with refs
-    if (Boolean.FALSE && _parser.getSettings().getDisableUnrecognized()) {
+    if (_parser.getSettings().getDisableUnrecognized()) {
       try {
         String warningStr = BatfishObjectMapper.writePrettyString(warning);
         String parseTreeStr =

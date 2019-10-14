@@ -37,7 +37,7 @@ ltm virtual /Common/missing_dest {
 }
 
 ltm virtual /Common/undefined_dest {
-    destination /Common/192.0.2.2
+    destination /Common/192.0.2.2:80
     pool /Common/pool1
 }
 

@@ -76,5 +76,5 @@ prefix_len_range
 
 nrp_route_domain
 :
-  ROUTE_DOMAIN name = word NEWLINE
+  ROUTE_DOMAIN name = structure_name NEWLINE
 ;
