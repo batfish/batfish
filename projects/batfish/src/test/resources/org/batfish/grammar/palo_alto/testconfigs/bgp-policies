@@ -1,0 +1,27 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname bgp-policies
+
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update extended-community none
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update community none
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update origin egp
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update as-path none
+set network virtual-router vr1 protocol bgp policy import rules import1 match address-prefix 12.12.1.1/32 exact yes
+set network virtual-router vr1 protocol bgp policy import rules import1 match address-prefix 1.21.3.0/24 exact no
+set network virtual-router vr1 protocol bgp policy import rules import1 match address-prefix 1.1.1.1/32 exact yes
+set network virtual-router vr1 protocol bgp policy import rules import1 match from-peer [ evil_peer good_peer ]
+set network virtual-router vr1 protocol bgp policy import rules import1 used-by pg2
+set network virtual-router vr1 protocol bgp policy import rules import1 enable yes
+
+set network virtual-router vr1 protocol bgp policy export rules export1 action allow update extended-community none
+set network virtual-router vr1 protocol bgp policy export rules export1 action allow update community none
+set network virtual-router vr1 protocol bgp policy export rules export1 action allow update as-path none
+set network virtual-router vr1 protocol bgp policy export rules export1 action allow update med 2323
+set network virtual-router vr1 protocol bgp policy export rules export1 action allow update origin igp
+set network virtual-router vr1 protocol bgp policy export rules export1 match address-prefix 0.0.0.0/0 exact yes
+set network virtual-router vr1 protocol bgp policy export rules export1 used-by pg1
+set network virtual-router vr1 protocol bgp policy export rules export1 enable yes
+
+set network virtual-router vr1 protocol bgp policy import rules import2 action deny
+set network virtual-router vr1 protocol bgp policy import rules import2 match address-prefix 1.2.3.0/24 exact no
+set network virtual-router vr1 protocol bgp policy import rules import2 used-by pg3
+set network virtual-router vr1 protocol bgp policy import rules import2 enable yes
