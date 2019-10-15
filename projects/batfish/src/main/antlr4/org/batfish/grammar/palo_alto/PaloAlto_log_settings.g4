@@ -13,7 +13,7 @@ s_log_settings
         sl_profiles
         | sl_syslog
         | sl_system
-    )
+    )?
 ;
 
 sl_profiles
@@ -26,7 +26,7 @@ sl_syslog
     SYSLOG name = variable
     (
         sls_server
-    )
+    )?
 ;
 
 sl_system
