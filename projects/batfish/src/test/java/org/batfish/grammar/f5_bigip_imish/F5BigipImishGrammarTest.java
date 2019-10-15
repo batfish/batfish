@@ -24,6 +24,7 @@ import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteTh
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeAccessListRouteFilterName;
+import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
@@ -337,6 +338,65 @@ public final class F5BigipImishGrammarTest {
       AggregateAddress aa = aggregateAddresses.get(Prefix.strict("10.5.0.0/24"));
       assertTrue(aa.getAsSet());
       assertTrue(aa.getSummaryOnly());
+    }
+  }
+
+  @Test
+  public void testBgpAggregateAddressConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_aggregate_address");
+    String routingPolicyName = computeBgpCommonExportPolicyName("65001");
+    RoutingPolicy exportPolicy = c.getRoutingPolicies().get(routingPolicyName);
+    assertNotNull(exportPolicy);
+
+    {
+      // more specific route should be allowed since summary-only is not specified
+      Bgpv4Route bgpRoute =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.IGP)
+              .setProtocol(RoutingProtocol.BGP)
+              .setNetwork(Prefix.strict("10.2.0.1/32"))
+              .build();
+
+      Environment env =
+          Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
+
+      assertTrue(exportPolicy.call(env).getBooleanValue());
+      assertNull(env.getSuppressed());
+    }
+
+    {
+      // more specific route should NOT be allowed since summary-only is specified
+      Bgpv4Route bgpRoute =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.IGP)
+              .setProtocol(RoutingProtocol.BGP)
+              .setNetwork(Prefix.strict("10.4.0.1/32"))
+              .build();
+
+      Environment env =
+          Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
+
+      exportPolicy.call(env);
+      assertTrue(env.getSuppressed());
+    }
+
+    {
+      // a valid aggregated route should be allowed
+      Bgpv4Route bgpRoute =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.IGP)
+              .setProtocol(RoutingProtocol.AGGREGATE)
+              .setNetwork(Prefix.strict("10.4.0.0/24"))
+              .build();
+
+      Environment env =
+          Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
+
+      assertTrue(exportPolicy.call(env).getBooleanValue());
+      assertNull(env.getSuppressed());
     }
   }
 
