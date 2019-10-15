@@ -512,7 +512,15 @@ public final class BgpTopologyUtils {
     }
     // Initiator is inside a confederation
     if (initiatorConfed != null) {
-      if (listenerRemoteAsns.contains(initiatorConfed)
+      // Initiator and listener are in the same AS, so they're in the same confederation
+      if (initiatorLocalAs.equals(listenerLocalAs)) {
+        if (listenerRemoteAsns.contains(initiatorLocalAs)
+            && initiatorRemoteAsns.contains(listenerLocalAs)) {
+          return new AsPair(initiatorLocalAs, listenerLocalAs);
+        } else {
+          return null;
+        }
+      } else if (listenerRemoteAsns.contains(initiatorConfed)
           && initiatorRemoteAsns.contains(listenerLocalAs)) {
         return new AsPair(initiatorConfed, listenerLocalAs);
       } else {
@@ -520,7 +528,15 @@ public final class BgpTopologyUtils {
       }
     } else {
       // Listener is inside a confederation
-      if (listenerRemoteAsns.contains(initiatorLocalAs)
+      // Initiator and listener are in the same AS, so they're in the same confederation
+      if (initiatorLocalAs.equals(listenerLocalAs)) {
+        if (listenerRemoteAsns.contains(initiatorLocalAs)
+            && initiatorRemoteAsns.contains(listenerLocalAs)) {
+          return new AsPair(initiatorLocalAs, listenerLocalAs);
+        } else {
+          return null;
+        }
+      } else if (listenerRemoteAsns.contains(initiatorLocalAs)
           && initiatorRemoteAsns.contains(listenerConfed)) {
         return new AsPair(initiatorLocalAs, listenerConfed);
       }
