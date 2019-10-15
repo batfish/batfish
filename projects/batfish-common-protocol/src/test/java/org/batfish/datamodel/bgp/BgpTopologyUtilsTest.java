@@ -36,6 +36,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.AsPair;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -380,22 +381,64 @@ public class BgpTopologyUtilsTest {
     assertPair(null, null, ALL_AS_NUMBERS, 3L, null, ALL_AS_NUMBERS, null);
     assertPair(1L, null, ALL_AS_NUMBERS, null, null, ALL_AS_NUMBERS, null);
     // Direct match
-    assertPair(1L, null, ALL_AS_NUMBERS, 2L, null, ALL_AS_NUMBERS, new AsPair(1, 2));
-    assertPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(1), new AsPair(1, 2));
+    assertPair(
+        1L,
+        null,
+        ALL_AS_NUMBERS,
+        2L,
+        null,
+        ALL_AS_NUMBERS,
+        new AsPair(1, 2, ConfedSessionType.NO_CONFED));
+    assertPair(
+        1L,
+        null,
+        LongSpace.of(2),
+        2L,
+        null,
+        LongSpace.of(1),
+        new AsPair(1, 2, ConfedSessionType.NO_CONFED));
     // Direct but no match
     assertPair(1L, null, LongSpace.of(2), 2L, null, LongSpace.of(3), null);
     // Direct match inside same confederation
-    assertPair(1L, 55L, LongSpace.of(2), 2L, 55L, LongSpace.of(1), new AsPair(1, 2));
+    assertPair(
+        1L,
+        55L,
+        LongSpace.of(2),
+        2L,
+        55L,
+        LongSpace.of(1),
+        new AsPair(1, 2, ConfedSessionType.WITHIN_CONFED));
     // No match across confederations, but confederation match
-    assertPair(1L, 55L, LongSpace.of(56), 2L, 56L, LongSpace.of(55), new AsPair(55, 56));
+    assertPair(
+        1L,
+        55L,
+        LongSpace.of(56),
+        2L,
+        56L,
+        LongSpace.of(55),
+        new AsPair(55, 56, ConfedSessionType.ACROSS_CONFED_BORDER));
     // Confed match
-    assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(3L), new AsPair(3, 4));
+    assertPair(
+        1L,
+        3L,
+        LongSpace.of(4),
+        4L,
+        null,
+        LongSpace.of(3L),
+        new AsPair(3, 4, ConfedSessionType.ACROSS_CONFED_BORDER));
     // Confed no match
     assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
     assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(5), null);
 
     // One peer implicitly matches other's confed, they shares same AS
-    assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(1L), new AsPair(1, 1));
+    assertPair(
+        1L,
+        3L,
+        LongSpace.of(1L),
+        1L,
+        null,
+        LongSpace.of(1L),
+        new AsPair(1, 1, ConfedSessionType.WITHIN_CONFED));
     // One peer implicitly matches other's confed, but remote ASN doesn't overlap local AS
     assertPair(1L, 3L, LongSpace.of(2L), 1L, null, LongSpace.of(1L), null);
     assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(2L), null);
