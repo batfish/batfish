@@ -7,6 +7,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -242,7 +243,6 @@ public final class OspfProcess implements Serializable {
       @Nullable @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS) Long maxMetricStubNetworks,
       @Nullable @JsonProperty(PROP_MAX_METRIC_SUMMARY_NETWORKS) Long maxMetricSummaryNetworks,
       @Nullable @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS) Long maxMetricTransitLinks,
-      @Nullable @JsonProperty(PROP_NEIGHBORS) Map<String, OspfNeighborConfig> neighbors,
       @Nullable @JsonProperty(PROP_PROCESS_ID) String processId,
       @Nullable @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth,
       @Nullable @JsonProperty(PROP_RFC1583) Boolean rfc1583Compatible,
@@ -272,8 +272,6 @@ public final class OspfProcess implements Serializable {
     _maxMetricSummaryNetworks = maxMetricSummaryNetworks;
     _maxMetricTransitLinks = maxMetricTransitLinks;
     _ospfNeighbors = new TreeMap<>();
-    _ospfNeighborConfigs =
-        ImmutableSortedMap.copyOf(firstNonNull(neighbors, ImmutableSortedMap.of()));
     _processId = processId;
     _referenceBandwidth = referenceBandwidth;
     _rfc1583Compatible = rfc1583Compatible;
@@ -396,7 +394,7 @@ public final class OspfProcess implements Serializable {
     return _ospfNeighbors;
   }
 
-  @JsonProperty(PROP_NEIGHBORS)
+  @JsonIgnore
   public Map<String, OspfNeighborConfig> getOspfNeighborConfigs() {
     return _ospfNeighborConfigs;
   }
@@ -532,4 +530,8 @@ public final class OspfProcess implements Serializable {
   public void setRouterId(@Nonnull Ip id) {
     _routerId = id;
   }
+
+  @Deprecated
+  @JsonProperty(PROP_NEIGHBORS)
+  private void setNeighborsDeprecated(JsonNode n) {}
 }
