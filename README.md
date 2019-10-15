@@ -45,7 +45,7 @@ Getting started with Batfish is easy. Just pull and run the latest `allinone` Do
 
     docker pull batfish/allinone
    
-    docker run -v batfish-data:/data -p 8888:8888 -p 9997:9997 -p 9996:9996 batfish/allinone
+    docker run --name batfish -v batfish-data:/data -p 8888:8888 -p 9997:9997 -p 9996:9996 batfish/allinone
 
 The second command starts the Batfish service and maps the necessary TCP ports. 
 
