@@ -485,7 +485,7 @@ public final class BgpTopologyUtils {
       // Note: order of evaluation matters.
       if (listenerRemoteAsns.contains(initiatorLocalAs)
           && initiatorRemoteAsns.contains(listenerLocalAs)) {
-        return new AsPair(initiatorLocalAs, listenerLocalAs);
+        return new AsPair(initiatorLocalAs, listenerLocalAs, ConfedSessionType.NO_CONFED);
       } else {
         return null;
       }
@@ -496,7 +496,7 @@ public final class BgpTopologyUtils {
       if (initiatorConfed.equals(listenerConfed)) {
         if (listenerRemoteAsns.contains(initiatorLocalAs)
             && initiatorRemoteAsns.contains(listenerLocalAs)) {
-          return new AsPair(initiatorLocalAs, listenerLocalAs);
+          return new AsPair(initiatorLocalAs, listenerLocalAs, ConfedSessionType.WITHIN_CONFED);
         } else {
           return null;
         }
@@ -504,7 +504,8 @@ public final class BgpTopologyUtils {
         // Both peers inside *different* confederations, must use external identifier only
         if (listenerRemoteAsns.contains(initiatorConfed)
             && initiatorRemoteAsns.contains(listenerConfed)) {
-          return new AsPair(initiatorConfed, listenerConfed);
+          return new AsPair(
+              initiatorConfed, listenerConfed, ConfedSessionType.ACROSS_CONFED_BORDER);
         } else {
           return null;
         }
@@ -512,30 +513,55 @@ public final class BgpTopologyUtils {
     }
     // Initiator is inside a confederation
     if (initiatorConfed != null) {
-      if (listenerRemoteAsns.contains(initiatorConfed)
+      // Initiator and listener are in the same AS, so they're in the same confederation
+      if (initiatorLocalAs.equals(listenerLocalAs)) {
+        if (listenerRemoteAsns.contains(initiatorLocalAs)
+            && initiatorRemoteAsns.contains(listenerLocalAs)) {
+          return new AsPair(initiatorLocalAs, listenerLocalAs, ConfedSessionType.WITHIN_CONFED);
+        } else {
+          return null;
+        }
+      } else if (listenerRemoteAsns.contains(initiatorConfed)
           && initiatorRemoteAsns.contains(listenerLocalAs)) {
-        return new AsPair(initiatorConfed, listenerLocalAs);
+        return new AsPair(initiatorConfed, listenerLocalAs, ConfedSessionType.ACROSS_CONFED_BORDER);
       } else {
         return null;
       }
     } else {
       // Listener is inside a confederation
-      if (listenerRemoteAsns.contains(initiatorLocalAs)
+      // Initiator and listener are in the same AS, so they're in the same confederation
+      if (initiatorLocalAs.equals(listenerLocalAs)) {
+        if (listenerRemoteAsns.contains(initiatorLocalAs)
+            && initiatorRemoteAsns.contains(listenerLocalAs)) {
+          return new AsPair(initiatorLocalAs, listenerLocalAs, ConfedSessionType.WITHIN_CONFED);
+        } else {
+          return null;
+        }
+      } else if (listenerRemoteAsns.contains(initiatorLocalAs)
           && initiatorRemoteAsns.contains(listenerConfed)) {
-        return new AsPair(initiatorLocalAs, listenerConfed);
+        return new AsPair(initiatorLocalAs, listenerConfed, ConfedSessionType.ACROSS_CONFED_BORDER);
       }
     }
     return null;
   }
 
   @VisibleForTesting
+  enum ConfedSessionType {
+    NO_CONFED,
+    WITHIN_CONFED,
+    ACROSS_CONFED_BORDER
+  }
+
+  @VisibleForTesting
   static final class AsPair {
     private final long _localAs;
     private final long _remoteAs;
+    private final ConfedSessionType _confedSessionType;
 
-    AsPair(long localAs, long remoteAs) {
+    AsPair(long localAs, long remoteAs, ConfedSessionType type) {
       _localAs = localAs;
       _remoteAs = remoteAs;
+      _confedSessionType = type;
     }
 
     public long getLocalAs() {
@@ -546,8 +572,12 @@ public final class BgpTopologyUtils {
       return _remoteAs;
     }
 
+    public ConfedSessionType getConfedSessionType() {
+      return _confedSessionType;
+    }
+
     public AsPair reverse() {
-      return new AsPair(_remoteAs, _localAs);
+      return new AsPair(_remoteAs, _localAs, _confedSessionType);
     }
 
     @Override
@@ -555,6 +585,7 @@ public final class BgpTopologyUtils {
       return MoreObjects.toStringHelper(this)
           .add("localAs", _localAs)
           .add("remoteAs", _remoteAs)
+          .add("confedType", _confedSessionType)
           .toString();
     }
 
@@ -567,12 +598,14 @@ public final class BgpTopologyUtils {
         return false;
       }
       AsPair asPair = (AsPair) o;
-      return _localAs == asPair._localAs && _remoteAs == asPair._remoteAs;
+      return _localAs == asPair._localAs
+          && _remoteAs == asPair._remoteAs
+          && _confedSessionType == asPair._confedSessionType;
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_localAs, _remoteAs);
+      return Objects.hash(_localAs, _remoteAs, _confedSessionType.ordinal());
     }
   }
 

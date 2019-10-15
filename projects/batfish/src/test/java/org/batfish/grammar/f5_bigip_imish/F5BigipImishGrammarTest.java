@@ -24,6 +24,7 @@ import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteTh
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeAccessListRouteFilterName;
+import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
@@ -66,6 +67,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -86,6 +88,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
@@ -341,6 +344,65 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpAggregateAddressConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_aggregate_address");
+    String routingPolicyName = computeBgpCommonExportPolicyName("65001");
+    RoutingPolicy exportPolicy = c.getRoutingPolicies().get(routingPolicyName);
+    assertNotNull(exportPolicy);
+
+    {
+      // more specific route should be allowed since summary-only is not specified
+      Bgpv4Route bgpRoute =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.IGP)
+              .setProtocol(RoutingProtocol.BGP)
+              .setNetwork(Prefix.strict("10.2.0.1/32"))
+              .build();
+
+      Environment env =
+          Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
+
+      assertTrue(exportPolicy.call(env).getBooleanValue());
+      assertNull(env.getSuppressed());
+    }
+
+    {
+      // more specific route should NOT be allowed since summary-only is specified
+      Bgpv4Route bgpRoute =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.IGP)
+              .setProtocol(RoutingProtocol.BGP)
+              .setNetwork(Prefix.strict("10.4.0.1/32"))
+              .build();
+
+      Environment env =
+          Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
+
+      exportPolicy.call(env);
+      assertTrue(env.getSuppressed());
+    }
+
+    {
+      // a valid aggregated route should be allowed
+      Bgpv4Route bgpRoute =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.IGP)
+              .setProtocol(RoutingProtocol.AGGREGATE)
+              .setNetwork(Prefix.strict("10.4.0.0/24"))
+              .build();
+
+      Environment env =
+          Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
+
+      assertTrue(exportPolicy.call(env).getBooleanValue());
+      assertNull(env.getSuppressed());
+    }
+  }
+
+  @Test
   public void testBgpNullParsing() {
     // test that ignored BGP lines parse successfully
     assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_null"));
@@ -364,6 +426,36 @@ public final class F5BigipImishGrammarTest {
     assertThat(vc.getBgpProcesses().get("65001").getConfederation().getId(), equalTo(65010L));
     assertThat(
         vc.getBgpProcesses().get("65001").getConfederation().getPeers(), contains(65012L, 65013L));
+  }
+
+  @Test
+  public void testBgpConfederationConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_confederation");
+    BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
+    assertThat(
+        bgpProcess.getConfederation(),
+        equalTo(new BgpConfederation(65010, ImmutableSet.of(65012L, 65013L))));
+    {
+      BgpActivePeerConfig neighbor =
+          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.10/32"));
+      assertNotNull(neighbor);
+      assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
+      assertThat(neighbor.getLocalAs(), equalTo(65001L));
+    }
+    {
+      BgpActivePeerConfig neighbor =
+          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.2/32"));
+      assertNotNull(neighbor);
+      assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
+      assertThat(neighbor.getLocalAs(), equalTo(65001L));
+    }
+    {
+      BgpActivePeerConfig neighbor =
+          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.3/32"));
+      assertNotNull(neighbor);
+      assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
+      assertThat(neighbor.getLocalAs(), equalTo(65001L));
+    }
   }
 
   @Test
