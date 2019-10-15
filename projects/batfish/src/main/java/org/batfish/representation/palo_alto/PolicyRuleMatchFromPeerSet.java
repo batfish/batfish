@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-/** A {@link PolicyRuleMatch} that matches on a set from peer names. */
+/** A {@link PolicyRuleMatch} that matches on a set of "from peer" names. */
 public final class PolicyRuleMatchFromPeerSet implements PolicyRuleMatch {
 
   private final @Nonnull Set<String> _fromPeers;
