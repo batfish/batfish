@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -328,6 +329,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     BgpActivePeerConfig.Builder builder =
         BgpActivePeerConfig.builder()
             .setBgpProcess(newProc)
+            .setConfederation(
+                proc.getConfederation() == null ? null : proc.getConfederation().getId())
             .setDescription(neighbor.getDescription())
             .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
             .setLocalAs(proc.getLocalAs())
@@ -1399,6 +1402,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // TODO: verify correct method of determining whether two AS-paths are equivalent
     newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+
+    // Global confederation config
+    BgpConfederation confederation = proc.getConfederation();
+    if (confederation != null && confederation.getId() != null) {
+      newProc.setConfederation(
+          new org.batfish.datamodel.bgp.BgpConfederation(
+              confederation.getId(), new HashSet<>(confederation.getPeers())));
+    }
 
     /*
      * Create common BGP export policy. This policy encompasses:
