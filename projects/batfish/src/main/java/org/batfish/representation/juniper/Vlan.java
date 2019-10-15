@@ -1,6 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -10,12 +12,21 @@ public class Vlan implements Serializable {
 
   private final String _name;
 
-  private @Nullable Integer _vlanId;
-
+  private @Nonnull Set<String> _interfaces;
   private @Nullable String _l3Interface;
+  private @Nullable Integer _vlanId;
 
   public Vlan(String name) {
     _name = name;
+    _interfaces = new HashSet<>(0);
+  }
+
+  public void addInterface(String ifname) {
+    _interfaces.add(ifname);
+  }
+
+  public @Nonnull Set<String> getInterfaces() {
+    return _interfaces;
   }
 
   public @Nullable String getL3Interface() {

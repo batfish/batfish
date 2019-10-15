@@ -132,6 +132,7 @@ s_vlans_named
     apply
     | vlt_description
     | vlt_filter
+    | vlt_interface
     | vlt_l3_interface
     | vlt_vlan_id
   )
@@ -161,6 +162,11 @@ vlt_filter
       INPUT
       | OUTPUT
    ) name = variable
+;
+
+vlt_interface
+:
+   INTERFACE interface_id
 ;
 
 vlt_l3_interface

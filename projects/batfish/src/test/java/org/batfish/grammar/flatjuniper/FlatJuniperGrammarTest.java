@@ -2430,7 +2430,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c, hasInterface("ge-0/1/0.0", hasNativeVlan(3)));
-    assertThat(c, hasInterface("ge-0/2/0.0", hasNativeVlan(1)));
+    assertThat(c, hasInterface("ge-0/2/0.0", hasNativeVlan(nullValue())));
     assertThat(c, hasInterface("ge-0/3/0.0", hasNativeVlan(nullValue())));
   }
 
@@ -2518,6 +2518,10 @@ public final class FlatJuniperGrammarTest {
     // Expecting an Interface in ACCESS mode with VLAN 101
     assertThat(c, hasInterface("ge-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
     assertThat(c, hasInterface("ge-0/0/0.0", hasAccessVlan(101)));
+
+    // Expecting an Interface in ACCESS mode with VLAN 103
+    assertThat(c, hasInterface("ge-0/2/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("ge-0/2/0.0", hasAccessVlan(103)));
 
     // Expecting an Interface in TRUNK mode with VLANs 1-5
     assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
