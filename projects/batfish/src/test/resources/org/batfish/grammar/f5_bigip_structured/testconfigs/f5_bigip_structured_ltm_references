@@ -78,9 +78,17 @@ ltm virtual /Common/virtual_used {
     destination /Common/192.0.2.7:80 #virtual-address reference (used)
     destination /Common/192.0.2.9:80 #virtual-address reference (undefined)
     persist {
+        # cookie
+        /Common/cookie { } #builtin
+        /Common/persistence_cookie_used { }
+        /Common/persistence_cookie_undefined { }
+
+        # source-addr
         /Common/source_addr { } #builtin
         /Common/persistence_source_addr_used { }
         /Common/persistence_source_addr_undefined { }
+
+        # ssl
         /Common/ssl { } #builtin
         /Common/persistence_ssl_used { }
         /Common/persistence_ssl_undefined { }
@@ -462,6 +470,11 @@ ltm monitor tcp /Common/monitor_tcp_used { }
 ltm monitor tcp /Common/monitor_tcp_unused {
     defaults-from /Common/monitor_tcp_undefined
     defaults-from /Common/monitor_tcp_used
+}
+ltm persistence cookie /Common/persistence_cookie_used { }
+ltm persistence cookie /Common/persistence_cookie_unused {
+    defaults-from /Common/persistence_cookie_undefined
+    defaults-from /Common/persistence_cookie_used
 }
 ltm persistence source-addr /Common/persistence_source_addr_used { }
 ltm persistence source-addr /Common/persistence_source_addr_unused {

@@ -5,51 +5,19 @@ options {
 }
 
 tokens {
-  ARRAY,
-  ASTERISK,
   BACKSLASH_CARRIAGE_RETURN,
   BACKSLASH_CHAR,
   BACKSLASH_NEWLINE,
   BACKSLASH_NEWLINE_WS,
-  BANG,
-  BREAK,
-  CASE,
   CHARS,
   COMMENT,
-  DASH,
   DOLLAR,
   DOUBLE_QUOTED_STRING,
-  ELSE,
-  ELSEIF,
-  EQ,
   EVENT,
-  EXISTS,
-  EXPR,
-  FORWARD_SLASH,
-  IDENTIFIER,
-  IF,
-  NE,
-  OP_AND,
-  OP_EQ,
-  OP_EXP,
-  OP_GE,
-  OP_GT,
-  OP_LE,
-  OP_LT,
-  OP_NE,
-  OP_OR,
   PAREN_LEFT,
   PAREN_RIGHT,
-  PERCENT,
-  PLUS,
-  PUTS,
+  PROC,
   RULE_SPECIAL,
-  SIZE,
-  SWITCH,
-  THEN,
-  VALUE_INTEGER,
-  VALUE_DOUBLE,
-  VALUE_STRING,
   WHEN
 }
 
@@ -240,6 +208,11 @@ COMPATIBILITY
   'compatibility'
 ;
 
+COOKIE
+:
+  'cookie'
+;
+
 DATA_GROUP
 :
   'data-group'
@@ -323,6 +296,11 @@ ENABLED
 ENTRIES
 :
   'entries'
+;
+
+EXPIRATION
+:
+  'expiration'
 ;
 
 EXTERNAL
@@ -1784,6 +1762,15 @@ F_Ipv6PrefixLength
 ;
 
 fragment
+F_IruleVarName
+:
+  [0-9A-Za-z_]+
+  (
+    '::' [0-9A-Za-z_]+
+  )*
+;
+
+fragment
 F_Newline
 :
   [\r\n] // carriage return or line feed
@@ -1949,12 +1936,63 @@ M_Irule_NEWLINE
   F_Newline+ -> type(NEWLINE)
 ;
 
+M_Irule_PROC
+:
+  'proc' -> type(PROC), pushMode(M_Proc)
+;
+
 M_Irule_WHEN
 :
   'when' -> type(WHEN), pushMode(M_Event)
 ;
 
 M_Irule_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_Proc;
+
+M_Proc_BRACE_LEFT
+:
+  '{' -> type(BRACE_LEFT), mode(M_ProcArgs)
+;
+
+M_Proc_CHARS
+:
+  F_IruleVarName -> type(CHARS)
+;
+
+M_Proc_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_ProcArgs;
+
+M_ProcArgs_BRACE_RIGHT
+:
+  '}' -> type(BRACE_RIGHT), mode(M_ProcPostArgs)
+;
+
+M_ProcArgs_CHARS
+:
+  F_IruleVarName -> type(CHARS)
+;
+
+M_ProcArgs_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_ProcPostArgs;
+
+M_ProcPostArgs_BRACE_LEFT
+:
+  '{' -> type(BRACE_LEFT), mode(M_Command)
+;
+
+M_ProcPostArgs_WS
 :
   F_Whitespace+ -> channel(HIDDEN)
 ;
@@ -2052,6 +2090,11 @@ M_DoubleQuotedSegment_CHARS
   ~[["$\\]+ -> type(CHARS)
 ;
 
+M_DoubleQuotedSegment_BACKSLASH_CARRIAGE_RETURN
+:
+  '\\r' -> type(BACKSLASH_CARRIAGE_RETURN)
+;
+
 M_DoubleQuotedSegment_BACKSLASH_CHAR
 :
   '\\' F_BackslashChar -> type(BACKSLASH_CHAR)
@@ -2084,23 +2127,44 @@ M_DoubleQuotedSegment_DOUBLE_QUOTE
 
 mode M_VariableSubstitution;
 
+M_VariableSubstitution_BACKSLASH
+:
+  '\\'
+  {
+    less();
+  } -> popMode
+;
+
 M_VariableSubstitution_BRACE_LEFT
 :
   '{' -> type(BRACE_LEFT), pushMode(M_BracedVariableSubstitution)
 ;
 
+M_VariableSubstitution_BRACKET_RIGHT
+:
+  ']'
+  {
+    less();
+  } -> popMode
+;
+
 M_VariableSubstitution_CHARS
 :
-  [0-9A-Za-z_]+
-  (
-    '::' [0-9A-Za-z_]+
-  )* -> type(CHARS)
+  F_IruleVarName -> type(CHARS)
 ;
 
 M_VariableSubstitution_DOLLAR
 :
 // kinda screwed here
   '$' -> type(DOLLAR), popMode
+;
+
+M_VariableSubstitution_DOUBLE_QUOTE
+:
+  '"'
+  {
+    less();
+  } -> popMode
 ;
 
 M_VariableSubstitution_NEWLINE

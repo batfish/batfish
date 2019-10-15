@@ -134,6 +134,11 @@ AS_FORMAT
     'as-format'
 ;
 
+AUTH
+:
+    'auth'
+;
+
 AUTH_PROFILE
 :
     'auth-profile'
@@ -284,6 +289,11 @@ DESTINATION
     'destination'
 ;
 
+DESTINATION_TRANSLATION
+:
+    'destination-translation'
+;
+
 DETERMINISTIC_MED_COMPARISON
 :
     'deterministic-med-comparison'
@@ -344,6 +354,11 @@ DYNAMIC
     'dynamic'
 ;
 
+DYNAMIC_IP_AND_PORT
+:
+    'dynamic-ip-and-port'
+;
+
 EBGP
 :
     'ebgp'
@@ -392,6 +407,11 @@ EXT_2
 EXTERNAL
 :
     'external'
+;
+
+EXTERNAL_LIST
+:
+    'external-list'
 ;
 
 ETHERNET
@@ -497,6 +517,11 @@ HIP_PROFILES
 HOSTNAME
 :
     'hostname'
+;
+
+HOURLY
+:
+    'hourly'
 ;
 
 HOURS
@@ -674,6 +699,11 @@ MTU
     'mtu'
 ;
 
+NAT
+:
+    'nat'
+;
+
 NDP_PROXY
 :
     'ndp-proxy'
@@ -809,6 +839,11 @@ PASSIVE
     'passive'
 ;
 
+PASSWORD
+:
+    'password'
+;
+
 PEER
 :
     'peer'
@@ -887,6 +922,11 @@ PROTOCOL
 QOS
 :
     'qos'
+;
+
+RECURRING
+:
+    'recurring'
 ;
 
 REFLECTOR_CLIENT
@@ -1064,6 +1104,11 @@ SOURCE_PORT
     'source-port'
 ;
 
+SOURCE_TRANSLATION
+:
+    'source-translation'
+;
+
 SOURCE_USER
 :
     'source-user'
@@ -1159,6 +1204,11 @@ TRANSIT_DELAY
     'transit-delay'
 ;
 
+TRANSLATED_ADDRESS
+:
+    'translated-address'
+;
+
 TUNNEL
 :
     'tunnel'
@@ -1199,9 +1249,19 @@ UPDATE_SERVER
     'update-server'
 ;
 
+URL
+:
+    'url'
+;
+
 USED_BY_MALWARE
 :
     'used-by-malware'
+;
+
+USERNAME
+:
+    'username'
 ;
 
 VIRTUAL_ROUTER

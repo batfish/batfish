@@ -18304,6 +18304,13 @@
               }
             },
             "bgpProcess" : {
+              "confederation" : {
+                "id" : 65001,
+                "members" : [
+                  65002,
+                  65003
+                ]
+              },
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "192.0.2.100",
@@ -18313,6 +18320,7 @@
               "neighbors" : {
                 "10.0.0.1/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "confederationAs" : 65001,
                   "defaultMetric" : 0,
                   "description" : "desc1",
                   "ebgpMultihop" : false,
@@ -32381,6 +32389,14 @@
             ]
           }
         }
+      },
+      "paloalto_nat" : {
+        "configurationFormat" : "PALO_ALTO_NESTED",
+        "name" : "paloalto_nat",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
       },
       "paloalto_policy" : {
         "configurationFormat" : "PALO_ALTO_NESTED",

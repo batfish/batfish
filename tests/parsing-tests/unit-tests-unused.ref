@@ -3512,54 +3512,6 @@
         }
       },
       {
-        "Structure_Type" : "zone",
-        "Structure_Name" : "zl2~vsys10",
-        "Source_Lines" : {
-          "filename" : "configs/palo_alto/zones",
-          "lines" : [
-            41,
-            42,
-            43
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "zone",
-        "Structure_Name" : "zl3~vsys10",
-        "Source_Lines" : {
-          "filename" : "configs/palo_alto/zones",
-          "lines" : [
-            46,
-            47,
-            48
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "zone",
-        "Structure_Name" : "ztap~vsys10",
-        "Source_Lines" : {
-          "filename" : "configs/palo_alto/zones",
-          "lines" : [
-            51,
-            52,
-            53
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "zone",
-        "Structure_Name" : "zvirtual-wire~vsys10",
-        "Source_Lines" : {
-          "filename" : "configs/palo_alto/zones",
-          "lines" : [
-            56,
-            57,
-            58
-          ]
-        }
-      },
-      {
         "Structure_Type" : "ipv4 prefix-list",
         "Structure_Name" : "test",
         "Source_Lines" : {
@@ -3789,10 +3741,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 256 results",
+      "notes" : "Found 252 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 256
+      "numResults" : 252
     }
   }
 ]

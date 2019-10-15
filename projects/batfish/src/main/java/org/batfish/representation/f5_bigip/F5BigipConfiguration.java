@@ -4,6 +4,8 @@ import static com.google.common.base.Predicates.notNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -20,10 +22,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.Streams;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,6 +47,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
@@ -62,6 +67,8 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -81,8 +88,11 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -124,6 +134,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
   private static final int DEFAULT_HELLO_INTERVAL_S = 10;
+
+  // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
+  private static final int DEFAULT_NBMA_DEAD_INTERVAL_S = 120;
+
+  // Assumed 30 to maintain 4x multiplier; unfortunately manpage has clearly missing text (see
+  // 'neighbor' command for OSPF in manual)
+  private static final int DEFAULT_NBMA_HELLO_INTERVAL_S = 30;
+
+  // TODO: confirm
+  private static final org.batfish.datamodel.ospf.OspfNetworkType DEFAULT_OSPF_NETWORK_TYPE =
+      org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 
   private static final double OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR = 1E6D; // bps per Mbps
 
@@ -308,6 +329,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     BgpActivePeerConfig.Builder builder =
         BgpActivePeerConfig.builder()
             .setBgpProcess(newProc)
+            .setConfederation(
+                proc.getConfederation() == null ? null : proc.getConfederation().getId())
             .setDescription(neighbor.getDescription())
             .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
             .setLocalAs(proc.getLocalAs())
@@ -809,6 +832,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _trunks;
   }
 
+  /**
+   * Get the local IP of the bgp session.
+   *
+   * <p>1. sanity check: neighbor address and AS, and local AS should all be defined.
+   *
+   * <p>2. If update-source is specified: 1) if it is update-source ip_address, then use this
+   * ip_address 2) if it is update-source interface_name, then use the address of this interface
+   *
+   * <p>3. If update-source is not specified, use the interface address which is in the same subnet
+   * of the neighbor IP
+   *
+   * <p>4. Otherwise, return null
+   */
   private @Nullable Ip getUpdateSource(BgpProcess proc, BgpNeighbor neighbor) {
     Ip neighborAddress = neighbor.getAddress();
     if (neighborAddress == null || proc.getLocalAs() == null || neighbor.getRemoteAs() == null) {
@@ -816,22 +852,43 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // Also skip if we are missing AS information.
       return null;
     }
-    String updateSourceInterface = neighbor.getUpdateSource();
-    if (!isEbgpSingleHop(proc, neighbor) && updateSourceInterface != null) {
-      org.batfish.datamodel.Interface sourceInterface =
-          _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
-      if (sourceInterface != null) {
-        ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
-        if (address != null) {
-          return address.getIp();
-        } else {
-          _w.redFlag(
-              String.format(
-                  "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip address",
-                  neighbor.getName(), updateSourceInterface));
-        }
+
+    UpdateSource updateSource = neighbor.getUpdateSource();
+    if (updateSource != null) {
+      UpdateSourceVisitor<Ip> visitor =
+          new UpdateSourceVisitor<Ip>() {
+            @Override
+            public Ip visitUpdateSourceIp(UpdateSourceIp updateSourceIp) {
+              return updateSourceIp.getIp();
+            }
+
+            @Override
+            public Ip visitUpdateSourceInterface(UpdateSourceInterface updateSourceInterface) {
+              if (!isEbgpSingleHop(proc, neighbor)) {
+                String sourceInterfaceName = updateSourceInterface.getName();
+                org.batfish.datamodel.Interface sourceInterface =
+                    _c.getDefaultVrf().getInterfaces().get(sourceInterfaceName);
+                if (sourceInterface != null) {
+                  ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
+                  if (address != null) {
+                    return address.getIp();
+                  } else {
+                    _w.redFlag(
+                        String.format(
+                            "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip address",
+                            neighbor.getName(), updateSourceInterface));
+                  }
+                }
+              }
+              return null;
+            }
+          };
+      Ip sourceIp = updateSource.accept(visitor);
+      if (sourceIp != null) {
+        return sourceIp;
       }
     }
+
     // Either the neighbor is eBGP single-hop, or no update-source was specified, or we failed to
     // get IP from update-source.
     // So try to get IP of an interface in same network as neighbor address.
@@ -1027,12 +1084,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.PERSISTENCE,
         F5BigipStructureUsage.VIRTUAL_PERSIST_PERSISTENCE,
         ImmutableList.of(
-            F5BigipStructureType.PERSISTENCE_SOURCE_ADDR, F5BigipStructureType.PERSISTENCE_SSL));
-    markConcreteStructure(
-        F5BigipStructureType.PERSISTENCE_SOURCE_ADDR,
-        F5BigipStructureUsage.PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM);
-    markConcreteStructure(
-        F5BigipStructureType.PERSISTENCE_SSL, F5BigipStructureUsage.PERSISTENCE_SSL_DEFAULTS_FROM);
+            F5BigipStructureType.PERSISTENCE_COOKIE,
+            F5BigipStructureType.PERSISTENCE_SOURCE_ADDR,
+            F5BigipStructureType.PERSISTENCE_SSL));
+    markConcreteStructure(F5BigipStructureType.PERSISTENCE_COOKIE);
+    markConcreteStructure(F5BigipStructureType.PERSISTENCE_SOURCE_ADDR);
+    markConcreteStructure(F5BigipStructureType.PERSISTENCE_SSL);
     markConcreteStructure(F5BigipStructureType.POOL, F5BigipStructureUsage.VIRTUAL_POOL);
     markConcreteStructure(
         F5BigipStructureType.PREFIX_LIST,
@@ -1346,14 +1403,35 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // TODO: verify correct method of determining whether two AS-paths are equivalent
     newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
+    // Global confederation config
+    BgpConfederation confederation = proc.getConfederation();
+    if (confederation != null && confederation.getId() != null) {
+      newProc.setConfederation(
+          new org.batfish.datamodel.bgp.BgpConfederation(
+              confederation.getId(), new HashSet<>(confederation.getPeers())));
+    }
+
     /*
      * Create common BGP export policy. This policy encompasses:
+     * - aggregate address
      * - redistribution from other protocols
      */
     RoutingPolicy.Builder bgpCommonExportPolicy =
         RoutingPolicy.builder()
             .setOwner(_c)
             .setName(computeBgpCommonExportPolicyName(proc.getName()));
+
+    // Never export routes suppressed because they are more specific than summary-only aggregate
+    Stream<Prefix> summaryOnlyNetworks =
+        proc.getAggregateAddresses().entrySet().stream()
+            .filter(e -> e.getValue().getSummaryOnly())
+            .map(Entry::getKey);
+    If suppressSummaryOnly =
+        suppressSummarizedPrefixes(_c, _c.getDefaultVrf().getName(), summaryOnlyNetworks);
+    if (suppressSummaryOnly != null) {
+      bgpCommonExportPolicy.addStatement(suppressSummaryOnly);
+    }
+
     // The body of the export policy is a huge disjunction over many reasons routes may be exported.
     Disjunction routesShouldBeExported = new Disjunction();
     bgpCommonExportPolicy.addStatement(
@@ -1361,8 +1439,38 @@ public class F5BigipConfiguration extends VendorConfiguration {
             routesShouldBeExported,
             ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
             ImmutableList.of()));
+
     // This list of reasons to export a route will be built up over the remainder of this function.
     List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+
+    // distribute aggregate routes
+    // TODO: handle as-set
+    for (Entry<Prefix, AggregateAddress> e : proc.getAggregateAddresses().entrySet()) {
+      Prefix prefix = e.getKey();
+
+      RoutingPolicy genPolicy = generateGenerationPolicy(_c, _c.getDefaultVrf().getName(), prefix);
+
+      GeneratedRoute.Builder gr =
+          GeneratedRoute.builder()
+              .setNetwork(prefix)
+              .setGenerationPolicy(genPolicy.getName())
+              .setDiscard(true);
+
+      // Conditions to generate this route
+      List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
+      exportAggregateConditions.add(
+          new MatchPrefixSet(
+              DestinationNetwork.instance(),
+              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
+      exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+
+      exportAggregateConditions.add(
+          bgpRedistributeWithEnvironmentExpr(BooleanExprs.TRUE, OriginType.IGP));
+
+      _c.getDefaultVrf().getGeneratedRoutes().add(gr.build());
+      // Do export a generated aggregate.
+      exportConditions.add(new Conjunction(exportAggregateConditions));
+    }
 
     // Finally, the export policy ends with returning false: do not export unmatched routes.
     bgpCommonExportPolicy.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
@@ -1872,9 +1980,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
     ospfSettings.setAreaName(areaId);
     ospfSettings.setProcess(processName);
     ospfSettings.setPassive(passive);
-    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
-    ospfSettings.setDeadInterval(firstNonNull(ospf.getDeadIntervalS(), DEFAULT_DEAD_INTERVAL_S));
-    ospfSettings.setHelloInterval(firstNonNull(ospf.getHelloIntervalS(), DEFAULT_HELLO_INTERVAL_S));
+    ospfSettings.setNetworkType(
+        firstNonNull(toOspfNetworkType(ospf.getNetwork()), DEFAULT_OSPF_NETWORK_TYPE));
+    if (ospf.getNetwork() == OspfNetworkType.NON_BROADCAST) {
+      // TODO: support poll-interval / dead-interval in 'neighbor' command
+      ospfSettings.setDeadInterval(DEFAULT_NBMA_DEAD_INTERVAL_S);
+      ospfSettings.setHelloInterval(DEFAULT_NBMA_HELLO_INTERVAL_S);
+    } else {
+      ospfSettings.setDeadInterval(firstNonNull(ospf.getDeadIntervalS(), DEFAULT_DEAD_INTERVAL_S));
+      ospfSettings.setHelloInterval(
+          firstNonNull(ospf.getHelloIntervalS(), DEFAULT_HELLO_INTERVAL_S));
+    }
 
     newIface.setOspfSettings(ospfSettings.build());
   }

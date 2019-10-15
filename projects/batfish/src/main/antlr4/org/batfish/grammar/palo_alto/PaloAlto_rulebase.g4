@@ -1,6 +1,8 @@
 parser grammar PaloAlto_rulebase;
 
-import PaloAlto_common;
+import
+    PaloAlto_common,
+    PaloAlto_nat;
 
 options {
     tokenVocab = PaloAltoLexer;
@@ -13,7 +15,8 @@ s_rulebase
 
 rulebase_inner
 :
-    sr_security
+    sr_nat
+    | sr_security
 ;
 
 sr_security
