@@ -393,5 +393,11 @@ public class BgpTopologyUtilsTest {
     // Confed no match
     assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
     assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(5), null);
+
+    // One peer implicitly matches other's confed, they shares same AS
+    assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(1L), new AsPair(1, 1));
+    // One peer implicitly matches other's confed, but remote ASN doesn't overlap local AS
+    assertPair(1L, 3L, LongSpace.of(2L), 1L, null, LongSpace.of(1L), null);
+    assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(2L), null);
   }
 }
