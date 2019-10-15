@@ -15,6 +15,7 @@ public enum F5BigipStructureUsage implements StructureUsage {
   BGP_NEIGHBOR_SELF_REFERENCE("bgp neighbor self-reference"),
   BGP_NEIGHBOR_UPDATE_SOURCE("bgp neighbor update-source"),
   BGP_PROCESS_SELF_REFERENCE("bgp process self-reference"),
+  BGP_REDISTRIBUTE_CONNECTED_ROUTE_MAP("router bgp redistribute connected route-map"),
   BGP_REDISTRIBUTE_KERNEL_ROUTE_MAP("router bgp redistribute kernel route-map"),
   DATA_GROUP_EXTERNAL_SELF_REFERENCE("data-group external self-reference"),
   DATA_GROUP_INTERNAL_SELF_REFERENCE("data-group internal self-reference"),

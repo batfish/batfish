@@ -157,7 +157,11 @@ rbr_kernel
 
 rbr_connected
 :
-  CONNECTED NEWLINE
+  CONNECTED
+  (
+    ROUTE_MAP rm = word
+  )?
+  NEWLINE
 ;
 
 router_bgp
