@@ -125,6 +125,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
   // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
   private static final int DEFAULT_HELLO_INTERVAL_S = 10;
 
+  // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
+  private static final int DEFAULT_NBMA_DEAD_INTERVAL_S = 120;
+
+  // Assumed 30 to maintain 4x multiplier; unfortunately manpage has clearly missing text (see
+  // 'neighbor' command for OSPF in manual)
+  private static final int DEFAULT_NBMA_HELLO_INTERVAL_S = 30;
+
+  // TODO: confirm
+  private static final org.batfish.datamodel.ospf.OspfNetworkType DEFAULT_OSPF_NETWORK_TYPE =
+      org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+
   private static final double OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR = 1E6D; // bps per Mbps
 
   private static boolean appliesToVlan(Snat snat, String vlanName) {
@@ -1906,9 +1917,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
     ospfSettings.setAreaName(areaId);
     ospfSettings.setProcess(processName);
     ospfSettings.setPassive(passive);
-    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
-    ospfSettings.setDeadInterval(firstNonNull(ospf.getDeadIntervalS(), DEFAULT_DEAD_INTERVAL_S));
-    ospfSettings.setHelloInterval(firstNonNull(ospf.getHelloIntervalS(), DEFAULT_HELLO_INTERVAL_S));
+    ospfSettings.setNetworkType(
+        firstNonNull(toOspfNetworkType(ospf.getNetwork()), DEFAULT_OSPF_NETWORK_TYPE));
+    if (ospf.getNetwork() == OspfNetworkType.NON_BROADCAST) {
+      // TODO: support poll-interval / dead-interval in 'neighbor' command
+      ospfSettings.setDeadInterval(DEFAULT_NBMA_DEAD_INTERVAL_S);
+      ospfSettings.setHelloInterval(DEFAULT_NBMA_HELLO_INTERVAL_S);
+    } else {
+      ospfSettings.setDeadInterval(firstNonNull(ospf.getDeadIntervalS(), DEFAULT_DEAD_INTERVAL_S));
+      ospfSettings.setHelloInterval(
+          firstNonNull(ospf.getHelloIntervalS(), DEFAULT_HELLO_INTERVAL_S));
+    }
 
     newIface.setOspfSettings(ospfSettings.build());
   }
