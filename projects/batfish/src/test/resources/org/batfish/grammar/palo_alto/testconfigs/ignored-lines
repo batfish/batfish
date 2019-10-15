@@ -9,6 +9,7 @@ set config shared server-profile tacplus MY_TACACS timeout 5
 set config shared service
 set config shared service-group
 set config shared content-preview application amazon-music-streaming category media
+set config shared profiles custom-url-category NAME description foo
 #
 set deviceconfig system type static
 set deviceconfig system update-server updates.paloaltonetworks.com
@@ -58,6 +59,7 @@ set policy panorama application-filter SOFTWARE-UPDATES tunnels-other-apps yes
 set policy panorama application-filter SOFTWARE-UPDATES used-by-malware yes
 set policy panorama application-filter SOFTWARE-UPDATES subcategory software-update
 set policy panorama application-filter SOFTWARE-UPDATES technology client-server
+set policy panorama profiles virus
 #
 set shared botnet configuration http dynamic-dns enabled yes
 set shared botnet configuration other-applications irc yes
@@ -81,3 +83,5 @@ set vsys vsys1 log-settings syslog NAME server NAME format IETF
 set vsys vsys1 log-settings syslog NAME server NAME port 65535
 set vsys vsys1 log-settings syslog NAME server NAME transport UDP
 set vsys vsys1 log-settings profiles NAME match-list ML_NAME log-type foo
+set vsys vsys1 profiles dos-protection
+set vsys vsys1 profile-group NAME

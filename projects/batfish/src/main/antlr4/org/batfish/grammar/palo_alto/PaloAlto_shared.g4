@@ -17,7 +17,6 @@ s_shared
     SHARED
     (
         ss_common
-        | ss_null
     )
 ;
 
@@ -34,6 +33,7 @@ ss_common
     | s_service
     | s_service_group
     | s_tag
+    | ss_null
 ;
 
 s_external_list
@@ -108,6 +108,8 @@ ss_null
         | CERTIFICATE
         | CERTIFICATE_PROFILE
         | CONTENT_PREVIEW
+        | PROFILE_GROUP
+        | PROFILES
         | SERVER_PROFILE
     )
     null_rest_of_line

@@ -22,6 +22,8 @@ public class BgpVr implements Serializable {
 
   public BgpVr() {
     _enable = DEFAULT_ENABLE;
+    _importPolicyRules = new HashMap<>();
+    _exportPolicyRules = new HashMap<>();
     _installRoute = DEFAULT_INSTALL_ROUTE;
     _peerGroups = new HashMap<>(0);
     _rejectDefaultRoute = DEFAULT_REJECT_DEFAULT_ROUTE;
@@ -34,6 +36,22 @@ public class BgpVr implements Serializable {
 
   public void setEnable(boolean enable) {
     _enable = enable;
+  }
+
+  public Map<String, PolicyRule> getExportPolicyRules() {
+    return _exportPolicyRules;
+  }
+
+  public PolicyRule getOrCreateExportPolicyRule(String name) {
+    return _exportPolicyRules.computeIfAbsent(name, PolicyRule::new);
+  }
+
+  public Map<String, PolicyRule> getImportPolicyRules() {
+    return _importPolicyRules;
+  }
+
+  public PolicyRule getOrCreateImportPolicyRule(String name) {
+    return _importPolicyRules.computeIfAbsent(name, PolicyRule::new);
   }
 
   public boolean getInstallRoute() {
@@ -84,7 +102,9 @@ public class BgpVr implements Serializable {
   private final BgpVrRoutingOptions _routingOptions;
 
   private boolean _enable;
+  private Map<String, PolicyRule> _exportPolicyRules;
   private boolean _installRoute;
+  private Map<String, PolicyRule> _importPolicyRules;
   private @Nullable Long _localAs;
   private @Nonnull final Map<String, BgpPeerGroup> _peerGroups;
   private boolean _rejectDefaultRoute;
