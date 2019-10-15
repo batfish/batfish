@@ -54,7 +54,7 @@ pr_used_by
 
 pra_allow
 :
-    ALLOW praa_update
+    ALLOW praa_update?
 ;
 
 pra_deny
