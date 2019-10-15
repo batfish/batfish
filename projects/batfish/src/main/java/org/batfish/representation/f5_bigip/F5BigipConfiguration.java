@@ -47,7 +47,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
@@ -1395,7 +1394,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
       RoutingPolicy genPolicy = generateGenerationPolicy(_c, _c.getDefaultVrf().getName(), prefix);
 
-      Builder gr =
+      GeneratedRoute.Builder gr =
           GeneratedRoute.builder()
               .setNetwork(prefix)
               .setGenerationPolicy(genPolicy.getName())

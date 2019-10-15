@@ -358,6 +358,7 @@ public final class F5BigipImishGrammarTest {
           Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
 
       assertTrue(exportPolicy.call(env).getBooleanValue());
+      assertNull(env.getSuppressed());
     }
 
     {
@@ -375,6 +376,23 @@ public final class F5BigipImishGrammarTest {
 
       exportPolicy.call(env);
       assertTrue(env.getSuppressed());
+    }
+
+    {
+      // an valid aggregated route should be allowed
+      Bgpv4Route bgpRoute =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.IGP)
+              .setProtocol(RoutingProtocol.AGGREGATE)
+              .setNetwork(Prefix.strict("10.4.0.0/24"))
+              .build();
+
+      Environment env =
+          Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
+
+      assertTrue(exportPolicy.call(env).getBooleanValue());
+      assertNull(env.getSuppressed());
     }
   }
 
