@@ -79,7 +79,6 @@ public final class OspfProcess implements Serializable {
               _maxMetricStubNetworks,
               _maxMetricSummaryNetworks,
               _maxMetricTransitLinks,
-              _neighbors,
               _processId != null ? _processId : generateName(),
               _referenceBandwidth,
               _rfc1583Compatible,
