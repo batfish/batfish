@@ -379,7 +379,7 @@ public final class F5BigipImishGrammarTest {
     }
 
     {
-      // an valid aggregated route should be allowed
+      // a valid aggregated route should be allowed
       Bgpv4Route bgpRoute =
           Bgpv4Route.builder()
               .setOriginatorIp(Ip.parse("10.0.0.1"))
