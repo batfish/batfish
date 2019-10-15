@@ -44,6 +44,11 @@ ADDRESS_GROUP
     'address-group'
 ;
 
+ADDRESS_PREFIX
+:
+    'address-prefix'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
@@ -134,6 +139,11 @@ AS_FORMAT
     'as-format'
 ;
 
+AS_PATH
+:
+    'as-path'
+;
+
 AUTH
 :
     'auth'
@@ -217,6 +227,11 @@ COMMENT
 COMMENTS
 :
     'comments'
+;
+
+COMMUNITY
+:
+    'community'
 ;
 
 CONFIG
@@ -364,6 +379,11 @@ EBGP
     'ebgp'
 ;
 
+EGP
+:
+    'egp'
+;
+
 ENABLE
 :
     'enable'
@@ -384,6 +404,11 @@ EVASIVE
     'evasive'
 ;
 
+EXACT
+:
+    'exact'
+;
+
 EXCESSIVE_BANDWIDTH_USE
 :
     'excessive-bandwidth-use'
@@ -402,6 +427,11 @@ EXT_1
 EXT_2
 :
     'ext-2'
+;
+
+EXTENDED_COMMUNITY
+:
+    'extended-community'
 ;
 
 EXTERNAL
@@ -432,6 +462,11 @@ FQDN
 FROM
 :
     'from'
+;
+
+FROM_PEER
+:
+    'from-peer'
 ;
 
 GATEWAY
@@ -539,6 +574,11 @@ ICMP
     'icmp'
 ;
 
+IGP
+:
+    'igp'
+;
+
 IKE
 :
     'ike'
@@ -557,6 +597,11 @@ IMPORT
 INCOMING_BGP_CONNECTION
 :
     'incoming-bgp-connection'
+;
+
+INCOMPLETE
+:
+    'incomplete'
 ;
 
 INSTALL_ROUTE
@@ -657,6 +702,11 @@ LOG_SETTINGS
 LOOPBACK
 :
     'loopback'
+;
+
+MATCH
+:
+    'match'
 ;
 
 MD5
@@ -777,6 +827,11 @@ NTP_SERVERS
 NULL
 :
     'null'
+;
+
+ORIGIN
+:
+    'origin'
 ;
 
 OSPF
@@ -1239,6 +1294,11 @@ UP
     'up'
 ;
 
+UPDATE
+:
+    'update'
+;
+
 UPDATE_SCHEDULE
 :
     'update-schedule'
@@ -1252,6 +1312,11 @@ UPDATE_SERVER
 URL
 :
     'url'
+;
+
+USED_BY
+:
+    'used-by'
 ;
 
 USED_BY_MALWARE

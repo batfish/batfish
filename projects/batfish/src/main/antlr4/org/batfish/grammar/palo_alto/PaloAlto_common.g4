@@ -31,6 +31,11 @@ ip_address_or_slash32
     addr = interface_address
 ;
 
+ip_prefix
+:
+    IP_PREFIX
+;
+
 src_or_dst_list
 :
     (
