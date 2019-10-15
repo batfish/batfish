@@ -15,12 +15,13 @@ bgp_med
 
 bgp_policy_rule
 :
+    RULES name = variable
     (
         pr_action
         | pr_enable
         | pr_match
         | pr_used_by
-    )
+    )?
 ;
 
 pr_action
@@ -70,7 +71,7 @@ praa_update
         | praau_extended_community
         | praau_med
         | praau_origin
-    )
+    )?
 ;
 
 praau_as_path
@@ -95,22 +96,15 @@ praau_med
 
 praau_origin
 :
-    ORIGIN type = variable
+    ORIGIN (EGP | IGP | INCOMPLETE)
 ;
 
 prm_address_prefix
 :
-    ADDRESS_PREFIX IP_PREFIX EXACT yn = yes_or_no
+    ADDRESS_PREFIX ip_prefix EXACT yn = yes_or_no
 ;
 
 prm_from_peer
 :
-    FROM_PEER
-    (
-        OPEN_BRACKET
-        (
-            variable
-        )*
-        CLOSE_BRACKET
-    )
+    FROM_PEER variable_list
 ;

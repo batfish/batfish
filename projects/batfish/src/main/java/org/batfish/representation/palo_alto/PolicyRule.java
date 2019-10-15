@@ -13,7 +13,7 @@ public final class PolicyRule implements Serializable {
     DENY
   }
 
-  private @Nonnull String _name;
+  private final @Nonnull String _name;
   private @Nullable Action _action;
   private @Nullable Boolean _enable;
   private @Nullable PolicyRuleUpdateOrigin _updateOrigin;
@@ -26,13 +26,11 @@ public final class PolicyRule implements Serializable {
     _name = name;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public Action getAction() {
+  public @Nullable Action getAction() {
     return _action;
   }
 
@@ -52,8 +50,7 @@ public final class PolicyRule implements Serializable {
     return Stream.of(_updateOrigin, _updateMetric).filter(Objects::nonNull);
   }
 
-  @Nullable
-  public Boolean getEnable() {
+  public @Nullable Boolean getEnable() {
     return _enable;
   }
 
@@ -61,8 +58,7 @@ public final class PolicyRule implements Serializable {
     _enable = enable;
   }
 
-  @Nullable
-  public String getUsedBy() {
+  public @Nullable String getUsedBy() {
     return _usedBy;
   }
 
@@ -78,8 +74,7 @@ public final class PolicyRule implements Serializable {
     _updateMetric = updateMetric;
   }
 
-  @Nullable
-  public PolicyRuleMatchFromPeerSet getMatchFromPeerSet() {
+  public @Nullable PolicyRuleMatchFromPeerSet getMatchFromPeerSet() {
     return _matchFromPeerSet;
   }
 
@@ -87,21 +82,14 @@ public final class PolicyRule implements Serializable {
     _matchFromPeerSet = matchFromPeerSet;
   }
 
-  @Nonnull
-  public PolicyRuleMatchAddressPrefixSet getOrCreateMatchAddressPrefixSet() {
+  public @Nonnull PolicyRuleMatchAddressPrefixSet getOrCreateMatchAddressPrefixSet() {
     if (_matchAddressPrefixSet == null) {
       _matchAddressPrefixSet = new PolicyRuleMatchAddressPrefixSet();
     }
     return _matchAddressPrefixSet;
   }
 
-  @Nullable
-  public PolicyRuleMatchAddressPrefixSet getMatchAddressPrefixSet() {
+  public @Nullable PolicyRuleMatchAddressPrefixSet getMatchAddressPrefixSet() {
     return _matchAddressPrefixSet;
-  }
-
-  public void setMatchAddressPrefixSet(
-      @Nullable PolicyRuleMatchAddressPrefixSet matchAddressPrefixSet) {
-    _matchAddressPrefixSet = matchAddressPrefixSet;
   }
 }

@@ -379,6 +379,11 @@ EBGP
     'ebgp'
 ;
 
+EGP
+:
+    'egp'
+;
+
 ENABLE
 :
     'enable'
@@ -569,6 +574,11 @@ ICMP
     'icmp'
 ;
 
+IGP
+:
+    'igp'
+;
+
 IKE
 :
     'ike'
@@ -587,6 +597,11 @@ IMPORT
 INCOMING_BGP_CONNECTION
 :
     'incoming-bgp-connection'
+;
+
+INCOMPLETE
+:
+    'incomplete'
 ;
 
 INSTALL_ROUTE

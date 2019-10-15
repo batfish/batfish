@@ -91,6 +91,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_asContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_local_prefContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_peer_group_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_peer_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_policy_ruleContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_router_idContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpp_exportContext;
@@ -128,6 +129,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.If_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
@@ -354,6 +356,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private boolean _currentNtpServerPrimary;
   private Interface _currentParentInterface;
   private PolicyRule _currentPolicyRule;
+  private boolean _currentPolicyRuleImport;
   private OspfArea _currentOspfArea;
   private OspfInterface _currentOspfInterface;
   private OspfAreaStub _currentOspfStubAreaType;
@@ -572,12 +575,20 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterBgpp_export(Bgpp_exportContext ctx) {
-    _currentPolicyRule = _currentBgpVr.getOrCreateExportPolicyRule(getText(ctx.name));
+    _currentPolicyRuleImport = false;
   }
 
   @Override
   public void enterBgpp_import(Bgpp_importContext ctx) {
-    _currentPolicyRule = _currentBgpVr.getOrCreateImportPolicyRule(getText(ctx.name));
+    _currentPolicyRuleImport = true;
+  }
+
+  @Override
+  public void enterBgp_policy_rule(Bgp_policy_ruleContext ctx) {
+    _currentPolicyRule =
+        _currentPolicyRuleImport
+            ? _currentBgpVr.getOrCreateImportPolicyRule(getText(ctx.name))
+            : _currentBgpVr.getOrCreateExportPolicyRule(getText(ctx.name));
   }
 
   @Override
@@ -612,20 +623,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitPraau_origin(Praau_originContext ctx) {
-    String originTypeText = getText(ctx.type);
     OriginType originType;
-    switch (originTypeText) {
-      case "igp":
-        originType = OriginType.IGP;
-        break;
-      case "egp":
-        originType = OriginType.EGP;
-        break;
-      case "incomplete":
-        originType = OriginType.INCOMPLETE;
-        break;
-      default:
-        return;
+    if (ctx.EGP() != null) {
+      originType = OriginType.EGP;
+    } else if (ctx.IGP() != null) {
+      originType = OriginType.IGP;
+    } else {
+      assert ctx.INCOMPLETE() != null;
+      originType = OriginType.INCOMPLETE;
     }
     _currentPolicyRule.setUpdateOrigin(new PolicyRuleUpdateOrigin(originType));
   }
@@ -638,7 +643,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitPrm_from_peer(Prm_from_peerContext ctx) {
     ImmutableSet.Builder<String> peers = ImmutableSet.builder();
-    for (VariableContext var : ctx.variable()) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String peerName = getText(var);
       peers.add(peerName);
     }
@@ -650,7 +655,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _currentPolicyRule
         .getOrCreateMatchAddressPrefixSet()
         .getAddressPrefixes()
-        .add(new AddressPrefix(Prefix.parse(getText(ctx.IP_PREFIX())), toBoolean(ctx.yn)));
+        .add(new AddressPrefix(toPrefix(ctx.ip_prefix()), toBoolean(ctx.yn)));
   }
 
   @Override
@@ -2179,6 +2184,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
   }
 
   private @Nonnull Optional<Ip> toIp(

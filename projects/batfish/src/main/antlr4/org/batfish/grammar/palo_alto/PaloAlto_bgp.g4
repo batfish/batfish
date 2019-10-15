@@ -214,12 +214,12 @@ bgp_policy
 
 bgpp_export
 :
-    EXPORT RULES name = variable bgp_policy_rule
+    EXPORT bgp_policy_rule?
 ;
 
 bgpp_import
 :
-    IMPORT RULES name = variable bgp_policy_rule
+    IMPORT bgp_policy_rule?
 ;
 
 bgp_reject_default_route
