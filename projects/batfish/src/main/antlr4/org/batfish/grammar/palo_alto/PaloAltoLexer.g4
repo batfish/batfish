@@ -984,6 +984,11 @@ RECURRING
     'recurring'
 ;
 
+REDIST_PROFILE
+:
+    'redist-profile'
+;
+
 REFLECTOR_CLIENT
 :
     'reflector-client'
