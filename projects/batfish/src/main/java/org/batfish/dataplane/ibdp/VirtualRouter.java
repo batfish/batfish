@@ -1095,7 +1095,6 @@ public class VirtualRouter implements Serializable {
       BgpSessionProperties sessionProperties =
           getBgpSessionProperties(bgpTopology, new EdgeId(remoteConfigId, ourConfigId));
       BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().head()));
-      assert ourBgpConfig.getLocalAs() != null;
       assert ourBgpConfig.getIpv4UnicastAddressFamily() != null;
       // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
       Ip remoteIp = sessionProperties.getTailIp();
@@ -1114,7 +1113,7 @@ public class VirtualRouter implements Serializable {
         Bgpv4Route.Builder transformedIncomingRouteBuilder =
             transformBgpRouteOnImport(
                 remoteRoute,
-                ourBgpConfig.getLocalAs(),
+                sessionProperties.getHeadAs(),
                 ourBgpConfig
                     .getIpv4UnicastAddressFamily()
                     .getAddressFamilyCapabilities()

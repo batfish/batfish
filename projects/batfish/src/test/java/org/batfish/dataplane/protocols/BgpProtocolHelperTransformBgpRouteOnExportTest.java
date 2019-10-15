@@ -102,7 +102,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .setRemoteAs(AS1)
             .setLocalIp(DEST_IP)
             .build();
-    _sessionProperties = BgpSessionProperties.from(_fromNeighbor, _toNeighbor, false);
+    _sessionProperties = BgpSessionProperties.from(_fromNeighbor, _toNeighbor, true);
     BgpProcess.Builder pb =
         _nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     Vrf fromVrf = _nf.vrfBuilder().setOwner(c1).build();

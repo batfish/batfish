@@ -94,7 +94,7 @@ public final class BgpProtocolHelper {
     // peer's AS and local peer has not set getAllowRemoteOut
     if (route.getCommunities().contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))
         || (sessionProperties.isEbgp()
-            && route.getAsPath().containsAs(toNeighbor.getLocalAs())
+            && route.getAsPath().containsAs(sessionProperties.getTailAs())
             && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
       return null;
     }
