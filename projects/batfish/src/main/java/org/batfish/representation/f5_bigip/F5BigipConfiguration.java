@@ -1495,6 +1495,28 @@ public class F5BigipConfiguration extends VendorConfiguration {
       exportConditions.add(exportProtocolConditions);
     }
 
+    // Export connected routes that should be redistributed
+    BgpRedistributionPolicy connectedPolicy =
+        proc.getIpv4AddressFamily()
+            .getRedistributionPolicies()
+            .get(F5BigipRoutingProtocol.CONNECTED);
+    if (connectedPolicy != null) {
+      BooleanExpr weInterior = BooleanExprs.TRUE;
+      Conjunction exportProtocolConditions = new Conjunction();
+      exportProtocolConditions.setComment("Redistribute connected routes into BGP");
+      exportProtocolConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
+      String mapName = connectedPolicy.getRouteMap();
+      if (mapName != null) {
+        RouteMap redistributeProtocolRouteMap = _routeMaps.get(mapName);
+        if (redistributeProtocolRouteMap != null) {
+          weInterior = new CallExpr(mapName);
+        }
+      }
+      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
+      exportProtocolConditions.getConjuncts().add(we);
+      exportConditions.add(exportProtocolConditions);
+    }
+
     // Export BGP and IBGP routes.
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
