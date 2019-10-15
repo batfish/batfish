@@ -713,10 +713,16 @@ public final class F5BigipImishGrammarTest {
   public void testOspfExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_ospf");
 
-    assertThat(vc.getImishInterfaces(), hasKeys("vlan_active", "vlan_passive"));
+    assertThat(vc.getImishInterfaces(), hasKeys("vlan_active", "vlan_active_nbma", "vlan_passive"));
     {
       ImishInterface iface = vc.getImishInterfaces().get("vlan_active");
       assertThat(iface.getName(), equalTo("vlan_active"));
+      OspfInterface ospf = iface.getOspf();
+      assertNull(ospf);
+    }
+    {
+      ImishInterface iface = vc.getImishInterfaces().get("vlan_active_nbma");
+      assertThat(iface.getName(), equalTo("vlan_active_nbma"));
       OspfInterface ospf = iface.getOspf();
       assertNotNull(ospf);
       assertThat(ospf.getNetwork(), equalTo(OspfNetworkType.NON_BROADCAST));
@@ -735,7 +741,13 @@ public final class F5BigipImishGrammarTest {
       assertThat(
           proc.getNetworks(),
           equalTo(
-              ImmutableMap.of(Prefix.strict("10.0.1.0/30"), 0L, Prefix.strict("10.0.2.0/30"), 0L)));
+              ImmutableMap.of(
+                  Prefix.strict("10.0.1.0/30"),
+                  0L,
+                  Prefix.strict("10.0.2.0/30"),
+                  0L,
+                  Prefix.strict("10.0.3.0/30"),
+                  0L)));
       assertThat(proc.getNeighbors(), contains(Ip.parse("10.0.1.2")));
     }
   }
