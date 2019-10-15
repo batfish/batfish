@@ -48,6 +48,7 @@ import static org.batfish.representation.palo_alto.Zone.Type.TAP;
 import static org.batfish.representation.palo_alto.Zone.Type.VIRTUAL_WIRE;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.Arrays;
 import java.util.List;
@@ -74,6 +75,7 @@ import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.UnrecognizedLineToken;
@@ -86,6 +88,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_peer_group_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_peer_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_router_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpp_exportContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpp_importContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_peerContext;
@@ -149,6 +153,14 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContex
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_numberContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Pr_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Pr_used_byContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Pra_allowContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Pra_denyContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Praau_medContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Praau_originContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Prm_address_prefixContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Prm_from_peerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Protocol_adContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_group_definitionContext;
@@ -261,6 +273,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_next_vrContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Yes_or_noContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
+import org.batfish.representation.palo_alto.AddressPrefix;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.ApplicationBuiltIn;
 import org.batfish.representation.palo_alto.ApplicationGroup;
@@ -283,6 +296,11 @@ import org.batfish.representation.palo_alto.OspfVr;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
+import org.batfish.representation.palo_alto.PolicyRule;
+import org.batfish.representation.palo_alto.PolicyRule.Action;
+import org.batfish.representation.palo_alto.PolicyRuleMatchFromPeerSet;
+import org.batfish.representation.palo_alto.PolicyRuleUpdateMetric;
+import org.batfish.representation.palo_alto.PolicyRuleUpdateOrigin;
 import org.batfish.representation.palo_alto.Rule;
 import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.Service;
@@ -327,6 +345,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private Interface _currentInterface;
   private boolean _currentNtpServerPrimary;
   private Interface _currentParentInterface;
+  private PolicyRule _currentPolicyRule;
   private OspfArea _currentOspfArea;
   private OspfInterface _currentOspfInterface;
   private OspfAreaStub _currentOspfStubAreaType;
@@ -541,6 +560,89 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitBgp_local_as(Bgp_local_asContext ctx) {
     toAsn(ctx, ctx.asn, _currentBgpVr.getRoutingOptions().getAsFormat())
         .ifPresent(_currentBgpVr::setLocalAs);
+  }
+
+  @Override
+  public void enterBgpp_export(Bgpp_exportContext ctx) {
+    _currentPolicyRule = _currentBgpVr.getOrCreateExportPolicyRule(getText(ctx.name));
+  }
+
+  @Override
+  public void enterBgpp_import(Bgpp_importContext ctx) {
+    _currentPolicyRule = _currentBgpVr.getOrCreateImportPolicyRule(getText(ctx.name));
+  }
+
+  @Override
+  public void exitBgpp_export(Bgpp_exportContext ctx) {
+    _currentPolicyRule = null;
+  }
+
+  @Override
+  public void exitBgpp_import(Bgpp_importContext ctx) {
+    _currentPolicyRule = null;
+  }
+
+  @Override
+  public void exitPr_enable(Pr_enableContext ctx) {
+    _currentPolicyRule.setEnable(true);
+  }
+
+  @Override
+  public void exitPr_used_by(Pr_used_byContext ctx) {
+    _currentPolicyRule.setUsedBy(getText(ctx.name));
+  }
+
+  @Override
+  public void exitPra_allow(Pra_allowContext ctx) {
+    _currentPolicyRule.setAction(Action.ALLOW);
+  }
+
+  @Override
+  public void exitPra_deny(Pra_denyContext ctx) {
+    _currentPolicyRule.setAction(Action.DENY);
+  }
+
+  @Override
+  public void exitPraau_origin(Praau_originContext ctx) {
+    String originTypeText = getText(ctx.type);
+    OriginType originType;
+    switch (originTypeText) {
+      case "igp":
+        originType = OriginType.IGP;
+        break;
+      case "egp":
+        originType = OriginType.EGP;
+        break;
+      case "incomplete":
+        originType = OriginType.INCOMPLETE;
+        break;
+      default:
+        return;
+    }
+    _currentPolicyRule.setUpdateOrigin(new PolicyRuleUpdateOrigin(originType));
+  }
+
+  @Override
+  public void exitPraau_med(Praau_medContext ctx) {
+    _currentPolicyRule.setUpdateMetric(new PolicyRuleUpdateMetric(toLong(ctx.value.uint32())));
+  }
+
+  @Override
+  public void exitPrm_from_peer(Prm_from_peerContext ctx) {
+    ImmutableSet.Builder<String> peers = ImmutableSet.builder();
+    for (VariableContext var : ctx.variable()) {
+      String peerName = getText(var);
+      peers.add(peerName);
+    }
+    _currentPolicyRule.setMatchFromPeerSet(new PolicyRuleMatchFromPeerSet(peers.build()));
+  }
+
+  @Override
+  public void exitPrm_address_prefix(Prm_address_prefixContext ctx) {
+    _currentPolicyRule
+        .getOrCreateMatchAddressPrefixSet()
+        .getAddressPrefixes()
+        .add(new AddressPrefix(Prefix.parse(getText(ctx.IP_PREFIX())), toBoolean(ctx.yn)));
   }
 
   @Override

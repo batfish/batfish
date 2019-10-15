@@ -1,6 +1,6 @@
 parser grammar PaloAlto_bgp;
 
-import PaloAlto_common;
+import PaloAlto_common, PaloAlto_policy_rule;
 
 options {
     tokenVocab = PaloAltoLexer;
@@ -214,12 +214,12 @@ bgp_policy
 
 bgpp_export
 :
-    EXPORT
+    EXPORT RULES name = variable bgp_policy_rule
 ;
 
 bgpp_import
 :
-    IMPORT
+    IMPORT RULES name = variable bgp_policy_rule
 ;
 
 bgp_reject_default_route

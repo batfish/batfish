@@ -44,6 +44,11 @@ ADDRESS_GROUP
     'address-group'
 ;
 
+ADDRESS_PREFIX
+:
+    'address-prefix'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
@@ -134,6 +139,11 @@ AS_FORMAT
     'as-format'
 ;
 
+AS_PATH
+:
+    'as-path'
+;
+
 AUTH_PROFILE
 :
     'auth-profile'
@@ -212,6 +222,11 @@ COMMENT
 COMMENTS
 :
     'comments'
+;
+
+COMMUNITY
+:
+    'community'
 ;
 
 CONFIG
@@ -369,6 +384,11 @@ EVASIVE
     'evasive'
 ;
 
+EXACT
+:
+    'exact'
+;
+
 EXCESSIVE_BANDWIDTH_USE
 :
     'excessive-bandwidth-use'
@@ -387,6 +407,11 @@ EXT_1
 EXT_2
 :
     'ext-2'
+;
+
+EXTENDED_COMMUNITY
+:
+    'extended-community'
 ;
 
 EXTERNAL
@@ -412,6 +437,11 @@ FQDN
 FROM
 :
     'from'
+;
+
+FROM_PEER
+:
+    'from-peer'
 ;
 
 GATEWAY
@@ -634,6 +664,11 @@ LOOPBACK
     'loopback'
 ;
 
+MATCH
+:
+    'match'
+;
+
 MD5
 :
     'md5'
@@ -747,6 +782,11 @@ NTP_SERVERS
 NULL
 :
     'null'
+;
+
+ORIGIN
+:
+    'origin'
 ;
 
 OSPF
@@ -1189,6 +1229,11 @@ UP
     'up'
 ;
 
+UPDATE
+:
+    'update'
+;
+
 UPDATE_SCHEDULE
 :
     'update-schedule'
@@ -1197,6 +1242,11 @@ UPDATE_SCHEDULE
 UPDATE_SERVER
 :
     'update-server'
+;
+
+USED_BY
+:
+    'used-by'
 ;
 
 USED_BY_MALWARE

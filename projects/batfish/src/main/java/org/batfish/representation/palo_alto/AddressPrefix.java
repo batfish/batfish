@@ -1,28 +1,43 @@
 package org.batfish.representation.palo_alto;
 
-import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix;
 
 /** Represents an address-prefix used in match policy rules */
-public class AddressPrefix {
-  @Nullable private Prefix _prefix;
-  @Nullable private Boolean _exact;
+public class AddressPrefix implements Serializable {
+  @Nonnull private Prefix _prefix;
+  private boolean _exact;
 
-  @Nullable
+  public AddressPrefix(Prefix prefix, boolean exact) {
+    _prefix = prefix;
+    _exact = exact;
+  }
+
+  @Nonnull
   public Prefix getPrefix() {
     return _prefix;
   }
 
-  public void setPrefix(@Nullable Prefix prefix) {
-    _prefix = prefix;
-  }
-
-  @Nullable
-  public Boolean getExact() {
+  public boolean getExact() {
     return _exact;
   }
 
-  public void setExact(@Nullable Boolean exact) {
-    _exact = exact;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof AddressPrefix)) {
+      return false;
+    }
+    AddressPrefix that = (AddressPrefix) o;
+    return _exact == that._exact && _prefix.equals(that._prefix);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_prefix, _exact);
   }
 }

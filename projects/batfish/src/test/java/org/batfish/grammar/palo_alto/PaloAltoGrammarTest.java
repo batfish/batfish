@@ -117,6 +117,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -135,6 +136,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
+import org.batfish.representation.palo_alto.AddressPrefix;
 import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.BgpConnectionOptions;
@@ -158,6 +160,9 @@ import org.batfish.representation.palo_alto.OspfVr;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
+import org.batfish.representation.palo_alto.PolicyRule;
+import org.batfish.representation.palo_alto.PolicyRule.Action;
+import org.batfish.representation.palo_alto.PolicyRuleUpdateOrigin;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
@@ -581,6 +586,54 @@ public final class PaloAltoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, APPLICATION_GROUP_OR_APPLICATION, "undefined", RULE_APPLICATION));
+  }
+
+  @Test
+  public void testBgpPolicesExtraction() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("bgp-policies");
+    VirtualRouter vr = c.getVirtualRouters().get("vr1");
+    assertThat(vr, notNullValue());
+    BgpVr bgp = vr.getBgp();
+    assertThat(bgp, notNullValue());
+
+    assertThat(bgp.getExportPolicyRules(), hasKey("export1"));
+    PolicyRule export1 = bgp.getExportPolicyRules().get("export1");
+    assertThat(export1.getAction(), equalTo(Action.ALLOW));
+    assertThat(export1.getUsedBy(), equalTo("pg1"));
+    assertThat(export1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(OriginType.IGP)));
+    assertThat(export1.getMatchAddressPrefixSet(), not(nullValue()));
+    assertThat(
+        export1.getMatchAddressPrefixSet().getAddressPrefixes(),
+        equalTo(ImmutableSet.of(new AddressPrefix(Prefix.ZERO, true))));
+    assertThat(export1.getMatchFromPeerSet(), nullValue());
+
+    assertThat(bgp.getImportPolicyRules(), hasKey("import1"));
+    PolicyRule import1 = bgp.getImportPolicyRules().get("import1");
+    assertThat(import1.getAction(), equalTo(Action.ALLOW));
+    assertThat(import1.getUsedBy(), equalTo("pg2"));
+    assertThat(import1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(OriginType.EGP)));
+    assertThat(import1.getMatchAddressPrefixSet(), not(nullValue()));
+    assertThat(
+        import1.getMatchAddressPrefixSet().getAddressPrefixes(),
+        equalTo(
+            ImmutableSet.of(
+                new AddressPrefix(Prefix.parse("12.12.1.1/32"), true),
+                new AddressPrefix(Prefix.parse("1.21.3.0/24"), false),
+                new AddressPrefix(Prefix.parse("1.1.1.1/32"), true))));
+    assertThat(import1.getMatchFromPeerSet(), not(nullValue()));
+    assertThat(
+        import1.getMatchFromPeerSet().getFromPeers(),
+        equalTo(ImmutableSet.of("evil_peer", "good_peer")));
+
+    assertThat(bgp.getImportPolicyRules(), hasKey("import2"));
+    PolicyRule import2 = bgp.getImportPolicyRules().get("import2");
+    assertThat(import2.getAction(), equalTo(Action.DENY));
+    assertThat(import2.getUsedBy(), equalTo("pg3"));
+    assertThat(import2.getEnable(), equalTo(true));
+    assertThat(import2.getMatchAddressPrefixSet(), not(nullValue()));
+    assertThat(
+        import2.getMatchAddressPrefixSet().getAddressPrefixes(),
+        equalTo(ImmutableSet.of(new AddressPrefix(Prefix.parse("1.2.3.0/24"), false))));
   }
 
   @Test

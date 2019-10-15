@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -149,8 +148,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private @Nullable Vsys _panorama;
 
-  private Map<String, PolicyRule> _policyRules;
-
   private @Nullable Vsys _shared;
 
   private final SortedMap<String, Vsys> _sharedGateways;
@@ -164,7 +161,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
     _interfaces = new TreeMap<>();
-    _policyRules = new HashMap<>();
     _sharedGateways = new TreeMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
@@ -1617,10 +1613,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public @Nullable Vsys getPanorama() {
     return _panorama;
-  }
-
-  public Map<String, PolicyRule> getPolicyRules() {
-    return _policyRules;
   }
 
   public @Nullable Vsys getShared() {

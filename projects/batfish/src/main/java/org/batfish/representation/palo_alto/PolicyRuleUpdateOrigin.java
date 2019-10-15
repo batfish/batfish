@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.OriginType;
 
@@ -19,5 +20,22 @@ public final class PolicyRuleUpdateOrigin implements PolicyRuleUpdate {
 
   public @Nonnull OriginType getOrigin() {
     return _origin;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PolicyRuleUpdateOrigin)) {
+      return false;
+    }
+    PolicyRuleUpdateOrigin that = (PolicyRuleUpdateOrigin) o;
+    return _origin == that._origin;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_origin);
   }
 }
