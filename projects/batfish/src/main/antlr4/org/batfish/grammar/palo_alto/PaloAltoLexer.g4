@@ -184,6 +184,11 @@ BROADCAST
     'broadcast'
 ;
 
+BSD
+:
+    [Bb][Ss][Dd]
+;
+
 CATEGORY
 :
     'category'
@@ -419,6 +424,11 @@ ETHERNET
     'ethernet'
 ;
 
+FACILITY
+:
+    'facility'
+;
+
 FILTER
 :
     'filter'
@@ -427,6 +437,11 @@ FILTER
 FQDN
 :
     'fqdn'
+;
+
+FORMAT
+:
+    'format'
 ;
 
 FROM
@@ -537,6 +552,11 @@ IBGP
 ICMP
 :
     'icmp'
+;
+
+IETF
+:
+    [Ii][Ee][Tt][Ff]
 ;
 
 IKE
@@ -1114,6 +1134,11 @@ SOURCE_USER
     'source-user'
 ;
 
+SSL
+:
+    [Ss][Ss][Ll]
+;
+
 STATIC
 :
     'static'
@@ -1166,7 +1191,7 @@ TAP
 
 TCP
 :
-    'tcp'
+    [Tt][Cc][Pp]
 ;
 
 TECHNOLOGY
@@ -1209,6 +1234,11 @@ TRANSLATED_ADDRESS
     'translated-address'
 ;
 
+TRANSPORT
+:
+    'transport'
+;
+
 TUNNEL
 :
     'tunnel'
@@ -1226,7 +1256,7 @@ TYPE
 
 UDP
 :
-    'udp'
+    [Uu][Dd][Pp]
 ;
 
 UNITS

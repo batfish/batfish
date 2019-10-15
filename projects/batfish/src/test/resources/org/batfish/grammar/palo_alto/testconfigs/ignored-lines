@@ -75,3 +75,9 @@ set mgt-config users admin public-key c3NoLX...
 set rulebase security rules RULE1 category streaming
 set rulebase security rules RULE1 hip-profiles any
 set rulebase security rules RULE1 source-user any
+#
+set vsys vsys1 log-settings syslog NAME server NAME facility LOG_LOCAL0
+set vsys vsys1 log-settings syslog NAME server NAME format IETF
+set vsys vsys1 log-settings syslog NAME server NAME port 65535
+set vsys vsys1 log-settings syslog NAME server NAME transport UDP
+set vsys vsys1 log-settings profiles NAME match-list ML_NAME log-type foo
