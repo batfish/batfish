@@ -35,6 +35,11 @@ policy {
             destination DST_NAME;
           }
           RULE_3 {
+            source-translation {
+              dynamic-ip-and-port {
+                translated-address [ ADDR1 1.1.1.1 2.2.2.0/24 3.3.3.3-4.4.4.4];
+              }
+            }
             from [ FROM_1 FROM_2 ];
             source [ SRC_1 SRC_2];
             destination [ DST_1 DST_2];
