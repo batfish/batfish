@@ -141,8 +141,7 @@ public final class OspfTopology {
 
   /** Return the graph backing this topology */
   @JsonIgnore
-  @VisibleForTesting
-  ValueGraph<OspfNeighborConfigId, OspfSessionProperties> getGraph() {
+  public ValueGraph<OspfNeighborConfigId, OspfSessionProperties> getGraph() {
     return _graph;
   }
 

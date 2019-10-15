@@ -4,9 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -123,7 +126,7 @@ public class EdgesAnswerer extends Answerer {
     return answer;
   }
 
-  private Multiset<Row> generateRows(
+  private Collection<Row> generateRows(
       Map<String, Configuration> configurations,
       Topology topology,
       Set<String> includeNodes,
@@ -288,43 +291,33 @@ public class EdgesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static Multiset<Row> getOspfEdges(
+  static List<Row> getOspfEdges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       OspfTopology topology) {
-    Multiset<Row> rows = HashMultiset.create();
-    for (Configuration c : configurations.values()) {
-      String hostname = c.getHostname();
-
-      if (!includeNodes.contains(hostname)) {
-        continue;
-      }
-
-      for (Vrf vrf : c.getVrfs().values()) {
-        for (OspfProcess proc : vrf.getOspfProcesses().values()) {
-          proc.getOspfNeighborConfigs()
-              .keySet()
-              .forEach(
-                  interfaceName ->
-                      topology
-                          .neighbors(
-                              new OspfNeighborConfigId(
-                                  hostname, vrf.getName(), proc.getProcessId(), interfaceName))
-                          .stream()
-                          .filter(n -> includeRemoteNodes.contains(n.getHostname()))
-                          .forEach(
-                              remote ->
-                                  rows.add(
-                                      getOspfEdgeRow(
-                                          hostname,
-                                          interfaceName,
-                                          remote.getHostname(),
-                                          remote.getInterfaceName()))));
-        }
-      }
-    }
-    return rows;
+    ImmutableSet.Builder<Row> rows = ImmutableSet.builder();
+    topology
+        .getGraph()
+        .edges()
+        .forEach(
+            p -> {
+              OspfNeighborConfigId sourceId = p.source();
+              OspfNeighborConfigId targetId = p.target();
+              String hostname = sourceId.getHostname();
+              String remoteHostname = targetId.getHostname();
+              if (!includeNodes.contains(hostname)
+                  || !includeRemoteNodes.contains(remoteHostname)) {
+                return;
+              }
+              rows.add(
+                  getOspfEdgeRow(
+                      hostname,
+                      sourceId.getInterfaceName(),
+                      remoteHostname,
+                      targetId.getInterfaceName()));
+            });
+    return ImmutableList.copyOf(rows.build());
   }
 
   @VisibleForTesting
