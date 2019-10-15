@@ -904,6 +904,11 @@ PRIORITY
     'priority'
 ;
 
+PROFILE_GROUP
+:
+    'profile-group'
+;
+
 PROFILES
 :
     'profiles'

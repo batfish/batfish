@@ -79,3 +79,4 @@ set rulebase security rules RULE1 hip-profiles any
 set rulebase security rules RULE1 source-user any
 #
 set vsys vsys1 profiles dos-protection
+set vsys vsys1 profile-group NAME

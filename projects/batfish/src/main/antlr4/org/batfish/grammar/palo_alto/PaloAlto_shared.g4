@@ -110,6 +110,7 @@ ss_null
         | CERTIFICATE
         | CERTIFICATE_PROFILE
         | CONTENT_PREVIEW
+        | PROFILE_GROUP
         | PROFILES
         | SERVER_PROFILE
     )
