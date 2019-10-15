@@ -394,16 +394,10 @@ public class BgpTopologyUtilsTest {
     assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
     assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(5), null);
 
-    // Listener implicitly matches initiator confed, listener shares AS with initiator
+    // One peer implicitly matches other's confed, they shares same AS
     assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(1L), new AsPair(1, 1));
-    // Listener implicitly matches initiator confed, but remote ASNs doesn't overlap local AS
+    // One peer implicitly matches other's confed, but remote ASN doesn't overlap local AS
     assertPair(1L, 3L, LongSpace.of(2L), 1L, null, LongSpace.of(1L), null);
     assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(2L), null);
-
-    // Initiator implicitly matches listener confed, initiator shares AS with listener
-    assertPair(1L, null, LongSpace.of(1L), 1L, 3L, LongSpace.of(1L), new AsPair(1, 1));
-    // Initiator implicitly matches listener confed, but remote ASNs doesn't overlap local AS
-    assertPair(1L, null, LongSpace.of(2L), 1L, 3L, LongSpace.of(1L), null);
-    assertPair(1L, null, LongSpace.of(1L), 1L, 3L, LongSpace.of(2L), null);
   }
 }
