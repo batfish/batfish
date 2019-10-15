@@ -442,5 +442,9 @@ public class BgpTopologyUtilsTest {
     // One peer implicitly matches other's confed, but remote ASN doesn't overlap local AS
     assertPair(1L, 3L, LongSpace.of(2L), 1L, null, LongSpace.of(1L), null);
     assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(2L), null);
+
+    // Compatible when ignoring confederations, but incompatible because non-matching confederations
+    // are present
+    assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(1), null);
   }
 }
