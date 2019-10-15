@@ -289,6 +289,11 @@ DESTINATION
     'destination'
 ;
 
+DESTINATION_TRANSLATION
+:
+    'destination-translation'
+;
+
 DETERMINISTIC_MED_COMPARISON
 :
     'deterministic-med-comparison'
@@ -347,6 +352,11 @@ DROP
 DYNAMIC
 :
     'dynamic'
+;
+
+DYNAMIC_IP_AND_PORT
+:
+    'dynamic-ip-and-port'
 ;
 
 EBGP
@@ -687,6 +697,11 @@ MGT_CONFIG
 MTU
 :
     'mtu'
+;
+
+NAT
+:
+    'nat'
 ;
 
 NDP_PROXY
@@ -1089,6 +1104,11 @@ SOURCE_PORT
     'source-port'
 ;
 
+SOURCE_TRANSLATION
+:
+    'source-translation'
+;
+
 SOURCE_USER
 :
     'source-user'
@@ -1182,6 +1202,11 @@ TRANSFERS_FILES
 TRANSIT_DELAY
 :
     'transit-delay'
+;
+
+TRANSLATED_ADDRESS
+:
+    'translated-address'
 ;
 
 TUNNEL

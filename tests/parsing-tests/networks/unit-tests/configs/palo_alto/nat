@@ -1,0 +1,46 @@
+!RANCID-CONTENT-TYPE: paloalto
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "paloalto_nat";
+        }
+      }
+    }
+  }
+}
+policy {
+  panorama {
+    post-rulebase {
+      nat {
+        rules {
+          RULE_1 {
+            destination-translation {
+              translated-address DST_ADDRESS_NAME;
+            }
+            source-translation {
+              dynamic-ip-and-port {
+                translated-address SRC_ADDRESS_NAME;
+              }
+            }
+            to TO_ZONE;
+            from any;
+            source any;
+            destination any;
+          }
+          RULE_2 {
+            from FROM_ZONE;
+            source SRC_NAME;
+            destination DST_NAME;
+          }
+          RULE_3 {
+            from [ FROM_1 FROM_2 ];
+            source [ SRC_1 SRC_2];
+            destination [ DST_1 DST_2];
+          }
+        }
+      }
+    }
+  }
+}
