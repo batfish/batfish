@@ -464,14 +464,14 @@ FILTER
     'filter'
 ;
 
-FQDN
-:
-    'fqdn'
-;
-
 FORMAT
 :
     'format'
+;
+
+FQDN
+:
+    'fqdn'
 ;
 
 FROM
