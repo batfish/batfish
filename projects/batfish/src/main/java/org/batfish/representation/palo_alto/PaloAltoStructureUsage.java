@@ -7,6 +7,8 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   APPLICATION_GROUP_MEMBERS("application-group members"),
   BGP_PEER_LOCAL_ADDRESS_INTERFACE("bgp peer local-address interface"),
   IMPORT_INTERFACE("import network interface"),
+  LAYER2_INTERFACE_ZONE("zone network layer2"),
+  LAYER3_INTERFACE_ZONE("zone network layer3"),
   RULE_APPLICATION("rulebase security rules application"),
   RULE_DESTINATION("rulebase security rules destination"),
   RULE_FROM_ZONE("rulebase security rules from"),
@@ -17,8 +19,10 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   SERVICE_GROUP_MEMBER("service-group members"),
   STATIC_ROUTE_INTERFACE("static-route interface"),
   STATIC_ROUTE_NEXT_VR("static-route nexthop next-vr"),
+  TAP_INTERFACE_ZONE("zone network tap"),
   VIRTUAL_ROUTER_INTERFACE("virtual-router interface"),
   VIRTUAL_ROUTER_SELF_REFERENCE("virtual-router self-reference"),
+  VIRTUAL_WIRE_INTERFACE_ZONE("zone network virtual-wire"),
   VSYS_IMPORT_INTERFACE("vsys import interface"),
   ZONE_INTERFACE("zone network layer3");
 

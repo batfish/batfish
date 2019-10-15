@@ -65,6 +65,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -111,6 +112,9 @@ import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
 import org.batfish.representation.f5_bigip.RouteMapSetIpNextHop;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
+import org.batfish.representation.f5_bigip.UpdateSource;
+import org.batfish.representation.f5_bigip.UpdateSourceInterface;
+import org.batfish.representation.f5_bigip.UpdateSourceIp;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -709,10 +713,16 @@ public final class F5BigipImishGrammarTest {
   public void testOspfExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_ospf");
 
-    assertThat(vc.getImishInterfaces(), hasKeys("vlan_active", "vlan_passive"));
+    assertThat(vc.getImishInterfaces(), hasKeys("vlan_active", "vlan_active_nbma", "vlan_passive"));
     {
       ImishInterface iface = vc.getImishInterfaces().get("vlan_active");
       assertThat(iface.getName(), equalTo("vlan_active"));
+      OspfInterface ospf = iface.getOspf();
+      assertNull(ospf);
+    }
+    {
+      ImishInterface iface = vc.getImishInterfaces().get("vlan_active_nbma");
+      assertThat(iface.getName(), equalTo("vlan_active_nbma"));
       OspfInterface ospf = iface.getOspf();
       assertNotNull(ospf);
       assertThat(ospf.getNetwork(), equalTo(OspfNetworkType.NON_BROADCAST));
@@ -731,7 +741,13 @@ public final class F5BigipImishGrammarTest {
       assertThat(
           proc.getNetworks(),
           equalTo(
-              ImmutableMap.of(Prefix.strict("10.0.1.0/30"), 0L, Prefix.strict("10.0.2.0/30"), 0L)));
+              ImmutableMap.of(
+                  Prefix.strict("10.0.1.0/30"),
+                  0L,
+                  Prefix.strict("10.0.2.0/30"),
+                  0L,
+                  Prefix.strict("10.0.3.0/30"),
+                  0L)));
       assertThat(proc.getNeighbors(), contains(Ip.parse("10.0.1.2")));
     }
   }
@@ -749,12 +765,28 @@ public final class F5BigipImishGrammarTest {
     {
       OspfArea area = proc.getAreas().get(0L);
       assertThat(
-          area.getInterfaces(), containsInAnyOrder("/Common/vlan_active", "/Common/vlan_passive"));
+          area.getInterfaces(),
+          containsInAnyOrder(
+              "/Common/vlan_active", "/Common/vlan_active_nbma", "/Common/vlan_passive"));
     }
 
-    assertThat(c.getAllInterfaces(), hasKeys("/Common/vlan_active", "/Common/vlan_passive"));
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys("/Common/vlan_active", "/Common/vlan_active_nbma", "/Common/vlan_passive"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_active");
+      OspfInterfaceSettings ospf = iface.getOspfSettings();
+      assertNotNull(ospf);
+      assertTrue(ospf.getEnabled());
+      assertThat(ospf.getAreaName(), equalTo(0L));
+      assertThat(
+          ospf.getNetworkType(), equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
+      assertFalse(ospf.getPassive());
+      assertThat(ospf.getHelloInterval(), equalTo(10));
+      assertThat(ospf.getDeadInterval(), equalTo(40));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_active_nbma");
       OspfInterfaceSettings ospf = iface.getOspfSettings();
       assertNotNull(ospf);
       assertTrue(ospf.getEnabled());
@@ -763,6 +795,8 @@ public final class F5BigipImishGrammarTest {
           ospf.getNetworkType(),
           equalTo(org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS));
       assertFalse(ospf.getPassive());
+      assertThat(ospf.getHelloInterval(), equalTo(30));
+      assertThat(ospf.getDeadInterval(), equalTo(120));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_passive");
@@ -1042,6 +1076,49 @@ public final class F5BigipImishGrammarTest {
   public void testBgpNeighborNull() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_neighbor_null");
     assertNotNull(vc);
+  }
+
+  @Test
+  public void testBgpNeighborUpdateSourceExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_neighbor_update_source");
+    assertNotNull(vc.getBgpProcesses().get("65001"));
+    assertNotNull(vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.1.10"));
+    UpdateSource updateSource =
+        vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.1.10").getUpdateSource();
+    assertThat(updateSource, instanceOf(UpdateSourceIp.class));
+    assertThat(((UpdateSourceIp) updateSource).getIp(), equalTo(Ip.parse("10.0.1.1")));
+
+    assertNotNull(vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.2.10"));
+    updateSource =
+        vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.2.10").getUpdateSource();
+    assertThat(updateSource, instanceOf(UpdateSourceInterface.class));
+    assertThat(((UpdateSourceInterface) updateSource).getName(), equalTo("vlan1"));
+  }
+
+  @Test
+  public void testBgpNeighborUpdateSourceConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_neighbor_update_source");
+    BgpActivePeerConfig peer1 =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.1.10/32"));
+    assertNotNull(peer1);
+    assertThat(peer1.getLocalIp(), equalTo(Ip.parse("10.0.1.1")));
+
+    BgpActivePeerConfig peer2 =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.2.10/32"));
+    assertNotNull(peer2);
+    assertThat(peer2.getLocalIp(), equalTo(Ip.parse("10.0.2.1")));
+
+    BgpActivePeerConfig peer3 =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.3.10/32"));
+    assertNotNull(peer3);
+    // cannot infer a local IP for this neighbor since no interface in this subnet
+    assertNull(peer3.getLocalIp());
+
+    BgpActivePeerConfig peer4 =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.4.10/32"));
+    assertNotNull(peer4);
+    // get the default IP (i.e., an interface address in the same subnet)
+    assertThat(peer4.getLocalIp(), equalTo(Ip.parse("10.0.4.1")));
   }
 
   private @Nonnull IpAccessListToBdd toBDD() {

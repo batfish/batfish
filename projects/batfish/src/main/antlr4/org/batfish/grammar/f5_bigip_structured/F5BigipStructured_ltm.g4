@@ -200,7 +200,8 @@ l_persistence
 :
   PERSISTENCE
   (
-    lper_source_addr
+    lper_cookie
+    | lper_source_addr
     | lper_ssl
     | unrecognized
   )
@@ -210,6 +211,32 @@ lper_null
 :
   (
     APP_SERVICE
+  ) ignored
+;
+
+lper_cookie
+:
+  COOKIE name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lper_cookie_defaults_from
+      | lper_cookie_null
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lper_cookie_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lper_cookie_null
+:
+  (
+    APP_SERVICE
+    | EXPIRATION
   ) ignored
 ;
 
