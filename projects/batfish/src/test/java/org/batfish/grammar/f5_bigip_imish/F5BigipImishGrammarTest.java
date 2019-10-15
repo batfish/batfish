@@ -66,6 +66,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -86,6 +87,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
@@ -364,6 +366,36 @@ public final class F5BigipImishGrammarTest {
     assertThat(vc.getBgpProcesses().get("65001").getConfederation().getId(), equalTo(65010L));
     assertThat(
         vc.getBgpProcesses().get("65001").getConfederation().getPeers(), contains(65012L, 65013L));
+  }
+
+  @Test
+  public void testBgpConfederationConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_confederation");
+    BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
+    assertThat(
+        bgpProcess.getConfederation(),
+        equalTo(new BgpConfederation(65010, ImmutableSet.of(65012L, 65013L))));
+    {
+      BgpActivePeerConfig neighbor =
+          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.10/32"));
+      assertNotNull(neighbor);
+      assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
+      assertThat(neighbor.getLocalAs(), equalTo(65001L));
+    }
+    {
+      BgpActivePeerConfig neighbor =
+          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.2/32"));
+      assertNotNull(neighbor);
+      assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
+      assertThat(neighbor.getLocalAs(), equalTo(65001L));
+    }
+    {
+      BgpActivePeerConfig neighbor =
+          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.3/32"));
+      assertNotNull(neighbor);
+      assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
+      assertThat(neighbor.getLocalAs(), equalTo(65001L));
+    }
   }
 
   @Test
