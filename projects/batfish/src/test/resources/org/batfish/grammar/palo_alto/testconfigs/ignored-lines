@@ -10,6 +10,7 @@ set config shared service
 set config shared service-group
 set config shared content-preview application amazon-music-streaming category media
 set config shared profiles custom-url-category NAME description foo
+set config shared log-settings system critical send-email
 #
 set deviceconfig system type static
 set deviceconfig system update-server updates.paloaltonetworks.com

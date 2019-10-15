@@ -12,6 +12,7 @@ s_log_settings
     (
         sl_profiles
         | sl_syslog
+        | sl_system
     )
 ;
 
@@ -26,6 +27,11 @@ sl_syslog
     (
         sls_server
     )
+;
+
+sl_system
+:
+    SYSTEM null_rest_of_line
 ;
 
 sls_server
