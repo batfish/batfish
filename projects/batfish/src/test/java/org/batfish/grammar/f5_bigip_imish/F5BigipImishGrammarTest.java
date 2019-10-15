@@ -373,10 +373,9 @@ public final class F5BigipImishGrammarTest {
       Environment env =
           Environment.builder(c).setDirection(Direction.OUT).setOriginalRoute(bgpRoute).build();
 
-      assertTrue(exportPolicy.call(env).getBooleanValue());
+      exportPolicy.call(env);
+      assertTrue(env.getSuppressed());
     }
-
-    return;
   }
 
   @Test

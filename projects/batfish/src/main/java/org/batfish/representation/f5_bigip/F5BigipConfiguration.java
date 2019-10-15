@@ -1389,6 +1389,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
 
     // distribute aggregate routes
+    // TODO: handle as-set
     for (Entry<Prefix, AggregateAddress> e : proc.getAggregateAddresses().entrySet()) {
       Prefix prefix = e.getKey();
 
