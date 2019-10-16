@@ -3,6 +3,7 @@ package org.batfish.common.runtime;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -99,5 +100,15 @@ public final class InterfaceRuntimeData {
   @Override
   public int hashCode() {
     return Objects.hash(_bandwidth, _lineUp, _speed);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .omitNullValues()
+        .add(PROP_BANDWIDTH, _bandwidth)
+        .add(PROP_LINE_UP, _lineUp)
+        .add(PROP_SPEED, _speed)
+        .toString();
   }
 }
