@@ -338,7 +338,7 @@ bgprrg_enable
 
 bgprrg_route_table
 :
-    ROUTING_TABLE (BOTH | MULTICAST | UNICAST)
+    ROUTE_TABLE (BOTH | MULTICAST | UNICAST)
 ;
 
 
