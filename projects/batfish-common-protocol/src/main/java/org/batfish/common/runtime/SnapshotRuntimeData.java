@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -177,5 +178,10 @@ public final class SnapshotRuntimeData {
   @Override
   public int hashCode() {
     return Objects.hash(_runtimeData);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("runtimeData", _runtimeData).toString();
   }
 }
