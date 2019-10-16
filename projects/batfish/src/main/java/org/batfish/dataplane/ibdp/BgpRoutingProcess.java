@@ -644,7 +644,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpPeerConfigId ourConfigId = edge.head();
     BgpPeerConfig ourBgpConfig = nc.getBgpPeerConfig(ourConfigId);
     assert ourBgpConfig != null; // because the edge exists
-    assert ourBgpConfig.getLocalAs() != null;
     assert ourBgpConfig.getEvpnAddressFamily() != null;
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     BgpSessionProperties sessionProperties = getSessionProperties(_topology, edge);
@@ -657,7 +656,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       B transformedBuilder =
           transformBgpRouteOnImport(
               route,
-              ourBgpConfig.getLocalAs(),
+              sessionProperties.getHeadAs(),
               ourBgpConfig
                   .getEvpnAddressFamily()
                   .getAddressFamilyCapabilities()
