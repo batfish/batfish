@@ -2,7 +2,6 @@ package org.batfish.datamodel.ospf;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ImmutableValueGraph;
@@ -91,7 +90,8 @@ public final class OspfTopologyUtils {
       for (Entry<String, Vrf> vrfEntry : config.getVrfs().entrySet()) {
         Vrf vrf = vrfEntry.getValue();
         for (OspfProcess proc : vrf.getOspfProcesses().values()) {
-          Builder<String, OspfNeighborConfig> neighborMap = ImmutableMap.builder();
+          ImmutableMap.Builder<OspfNeighborConfigId, OspfNeighborConfig> neighborsById =
+              ImmutableMap.builder();
 
           // Iterate over all OSPF areas
           for (Entry<Long, OspfArea> ospfAreaEntry : proc.getAreas().entrySet()) {
@@ -100,28 +100,38 @@ public final class OspfTopologyUtils {
             // All interfaces in this area
             for (String ifaceName : area.getInterfaces()) {
               Interface iface = config.getAllInterfaces().get(ifaceName);
-              // only checking and adding the concrete (primary) address of iface
-              // TODO: check if secondary addresses also participate in OSPF neighbor relationships
-              if (iface.getConcreteAddress() == null) {
-                continue;
-              }
+
               // Skip any interface without OSPF settings
               if (iface.getOspfSettings() == null) {
                 continue;
               }
-              neighborMap.put(
-                  ifaceName,
-                  OspfNeighborConfig.builder()
-                      .setArea(area.getAreaNumber())
-                      .setHostname(config.getHostname())
-                      .setInterfaceName(ifaceName)
-                      .setIp(iface.getConcreteAddress().getIp())
-                      .setVrfName(vrf.getName())
-                      .setPassive(iface.getOspfPassive())
-                      .build());
+              String hostname = config.getHostname();
+              String vrfName = vrf.getName();
+              iface
+                  .getAllConcreteAddresses()
+                  .forEach(
+                      concreteAddress -> {
+                        OspfNeighborConfigId id =
+                            new OspfNeighborConfigId(
+                                hostname,
+                                vrfName,
+                                iface.getOspfProcess(),
+                                ifaceName,
+                                concreteAddress);
+                        neighborsById.put(
+                            id,
+                            OspfNeighborConfig.builder()
+                                .setArea(area.getAreaNumber())
+                                .setHostname(hostname)
+                                .setInterfaceName(ifaceName)
+                                .setIp(concreteAddress.getIp())
+                                .setVrfName(vrfName)
+                                .setPassive(iface.getOspfPassive())
+                                .build());
+                      });
             }
           }
-          proc.setOspfNeighborConfigs(neighborMap.build());
+          proc.setOspfNeighborConfigs(neighborsById.build());
         }
       }
     }
@@ -138,28 +148,24 @@ public final class OspfTopologyUtils {
       for (Entry<String, Vrf> vrfEntry : config.getVrfs().entrySet()) {
         Vrf vrf = vrfEntry.getValue();
         for (OspfProcess proc : vrf.getOspfProcesses().values()) {
-          for (OspfNeighborConfig neighbor : proc.getOspfNeighborConfigs().values()) {
-            if (neighbor.isPassive()) {
-              continue;
-            }
-
-            // Check if the interface is up
-            Optional<Interface> iface =
-                configurations.getInterface(config.getHostname(), neighbor.getInterfaceName());
-            if (!iface.isPresent()) {
-              continue;
-            }
-            if (!iface.get().getActive()) {
-              continue;
-            }
-
-            graph.addNode(
-                new OspfNeighborConfigId(
-                    config.getHostname(),
-                    vrf.getName(),
-                    proc.getProcessId(),
-                    iface.get().getName()));
-          }
+          proc.getOspfNeighborConfigs()
+              .forEach(
+                  (neighborId, neighbor) -> {
+                    if (neighbor.isPassive()) {
+                      return;
+                    }
+                    // Check if the interface is up
+                    Optional<Interface> iface =
+                        configurations.getInterface(
+                            config.getHostname(), neighbor.getInterfaceName());
+                    if (!iface.isPresent()) {
+                      return;
+                    }
+                    if (!iface.get().getActive()) {
+                      return;
+                    }
+                    graph.addNode(neighborId);
+                  });
         }
       }
     }
@@ -186,17 +192,27 @@ public final class OspfTopologyUtils {
           continue;
         }
 
-        OspfNeighborConfigId remoteConfigId =
-            new OspfNeighborConfigId(
-                remoteNodeInterface.getHostname(),
-                remoteInterface.getVrfName(),
-                remoteInterface.getOspfProcess(),
-                remoteNodeInterface.getInterface());
-        OspfSessionStatus status =
-            getSessionStatus(configId, remoteConfigId, networkConfigurations);
-        if (status != OspfSessionStatus.NO_SESSION) {
-          graph.putEdgeValue(configId, remoteConfigId, status);
-        }
+        networkConfigurations
+            .getOspfNeighborConfigs(
+                remoteNodeInterface.getHostname(), remoteNodeInterface.getInterface())
+            .get()
+            .forEach(
+                remoteConfigId -> {
+                  if (configId.getAddress().getIp().equals(remoteConfigId.getAddress().getIp())) {
+                    return;
+                  }
+                  if (!configId
+                      .getAddress()
+                      .getPrefix()
+                      .equals(remoteConfigId.getAddress().getPrefix())) {
+                    return;
+                  }
+                  OspfSessionStatus status =
+                      getSessionStatus(configId, remoteConfigId, networkConfigurations);
+                  if (status != OspfSessionStatus.NO_SESSION) {
+                    graph.putEdgeValue(configId, remoteConfigId, status);
+                  }
+                });
       }
     }
   }

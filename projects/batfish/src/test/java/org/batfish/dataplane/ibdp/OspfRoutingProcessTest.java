@@ -95,6 +95,10 @@ public class OspfRoutingProcessTest {
       ConcreteInterfaceAddress.parse("1.1.1.1/24");
   private static final ConcreteInterfaceAddress ACTIVE_ADDR_1 =
       ConcreteInterfaceAddress.parse("2.2.2.2/24");
+  private static final ConcreteInterfaceAddress ACTIVE_ADDR_1_NEIGHBOR =
+      ConcreteInterfaceAddress.parse("2.2.2.3/24");
+  private static final ConcreteInterfaceAddress ACTIVE_ADDR_1_NEIGHBOR2 =
+      ConcreteInterfaceAddress.parse("2.2.2.4/24");
   private static final ConcreteInterfaceAddress ACTIVE_ADDR_2 =
       ConcreteInterfaceAddress.parse("3.3.3.3/24");
   private static final ConcreteInterfaceAddress PASSIVE_ADDR =
@@ -183,6 +187,9 @@ public class OspfRoutingProcessTest {
 
     OspfArea area1Config = OspfArea.builder().setNumber(1).build();
 
+    OspfNeighborConfigId id =
+        new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
+
     OspfProcess ospfProcess =
         nf.ospfProcessBuilder()
             .setProcessId("1")
@@ -193,7 +200,7 @@ public class OspfRoutingProcessTest {
             .setAdminCosts(ADMIN_COSTS)
             .setNeighborConfigs(
                 ImmutableMap.of(
-                    ACTIVE_IFACE_NAME,
+                    id,
                     OspfNeighborConfig.builder()
                         .setHostname(HOSTNAME)
                         .setVrfName(VRF_NAME)
@@ -208,19 +215,21 @@ public class OspfRoutingProcessTest {
   private static OspfTopology nonEmptyOspfTopology() {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().build();
-    OspfNeighborConfigId c1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
-    OspfNeighborConfigId c2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
+    OspfNeighborConfigId c1 =
+        new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
+    OspfNeighborConfigId c2 =
+        new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface", ACTIVE_ADDR_1_NEIGHBOR);
     // Add edges both directions
     graph.putEdgeValue(
         c1,
         c2,
         new OspfSessionProperties(
-            0L, new IpLink(ACTIVE_ADDR_1.getIp(), Ip.create(ACTIVE_ADDR_1.getIp().asLong() + 1))));
+            0L, new IpLink(ACTIVE_ADDR_1.getIp(), ACTIVE_ADDR_1_NEIGHBOR.getIp())));
     graph.putEdgeValue(
         c2,
         c1,
         new OspfSessionProperties(
-            0L, new IpLink(Ip.create(ACTIVE_ADDR_1.getIp().asLong() + 1), ACTIVE_ADDR_1.getIp())));
+            0L, new IpLink(ACTIVE_ADDR_1_NEIGHBOR.getIp(), ACTIVE_ADDR_1.getIp())));
     return new OspfTopology(graph);
   }
 
@@ -238,7 +247,7 @@ public class OspfRoutingProcessTest {
         nf.interfaceBuilder()
             .setOwner(c)
             .setVrf(vrf)
-            .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
+            .setAddress(ACTIVE_ADDR_1)
             .setOspfSettings(
                 OspfInterfaceSettings.defaultSettingsBuilder()
                     .setInboundDistributeListPolicy("policy")
@@ -250,9 +259,9 @@ public class OspfRoutingProcessTest {
             "prefix_list",
             ImmutableList.of(
                 new RouteFilterLine(
-                    LineAction.PERMIT, PrefixRange.fromPrefix(Prefix.parse("2.2.2.0/24"))),
+                    LineAction.PERMIT, PrefixRange.fromPrefix(ACTIVE_ADDR_2.getPrefix())),
                 new RouteFilterLine(
-                    LineAction.DENY, PrefixRange.fromPrefix(Prefix.parse("1.1.1.0/24")))));
+                    LineAction.DENY, PrefixRange.fromPrefix(ACTIVE_ADDR_1.getPrefix()))));
     c.getRouteFilterLists().put(prefixList.getName(), prefixList);
 
     nf.routingPolicyBuilder()
@@ -268,10 +277,10 @@ public class OspfRoutingProcessTest {
         .build();
 
     OspfIntraAreaRoute.Builder allowedRouteBuilder =
-        OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L);
+        OspfIntraAreaRoute.builder().setNetwork(ACTIVE_ADDR_2.getPrefix()).setArea(1L);
 
     OspfIntraAreaRoute.Builder deniedRouteBuilder =
-        OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L);
+        OspfIntraAreaRoute.builder().setNetwork(ACTIVE_ADDR_1.getPrefix()).setArea(1L);
 
     applyDistributeList(c, vrf.getName(), i1.getName(), allowedRouteBuilder);
 
@@ -419,9 +428,11 @@ public class OspfRoutingProcessTest {
             .setStubType(StubType.STUB)
             .setStubSettings(StubSettings.builder().build())
             .build();
-    Ip nextHopIp = Ip.parse("1.1.1.1");
-    OspfNeighborConfigId n1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
+    Ip nextHopIp = ACTIVE_ADDR_1.getIp();
+    OspfNeighborConfigId n1 =
+        new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
+    OspfNeighborConfigId n2 =
+        new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface", ACTIVE_ADDR_1_NEIGHBOR);
     EdgeId edge = OspfTopology.makeEdge(n1, n2);
 
     // First call allows injection of default route
@@ -443,7 +454,8 @@ public class OspfRoutingProcessTest {
     }
 
     // For a edge with a different tail node, we still get a default route
-    OspfNeighborConfigId n3 = new OspfNeighborConfigId("r3", VRF_NAME, "1", "someIface");
+    OspfNeighborConfigId n3 =
+        new OspfNeighborConfigId("r3", VRF_NAME, "1", "someIface", ACTIVE_ADDR_1_NEIGHBOR2);
     edge = OspfTopology.makeEdge(n3, n2);
     assertThat(
         _routingProcess
@@ -458,8 +470,10 @@ public class OspfRoutingProcessTest {
   @Test
   public void testUpdateTopology() {
     _routingProcess.updateTopology(nonEmptyOspfTopology());
-    OspfNeighborConfigId n1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
+    OspfNeighborConfigId n1 =
+        new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
+    OspfNeighborConfigId n2 =
+        new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface", ACTIVE_ADDR_1_NEIGHBOR);
 
     // Both of these should not crash because new message queues exist now
     _routingProcess.enqueueMessagesIntra(OspfTopology.makeEdge(n2, n1), Stream.of());
@@ -469,8 +483,10 @@ public class OspfRoutingProcessTest {
   @Test
   public void updateTopologyIsNonDestructive() {
     _routingProcess.updateTopology(nonEmptyOspfTopology());
-    OspfNeighborConfigId n1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
+    OspfNeighborConfigId n1 =
+        new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
+    OspfNeighborConfigId n2 =
+        new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface", ACTIVE_ADDR_1_NEIGHBOR);
     _routingProcess.enqueueMessagesIntra(
         OspfTopology.makeEdge(n2, n1),
         Stream.of(

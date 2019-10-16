@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -27,9 +28,11 @@ import org.junit.Test;
 public class OspfTopologyUtilsTest {
 
   private static final OspfNeighborConfigId LOCAL_CONFIG_ID =
-      new OspfNeighborConfigId("r1", "vrf1", "proc1", "iface1");
+      new OspfNeighborConfigId(
+          "r1", "vrf1", "proc1", "iface1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
   private static final OspfNeighborConfigId REMOTE_CONFIG_ID =
-      new OspfNeighborConfigId("r2", "vrf2", "proc2", "iface2");
+      new OspfNeighborConfigId(
+          "r2", "vrf2", "proc2", "iface2", ConcreteInterfaceAddress.parse("192.0.2.1/31"));
 
   private static NetworkConfigurations buildNetworkConfigurations(Ip localIp, Ip remoteIp) {
     return buildNetworkConfigurations(
@@ -236,7 +239,12 @@ public class OspfTopologyUtilsTest {
                 .setReferenceBandwidth(7.0)
                 .setNeighborConfigs(
                     ImmutableMap.of(
-                        ifaceName,
+                        new OspfNeighborConfigId(
+                            hostname,
+                            vrfName,
+                            procName,
+                            ifaceName,
+                            ConcreteInterfaceAddress.create(ospfNeighborIp, 31)),
                         OspfNeighborConfig.builder()
                             .setVrfName(vrfName)
                             .setInterfaceName(ifaceName)
@@ -277,7 +285,12 @@ public class OspfTopologyUtilsTest {
                 .setReferenceBandwidth(7.0)
                 .setNeighborConfigs(
                     ImmutableMap.of(
-                        ifaceName,
+                        new OspfNeighborConfigId(
+                            hostname,
+                            vrfName,
+                            procName,
+                            ifaceName,
+                            ConcreteInterfaceAddress.create(ospfNeighborIp, 31)),
                         OspfNeighborConfig.builder()
                             .setVrfName(vrfName)
                             .setInterfaceName(ifaceName)
@@ -301,14 +314,20 @@ public class OspfTopologyUtilsTest {
     // Setup
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    OspfNeighborConfigId n1 = new OspfNeighborConfigId("h1", "v", "p", "i");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "v", "p", "i");
-    OspfNeighborConfigId n3 = new OspfNeighborConfigId("h3", "v", "p", "i");
+    OspfNeighborConfigId n1 =
+        new OspfNeighborConfigId(
+            "h1", "v", "p", "i", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
+    OspfNeighborConfigId n2 =
+        new OspfNeighborConfigId(
+            "h2", "v", "p", "i", ConcreteInterfaceAddress.parse("192.0.2.1/31"));
+    OspfNeighborConfigId n3 =
+        new OspfNeighborConfigId(
+            "h3", "v", "p", "i", ConcreteInterfaceAddress.parse("192.0.2.2/31"));
     graph.addNode(n1);
     graph.addNode(n2);
     graph.addNode(n3);
     // n1 <--> n2. Link values (IPs) don't matter
-    Ip ip = Ip.parse("1.1.1.1");
+    Ip ip = Ip.parse("192.0.2.0");
     OspfSessionProperties s = new OspfSessionProperties(0, new IpLink(ip, ip));
     graph.putEdgeValue(n1, n2, s);
     graph.putEdgeValue(n2, n1, s);
@@ -327,7 +346,7 @@ public class OspfTopologyUtilsTest {
   @Test
   public void testGetSessionStatusCompatible() {
     NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"));
+        buildNetworkConfigurations(Ip.parse("192.0.2.0"), Ip.parse("192.0.2.1"));
 
     // Confirm we correctly identify compatible sessions
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
@@ -337,7 +356,7 @@ public class OspfTopologyUtilsTest {
   @Test
   public void testGetSessionStatusMismatchArea() {
     NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), 0L, Ip.parse("1.1.1.2"), 1L);
+        buildNetworkConfigurations(Ip.parse("192.0.2.0"), 0L, Ip.parse("192.0.2.1"), 1L);
 
     // Confirm we correctly mark a session as incompatible when neighbor areas are not equal
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
@@ -348,7 +367,7 @@ public class OspfTopologyUtilsTest {
   public void testGetSessionStatusMismatchAreaType() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
-            Ip.parse("1.1.1.1"), StubType.STUB, Ip.parse("1.1.1.2"), StubType.NONE);
+            Ip.parse("192.0.2.0"), StubType.STUB, Ip.parse("192.0.2.1"), StubType.NONE);
 
     // Confirm we correctly mark a session as incompatible when neighbor area types do not match
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
@@ -358,9 +377,10 @@ public class OspfTopologyUtilsTest {
   @Test
   public void testGetSessionStatusMissingProcess() {
     NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"));
+        buildNetworkConfigurations(Ip.parse("192.0.2.0"), Ip.parse("192.0.2.1"));
     OspfNeighborConfigId bogusProcConfigId =
-        new OspfNeighborConfigId("r2", "vrf2", "bogusProc", "iface2");
+        new OspfNeighborConfigId(
+            "r2", "vrf2", "bogusProc", "iface2", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
 
     // No process configured for the remote should result in process missing/misconfigured status
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, bogusProcConfigId, configs);
@@ -369,8 +389,8 @@ public class OspfTopologyUtilsTest {
 
   @Test
   public void testGetSessionStatusMissingArea() {
-    Ip localIp = Ip.parse("1.1.1.1");
-    Ip remoteIp = Ip.parse("1.1.1.2");
+    Ip localIp = Ip.parse("192.0.2.0");
+    Ip remoteIp = Ip.parse("192.0.2.1");
     NetworkConfigurations configs =
         NetworkConfigurations.of(
             ImmutableMap.of(
@@ -391,7 +411,7 @@ public class OspfTopologyUtilsTest {
   @Test
   public void testGetSessionStatusMtuMismatch() {
     NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), 1234, Ip.parse("1.1.1.2"), 1500);
+        buildNetworkConfigurations(Ip.parse("192.0.2.0"), 1234, Ip.parse("192.0.2.1"), 1500);
 
     // Confirm we correctly mark a session as incompatible when interfaces has mismatched MTU
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
@@ -402,9 +422,9 @@ public class OspfTopologyUtilsTest {
   public void testGetSessionStatusDeadIntervalMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
-            Ip.parse("1.1.1.1"),
+            Ip.parse("192.0.2.0"),
             OspfInterfaceSettings.defaultSettingsBuilder().setDeadInterval(44).build(),
-            Ip.parse("1.1.1.2"),
+            Ip.parse("192.0.2.1"),
             OspfInterfaceSettings.defaultSettingsBuilder().setDeadInterval(40).build());
 
     // Confirm we correctly mark a session as incompatible when OSPF dead intervals are mismatched
@@ -416,9 +436,9 @@ public class OspfTopologyUtilsTest {
   public void testGetSessionStatusHelloIntervalMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
-            Ip.parse("1.1.1.1"),
+            Ip.parse("192.0.2.0"),
             OspfInterfaceSettings.defaultSettingsBuilder().setHelloInterval(11).build(),
-            Ip.parse("1.1.1.2"),
+            Ip.parse("192.0.2.1"),
             OspfInterfaceSettings.defaultSettingsBuilder().setHelloInterval(10).build());
 
     // Confirm we correctly mark a session as incompatible when OSPF hello intervals are mismatched
@@ -430,11 +450,11 @@ public class OspfTopologyUtilsTest {
   public void testGetSessionStatusNetworkTypeMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
-            Ip.parse("1.1.1.1"),
+            Ip.parse("192.0.2.0"),
             OspfInterfaceSettings.defaultSettingsBuilder()
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .build(),
-            Ip.parse("1.1.1.2"),
+            Ip.parse("192.0.2.1"),
             OspfInterfaceSettings.defaultSettingsBuilder()
                 .setNetworkType(OspfNetworkType.BROADCAST)
                 .build());
@@ -447,7 +467,7 @@ public class OspfTopologyUtilsTest {
   @Test
   public void testGetSessionStatusPassiveMismatch() {
     NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), true, Ip.parse("1.1.1.2"), false);
+        buildNetworkConfigurations(Ip.parse("192.0.2.0"), true, Ip.parse("192.0.2.1"), false);
 
     // Confirm we correctly mark a session as incompatible when one of the interfaces is passive
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
@@ -457,7 +477,7 @@ public class OspfTopologyUtilsTest {
   @Test
   public void testGetSessionStatusBothPassive() {
     NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), true, Ip.parse("1.1.1.2"), true);
+        buildNetworkConfigurations(Ip.parse("192.0.2.0"), true, Ip.parse("192.0.2.1"), true);
 
     // Confirm we indicate there is no session when both OSPF peers are passive
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
@@ -466,9 +486,10 @@ public class OspfTopologyUtilsTest {
 
   @Test
   public void testGetSessionStatusDuplicateRouterId() {
-    Ip routerId = Ip.parse("1.1.1.1");
+    Ip routerId = Ip.parse("192.0.2.0");
     NetworkConfigurations configs =
-        buildNetworkConfigurations(Ip.parse("1.1.1.1"), routerId, Ip.parse("1.1.1.2"), routerId);
+        buildNetworkConfigurations(
+            Ip.parse("192.0.2.0"), routerId, Ip.parse("192.0.2.1"), routerId);
 
     // Confirm we mark a session as incompatible when routerId is the same for both neighbors
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
