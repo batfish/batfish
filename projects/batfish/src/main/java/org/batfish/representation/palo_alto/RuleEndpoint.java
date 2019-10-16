@@ -1,8 +1,8 @@
 package org.batfish.representation.palo_alto;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /** PAN datamodel component containing the source or destination of a rule */
@@ -51,11 +51,11 @@ public final class RuleEndpoint implements Serializable {
       return false;
     }
     RuleEndpoint o = (RuleEndpoint) obj;
-    return _type == o._type && Objects.equal(_value, o._value);
+    return _type == o._type && Objects.equals(_value, o._value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_type.ordinal(), _value);
+    return Objects.hash(_type.ordinal(), _value);
   }
 }
