@@ -324,8 +324,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (ctx.summary_only != null) {
       a.setSummaryOnly(true);
     }
-    // TODO: conversion
-    todo(ctx);
   }
 
   @Override
@@ -402,7 +400,20 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRbr_connected(Rbr_connectedContext ctx) {
-    todo(ctx);
+    String routeMapName = null;
+    if (ctx.rm != null) {
+      routeMapName = ctx.rm.getText();
+      _c.referenceStructure(
+          F5BigipStructureType.ROUTE_MAP,
+          routeMapName,
+          F5BigipStructureUsage.BGP_REDISTRIBUTE_CONNECTED_ROUTE_MAP,
+          ctx.rm.getStart().getLine());
+    }
+    _currentBgpProcess
+        .getIpv4AddressFamily()
+        .getRedistributionPolicies()
+        .computeIfAbsent(F5BigipRoutingProtocol.CONNECTED, BgpRedistributionPolicy::new)
+        .setRouteMap(routeMapName);
   }
 
   @Override

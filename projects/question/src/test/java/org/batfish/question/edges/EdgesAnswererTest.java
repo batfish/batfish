@@ -421,7 +421,7 @@ public class EdgesAnswererTest {
             ImmutableSortedSet.of(
                 Edge.of("host1", "int1", "host2", "int2"),
                 Edge.of("host2", "int2", "host1", "int1")));
-    Multiset<Row> rows =
+    List<Row> rows =
         getOspfEdges(
             _configurations,
             _includeNodes,

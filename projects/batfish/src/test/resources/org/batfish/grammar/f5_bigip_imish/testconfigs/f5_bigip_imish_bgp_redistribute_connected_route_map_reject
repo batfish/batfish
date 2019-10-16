@@ -1,14 +1,16 @@
 #TMSH-VERSION: 13.1.1
 
 sys global-settings {
-    hostname f5_bigip_imish_bgp_redistribute_connected_no_route_map
+    hostname f5_bigip_imish_bgp_redistribute_connected_route_map_reject
 }
 
 !
 !!! imish configuration starts here
 !
+route-map rm1 deny 10
+!
 router bgp 1
- redistribute connected
+ redistribute connected route-map rm1
  neighbor 192.0.2.2 remote-as 2
 !
 end

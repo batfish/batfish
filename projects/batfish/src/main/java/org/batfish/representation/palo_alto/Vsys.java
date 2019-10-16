@@ -173,7 +173,17 @@ public final class Vsys implements Serializable {
   /** Returns a list of all syslog server addresses. */
   SortedSet<String> getSyslogServerAddresses() {
     SortedSet<String> servers = new TreeSet<>();
-    _syslogServerGroups.values().forEach(g -> g.values().forEach(s -> servers.add(s.getAddress())));
+    _syslogServerGroups
+        .values()
+        .forEach(
+            g ->
+                g.values()
+                    .forEach(
+                        s -> {
+                          if (s.getAddress() != null) {
+                            servers.add(s.getAddress());
+                          }
+                        }));
     return servers;
   }
 

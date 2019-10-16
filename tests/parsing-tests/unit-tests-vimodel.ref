@@ -2627,16 +2627,6 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "blah" : {
-                    "area" : 0,
-                    "hostname" : "asa_ospf",
-                    "interface" : "blah",
-                    "ip" : "192.168.1.0",
-                    "passive" : false,
-                    "vrf" : "default"
-                  }
-                },
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "192.168.1.0",
@@ -10776,16 +10766,6 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "Ethernet0/0" : {
-                    "area" : 0,
-                    "hostname" : "cisco_ospf",
-                    "interface" : "Ethernet0/0",
-                    "ip" : "3.3.3.0",
-                    "passive" : false,
-                    "vrf" : "default"
-                  }
-                },
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
@@ -11081,16 +11061,6 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "Ethernet0/0" : {
-                    "area" : 0,
-                    "hostname" : "cisco_ospf_multi_process",
-                    "interface" : "Ethernet0/0",
-                    "ip" : "2.2.2.0",
-                    "passive" : false,
-                    "vrf" : "default"
-                  }
-                },
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
@@ -11140,16 +11110,6 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "Ethernet1/0" : {
-                    "area" : 0,
-                    "hostname" : "cisco_ospf_multi_process",
-                    "interface" : "Ethernet1/0",
-                    "ip" : "3.3.3.0",
-                    "passive" : false,
-                    "vrf" : "default"
-                  }
-                },
                 "processId" : "ignored",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
@@ -19118,24 +19078,6 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "Ethernet0" : {
-                    "area" : 0,
-                    "hostname" : "host2",
-                    "interface" : "Ethernet0",
-                    "ip" : "2.130.0.1",
-                    "passive" : false,
-                    "vrf" : "default"
-                  },
-                  "Ethernet1" : {
-                    "area" : 0,
-                    "hostname" : "host2",
-                    "interface" : "Ethernet1",
-                    "ip" : "2.131.0.1",
-                    "passive" : false,
-                    "vrf" : "default"
-                  }
-                },
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.130.0.1",
@@ -20113,16 +20055,6 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "xe-0/0/0:0.0" : {
-                    "area" : 0,
-                    "hostname" : "interfacemtu",
-                    "interface" : "xe-0/0/0:0.0",
-                    "ip" : "10.1.2.3",
-                    "passive" : false,
-                    "vrf" : "default"
-                  }
-                },
                 "processId" : "default",
                 "referenceBandwidth" : 1.0E9,
                 "routerId" : "10.1.2.3",
@@ -24069,8 +24001,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATE_CHILD",
             "vrf" : "default"
@@ -24501,8 +24433,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
             "vrf" : "default"
@@ -29821,16 +29753,6 @@
                 },
                 "maxMetricExternalNetworks" : 65535,
                 "maxMetricTransitLinks" : 65535,
-                "neighbors" : {
-                  "Ethernet0/0" : {
-                    "area" : 1,
-                    "hostname" : "nxos_ospf",
-                    "interface" : "Ethernet0/0",
-                    "ip" : "1.1.1.2",
-                    "passive" : false,
-                    "vrf" : "OTHER"
-                  }
-                },
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",

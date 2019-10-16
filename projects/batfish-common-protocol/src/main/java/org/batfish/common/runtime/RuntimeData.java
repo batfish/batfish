@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,5 +95,10 @@ public final class RuntimeData {
   @Override
   public int hashCode() {
     return Objects.hash(_interfaces);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add(PROP_INTERFACES, _interfaces).toString();
   }
 }

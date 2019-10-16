@@ -83,6 +83,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
 import static org.batfish.representation.juniper.Nat.Type.SOURCE;
@@ -257,6 +258,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_native_vlan_idContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_ethernet_switchingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_interface_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idContext;
@@ -577,6 +579,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Wildcard_addressContext;
@@ -2319,6 +2322,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _configuration.defineFlattenedStructure(INTERFACE, unitFullName, ctx, _parser);
     _configuration.referenceStructure(
         INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, getLine(ctx.num));
+  }
+
+  @Override
+  public void enterIf_ethernet_switching(If_ethernet_switchingContext ctx) {
+    if (_currentInterfaceOrRange.getSwitchportMode() == SwitchportMode.NONE) {
+      // JunOS docs say family ethernet-switching are access mode by default.
+      //   use enter rule so that an inner port-mode or interface-mode command will override.
+      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.ACCESS);
+    }
   }
 
   @Override
@@ -5977,8 +5989,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitVlt_interface(Vlt_interfaceContext ctx) {
+    String name = getInterfaceFullName(ctx.interface_id());
+    _configuration.referenceStructure(
+        INTERFACE, name, VLAN_INTERFACE, getLine(ctx.interface_id().getStart()));
+    _currentNamedVlan.addInterface(name);
+  }
+
+  @Override
   public void exitVlt_l3_interface(Vlt_l3_interfaceContext ctx) {
-    String name = ctx.interface_id().getText();
+    String name = getInterfaceFullName(ctx.interface_id());
     _configuration.referenceStructure(
         INTERFACE, name, VLAN_L3_INTERFACE, getLine(ctx.interface_id().getStart()));
     _currentNamedVlan.setL3Interface(name);

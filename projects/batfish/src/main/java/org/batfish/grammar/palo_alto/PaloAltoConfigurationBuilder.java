@@ -213,6 +213,9 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Selt_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sl_syslogContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sls_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
@@ -252,9 +255,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.St_commentsContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
@@ -2213,28 +2213,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSsl_syslog(Ssl_syslogContext ctx) {
+  public void enterSl_syslog(Sl_syslogContext ctx) {
     _currentSyslogServerGroupName = getText(ctx.name);
   }
 
   @Override
-  public void exitSsl_syslog(Ssl_syslogContext ctx) {
+  public void exitSl_syslog(Sl_syslogContext ctx) {
     _currentSyslogServerGroupName = null;
   }
 
   @Override
-  public void enterSsls_server(Ssls_serverContext ctx) {
+  public void enterSls_server(Sls_serverContext ctx) {
     _currentSyslogServer =
         _currentVsys.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
   }
 
   @Override
-  public void exitSsls_server(Ssls_serverContext ctx) {
+  public void exitSls_server(Sls_serverContext ctx) {
     _currentSyslogServer = null;
   }
 
   @Override
-  public void exitSslss_server(Sslss_serverContext ctx) {
+  public void exitSlss_server(Slss_serverContext ctx) {
     _currentSyslogServer.setAddress(getText(ctx.address));
   }
 

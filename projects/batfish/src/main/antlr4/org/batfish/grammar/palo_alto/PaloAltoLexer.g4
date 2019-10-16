@@ -204,6 +204,11 @@ BROADCAST
     'broadcast'
 ;
 
+BSD
+:
+    [Bb][Ss][Dd]
+;
+
 CATEGORY
 :
     'category'
@@ -464,9 +469,19 @@ ETHERNET
     'ethernet'
 ;
 
+FACILITY
+:
+    'facility'
+;
+
 FILTER
 :
     'filter'
+;
+
+FORMAT
+:
+    'format'
 ;
 
 FQDN
@@ -587,6 +602,11 @@ IBGP
 ICMP
 :
     'icmp'
+;
+
+IETF
+:
+    [Ii][Ee][Tt][Ff]
 ;
 
 IGP
@@ -989,6 +1009,11 @@ PRIORITY
     'priority'
 ;
 
+PROFILE_GROUP
+:
+    'profile-group'
+;
+
 PROFILES
 :
     'profiles'
@@ -1224,6 +1249,11 @@ SOURCE_USER
     'source-user'
 ;
 
+SSL
+:
+    [Ss][Ss][Ll]
+;
+
 STATIC
 :
     'static'
@@ -1276,7 +1306,7 @@ TAP
 
 TCP
 :
-    'tcp'
+    [Tt][Cc][Pp]
 ;
 
 TECHNOLOGY
@@ -1319,6 +1349,11 @@ TRANSLATED_ADDRESS
     'translated-address'
 ;
 
+TRANSPORT
+:
+    'transport'
+;
+
 TUNNEL
 :
     'tunnel'
@@ -1336,7 +1371,7 @@ TYPE
 
 UDP
 :
-    'udp'
+    [Uu][Dd][Pp]
 ;
 
 UNICAST

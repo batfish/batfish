@@ -532,8 +532,45 @@ public final class F5BigipImishGrammarTest {
 
   @Test
   public void testBgpConnectedRouteRedistributionNoRouteMap() throws IOException {
-    // TODO: extraction
-    assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_redistribute_connected_no_route_map"));
+    Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_connected_no_route_map");
+    Ip peerAddress = Ip.parse("192.0.2.2");
+    String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
+
+    assertThat(c.getRoutingPolicies(), hasKey(rpName));
+
+    RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+
+    Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    assertTrue(rp.process(new ConnectedRoute(Prefix.ZERO, "iface1"), outputBuilder, Direction.OUT));
+  }
+
+  @Test
+  public void testBgpConnectedRouteRedistributionRouteMapAccept() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_connected_route_map_accept");
+    Ip peerAddress = Ip.parse("192.0.2.2");
+    String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
+
+    assertThat(c.getRoutingPolicies(), hasKey(rpName));
+
+    RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+
+    Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    assertTrue(rp.process(new ConnectedRoute(Prefix.ZERO, "iface1"), outputBuilder, Direction.OUT));
+  }
+
+  @Test
+  public void testBgpConnectedRouteRedistributionRouteMapReject() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_connected_route_map_reject");
+    Ip peerAddress = Ip.parse("192.0.2.2");
+    String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
+
+    assertThat(c.getRoutingPolicies(), hasKey(rpName));
+
+    RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+
+    Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    assertFalse(
+        rp.process(new ConnectedRoute(Prefix.ZERO, "iface1"), outputBuilder, Direction.OUT));
   }
 
   @Test
