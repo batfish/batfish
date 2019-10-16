@@ -63,8 +63,7 @@ public final class FlowEvaluator {
     }
 
     @Override
-    public Boolean visitFibLookupOutgoingInterfaceIsOneOf(
-        FibLookupOutgoingInterfaceIsOneOf expr) {
+    public Boolean visitFibLookupOutgoingInterfaceIsOneOf(FibLookupOutgoingInterfaceIsOneOf expr) {
       String vrf = _vrfExprEvaluator.visit(expr.getVrf());
       Fib fib = _fibs.get(vrf);
       if (fib == null) {
