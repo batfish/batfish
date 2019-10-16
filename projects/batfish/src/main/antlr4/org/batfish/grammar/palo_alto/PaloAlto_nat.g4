@@ -8,12 +8,12 @@ options {
 
 sr_nat
 :
-    NAT sr_nat_rules
+    NAT sr_nat_rules?
 ;
 
 sr_nat_rules
 :
-    RULES srn_definition
+    RULES srn_definition?
 ;
 
 srn_definition
@@ -26,7 +26,7 @@ srn_definition
         | srn_from
         | srn_source
         | srn_destination
-    )
+    )?
 ;
 
 srn_destination_translation
