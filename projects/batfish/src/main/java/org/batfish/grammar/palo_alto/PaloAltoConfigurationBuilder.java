@@ -369,11 +369,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   /** Indicates which rulebase that new rules go into. */
   private enum RulebaseId {
-    /** Vsys.getRules(). */
+    /** Indicates default rulebase ({@link Vsys#getRulebase}) */
     DEFAULT,
-    /** Vsys.getPreRules(). */
+    /** Indicates pre-rulebase ({@link Vsys#getPreRulebase}) */
     PRE,
-    /** Vsys.getPostRules(). */
+    /** Indicates post-rulebase ({@link Vsys#getPostRulebase}) */
     POST
   }
 
