@@ -8,6 +8,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.Evaluator;
+import org.batfish.datamodel.transformation.TransformationEvaluator;
 
 /**
  * Evaluates a {@link PacketPolicy} against a given {@link Flow}.
@@ -72,6 +73,20 @@ public final class FlowEvaluator {
     @Override
     public Action visitReturn(Return returnStmt) {
       return returnStmt.getAction();
+    }
+
+    @Override
+    public Action visitApplyTransformation(ApplyTransformation transformation) {
+      _currentFlow =
+          TransformationEvaluator.eval(
+                  transformation.getTransformation(),
+                  _currentFlow.build(),
+                  _srcInterface,
+                  _availableAcls,
+                  _namedIpSpaces)
+              .getOutputFlow()
+              .toBuilder();
+      return null;
     }
   }
 
