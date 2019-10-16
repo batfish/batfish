@@ -1,18 +1,28 @@
 set deviceconfig system hostname rulebase-nat
 
+# No-ops: Shouldn't affect anything
+set rulebase nat
+set rulebase nat rules
+set rulebase nat rules RULE1
+
 set rulebase nat rules RULE1 to TO_ZONE
 set rulebase nat rules RULE1 from any
 set rulebase nat rules RULE1 source any
 set rulebase nat rules RULE1 destination any
 
-set rulebase nat rules RULE2 from FROM_1
-set rulebase nat rules RULE2 source SRC_1
-set rulebase nat rules RULE2 destination DST_1
+# This rule comes before the first alphabetically but should be processed last
+set rulebase nat rules 2nd_RULE to TO_1
+set rulebase nat rules 2nd_RULE to TO_2
+set rulebase nat rules 2nd_RULE from FROM_1
+set rulebase nat rules 2nd_RULE from [ FROM_2 FROM_3]
+set rulebase nat rules 2nd_RULE source [ SRC_1 SRC_2]
+set rulebase nat rules 2nd_RULE source SRC_3
+set rulebase nat rules 2nd_RULE destination DST_1
+set rulebase nat rules 2nd_RULE destination [ DST_2 DST_3]
+set rulebase nat rules 2nd_RULE source-translation dynamic-ip-and-port translated-address [ SRC_1 SRC_2]
+set rulebase nat rules 2nd_RULE source-translation dynamic-ip-and-port translated-address SRC_3
+set rulebase nat rules 2nd_RULE destination-translation translated-address DST_1
+set rulebase nat rules 2nd_RULE destination-translation translated-address DST_2
 
-# This last rule comes before the others alphabetically but should be processed last
-set rulebase nat rules 3rd_RULE from FROM_1
-set rulebase nat rules 3rd_RULE from [ FROM_2 FROM_3]
-set rulebase nat rules 3rd_RULE source SRC_1
-set rulebase nat rules 3rd_RULE source [ SRC_2 SRC_3]
-set rulebase nat rules 3rd_RULE destination DST_1
-set rulebase nat rules 3rd_RULE destination [ DST_2 DST_3]
+# Add modification to RULE1 after referencing other rule
+set rulebase nat rules RULE1 source-translation dynamic-ip-and-port translated-address [ 1.1.1.1 2.2.2.0/24 3.3.3.3-4.4.4.4]
