@@ -1597,6 +1597,7 @@ public final class CiscoNxosGrammarTest {
                 DEFAULT_VRF_NAME,
                 policy,
                 c.getIpAccessLists(),
+                ImmutableMap.of(),
                 ImmutableMap.of())
             .getAction(),
         equalTo(
@@ -1615,6 +1616,7 @@ public final class CiscoNxosGrammarTest {
                 DEFAULT_VRF_NAME,
                 policy,
                 c.getIpAccessLists(),
+                ImmutableMap.of(),
                 ImmutableMap.of())
             .getAction(),
         equalTo(regularFibLookup));

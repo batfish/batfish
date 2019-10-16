@@ -147,8 +147,15 @@ public class TracerouteEngineImplContext {
     return _configurations;
   }
 
+  /** Return a FIB for a given node and VRF */
   Optional<Fib> getFib(String node, String vrf) {
-    return Optional.ofNullable(_fibs.getOrDefault(node, ImmutableMap.of()).get(vrf));
+    return Optional.ofNullable(getFibs(node).get(vrf));
+  }
+
+  /** Get all fibs for a given node */
+  @Nonnull
+  public Map<String, Fib> getFibs(String node) {
+    return _fibs.getOrDefault(node, ImmutableMap.of());
   }
 
   boolean getIgnoreFilters() {

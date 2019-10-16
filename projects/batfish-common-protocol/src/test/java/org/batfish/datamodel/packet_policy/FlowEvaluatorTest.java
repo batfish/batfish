@@ -55,6 +55,7 @@ public final class FlowEvaluatorTest {
             "otherVrf",
             singletonPolicy(new Return(fl)),
             ImmutableMap.of(),
+            ImmutableMap.of(),
             ImmutableMap.of());
 
     assertThat(r.getAction(), equalTo(fl));
@@ -72,6 +73,7 @@ public final class FlowEvaluatorTest {
             singletonPolicy(
                 new If(new PacketMatchExpr(TrueExpr.INSTANCE), ImmutableList.of(new Return(fl)))),
             ImmutableMap.of(),
+            ImmutableMap.of(),
             ImmutableMap.of());
 
     assertThat(r.getAction(), equalTo(fl));
@@ -88,6 +90,7 @@ public final class FlowEvaluatorTest {
             "otherVrf",
             singletonPolicy(
                 new If(new PacketMatchExpr(FalseExpr.INSTANCE), ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
 
@@ -128,7 +131,13 @@ public final class FlowEvaluatorTest {
     // Test:
     FlowResult result =
         FlowEvaluator.evaluate(
-            _flow, "Eth0", "otherVrf", policy, ImmutableMap.of(), ImmutableMap.of());
+            _flow,
+            "Eth0",
+            "otherVrf",
+            policy,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
 
     assertThat(result.getAction(), equalTo(action));
     // No transformations occurred
@@ -142,7 +151,13 @@ public final class FlowEvaluatorTest {
     // Test:
     FlowResult result =
         FlowEvaluator.evaluate(
-            _flow, "Eth0", "otherVrf", policy, ImmutableMap.of(), ImmutableMap.of());
+            _flow,
+            "Eth0",
+            "otherVrf",
+            policy,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
 
     assertThat(result.getAction(), equalTo(_defaultAction.getAction()));
     // No transformations occurred
@@ -174,7 +189,8 @@ public final class FlowEvaluatorTest {
                                     .setDstIps(new IpSpaceReference(ipSpaceName))
                                     .build())))
                     .build()),
-            ImmutableMap.of(ipSpaceName, UniverseIpSpace.INSTANCE));
+            ImmutableMap.of(ipSpaceName, UniverseIpSpace.INSTANCE),
+            ImmutableMap.of());
 
     assertThat(r.getAction(), equalTo(fl));
     assertThat(r.getFinalFlow(), equalTo(_flow));
@@ -193,6 +209,7 @@ public final class FlowEvaluatorTest {
                     org.batfish.datamodel.packet_policy.TrueExpr.instance(),
                     ImmutableList.of(new Return(fl)))),
             ImmutableMap.of(),
+            ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(r.getAction(), equalTo(fl));
     assertThat(r.getFinalFlow(), equalTo(_flow));
@@ -210,6 +227,7 @@ public final class FlowEvaluatorTest {
                 new If(
                     org.batfish.datamodel.packet_policy.FalseExpr.instance(),
                     ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
@@ -230,6 +248,7 @@ public final class FlowEvaluatorTest {
             "Eth0",
             "otherVrf",
             singletonPolicy(transformation),
+            ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(r.getAction(), equalTo(_defaultAction.getAction()));

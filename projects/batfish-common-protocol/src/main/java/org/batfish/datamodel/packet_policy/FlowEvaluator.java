@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -14,7 +15,7 @@ import org.batfish.datamodel.transformation.TransformationEvaluator;
  * Evaluates a {@link PacketPolicy} against a given {@link Flow}.
  *
  * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, String, PacketPolicy, Map,
- * Map)} which will return a {@link FlowResult}.
+ * Map, Map)} which will return a {@link FlowResult}.
  */
 public final class FlowEvaluator {
 
@@ -24,6 +25,8 @@ public final class FlowEvaluator {
   // Start state
   @Nonnull private final String _srcInterface;
   @Nonnull private final String _srcInterfaceVrf;
+  /** Vrf name to FIB mapping */
+  @Nonnull private final Map<String, Fib> _fibs;
 
   // Modified state
   @Nonnull private Flow.Builder _currentFlow;
@@ -105,12 +108,14 @@ public final class FlowEvaluator {
       String srcInterface,
       String srcInterfaceVrf,
       Map<String, IpAccessList> availableAcls,
-      Map<String, IpSpace> namedIpSpaces) {
+      Map<String, IpSpace> namedIpSpaces,
+      Map<String, Fib> fibs) {
     _currentFlow = originalFlow.toBuilder();
     _srcInterface = srcInterface;
     _srcInterfaceVrf = srcInterfaceVrf;
     _availableAcls = availableAcls;
     _namedIpSpaces = namedIpSpaces;
+    _fibs = fibs;
   }
 
   @Nonnull
@@ -134,8 +139,9 @@ public final class FlowEvaluator {
       String srcInterfaceVrf,
       PacketPolicy policy,
       Map<String, IpAccessList> availableAcls,
-      Map<String, IpSpace> namedIpSpaces) {
-    return new FlowEvaluator(f, srcInterface, srcInterfaceVrf, availableAcls, namedIpSpaces)
+      Map<String, IpSpace> namedIpSpaces,
+      Map<String, Fib> fibs) {
+    return new FlowEvaluator(f, srcInterface, srcInterfaceVrf, availableAcls, namedIpSpaces, fibs)
         .evaluate(policy);
   }
 
