@@ -62,6 +62,7 @@ rbn_common
     rbn_description
     | rbn_next_hop_self
     | rbn_null
+    | rbn_soft_reconfiguration
     | rbn_remote_as
     | rbn_route_map_out
     | rbn_password
@@ -102,6 +103,11 @@ rbn_null
     | FALL_OVER
     | MAXIMUM_PREFIX
   ) null_rest_of_line
+;
+
+rbn_soft_reconfiguration
+:
+  SOFT_RECONFIGURATION INBOUND NEWLINE
 ;
 
 rbn_remote_as
