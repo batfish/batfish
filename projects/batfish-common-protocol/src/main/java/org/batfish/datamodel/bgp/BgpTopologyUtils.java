@@ -265,9 +265,21 @@ public final class BgpTopologyUtils {
             remotePeer.getRemoteAsns());
     assert asPair != null;
     BgpSessionProperties edgeToCandidate =
-        BgpSessionProperties.from(p1, remotePeer, false, asPair.getLocalAs(), asPair.getRemoteAs());
+        BgpSessionProperties.from(
+            p1,
+            remotePeer,
+            false,
+            asPair.getLocalAs(),
+            asPair.getRemoteAs(),
+            asPair.getConfedSessionType());
     BgpSessionProperties edgeFromCandidate =
-        BgpSessionProperties.from(p1, remotePeer, true, asPair.getLocalAs(), asPair.getRemoteAs());
+        BgpSessionProperties.from(
+            p1,
+            remotePeer,
+            true,
+            asPair.getLocalAs(),
+            asPair.getRemoteAs(),
+            asPair.getConfedSessionType());
     graph.putEdgeValue(id1, id2, edgeToCandidate);
     graph.putEdgeValue(id2, id1, edgeFromCandidate);
   }
@@ -545,8 +557,8 @@ public final class BgpTopologyUtils {
     return null;
   }
 
-  @VisibleForTesting
-  enum ConfedSessionType {
+  /** Whether the session is within a confederation (or across its border), if applicable */
+  public enum ConfedSessionType {
     NO_CONFED,
     WITHIN_CONFED,
     ACROSS_CONFED_BORDER

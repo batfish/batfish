@@ -33,6 +33,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -165,7 +166,12 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    */
   private void runTransformBgpRoutePostExport(Bgpv4Route.Builder routeBuilder) {
     BgpProtocolHelper.transformBgpRoutePostExport(
-        routeBuilder, _sessionProperties.isEbgp(), _headNeighbor.getLocalAs(), Ip.ZERO, Ip.ZERO);
+        routeBuilder,
+        _sessionProperties.isEbgp(),
+        ConfedSessionType.NO_CONFED,
+        _headNeighbor.getLocalAs(),
+        Ip.ZERO,
+        Ip.ZERO);
   }
 
   /**
