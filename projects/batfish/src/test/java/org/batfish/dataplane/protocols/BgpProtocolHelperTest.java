@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpProcess;
@@ -165,41 +166,67 @@ public class BgpProtocolHelperTest {
 
   @Test
   public void testTransformPostExportPrependAs() {
-    // Append own as
+    AsPath baseAsPath = AsPath.of(ImmutableList.of(AsSet.of(777), AsSet.confed(888)));
+    // Prepend own as
+    _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder, true, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
-    assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L)));
+    assertThat(
+        _baseBgpRouteBuilder.getAsPath(),
+        equalTo(
+            AsPath.of(
+                ImmutableList.<AsSet>builder()
+                    .add(AsSet.of(1))
+                    .addAll(baseAsPath.getAsSets())
+                    .build())));
 
-    // Append own as across border
+    // Prepend own as across border
     resetDefaultRouteBuilders();
+    _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder, true, ConfedSessionType.ACROSS_CONFED_BORDER, 2, DEST_IP, Ip.ZERO);
-    assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(AsPath.ofSingletonAsSets(2L)));
+    assertThat(
+        _baseBgpRouteBuilder.getAsPath(),
+        equalTo(
+            AsPath.of(ImmutableList.<AsSet>builder().add(AsSet.of(2)).add(AsSet.of(777)).build())));
 
-    // Clear confederations, append own AS
+    // Clear confederations, prepend own AS
     resetDefaultRouteBuilders();
-    _baseBgpRouteBuilder.setAsPath(AsPath.of(AsSet.confed(65555L)));
+    _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder, true, ConfedSessionType.ACROSS_CONFED_BORDER, 3, DEST_IP, Ip.ZERO);
-    assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(AsPath.ofSingletonAsSets(3L)));
+    assertThat(
+        _baseBgpRouteBuilder.getAsPath(),
+        equalTo(
+            AsPath.of(ImmutableList.<AsSet>builder().add(AsSet.of(3)).add(AsSet.of(777)).build())));
 
-    // Append confederation AS set
+    // Prepend confederation AS set
     resetDefaultRouteBuilders();
+    _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder, true, ConfedSessionType.WITHIN_CONFED, 4, DEST_IP, Ip.ZERO);
-    assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(AsPath.of(AsSet.confed(4L))));
+    assertThat(
+        _baseBgpRouteBuilder.getAsPath(),
+        equalTo(
+            AsPath.of(
+                ImmutableList.<AsSet>builder()
+                    .add(AsSet.confed(4))
+                    .addAll(baseAsPath.getAsSets())
+                    .build())));
 
-    // Do not append for IBGP
+    // Do not prepend for IBGP
     resetDefaultRouteBuilders();
+    _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder, false, ConfedSessionType.NO_CONFED, 5, DEST_IP, Ip.ZERO);
-    assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(AsPath.empty()));
+    assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(baseAsPath));
 
-    // Do not append for IBGP within confed
+    // Do not prepend for IBGP within confed
     resetDefaultRouteBuilders();
+    _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder, false, ConfedSessionType.WITHIN_CONFED, 6, DEST_IP, Ip.ZERO);
-    assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(AsPath.empty()));
+    assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(baseAsPath));
   }
 
   @Test
