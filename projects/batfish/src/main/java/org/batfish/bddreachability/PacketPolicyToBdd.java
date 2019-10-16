@@ -21,6 +21,7 @@ import org.batfish.datamodel.packet_policy.BoolExprVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FalseExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceMatchesOneOf;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
@@ -156,6 +157,14 @@ class PacketPolicyToBdd {
     @Override
     public BDD visitFalseExpr(FalseExpr expr) {
       return _ipAccessListToBdd.getBDDPacket().getFactory().zero();
+    }
+
+    @Override
+    public BDD visitFibLookupOutgoingInterfaceMatchesOneOf(
+        FibLookupOutgoingInterfaceMatchesOneOf expr) {
+      // TODO:
+      throw new UnsupportedOperationException(
+          "FibLookupOutgoingInterfaceMatchesOneOf in packet policy -> BDD not yet supported");
     }
   }
 
