@@ -19,7 +19,7 @@ public enum PaloAltoStructureType implements StructureType {
   IPSEC_CRYPTO_PROFILE("ipsec-crypto-profile"),
   INTERFACE("interface"),
   REDIST_PROFILE("redist-profile"),
-  RULE("rule"),
+  SECURITY_RULE("security rule"),
   SERVICE("service"),
   SERVICE_GROUP("service-group"),
   SERVICE_OR_SERVICE_GROUP("service or service-group"),
