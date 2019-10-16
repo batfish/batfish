@@ -16,6 +16,7 @@ import org.batfish.bddreachability.transition.Zero;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
+import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.BoolExprVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FalseExpr;
@@ -124,6 +125,13 @@ class PacketPolicyToBdd {
       new Collector(_pathTransition).visit(returnStmt.getAction());
       _pathTransition = ZERO;
       return null;
+    }
+
+    @Override
+    public Void visitApplyTransformation(ApplyTransformation transformation) {
+      // TODO:
+      throw new UnsupportedOperationException(
+          "Transformations in packet policy -> BDD not yet supported");
     }
   }
 
