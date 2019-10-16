@@ -257,12 +257,25 @@ public final class BgpSessionProperties {
     return _confedSessionType;
   }
 
-  public boolean advertiseUnchangedMed() {
+  /** Returns true if this session is IBGP or eBGP within a confederation */
+  private boolean isIbgpOrWithinConfed() {
     return !isEbgp() || _confedSessionType == ConfedSessionType.WITHIN_CONFED;
   }
 
-  public boolean advertiseUnchanedLocalPref() {
-    return !isEbgp() || _confedSessionType == ConfedSessionType.WITHIN_CONFED;
+  /**
+   * Whether or not this session type requires propagating unchanged MED values (i.e., IBGP or eBGP
+   * within a confederation)
+   */
+  public boolean advertiseUnchangedMed() {
+    return isIbgpOrWithinConfed();
+  }
+
+  /**
+   * Whether or not this session type requires propagating unchanged local preference values (i.e.,
+   * IBGP or eBGP within a confederation)
+   */
+  public boolean advertiseUnchangedLocalPref() {
+    return isIbgpOrWithinConfed();
   }
 
   /**
