@@ -71313,7 +71313,7 @@
             "                  MEMBERS:'members'",
             "                  (variable_list",
             "                    (variable_list_item",
-            "                      VARIABLE:'ssl')))))))))",
+            "                      SSL:'ssl')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
