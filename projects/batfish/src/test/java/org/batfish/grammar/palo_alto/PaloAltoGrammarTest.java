@@ -672,14 +672,13 @@ public final class PaloAltoGrammarTest {
     BgpVr bgp = vr.getBgp();
     assertThat(bgp, not(nullValue()));
 
-    RedistRule namedRedistRule =
-        bgp.getRedistRules().get(new RedistRuleRefNameOrPrefix(null, "rdp1"));
+    RedistRule namedRedistRule = bgp.getRedistRules().get(new RedistRuleRefNameOrPrefix("rdp1"));
     assertThat(namedRedistRule, not(nullValue()));
     assertThat(namedRedistRule.getEnable(), equalTo(Boolean.TRUE));
     assertThat(namedRedistRule.getOrigin(), equalTo(OriginType.INCOMPLETE));
 
     RedistRule prefixRedistRule =
-        bgp.getRedistRules().get(new RedistRuleRefNameOrPrefix(Prefix.parse("1.1.1.0/24"), null));
+        bgp.getRedistRules().get(new RedistRuleRefNameOrPrefix(Prefix.parse("1.1.1.0/24")));
     assertThat(prefixRedistRule, not(nullValue()));
     assertThat(prefixRedistRule.getEnable(), equalTo(Boolean.TRUE));
     assertThat(prefixRedistRule.getOrigin(), equalTo(OriginType.EGP));
@@ -688,7 +687,7 @@ public final class PaloAltoGrammarTest {
     assertThat(prefixRedistRule.getRouteTableType(), equalTo(RouteTableType.UNICAST));
 
     RedistRule ipAddressRedistRule =
-        bgp.getRedistRules().get(new RedistRuleRefNameOrPrefix(Prefix.parse("2.2.2.2/32"), null));
+        bgp.getRedistRules().get(new RedistRuleRefNameOrPrefix(Prefix.parse("2.2.2.2/32")));
     assertThat(ipAddressRedistRule, not(nullValue()));
     assertThat(ipAddressRedistRule.getEnable(), equalTo(Boolean.FALSE));
     assertThat(ipAddressRedistRule.getOrigin(), equalTo(OriginType.IGP));

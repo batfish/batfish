@@ -846,22 +846,20 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterBgprr_prefix(Bgprr_prefixContext ctx) {
     _currentRedistRule =
-        _currentBgpVr.getOrCreateRedistRule(
-            new RedistRuleRefNameOrPrefix(toPrefix(ctx.prefix), null));
+        _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(toPrefix(ctx.prefix)));
   }
 
   @Override
   public void enterBgprr_ip_address(Bgprr_ip_addressContext ctx) {
     _currentRedistRule =
         _currentBgpVr.getOrCreateRedistRule(
-            new RedistRuleRefNameOrPrefix(toIp(ctx.ip_address()).toPrefix(), null));
+            new RedistRuleRefNameOrPrefix(toIp(ctx.ip_address()).toPrefix()));
   }
 
   @Override
   public void enterBgprr_profile_name(Bgprr_profile_nameContext ctx) {
     String name = getText(ctx.name);
-    _currentRedistRule =
-        _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(null, name));
+    _currentRedistRule = _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(name));
     _configuration.referenceStructure(
         REDIST_PROFILE, name, REDIST_RULE_REDIST_PROFILE, getLine(ctx.name.start));
   }

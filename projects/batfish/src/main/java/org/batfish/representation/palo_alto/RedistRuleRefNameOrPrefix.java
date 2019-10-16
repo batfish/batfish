@@ -2,6 +2,7 @@ package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix;
 
@@ -9,10 +10,15 @@ import org.batfish.datamodel.Prefix;
  * Contains either name of the redist profile referenced by a redist rule or the prefix used in
  * redist rule
  */
-public class RedistRuleRefNameOrPrefix implements Serializable {
+public final class RedistRuleRefNameOrPrefix implements Serializable {
 
-  public RedistRuleRefNameOrPrefix(@Nullable Prefix prefix, @Nullable String redistProfileName) {
+  public RedistRuleRefNameOrPrefix(@Nonnull Prefix prefix) {
     _prefix = prefix;
+    _redistProfileName = null;
+  }
+
+  public RedistRuleRefNameOrPrefix(@Nonnull String redistProfileName) {
+    _prefix = null;
     _redistProfileName = redistProfileName;
   }
 
@@ -42,6 +48,6 @@ public class RedistRuleRefNameOrPrefix implements Serializable {
     return Objects.hash(_redistProfileName, _prefix);
   }
 
-  private @Nullable String _redistProfileName;
-  private @Nullable Prefix _prefix;
+  private final @Nullable String _redistProfileName;
+  private final @Nullable Prefix _prefix;
 }

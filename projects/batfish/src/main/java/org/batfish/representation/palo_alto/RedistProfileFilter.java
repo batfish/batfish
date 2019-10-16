@@ -8,7 +8,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
 /** Redist profile's filter */
-public class RedistProfileFilter implements Serializable {
+public final class RedistProfileFilter implements Serializable {
   public RedistProfileFilter() {
     _routingProtocols = new HashSet<>();
     _destinationPrefixes = new HashSet<>();

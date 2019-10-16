@@ -75,6 +75,6 @@ public class VirtualRouter implements Serializable {
   private final NavigableSet<String> _interfaceNames;
   private final String _name;
   private @Nullable OspfVr _ospf;
-  private @Nonnull Map<String, RedistProfile> _redistProfiles;
+  private final @Nonnull Map<String, RedistProfile> _redistProfiles;
   private final Map<String, StaticRoute> _staticRoutes;
 }

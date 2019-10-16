@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.OriginType;
 
 /** Rules used for redisribution, refers to a {@link RedistProfile} */
-public class RedistRule implements Serializable {
+public final class RedistRule implements Serializable {
   public enum AddressFamilyIdentifier {
     IPV4,
     IPV6
