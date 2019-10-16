@@ -17,6 +17,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.REDIST_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
@@ -30,6 +31,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PE
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.REDIST_RULE_REDIST_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_DESTINATION;
@@ -857,8 +859,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterBgprr_profile_name(Bgprr_profile_nameContext ctx) {
+    String name = getText(ctx.name);
     _currentRedistRule =
-        _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(null, getText(ctx.name)));
+        _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(null, name));
+    _configuration.referenceStructure(
+        REDIST_PROFILE, name, REDIST_RULE_REDIST_PROFILE, getLine(ctx.name.start));
   }
 
   @Override
@@ -1841,7 +1846,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterVrp_redist_profile(Vrp_redist_profileContext ctx) {
-    _currentRedistProfile = _currentVirtualRouter.getOrCreateRedistProfile(getText(ctx.name));
+    String name = getText(ctx.name);
+    _configuration.defineFlattenedStructure(REDIST_PROFILE, name, ctx, _parser);
+    _currentRedistProfile = _currentVirtualRouter.getOrCreateRedistProfile(name);
   }
 
   @Override
