@@ -861,7 +861,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     String name = getText(ctx.name);
     _currentRedistRule = _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(name));
     _configuration.referenceStructure(
-        REDIST_PROFILE, name, REDIST_RULE_REDIST_PROFILE, getLine(ctx.name.start));
+        REDIST_PROFILE,
+        computeObjectName(_currentVirtualRouter.getName(), name),
+        REDIST_RULE_REDIST_PROFILE,
+        getLine(ctx.name.start));
   }
 
   @Override
@@ -1845,8 +1848,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterVrp_redist_profile(Vrp_redist_profileContext ctx) {
     String name = getText(ctx.name);
-    _configuration.defineFlattenedStructure(REDIST_PROFILE, name, ctx, _parser);
     _currentRedistProfile = _currentVirtualRouter.getOrCreateRedistProfile(name);
+    _configuration.defineFlattenedStructure(
+        REDIST_PROFILE, computeObjectName(_currentVirtualRouter.getName(), name), ctx, _parser);
   }
 
   @Override
