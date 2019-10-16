@@ -16,7 +16,7 @@ public final class NatRule implements Serializable {
 
   // Zones (both required to commit)
   @Nonnull private final SortedSet<String> _from;
-  @Nonnull private final SortedSet<String> _to;
+  @Nullable private String _to;
 
   // IPs (both required to commit)
   @Nonnull private final List<RuleEndpoint> _source;
@@ -29,7 +29,6 @@ public final class NatRule implements Serializable {
   public NatRule(String name) {
     _name = name;
     _from = new TreeSet<>();
-    _to = new TreeSet<>();
     _source = new LinkedList<>();
     _destination = new LinkedList<>();
   }
@@ -65,7 +64,7 @@ public final class NatRule implements Serializable {
   }
 
   @Nonnull
-  public SortedSet<String> getTo() {
+  public String getTo() {
     return _to;
   }
 
@@ -75,5 +74,9 @@ public final class NatRule implements Serializable {
 
   public void setSourceTranslation(SourceTranslation sourceTranslation) {
     _sourceTranslation = sourceTranslation;
+  }
+
+  public void setTo(@Nullable String to) {
+    _to = to;
   }
 }

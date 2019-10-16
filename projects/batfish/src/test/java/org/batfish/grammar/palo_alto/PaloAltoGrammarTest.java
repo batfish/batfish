@@ -1500,7 +1500,7 @@ public final class PaloAltoGrammarTest {
     assertThat(natRules.keySet(), contains(rule1Name, rule2Name, rule3Name));
 
     NatRule rule1 = natRules.get(rule1Name);
-    assertThat(rule1.getTo(), contains("TO_ZONE"));
+    assertThat(rule1.getTo(), equalTo("TO_ZONE"));
     assertThat(rule1.getFrom(), contains("any"));
     assertThat(
         Iterables.getOnlyElement(rule1.getSource()).getType(), equalTo(RuleEndpoint.Type.Any));

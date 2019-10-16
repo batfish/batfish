@@ -2123,7 +2123,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrn_to(Srn_toContext ctx) {
     String zoneName = getText(ctx.zone);
-    _currentNatRule.getTo().add(zoneName);
+    _currentNatRule.setTo(zoneName);
 
     if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
       // Use constructed object name so same-named refs across vsys are unique
