@@ -25,6 +25,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 @ParametersAreNonnullByDefault
@@ -160,16 +161,16 @@ public final class BgpProtocolHelper {
       }
     }
 
-    // Outgoing metric (MED) is preserved only if advertising to IBGP peer. For eBGP, clear it.
-    if (sessionProperties.isEbgp()) {
+    // Outgoing metric (MED) is preserved only if advertising to IBGP peer or within a confederation
+    if (!sessionProperties.advertiseUnchangedMed()) {
       builder.setMetric(0);
     }
 
-    // Local preference: only transitive for iBGP
+    // Local preference: only transitive for iBGP or within a confederation
     builder.setLocalPreference(
-        sessionProperties.isEbgp()
-            ? BgpRoute.DEFAULT_LOCAL_PREFERENCE
-            : route.getLocalPreference());
+        sessionProperties.advertiseUnchanedLocalPref()
+            ? route.getLocalPreference()
+            : BgpRoute.DEFAULT_LOCAL_PREFERENCE);
 
     return builder;
   }
@@ -280,20 +281,37 @@ public final class BgpProtocolHelper {
    *
    * @param routeBuilder Builder for the output (exported) route
    * @param isEbgp true for ebgp sessions
+   * @param confedSessionType type of confederation session, if any
    * @param localAs local AS
    * @param fromNeighborIp IP of the neighbor which is exporting the route
    * @param originalRouteNhip Next hop IP of the original route
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       void transformBgpRoutePostExport(
-          B routeBuilder, boolean isEbgp, long localAs, Ip fromNeighborIp, Ip originalRouteNhip) {
+          B routeBuilder,
+          boolean isEbgp,
+          ConfedSessionType confedSessionType,
+          long localAs,
+          Ip fromNeighborIp,
+          Ip originalRouteNhip) {
+    // if eBGP, prepend as-path sender's as-path number
     if (isEbgp) {
-      // if eBGP, prepend as-path sender's as-path number
+      AsSet asSetToPrepend =
+          confedSessionType == ConfedSessionType.WITHIN_CONFED
+              ? AsSet.confed(localAs)
+              : AsSet.of(localAs);
+
+      // Remove any confederations if propagating route outside of the confederation border
+      AsPath routeAsPath = routeBuilder.getAsPath();
+      if (confedSessionType.equals(ConfedSessionType.ACROSS_CONFED_BORDER)) {
+        routeAsPath = routeAsPath.removeConfederations();
+      }
+
       routeBuilder.setAsPath(
           AsPath.of(
               ImmutableList.<AsSet>builder()
-                  .add(AsSet.of(localAs))
-                  .addAll(routeBuilder.getAsPath().getAsSets())
+                  .add(asSetToPrepend)
+                  .addAll(routeAsPath.getAsSets())
                   .build()));
       // Tags are non-transitive
       routeBuilder.setTag(null);
