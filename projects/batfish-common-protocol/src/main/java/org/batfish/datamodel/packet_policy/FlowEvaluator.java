@@ -1,15 +1,23 @@
 package org.batfish.datamodel.packet_policy;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNextVrf;
+import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
+import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /**
  * Evaluates a {@link PacketPolicy} against a given {@link Flow}.
@@ -55,11 +63,45 @@ public final class FlowEvaluator {
     }
 
     @Override
-    public Boolean visitFibLookupOutgoingInterfaceMatchesOneOf(
+    public Boolean visitFibLookupOutgoingInterfaceIsOneOf(
         FibLookupOutgoingInterfaceIsOneOf expr) {
-      // TODO:
-      throw new UnsupportedOperationException(
-          "FibLookupOutgoingInterfaceIsOneOf in FlowEvaluator not yet supported");
+      String vrf = _vrfExprEvaluator.visit(expr.getVrf());
+      Fib fib = _fibs.get(vrf);
+      if (fib == null) {
+        return false;
+      }
+
+      // Collect entries
+      Set<FibEntry> entries = fib.get(_currentFlow.getDstIp());
+      // Set of all interfaces the lookup resolves to
+      ImmutableSet.Builder<String> outgoingInterfaces = ImmutableSet.builder();
+
+      FibActionVisitor<Void> actionVisitor =
+          new FibActionVisitor<Void>() {
+            @Override
+            public Void visitFibForward(FibForward fibForward) {
+              outgoingInterfaces.add(fibForward.getInterfaceName());
+              return null;
+            }
+
+            @Override
+            public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
+              Fib innerFib = _fibs.get(fibNextVrf.getNextVrf());
+              Set<FibEntry> innerEntries = innerFib.get(_currentFlow.getDstIp());
+              // Recurse and continue interface collection
+              innerEntries.forEach(entry -> entry.getAction().accept(this));
+              return null;
+            }
+
+            @Override
+            public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+              // nothing to do
+              return null;
+            }
+          };
+
+      entries.forEach(entry -> entry.getAction().accept(actionVisitor));
+      return !Sets.intersection(outgoingInterfaces.build(), expr.getInterfaceNames()).isEmpty();
     }
   }
 

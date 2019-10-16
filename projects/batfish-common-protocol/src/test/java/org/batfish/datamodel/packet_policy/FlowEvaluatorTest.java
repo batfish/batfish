@@ -5,13 +5,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
+import java.util.Collections;
+import java.util.Map;
+import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.MockFib;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -253,5 +263,123 @@ public final class FlowEvaluatorTest {
             ImmutableMap.of());
     assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
     assertThat(r.getFinalFlow(), equalTo(_flow.toBuilder().setDstIp(natIp).build()));
+  }
+
+  @Test
+  public void testEvaluateFibLookupOutgoingInterfaceIsOneOf() {
+    Prefix dstPrefix = _flow.getDstIp().toPrefix();
+    Ip nextVrIp = Ip.parse("5.5.5.5");
+    String srcIface = "Eth0";
+    String vrfName = "vrf";
+    String nextVrfName = "nextVrf";
+    String vrfIface = "vrfIface";
+    String nextVrfIface = "nextVrfIface";
+    ConnectedRoute fakeRoute = new ConnectedRoute(dstPrefix, vrfIface);
+
+    Map<String, Fib> fibs =
+        ImmutableMap.of(
+            vrfName,
+            MockFib.builder()
+                .setFibEntries(
+                    ImmutableMap.of(
+                        _flow.getDstIp(),
+                        ImmutableSet.of(
+                            new FibEntry(
+                                new FibForward(Ip.MAX, vrfIface), ImmutableList.of(fakeRoute))),
+                        nextVrIp,
+                        ImmutableSet.of(
+                            new FibEntry(
+                                new FibNextVrf(nextVrfName), ImmutableList.of(fakeRoute)))))
+                .build(),
+            nextVrfName,
+            MockFib.builder()
+                .setFibEntries(
+                    ImmutableMap.of(
+                        _flow.getDstIp(),
+                        ImmutableSet.of(
+                            new FibEntry(
+                                new FibForward(Ip.MAX, nextVrfIface), ImmutableList.of(fakeRoute))),
+                        nextVrIp,
+                        ImmutableSet.of(
+                            new FibEntry(
+                                new FibForward(Ip.MAX, nextVrfIface),
+                                ImmutableList.of(fakeRoute)))))
+                .build());
+
+    Action trueAction = new FibLookup(new LiteralVrfName("finalVrf"));
+    Return trueReturn = new Return(trueAction);
+    Action defaultAction = Drop.instance();
+
+    {
+      // Lookup in interface VRF
+      FlowResult r =
+          FlowEvaluator.evaluate(
+              _flow,
+              srcIface,
+              vrfName,
+              singletonPolicy(
+                  new If(
+                      new FibLookupOutgoingInterfaceIsOneOf(
+                          IngressInterfaceVrf.instance(), ImmutableSet.of(vrfIface)),
+                      Collections.singletonList(trueReturn))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              fibs);
+      assertThat(r.getAction(), equalTo(trueAction));
+    }
+    {
+      // Lookup in interface VRF, no match
+      FlowResult r =
+          FlowEvaluator.evaluate(
+              _flow,
+              srcIface,
+              vrfName,
+              singletonPolicy(
+                  new If(
+                      new FibLookupOutgoingInterfaceIsOneOf(
+                          IngressInterfaceVrf.instance(), ImmutableSet.of("NoMatchIface")),
+                      Collections.singletonList(trueReturn))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              fibs);
+      assertThat(r.getAction(), equalTo(defaultAction));
+    }
+
+    {
+      // Lookup in a different VRF
+      FlowResult r =
+          FlowEvaluator.evaluate(
+              _flow,
+              srcIface,
+              vrfName,
+              singletonPolicy(
+                  new If(
+                      new FibLookupOutgoingInterfaceIsOneOf(
+                          new LiteralVrfName(nextVrfName), ImmutableSet.of(nextVrfIface)),
+                      Collections.singletonList(trueReturn))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              fibs);
+      assertThat(r.getAction(), equalTo(trueAction));
+    }
+
+    {
+      // Lookup in original VRF with NEXT VR route -- should match nextVrfIface
+      Flow flow = _flow.toBuilder().setDstIp(nextVrIp).build();
+      FlowResult r =
+          FlowEvaluator.evaluate(
+              flow,
+              srcIface,
+              vrfName,
+              singletonPolicy(
+                  new If(
+                      new FibLookupOutgoingInterfaceIsOneOf(
+                          IngressInterfaceVrf.instance(), ImmutableSet.of(nextVrfIface)),
+                      Collections.singletonList(trueReturn))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              fibs);
+      assertThat(r.getAction(), equalTo(trueAction));
+    }
   }
 }
