@@ -12,4 +12,6 @@ public interface BoolExprVisitor<T> {
   T visitTrueExpr(TrueExpr expr);
 
   T visitFalseExpr(FalseExpr expr);
+
+  T visitFibLookupOutgoingInterfaceMatchesOneOf(FibLookupOutgoingInterfaceIsOneOf expr);
 }

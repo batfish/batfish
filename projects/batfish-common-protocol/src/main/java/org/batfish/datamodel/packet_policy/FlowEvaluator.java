@@ -48,6 +48,14 @@ public final class FlowEvaluator {
     public Boolean visitFalseExpr(FalseExpr expr) {
       return false;
     }
+
+    @Override
+    public Boolean visitFibLookupOutgoingInterfaceMatchesOneOf(
+        FibLookupOutgoingInterfaceIsOneOf expr) {
+      // TODO:
+      throw new UnsupportedOperationException(
+          "FibLookupOutgoingInterfaceIsOneOf in FlowEvaluator not yet supported");
+    }
   }
 
   /**
