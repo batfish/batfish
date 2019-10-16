@@ -10,6 +10,7 @@ set config shared service
 set config shared service-group
 set config shared content-preview application amazon-music-streaming category media
 set config shared profiles custom-url-category NAME description foo
+set config shared log-settings system critical send-email
 #
 set deviceconfig system type static
 set deviceconfig system update-server updates.paloaltonetworks.com
@@ -78,5 +79,10 @@ set rulebase security rules RULE1 category streaming
 set rulebase security rules RULE1 hip-profiles any
 set rulebase security rules RULE1 source-user any
 #
+set vsys vsys1 log-settings syslog NAME server NAME facility LOG_LOCAL0
+set vsys vsys1 log-settings syslog NAME server NAME format IETF
+set vsys vsys1 log-settings syslog NAME server NAME port 65535
+set vsys vsys1 log-settings syslog NAME server NAME transport UDP
+set vsys vsys1 log-settings profiles NAME match-list ML_NAME log-type foo
 set vsys vsys1 profiles dos-protection
 set vsys vsys1 profile-group NAME
