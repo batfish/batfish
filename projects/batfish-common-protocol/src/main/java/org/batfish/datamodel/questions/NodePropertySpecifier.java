@@ -18,7 +18,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.Grammar;
@@ -70,7 +69,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String SNMP_TRAP_SERVERS = "SNMP_Trap_Servers";
   public static final String TACACS_SERVERS = "TACACS_Servers";
   public static final String TACACS_SOURCE_INTERFACE = "TACACS_Source_Interface";
-  public static final String VENDOR_FAMILY = "Vendor_Family";
   public static final String VRFS = "VRFs";
   public static final String ZONES = "Zones";
 
@@ -276,16 +274,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
                   Configuration::getTacacsSourceInterface,
                   Schema.STRING,
                   "Source interface to use for communicating with TACACS servers"))
-          .put(
-              VENDOR_FAMILY,
-              new PropertyDescriptor<>(
-                  Configuration::getVendorFamily,
-                  Schema.STRING,
-                  "Vendor family ("
-                      + Arrays.stream(VendorFamily.Type.values())
-                          .map(Object::toString)
-                          .collect(Collectors.joining(", "))
-                      + ")"))
           .put(
               VRFS,
               new PropertyDescriptor<>(
