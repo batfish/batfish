@@ -18,7 +18,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.REDIST_PROFILE;
-import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SECURITY_RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE;
@@ -32,13 +32,13 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.REDIST_RULE_REDIST_PROFILE;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_DESTINATION;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_FROM_ZONE;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_SELF_REF;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_SOURCE;
-import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_TO_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_DESTINATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_FROM_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_SELF_REF;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_SERVICE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_SOURCE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR;
@@ -331,8 +331,8 @@ import org.batfish.representation.palo_alto.RedistRule;
 import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
 import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
-import org.batfish.representation.palo_alto.Rule;
 import org.batfish.representation.palo_alto.RuleEndpoint;
+import org.batfish.representation.palo_alto.SecurityRule;
 import org.batfish.representation.palo_alto.Service;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.ServiceGroup;
@@ -386,7 +386,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private RedistProfile _currentRedistProfile;
   private RedistRule _currentRedistRule;
   private RulebaseId _currentRuleScope;
-  private Rule _currentRule;
+  private SecurityRule _currentSecurityRule;
   private Service _currentService;
   private ServiceGroup _currentServiceGroup;
   private StaticRoute _currentStaticRoute;
@@ -1959,7 +1959,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSrs_definition(Srs_definitionContext ctx) {
     String name = getText(ctx.name);
-    Map<String, Rule> rulebase;
+    Map<String, SecurityRule> rulebase;
     if (_currentRuleScope == RulebaseId.DEFAULT) {
       rulebase = _currentVsys.getRules();
     } else if (_currentRuleScope == RulebaseId.PRE) {
@@ -1968,25 +1968,26 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       assert _currentRuleScope == RulebaseId.POST;
       rulebase = _currentVsys.getPostRules();
     }
-    _currentRule = rulebase.computeIfAbsent(name, n -> new Rule(n, _currentVsys));
+    _currentSecurityRule = rulebase.computeIfAbsent(name, n -> new SecurityRule(n, _currentVsys));
 
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
-    _configuration.defineFlattenedStructure(RULE, uniqueName, ctx, _parser);
-    _configuration.referenceStructure(RULE, uniqueName, RULE_SELF_REF, getLine(ctx.name.start));
+    _configuration.defineFlattenedStructure(SECURITY_RULE, uniqueName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_RULE, uniqueName, SECURITY_RULE_SELF_REF, getLine(ctx.name.start));
   }
 
   @Override
   public void exitSrs_definition(Srs_definitionContext ctx) {
-    _currentRule = null;
+    _currentSecurityRule = null;
   }
 
   @Override
   public void exitSrs_action(Srs_actionContext ctx) {
     if (ctx.ALLOW() != null) {
-      _currentRule.setAction(LineAction.PERMIT);
+      _currentSecurityRule.setAction(LineAction.PERMIT);
     } else {
-      _currentRule.setAction(LineAction.DENY);
+      _currentSecurityRule.setAction(LineAction.DENY);
     }
   }
 
@@ -2009,23 +2010,23 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrs_application(Srs_applicationContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String name = getText(var);
-      _currentRule.getApplications().add(name);
+      _currentSecurityRule.getApplications().add(name);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys.getName(), name);
-      referenceApplicationLike(name, uniqueName, RULE_APPLICATION, var);
+      referenceApplicationLike(name, uniqueName, SECURITY_RULE_APPLICATION, var);
     }
   }
 
   @Override
   public void exitSrs_description(Srs_descriptionContext ctx) {
-    _currentRule.setDescription(getText(ctx.description));
+    _currentSecurityRule.setDescription(getText(ctx.description));
   }
 
   @Override
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       RuleEndpoint endpoint = toRuleEndpoint(var);
-      _currentRule.getDestination().add(endpoint);
+      _currentSecurityRule.getDestination().add(endpoint);
 
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys.getName(), endpoint.getValue());
@@ -2038,45 +2039,47 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         // object/group
         type = ADDRESS_LIKE;
       }
-      _configuration.referenceStructure(type, uniqueName, RULE_DESTINATION, getLine(var.start));
+      _configuration.referenceStructure(
+          type, uniqueName, SECURITY_RULE_DESTINATION, getLine(var.start));
     }
   }
 
   @Override
   public void exitSrs_disabled(Srs_disabledContext ctx) {
-    _currentRule.setDisabled(toBoolean(ctx.yn));
+    _currentSecurityRule.setDisabled(toBoolean(ctx.yn));
   }
 
   @Override
   public void exitSrs_from(Srs_fromContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String zoneName = getText(var);
-      _currentRule.getFrom().add(zoneName);
+      _currentSecurityRule.getFrom().add(zoneName);
 
       if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
         // Use constructed object name so same-named refs across vsys are unique
         String uniqueName = computeObjectName(_currentVsys.getName(), zoneName);
-        _configuration.referenceStructure(ZONE, uniqueName, RULE_FROM_ZONE, getLine(var.start));
+        _configuration.referenceStructure(
+            ZONE, uniqueName, SECURITY_RULE_FROM_ZONE, getLine(var.start));
       }
     }
   }
 
   @Override
   public void exitSrs_negate_destination(Srs_negate_destinationContext ctx) {
-    _currentRule.setNegateDestination(toBoolean(ctx.yn));
+    _currentSecurityRule.setNegateDestination(toBoolean(ctx.yn));
   }
 
   @Override
   public void exitSrs_negate_source(Srs_negate_sourceContext ctx) {
-    _currentRule.setNegateSource(toBoolean(ctx.yn));
+    _currentSecurityRule.setNegateSource(toBoolean(ctx.yn));
   }
 
   @Override
   public void exitSrs_service(Srs_serviceContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String serviceName = getText(var);
-      _currentRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
-      referenceService(var, RULEBASE_SERVICE);
+      _currentSecurityRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
+      referenceService(var, SECURITY_RULE_SERVICE);
     }
   }
 
@@ -2084,7 +2087,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrs_source(Srs_sourceContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       RuleEndpoint endpoint = toRuleEndpoint(var);
-      _currentRule.getSource().add(endpoint);
+      _currentSecurityRule.getSource().add(endpoint);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys.getName(), endpoint.getValue());
 
@@ -2094,7 +2097,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
         type = ADDRESS_LIKE;
       }
-      _configuration.referenceStructure(type, uniqueName, RULE_SOURCE, getLine(var.start));
+      _configuration.referenceStructure(type, uniqueName, SECURITY_RULE_SOURCE, getLine(var.start));
     }
   }
 
@@ -2102,12 +2105,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrs_to(Srs_toContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String zoneName = getText(var);
-      _currentRule.getTo().add(zoneName);
+      _currentSecurityRule.getTo().add(zoneName);
 
       if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
         // Use constructed object name so same-named refs across vsys are unique
         String uniqueName = computeObjectName(_currentVsys.getName(), zoneName);
-        _configuration.referenceStructure(ZONE, uniqueName, RULE_TO_ZONE, getLine(var.start));
+        _configuration.referenceStructure(
+            ZONE, uniqueName, SECURITY_RULE_TO_ZONE, getLine(var.start));
       }
     }
   }
