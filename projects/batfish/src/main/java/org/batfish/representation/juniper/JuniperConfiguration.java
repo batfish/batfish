@@ -1644,20 +1644,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
         newIface.setAccessVlan(vlan.getVlanId());
       }
     }
-    IntegerSpace.Builder vlanIdsBuilder = IntegerSpace.builder();
-    Stream.concat(
-            iface.getAllowedVlanNames().stream()
-                .map(_masterLogicalSystem.getNamedVlans()::get)
-                .filter(Objects::nonNull) // named vlan must exist
-                .map(Vlan::getVlanId)
-                .filter(Objects::nonNull) // named vlan must have assigned numeric id
-                .map(SubRange::new),
-            iface.getAllowedVlans().stream())
-        .forEach(vlanIdsBuilder::including);
-    newIface.setAllowedVlans(vlanIdsBuilder.build());
-
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
+      IntegerSpace.Builder vlanIdsBuilder = IntegerSpace.builder();
+      Stream.concat(
+              iface.getAllowedVlanNames().stream()
+                  .map(_masterLogicalSystem.getNamedVlans()::get)
+                  .filter(Objects::nonNull) // named vlan must exist
+                  .map(Vlan::getVlanId)
+                  .filter(Objects::nonNull) // named vlan must have assigned numeric id
+                  .map(SubRange::new),
+              iface.getAllowedVlans().stream())
+          .forEach(vlanIdsBuilder::including);
+
+      newIface.setAllowedVlans(vlanIdsBuilder.build());
+      // default is no native vlan, untagged are dropped.
+      // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/native-vlan-id-edit-interfaces-qfx-series.html
+      newIface.setNativeVlan(iface.getNativeVlan());
     }
 
     newIface.setSwitchportMode(iface.getSwitchportMode());
@@ -3104,6 +3106,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE,
         JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
         JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE,
+        JuniperStructureUsage.VLAN_INTERFACE,
+        JuniperStructureUsage.VLAN_L3_INTERFACE,
         JuniperStructureUsage.VTEP_SOURCE_INTERFACE);
     markConcreteStructure(
         JuniperStructureType.POLICY_STATEMENT,
@@ -3256,6 +3260,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
     initDefaultPseudoProtocolImportPolicy();
   }
 
+  private @Nonnull Optional<Interface> getInterfaceOrUnitByName(@Nonnull String name) {
+    for (Interface i : _masterLogicalSystem.getInterfaces().values()) {
+      if (name.equals(i.getName())) {
+        return Optional.of(i);
+      }
+      for (Interface u : i.getUnits().values()) {
+        if (name.equals(u.getName())) {
+          return Optional.of(u);
+        }
+      }
+    }
+    return Optional.empty();
+  }
+
   private void convertInterfaces() {
     // Set IRB vlan IDs by resolving l3-interface from named VLANs.
     // If more than one named vlan refers to a given l3-interface, we just keep the first assignment
@@ -3275,6 +3293,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
         continue;
       }
       irbVlanIds.put(l3Interface, vlanId);
+      for (String memberIfName : vlan.getInterfaces()) {
+        Optional<Interface> optionalInterface = getInterfaceOrUnitByName(memberIfName);
+        if (!optionalInterface.isPresent()) {
+          continue;
+        }
+        Interface i = optionalInterface.get();
+        if (i.getSwitchportMode() == SwitchportMode.ACCESS) {
+          i.setAccessVlan(vlan.getName());
+        } else if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
+          i.getAllowedVlanNames().add(vlan.getName());
+        }
+      }
     }
 
     // Get a stream of all interfaces (including Node interfaces)

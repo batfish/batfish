@@ -24001,8 +24001,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATE_CHILD",
             "vrf" : "default"
@@ -24433,8 +24433,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
             "vrf" : "default"
