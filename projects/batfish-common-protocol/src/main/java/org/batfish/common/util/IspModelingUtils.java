@@ -36,6 +36,7 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -262,6 +263,8 @@ public final class IspModelingUtils {
             .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
     bgpProcess.setMultipathEbgp(true);
+    bgpProcess.setMultipathEquivalentAsPathMatchMode(
+        MultipathEquivalentAsPathMatchMode.PATH_LENGTH);
 
     internetConfiguration.setRoutingPolicies(
         ImmutableSortedMap.of(
