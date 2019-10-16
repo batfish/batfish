@@ -247,11 +247,11 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_fromContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_sourceContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_source_translationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_toContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srndt_translated_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srnst_dynamic_ip_and_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_definitionContext;
@@ -2017,13 +2017,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSrn_destination_translation(Srn_destination_translationContext ctx) {
-    if (ctx.srndt_translated_address() == null
-        || ctx.srndt_translated_address().translated_address_list_item() == null) {
-      return;
-    }
-    RuleEndpoint translatedAddress =
-        toRuleEndpoint(ctx.srndt_translated_address().translated_address_list_item());
+  public void exitSrndt_translated_address(Srndt_translated_addressContext ctx) {
+    RuleEndpoint translatedAddress = toRuleEndpoint(ctx.translated_address_list_item());
     _currentNatRule.setDestinationTranslation(new DestinationTranslation(translatedAddress));
 
     // Add reference
@@ -2041,11 +2036,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSrn_source_translation(Srn_source_translationContext ctx) {
-    if (ctx.srnst_dynamic_ip_and_port() == null
-        || ctx.srnst_dynamic_ip_and_port().srnst_translated_address() == null) {
-      return;
-    }
+  public void exitSrnst_dynamic_ip_and_port(Srnst_dynamic_ip_and_portContext ctx) {
     SourceTranslation sourceTranslation = _currentNatRule.getSourceTranslation();
     if (sourceTranslation == null) {
       sourceTranslation = new SourceTranslation();
@@ -2057,10 +2048,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       sourceTranslation.setDynamicIpAndPort(dynamicIpAndPort);
     }
     for (Translated_address_list_itemContext var :
-        ctx.srnst_dynamic_ip_and_port()
-            .srnst_translated_address()
-            .translated_address_list()
-            .translated_address_list_item()) {
+        ctx.srnst_translated_address().translated_address_list().translated_address_list_item()) {
       RuleEndpoint translatedAddress = toRuleEndpoint(var);
       dynamicIpAndPort.addTranslatedAddress(translatedAddress);
 
