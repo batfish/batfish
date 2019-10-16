@@ -17,6 +17,7 @@ public class VirtualRouter implements Serializable {
     _interfaceNames = new TreeSet<>();
     _name = name;
     _ospf = null;
+    _redistProfiles = new TreeMap<>();
     _staticRoutes = new TreeMap<>();
   }
 
@@ -33,6 +34,14 @@ public class VirtualRouter implements Serializable {
       _bgp = new BgpVr();
     }
     return _bgp;
+  }
+
+  public @Nonnull Map<String, RedistProfile> getRedistProfiles() {
+    return _redistProfiles;
+  }
+
+  public @Nonnull RedistProfile getOrCreateRedistProfile(String name) {
+    return _redistProfiles.computeIfAbsent(name, RedistProfile::new);
   }
 
   @Nullable
@@ -66,5 +75,6 @@ public class VirtualRouter implements Serializable {
   private final NavigableSet<String> _interfaceNames;
   private final String _name;
   private @Nullable OspfVr _ospf;
+  private @Nonnull Map<String, RedistProfile> _redistProfiles;
   private final Map<String, StaticRoute> _staticRoutes;
 }

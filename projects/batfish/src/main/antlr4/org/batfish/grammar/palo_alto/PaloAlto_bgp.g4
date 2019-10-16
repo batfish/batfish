@@ -34,6 +34,7 @@ vrp_bgp
         | bgp_null
         | bgp_peer_group
         | bgp_policy
+        | bgp_redist_rules
         | bgp_reject_default_route
         | bgp_router_id
         | bgp_routing_options
@@ -64,6 +65,16 @@ bgp_null
 bgp_peer_group
 :
     PEER_GROUP bgppg_definition?
+;
+
+bgp_redist_rules
+:
+    REDIST_RULES
+    (
+        bgprr_prefix
+        | bgprr_ip_address
+        | bgprr_profile_name
+    )
 ;
 
 bgppg_definition
@@ -304,3 +315,50 @@ bgpro_reflector_cluster_id
 :
     REFLECTOR_CLUSTER_ID id = ip_address
 ;
+
+bgprr_general
+:
+    (
+        bgprrg_address_family_identifier
+        | bgprrg_enable
+        | bgprrg_route_table
+        | bgprrg_set_origin
+    )
+;
+
+bgprrg_address_family_identifier
+:
+    ADDRESS_FAMILY_IDENTIFIER (IPV4 | IPV6)
+;
+
+bgprrg_enable
+:
+    ENABLE yn = yes_or_no
+;
+
+bgprrg_route_table
+:
+    ROUTING_TABLE (BOTH | MULTICAST | UNICAST)
+;
+
+
+bgprrg_set_origin
+:
+    SET_ORIGIN (EGP | IGP | INCOMPLETE)
+;
+
+bgprr_ip_address
+:
+    addr = ip_address bgprr_general
+;
+
+bgprr_prefix
+:
+    prefix = ip_prefix bgprr_general
+;
+
+bgprr_profile_name
+:
+    name = variable bgprr_general
+;
+

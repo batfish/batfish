@@ -82,6 +82,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
@@ -118,6 +119,13 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgproa_aggregate_medContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprog_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprom_always_compare_medContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprom_deterministic_med_comparisonContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprr_ip_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprr_prefixContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprr_profile_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprrg_address_family_identifierContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprrg_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprrg_route_tableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgprrg_set_originContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_authenticationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryptionContext;
@@ -130,6 +138,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefix_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
@@ -273,6 +282,11 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_static_ipv6Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrp_bgpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrp_ospfContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrp_redist_profileContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrprp_actionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrprp_priorityContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrprpf_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrprpf_typeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_admin_distContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_interfaceContext;
@@ -310,6 +324,11 @@ import org.batfish.representation.palo_alto.PolicyRule.Action;
 import org.batfish.representation.palo_alto.PolicyRuleMatchFromPeerSet;
 import org.batfish.representation.palo_alto.PolicyRuleUpdateMetric;
 import org.batfish.representation.palo_alto.PolicyRuleUpdateOrigin;
+import org.batfish.representation.palo_alto.RedistProfile;
+import org.batfish.representation.palo_alto.RedistRule;
+import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
+import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
+import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.Rule;
 import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.Service;
@@ -362,6 +381,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private OspfAreaStub _currentOspfStubAreaType;
   private OspfAreaNssa _currentOspfNssaAreaType;
   private OspfVr _currentOspfVr;
+  private RedistProfile _currentRedistProfile;
+  private RedistRule _currentRedistRule;
   private RulebaseId _currentRuleScope;
   private Rule _currentRule;
   private Service _currentService;
@@ -555,6 +576,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return ImmutableList.of();
     }
     return ctx.variable_list_item();
+  }
+
+  /** A helper function to extract all variables from an optional list of prefixes. */
+  private static List<Ip_prefixContext> prefixes(@Nullable Ip_prefix_listContext ctx) {
+    if (ctx == null || ctx.ip_prefix() == null) {
+      return ImmutableList.of();
+    }
+    return ctx.ip_prefix();
   }
 
   @Override
@@ -810,6 +839,80 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitBgp_router_id(Bgp_router_idContext ctx) {
     toIp(ctx, ctx.addr, "BGP router-id").ifPresent(_currentBgpVr::setRouterId);
+  }
+
+  @Override
+  public void enterBgprr_prefix(Bgprr_prefixContext ctx) {
+    _currentRedistRule =
+        _currentBgpVr.getOrCreateRedistRule(
+            new RedistRuleRefNameOrPrefix(toPrefix(ctx.prefix), null));
+  }
+
+  @Override
+  public void enterBgprr_ip_address(Bgprr_ip_addressContext ctx) {
+    _currentRedistRule =
+        _currentBgpVr.getOrCreateRedistRule(
+            new RedistRuleRefNameOrPrefix(toIp(ctx.ip_address()).toPrefix(), null));
+  }
+
+  @Override
+  public void enterBgprr_profile_name(Bgprr_profile_nameContext ctx) {
+    _currentRedistRule =
+        _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(null, getText(ctx.name)));
+  }
+
+  @Override
+  public void exitBgprr_prefix(Bgprr_prefixContext ctx) {
+    _currentRedistRule = null;
+  }
+
+  @Override
+  public void exitBgprr_ip_address(Bgprr_ip_addressContext ctx) {
+    _currentRedistRule = null;
+  }
+
+  @Override
+  public void exitBgprr_profile_name(Bgprr_profile_nameContext ctx) {
+    _currentRedistRule = null;
+  }
+
+  @Override
+  public void exitBgprrg_address_family_identifier(Bgprrg_address_family_identifierContext ctx) {
+    if (ctx.IPV4() != null) {
+      _currentRedistRule.setAddressFamilyIdentifier(AddressFamilyIdentifier.IPV4);
+    } else {
+      assert ctx.IPV6() != null;
+      _currentRedistRule.setAddressFamilyIdentifier(AddressFamilyIdentifier.IPV6);
+    }
+  }
+
+  @Override
+  public void exitBgprrg_route_table(Bgprrg_route_tableContext ctx) {
+    if (ctx.BOTH() != null) {
+      _currentRedistRule.setRouteTableType(RouteTableType.BOTH);
+    } else if (ctx.MULTICAST() != null) {
+      _currentRedistRule.setRouteTableType(RouteTableType.MULTICAST);
+    } else {
+      assert ctx.UNICAST() != null;
+      _currentRedistRule.setRouteTableType(RouteTableType.UNICAST);
+    }
+  }
+
+  @Override
+  public void exitBgprrg_enable(Bgprrg_enableContext ctx) {
+    _currentRedistRule.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgprrg_set_origin(Bgprrg_set_originContext ctx) {
+    if (ctx.EGP() != null) {
+      _currentRedistRule.setOrigin(OriginType.EGP);
+    } else if (ctx.IGP() != null) {
+      _currentRedistRule.setOrigin(OriginType.IGP);
+    } else {
+      assert ctx.INCOMPLETE() != null;
+      _currentRedistRule.setOrigin(OriginType.INCOMPLETE);
+    }
   }
 
   @Override
@@ -1734,6 +1837,72 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitVrp_ospf(Vrp_ospfContext ctx) {
     _currentOspfVr = null;
+  }
+
+  @Override
+  public void enterVrp_redist_profile(Vrp_redist_profileContext ctx) {
+    _currentRedistProfile = _currentVirtualRouter.getOrCreateRedistProfile(getText(ctx.name));
+  }
+
+  @Override
+  public void exitVrp_redist_profile(Vrp_redist_profileContext ctx) {
+    _currentRedistProfile = null;
+  }
+
+  @Override
+  public void exitVrprp_action(Vrprp_actionContext ctx) {
+    if (ctx.REDIST() != null) {
+      _currentRedistProfile.setAction(RedistProfile.Action.REDIST);
+    } else {
+      assert ctx.NO_REDIST() != null;
+      _currentRedistProfile.setAction(RedistProfile.Action.NO_REDIST);
+    }
+  }
+
+  @Override
+  public void exitVrprp_priority(Vrprp_priorityContext ctx) {
+    _currentRedistProfile.setPriority(toInteger(ctx.redist_profile_priority().uint8()));
+  }
+
+  @Override
+  public void exitVrprpf_destination(Vrprpf_destinationContext ctx) {
+    for (Ip_prefixContext prefix : prefixes(ctx.ip_prefix_list())) {
+      _currentRedistProfile.getOrCreateFilter().getDestinationPrefixes().add(toPrefix(prefix));
+    }
+  }
+
+  @Override
+  public void exitVrprpf_type(Vrprpf_typeContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String protocol = getText(var);
+      RoutingProtocol routingProtocol = null;
+      switch (protocol) {
+        case "bgp":
+          routingProtocol = RoutingProtocol.BGP;
+          break;
+        case "ospf":
+          routingProtocol = RoutingProtocol.OSPF;
+          break;
+        case "static":
+          routingProtocol = RoutingProtocol.STATIC;
+          break;
+        case "rip":
+          routingProtocol = RoutingProtocol.RIP;
+          break;
+        case "connect":
+          routingProtocol = RoutingProtocol.CONNECTED;
+          break;
+        default:
+          _w.redFlag(
+              String.format(
+                  "type = %s is not valid under redist-profile %s",
+                  protocol, _currentRedistProfile.getName()));
+          break;
+      }
+      if (routingProtocol != null) {
+        _currentRedistProfile.getOrCreateFilter().getRoutingProtocols().add(routingProtocol);
+      }
+    }
   }
 
   @Override

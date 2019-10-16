@@ -36,6 +36,21 @@ ip_prefix
     IP_PREFIX
 ;
 
+ip_prefix_list
+:
+    (
+        ip_prefix
+        |
+        (
+            OPEN_BRACKET
+            (
+                ip_prefix
+            )*
+            CLOSE_BRACKET
+        )
+    )
+;
+
 src_or_dst_list
 :
     (

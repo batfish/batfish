@@ -49,6 +49,11 @@ ADDRESS_PREFIX
     'address-prefix'
 ;
 
+ADDRESS_FAMILY_IDENTIFIER
+:
+    'address-family-identifier'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
@@ -184,6 +189,11 @@ BGP
     'bgp'
 ;
 
+BOTH
+:
+    'both'
+;
+
 BOTNET
 :
     'botnet'
@@ -232,6 +242,11 @@ COMMENTS
 COMMUNITY
 :
     'community'
+;
+
+CONNECT
+:
+    'connect'
 ;
 
 CONFIG
@@ -639,6 +654,11 @@ IPSEC_CRYPTO_PROFILES
     'ipsec-crypto-profiles'
 ;
 
+IPV4
+:
+    'ipv4'
+;
+
 IPV6
 :
     'ipv6'
@@ -749,6 +769,11 @@ MTU
     'mtu'
 ;
 
+MULTICAST
+:
+    'multicast'
+;
+
 NAT
 :
     'nat'
@@ -792,6 +817,11 @@ NEXTHOP
 NO
 :
     'no'
+;
+
+NO_REDIST
+:
+    'no-redist'
 ;
 
 NON_CLIENT
@@ -984,9 +1014,19 @@ RECURRING
     'recurring'
 ;
 
+REDIST
+:
+    'redist'
+;
+
 REDIST_PROFILE
 :
     'redist-profile'
+;
+
+REDIST_RULES
+:
+    'redist-rules'
 ;
 
 REFLECTOR_CLIENT
@@ -1037,6 +1077,11 @@ RIP
 RISK
 :
     'risk'
+;
+
+ROUTE_TABLE
+:
+    'route-table'
 ;
 
 ROUTER_ID
@@ -1117,6 +1162,11 @@ SERVICE_GROUP
 SET
 :
     'set'
+;
+
+SET_ORIGIN
+:
+    'set-origin'
 ;
 
 SETTING
@@ -1287,6 +1337,11 @@ TYPE
 UDP
 :
     'udp'
+;
+
+UNICAST
+:
+    'unicast'
 ;
 
 UNITS

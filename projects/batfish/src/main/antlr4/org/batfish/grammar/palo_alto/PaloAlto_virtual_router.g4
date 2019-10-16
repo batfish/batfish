@@ -1,6 +1,6 @@
 parser grammar PaloAlto_virtual_router;
 
-import PaloAlto_common;
+import PaloAlto_common, PaloAlto_redist_profile;
 
 options {
     tokenVocab = PaloAltoLexer;
@@ -99,6 +99,7 @@ vr_protocol
     (
         vrp_bgp
         | vrp_ospf
+        | vrp_redist_profile
         | vrp_rip
     )?
 ;
