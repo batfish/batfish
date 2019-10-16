@@ -324,8 +324,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (ctx.summary_only != null) {
       a.setSummaryOnly(true);
     }
-    // TODO: conversion
-    todo(ctx);
   }
 
   @Override
