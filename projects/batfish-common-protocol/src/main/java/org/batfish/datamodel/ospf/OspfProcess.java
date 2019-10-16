@@ -52,7 +52,7 @@ public final class OspfProcess implements Serializable {
     @Nullable private Long _maxMetricStubNetworks;
     @Nullable private Long _maxMetricSummaryNetworks;
     @Nullable private Long _maxMetricTransitLinks;
-    @Nullable private Map<String, OspfNeighborConfig> _neighbors;
+    @Nullable private Map<String, OspfNeighborConfig> _neighborConfigs;
     @Nullable private String _processId;
     @Nullable private Double _referenceBandwidth;
     @Nullable private Vrf _vrf;
@@ -69,6 +69,7 @@ public final class OspfProcess implements Serializable {
       _adminCosts = computeDefaultAdminCosts(ConfigurationFormat.CISCO_IOS);
       _areas = ImmutableMap.of();
       _exportPolicySources = ImmutableSet.of();
+      _neighborConfigs = ImmutableMap.of();
       // Default to Cisco IOS value
       _summaryAdminCost =
           RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(ConfigurationFormat.CISCO_IOS);
@@ -97,7 +98,7 @@ public final class OspfProcess implements Serializable {
               _maxMetricStubNetworks,
               _maxMetricSummaryNetworks,
               _maxMetricTransitLinks,
-              _neighbors,
+              _neighborConfigs,
               _processId != null ? _processId : generateName(),
               _referenceBandwidth,
               _rfc1583Compatible,
@@ -140,8 +141,8 @@ public final class OspfProcess implements Serializable {
       return this;
     }
 
-    public Builder setNeighbors(Map<String, OspfNeighborConfig> neighbors) {
-      _neighbors = neighbors;
+    public Builder setNeighborConfigs(Map<String, OspfNeighborConfig> neighbors) {
+      _neighborConfigs = neighbors;
       return this;
     }
 
