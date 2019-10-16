@@ -51,10 +51,10 @@ public final class FlowEvaluator {
 
     @Override
     public Boolean visitFibLookupOutgoingInterfaceMatchesOneOf(
-        FibLookupOutgoingInterfaceMatchesOneOf expr) {
+        FibLookupOutgoingInterfaceIsOneOf expr) {
       // TODO:
       throw new UnsupportedOperationException(
-          "FibLookupOutgoingInterfaceMatchesOneOf in FlowEvaluator not yet supported");
+          "FibLookupOutgoingInterfaceIsOneOf in FlowEvaluator not yet supported");
     }
   }
 

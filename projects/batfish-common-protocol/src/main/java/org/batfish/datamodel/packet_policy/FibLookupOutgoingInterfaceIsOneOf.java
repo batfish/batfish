@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
  *
  * <p><em>This does not route the packet/flow</em>
  */
-public class FibLookupOutgoingInterfaceMatchesOneOf implements BoolExpr {
+public class FibLookupOutgoingInterfaceIsOneOf implements BoolExpr {
 
   @Nonnull private final VrfExpr _vrf;
   @Nonnull private final Set<String> _interfaceNames;
@@ -27,7 +27,7 @@ public class FibLookupOutgoingInterfaceMatchesOneOf implements BoolExpr {
   private static final String PROP_VRF = "vrf";
   private static final String PROP_INTERFACES = "interfaces";
 
-  public FibLookupOutgoingInterfaceMatchesOneOf(VrfExpr vrf, Iterable<String> interfaceNames) {
+  public FibLookupOutgoingInterfaceIsOneOf(VrfExpr vrf, Iterable<String> interfaceNames) {
     _vrf = vrf;
     _interfaceNames = ImmutableSet.copyOf(interfaceNames);
   }
@@ -60,10 +60,10 @@ public class FibLookupOutgoingInterfaceMatchesOneOf implements BoolExpr {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof FibLookupOutgoingInterfaceMatchesOneOf)) {
+    if (!(o instanceof FibLookupOutgoingInterfaceIsOneOf)) {
       return false;
     }
-    FibLookupOutgoingInterfaceMatchesOneOf that = (FibLookupOutgoingInterfaceMatchesOneOf) o;
+    FibLookupOutgoingInterfaceIsOneOf that = (FibLookupOutgoingInterfaceIsOneOf) o;
     return _vrf.equals(that._vrf) && _interfaceNames.equals(that._interfaceNames);
   }
 
@@ -73,11 +73,10 @@ public class FibLookupOutgoingInterfaceMatchesOneOf implements BoolExpr {
   }
 
   @JsonCreator
-  private static FibLookupOutgoingInterfaceMatchesOneOf create(
+  private static FibLookupOutgoingInterfaceIsOneOf create(
       @Nullable @JsonProperty(PROP_VRF) VrfExpr vrf,
       @Nullable @JsonProperty(PROP_INTERFACES) Set<String> interfaces) {
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
-    return new FibLookupOutgoingInterfaceMatchesOneOf(
-        vrf, firstNonNull(interfaces, ImmutableSet.of()));
+    return new FibLookupOutgoingInterfaceIsOneOf(vrf, firstNonNull(interfaces, ImmutableSet.of()));
   }
 }
