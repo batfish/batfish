@@ -234,7 +234,7 @@ public class OspfTopologyUtilsTest {
                             .build()))
                 .setProcessId(procName)
                 .setReferenceBandwidth(7.0)
-                .setNeighbors(
+                .setNeighborConfigs(
                     ImmutableMap.of(
                         ifaceName,
                         OspfNeighborConfig.builder()
@@ -275,7 +275,7 @@ public class OspfTopologyUtilsTest {
             OspfProcess.builder()
                 .setProcessId(procName)
                 .setReferenceBandwidth(7.0)
-                .setNeighbors(
+                .setNeighborConfigs(
                     ImmutableMap.of(
                         ifaceName,
                         OspfNeighborConfig.builder()

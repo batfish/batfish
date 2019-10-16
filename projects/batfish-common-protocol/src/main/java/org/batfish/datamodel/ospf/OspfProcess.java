@@ -1,14 +1,16 @@
 package org.batfish.datamodel.ospf;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Optional.ofNullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
@@ -44,29 +46,47 @@ public final class OspfProcess implements Serializable {
   /** Builder for {@link OspfProcess} */
   public static class Builder extends NetworkFactoryBuilder<OspfProcess> {
 
-    @Nullable private SortedMap<RoutingProtocol, Integer> _adminCosts;
+    @Nullable private Map<RoutingProtocol, Integer> _adminCosts;
     @Nullable private String _exportPolicy;
     @Nullable private Long _maxMetricExternalNetworks;
     @Nullable private Long _maxMetricStubNetworks;
     @Nullable private Long _maxMetricSummaryNetworks;
     @Nullable private Long _maxMetricTransitLinks;
-    @Nullable private Map<String, OspfNeighborConfig> _neighbors;
+    @Nullable private Map<String, OspfNeighborConfig> _neighborConfigs;
     @Nullable private String _processId;
     @Nullable private Double _referenceBandwidth;
     @Nullable private Vrf _vrf;
-    @Nullable private SortedMap<Long, OspfArea> _areas;
-    @Nullable private SortedSet<String> _exportPolicySources;
-    @Nullable private SortedSet<GeneratedRoute> _generatedRoutes;
+    @Nullable private Map<Long, OspfArea> _areas;
+    @Nullable private Set<String> _exportPolicySources;
+    @Nullable private Set<GeneratedRoute> _generatedRoutes;
     @Nullable private Boolean _rfc1583Compatible;
     @Nullable private Ip _routerId;
     @Nullable private Integer _summaryAdminCost;
 
     private Builder(@Nullable NetworkFactory networkFactory) {
       super(networkFactory, OspfProcess.class);
+      // Default to Cisco IOS values
+      _adminCosts = computeDefaultAdminCosts(ConfigurationFormat.CISCO_IOS);
+      _areas = ImmutableMap.of();
+      _exportPolicySources = ImmutableSet.of();
+      _neighborConfigs = ImmutableMap.of();
+      // Default to Cisco IOS value
+      _summaryAdminCost =
+          RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(ConfigurationFormat.CISCO_IOS);
+      _generatedRoutes = ImmutableSet.of();
     }
 
     @Override
-    public OspfProcess build() {
+    public @Nonnull OspfProcess build() {
+      checkArgument(_referenceBandwidth != null, "Missing %s", PROP_REFERENCE_BANDWIDTH);
+      checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
+      checkArgument(_adminCosts.keySet().containsAll(REQUIRES_ADMIN));
+      // Ensure area numbers match up
+      checkArgument(
+          _areas.entrySet().stream()
+              .allMatch(entry -> entry.getKey() == entry.getValue().getAreaNumber()),
+          "Area number does not match up with map key");
+
       OspfProcess ospfProcess =
           new OspfProcess(
               _adminCosts,
@@ -78,7 +98,7 @@ public final class OspfProcess implements Serializable {
               _maxMetricStubNetworks,
               _maxMetricSummaryNetworks,
               _maxMetricTransitLinks,
-              _neighbors,
+              _neighborConfigs,
               _processId != null ? _processId : generateName(),
               _referenceBandwidth,
               _rfc1583Compatible,
@@ -121,8 +141,8 @@ public final class OspfProcess implements Serializable {
       return this;
     }
 
-    public Builder setNeighbors(Map<String, OspfNeighborConfig> neighbors) {
-      _neighbors = neighbors;
+    public Builder setNeighborConfigs(Map<String, OspfNeighborConfig> neighbors) {
+      _neighborConfigs = neighbors;
       return this;
     }
 
@@ -141,7 +161,7 @@ public final class OspfProcess implements Serializable {
       return this;
     }
 
-    public Builder setAreas(SortedMap<Long, OspfArea> areas) {
+    public Builder setAreas(Map<Long, OspfArea> areas) {
       _areas = areas;
       return this;
     }
@@ -151,12 +171,12 @@ public final class OspfProcess implements Serializable {
       return this;
     }
 
-    public Builder setExportPolicySources(SortedSet<String> exportPolicySources) {
+    public Builder setExportPolicySources(Set<String> exportPolicySources) {
       _exportPolicySources = exportPolicySources;
       return this;
     }
 
-    public Builder setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {
+    public Builder setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
       return this;
     }
@@ -203,27 +223,27 @@ public final class OspfProcess implements Serializable {
   private static final String PROP_SUMMARY_ADMIN = "summaryAdminCost";
 
   /** Builder to be used for tests (maintains pointer to {@link NetworkFactory} */
-  public static Builder builder(@Nullable NetworkFactory networkFactory) {
+  public static @Nonnull Builder builder(@Nullable NetworkFactory networkFactory) {
     return new Builder(networkFactory);
   }
 
-  public static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder(null);
   }
 
-  @Nonnull private final SortedMap<RoutingProtocol, Integer> _adminCosts;
+  @Nonnull private final Map<RoutingProtocol, Integer> _adminCosts;
 
-  @Nonnull private SortedMap<Long, OspfArea> _areas;
+  @Nonnull private Map<Long, OspfArea> _areas;
   @Nullable private String _exportPolicy;
-  @Nonnull private SortedSet<String> _exportPolicySources;
-  @Nonnull private SortedSet<GeneratedRoute> _generatedRoutes;
+  @Nonnull private Set<String> _exportPolicySources;
+  @Nonnull private Set<GeneratedRoute> _generatedRoutes;
   @Nullable private Long _maxMetricExternalNetworks;
   @Nullable private Long _maxMetricStubNetworks;
   @Nullable private Long _maxMetricSummaryNetworks;
   @Nullable private Long _maxMetricTransitLinks;
   private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
   /** Mapping from interface name to an OSPF config */
-  @Nonnull private SortedMap<String, OspfNeighborConfig> _ospfNeighborConfigs;
+  @Nonnull private Map<String, OspfNeighborConfig> _ospfNeighborConfigs;
 
   @Nonnull private final String _processId;
   @Nonnull private Double _referenceBandwidth;
@@ -231,8 +251,44 @@ public final class OspfProcess implements Serializable {
   @Nonnull private Ip _routerId;
   private int _summaryAdminCost;
 
-  @JsonCreator
   private OspfProcess(
+      Map<RoutingProtocol, Integer> adminCosts,
+      Map<Long, OspfArea> areas,
+      @Nullable String exportPolicy,
+      Set<String> exportPolicySources,
+      Set<GeneratedRoute> generatedRoutes,
+      @Nullable Long maxMetricExternalNetworks,
+      @Nullable Long maxMetricStubNetworks,
+      @Nullable Long maxMetricSummaryNetworks,
+      @Nullable Long maxMetricTransitLinks,
+      Map<String, OspfNeighborConfig> ospfNeighborConfigs,
+      String processId,
+      Double referenceBandwidth,
+      @Nullable Boolean rfc1583Compatible,
+      Ip routerId,
+      Integer summaryAdminCost) {
+    _adminCosts = adminCosts;
+    _areas = areas;
+    _exportPolicy = exportPolicy;
+    _exportPolicySources = exportPolicySources;
+    _generatedRoutes = generatedRoutes;
+    _maxMetricExternalNetworks = maxMetricExternalNetworks;
+    _maxMetricStubNetworks = maxMetricStubNetworks;
+    _maxMetricSummaryNetworks = maxMetricSummaryNetworks;
+    _maxMetricTransitLinks = maxMetricTransitLinks;
+    _ospfNeighborConfigs = ospfNeighborConfigs;
+    _processId = processId;
+    _referenceBandwidth = referenceBandwidth;
+    _rfc1583Compatible = rfc1583Compatible;
+    _routerId = routerId;
+    _summaryAdminCost = summaryAdminCost;
+
+    // transient
+    _ospfNeighbors = new TreeMap<>();
+  }
+
+  @JsonCreator
+  private static @Nonnull OspfProcess create(
       @Nullable @JsonProperty(PROP_ADMIN_COSTS) SortedMap<RoutingProtocol, Integer> adminCosts,
       @Nullable @JsonProperty(PROP_AREAS) SortedMap<Long, OspfArea> areas,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
@@ -242,47 +298,32 @@ public final class OspfProcess implements Serializable {
       @Nullable @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS) Long maxMetricStubNetworks,
       @Nullable @JsonProperty(PROP_MAX_METRIC_SUMMARY_NETWORKS) Long maxMetricSummaryNetworks,
       @Nullable @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS) Long maxMetricTransitLinks,
-      @Nullable @JsonProperty(PROP_NEIGHBORS) Map<String, OspfNeighborConfig> neighbors,
       @Nullable @JsonProperty(PROP_PROCESS_ID) String processId,
       @Nullable @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth,
       @Nullable @JsonProperty(PROP_RFC1583) Boolean rfc1583Compatible,
       @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
       @Nullable @JsonProperty(PROP_SUMMARY_ADMIN) Integer summaryAdminCost) {
+    OspfProcess.Builder builder = builder();
     checkArgument(processId != null, "Missing %s", PROP_PROCESS_ID);
-    checkArgument(referenceBandwidth != null, "Missing %s", PROP_REFERENCE_BANDWIDTH);
-    checkArgument(routerId != null, "Missing %s", PROP_ROUTER_ID);
-    _adminCosts =
-        ImmutableSortedMap.copyOf(
-            firstNonNull(
-                adminCosts,
-                // In the absence of provided values, default to Cisco IOS values
-                computeDefaultAdminCosts(ConfigurationFormat.CISCO_IOS)));
-    checkArgument(_adminCosts.keySet().containsAll(REQUIRES_ADMIN));
-    _areas = firstNonNull(areas, ImmutableSortedMap.of());
-    // Ensure area numbers match up
-    checkArgument(
-        _areas.entrySet().stream()
-            .allMatch(entry -> entry.getKey() == entry.getValue().getAreaNumber()),
-        "Area number does not match up with map key");
-    _exportPolicy = exportPolicy;
-    _exportPolicySources = firstNonNull(exportPolicySources, ImmutableSortedSet.of());
-    _generatedRoutes = firstNonNull(generatedRoutes, ImmutableSortedSet.of());
-    _maxMetricExternalNetworks = maxMetricExternalNetworks;
-    _maxMetricStubNetworks = maxMetricStubNetworks;
-    _maxMetricSummaryNetworks = maxMetricSummaryNetworks;
-    _maxMetricTransitLinks = maxMetricTransitLinks;
-    _ospfNeighbors = new TreeMap<>();
-    _ospfNeighborConfigs =
-        ImmutableSortedMap.copyOf(firstNonNull(neighbors, ImmutableSortedMap.of()));
-    _processId = processId;
-    _referenceBandwidth = referenceBandwidth;
-    _rfc1583Compatible = rfc1583Compatible;
-    _routerId = routerId;
-    // In the absence of provided value, default to Cisco IOS value
-    _summaryAdminCost =
-        firstNonNull(
-            summaryAdminCost,
-            RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(ConfigurationFormat.CISCO_IOS));
+    builder.setProcessId(processId);
+    ofNullable(referenceBandwidth).ifPresent(builder::setReferenceBandwidth);
+    ofNullable(routerId).ifPresent(builder::setRouterId);
+    ofNullable(adminCosts).ifPresent(builder::setAdminCosts);
+    ofNullable(areas).ifPresent(builder::setAreas);
+    builder.setExportPolicyName(exportPolicy);
+    ofNullable(exportPolicySources).ifPresent(builder::setExportPolicySources);
+    ofNullable(generatedRoutes).ifPresent(builder::setGeneratedRoutes);
+    builder
+        .setMaxMetricExternalNetworks(maxMetricExternalNetworks)
+        .setMaxMetricStubNetworks(maxMetricStubNetworks)
+        .setMaxMetricSummaryNetworks(maxMetricSummaryNetworks)
+        .setMaxMetricTransitLinks(maxMetricTransitLinks);
+    ofNullable(processId).ifPresent(builder::setProcessId);
+    ofNullable(referenceBandwidth).ifPresent(builder::setReferenceBandwidth);
+    builder.setRfc1583Compatible(rfc1583Compatible);
+    ofNullable(routerId).ifPresent(builder::setRouterId);
+    ofNullable(summaryAdminCost).ifPresent(builder::setSummaryAdminCost);
+    return builder.build();
   }
 
   /** Compute default admin costs based on a given configuration format */
@@ -325,16 +366,28 @@ public final class OspfProcess implements Serializable {
    * #REQUIRES_ADMIN})
    */
   @Nonnull
-  @JsonProperty(PROP_ADMIN_COSTS)
-  public SortedMap<RoutingProtocol, Integer> getAdminCosts() {
+  @JsonIgnore
+  public Map<RoutingProtocol, Integer> getAdminCosts() {
     return _adminCosts;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_ADMIN_COSTS)
+  private SortedMap<RoutingProtocol, Integer> getAdminCostsSorted() {
+    return ImmutableSortedMap.copyOf(_adminCosts);
   }
 
   /** The OSPF areas contained in this process */
   @Nonnull
-  @JsonProperty(PROP_AREAS)
-  public SortedMap<Long, OspfArea> getAreas() {
+  @JsonIgnore
+  public Map<Long, OspfArea> getAreas() {
     return _areas;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_AREAS)
+  private SortedMap<Long, OspfArea> getAreasSorted() {
+    return ImmutableSortedMap.copyOf(_areas);
   }
 
   /**
@@ -352,9 +405,15 @@ public final class OspfProcess implements Serializable {
    * immutable.
    */
   @Nonnull
-  @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
-  public SortedSet<String> getExportPolicySources() {
+  @JsonIgnore
+  public Set<String> getExportPolicySources() {
     return _exportPolicySources;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
+  private SortedSet<String> getExportPolicySourcesSorted() {
+    return ImmutableSortedSet.copyOf(_exportPolicySources);
   }
 
   /**
@@ -362,9 +421,15 @@ public final class OspfProcess implements Serializable {
    * the main RIB.
    */
   @Nonnull
-  @JsonProperty(PROP_GENERATED_ROUTES)
-  public SortedSet<GeneratedRoute> getGeneratedRoutes() {
+  @JsonIgnore
+  public Set<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_GENERATED_ROUTES)
+  private SortedSet<GeneratedRoute> getGeneratedRoutesSorted() {
+    return ImmutableSortedSet.copyOf(_generatedRoutes);
   }
 
   @Nullable
@@ -396,7 +461,7 @@ public final class OspfProcess implements Serializable {
     return _ospfNeighbors;
   }
 
-  @JsonProperty(PROP_NEIGHBORS)
+  @JsonIgnore
   public Map<String, OspfNeighborConfig> getOspfNeighborConfigs() {
     return _ospfNeighborConfigs;
   }
@@ -454,7 +519,8 @@ public final class OspfProcess implements Serializable {
     return areas.contains(0L) && areas.size() > 1;
   }
 
-  public void setAreas(SortedMap<Long, OspfArea> areas) {
+  @JsonIgnore
+  public void setAreas(Map<Long, OspfArea> areas) {
     // Ensure area numbers match up
     checkArgument(
         areas.entrySet().stream()
@@ -532,4 +598,8 @@ public final class OspfProcess implements Serializable {
   public void setRouterId(@Nonnull Ip id) {
     _routerId = id;
   }
+
+  @Deprecated
+  @JsonProperty(PROP_NEIGHBORS)
+  private void setNeighborsDeprecated(JsonNode n) {}
 }
