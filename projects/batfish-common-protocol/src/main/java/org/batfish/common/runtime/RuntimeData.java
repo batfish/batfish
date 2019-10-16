@@ -99,6 +99,6 @@ public final class RuntimeData {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("interfaces", _interfaces).toString();
+    return MoreObjects.toStringHelper(this).add(PROP_INTERFACES, _interfaces).toString();
   }
 }

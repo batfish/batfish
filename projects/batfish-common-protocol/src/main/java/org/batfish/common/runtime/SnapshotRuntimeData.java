@@ -182,6 +182,6 @@ public final class SnapshotRuntimeData {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("runtimeData", _runtimeData).toString();
+    return MoreObjects.toStringHelper(this).add(PROP_RUNTIME_DATA, _runtimeData).toString();
   }
 }

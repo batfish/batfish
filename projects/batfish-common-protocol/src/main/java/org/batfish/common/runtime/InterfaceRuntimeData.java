@@ -106,9 +106,9 @@ public final class InterfaceRuntimeData {
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
-        .add("bandwidth", _bandwidth)
-        .add("lineUp", _lineUp)
-        .add("speed", _speed)
+        .add(PROP_BANDWIDTH, _bandwidth)
+        .add(PROP_LINE_UP, _lineUp)
+        .add(PROP_SPEED, _speed)
         .toString();
   }
 }
