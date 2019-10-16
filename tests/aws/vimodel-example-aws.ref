@@ -2553,32 +2553,6 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "Ethernet1/0" : {
-                    "area" : 0,
-                    "hostname" : "lhr-border-02",
-                    "interface" : "Ethernet1/0",
-                    "ip" : "10.10.10.38",
-                    "passive" : false,
-                    "vrf" : "default"
-                  },
-                  "Ethernet1/1" : {
-                    "area" : 0,
-                    "hostname" : "lhr-border-02",
-                    "interface" : "Ethernet1/1",
-                    "ip" : "10.10.10.46",
-                    "passive" : false,
-                    "vrf" : "default"
-                  },
-                  "Loopback0" : {
-                    "area" : 0,
-                    "hostname" : "lhr-border-02",
-                    "interface" : "Loopback0",
-                    "ip" : "10.10.255.8",
-                    "passive" : true,
-                    "vrf" : "default"
-                  }
-                },
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "10.10.255.8",

@@ -191,7 +191,7 @@ public class OspfRoutingProcessTest {
             .setVrf(vrf)
             .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG, 1L, area1Config))
             .setAdminCosts(ADMIN_COSTS)
-            .setNeighbors(
+            .setNeighborConfigs(
                 ImmutableMap.of(
                     ACTIVE_IFACE_NAME,
                     OspfNeighborConfig.builder()

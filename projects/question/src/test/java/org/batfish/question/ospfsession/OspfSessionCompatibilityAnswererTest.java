@@ -71,7 +71,7 @@ public class OspfSessionCompatibilityAnswererTest {
     nf.ospfProcessBuilder()
         .setVrf(vrf)
         .setProcessId("proc")
-        .setNeighbors(
+        .setNeighborConfigs(
             ImmutableMap.of(
                 iface,
                 OspfNeighborConfig.builder()
