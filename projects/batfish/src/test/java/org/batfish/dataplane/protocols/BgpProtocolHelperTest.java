@@ -190,16 +190,6 @@ public class BgpProtocolHelperTest {
         equalTo(
             AsPath.of(ImmutableList.<AsSet>builder().add(AsSet.of(2)).add(AsSet.of(777)).build())));
 
-    // Clear confederations, prepend own AS
-    resetDefaultRouteBuilders();
-    _baseBgpRouteBuilder.setAsPath(baseAsPath);
-    transformBgpRoutePostExport(
-        _baseBgpRouteBuilder, true, ConfedSessionType.ACROSS_CONFED_BORDER, 3, DEST_IP, Ip.ZERO);
-    assertThat(
-        _baseBgpRouteBuilder.getAsPath(),
-        equalTo(
-            AsPath.of(ImmutableList.<AsSet>builder().add(AsSet.of(3)).add(AsSet.of(777)).build())));
-
     // Prepend confederation AS set
     resetDefaultRouteBuilders();
     _baseBgpRouteBuilder.setAsPath(baseAsPath);

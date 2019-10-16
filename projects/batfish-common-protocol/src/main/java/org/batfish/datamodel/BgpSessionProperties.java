@@ -355,7 +355,7 @@ public final class BgpSessionProperties {
         confedSessionType);
   }
 
-  /** For test use only. */
+  /** For test use only. Does not support confederations. */
   @VisibleForTesting
   public static BgpSessionProperties from(
       BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
