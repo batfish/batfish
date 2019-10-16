@@ -460,6 +460,7 @@ class FlowTracer {
         FlowEvaluator.evaluate(
             _currentFlow,
             incomingInterface.getName(),
+            incomingInterface.getVrfName(),
             policy,
             owner.getIpAccessLists(),
             owner.getIpSpaces());

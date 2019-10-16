@@ -13,8 +13,8 @@ import org.batfish.datamodel.transformation.TransformationEvaluator;
 /**
  * Evaluates a {@link PacketPolicy} against a given {@link Flow}.
  *
- * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, PacketPolicy, Map, Map)}
- * which will return a {@link FlowResult}.
+ * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, String, PacketPolicy, Map,
+ * Map)} which will return a {@link FlowResult}.
  */
 public final class FlowEvaluator {
 
@@ -23,6 +23,7 @@ public final class FlowEvaluator {
 
   // Start state
   @Nonnull private final String _srcInterface;
+  @Nonnull private final String _srcInterfaceVrf;
 
   // Modified state
   @Nonnull private Flow.Builder _currentFlow;
@@ -30,6 +31,7 @@ public final class FlowEvaluator {
   // Expr and stmt visitors
   @Nonnull private BoolExprEvaluator _boolExprEvaluator = new BoolExprEvaluator();
   @Nonnull private StatementEvaluator _stmtEvaluator = new StatementEvaluator();
+  @Nonnull private VrfExprEvaluator _vrfExprEvaluator = new VrfExprEvaluator();
 
   private final class BoolExprEvaluator implements BoolExprVisitor<Boolean> {
 
@@ -101,10 +103,12 @@ public final class FlowEvaluator {
   private FlowEvaluator(
       Flow originalFlow,
       String srcInterface,
+      String srcInterfaceVrf,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
     _currentFlow = originalFlow.toBuilder();
     _srcInterface = srcInterface;
+    _srcInterfaceVrf = srcInterfaceVrf;
     _availableAcls = availableAcls;
     _namedIpSpaces = namedIpSpaces;
   }
@@ -127,10 +131,12 @@ public final class FlowEvaluator {
   public static FlowResult evaluate(
       Flow f,
       String srcInterface,
+      String srcInterfaceVrf,
       PacketPolicy policy,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
-    return new FlowEvaluator(f, srcInterface, availableAcls, namedIpSpaces).evaluate(policy);
+    return new FlowEvaluator(f, srcInterface, srcInterfaceVrf, availableAcls, namedIpSpaces)
+        .evaluate(policy);
   }
 
   /** Combination of final (possibly transformed) {@link Flow} and the action taken */
@@ -167,6 +173,19 @@ public final class FlowEvaluator {
     @Override
     public int hashCode() {
       return Objects.hash(getFinalFlow(), getAction());
+    }
+  }
+
+  private final class VrfExprEvaluator implements VrfExprVisitor<String> {
+
+    @Override
+    public String visitLiteralVrfName(LiteralVrfName expr) {
+      return expr.getVrfName();
+    }
+
+    @Override
+    public String visitIngressInterfaceVrf(IngressInterfaceVrf expr) {
+      return _srcInterfaceVrf;
     }
   }
 }

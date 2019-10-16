@@ -50,7 +50,12 @@ public final class FlowEvaluatorTest {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     FlowResult r =
         FlowEvaluator.evaluate(
-            _flow, "Eth0", singletonPolicy(new Return(fl)), ImmutableMap.of(), ImmutableMap.of());
+            _flow,
+            "Eth0",
+            "otherVrf",
+            singletonPolicy(new Return(fl)),
+            ImmutableMap.of(),
+            ImmutableMap.of());
 
     assertThat(r.getAction(), equalTo(fl));
     assertThat(r.getFinalFlow(), equalTo(_flow));
@@ -63,6 +68,7 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(new PacketMatchExpr(TrueExpr.INSTANCE), ImmutableList.of(new Return(fl)))),
             ImmutableMap.of(),
@@ -79,6 +85,7 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(new PacketMatchExpr(FalseExpr.INSTANCE), ImmutableList.of(new Return(fl)))),
             ImmutableMap.of(),
@@ -120,7 +127,8 @@ public final class FlowEvaluatorTest {
 
     // Test:
     FlowResult result =
-        FlowEvaluator.evaluate(_flow, "Eth0", policy, ImmutableMap.of(), ImmutableMap.of());
+        FlowEvaluator.evaluate(
+            _flow, "Eth0", "otherVrf", policy, ImmutableMap.of(), ImmutableMap.of());
 
     assertThat(result.getAction(), equalTo(action));
     // No transformations occurred
@@ -133,7 +141,8 @@ public final class FlowEvaluatorTest {
     PacketPolicy policy = new PacketPolicy("policyName", ImmutableList.of(), _defaultAction);
     // Test:
     FlowResult result =
-        FlowEvaluator.evaluate(_flow, "Eth0", policy, ImmutableMap.of(), ImmutableMap.of());
+        FlowEvaluator.evaluate(
+            _flow, "Eth0", "otherVrf", policy, ImmutableMap.of(), ImmutableMap.of());
 
     assertThat(result.getAction(), equalTo(_defaultAction.getAction()));
     // No transformations occurred
@@ -149,6 +158,7 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(
                     new PacketMatchExpr(permittedByAcl(aclName)),
@@ -177,6 +187,7 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(
                     org.batfish.datamodel.packet_policy.TrueExpr.instance(),
@@ -194,6 +205,7 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(
                     org.batfish.datamodel.packet_policy.FalseExpr.instance(),
@@ -214,7 +226,12 @@ public final class FlowEvaluatorTest {
                 .build());
     FlowResult r =
         FlowEvaluator.evaluate(
-            _flow, "Eth0", singletonPolicy(transformation), ImmutableMap.of(), ImmutableMap.of());
+            _flow,
+            "Eth0",
+            "otherVrf",
+            singletonPolicy(transformation),
+            ImmutableMap.of(),
+            ImmutableMap.of());
     assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
     assertThat(r.getFinalFlow(), equalTo(_flow.toBuilder().setDstIp(natIp).build()));
   }
