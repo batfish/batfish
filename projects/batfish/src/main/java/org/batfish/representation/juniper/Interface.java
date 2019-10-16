@@ -110,10 +110,6 @@ public class Interface implements Serializable {
     _vrrpGroups = new TreeMap<>();
   }
 
-  public void addAllowedRanges(List<SubRange> ranges) {
-    _allowedVlans.addAll(ranges);
-  }
-
   public String get8023adInterface() {
     return _agg8023adInterface;
   }

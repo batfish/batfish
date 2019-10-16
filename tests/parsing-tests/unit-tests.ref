@@ -92353,6 +92353,20 @@
             }
           }
         },
+        "configs/juniper_vlan" : {
+          "interface" : {
+            "vlan.30" : {
+              "vlan l3-interface" : [
+                6
+              ]
+            },
+            "vlan.40" : {
+              "vlan l3-interface" : [
+                8
+              ]
+            }
+          }
+        },
         "configs/named_and_numbered_lists" : {
           "ipv4 acl" : {
             "1" : {
