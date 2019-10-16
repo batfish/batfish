@@ -26,6 +26,7 @@ public class BgpVr implements Serializable {
     _exportPolicyRules = new HashMap<>();
     _installRoute = DEFAULT_INSTALL_ROUTE;
     _peerGroups = new HashMap<>(0);
+    _redistRules = new HashMap<>(0);
     _rejectDefaultRoute = DEFAULT_REJECT_DEFAULT_ROUTE;
     _routingOptions = new BgpVrRoutingOptions();
   }
@@ -52,6 +53,16 @@ public class BgpVr implements Serializable {
 
   public PolicyRule getOrCreateImportPolicyRule(String name) {
     return _importPolicyRules.computeIfAbsent(name, PolicyRule::new);
+  }
+
+  public @Nonnull Map<RedistRuleRefNameOrPrefix, RedistRule> getRedistRules() {
+    return _redistRules;
+  }
+
+  public @Nonnull RedistRule getOrCreateRedistRule(
+      RedistRuleRefNameOrPrefix redistRuleRefNameOrPrefix) {
+    return _redistRules.computeIfAbsent(
+        redistRuleRefNameOrPrefix, redistRuleRefNameOrPrefix1 -> new RedistRule());
   }
 
   public boolean getInstallRoute() {
@@ -107,6 +118,12 @@ public class BgpVr implements Serializable {
   private Map<String, PolicyRule> _importPolicyRules;
   private @Nullable Long _localAs;
   private @Nonnull final Map<String, BgpPeerGroup> _peerGroups;
+  /**
+   * Redist rules used by this BGP process, keyed by the referred redist profile name or by the
+   * prefix used for filtering
+   */
+  private @Nonnull final Map<RedistRuleRefNameOrPrefix, RedistRule> _redistRules;
+
   private boolean _rejectDefaultRoute;
   private @Nullable Ip _routerId;
 }

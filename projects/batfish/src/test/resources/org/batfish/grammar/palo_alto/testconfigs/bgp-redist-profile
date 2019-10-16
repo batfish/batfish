@@ -1,0 +1,22 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname bgp-redist-profile
+
+set network virtual-router vr1 protocol redist-profile rdp1 filter type [ bgp connect static ospf rip ]
+set network virtual-router vr1 protocol redist-profile rdp1 filter destination [ 1.1.1.0/24 2.2.2.0/24 ]
+set network virtual-router vr1 protocol redist-profile rdp1 priority 2
+set network virtual-router vr1 protocol redist-profile rdp1 action no-redist
+
+# redist-rule's name matches redist-profile's name
+set network virtual-router vr1 protocol bgp redist-rules rdp1 enable yes
+set network virtual-router vr1 protocol bgp redist-rules rdp1 set-origin incomplete
+
+set network virtual-router vr1 protocol bgp redist-rules 1.1.1.0/24 enable yes
+set network virtual-router vr1 protocol bgp redist-rules 1.1.1.0/24 set-origin egp
+set network virtual-router vr1 protocol bgp redist-rules 1.1.1.0/24 address-family-identifier ipv4
+set network virtual-router vr1 protocol bgp redist-rules 1.1.1.0/24 route-table unicast
+
+
+set network virtual-router vr1 protocol bgp redist-rules 2.2.2.2 enable no
+set network virtual-router vr1 protocol bgp redist-rules 2.2.2.2 set-origin igp
+set network virtual-router vr1 protocol bgp redist-rules 2.2.2.2 address-family-identifier ipv6
+set network virtual-router vr1 protocol bgp redist-rules 2.2.2.2 route-table multicast
