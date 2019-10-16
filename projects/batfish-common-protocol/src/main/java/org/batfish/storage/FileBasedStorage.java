@@ -37,6 +37,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -193,13 +194,24 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public @Nullable SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
       NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
-    if (!Files.exists(path)) {
+    // Prefer runtime data inside of batfish/ subfolder over top level
+    Path insideBatfish =
+        Paths.get(
+            BfConsts.RELPATH_INPUT,
+            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+    Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+    Optional<Path> path =
+        Stream.of(insideBatfish, topLevel)
+            .map(p -> _d.getSnapshotDir(network, snapshot).resolve(p))
+            .filter(Files::exists)
+            .findFirst();
+    if (!path.isPresent()) {
+      // Neither file was present in input.
       return null;
     }
-    String fileText = CommonUtil.readFile(path);
+
+    String fileText = CommonUtil.readFile(path.get());
     try {
       return BatfishObjectMapper.mapper()
           .readValue(fileText, new TypeReference<SortedSet<NodeInterfacePair>>() {});
@@ -237,13 +249,24 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nullable SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_BLACKLIST_FILE));
-    if (!Files.exists(path)) {
+    // Prefer runtime data inside of batfish/ subfolder over top level
+    Path insideBatfish =
+        Paths.get(
+            BfConsts.RELPATH_INPUT,
+            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            BfConsts.RELPATH_NODE_BLACKLIST_FILE);
+    Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_BLACKLIST_FILE);
+    Optional<Path> path =
+        Stream.of(insideBatfish, topLevel)
+            .map(p -> _d.getSnapshotDir(network, snapshot).resolve(p))
+            .filter(Files::exists)
+            .findFirst();
+    if (!path.isPresent()) {
+      // Neither file was present in input.
       return null;
     }
-    String fileText = CommonUtil.readFile(path);
+
+    String fileText = CommonUtil.readFile(path.get());
     try {
       return BatfishObjectMapper.mapper()
           .readValue(fileText, new TypeReference<SortedSet<String>>() {});
@@ -257,20 +280,26 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nullable Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_L1_TOPOLOGY_PATH));
-    if (!Files.exists(path)) {
-      // (deprecated)
-      path =
-          _d.getSnapshotDir(network, snapshot)
-              .resolve(Paths.get(BfConsts.RELPATH_INPUT, "testrig_layer1_topology"));
-    }
-    if (!Files.exists(path)) {
+    // Prefer runtime data inside of batfish/ subfolder over top level
+    Path insideBatfish =
+        Paths.get(
+            BfConsts.RELPATH_INPUT,
+            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            BfConsts.RELPATH_L1_TOPOLOGY_PATH);
+    Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
+    Path deprecated = Paths.get(BfConsts.RELPATH_INPUT, "testrig_layer1_topology");
+    Optional<Path> path =
+        Stream.of(insideBatfish, topLevel, deprecated)
+            .map(p -> _d.getSnapshotDir(network, snapshot).resolve(p))
+            .filter(Files::exists)
+            .findFirst();
+    if (!path.isPresent()) {
+      // Neither file was present in input.
       return null;
     }
+
     AtomicInteger counter = _newBatch.apply("Reading layer-1 topology", 1);
-    String topologyFileText = CommonUtil.readFile(path);
+    String topologyFileText = CommonUtil.readFile(path.get());
     try {
       return BatfishObjectMapper.mapper().readValue(topologyFileText, Layer1Topology.class);
     } catch (IOException e) {
@@ -338,14 +367,25 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nullable SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE));
-    if (!Files.exists(path)) {
+    // Prefer runtime data inside of batfish/ subfolder over top level
+    Path insideBatfish =
+        Paths.get(
+            BfConsts.RELPATH_INPUT,
+            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            BfConsts.RELPATH_RUNTIME_DATA_FILE);
+    Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE);
+    Optional<Path> path =
+        Stream.of(insideBatfish, topLevel)
+            .map(p -> _d.getSnapshotDir(network, snapshot).resolve(p))
+            .filter(Files::exists)
+            .findFirst();
+    if (!path.isPresent()) {
+      // Neither file was present in input.
       return null;
     }
+
     AtomicInteger counter = _newBatch.apply("Reading runtime data", 1);
-    String runtimeDataFileText = CommonUtil.readFile(path);
+    String runtimeDataFileText = CommonUtil.readFile(path.get());
     try {
       return BatfishObjectMapper.mapper().readValue(runtimeDataFileText, SnapshotRuntimeData.class);
     } catch (IOException e) {
