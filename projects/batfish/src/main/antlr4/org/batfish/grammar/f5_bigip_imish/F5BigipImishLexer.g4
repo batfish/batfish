@@ -335,6 +335,11 @@ SET
   'set'
 ;
 
+SOFT_RECONFIGURATION
+:
+  'soft-reconfiguration'
+;
+
 SUMMARY_ONLY
 :
   'summary-only'
@@ -395,6 +400,11 @@ IPV6_ADDRESS
 IPV6_PREFIX
 :
   F_Ipv6Prefix
+;
+
+INBOUND
+:
+  'inbound'
 ;
 
 NEWLINE

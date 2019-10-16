@@ -9,4 +9,5 @@ net vlan /Common/vlan_used { }
 !
 router bgp 123
  neighbor N advertisement-interval 5
+ neighbor N soft-reconfiguration inbound
 !
