@@ -26,6 +26,7 @@ public class ApplyTransformationTest {
         .addEqualityGroup(
             new ApplyTransformation(
                 Transformation.when(FalseExpr.INSTANCE).apply(ImmutableList.of()).build()))
+        .addEqualityGroup(new Object())
         .testEquals();
   }
 
