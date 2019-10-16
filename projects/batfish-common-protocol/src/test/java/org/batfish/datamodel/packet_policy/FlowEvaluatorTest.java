@@ -16,6 +16,8 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.packet_policy.FlowEvaluator.FlowResult;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.junit.Before;
 import org.junit.Test;
 import org.parboiled.common.ImmutableList;
@@ -200,5 +202,20 @@ public final class FlowEvaluatorTest {
             ImmutableMap.of());
     assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
     assertThat(r.getFinalFlow(), equalTo(_flow));
+  }
+
+  @Test
+  public void testEvaluateApplyTransformation() {
+    Ip natIp = Ip.parse("8.8.8.8");
+    ApplyTransformation transformation =
+        new ApplyTransformation(
+            Transformation.always()
+                .apply(TransformationStep.assignDestinationIp(natIp, natIp))
+                .build());
+    FlowResult r =
+        FlowEvaluator.evaluate(
+            _flow, "Eth0", singletonPolicy(transformation), ImmutableMap.of(), ImmutableMap.of());
+    assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
+    assertThat(r.getFinalFlow(), equalTo(_flow.toBuilder().setDstIp(natIp).build()));
   }
 }
