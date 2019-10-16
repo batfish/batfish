@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +37,10 @@ public class Interface implements Serializable {
     } else {
       return 1E12;
     }
+  }
+
+  public Set<InterfaceOspfNeighbor> getOspfNeighbors() {
+    return _ospfNeighbors;
   }
 
   /** Represents the type of interface for OSPF */
@@ -79,6 +84,7 @@ public class Interface implements Serializable {
   private int _ospfHelloMultiplier;
   private boolean _ospfPassive;
   private OspfInterfaceType _ospfInterfaceType;
+  private Set<InterfaceOspfNeighbor> _ospfNeighbors;
   private @Nullable String _outgoingFilter;
   private @Nullable List<String> _outgoingFilterList;
   private Interface _parent;
@@ -101,6 +107,7 @@ public class Interface implements Serializable {
     _isisSettings = new IsisInterfaceSettings();
     _name = name;
     _ospfInterfaceType = OspfInterfaceType.BROADCAST;
+    _ospfNeighbors = new HashSet<>();
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _allowedVlans = new LinkedList<>();
