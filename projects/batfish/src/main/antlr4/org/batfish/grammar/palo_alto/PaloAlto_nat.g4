@@ -31,7 +31,7 @@ srn_definition
 
 srn_destination_translation
 :
-    DESTINATION_TRANSLATION srn_translated_address?
+    DESTINATION_TRANSLATION srndt_translated_address?
 ;
 
 srn_source_translation
@@ -62,10 +62,40 @@ srn_source
 
 srnst_dynamic_ip_and_port
 :
-    DYNAMIC_IP_AND_PORT srn_translated_address?
+    DYNAMIC_IP_AND_PORT srnst_translated_address?
 ;
 
-srn_translated_address
+srndt_translated_address
 :
-    TRANSLATED_ADDRESS src_or_dst_list_item
+    TRANSLATED_ADDRESS translated_address_list_item
+;
+
+srnst_translated_address
+:
+    TRANSLATED_ADDRESS translated_address_list
+;
+
+translated_address_list
+:
+    (
+        translated_address_list_item
+        |
+        (
+            OPEN_BRACKET
+            (
+                translated_address_list_item
+            )*
+            CLOSE_BRACKET
+        )
+    )
+;
+
+translated_address_list_item
+:
+    (
+        address = ip_address
+        | prefix = IP_PREFIX
+        | range = IP_RANGE
+        | name = variable
+    )
 ;
