@@ -39,7 +39,7 @@ public class Interface implements Serializable {
     }
   }
 
-  public Set<InterfaceOspfNeighbor> getOspfNeighbors() {
+  public @Nonnull Set<InterfaceOspfNeighbor> getOspfNeighbors() {
     return _ospfNeighbors;
   }
 
@@ -84,7 +84,7 @@ public class Interface implements Serializable {
   private int _ospfHelloMultiplier;
   private boolean _ospfPassive;
   private OspfInterfaceType _ospfInterfaceType;
-  private Set<InterfaceOspfNeighbor> _ospfNeighbors;
+  private @Nonnull Set<InterfaceOspfNeighbor> _ospfNeighbors;
   private @Nullable String _outgoingFilter;
   private @Nullable List<String> _outgoingFilterList;
   private Interface _parent;

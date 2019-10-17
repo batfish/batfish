@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
+/** Ospf interface neighbor information */
 public final class InterfaceOspfNeighbor implements Serializable {
   public InterfaceOspfNeighbor(@Nonnull Ip ip) {
     _ip = ip;
