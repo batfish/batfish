@@ -145,8 +145,7 @@ public final class OspfTopologyUtils {
     // Iterate over all configurations
     for (Configuration config : configurations.all()) {
       // All VRFs in the configuration
-      for (Entry<String, Vrf> vrfEntry : config.getVrfs().entrySet()) {
-        Vrf vrf = vrfEntry.getValue();
+      for (Vrf vrf : config.getVrfs().values()) {
         for (OspfProcess proc : vrf.getOspfProcesses().values()) {
           proc.getOspfNeighborConfigs()
               .forEach(
