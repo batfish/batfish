@@ -160,7 +160,7 @@ class PacketPolicyToBdd {
     }
 
     @Override
-    public BDD visitFibLookupOutgoingInterfaceMatchesOneOf(FibLookupOutgoingInterfaceIsOneOf expr) {
+    public BDD visitFibLookupOutgoingInterfaceIsOneOf(FibLookupOutgoingInterfaceIsOneOf expr) {
       // TODO:
       throw new UnsupportedOperationException(
           "FibLookupOutgoingInterfaceIsOneOf in packet policy -> BDD not yet supported");
