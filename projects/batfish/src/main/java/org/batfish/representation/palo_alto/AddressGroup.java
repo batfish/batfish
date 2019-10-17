@@ -1,16 +1,15 @@
 package org.batfish.representation.palo_alto;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -175,12 +174,11 @@ public final class AddressGroup implements Serializable {
    */
   public RangeSet<Ip> getIpRangeSet(
       Map<String, AddressObject> addressObjects, Map<String, AddressGroup> addressGroups) {
-    return ImmutableRangeSet.unionOf(
-        getDescendantObjects(addressObjects, addressGroups, new HashSet<>()).stream()
-            .map(addrObjName -> addressObjects.get(addrObjName).getAddressAsRange())
-            // Exclude empty address objects
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList()));
+    RangeSet<Ip> rangeSet = TreeRangeSet.create();
+    getDescendantObjects(addressObjects, addressGroups, new HashSet<>()).stream()
+        .map(addrObjName -> addressObjects.get(addrObjName).getAddressAsRangeSet())
+        .forEach(rangeSet::addAll);
+    return ImmutableRangeSet.copyOf(rangeSet);
   }
 
   public @Nullable String getDescription() {
