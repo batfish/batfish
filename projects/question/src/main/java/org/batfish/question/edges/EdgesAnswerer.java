@@ -149,7 +149,6 @@ public class EdgesAnswerer extends Answerer {
         return getIsisEdges(includeNodes, includeRemoteNodes, isisTopology);
       case OSPF:
         return getOspfEdges(
-            configurations,
             includeNodes,
             includeRemoteNodes,
             initial
@@ -290,7 +289,6 @@ public class EdgesAnswerer extends Answerer {
 
   @VisibleForTesting
   static List<Row> getOspfEdges(
-      Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       OspfTopology topology) {
