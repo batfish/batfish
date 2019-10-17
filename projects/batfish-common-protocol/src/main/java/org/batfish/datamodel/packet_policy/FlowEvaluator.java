@@ -1,14 +1,10 @@
 package org.batfish.datamodel.packet_policy;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Fib;
-import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
@@ -64,43 +60,34 @@ public final class FlowEvaluator {
 
     @Override
     public Boolean visitFibLookupOutgoingInterfaceIsOneOf(FibLookupOutgoingInterfaceIsOneOf expr) {
-      String vrf = _vrfExprEvaluator.visit(expr.getVrf());
-      Fib fib = _fibs.get(vrf);
+      Fib fib = _fibs.get(_vrfExprEvaluator.visit(expr.getVrf()));
       if (fib == null) {
         return false;
       }
 
-      // Collect entries
-      Set<FibEntry> entries = fib.get(_currentFlow.getDstIp());
-      // Set of all interfaces the lookup resolves to
-      ImmutableSet.Builder<String> outgoingInterfaces = ImmutableSet.builder();
-
-      FibActionVisitor<Void> actionVisitor =
-          new FibActionVisitor<Void>() {
+      FibActionVisitor<Boolean> actionVisitor =
+          new FibActionVisitor<Boolean>() {
             @Override
-            public Void visitFibForward(FibForward fibForward) {
-              outgoingInterfaces.add(fibForward.getInterfaceName());
-              return null;
+            public Boolean visitFibForward(FibForward fibForward) {
+              return expr.getInterfaceNames().contains(fibForward.getInterfaceName());
             }
 
             @Override
-            public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
-              Fib innerFib = _fibs.get(fibNextVrf.getNextVrf());
-              Set<FibEntry> innerEntries = innerFib.get(_currentFlow.getDstIp());
+            public Boolean visitFibNextVrf(FibNextVrf fibNextVrf) {
               // Recurse and continue interface collection
-              innerEntries.forEach(entry -> entry.getAction().accept(this));
-              return null;
+              return _fibs.get(fibNextVrf.getNextVrf()).get(_currentFlow.getDstIp()).stream()
+                  .anyMatch(entry -> entry.getAction().accept(this));
             }
 
             @Override
-            public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+            public Boolean visitFibNullRoute(FibNullRoute fibNullRoute) {
               // nothing to do
-              return null;
+              return false;
             }
           };
 
-      entries.forEach(entry -> entry.getAction().accept(actionVisitor));
-      return !Sets.intersection(outgoingInterfaces.build(), expr.getInterfaceNames()).isEmpty();
+      return fib.get(_currentFlow.getDstIp()).stream()
+          .anyMatch(entry -> entry.getAction().accept(actionVisitor));
     }
   }
 
