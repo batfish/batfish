@@ -25,7 +25,7 @@ public class DynamicIpAndPort implements Serializable {
   }
 
   @Nonnull
-  public List<RuleEndpoint> getTranslatedAddress() {
+  public List<RuleEndpoint> getTranslatedAddresses() {
     return ImmutableList.copyOf(_translatedAddress);
   }
 }
