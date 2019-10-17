@@ -164,14 +164,16 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * Calls {@link BgpProtocolHelper#transformBgpRoutePostExport} with the given {@code routeBuilder}
    * and the class variables representing the BGP session.
    */
-  private void runTransformBgpRoutePostExport(Bgpv4Route.Builder routeBuilder) {
+  private void runTransformBgpRoutePostExport(
+      Bgpv4Route.Builder routeBuilder, RoutingProtocol originalProtocol) {
     BgpProtocolHelper.transformBgpRoutePostExport(
         routeBuilder,
         _sessionProperties.isEbgp(),
         ConfedSessionType.NO_CONFED,
         _headNeighbor.getLocalAs(),
         Ip.ZERO,
-        Ip.ZERO);
+        Ip.ZERO,
+        originalProtocol);
   }
 
   /**
@@ -277,8 +279,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     // EBGP)
     AsPath expectedAsPathPostExport =
         AsPath.of(ImmutableList.of(AsSet.of(AS1), AsSet.of(asInPath)));
-    runTransformBgpRoutePostExport(transformedAggregateRoute);
-    runTransformBgpRoutePostExport(transformedBgpRoute);
+    runTransformBgpRoutePostExport(transformedAggregateRoute, RoutingProtocol.AGGREGATE);
+    runTransformBgpRoutePostExport(transformedBgpRoute, RoutingProtocol.BGP);
     assertThat(transformedAggregateRoute.getAsPath(), equalTo(expectedAsPathPostExport));
     assertThat(transformedBgpRoute.getAsPath(), equalTo(expectedAsPathPostExport));
 
@@ -288,7 +290,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     Bgpv4Route.Builder transformedRoute = runTransformBgpRoutePreExport(staticRoute);
     assertThat(transformedRoute.getAsPath(), equalTo(AsPath.empty()));
 
-    runTransformBgpRoutePostExport(transformedRoute);
+    runTransformBgpRoutePostExport(transformedRoute, RoutingProtocol.BGP);
     assertThat(transformedRoute.getAsPath(), equalTo(AsPath.of(AsSet.of(AS1))));
   }
 

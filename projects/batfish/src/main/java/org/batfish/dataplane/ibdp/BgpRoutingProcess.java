@@ -879,7 +879,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         sessionProperties.getConfedSessionType(),
         sessionProperties.getHeadAs(),
         sessionProperties.getHeadIp(),
-        exportCandidate.getNextHopIp());
+        exportCandidate.getNextHopIp(),
+        exportCandidate.getProtocol());
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
 
@@ -958,7 +959,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         sessionProperties.getConfedSessionType(),
         sessionProperties.getHeadAs(),
         sessionProperties.getHeadIp(),
-        sessionProperties.getHeadIp());
+        sessionProperties.getHeadIp(),
+        exportCandidate.getRoute().getProtocol());
 
     // Successfully exported route
     Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();

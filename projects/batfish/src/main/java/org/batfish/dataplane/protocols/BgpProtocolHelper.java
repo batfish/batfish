@@ -293,7 +293,8 @@ public final class BgpProtocolHelper {
           ConfedSessionType confedSessionType,
           long localAs,
           Ip localIp,
-          Ip originalRouteNhip) {
+          Ip originalRouteNhip,
+          RoutingProtocol originalRouteProtocol) {
     // if eBGP, prepend as-path sender's as-path number
     if (isEbgp) {
       AsSet asSetToPrepend =
@@ -319,14 +320,26 @@ public final class BgpProtocolHelper {
 
     // Skip setting our own next hop if it has already been set by the routing policy
     if (routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
-      if (isEbgp && confedSessionType != ConfedSessionType.WITHIN_CONFED) { // "Pure" eBGP
-        routeBuilder.setNextHopIp(localIp);
-      } else {
-        // iBGP session (or eBGP within confederation):
-        // if original route has next-hop ip, preserve it. If not, set our own.
-        // Note: implementation of next-hop-self in the general case is delegated to routing policy
-        routeBuilder.setNextHopIp(
-            originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP) ? localIp : originalRouteNhip);
+      Ip originalOrLocalIp =
+          originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP) ? localIp : originalRouteNhip;
+      if (isEbgp) {
+        if (confedSessionType != ConfedSessionType.WITHIN_CONFED) { // "Pure" eBGP)
+          routeBuilder.setNextHopIp(localIp);
+        } else {
+          routeBuilder.setNextHopIp(originalOrLocalIp);
+        }
+        // else: ebgp within confederation -- no change
+      } else { // iBGP session
+        // Note: implementation of next-hop-self in the general case is delegated to routing
+        // policy
+        if (originalRouteProtocol == RoutingProtocol.IBGP) {
+          // ibgp route:
+          // if original route has next-hop ip, preserve it. If not, set our own.
+          routeBuilder.setNextHopIp(originalOrLocalIp);
+        } else {
+          // ebgp route being sent to iBGP, change next hop ip.
+          routeBuilder.setNextHopIp(localIp);
+        }
       }
     }
   }
