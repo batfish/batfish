@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -144,16 +145,24 @@ public final class NetworkConfigurations {
     return get(hostname).map(Configuration::getMlags).map(m -> m.get(id));
   }
 
-  public Optional<OspfProcess> getOspfProcess(OspfNeighborConfigId ospfConfigId) {
+  public @Nonnull Optional<OspfProcess> getOspfProcess(String hostname, String interfaceName) {
+    return getInterface(hostname, interfaceName)
+        .map(
+            iface ->
+                iface.getOspfProcess() != null
+                    ? iface.getVrf().getOspfProcesses().get(iface.getOspfProcess())
+                    : null);
+  }
+
+  public @Nonnull Optional<OspfProcess> getOspfProcess(OspfNeighborConfigId ospfConfigId) {
     return getVrf(ospfConfigId.getHostname(), ospfConfigId.getVrfName())
         .map(vrf -> vrf.getOspfProcesses().get(ospfConfigId.getProcName()));
   }
 
   public Optional<OspfNeighborConfig> getOspfNeighborConfig(OspfNeighborConfigId ospfConfigId) {
-
     return getOspfProcess(ospfConfigId)
         .map(OspfProcess::getOspfNeighborConfigs)
-        .map(oc -> oc.get(ospfConfigId.getInterfaceName()));
+        .map(oc -> oc.get(ospfConfigId));
   }
 
   /** Return {@link VniSettings} identificated by {@code hostname} and {@code vni} number. */
@@ -180,5 +189,15 @@ public final class NetworkConfigurations {
   /** Wrap a configurations map */
   public static NetworkConfigurations of(Map<String, Configuration> configurations) {
     return new NetworkConfigurations(configurations);
+  }
+
+  /** Get OSPF neighbor config IDs for a given hostname and interface name. */
+  public @Nonnull Optional<Stream<OspfNeighborConfigId>> getOspfNeighborConfigs(
+      String hostname, String interfaceName) {
+    return getOspfProcess(hostname, interfaceName)
+        .map(
+            proc ->
+                proc.getOspfNeighborConfigs().keySet().stream()
+                    .filter(id -> id.getInterfaceName().equals(interfaceName)));
   }
 }
