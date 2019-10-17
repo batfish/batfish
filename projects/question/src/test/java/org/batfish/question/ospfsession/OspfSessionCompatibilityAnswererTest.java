@@ -61,7 +61,7 @@ public class OspfSessionCompatibilityAnswererTest {
     Vrf vrf = nf.vrfBuilder().setName(vrfName).setOwner(configuration).build();
 
     nf.interfaceBuilder()
-        .setAddress(ConcreteInterfaceAddress.create(addr, 31))
+        .setAddress(ConcreteInterfaceAddress.create(addr, 24))
         .setName(iface)
         .setVrf(vrf)
         .setOwner(configuration)
@@ -73,7 +73,8 @@ public class OspfSessionCompatibilityAnswererTest {
         .setProcessId("proc")
         .setNeighborConfigs(
             ImmutableMap.of(
-                iface,
+                new OspfNeighborConfigId(
+                    hostname, vrfName, "proc", iface, ConcreteInterfaceAddress.create(addr, 24)),
                 OspfNeighborConfig.builder()
                     .setArea(1L)
                     .setHostname(hostname)
@@ -92,24 +93,44 @@ public class OspfSessionCompatibilityAnswererTest {
     _configurations =
         ImmutableMap.of(
             "configuration_u",
-            buildConfig(nf, "configuration_u", "vrf_u", "int_u", Ip.parse("1.1.1.2")),
+            buildConfig(nf, "configuration_u", "vrf_u", "int_u", Ip.parse("192.0.2.1")),
             "configuration_v",
-            buildConfig(nf, "configuration_v", "vrf_v", "int_v", Ip.parse("1.1.1.3")),
+            buildConfig(nf, "configuration_v", "vrf_v", "int_v", Ip.parse("192.0.2.2")),
             "configuration_w",
-            buildConfig(nf, "configuration_w", "vrf_w", "int_w", Ip.parse("1.1.1.4")),
+            buildConfig(nf, "configuration_w", "vrf_w", "int_w", Ip.parse("192.0.2.3")),
             "configuration_x",
-            buildConfig(nf, "configuration_x", "vrf_x", "int_x", Ip.parse("1.1.1.5")));
+            buildConfig(nf, "configuration_x", "vrf_x", "int_x", Ip.parse("192.0.2.4")));
 
     MutableValueGraph<OspfNeighborConfigId, OspfSessionStatus> ospfGraph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     ospfGraph.putEdgeValue(
-        new OspfNeighborConfigId("configuration_u", "vrf_u", "proc", "int_u"),
-        new OspfNeighborConfigId("configuration_v", "vrf_v", "proc", "int_v"),
+        new OspfNeighborConfigId(
+            "configuration_u",
+            "vrf_u",
+            "proc",
+            "int_u",
+            ConcreteInterfaceAddress.parse("192.0.2.1/24")),
+        new OspfNeighborConfigId(
+            "configuration_v",
+            "vrf_v",
+            "proc",
+            "int_v",
+            ConcreteInterfaceAddress.parse("192.0.2.2/24")),
         OspfSessionStatus.ESTABLISHED);
     ospfGraph.putEdgeValue(
-        new OspfNeighborConfigId("configuration_w", "vrf_w", "proc", "int_w"),
-        new OspfNeighborConfigId("configuration_x", "vrf_x", "proc", "int_x"),
+        new OspfNeighborConfigId(
+            "configuration_w",
+            "vrf_w",
+            "proc",
+            "int_w",
+            ConcreteInterfaceAddress.parse("192.0.2.3/24")),
+        new OspfNeighborConfigId(
+            "configuration_x",
+            "vrf_x",
+            "proc",
+            "int_x",
+            ConcreteInterfaceAddress.parse("192.0.2.4/24")),
         OspfSessionStatus.NETWORK_TYPE_MISMATCH);
     _ospfTopology = new CandidateOspfTopology(ImmutableValueGraph.copyOf(ospfGraph));
   }
@@ -134,14 +155,14 @@ public class OspfSessionCompatibilityAnswererTest {
                 equalTo(NodeInterfacePair.of("configuration_u", "int_u")),
                 Schema.INTERFACE),
             hasColumn(COL_VRF, equalTo("vrf_u"), Schema.STRING),
-            hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.2")), Schema.IP),
+            hasColumn(COL_IP, equalTo(Ip.parse("192.0.2.1")), Schema.IP),
             hasColumn(COL_AREA, equalTo(1L), Schema.LONG),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(NodeInterfacePair.of("configuration_v", "int_v")),
                 Schema.INTERFACE),
             hasColumn(COL_REMOTE_VRF, equalTo("vrf_v"), Schema.STRING),
-            hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("1.1.1.3")), Schema.IP),
+            hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("192.0.2.2")), Schema.IP),
             hasColumn(COL_REMOTE_AREA, equalTo(1L), Schema.LONG),
             hasColumn(
                 COL_SESSION_STATUS,
@@ -156,14 +177,14 @@ public class OspfSessionCompatibilityAnswererTest {
                 equalTo(NodeInterfacePair.of("configuration_w", "int_w")),
                 Schema.INTERFACE),
             hasColumn(COL_VRF, equalTo("vrf_w"), Schema.STRING),
-            hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.4")), Schema.IP),
+            hasColumn(COL_IP, equalTo(Ip.parse("192.0.2.3")), Schema.IP),
             hasColumn(COL_AREA, equalTo(1L), Schema.LONG),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(NodeInterfacePair.of("configuration_x", "int_x")),
                 Schema.INTERFACE),
             hasColumn(COL_REMOTE_VRF, equalTo("vrf_x"), Schema.STRING),
-            hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("1.1.1.5")), Schema.IP),
+            hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("192.0.2.4")), Schema.IP),
             hasColumn(COL_REMOTE_AREA, equalTo(1L), Schema.LONG),
             hasColumn(
                 COL_SESSION_STATUS,

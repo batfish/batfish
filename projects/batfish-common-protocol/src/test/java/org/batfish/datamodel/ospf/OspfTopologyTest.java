@@ -13,6 +13,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
@@ -25,8 +26,10 @@ public final class OspfTopologyTest {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     graph.putEdgeValue(
-        new OspfNeighborConfigId("a", "b", "c", "d"),
-        new OspfNeighborConfigId("e", "f", "g", "h"),
+        new OspfNeighborConfigId(
+            "a", "b", "c", "d", ConcreteInterfaceAddress.create(Ip.FIRST_CLASS_A_PRIVATE_IP, 1)),
+        new OspfNeighborConfigId(
+            "e", "f", "g", "h", ConcreteInterfaceAddress.create(Ip.FIRST_CLASS_B_PRIVATE_IP, 1)),
         new OspfSessionProperties(
             5L, new IpLink(Ip.FIRST_CLASS_A_PRIVATE_IP, Ip.FIRST_CLASS_B_PRIVATE_IP)));
     return new OspfTopology(graph);
@@ -52,27 +55,35 @@ public final class OspfTopologyTest {
 
   @Test
   public void testGetNeighborsNonExistentNode() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
+    OspfNeighborConfigId n =
+        new OspfNeighborConfigId(
+            "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
     assertThat(EMPTY.neighbors(n), empty());
   }
 
   @Test
   public void testGetIncomingEdgesNonExistentNode() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
+    OspfNeighborConfigId n =
+        new OspfNeighborConfigId(
+            "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
     assertThat(EMPTY.incomingEdges(n), empty());
   }
 
   @Test
   public void testGetIncomingEdges() {
     // Setup: small topo with one edge
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "p2", "i2");
+    OspfNeighborConfigId n =
+        new OspfNeighborConfigId(
+            "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
+    OspfNeighborConfigId n2 =
+        new OspfNeighborConfigId(
+            "h2", "vrf2", "p2", "i2", ConcreteInterfaceAddress.parse("192.0.2.1/31"));
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().build();
     graph.addNode(n);
     graph.addNode(n2);
     OspfSessionProperties session =
-        new OspfSessionProperties(0, new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3")));
+        new OspfSessionProperties(0, new IpLink(Ip.parse("192.0.2.0"), Ip.parse("192.0.2.1")));
     graph.putEdgeValue(n, n2, session);
     OspfTopology topo = new OspfTopology(graph);
 
@@ -84,8 +95,12 @@ public final class OspfTopologyTest {
 
   @Test
   public void testEdgeIdEquals() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "p", "i2");
+    OspfNeighborConfigId n =
+        new OspfNeighborConfigId(
+            "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
+    OspfNeighborConfigId n2 =
+        new OspfNeighborConfigId(
+            "h2", "vrf2", "p", "i2", ConcreteInterfaceAddress.parse("192.0.2.1/31"));
     new EqualsTester()
         .addEqualityGroup(OspfTopology.makeEdge(n, n2), OspfTopology.makeEdge(n, n2))
         .addEqualityGroup(OspfTopology.makeEdge(n, n))
@@ -96,8 +111,12 @@ public final class OspfTopologyTest {
 
   @Test
   public void testEdgeIdReverse() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "p", "i2");
+    OspfNeighborConfigId n =
+        new OspfNeighborConfigId(
+            "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
+    OspfNeighborConfigId n2 =
+        new OspfNeighborConfigId(
+            "h2", "vrf2", "p", "i2", ConcreteInterfaceAddress.parse("192.0.2.1/31"));
     EdgeId edgeId = OspfTopology.makeEdge(n, n2);
     assertThat(edgeId.reverse(), equalTo(OspfTopology.makeEdge(n2, n)));
   }

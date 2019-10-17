@@ -289,6 +289,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.IcmpLarge;
+import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
@@ -5096,5 +5097,47 @@ public final class FlatJuniperGrammarTest {
         config.getAllInterfaces().get("ge-0/0/0.0").getOutgoingTransformation();
 
     assertThat(outgoingTransformation, equalTo(expectedOutgoingTransformation));
+  }
+
+  @Test
+  public void testOspfAreaInterfaceNeighbor() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("ospf-area-interface-neighbor");
+    assertNotNull(juniperConfiguration);
+    assertNotNull(juniperConfiguration.getMasterLogicalSystem().getInterfaces().get("ge-0/0/0"));
+    assertNotNull(
+        juniperConfiguration
+            .getMasterLogicalSystem()
+            .getInterfaces()
+            .get("ge-0/0/0")
+            .getUnits()
+            .get("ge-0/0/0.0"));
+    assertThat(
+        juniperConfiguration
+            .getMasterLogicalSystem()
+            .getInterfaces()
+            .get("ge-0/0/0")
+            .getUnits()
+            .get("ge-0/0/0.0")
+            .getOspfNeighbors(),
+        contains(new InterfaceOspfNeighbor(Ip.parse("1.0.0.1"))));
+
+    assertNotNull(
+        juniperConfiguration
+            .getMasterLogicalSystem()
+            .getInterfaces()
+            .get("ge-0/0/1")
+            .getUnits()
+            .get("ge-0/0/1.0"));
+    InterfaceOspfNeighbor neighbor = new InterfaceOspfNeighbor(Ip.parse("2.0.0.1"));
+    neighbor.setDesignated(true);
+    assertThat(
+        juniperConfiguration
+            .getMasterLogicalSystem()
+            .getInterfaces()
+            .get("ge-0/0/1")
+            .getUnits()
+            .get("ge-0/0/1.0")
+            .getOspfNeighbors(),
+        contains(neighbor));
   }
 }

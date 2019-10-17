@@ -397,6 +397,8 @@ public class EdgesAnswererTest {
     _host2.setVrfs(ImmutableSortedMap.of("vrf2", vrf2));
     Interface i1 = _host1.getAllInterfaces().get("int1");
     i1.setVrf(vrf1);
+    i1.setAddress(ConcreteInterfaceAddress.parse("192.0.2.0/31"));
+    i1.setAllAddresses(ImmutableSet.of(ConcreteInterfaceAddress.parse("192.0.2.0/31")));
     i1.setOspfSettings(
         OspfInterfaceSettings.defaultSettingsBuilder()
             .setCost(1)
@@ -406,6 +408,8 @@ public class EdgesAnswererTest {
             .build());
     Interface i2 = _host2.getAllInterfaces().get("int2");
     i2.setVrf(vrf2);
+    i2.setAddress(ConcreteInterfaceAddress.parse("192.0.2.1/31"));
+    i2.setAllAddresses(ImmutableSet.of(ConcreteInterfaceAddress.parse("192.0.2.1/31")));
     i2.setOspfSettings(
         OspfInterfaceSettings.defaultSettingsBuilder()
             .setCost(1)
@@ -423,7 +427,6 @@ public class EdgesAnswererTest {
                 Edge.of("host2", "int2", "host1", "int1")));
     List<Row> rows =
         getOspfEdges(
-            _configurations,
             _includeNodes,
             _includeRemoteNodes,
             OspfTopologyUtils.computeOspfTopology(

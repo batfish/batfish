@@ -59,6 +59,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
@@ -165,6 +166,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   // computed data
   private static SortedMap<String, Configuration> FPFN_CONFIGS;
   private static ForwardingAnalysis FPFN_FORWARDING_ANALYSIS;
+  private static IpsRoutedOutInterfacesFactory FPFN_IPS_ROUTED_OUT_INTERFACES_FACTORY;
 
   @ClassRule public static final TemporaryFolder FPFN_TEMP = new TemporaryFolder();
 
@@ -221,7 +223,9 @@ public final class BidirectionalReachabilityAnalysisTest {
     FPFN_CONFIGS = ImmutableSortedMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
     Batfish batfish = getBatfish(FPFN_CONFIGS, FPFN_TEMP);
     batfish.computeDataPlane();
-    FPFN_FORWARDING_ANALYSIS = batfish.loadDataPlane().getForwardingAnalysis();
+    DataPlane dataPlane = batfish.loadDataPlane();
+    FPFN_FORWARDING_ANALYSIS = dataPlane.getForwardingAnalysis();
+    FPFN_IPS_ROUTED_OUT_INTERFACES_FACTORY = new IpsRoutedOutInterfacesFactory(dataPlane.getFibs());
   }
 
   @Test
@@ -314,9 +318,15 @@ public final class BidirectionalReachabilityAnalysisTest {
                 Ip.parse("10.0.0.3").toIpSpace())
             .build();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, true);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            true);
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             assignment,
@@ -580,11 +590,13 @@ public final class BidirectionalReachabilityAnalysisTest {
     Ip dstIp = Ip.parse("255.255.255.1");
     BDD dstIpBdd = PKT.getDstIp().value(dstIp.asLong());
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BidirectionalReachabilityAnalysis analysis =
         new BidirectionalReachabilityAnalysis(
             PKT,
             configurations,
-            batfish.loadDataPlane().getForwardingAnalysis(),
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
             assignment,
             matchDst(dstIp),
             ImmutableSet.of(),
@@ -780,11 +792,13 @@ public final class BidirectionalReachabilityAnalysisTest {
     Ip dstIp = Ip.parse("255.255.255.1");
     BDD dstIpBdd = PKT.getDstIp().value(dstIp.asLong());
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BidirectionalReachabilityResult result =
         new BidirectionalReachabilityAnalysis(
                 PKT,
                 configurations,
-                batfish.loadDataPlane().getForwardingAnalysis(),
+                dataPlane.getForwardingAnalysis(),
+                new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
                 assignment,
                 matchDst(dstIp),
                 ImmutableSet.of(),
@@ -825,6 +839,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             PKT,
             FPFN_CONFIGS,
             FPFN_FORWARDING_ANALYSIS,
+            FPFN_IPS_ROUTED_OUT_INTERFACES_FACTORY,
             assignment,
             matchDst(dstIpSpace),
             ImmutableSet.of(),
@@ -850,6 +865,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             PKT,
             FPFN_CONFIGS,
             FPFN_FORWARDING_ANALYSIS,
+            FPFN_IPS_ROUTED_OUT_INTERFACES_FACTORY,
             assignment,
             matchDst(dstIpSpace),
             ImmutableSet.of(),
@@ -1055,11 +1071,13 @@ public final class BidirectionalReachabilityAnalysisTest {
     batfish.computeDataPlane();
 
     // Bidirectional analysis
+    DataPlane dataPlane = batfish.loadDataPlane();
     BidirectionalReachabilityAnalysis analysis =
         new BidirectionalReachabilityAnalysis(
             PKT,
             configurations,
-            batfish.loadDataPlane().getForwardingAnalysis(),
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
             IpSpaceAssignment.builder()
                 .assign(SFL_INGRESS_LOCATION, UniverseIpSpace.INSTANCE)
                 .build(),
@@ -1098,11 +1116,13 @@ public final class BidirectionalReachabilityAnalysisTest {
             .build();
 
     // Bidirectional analysis
+    DataPlane dataPlane = batfish.loadDataPlane();
     BidirectionalReachabilityAnalysis analysis =
         new BidirectionalReachabilityAnalysis(
             PKT,
             configurations,
-            batfish.loadDataPlane().getForwardingAnalysis(),
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
             IpSpaceAssignment.builder()
                 .assign(SFL_INGRESS_LOCATION, UniverseIpSpace.INSTANCE)
                 .build(),

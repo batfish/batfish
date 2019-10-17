@@ -52,7 +52,7 @@ public class FibLookupOutgoingInterfaceIsOneOf implements BoolExpr {
 
   @Override
   public <T> T accept(BoolExprVisitor<T> tBoolExprVisitor) {
-    return tBoolExprVisitor.visitFibLookupOutgoingInterfaceMatchesOneOf(this);
+    return tBoolExprVisitor.visitFibLookupOutgoingInterfaceIsOneOf(this);
   }
 
   @Override
