@@ -1592,7 +1592,13 @@ public final class CiscoNxosGrammarTest {
     // Accepted flow sent to 2.2.2.2
     assertThat(
         FlowEvaluator.evaluate(
-                acceptedFlow, "eth0", policy, c.getIpAccessLists(), ImmutableMap.of())
+                acceptedFlow,
+                "eth0",
+                DEFAULT_VRF_NAME,
+                policy,
+                c.getIpAccessLists(),
+                ImmutableMap.of(),
+                ImmutableMap.of())
             .getAction(),
         equalTo(
             FibLookupOverrideLookupIp.builder()
@@ -1605,7 +1611,13 @@ public final class CiscoNxosGrammarTest {
     // Rejected flow delegated to regular FIB lookup
     assertThat(
         FlowEvaluator.evaluate(
-                rejectedFlow, "eth0", policy, c.getIpAccessLists(), ImmutableMap.of())
+                rejectedFlow,
+                "eth0",
+                DEFAULT_VRF_NAME,
+                policy,
+                c.getIpAccessLists(),
+                ImmutableMap.of(),
+                ImmutableMap.of())
             .getAction(),
         equalTo(regularFibLookup));
   }
