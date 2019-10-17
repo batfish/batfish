@@ -160,7 +160,8 @@ public final class PacketPolicyToBddTest {
                 "name",
                 ImmutableList.of(new ApplyTransformation(transformation), new Return(fl)),
                 new Return(Drop.instance())),
-            _ipAccessListToBdd);
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
     assertThat(
         evaluator.getFibLookups().get(fl),
         equalTo(

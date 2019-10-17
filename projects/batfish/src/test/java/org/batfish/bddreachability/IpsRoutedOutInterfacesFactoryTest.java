@@ -41,7 +41,8 @@ public class IpsRoutedOutInterfacesFactoryTest {
     // empty fib
     {
       Fib fib = MockFib.builder().build();
-      assertEquals(ImmutableMap.of(), IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib));
+      assertEquals(
+          ImmutableMap.of(), IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib));
     }
 
     // single fib entry with missing matching Ips
@@ -54,8 +55,9 @@ public class IpsRoutedOutInterfacesFactoryTest {
                       ImmutableSet.of(
                           new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)))))
               .build();
-      Map<String, IpSpace> map = IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
-      assertThat(map, equalTo(ImmutableMap.of(iface1,EmptyIpSpace.INSTANCE)));
+      Map<String, IpSpace> map =
+          IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
+      assertThat(map, equalTo(ImmutableMap.of(iface1, EmptyIpSpace.INSTANCE)));
     }
 
     // single fib entry with matching Ips
@@ -69,7 +71,8 @@ public class IpsRoutedOutInterfacesFactoryTest {
                           new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)))))
               .setMatchingIps(ImmutableMap.of(prefix1, prefix1.toIpSpace()))
               .build();
-      Map<String, IpSpace> map = IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
+      Map<String, IpSpace> map =
+          IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
       assertEquals(1, map.size());
       assertEquals(prefix1Bdd, DST.visit(map.get(iface1)));
     }
@@ -87,7 +90,8 @@ public class IpsRoutedOutInterfacesFactoryTest {
               .setMatchingIps(
                   ImmutableMap.of(prefix1, prefix1.toIpSpace(), prefix2, prefix2.toIpSpace()))
               .build();
-      Map<String, IpSpace> map = IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
+      Map<String, IpSpace> map =
+          IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
       assertEquals(2, map.size());
       assertEquals(prefix1Bdd, DST.visit(map.get(iface1)));
       assertEquals(prefix2Bdd, DST.visit(map.get(iface2)));
