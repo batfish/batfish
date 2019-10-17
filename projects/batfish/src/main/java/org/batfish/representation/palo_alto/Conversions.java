@@ -70,13 +70,15 @@ final class Conversions {
     return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
   }
 
+  /** Creates and stores a routing policy from the given statement in configuration object */
   static void statementToExportPolicy(
       Statement statement, Configuration c, String routingPolicyName) {
     new NetworkFactory()
         .routingPolicyBuilder()
         .setOwner(c)
         .setName(routingPolicyName)
-        .setStatements(ImmutableList.of(statement));
+        .setStatements(ImmutableList.of(statement))
+        .build();
   }
 
   private static @Nonnull BooleanExpr toBooleanExpr(PolicyRuleMatch match) {
@@ -202,6 +204,8 @@ final class Conversions {
     // using conjunction since all conditions of the filter have to be met for a route to be
     // redistributed
     ImmutableList.Builder<BooleanExpr> conditionForConjunction = ImmutableList.builder();
+
+    // TODO: add support for protocols other than static
     if (filter.getRoutingProtocols().contains(RoutingProtocol.STATIC)) {
       conditionForConjunction.add(new MatchProtocol(RoutingProtocol.STATIC));
     }
@@ -238,10 +242,10 @@ final class Conversions {
   }
 
   static RoutingPolicy computeAndSetPerPeerExportPolicy(
-      BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr) {
+      BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
     List<PolicyRule> exportPolicyRulesUsedByThisPeer =
         bgpVr.getExportPolicyRules().values().stream()
-            .filter(ep -> ep.getUsedBy() != null && ep.getUsedBy().equals(peer.getName()))
+            .filter(ep -> ep.getUsedBy() != null && ep.getUsedBy().equals(peerGroupName))
             .collect(ImmutableList.toImmutableList());
 
     ImmutableList.Builder<BooleanExpr> disjunctionOfAllPolicesUsedByPeer = ImmutableList.builder();

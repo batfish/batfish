@@ -1113,7 +1113,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         Ipv4UnicastAddressFamily.builder()
             .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build());
 
-    ipv4af.setExportPolicy(computeAndSetPerPeerExportPolicy(peer, _c, vr, bgp).getName());
+    ipv4af.setExportPolicy(
+        computeAndSetPerPeerExportPolicy(peer, _c, vr, bgp, pg.getName()).getName());
 
     peerB.setIpv4UnicastAddressFamily(ipv4af.build());
 
