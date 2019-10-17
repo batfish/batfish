@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
+import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Zero;
 import org.batfish.common.bdd.BDDOps;
@@ -45,6 +46,7 @@ class PacketPolicyToBdd {
   @Nonnull private final BoolExprToBdd _boolExprToBdd;
   @Nonnull private Transition _toDrop;
   @Nonnull private final Map<FibLookup, Transition> _fibLookups;
+  @Nonnull private final TransformationToTransition _transformationToTransition;
 
   /**
    * Process a given {@link PacketPolicy} and return the {@link PacketPolicyToBdd} that expresses
@@ -65,6 +67,8 @@ class PacketPolicyToBdd {
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     _toDrop = Zero.INSTANCE;
     _fibLookups = new HashMap<>(0);
+    _transformationToTransition =
+        new TransformationToTransition(ipAccessListToBdd.getBDDPacket(), ipAccessListToBdd);
   }
 
   /** Process a given {@link PacketPolicy} */
@@ -138,9 +142,11 @@ class PacketPolicyToBdd {
 
     @Override
     public Void visitApplyTransformation(ApplyTransformation transformation) {
-      // TODO:
-      throw new UnsupportedOperationException(
-          "Transformations in packet policy -> BDD not yet supported");
+      _pathTransition =
+          compose(
+              _pathTransition,
+              _transformationToTransition.toTransition(transformation.getTransformation()));
+      return null;
     }
   }
 
@@ -172,7 +178,7 @@ class PacketPolicyToBdd {
     }
 
     @Override
-    public BDD visitFibLookupOutgoingInterfaceMatchesOneOf(FibLookupOutgoingInterfaceIsOneOf expr) {
+    public BDD visitFibLookupOutgoingInterfaceIsOneOf(FibLookupOutgoingInterfaceIsOneOf expr) {
       BDDPacket bddPacket = _ipAccessListToBdd.getBDDPacket();
       IpSpaceToBDD dst = bddPacket.getDstIpSpaceToBDD();
       BDDOps ops = new BDDOps(bddPacket.getFactory());

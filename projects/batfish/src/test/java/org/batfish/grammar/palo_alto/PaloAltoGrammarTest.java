@@ -62,6 +62,11 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
+import static org.batfish.representation.palo_alto.RuleEndpoint.Type.Any;
+import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_ADDRESS;
+import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_PREFIX;
+import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_RANGE;
+import static org.batfish.representation.palo_alto.RuleEndpoint.Type.REFERENCE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
@@ -152,6 +157,7 @@ import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.IbgpPeerGroupType;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
 import org.batfish.representation.palo_alto.OspfAreaNormal;
 import org.batfish.representation.palo_alto.OspfAreaNssa;
@@ -172,6 +178,7 @@ import org.batfish.representation.palo_alto.RedistRule;
 import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
 import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
+import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
@@ -1476,6 +1483,61 @@ public final class PaloAltoGrammarTest {
         not(
             hasUndefinedReference(
                 filename, SERVICE_OR_SERVICE_GROUP, ServiceBuiltIn.APPLICATION_DEFAULT.getName())));
+  }
+
+  @Test
+  public void testNatRulesAndReferences() throws IOException {
+    String hostname = "rulebase-nat";
+
+    // Check VS model
+    PaloAltoConfiguration vendorConfig = parsePaloAltoConfig(hostname);
+    Map<String, NatRule> natRules =
+        vendorConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getNatRules();
+
+    // In order of appearance
+    String rule1Name = "RULE1";
+    String rule2Name = "2nd_RULE";
+    RuleEndpoint anyRuleEndpoint = new RuleEndpoint(Any, "any");
+    assertThat(natRules.keySet(), contains(rule1Name, rule2Name));
+
+    NatRule rule1 = natRules.get(rule1Name);
+    assertThat(rule1.getTo(), equalTo("TO_ZONE"));
+    assertThat(rule1.getFrom(), contains("any"));
+    assertThat(rule1.getSource(), contains(anyRuleEndpoint));
+    assertThat(rule1.getDestination(), contains(anyRuleEndpoint));
+    assertThat(
+        rule1.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddress(),
+        contains(
+            new RuleEndpoint(IP_ADDRESS, "1.1.1.1"),
+            new RuleEndpoint(IP_PREFIX, "2.2.2.0/24"),
+            new RuleEndpoint(IP_RANGE, "3.3.3.3-4.4.4.4")));
+
+    NatRule rule2 = natRules.get(rule2Name);
+    assertThat(rule2.getTo(), equalTo("TO_2"));
+    assertThat(rule2.getFrom(), contains("FROM_1", "FROM_2", "FROM_3"));
+    assertThat(
+        rule2.getSource(),
+        contains(
+            new RuleEndpoint(REFERENCE, "SRC_1"),
+            new RuleEndpoint(REFERENCE, "SRC_2"),
+            new RuleEndpoint(REFERENCE, "SRC_3")));
+    assertThat(
+        rule2.getDestination(),
+        contains(
+            new RuleEndpoint(REFERENCE, "DST_1"),
+            new RuleEndpoint(REFERENCE, "DST_2"),
+            new RuleEndpoint(REFERENCE, "DST_3")));
+    assertThat(
+        rule2.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddress(),
+        contains(
+            new RuleEndpoint(REFERENCE, "SRC_1"),
+            new RuleEndpoint(REFERENCE, "SRC_2"),
+            new RuleEndpoint(REFERENCE, "SRC_3")));
+    assertThat(
+        rule2.getDestinationTranslation().getTranslatedAddress(),
+        equalTo(new RuleEndpoint(REFERENCE, "DST_2")));
+
+    // TODO: Test semantics after conversion
   }
 
   @Test

@@ -31,38 +31,38 @@ srn_definition
 
 srn_destination_translation
 :
-    DESTINATION_TRANSLATION srndt_translated_address?
+    DESTINATION_TRANSLATION srndt_translated_address
 ;
 
 srn_source_translation
 :
-    SOURCE_TRANSLATION srnst_dynamic_ip_and_port?
+    SOURCE_TRANSLATION srnst_dynamic_ip_and_port
 ;
 
 srn_from
 :
-    FROM variable_list?
+    FROM variable_list
 ;
 
 srn_to
 :
-    TO zone = variable?
+    TO zone = variable
 ;
 
 
 srn_destination
 :
-    DESTINATION src_or_dst_list?
+    DESTINATION src_or_dst_list
 ;
 
 srn_source
 :
-    SOURCE src_or_dst_list?
+    SOURCE src_or_dst_list
 ;
 
 srnst_dynamic_ip_and_port
 :
-    DYNAMIC_IP_AND_PORT srnst_translated_address?
+    DYNAMIC_IP_AND_PORT srnst_translated_address
 ;
 
 srndt_translated_address

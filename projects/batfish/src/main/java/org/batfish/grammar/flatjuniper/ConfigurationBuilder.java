@@ -333,6 +333,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_hello_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_interface_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_no_summariesContext;
@@ -649,6 +650,7 @@ import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
+import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
@@ -4691,6 +4693,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return;
     }
     _currentOspfInterface.setOspfHelloInterval(seconds);
+  }
+
+  @Override
+  public void exitOai_neighbor(Oai_neighborContext ctx) {
+    Ip neighborIp = Ip.parse(ctx.IP_ADDRESS().getText());
+    InterfaceOspfNeighbor neighbor = new InterfaceOspfNeighbor(neighborIp);
+    if (ctx.ELIGIBLE() != null) {
+      neighbor.setDesignated(true);
+    }
+    _currentOspfInterface.getOspfNeighbors().add(neighbor);
   }
 
   @Override

@@ -5,13 +5,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
+import java.util.Collections;
+import java.util.Map;
+import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.MockFib;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -50,7 +60,13 @@ public final class FlowEvaluatorTest {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     FlowResult r =
         FlowEvaluator.evaluate(
-            _flow, "Eth0", singletonPolicy(new Return(fl)), ImmutableMap.of(), ImmutableMap.of());
+            _flow,
+            "Eth0",
+            "otherVrf",
+            singletonPolicy(new Return(fl)),
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
 
     assertThat(r.getAction(), equalTo(fl));
     assertThat(r.getFinalFlow(), equalTo(_flow));
@@ -63,8 +79,10 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(new PacketMatchExpr(TrueExpr.INSTANCE), ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
 
@@ -79,8 +97,10 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(new PacketMatchExpr(FalseExpr.INSTANCE), ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
 
@@ -120,7 +140,14 @@ public final class FlowEvaluatorTest {
 
     // Test:
     FlowResult result =
-        FlowEvaluator.evaluate(_flow, "Eth0", policy, ImmutableMap.of(), ImmutableMap.of());
+        FlowEvaluator.evaluate(
+            _flow,
+            "Eth0",
+            "otherVrf",
+            policy,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
 
     assertThat(result.getAction(), equalTo(action));
     // No transformations occurred
@@ -133,7 +160,14 @@ public final class FlowEvaluatorTest {
     PacketPolicy policy = new PacketPolicy("policyName", ImmutableList.of(), _defaultAction);
     // Test:
     FlowResult result =
-        FlowEvaluator.evaluate(_flow, "Eth0", policy, ImmutableMap.of(), ImmutableMap.of());
+        FlowEvaluator.evaluate(
+            _flow,
+            "Eth0",
+            "otherVrf",
+            policy,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
 
     assertThat(result.getAction(), equalTo(_defaultAction.getAction()));
     // No transformations occurred
@@ -149,6 +183,7 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(
                     new PacketMatchExpr(permittedByAcl(aclName)),
@@ -164,7 +199,8 @@ public final class FlowEvaluatorTest {
                                     .setDstIps(new IpSpaceReference(ipSpaceName))
                                     .build())))
                     .build()),
-            ImmutableMap.of(ipSpaceName, UniverseIpSpace.INSTANCE));
+            ImmutableMap.of(ipSpaceName, UniverseIpSpace.INSTANCE),
+            ImmutableMap.of());
 
     assertThat(r.getAction(), equalTo(fl));
     assertThat(r.getFinalFlow(), equalTo(_flow));
@@ -177,10 +213,12 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(
                     org.batfish.datamodel.packet_policy.TrueExpr.instance(),
                     ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(r.getAction(), equalTo(fl));
@@ -194,10 +232,12 @@ public final class FlowEvaluatorTest {
         FlowEvaluator.evaluate(
             _flow,
             "Eth0",
+            "otherVrf",
             singletonPolicy(
                 new If(
                     org.batfish.datamodel.packet_policy.FalseExpr.instance(),
                     ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
@@ -214,8 +254,132 @@ public final class FlowEvaluatorTest {
                 .build());
     FlowResult r =
         FlowEvaluator.evaluate(
-            _flow, "Eth0", singletonPolicy(transformation), ImmutableMap.of(), ImmutableMap.of());
+            _flow,
+            "Eth0",
+            "otherVrf",
+            singletonPolicy(transformation),
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
     assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
     assertThat(r.getFinalFlow(), equalTo(_flow.toBuilder().setDstIp(natIp).build()));
+  }
+
+  @Test
+  public void testEvaluateFibLookupOutgoingInterfaceIsOneOf() {
+    Prefix dstPrefix = _flow.getDstIp().toPrefix();
+    Ip nextVrIp = Ip.parse("5.5.5.5");
+    String srcIface = "Eth0";
+    String vrfName = "vrf";
+    String nextVrfName = "nextVrf";
+    String vrfIface = "vrfIface";
+    String nextVrfIface = "nextVrfIface";
+    ConnectedRoute fakeRoute = new ConnectedRoute(dstPrefix, vrfIface);
+
+    Map<String, Fib> fibs =
+        ImmutableMap.of(
+            vrfName,
+            MockFib.builder()
+                .setFibEntries(
+                    ImmutableMap.of(
+                        _flow.getDstIp(),
+                        ImmutableSet.of(
+                            new FibEntry(
+                                new FibForward(Ip.MAX, vrfIface), ImmutableList.of(fakeRoute))),
+                        nextVrIp,
+                        ImmutableSet.of(
+                            new FibEntry(
+                                new FibNextVrf(nextVrfName), ImmutableList.of(fakeRoute)))))
+                .build(),
+            nextVrfName,
+            MockFib.builder()
+                .setFibEntries(
+                    ImmutableMap.of(
+                        _flow.getDstIp(),
+                        ImmutableSet.of(
+                            new FibEntry(
+                                new FibForward(Ip.MAX, nextVrfIface), ImmutableList.of(fakeRoute))),
+                        nextVrIp,
+                        ImmutableSet.of(
+                            new FibEntry(
+                                new FibForward(Ip.MAX, nextVrfIface),
+                                ImmutableList.of(fakeRoute)))))
+                .build());
+
+    Action trueAction = new FibLookup(new LiteralVrfName("finalVrf"));
+    Return trueReturn = new Return(trueAction);
+    Action defaultAction = Drop.instance();
+
+    {
+      // Lookup in interface VRF
+      FlowResult r =
+          FlowEvaluator.evaluate(
+              _flow,
+              srcIface,
+              vrfName,
+              singletonPolicy(
+                  new If(
+                      new FibLookupOutgoingInterfaceIsOneOf(
+                          IngressInterfaceVrf.instance(), ImmutableSet.of(vrfIface)),
+                      Collections.singletonList(trueReturn))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              fibs);
+      assertThat(r.getAction(), equalTo(trueAction));
+    }
+    {
+      // Lookup in interface VRF, no match
+      FlowResult r =
+          FlowEvaluator.evaluate(
+              _flow,
+              srcIface,
+              vrfName,
+              singletonPolicy(
+                  new If(
+                      new FibLookupOutgoingInterfaceIsOneOf(
+                          IngressInterfaceVrf.instance(), ImmutableSet.of("NoMatchIface")),
+                      Collections.singletonList(trueReturn))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              fibs);
+      assertThat(r.getAction(), equalTo(defaultAction));
+    }
+
+    {
+      // Lookup in a different VRF
+      FlowResult r =
+          FlowEvaluator.evaluate(
+              _flow,
+              srcIface,
+              vrfName,
+              singletonPolicy(
+                  new If(
+                      new FibLookupOutgoingInterfaceIsOneOf(
+                          new LiteralVrfName(nextVrfName), ImmutableSet.of(nextVrfIface)),
+                      Collections.singletonList(trueReturn))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              fibs);
+      assertThat(r.getAction(), equalTo(trueAction));
+    }
+
+    {
+      // Lookup in original VRF with NEXT VR route -- should match nextVrfIface
+      Flow flow = _flow.toBuilder().setDstIp(nextVrIp).build();
+      FlowResult r =
+          FlowEvaluator.evaluate(
+              flow,
+              srcIface,
+              vrfName,
+              singletonPolicy(
+                  new If(
+                      new FibLookupOutgoingInterfaceIsOneOf(
+                          IngressInterfaceVrf.instance(), ImmutableSet.of(nextVrfIface)),
+                      Collections.singletonList(trueReturn))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              fibs);
+      assertThat(r.getAction(), equalTo(trueAction));
+    }
   }
 }
