@@ -4,17 +4,22 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNextVrf;
+import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
+import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /**
  * Evaluates a {@link PacketPolicy} against a given {@link Flow}.
  *
- * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, PacketPolicy, Map, Map)}
- * which will return a {@link FlowResult}.
+ * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, String, PacketPolicy, Map,
+ * Map, Map)} which will return a {@link FlowResult}.
  */
 public final class FlowEvaluator {
 
@@ -23,6 +28,9 @@ public final class FlowEvaluator {
 
   // Start state
   @Nonnull private final String _srcInterface;
+  @Nonnull private final String _srcInterfaceVrf;
+  /** Vrf name to FIB mapping */
+  @Nonnull private final Map<String, Fib> _fibs;
 
   // Modified state
   @Nonnull private Flow.Builder _currentFlow;
@@ -30,6 +38,7 @@ public final class FlowEvaluator {
   // Expr and stmt visitors
   @Nonnull private BoolExprEvaluator _boolExprEvaluator = new BoolExprEvaluator();
   @Nonnull private StatementEvaluator _stmtEvaluator = new StatementEvaluator();
+  @Nonnull private VrfExprEvaluator _vrfExprEvaluator = new VrfExprEvaluator();
 
   private final class BoolExprEvaluator implements BoolExprVisitor<Boolean> {
 
@@ -50,11 +59,35 @@ public final class FlowEvaluator {
     }
 
     @Override
-    public Boolean visitFibLookupOutgoingInterfaceMatchesOneOf(
-        FibLookupOutgoingInterfaceIsOneOf expr) {
-      // TODO:
-      throw new UnsupportedOperationException(
-          "FibLookupOutgoingInterfaceIsOneOf in FlowEvaluator not yet supported");
+    public Boolean visitFibLookupOutgoingInterfaceIsOneOf(FibLookupOutgoingInterfaceIsOneOf expr) {
+      Fib fib = _fibs.get(_vrfExprEvaluator.visit(expr.getVrf()));
+      if (fib == null) {
+        return false;
+      }
+
+      FibActionVisitor<Boolean> actionVisitor =
+          new FibActionVisitor<Boolean>() {
+            @Override
+            public Boolean visitFibForward(FibForward fibForward) {
+              return expr.getInterfaceNames().contains(fibForward.getInterfaceName());
+            }
+
+            @Override
+            public Boolean visitFibNextVrf(FibNextVrf fibNextVrf) {
+              // Recurse and continue interface collection
+              return _fibs.get(fibNextVrf.getNextVrf()).get(_currentFlow.getDstIp()).stream()
+                  .anyMatch(entry -> entry.getAction().accept(this));
+            }
+
+            @Override
+            public Boolean visitFibNullRoute(FibNullRoute fibNullRoute) {
+              // nothing to do
+              return false;
+            }
+          };
+
+      return fib.get(_currentFlow.getDstIp()).stream()
+          .anyMatch(entry -> entry.getAction().accept(actionVisitor));
     }
   }
 
@@ -101,12 +134,16 @@ public final class FlowEvaluator {
   private FlowEvaluator(
       Flow originalFlow,
       String srcInterface,
+      String srcInterfaceVrf,
       Map<String, IpAccessList> availableAcls,
-      Map<String, IpSpace> namedIpSpaces) {
+      Map<String, IpSpace> namedIpSpaces,
+      Map<String, Fib> fibs) {
     _currentFlow = originalFlow.toBuilder();
     _srcInterface = srcInterface;
+    _srcInterfaceVrf = srcInterfaceVrf;
     _availableAcls = availableAcls;
     _namedIpSpaces = namedIpSpaces;
+    _fibs = fibs;
   }
 
   @Nonnull
@@ -127,10 +164,13 @@ public final class FlowEvaluator {
   public static FlowResult evaluate(
       Flow f,
       String srcInterface,
+      String srcInterfaceVrf,
       PacketPolicy policy,
       Map<String, IpAccessList> availableAcls,
-      Map<String, IpSpace> namedIpSpaces) {
-    return new FlowEvaluator(f, srcInterface, availableAcls, namedIpSpaces).evaluate(policy);
+      Map<String, IpSpace> namedIpSpaces,
+      Map<String, Fib> fibs) {
+    return new FlowEvaluator(f, srcInterface, srcInterfaceVrf, availableAcls, namedIpSpaces, fibs)
+        .evaluate(policy);
   }
 
   /** Combination of final (possibly transformed) {@link Flow} and the action taken */
@@ -167,6 +207,19 @@ public final class FlowEvaluator {
     @Override
     public int hashCode() {
       return Objects.hash(getFinalFlow(), getAction());
+    }
+  }
+
+  private final class VrfExprEvaluator implements VrfExprVisitor<String> {
+
+    @Override
+    public String visitLiteralVrfName(LiteralVrfName expr) {
+      return expr.getVrfName();
+    }
+
+    @Override
+    public String visitIngressInterfaceVrf(IngressInterfaceVrf expr) {
+      return _srcInterfaceVrf;
     }
   }
 }

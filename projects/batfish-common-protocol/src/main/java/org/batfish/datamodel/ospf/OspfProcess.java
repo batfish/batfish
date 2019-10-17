@@ -52,7 +52,7 @@ public final class OspfProcess implements Serializable {
     @Nullable private Long _maxMetricStubNetworks;
     @Nullable private Long _maxMetricSummaryNetworks;
     @Nullable private Long _maxMetricTransitLinks;
-    @Nullable private Map<String, OspfNeighborConfig> _neighborConfigs;
+    @Nonnull private Map<OspfNeighborConfigId, OspfNeighborConfig> _neighborConfigs;
     @Nullable private String _processId;
     @Nullable private Double _referenceBandwidth;
     @Nullable private Vrf _vrf;
@@ -141,8 +141,9 @@ public final class OspfProcess implements Serializable {
       return this;
     }
 
-    public Builder setNeighborConfigs(Map<String, OspfNeighborConfig> neighbors) {
-      _neighborConfigs = neighbors;
+    public @Nonnull Builder setNeighborConfigs(
+        Map<OspfNeighborConfigId, OspfNeighborConfig> neighborConfigs) {
+      _neighborConfigs = neighborConfigs;
       return this;
     }
 
@@ -243,7 +244,7 @@ public final class OspfProcess implements Serializable {
   @Nullable private Long _maxMetricTransitLinks;
   private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
   /** Mapping from interface name to an OSPF config */
-  @Nonnull private Map<String, OspfNeighborConfig> _ospfNeighborConfigs;
+  @Nonnull private Map<OspfNeighborConfigId, OspfNeighborConfig> _ospfNeighborConfigs;
 
   @Nonnull private final String _processId;
   @Nonnull private Double _referenceBandwidth;
@@ -261,7 +262,7 @@ public final class OspfProcess implements Serializable {
       @Nullable Long maxMetricStubNetworks,
       @Nullable Long maxMetricSummaryNetworks,
       @Nullable Long maxMetricTransitLinks,
-      Map<String, OspfNeighborConfig> ospfNeighborConfigs,
+      Map<OspfNeighborConfigId, OspfNeighborConfig> ospfNeighborConfigs,
       String processId,
       Double referenceBandwidth,
       @Nullable Boolean rfc1583Compatible,
@@ -462,7 +463,7 @@ public final class OspfProcess implements Serializable {
   }
 
   @JsonIgnore
-  public Map<String, OspfNeighborConfig> getOspfNeighborConfigs() {
+  public Map<OspfNeighborConfigId, OspfNeighborConfig> getOspfNeighborConfigs() {
     return _ospfNeighborConfigs;
   }
 
@@ -537,10 +538,12 @@ public final class OspfProcess implements Serializable {
             .build();
   }
 
+  @JsonIgnore
   public void setExportPolicy(@Nullable String exportPolicy) {
     _exportPolicy = exportPolicy;
   }
 
+  @JsonIgnore
   public void setExportPolicySources(SortedSet<String> exportPolicySources) {
     _exportPolicySources = ImmutableSortedSet.copyOf(exportPolicySources);
   }
@@ -549,6 +552,7 @@ public final class OspfProcess implements Serializable {
    * Overwrite all generated route. See {@link #getGeneratedRoutes} for explanation of generated
    * routes.
    */
+  @JsonIgnore
   public void setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {
     _generatedRoutes = ImmutableSortedSet.copyOf(generatedRoutes);
   }
@@ -562,18 +566,22 @@ public final class OspfProcess implements Serializable {
             .build();
   }
 
+  @JsonIgnore
   public void setMaxMetricExternalNetworks(@Nullable Long maxMetricExternalNetworks) {
     _maxMetricExternalNetworks = maxMetricExternalNetworks;
   }
 
+  @JsonIgnore
   public void setMaxMetricStubNetworks(@Nullable Long maxMetricStubNetworks) {
     _maxMetricStubNetworks = maxMetricStubNetworks;
   }
 
+  @JsonIgnore
   public void setMaxMetricSummaryNetworks(@Nullable Long maxMetricSummaryNetworks) {
     _maxMetricSummaryNetworks = maxMetricSummaryNetworks;
   }
 
+  @JsonIgnore
   public void setMaxMetricTransitLinks(@Nullable Long maxMetricTransitLinks) {
     _maxMetricTransitLinks = maxMetricTransitLinks;
   }
@@ -583,18 +591,22 @@ public final class OspfProcess implements Serializable {
     _ospfNeighbors = ospfNeighbors;
   }
 
-  void setOspfNeighborConfigs(Map<String, OspfNeighborConfig> ospfNeighborConfigs) {
-    _ospfNeighborConfigs = ImmutableSortedMap.copyOf(ospfNeighborConfigs);
+  @JsonIgnore
+  void setOspfNeighborConfigs(Map<OspfNeighborConfigId, OspfNeighborConfig> ospfNeighborConfigs) {
+    _ospfNeighborConfigs = ospfNeighborConfigs;
   }
 
+  @JsonIgnore
   public void setReferenceBandwidth(Double referenceBandwidth) {
     _referenceBandwidth = referenceBandwidth;
   }
 
+  @JsonIgnore
   public void setRfc1583Compatible(@Nullable Boolean rfc1583Compatible) {
     _rfc1583Compatible = rfc1583Compatible;
   }
 
+  @JsonIgnore
   public void setRouterId(@Nonnull Ip id) {
     _routerId = id;
   }

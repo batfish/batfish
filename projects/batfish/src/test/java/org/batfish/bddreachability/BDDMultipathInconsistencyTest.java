@@ -80,7 +80,12 @@ public class BDDMultipathInconsistencyTest {
     DataPlane dataPlane = _batfish.loadDataPlane();
     _graphFactory =
         new BDDReachabilityAnalysisFactory(
-            PKT, _net._configs, dataPlane.getForwardingAnalysis(), false, false);
+            PKT,
+            _net._configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     _dstIface2Ip = DST_PREFIX_2.getStartIp();
     _srcName = _net._srcNode.getHostname();

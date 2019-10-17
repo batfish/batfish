@@ -26,6 +26,7 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -85,8 +86,14 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
   private BDDReachabilityAnalysisFactory initFactory() throws IOException {
     Batfish batfish = initBatfish(_configs);
+    DataPlane dataPlane = batfish.loadDataPlane();
     return new BDDReachabilityAnalysisFactory(
-        PKT, _configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+        PKT,
+        _configs,
+        dataPlane.getForwardingAnalysis(),
+        new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+        false,
+        false);
   }
 
   private BDDReachabilityAnalysis initAnalysis(FlowDisposition disposition) throws IOException {

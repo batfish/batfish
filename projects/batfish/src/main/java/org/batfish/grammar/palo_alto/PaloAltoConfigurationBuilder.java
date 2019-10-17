@@ -85,7 +85,6 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
@@ -1393,9 +1392,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSa_ip_netmask(Sa_ip_netmaskContext ctx) {
     if (ctx.ip_address() != null) {
-      _currentAddressObject.setIpSpace(toIp(ctx.ip_address()).toIpSpace());
+      _currentAddressObject.setIp(toIp(ctx.ip_address()));
     } else if (ctx.IP_PREFIX() != null) {
-      _currentAddressObject.setIpSpace(Prefix.parse(getText(ctx.IP_PREFIX())).toIpSpace());
+      _currentAddressObject.setPrefix(Prefix.parse(getText(ctx.IP_PREFIX())));
     } else {
       warn(ctx, "Cannot understand what follows 'ip-netmask'");
     }
@@ -1404,7 +1403,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
     String[] ips = getText(ctx.IP_RANGE()).split("-");
-    _currentAddressObject.setIpSpace(IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1])));
+    _currentAddressObject.setIpRange(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
   }
 
   @Override

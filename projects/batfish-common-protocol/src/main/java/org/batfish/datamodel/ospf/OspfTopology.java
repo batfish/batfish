@@ -162,7 +162,9 @@ public final class OspfTopology {
     private static final Comparator<OspfNeighborConfigId> ID_COMPARATOR =
         Comparator.comparing(OspfNeighborConfigId::getHostname)
             .thenComparing(OspfNeighborConfigId::getVrfName)
-            .thenComparing(OspfNeighborConfigId::getInterfaceName);
+            .thenComparing(OspfNeighborConfigId::getInterfaceName)
+            .thenComparing(OspfNeighborConfigId::getProcName)
+            .thenComparing(OspfNeighborConfigId::getAddress);
 
     @VisibleForTesting
     EdgeId(OspfNeighborConfigId tail, OspfNeighborConfigId head) {
@@ -203,11 +205,11 @@ public final class OspfTopology {
       if (this == o) {
         return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof EdgeId)) {
         return false;
       }
       EdgeId other = (EdgeId) o;
-      return Objects.equals(_tail, other._tail) && Objects.equals(_head, other._head);
+      return _tail.equals(other._tail) && _head.equals(other._head);
     }
 
     @Override

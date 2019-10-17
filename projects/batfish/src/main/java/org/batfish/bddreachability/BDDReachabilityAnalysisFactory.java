@@ -46,6 +46,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.BatfishException;
@@ -61,7 +62,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -229,6 +229,7 @@ public final class BDDReachabilityAnalysisFactory {
       BDDPacket packet,
       Map<String, Configuration> configs,
       ForwardingAnalysis forwardingAnalysis,
+      IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory,
       boolean ignoreFilters,
       boolean initializeSessions) {
     try (ActiveSpan span =
@@ -274,7 +275,7 @@ public final class BDDReachabilityAnalysisFactory {
           computeVrfAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
       _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
 
-      _convertedPacketPolicies = convertPacketPolicies(configs);
+      _convertedPacketPolicies = convertPacketPolicies(configs, ipsRoutedOutInterfacesFactory);
 
       _dstIpVars = Arrays.stream(_bddPacket.getDstIp().getBitvec()).reduce(_one, BDD::and);
       _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
@@ -451,7 +452,9 @@ public final class BDDReachabilityAnalysisFactory {
 
   /** For all configs/interfaces that have PBR policy defined, convert the packet policy to BDDs */
   private Map<String, Map<String, PacketPolicyToBdd>> convertPacketPolicies(
-      Map<String, Configuration> configs) {
+      Map<String, Configuration> configs,
+      IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory) {
+
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.convertPacketPolicies")
@@ -461,18 +464,28 @@ public final class BDDReachabilityAnalysisFactory {
           configs,
           Entry::getKey,
           configEntry ->
-              configEntry.getValue().getAllInterfaces().values().stream()
-                  .filter(iface -> iface.getRoutingPolicyName() != null)
-                  .collect(
-                      ImmutableMap.toImmutableMap(
-                          Interface::getName,
-                          iface ->
-                              PacketPolicyToBdd.evaluate(
-                                  configEntry
-                                      .getValue()
-                                      .getPacketPolicies()
-                                      .get(iface.getRoutingPolicyName()),
-                                  ipAccessListToBdd(configEntry.getValue())))));
+              configEntry.getValue().getVrfs().values().stream()
+                  .flatMap(
+                      vrf -> {
+                        IpsRoutedOutInterfaces ipsRoutedOutInterfaces =
+                            ipsRoutedOutInterfacesFactory.getIpsRoutedOutInterfaces(
+                                configEntry.getKey(), vrf.getName());
+                        return vrf.getInterfaces().values().stream()
+                            .filter(
+                                iface -> iface.getActive() && iface.getRoutingPolicyName() != null)
+                            .map(
+                                iface ->
+                                    Maps.immutableEntry(
+                                        iface.getName(),
+                                        PacketPolicyToBdd.evaluate(
+                                            configEntry
+                                                .getValue()
+                                                .getPacketPolicies()
+                                                .get(iface.getRoutingPolicyName()),
+                                            ipAccessListToBdd(configEntry.getValue()),
+                                            ipsRoutedOutInterfaces)));
+                      })
+                  .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
     }
   }
 

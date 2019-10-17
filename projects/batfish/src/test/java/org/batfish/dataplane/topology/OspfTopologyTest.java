@@ -167,9 +167,19 @@ public class OspfTopologyTest {
 
     // Active neighbor relationship
     final OspfNeighborConfigId r1i13 =
-        new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "1", "i13");
+        new OspfNeighborConfigId(
+            "r1",
+            Configuration.DEFAULT_VRF_NAME,
+            "1",
+            "i13",
+            ConcreteInterfaceAddress.parse("1.1.1.2/31"));
     final OspfNeighborConfigId r3i31 =
-        new OspfNeighborConfigId("r3", Configuration.DEFAULT_VRF_NAME, "1", "i31");
+        new OspfNeighborConfigId(
+            "r3",
+            Configuration.DEFAULT_VRF_NAME,
+            "1",
+            "i31",
+            ConcreteInterfaceAddress.parse("1.1.1.3/31"));
     assertThat(topology.neighbors(r1i13), equalTo(ImmutableSet.of(r3i31)));
     assertThat(topology.neighbors(r3i31), equalTo(ImmutableSet.of(r1i13)));
     assertThat(
@@ -184,28 +194,58 @@ public class OspfTopologyTest {
     // Everyone else has no neighbors
     assertThat(
         topology.neighbors(
-            new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "p", "i12")),
+            new OspfNeighborConfigId(
+                "r1",
+                Configuration.DEFAULT_VRF_NAME,
+                "p",
+                "i12",
+                ConcreteInterfaceAddress.parse("1.1.1.0/31"))),
         empty());
     assertThat(
         topology.neighbors(
-            new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "p", "i14")),
+            new OspfNeighborConfigId(
+                "r1",
+                Configuration.DEFAULT_VRF_NAME,
+                "p",
+                "i14",
+                ConcreteInterfaceAddress.parse("1.1.1.4/31"))),
         empty());
     assertThat(
         topology.neighbors(
-            new OspfNeighborConfigId("r2", Configuration.DEFAULT_VRF_NAME, "p", "i21")),
+            new OspfNeighborConfigId(
+                "r2",
+                Configuration.DEFAULT_VRF_NAME,
+                "p",
+                "i21",
+                ConcreteInterfaceAddress.parse("1.1.1.1/31"))),
         empty());
     assertThat(
         topology.neighbors(
-            new OspfNeighborConfigId("r4", Configuration.DEFAULT_VRF_NAME, "p", "i41")),
+            new OspfNeighborConfigId(
+                "r4",
+                Configuration.DEFAULT_VRF_NAME,
+                "p",
+                "i41",
+                ConcreteInterfaceAddress.parse("1.1.1.5/31"))),
         empty());
   }
 
   @Test
   public void testEdgeIdJsonSerialization() throws IOException {
     final OspfNeighborConfigId r1i13 =
-        new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "1", "i13");
+        new OspfNeighborConfigId(
+            "r1",
+            Configuration.DEFAULT_VRF_NAME,
+            "1",
+            "i13",
+            ConcreteInterfaceAddress.parse("1.1.1.2/31"));
     final OspfNeighborConfigId r3i31 =
-        new OspfNeighborConfigId("r3", Configuration.DEFAULT_VRF_NAME, "1", "i31");
+        new OspfNeighborConfigId(
+            "r3",
+            Configuration.DEFAULT_VRF_NAME,
+            "1",
+            "i31",
+            ConcreteInterfaceAddress.parse("1.1.1.3/31"));
     EdgeId edge = OspfTopology.makeEdge(r1i13, r3i31);
     assertThat(BatfishObjectMapper.clone(edge, EdgeId.class), equalTo(edge));
   }
@@ -231,6 +271,7 @@ public class OspfTopologyTest {
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .setCost(1)
                 .setEnabled(true)
+                .setProcess("ospf")
                 .build())
         .build();
 
@@ -267,7 +308,8 @@ public class OspfTopologyTest {
         configuration.getVrfs().get("vrf").getOspfProcesses().get("ospf").getOspfNeighborConfigs(),
         equalTo(
             ImmutableMap.of(
-                "iface1",
+                new OspfNeighborConfigId(
+                    "conf", "vrf", "ospf", "iface1", ConcreteInterfaceAddress.parse("1.1.1.1/31")),
                 OspfNeighborConfig.builder()
                     .setArea(1L)
                     .setHostname("conf")

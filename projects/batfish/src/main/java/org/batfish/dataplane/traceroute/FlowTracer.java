@@ -460,9 +460,11 @@ class FlowTracer {
         FlowEvaluator.evaluate(
             _currentFlow,
             incomingInterface.getName(),
+            incomingInterface.getVrfName(),
             policy,
             owner.getIpAccessLists(),
-            owner.getIpSpaces());
+            owner.getIpSpaces(),
+            _tracerouteContext.getFibs(_currentNode.getName()));
     return new ActionVisitor<Boolean>() {
 
       /** Helper visitor to figure out in which VRF we need to do the FIB lookup */

@@ -21,6 +21,7 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecSession;
@@ -64,7 +65,9 @@ public final class TopologyContextTest {
     isisTopology.addNode(new IsisNode("a", "b"));
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfTopology =
         ValueGraphBuilder.directed().build();
-    ospfTopology.addNode(new OspfNeighborConfigId("a", "b", "c", "d"));
+    ospfTopology.addNode(
+        new OspfNeighborConfigId(
+            "a", "b", "c", "d", ConcreteInterfaceAddress.parse("192.0.2.0/31")));
     MutableGraph<VxlanNode> vxlanTopology =
         GraphBuilder.undirected().allowsSelfLoops(false).build();
     vxlanTopology.addNode(new VxlanNode("a", 5));
@@ -130,7 +133,9 @@ public final class TopologyContextTest {
     isisTopology.addNode(new IsisNode("a", "b"));
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfTopology =
         ValueGraphBuilder.directed().build();
-    ospfTopology.addNode(new OspfNeighborConfigId("a", "b", "c", "d"));
+    ospfTopology.addNode(
+        new OspfNeighborConfigId(
+            "a", "b", "c", "d", ConcreteInterfaceAddress.parse("192.0.2.0/31")));
     MutableGraph<VxlanNode> vxlanTopology =
         GraphBuilder.undirected().allowsSelfLoops(false).build();
     vxlanTopology.addNode(new VxlanNode("a", 5));
