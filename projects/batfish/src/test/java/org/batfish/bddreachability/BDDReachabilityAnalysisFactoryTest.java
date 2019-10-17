@@ -1617,4 +1617,87 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // TODO: Specify final interface where DELIVERED_TO_SUBNET occurs when that becomes possible
     assertThat(deliveredToSubnetEndToEndBDD, equalTo(dstIpSpaceOfInterest.accept(ipSpaceToBDD)));
   }
+
+  /**
+   * Create a network that uses {@link FibLookupOutgoingInterfaceIsOneOf} to forward traffic that
+   * will be forwarded out interface i1, and drop otherwise.
+   */
+  private ImmutableSortedMap<String, Configuration> makeOutgoingInterfaceIsOneOfNetwork() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration config = cb.setHostname(INGRESS_NODE).build();
+
+    Vrf vrf = nf.vrfBuilder().setName(INGRESS_VRF).setOwner(config).build();
+
+    final String packetPolicyName = "packetPolicyName";
+    config.setPacketPolicies(
+        ImmutableSortedMap.of(
+            packetPolicyName,
+            new PacketPolicy(
+                packetPolicyName,
+                ImmutableList.of(
+                    new If(
+                        new FibLookupOutgoingInterfaceIsOneOf(
+                            new LiteralVrfName(vrf.getName()), ImmutableSet.of("i1")),
+                        ImmutableList.of(
+                            new Return(new FibLookup(new LiteralVrfName(vrf.getName())))))),
+                new Return(Drop.instance()))));
+
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
+    Interface ingressIface =
+        ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("10.0.0.0/24")).build();
+    ingressIface.setRoutingPolicy(packetPolicyName);
+    ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+    ib.setName("i2").setAddress(ConcreteInterfaceAddress.parse("2.2.2.1/24")).build();
+
+    return ImmutableSortedMap.of(config.getHostname(), config);
+  }
+
+  @Test
+  public void testOutgoingInterfaceIsOneOf() throws IOException {
+    ImmutableSortedMap<String, Configuration> configs = makeOutgoingInterfaceIsOneOfNetwork();
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane();
+
+    DataPlane dataPlane = batfish.loadDataPlane();
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT,
+            configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
+
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(
+                    new InterfaceLinkLocation(INGRESS_NODE, INGRESS_IFACE),
+                    UniverseIpSpace.INSTANCE)
+                .build(),
+            AclLineMatchExprs.TRUE,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            configs.keySet(),
+            SUCCESS_DISPOSITIONS);
+
+    BDD deliveredToSubnetEndToEndBDD =
+        analysis
+            .getIngressLocationReachableBDDs()
+            .get(IngressLocation.interfaceLink(INGRESS_NODE, INGRESS_IFACE));
+
+    // policy allows traffic to i1's subnet
+    BDD i1SubnetBdd = PKT.getDstIpSpaceToBDD().toBDD(Ip.parse("1.1.1.2"));
+    assertTrue(deliveredToSubnetEndToEndBDD.andSat(i1SubnetBdd));
+
+    // policy allows traffic to i1's ip
+    BDD i1Ip = PKT.getDstIpSpaceToBDD().toBDD(Ip.parse("1.1.1.1"));
+    assertTrue(deliveredToSubnetEndToEndBDD.andSat(i1Ip));
+
+    // policy drops traffic to i2
+    BDD i2SubnetBdd = PKT.getDstIpSpaceToBDD().toBDD(Ip.parse("2.2.2.2"));
+    assertFalse(deliveredToSubnetEndToEndBDD.andSat(i2SubnetBdd));
+  }
 }
