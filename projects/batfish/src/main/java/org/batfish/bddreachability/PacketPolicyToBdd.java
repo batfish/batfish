@@ -6,14 +6,20 @@ import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.or;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Zero;
+import org.batfish.common.bdd.BDDOps;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
@@ -36,7 +42,6 @@ import org.batfish.datamodel.packet_policy.TrueExpr;
  */
 @ParametersAreNonnullByDefault
 class PacketPolicyToBdd {
-
   @Nonnull private final BoolExprToBdd _boolExprToBdd;
   @Nonnull private Transition _toDrop;
   @Nonnull private final Map<FibLookup, Transition> _fibLookups;
@@ -47,14 +52,17 @@ class PacketPolicyToBdd {
    * and {@link #getFibLookups()}
    */
   public static PacketPolicyToBdd evaluate(
-      PacketPolicy policy, IpAccessListToBdd ipAccessListToBdd) {
-    PacketPolicyToBdd evaluator = new PacketPolicyToBdd(ipAccessListToBdd);
+      PacketPolicy policy,
+      IpAccessListToBdd ipAccessListToBdd,
+      IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
+    PacketPolicyToBdd evaluator = new PacketPolicyToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     evaluator.process(policy);
     return evaluator;
   }
 
-  private PacketPolicyToBdd(IpAccessListToBdd ipAccessListToBdd) {
-    _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd);
+  private PacketPolicyToBdd(
+      IpAccessListToBdd ipAccessListToBdd, IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
+    _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     _toDrop = Zero.INSTANCE;
     _fibLookups = new HashMap<>(0);
   }
@@ -137,11 +145,15 @@ class PacketPolicyToBdd {
   }
 
   /** Converts boolean expressions to BDDs */
-  private static final class BoolExprToBdd implements BoolExprVisitor<BDD> {
-    private final IpAccessListToBdd _ipAccessListToBdd;
+  @VisibleForTesting
+  static final class BoolExprToBdd implements BoolExprVisitor<BDD> {
+    @Nonnull private final IpAccessListToBdd _ipAccessListToBdd;
+    @Nonnull private final IpsRoutedOutInterfaces _ipsRoutedOutInterfaces;
 
-    private BoolExprToBdd(IpAccessListToBdd ipAccessListToBdd) {
+    BoolExprToBdd(
+        IpAccessListToBdd ipAccessListToBdd, IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
       _ipAccessListToBdd = ipAccessListToBdd;
+      _ipsRoutedOutInterfaces = ipsRoutedOutInterfaces;
     }
 
     @Override
@@ -161,9 +173,14 @@ class PacketPolicyToBdd {
 
     @Override
     public BDD visitFibLookupOutgoingInterfaceMatchesOneOf(FibLookupOutgoingInterfaceIsOneOf expr) {
-      // TODO:
-      throw new UnsupportedOperationException(
-          "FibLookupOutgoingInterfaceIsOneOf in packet policy -> BDD not yet supported");
+      BDDPacket bddPacket = _ipAccessListToBdd.getBDDPacket();
+      IpSpaceToBDD dst = bddPacket.getDstIpSpaceToBDD();
+      BDDOps ops = new BDDOps(bddPacket.getFactory());
+      return ops.orAll(
+          expr.getInterfaceNames().stream()
+              .map(_ipsRoutedOutInterfaces::getIpsRoutedOutInterface)
+              .map(dst::visit)
+              .collect(ImmutableList.toImmutableList()));
     }
   }
 

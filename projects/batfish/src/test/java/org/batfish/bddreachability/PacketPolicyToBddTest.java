@@ -9,22 +9,33 @@ import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
+import org.batfish.bddreachability.PacketPolicyToBdd.BoolExprToBdd;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
@@ -35,6 +46,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public final class PacketPolicyToBddTest {
+  private static final IpsRoutedOutInterfaces EMPTY_IPS_ROUTED_OUT_INTERFACES =
+      new IpsRoutedOutInterfaces(MockFib.builder().build());
 
   private BDDPacket _bddPacket;
   private IpAccessListToBdd _ipAccessListToBdd;
@@ -60,7 +73,8 @@ public final class PacketPolicyToBddTest {
     PacketPolicyToBdd evaluator =
         PacketPolicyToBdd.evaluate(
             new PacketPolicy("name", ImmutableList.of(), new Return(Drop.instance())),
-            _ipAccessListToBdd);
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
     // Everything is dropped
     assertEquals(evaluator.getToDrop(), IDENTITY);
     assertThat(evaluator.getFibLookups(), anEmptyMap());
@@ -74,7 +88,8 @@ public final class PacketPolicyToBddTest {
                 "name",
                 ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("vrf")))),
                 new Return(Drop.instance())),
-            _ipAccessListToBdd);
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
     // Everything is looked up in "vrf"
     assertEquals(ZERO, evaluator.getToDrop());
     assertThat(evaluator.getFibLookups(), aMapWithSize(1));
@@ -106,7 +121,8 @@ public final class PacketPolicyToBddTest {
                 "name",
                 ImmutableList.of(outerIf, new Return(new FibLookup(new LiteralVrfName(vrf3)))),
                 new Return(Drop.instance())),
-            _ipAccessListToBdd);
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
 
     BDD dstIpBdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(dstIps);
 
@@ -125,5 +141,78 @@ public final class PacketPolicyToBddTest {
     assertThat(
         evaluator.getFibLookups(),
         hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf3))), mapsOne(_zero)));
+  }
+
+  @Test
+  public void testFibLookupOutgoingInterfaceIsOneOf() {
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+    FibLookupOutgoingInterfaceIsOneOf expr =
+        new FibLookupOutgoingInterfaceIsOneOf(
+            new LiteralVrfName("vrf"), ImmutableList.of(iface1, iface2));
+
+    Prefix prefix1 = Prefix.parse("1.2.3.0/24");
+    Prefix prefix2 = Prefix.parse("2.2.3.0/24");
+    ConnectedRoute route1 = new ConnectedRoute(prefix1, iface1);
+    ConnectedRoute route2 = new ConnectedRoute(prefix2, iface2);
+    BDD prefix1Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(prefix1);
+    BDD prefix2Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(prefix2);
+
+    // empty fib
+    {
+      Fib fib = MockFib.builder().build();
+      IpsRoutedOutInterfaces ipsRoutedOutInterfaces = new IpsRoutedOutInterfaces(fib);
+      BoolExprToBdd toBdd = new BoolExprToBdd(_ipAccessListToBdd, ipsRoutedOutInterfaces);
+      assertTrue(toBdd.visit(expr).isZero());
+    }
+
+    // single fib entry with missing matching Ips
+    {
+      Fib fib =
+          MockFib.builder()
+              .setFibEntries(
+                  ImmutableMap.of(
+                      Ip.ZERO,
+                      ImmutableSet.of(
+                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)))))
+              .build();
+      IpsRoutedOutInterfaces ipsRoutedOutInterfaces = new IpsRoutedOutInterfaces(fib);
+      BoolExprToBdd toBdd = new BoolExprToBdd(_ipAccessListToBdd, ipsRoutedOutInterfaces);
+      assertTrue(toBdd.visit(expr).isZero());
+    }
+
+    // single fib entry with matching Ips
+    {
+      Fib fib =
+          MockFib.builder()
+              .setFibEntries(
+                  ImmutableMap.of(
+                      Ip.ZERO,
+                      ImmutableSet.of(
+                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)))))
+              .setMatchingIps(ImmutableMap.of(prefix1, prefix1.toIpSpace()))
+              .build();
+      IpsRoutedOutInterfaces ipsRoutedOutInterfaces = new IpsRoutedOutInterfaces(fib);
+      BoolExprToBdd toBdd = new BoolExprToBdd(_ipAccessListToBdd, ipsRoutedOutInterfaces);
+      assertEquals(prefix1Bdd, toBdd.visit(expr));
+    }
+
+    // two fib entries
+    {
+      Fib fib =
+          MockFib.builder()
+              .setFibEntries(
+                  ImmutableMap.of(
+                      Ip.ZERO,
+                      ImmutableSet.of(
+                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)),
+                          new FibEntry(new FibForward(Ip.ZERO, iface2), ImmutableList.of(route2)))))
+              .setMatchingIps(
+                  ImmutableMap.of(prefix1, prefix1.toIpSpace(), prefix2, prefix2.toIpSpace()))
+              .build();
+      IpsRoutedOutInterfaces ipsRoutedOutInterfaces = new IpsRoutedOutInterfaces(fib);
+      BoolExprToBdd toBdd = new BoolExprToBdd(_ipAccessListToBdd, ipsRoutedOutInterfaces);
+      assertEquals(prefix1Bdd.or(prefix2Bdd), toBdd.visit(expr));
+    }
   }
 }
