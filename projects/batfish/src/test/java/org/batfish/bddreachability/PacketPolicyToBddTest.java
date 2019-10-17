@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -20,9 +21,11 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
@@ -30,10 +33,13 @@ import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Tests of {@link PacketPolicyToBdd} */
 public final class PacketPolicyToBddTest {
 
   private BDDPacket _bddPacket;
@@ -125,5 +131,25 @@ public final class PacketPolicyToBddTest {
     assertThat(
         evaluator.getFibLookups(),
         hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf3))), mapsOne(_zero)));
+  }
+
+  @Test
+  public void testApplyTransformation() {
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    Ip ip = Ip.parse("8.8.8.8.");
+    Transformation transformation =
+        Transformation.always().apply(TransformationStep.assignSourceIp(ip, ip)).build();
+    PacketPolicyToBdd evaluator =
+        PacketPolicyToBdd.evaluate(
+            new PacketPolicy(
+                "name",
+                ImmutableList.of(new ApplyTransformation(transformation), new Return(fl)),
+                new Return(Drop.instance())),
+            _ipAccessListToBdd);
+    assertThat(
+        evaluator.getFibLookups().get(fl),
+        equalTo(
+            new TransformationToTransition(_ipAccessListToBdd.getBDDPacket(), _ipAccessListToBdd)
+                .toTransition(transformation)));
   }
 }
