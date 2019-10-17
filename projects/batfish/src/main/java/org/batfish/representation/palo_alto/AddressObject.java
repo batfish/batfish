@@ -1,6 +1,8 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -59,6 +61,19 @@ public final class AddressObject implements Serializable {
       return IpRange.range(_ipRange.lowerEndpoint(), _ipRange.upperEndpoint());
     }
     return EmptyIpSpace.INSTANCE;
+  }
+
+  /** Returns all addresses owned by this address object as an IP {@link RangeSet}. */
+  @Nonnull
+  public RangeSet<Ip> getAddressAsRangeSet() {
+    if (_ip != null) {
+      return ImmutableRangeSet.of(Range.singleton(_ip));
+    } else if (_prefix != null) {
+      return ImmutableRangeSet.of(Range.closed(_prefix.getStartIp(), _prefix.getEndIp()));
+    } else if (_ipRange != null) {
+      return ImmutableRangeSet.of(_ipRange);
+    }
+    return ImmutableRangeSet.of();
   }
 
   @Nullable
