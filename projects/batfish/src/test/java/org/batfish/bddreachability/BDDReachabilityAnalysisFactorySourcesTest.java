@@ -77,7 +77,12 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     DataPlane dataPlane = batfish.loadDataPlane();
     factory =
         new BDDReachabilityAnalysisFactory(
-            pkt, configs, dataPlane.getForwardingAnalysis(), false, false);
+            pkt,
+            configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
     peerSrcMgr = factory.getBDDSourceManagers().get(PEER_NAME);
     srcMgr = factory.getBDDSourceManagers().get(CONFIG_NAME);
 

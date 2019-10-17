@@ -23,6 +23,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -118,9 +119,15 @@ public final class BDDLoopDetectionAnalysisTest {
         LocationSpecifier.ALL_LOCATIONS.resolve(batfish.specifierContext());
     IpSpaceAssignment srcIpSpaceAssignment =
         IpSpaceAssignment.builder().assign(allLocations, UniverseIpSpace.INSTANCE).build();
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDLoopDetectionAnalysis analysis =
         new BDDReachabilityAnalysisFactory(
-                PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false)
+                PKT,
+                configs,
+                dataPlane.getForwardingAnalysis(),
+                new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+                false,
+                false)
             .bddLoopDetectionAnalysis(srcIpSpaceAssignment);
 
     Map<IngressLocation, BDD> actual = analysis.detectLoops();

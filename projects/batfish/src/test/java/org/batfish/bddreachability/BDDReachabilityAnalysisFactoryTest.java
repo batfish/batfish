@@ -9,6 +9,7 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
+import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -72,12 +73,14 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
@@ -172,7 +175,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     // Confirm factory building does not throw, even with IpSpace and ACL indirection
     new BDDReachabilityAnalysisFactory(
-        PKT, net._configs, dataPlane.getForwardingAnalysis(), false, false);
+        PKT,
+        net._configs,
+        dataPlane.getForwardingAnalysis(),
+        new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+        false,
+        false);
   }
 
   @Test
@@ -187,7 +195,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
       String otherNode = configs.keySet().stream().filter(n -> !n.equals(node)).findFirst().get();
       Map<StateExpr, Map<StateExpr, Transition>> edges =
           new BDDReachabilityAnalysisFactory(
-                  PKT, configs, dataPlane.getForwardingAnalysis(), false, false)
+                  PKT,
+                  configs,
+                  dataPlane.getForwardingAnalysis(),
+                  new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+                  false,
+                  false)
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
                   matchDst(UniverseIpSpace.INSTANCE),
@@ -233,7 +246,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
       String otherNode = configs.keySet().stream().filter(n -> !n.equals(node)).findFirst().get();
       BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
           new BDDReachabilityAnalysisFactory(
-              PKT, configs, dataPlane.getForwardingAnalysis(), false, false);
+              PKT,
+              configs,
+              dataPlane.getForwardingAnalysis(),
+              new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+              false,
+              false);
       Map<StateExpr, Map<StateExpr, Transition>> edgeMap =
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
@@ -290,7 +308,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
     for (String node : configs.keySet()) {
       BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
           new BDDReachabilityAnalysisFactory(
-              PKT, configs, dataPlane.getForwardingAnalysis(), false, false);
+              PKT,
+              configs,
+              dataPlane.getForwardingAnalysis(),
+              new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+              false,
+              false);
       BDD requiredTransitNodesBDD = bddReachabilityAnalysisFactory.getRequiredTransitNodeBDD();
       BDD transited = requiredTransitNodesBDD;
       BDD notTransited = requiredTransitNodesBDD.not();
@@ -510,40 +533,66 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // when interface is active and not blacklisted, its Ip belongs to the VRF
     ImmutableSortedMap<String, Configuration> configs =
         ImmutableSortedMap.of(config.getHostname(), config);
-    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane();
-    BDDReachabilityAnalysisFactory factory =
-        new BDDReachabilityAnalysisFactory(
-            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
-    assertThat(
-        factory.getVrfAcceptBDDs(),
-        hasEntry(equalTo(config.getHostname()), hasEntry(equalTo(vrf.getName()), equalTo(ipBDD))));
+    {
+      Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+      batfish.computeDataPlane();
+      DataPlane dataPlane = batfish.loadDataPlane();
+      BDDReachabilityAnalysisFactory factory =
+          new BDDReachabilityAnalysisFactory(
+              PKT,
+              configs,
+              dataPlane.getForwardingAnalysis(),
+              new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+              false,
+              false);
+      assertThat(
+          factory.getVrfAcceptBDDs(),
+          hasEntry(
+              equalTo(config.getHostname()), hasEntry(equalTo(vrf.getName()), equalTo(ipBDD))));
+    }
 
     // when interface is inactive, its Ip does not belong to the VRF
-    iface.setActive(false);
-    batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane();
-    factory =
-        new BDDReachabilityAnalysisFactory(
-            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
-    assertThat(
-        factory.getVrfAcceptBDDs(),
-        hasEntry(
-            equalTo(config.getHostname()),
-            hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
+    {
+      iface.setActive(false);
+      Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+      batfish.computeDataPlane();
+      DataPlane dataPlane = batfish.loadDataPlane();
+      BDDReachabilityAnalysisFactory factory =
+          new BDDReachabilityAnalysisFactory(
+              PKT,
+              configs,
+              dataPlane.getForwardingAnalysis(),
+              new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+              false,
+              false);
+      assertThat(
+          factory.getVrfAcceptBDDs(),
+          hasEntry(
+              equalTo(config.getHostname()),
+              hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
+    }
 
     // when interface is blacklisted, its Ip does not belong to the VRF
-    iface.blacklist();
-    batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane();
-    factory =
-        new BDDReachabilityAnalysisFactory(
-            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
-    assertThat(
-        factory.getVrfAcceptBDDs(),
-        hasEntry(
-            equalTo(config.getHostname()),
-            hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
+    {
+      iface.blacklist();
+      Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+      batfish.computeDataPlane();
+      BDDReachabilityAnalysisFactory factory;
+      DataPlane dataPlane = batfish.loadDataPlane();
+      factory =
+          new BDDReachabilityAnalysisFactory(
+              PKT,
+              configs,
+              dataPlane.getForwardingAnalysis(),
+              new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+              false,
+              false);
+      assertThat(
+          factory.getVrfAcceptBDDs(),
+          hasEntry(
+              equalTo(config.getHostname()),
+              hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
+    }
   }
 
   @Test
@@ -579,9 +628,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
@@ -650,9 +705,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
@@ -720,9 +781,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
@@ -803,9 +870,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
@@ -955,9 +1028,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
@@ -1025,9 +1104,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
@@ -1108,9 +1193,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
@@ -1167,9 +1258,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDD one = PKT.getFactory().one();
     assertThat(factory.computeFinalHeaderSpaceBdd(one), equalTo(one));
@@ -1211,9 +1308,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     BDD one = PKT.getFactory().one();
     assertThat(factory.computeFinalHeaderSpaceBdd(one), equalTo(one));
@@ -1274,9 +1377,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     Ip dstIp = iface.getConcreteAddress().getPrefix().getLastHostIp();
     BDDReachabilityAnalysis analysis =
@@ -1371,9 +1480,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     Ip dstIp = Ip.parse("8.8.8.8");
     BDDReachabilityAnalysis analysis =
@@ -1425,9 +1540,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     Ip dstIp = Ip.parse("8.8.8.8");
     BDDReachabilityAnalysis analysis =
@@ -1508,9 +1629,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     Ip dstIp = Ip.parse("10.0.12.2");
     BDDReachabilityAnalysis analysis =
@@ -1566,9 +1693,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
+    DataPlane dataPlane = batfish.loadDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+            PKT,
+            configurations,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     IpSpace dstIpSpaceOfInterest =
         AclIpSpace.difference(

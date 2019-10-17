@@ -131,7 +131,12 @@ public final class BDDReachabilityAnalysisTest {
     DataPlane dataPlane = batfish.loadDataPlane();
     _graphFactory =
         new BDDReachabilityAnalysisFactory(
-            PKT, _net._configs, dataPlane.getForwardingAnalysis(), false, false);
+            PKT,
+            _net._configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
 
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder()
