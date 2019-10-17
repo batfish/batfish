@@ -10,15 +10,20 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.junit.Test;
 
 /** Tests of {@link CandidateOspfTopology} */
 public class CandidateOspfTopologyTest {
 
-  private static OspfNeighborConfigId NODE_A = new OspfNeighborConfigId("a", "b", "c", "d");
-  private static OspfNeighborConfigId NODE_E = new OspfNeighborConfigId("e", "f", "g", "h");
-  private static OspfNeighborConfigId NODE_I = new OspfNeighborConfigId("i", "j", "k", "l");
-  private static OspfNeighborConfigId NODE_M = new OspfNeighborConfigId("m", "n", "o", "p");
+  private static OspfNeighborConfigId NODE_A =
+      new OspfNeighborConfigId("a", "b", "c", "d", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
+  private static OspfNeighborConfigId NODE_E =
+      new OspfNeighborConfigId("e", "f", "g", "h", ConcreteInterfaceAddress.parse("192.0.2.1/31"));
+  private static OspfNeighborConfigId NODE_I =
+      new OspfNeighborConfigId("i", "j", "k", "l", ConcreteInterfaceAddress.parse("192.0.2.4/31"));
+  private static OspfNeighborConfigId NODE_M =
+      new OspfNeighborConfigId("m", "n", "o", "p", ConcreteInterfaceAddress.parse("192.0.2.6/31"));
 
   private static OspfSessionStatus NODE_A_TO_E_STATUS = OspfSessionStatus.ESTABLISHED;
   private static OspfSessionStatus NODE_I_TO_M_STATUS = OspfSessionStatus.NETWORK_TYPE_MISMATCH;
@@ -44,7 +49,9 @@ public class CandidateOspfTopologyTest {
 
   @Test
   public void testGetNeighborsNonExistentNode() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
+    OspfNeighborConfigId n =
+        new OspfNeighborConfigId(
+            "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.8/31"));
     assertThat(nonTrivialTopology().neighbors(n), empty());
   }
 

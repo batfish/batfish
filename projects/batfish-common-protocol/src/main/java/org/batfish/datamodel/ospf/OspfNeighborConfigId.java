@@ -11,6 +11,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Uniquely identifies an OSPF configuration ({@link OspfNeighbor}) in the network. */
@@ -21,11 +22,13 @@ public final class OspfNeighborConfigId implements Serializable {
   private static final String PROP_VRF = "vrf";
   private static final String PROP_PROCESS = "process";
   private static final String PROP_INTERFACE = "interface";
+  private static final String PROP_ADDRESS = "address";
 
   @Nonnull private final String _hostname;
   @Nonnull private final String _vrfName;
   @Nonnull private final String _procName;
   @Nonnull private final String _interfaceName;
+  @Nonnull private final ConcreteInterfaceAddress _address;
 
   /**
    * Create a new unique identifier for an OSPF process
@@ -34,13 +37,19 @@ public final class OspfNeighborConfigId implements Serializable {
    * @param vrfName the name of a VRF on which the neighbor exists
    * @param procName the name of OSPF process on which the neighbor exists
    * @param interfaceName the interface name
+   * @param address the interface address
    */
   public OspfNeighborConfigId(
-      String hostname, String vrfName, String procName, String interfaceName) {
+      String hostname,
+      String vrfName,
+      String procName,
+      String interfaceName,
+      ConcreteInterfaceAddress address) {
     _hostname = hostname;
     _vrfName = vrfName;
     _procName = procName;
     _interfaceName = interfaceName;
+    _address = address;
   }
 
   @JsonCreator
@@ -48,12 +57,14 @@ public final class OspfNeighborConfigId implements Serializable {
       @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
       @Nullable @JsonProperty(PROP_VRF) String vrf,
       @Nullable @JsonProperty(PROP_PROCESS) String process,
-      @Nullable @JsonProperty(PROP_INTERFACE) String interfaceName) {
+      @Nullable @JsonProperty(PROP_INTERFACE) String interfaceName,
+      @Nullable @JsonProperty(PROP_ADDRESS) ConcreteInterfaceAddress address) {
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(process != null, "Missing %s", PROP_PROCESS);
     checkArgument(interfaceName != null, "Missing %s", PROP_INTERFACE);
-    return new OspfNeighborConfigId(hostname, vrf, process, interfaceName);
+    checkArgument(address != null, "Missing %s", PROP_ADDRESS);
+    return new OspfNeighborConfigId(hostname, vrf, process, interfaceName, address);
   }
 
   @Nonnull
@@ -81,6 +92,12 @@ public final class OspfNeighborConfigId implements Serializable {
   }
 
   @Nonnull
+  @JsonProperty(PROP_ADDRESS)
+  public ConcreteInterfaceAddress getAddress() {
+    return _address;
+  }
+
+  @Nonnull
   @JsonIgnore
   public NodeInterfacePair getNodeInterfacePair() {
     return NodeInterfacePair.of(getHostname(), getInterfaceName());
@@ -98,12 +115,13 @@ public final class OspfNeighborConfigId implements Serializable {
     return _hostname.equals(other._hostname)
         && _vrfName.equals(other._vrfName)
         && _procName.equals(other._procName)
-        && _interfaceName.equals(other._interfaceName);
+        && _interfaceName.equals(other._interfaceName)
+        && _address.equals(other._address);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _vrfName, _interfaceName);
+    return Objects.hash(_hostname, _vrfName, _procName, _interfaceName, _address);
   }
 
   @Override
@@ -113,6 +131,7 @@ public final class OspfNeighborConfigId implements Serializable {
         .add("vrfName", _vrfName)
         .add("procName", _procName)
         .add("interfaceName", _interfaceName)
+        .add(PROP_ADDRESS, _address)
         .toString();
   }
 }

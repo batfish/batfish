@@ -62,7 +62,6 @@ import org.batfish.dataplane.rib.OspfInterAreaRib;
 import org.batfish.dataplane.rib.OspfIntraAreaRib;
 import org.batfish.dataplane.rib.OspfRib;
 import org.batfish.dataplane.rib.RibDelta;
-import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -417,13 +416,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull
   private Stream<EdgeId> getIncomingEdgeStream(OspfTopology topology) {
     return _process.getOspfNeighborConfigs().keySet().stream()
-        .flatMap(
-            interfaceName ->
-                topology
-                    .incomingEdges(
-                        new OspfNeighborConfigId(
-                            _c.getHostname(), _vrfName, _process.getProcessId(), interfaceName))
-                    .stream());
+        .flatMap(ospfNeighborConfigId -> topology.incomingEdges(ospfNeighborConfigId).stream());
   }
 
   /**
@@ -489,8 +482,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @return the resulting inter-area RIB delta builder.
    */
   @Nonnull
-  private Builder<OspfInterAreaRoute> processInterAreaRoutes() {
-    Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
+  private RibDelta.Builder<OspfInterAreaRoute> processInterAreaRoutes() {
+    RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
     _interAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
           String ifaceName = edgeId.getHead().getInterfaceName();
@@ -546,7 +539,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   @Nonnull
   private RibDelta<OspfIntraAreaRoute> processIntraAreaRoutes() {
-    Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
+    RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
     _intraAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
           String ifaceName = edgeId.getHead().getInterfaceName();
@@ -606,7 +599,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Compute inter-area summaries for a single area. */
   @Nonnull
   private RibDelta<OspfInterAreaRoute> computeInterAreaSummariesForArea(OspfArea area) {
-    Builder<OspfInterAreaRoute> deltaBuilder = RibDelta.builder();
+    RibDelta.Builder<OspfInterAreaRoute> deltaBuilder = RibDelta.builder();
     area.getSummaries()
         .forEach(
             (prefix, summary) ->
@@ -1027,7 +1020,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Process type 1 routes from all message queues */
   @Nonnull
   private RibDelta<OspfExternalType1Route> processType1Routes() {
-    Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
     _type1IncomingRoutes.forEach(
         (edgeId, queue) -> {
           String ifaceName = edgeId.getHead().getInterfaceName();
@@ -1067,7 +1060,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Process type 2 routes from all message queues */
   @Nonnull
   private RibDelta<OspfExternalType2Route> processType2Routes() {
-    Builder<OspfExternalType2Route> type2deltaBuilder = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType2Route> type2deltaBuilder = RibDelta.builder();
     _type2IncomingRoutes.forEach(
         (edgeId, queue) -> {
           String headIfaceName = edgeId.getHead().getInterfaceName();
@@ -1333,7 +1326,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
     // Run each generated route through its own generation policy if present, then run the resulting
     // activated routes through the standard OSPF export policy.
-    Builder<OspfExternalRoute> activated = RibDelta.builder();
+    RibDelta.Builder<OspfExternalRoute> activated = RibDelta.builder();
     _process.getGeneratedRoutes().stream()
         .map(r -> activateGeneratedRoute(mainRibDelta, r))
         .filter(Objects::nonNull)
