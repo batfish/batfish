@@ -1506,7 +1506,7 @@ public final class PaloAltoGrammarTest {
     assertThat(rule1.getSource(), contains(anyRuleEndpoint));
     assertThat(rule1.getDestination(), contains(anyRuleEndpoint));
     assertThat(
-        rule1.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddress(),
+        rule1.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddresses(),
         contains(
             new RuleEndpoint(IP_ADDRESS, "1.1.1.1"),
             new RuleEndpoint(IP_PREFIX, "2.2.2.0/24"),
@@ -1528,7 +1528,7 @@ public final class PaloAltoGrammarTest {
             new RuleEndpoint(REFERENCE, "DST_2"),
             new RuleEndpoint(REFERENCE, "DST_3")));
     assertThat(
-        rule2.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddress(),
+        rule2.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddresses(),
         contains(
             new RuleEndpoint(REFERENCE, "SRC_1"),
             new RuleEndpoint(REFERENCE, "SRC_2"),
