@@ -978,6 +978,18 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testTestbedVS() throws IOException {
+    PaloAltoConfiguration c = parseNestedConfig("testbed");
+    assertThat(c, notNullValue());
+  }
+
+  @Test
+  public void testTestbed() throws IOException {
+    Configuration c = parseConfig("testbed");
+    assertThat(c, notNullValue());
+  }
+
+  @Test
   public void testIkeCryptoProfiles() {
     PaloAltoConfiguration c = parsePaloAltoConfig("ike-crypto-profiles");
 

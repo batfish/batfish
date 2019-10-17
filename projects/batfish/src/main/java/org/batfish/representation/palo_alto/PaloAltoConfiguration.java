@@ -88,6 +88,7 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily.Builder;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -95,10 +96,20 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubSettings;
+import org.batfish.datamodel.packet_policy.ApplyTransformation;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.Zone.Type;
@@ -299,6 +310,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("~%s~OUTGOING_FILTER~", interfaceOrZoneName);
   }
 
+  /** Generate RoutingPolicy name given an interface name */
+  static String computeRoutingPolicyName(String interfaceName) {
+    return String.format("~%s~ROUTING_POLICY~", interfaceName);
+  }
+
   /**
    * Extract object name from a name with an embedded namespace. For example: {@code
    * nameWithNamespace} might be `SERVICE1~vsys1`, where `SERVICE1` is the object name extracted and
@@ -327,7 +343,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     for (Vsys vsys : _virtualSystems.values()) {
-
       // Create zone-specific outgoing ACLs.
       for (Zone toZone : vsys.getZones().values()) {
         if (toZone.getType() != Type.LAYER3) {
@@ -497,6 +512,27 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                 .map(r -> new SimpleImmutableEntry<>(r, _panorama));
     Stream<Map.Entry<SecurityRule, Vsys>> rules =
         vsys.getRulebase().getSecurityRules().values().stream()
+            .map(r -> new SimpleImmutableEntry<>(r, vsys));
+
+    return Stream.concat(Stream.concat(pre, rules), post).collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Collects the NAT rules from this Vsys and merges the common pre-/post-rulebases from Panorama.
+   */
+  private List<Map.Entry<NatRule, Vsys>> getAllNatRules(Vsys vsys) {
+    Stream<Map.Entry<NatRule, Vsys>> pre =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPreRulebase().getNatRules().values().stream()
+                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
+    Stream<Map.Entry<NatRule, Vsys>> post =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPostRulebase().getNatRules().values().stream()
+                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
+    Stream<Map.Entry<NatRule, Vsys>> rules =
+        vsys.getRulebase().getNatRules().values().stream()
             .map(r -> new SimpleImmutableEntry<>(r, vsys));
 
     return Stream.concat(Stream.concat(pre, rules), post).collect(ImmutableList.toImmutableList());
@@ -1034,7 +1070,98 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
+
+    // TODO if there is a NAT for this iface, apply it
+    // asdf
+    String packetPolicyName = generatePacketPolicyForIface(iface);
+    if (packetPolicyName != null) {
+      newIface.setRoutingPolicy(packetPolicyName);
+    }
+
     return newIface;
+  }
+
+  /**
+   * Generate packet policy for the specified interface and attach it to the VI config, if
+   * applicable. If no packet policy is applicable, returns {@code null}
+   */
+  private @Nullable String generatePacketPolicyForIface(Interface iface) {
+    Zone zone = iface.getZone();
+    // Unzoned interfaces don't transmit traffic, so don't need packet policy
+    if (zone == null) {
+      return null;
+    }
+    Vsys vsys = zone.getVsys();
+    List<Entry<NatRule, Vsys>> natEntries = getNatPoliciesForIface(iface);
+    if (!natEntries.isEmpty()) {
+      String packetPolicyName = computeRoutingPolicyName(iface.getName());
+      PacketPolicy pp = buildPacketPolicy(packetPolicyName, natEntries, vsys);
+      _c.getPacketPolicies().put(packetPolicyName, pp);
+      return packetPolicyName;
+    }
+    return null;
+  }
+
+  /** Build a routing policy for the specified NAT rule + vsys entries in the specified vsys. */
+  private PacketPolicy buildPacketPolicy(
+      String name, List<Entry<NatRule, Vsys>> natEntries, Vsys vsys) {
+    ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> lines =
+        ImmutableList.builder();
+    for (Entry<NatRule, Vsys> entry : natEntries) {
+      NatRule rule = entry.getKey();
+      Vsys ruleVsys = entry.getValue();
+      String ruleName = computeObjectName(ruleVsys.getName(), rule.getName());
+      DestinationTranslation destTranslation = rule.getDestinationTranslation();
+      Zone toZone = vsys.getZones().get(rule.getTo());
+      if (destTranslation == null || toZone == null) {
+        continue;
+      }
+
+      ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> transforms =
+          ImmutableList.builder();
+      ImmutableList.Builder<TransformationStep> transformationSteps = ImmutableList.builder();
+
+      RuleEndpoint translatedAddress = destTranslation.getTranslatedAddress();
+      if (translatedAddress != null) {
+        IpSpace translatedAddressSpace = ruleEndpointToIpSpace(translatedAddress, vsys, _w);
+        transformationSteps.add(
+            new AssignIpAddressFromPool(
+                TransformationType.DEST_NAT,
+                IpField.DESTINATION,
+                // TODO use ip range from address
+                Ip.parse("1.1.1.1"),
+                Ip.parse("1.1.1.255")));
+      }
+
+      Transformation transform =
+          new Transformation(TrueExpr.INSTANCE, transformationSteps.build(), null, null);
+      transforms.add(new ApplyTransformation(transform));
+
+      // asdf
+      org.batfish.datamodel.packet_policy.If guard =
+          new org.batfish.datamodel.packet_policy.If(
+              new FibLookupOutgoingInterfaceIsOneOf(
+                  IngressInterfaceVrf.instance(), toZone.getInterfaceNames()),
+              transforms.build());
+      lines.add(guard);
+    }
+    // Add the new packet policy
+    PacketPolicy pp =
+        new PacketPolicy(
+            name, lines.build(), new Return(new FibLookup(IngressInterfaceVrf.instance())));
+    return pp;
+  }
+
+  /** Return a list of all NAT rules associated with the specified interface. */
+  private List<Map.Entry<NatRule, Vsys>> getNatPoliciesForIface(Interface iface) {
+    Zone zone = iface.getZone();
+    if (zone == null) {
+      return ImmutableList.of();
+    }
+    Vsys vsys = iface.getZone().getVsys();
+    return getAllNatRules(vsys).stream()
+        .filter(e -> e.getKey().getFrom().contains(iface.getZone().getName()))
+        .collect(ImmutableList.toImmutableList());
   }
 
   private void convertPeerGroup(BgpPeerGroup pg, BgpVr bgp, BgpProcess proc) {
