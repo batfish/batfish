@@ -471,7 +471,8 @@ public final class BDDReachabilityAnalysisFactory {
                             ipsRoutedOutInterfacesFactory.getIpsRoutedOutInterfaces(
                                 configEntry.getKey(), vrf.getName());
                         return vrf.getInterfaces().values().stream()
-                            .filter(iface -> iface.getRoutingPolicyName() != null)
+                            .filter(
+                                iface -> iface.getActive() && iface.getRoutingPolicyName() != null)
                             .map(
                                 iface ->
                                     Maps.immutableEntry(
