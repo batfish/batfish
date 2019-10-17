@@ -73,6 +73,7 @@ public final class BidirectionalReachabilityAnalysis {
       BDDPacket bddPacket,
       Map<String, Configuration> configs,
       ForwardingAnalysis forwardingAnalysis,
+      IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory,
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr initialForwardHeaderSpace,
       Set<String> forbiddenTransitNodes,
@@ -87,7 +88,8 @@ public final class BidirectionalReachabilityAnalysis {
       _bddPacket = bddPacket;
       _configs = configs;
       _factory =
-          new BDDReachabilityAnalysisFactory(bddPacket, configs, forwardingAnalysis, false, true);
+          new BDDReachabilityAnalysisFactory(
+              bddPacket, configs, forwardingAnalysis, ipsRoutedOutInterfacesFactory, false, true);
       _forbiddenTransitNodes = ImmutableSet.copyOf(forbiddenTransitNodes);
       _reversePassOriginationState =
           new ReversePassOriginationState(forwardPassFinalNodes::contains);

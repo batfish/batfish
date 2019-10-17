@@ -89,6 +89,7 @@ import org.batfish.bddreachability.BDDLoopDetectionAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.bddreachability.BidirectionalReachabilityAnalysis;
+import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -2796,10 +2797,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Error resolving reachability parameters", e);
     }
 
+    DataPlane dataPlane = loadDataPlane();
     return new BidirectionalReachabilityAnalysis(
             bddPacket,
             loadConfigurations(),
-            loadDataPlane().getForwardingAnalysis(),
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
             params.getSourceIpAssignment(),
             params.getHeaderSpace(),
             params.getForbiddenTransitNodes(),
@@ -2987,8 +2990,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("getBddReachabilityAnalysisFactory").startActive()) {
       assert span != null; // avoid unused warning
+      DataPlane dataPlane = loadDataPlane();
       return new BDDReachabilityAnalysisFactory(
-          pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreFilters, false);
+          pkt,
+          loadConfigurations(),
+          dataPlane.getForwardingAnalysis(),
+          new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+          ignoreFilters,
+          false);
     }
   }
 

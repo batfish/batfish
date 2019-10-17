@@ -24,6 +24,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -126,8 +127,14 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   BDDReachabilityAnalysis initAnalysis(
       IpSpace initialSrcIp, FlowDisposition disposition, boolean ignoreFilters) {
     Map<String, Configuration> configs = batfish.loadConfigurations();
+    DataPlane dataPlane = batfish.loadDataPlane();
     return new BDDReachabilityAnalysisFactory(
-            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), ignoreFilters, false)
+            PKT,
+            configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            ignoreFilters,
+            false)
         .bddReachabilityAnalysis(
             IpSpaceAssignment.builder().assign(IFACE1_LOCATION, initialSrcIp).build(),
             matchDst(NODE2_ADDR.getIp().toIpSpace()),
