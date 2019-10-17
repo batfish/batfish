@@ -1,12 +1,16 @@
 package org.batfish.representation.palo_alto;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.RangeSet;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -14,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 
 /** Represents a Palo Alto address group */
@@ -162,6 +167,20 @@ public final class AddressGroup implements Serializable {
                 .map(m -> addressObjects.get(m).getIpSpace())
                 .collect(Collectors.toSet()));
     return space == null ? EmptyIpSpace.INSTANCE : space;
+  }
+
+  /**
+   * Returns a {@link com.google.common.collect.RangeSet} containing the union of all addresses
+   * owned by members. Returns empty RangeSet if there are no members.
+   */
+  public RangeSet<Ip> getIpRangeSet(
+      Map<String, AddressObject> addressObjects, Map<String, AddressGroup> addressGroups) {
+    return ImmutableRangeSet.unionOf(
+        getDescendantObjects(addressObjects, addressGroups, new HashSet<>()).stream()
+            .map(addrObjName -> addressObjects.get(addrObjName).getAddressAsRange())
+            // Exclude empty address objects
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   public @Nullable String getDescription() {

@@ -61,6 +61,22 @@ public final class AddressObject implements Serializable {
     return EmptyIpSpace.INSTANCE;
   }
 
+  /**
+   * Returns all addresses owned by this address object as an IP {@link Range}, or null if this
+   * address object is empty.
+   */
+  @Nullable
+  public Range<Ip> getAddressAsRange() {
+    if (_ip != null) {
+      return Range.singleton(_ip);
+    } else if (_prefix != null) {
+      return Range.closed(_prefix.getStartIp(), _prefix.getEndIp());
+    } else if (_ipRange != null) {
+      return _ipRange;
+    }
+    return null;
+  }
+
   @Nullable
   public Ip getIp() {
     return _ip;

@@ -6,10 +6,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.junit.Test;
 
 /** Tests for {@link AddressGroup} */
@@ -131,5 +135,51 @@ public class AddressGroupTest {
   public void testGetFilterConjuncts() {
     String filter = "'tag1' and 'tag2'";
     assertThat(getFilterConjuncts(filter), contains("tag1", "tag2"));
+  }
+
+  @Test
+  public void testGetIpRangeSet() {
+    // For an empty address group
+    AddressGroup group = new AddressGroup("group");
+    Map<String, AddressGroup> groupMap = ImmutableMap.of(group.getName(), group);
+    assertThat(group.getIpRangeSet(ImmutableMap.of(), groupMap), equalTo(ImmutableRangeSet.of()));
+
+    // For an address group containing an undefined address object
+    String addrObjName = "addrObj";
+    group.addMember(addrObjName);
+    assertThat(group.getIpRangeSet(ImmutableMap.of(), groupMap), equalTo(ImmutableRangeSet.of()));
+
+    // For an address group containing an empty address object
+    AddressObject addressObj = new AddressObject(addrObjName);
+    Map<String, AddressObject> addrObjects = ImmutableMap.of(addressObj.getName(), addressObj);
+    assertThat(group.getIpRangeSet(addrObjects, groupMap), equalTo(ImmutableRangeSet.of()));
+
+    // For address object containing an IP
+    addressObj.setIp(Ip.ZERO);
+    assertThat(
+        group.getIpRangeSet(addrObjects, groupMap),
+        equalTo(ImmutableRangeSet.of(Range.singleton(Ip.ZERO))));
+
+    // For address object containing a prefix
+    addressObj.setPrefix(Prefix.ZERO);
+    assertThat(
+        group.getIpRangeSet(addrObjects, groupMap),
+        equalTo(ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.MAX))));
+
+    // For address object containing an IP range
+    Range<Ip> range = Range.closed(Ip.ZERO, Ip.parse("1.1.1.1"));
+    addressObj.setIpRange(range);
+    assertThat(group.getIpRangeSet(addrObjects, groupMap), equalTo(ImmutableRangeSet.of(range)));
+
+    // For two address objects with overlapping IP ranges
+    Range<Ip> range2 = Range.closed(Ip.parse("1.0.0.0"), Ip.parse("2.0.0.0"));
+    AddressObject addressObj2 = new AddressObject("addressObj2");
+    addressObj2.setIpRange(range2);
+    group.addMember(addressObj2.getName());
+    Map<String, AddressObject> bothObjectsMap =
+        ImmutableMap.of(addressObj.getName(), addressObj, addressObj2.getName(), addressObj2);
+    assertThat(
+        group.getIpRangeSet(bothObjectsMap, groupMap),
+        equalTo(ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.parse("2.0.0.0")))));
   }
 }
