@@ -289,9 +289,7 @@ public class EdgesAnswerer extends Answerer {
 
   @VisibleForTesting
   static List<Row> getOspfEdges(
-      Set<String> includeNodes,
-      Set<String> includeRemoteNodes,
-      OspfTopology topology) {
+      Set<String> includeNodes, Set<String> includeRemoteNodes, OspfTopology topology) {
     ImmutableSet.Builder<Row> rows = ImmutableSet.builder();
     topology
         .getGraph()
