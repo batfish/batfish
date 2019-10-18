@@ -5329,7 +5329,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       int eq = eqOption.get();
       low = eq;
       high = eq;
-    } else if (ctx.ge != null || ctx.le != null) {
+    } else if (ctx.ge == null && ctx.le == null) {
+      low = prefixLength;
+      high = prefixLength;
+    } else {
       if (ctx.ge != null) {
         Optional<Integer> geOption = toInteger(ctx, ctx.ge);
         if (!geOption.isPresent()) {
@@ -5350,9 +5353,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       } else {
         high = Prefix.MAX_PREFIX_LENGTH;
       }
-    } else {
-      low = prefixLength;
-      high = Prefix.MAX_PREFIX_LENGTH;
     }
     IpPrefixListLine pll =
         new IpPrefixListLine(toLineAction(ctx.action), num, prefix, new SubRange(low, high));

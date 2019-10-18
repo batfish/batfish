@@ -665,44 +665,51 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     long num = toLong(ctx.num);
     Prefix prefix = toPrefix(ctx.prefix);
     int prefixLength = prefix.getPrefixLength();
-    Integer ge = ctx.ge != null ? toInteger(ctx.ge) : null;
-    Integer le = ctx.le != null ? toInteger(ctx.le) : null;
-    int low = prefixLength;
-    int high = Prefix.MAX_PREFIX_LENGTH;
-    if (ge != null) {
-      if (ge < prefixLength) {
-        // Ineffectual, so warn
-        _w.redFlag(
-            String.format(
-                "ge (min) arg '%d' less than prefix-length '%d' in: %s",
-                ge, prefixLength, getFullText(ctx)));
-      } else {
-        low = ge;
+    SubRange range;
+    if (ctx.ge == null && ctx.le == null) {
+      range = SubRange.singleton(prefixLength);
+    } else {
+      Integer ge = ctx.ge != null ? toInteger(ctx.ge) : null;
+      Integer le = ctx.le != null ? toInteger(ctx.le) : null;
+      int low = prefixLength;
+      int high = Prefix.MAX_PREFIX_LENGTH;
+      if (ge != null) {
+        if (ge < prefixLength) {
+          // Ineffectual, so warn
+          _w.redFlag(
+              String.format(
+                  "ge (min) arg '%d' less than prefix-length '%d' in: %s",
+                  ge, prefixLength, getFullText(ctx)));
+        } else {
+          low = ge;
+        }
       }
-    }
-    if (le != null) {
-      if (le < prefixLength) {
-        // Invalid and cannot match anything, so warn and do not add
-        _w.redFlag(
-            String.format(
-                "le (max) arg '%d' less than prefix-length '%d' in: %s",
-                le, prefixLength, getFullText(ctx)));
-        return;
-      } else if (ge != null && le < ge) {
-        // Invalid and cannot match anything, so warn and do not add
-        _w.redFlag(
-            String.format(
-                "le (max) arg '%d' less than ge (min) arg '%d' in: %s", le, ge, getFullText(ctx)));
-        return;
-      } else {
-        high = le;
+      if (le != null) {
+        if (le < prefixLength) {
+          // Invalid and cannot match anything, so warn and do not add
+          _w.redFlag(
+              String.format(
+                  "le (max) arg '%d' less than prefix-length '%d' in: %s",
+                  le, prefixLength, getFullText(ctx)));
+          return;
+        } else if (ge != null && le < ge) {
+          // Invalid and cannot match anything, so warn and do not add
+          _w.redFlag(
+              String.format(
+                  "le (max) arg '%d' less than ge (min) arg '%d' in: %s",
+                  le, ge, getFullText(ctx)));
+          return;
+        } else {
+          high = le;
+        }
       }
+      range = new SubRange(low, high);
     }
     _c.defineStructure(F5BigipStructureType.PREFIX_LIST, name, ctx);
     PrefixListEntry entry = new PrefixListEntry(num);
     entry.setAction(toLineAction(ctx.action));
     entry.setPrefix(prefix);
-    entry.setLengthRange(new SubRange(low, high));
+    entry.setLengthRange(range);
     _c.getPrefixLists().computeIfAbsent(name, PrefixList::new).getEntries().put(num, entry);
   }
 
