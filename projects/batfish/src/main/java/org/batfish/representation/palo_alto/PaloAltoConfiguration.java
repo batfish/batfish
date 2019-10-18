@@ -1126,11 +1126,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             String[] ips = endpointValue.split("-");
             return ImmutableRangeSet.of(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
           case REFERENCE:
-            // Undefined reference
-            w.redFlag("No matching address group/object found for RuleEndpoint: " + endpoint);
+            // Rely on undefined references to surface this issue (endpoint reference not defined)
             return ImmutableRangeSet.of();
           default:
-            w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
+            w.redFlag("Could not convert RuleEndpoint to RangeSet: " + endpoint);
             return ImmutableRangeSet.of();
         }
     }
