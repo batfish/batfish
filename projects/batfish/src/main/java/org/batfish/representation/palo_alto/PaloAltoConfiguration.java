@@ -1009,7 +1009,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             w.redFlag("No matching address group/object found for RuleEndpoint: " + endpoint);
             return ImmutableRangeSet.of();
           default:
-            w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
+            w.redFlag("Could not convert RuleEndpoint to RangeSet: " + endpoint);
             return ImmutableRangeSet.of();
         }
     }
