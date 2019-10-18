@@ -25,6 +25,7 @@ import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.BoolExprVisitor;
+import org.batfish.datamodel.packet_policy.Conjunction;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FalseExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
@@ -187,6 +188,13 @@ class PacketPolicyToBdd {
               .map(_ipsRoutedOutInterfaces::getIpsRoutedOutInterface)
               .map(dst::visit)
               .collect(ImmutableList.toImmutableList()));
+    }
+
+    @Override
+    public BDD visitConjunction(Conjunction expr) {
+      return expr.getConjuncts().stream()
+          .map(this::visit)
+          .reduce(_ipAccessListToBdd.getBDDPacket().getFactory().one(), BDD::and);
     }
   }
 

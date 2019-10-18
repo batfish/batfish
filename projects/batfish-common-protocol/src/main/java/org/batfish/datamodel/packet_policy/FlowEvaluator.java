@@ -89,6 +89,11 @@ public final class FlowEvaluator {
       return fib.get(_currentFlow.getDstIp()).stream()
           .anyMatch(entry -> entry.getAction().accept(actionVisitor));
     }
+
+    @Override
+    public Boolean visitConjunction(Conjunction expr) {
+      return expr.getConjuncts().stream().allMatch(c -> c.accept(this));
+    }
   }
 
   /**
