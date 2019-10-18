@@ -4,6 +4,7 @@ import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 import static org.batfish.datamodel.OriginType.EGP;
 import static org.batfish.datamodel.OriginType.IGP;
+import static org.batfish.datamodel.OriginType.INCOMPLETE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
@@ -867,6 +868,28 @@ public final class PaloAltoGrammarTest {
             srb.setNetwork(Prefix.parse("2.2.2.0/24")).build(),
             Bgpv4Route.builder(),
             Direction.OUT));
+
+    // testing import policy generated for peer 1
+    String importPolicyPeer1Name = "~BGP_PEER_IMPORT_POLICY:vr1:peer1~";
+    RoutingPolicy importRoutingPolicyPeer1 = c.getRoutingPolicies().get(importPolicyPeer1Name);
+
+    srb =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.parse("3.2.1.0/24"))
+            .setAdmin(5)
+            .setMetric(10L);
+
+    bgpBuilder = Bgpv4Route.builder();
+    accepted = importRoutingPolicyPeer1.process(srb.build(), bgpBuilder, Direction.IN);
+    assertTrue(accepted);
+    assertThat(bgpBuilder.getOriginType(), equalTo(INCOMPLETE));
+
+    // rejected because of mismatching prefix
+    assertFalse(
+        importRoutingPolicyPeer1.process(
+            srb.setNetwork(Prefix.parse("1.1.1.0/24")).build(),
+            Bgpv4Route.builder(),
+            Direction.IN));
   }
 
   @Test
