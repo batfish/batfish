@@ -3919,7 +3919,7 @@ public final class CiscoNxosGrammarTest {
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(16, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getLengthRange(), equalTo(SubRange.singleton(16)));
       assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
 
       line = lines.next();
@@ -3992,7 +3992,7 @@ public final class CiscoNxosGrammarTest {
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(16, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getLengthRange(), equalTo(SubRange.singleton(16)));
       assertThat(line.getLine(), equalTo(5L));
       assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
 

@@ -841,7 +841,7 @@ public class CumulusFrrGrammarTest {
     IpPrefixListLine line1 = prefixList.getLines().get(10L);
     assertThat(line1.getLine(), equalTo(10L));
     assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
-    assertThat(line1.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(line1.getLengthRange(), equalTo(SubRange.singleton(24)));
     assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
 
     IpPrefixListLine line2 = prefixList.getLines().get(20L);
@@ -865,7 +865,7 @@ public class CumulusFrrGrammarTest {
     IpPrefixListLine line1 = prefixList.getLines().get(4L);
     assertThat(line1.getLine(), equalTo(4L));
     assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
-    assertThat(line1.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(line1.getLengthRange(), equalTo(SubRange.singleton(24)));
     assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
 
     IpPrefixListLine line2 = prefixList.getLines().get(5L);
