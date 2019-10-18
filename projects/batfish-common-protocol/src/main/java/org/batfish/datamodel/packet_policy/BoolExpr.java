@@ -8,9 +8,4 @@ import java.io.Serializable;
 public interface BoolExpr extends Serializable {
 
   <T> T accept(BoolExprVisitor<T> tBoolExprVisitor);
-
-  /** Return a logical AND of this expression and another boolean expression */
-  default Conjunction and(BoolExpr expr) {
-    return new Conjunction(this, expr);
-  }
 }
