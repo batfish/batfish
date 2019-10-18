@@ -50,6 +50,10 @@ public final class PolicyRule implements Serializable {
     return Stream.of(_updateOrigin, _updateMetric).filter(Objects::nonNull);
   }
 
+  public @Nonnull Stream<PolicyRuleMatch> getMatches() {
+    return Stream.of(_matchAddressPrefixSet, _matchFromPeerSet).filter(Objects::nonNull);
+  }
+
   public @Nullable Boolean getEnable() {
     return _enable;
   }
