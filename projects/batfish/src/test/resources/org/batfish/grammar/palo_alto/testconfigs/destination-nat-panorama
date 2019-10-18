@@ -29,6 +29,7 @@ policy {
         }
       }
     }
+    # Should never apply this NAT since rule in vsys will always be applied first
     post-rulebase {
       nat {
         rules {

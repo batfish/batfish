@@ -317,9 +317,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("~%s~OUTGOING_FILTER~", interfaceOrZoneName);
   }
 
-  /** Generate RoutingPolicy name given an interface name */
-  public static String computeRoutingPolicyName(String interfaceName) {
-    return String.format("~%s~ROUTING_POLICY~", interfaceName);
+  /** Generate PacketPolicy name given an interface name */
+  public static String computePacketPolicyName(String interfaceName) {
+    return String.format("~%s~PACKET_POLICY~", interfaceName);
   }
 
   /**
@@ -1168,9 +1168,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     Vsys vsys = zone.getVsys();
     List<Entry<NatRule, Vsys>> natEntries = getNatPoliciesForIface(iface);
     if (!natEntries.isEmpty()) {
-      String packetPolicyName = computeRoutingPolicyName(iface.getName());
-      PacketPolicy pp = buildPacketPolicy(packetPolicyName, natEntries, vsys);
-      _c.getPacketPolicies().put(packetPolicyName, pp);
+      String packetPolicyName = computePacketPolicyName(iface.getName());
+      _c.getPacketPolicies()
+          .put(packetPolicyName, buildPacketPolicy(packetPolicyName, natEntries, vsys));
       return packetPolicyName;
     }
     return null;
@@ -1193,12 +1193,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         continue;
       }
 
-      // Headerspace conditions under which to apply dest NAT
+      // Conditions under which to apply dest NAT
       IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
       IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
       MatchHeaderSpace matchHeaderSpace =
           new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+      BoolExpr condition =
+          new Conjunction(
+              new PacketMatchExpr(matchHeaderSpace),
+              // Only apply dest NAT if flow is exiting an interface in the to-zone
+              new FibLookupOutgoingInterfaceIsOneOf(
+                  IngressInterfaceVrf.instance(), toZone.getInterfaceNames()));
 
+      // Actual dest NAT transformation
       Transformation transform =
           new Transformation(
               matchHeaderSpace,
@@ -1210,26 +1217,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
               null,
               null);
 
-      BoolExpr condition =
-          new Conjunction(
-              new PacketMatchExpr(matchHeaderSpace),
-              new FibLookupOutgoingInterfaceIsOneOf(
-                  IngressInterfaceVrf.instance(), toZone.getInterfaceNames()));
-
-      // Only apply dest NAT if flow is exiting an interface in the to zone
-      org.batfish.datamodel.packet_policy.If guard =
+      lines.add(
           new org.batfish.datamodel.packet_policy.If(
               condition,
               ImmutableList.of(
                   new ApplyTransformation(transform),
-                  new Return(new FibLookup(IngressInterfaceVrf.instance()))));
-      lines.add(guard);
+                  new Return(new FibLookup(IngressInterfaceVrf.instance())))));
     }
     return new PacketPolicy(
         name, lines.build(), new Return(new FibLookup(IngressInterfaceVrf.instance())));
   }
 
-  /** Return a list of all NAT rules associated with the specified interface. */
+  /** Return a list of all NAT rules associated with the specified from-interface. */
   private List<Map.Entry<NatRule, Vsys>> getNatPoliciesForIface(Interface iface) {
     Zone zone = iface.getZone();
     if (zone == null) {

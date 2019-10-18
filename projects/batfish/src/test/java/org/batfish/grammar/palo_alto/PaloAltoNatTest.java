@@ -61,6 +61,8 @@ public class PaloAltoNatTest {
   public void testDestNat() throws IOException {
     // Test destination NAT is applied correctly
     Configuration c = parseConfig("destination-nat");
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    batfish.computeDataPlane();
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/31
     String inside2Name = "ethernet1/1.2"; // 1.1.2.3/31
     String outside1Name = "ethernet1/2.1"; // 1.2.1.3/31
@@ -72,9 +74,6 @@ public class PaloAltoNatTest {
     String outside1Policy = outside1.getRoutingPolicyName();
     // Interface in OUTSIDE zone has packet policy
     assertThat(outside1Policy, notNullValue());
-
-    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
 
     // This flow is NAT'd and should pass through the firewall
     Flow outsideToInsideNat =
@@ -100,7 +99,7 @@ public class PaloAltoNatTest {
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP)
             .build();
-    // This flow is NOT NAT'd (does not match from interface constraint)
+    // This flow is NOT NAT'd (does not match from-interface constraint)
     Flow insideToInsideBadIngressIface =
         Flow.builder()
             .setTag("test")
@@ -124,11 +123,11 @@ public class PaloAltoNatTest {
     // Flow should be NAT'd and be successful
     assertTrue(traces.get(outsideToInsideNat).get(0).getDisposition().isSuccessful());
 
-    // Flow not matching NAT dest address restriction should not be NAT'd
-    // And therefore should not be successful
+    // Flow not matching NAT dest address constraint should not be NAT'd and therefore should not be
+    // successful
     assertFalse(traces.get(outsideToInsideBadSrcIp).get(0).getDisposition().isSuccessful());
 
-    // Flow not matching from zone, should not be NAT'd and should be unsuccessful
+    // Flow not matching from-zone, should not be NAT'd and should be unsuccessful
     assertFalse(traces.get(insideToInsideBadIngressIface).get(0).getDisposition().isSuccessful());
   }
 
@@ -136,7 +135,8 @@ public class PaloAltoNatTest {
   public void testPanoramaDestNatOrder() throws IOException {
     // Test panorama destination NATs are applied in the right order
     Configuration c = parseConfig("destination-nat-panorama");
-
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    batfish.computeDataPlane();
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/31
     String outside1Name = "ethernet1/2.1"; // 1.2.1.3/31
     assertThat(
@@ -145,12 +145,8 @@ public class PaloAltoNatTest {
 
     Interface outside1 = c.getAllInterfaces().get(outside1Name);
     String outside1Policy = outside1.getRoutingPolicyName();
-
-    // Interface in OUTSIDE zone have packet policy
+    // Interface in OUTSIDE zone has packet policy
     assertThat(outside1Policy, notNullValue());
-
-    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
 
     // This flow is NAT'd by the pre-rulebase rule and should pass through the firewall
     Flow outsideToInsideNatPreRulebase =
