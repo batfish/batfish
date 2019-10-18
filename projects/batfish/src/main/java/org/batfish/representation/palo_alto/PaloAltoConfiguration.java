@@ -324,6 +324,33 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s~SERVICE_GROUP_MEMBER", serviceGroupMemberName, vsysName);
   }
 
+  /**
+   * Checks whether the given NAT rule's {@link NatRule#getFrom()}, {@link NatRule#getTo()}, {@link
+   * NatRule#getSource()}, and {@link NatRule#getDestination()} are valid (configured and not
+   * empty). Files conversion warnings for any invalid rules if {@code fileWarnings} is set.
+   *
+   * <p>No NAT rule that fails this check should be converted to VI. However, a rule that does pass
+   * should not necessarily be converted to VI -- there may be other reasons not to convert.
+   */
+  private boolean checkNatRuleValid(NatRule rule, boolean fileWarnings) {
+    String missingItem = null;
+    if (rule.getTo() == null) {
+      missingItem = "to zone";
+    } else if (rule.getFrom().isEmpty()) {
+      missingItem = "from zones";
+    } else if (rule.getSource().isEmpty()) {
+      missingItem = "source addresses";
+    } else if (rule.getDestination().isEmpty()) {
+      missingItem = "destination addresses";
+    }
+    if (missingItem != null && fileWarnings) {
+      _w.redFlag(
+          String.format(
+              "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem));
+    }
+    return missingItem == null;
+  }
+
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     for (Vsys vsys : _virtualSystems.values()) {
