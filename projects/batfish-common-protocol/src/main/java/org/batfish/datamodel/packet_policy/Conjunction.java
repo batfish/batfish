@@ -62,7 +62,8 @@ public class Conjunction implements BoolExpr {
   }
 
   @JsonCreator
-  private static Conjunction create(@Nullable @JsonProperty List<BoolExpr> conjuncts) {
+  private static Conjunction create(
+      @Nullable @JsonProperty(PROP_CONJUNCTS) List<BoolExpr> conjuncts) {
     checkArgument(conjuncts != null && !conjuncts.isEmpty(), "Missing %s", PROP_CONJUNCTS);
     return new Conjunction(conjuncts);
   }

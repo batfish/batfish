@@ -4,7 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Tests of {@link Conjunction} */
@@ -26,8 +28,8 @@ public class ConjunctionTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  public void testJsonSerialization() throws IOException {
     BoolExpr c = Conjunction.of(TrueExpr.instance());
-    assertThat(SerializationUtils.clone(c), equalTo(c));
+    assertThat(BatfishObjectMapper.clone(c, Conjunction.class), equalTo(c));
   }
 }
