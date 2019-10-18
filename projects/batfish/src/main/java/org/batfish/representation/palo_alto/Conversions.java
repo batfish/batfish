@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -149,7 +150,7 @@ final class Conversions {
   static RoutingPolicy getBgpCommonExportPolicy(
       BgpVr bgpVr, VirtualRouter vr, Warnings w, Configuration c) {
     Map<RedistRuleRefNameOrPrefix, RedistRule> redistRules = bgpVr.getRedistRules();
-    ImmutableList.Builder<BooleanExpr> disjunctionOfRedistRules = ImmutableList.builder();
+    ImmutableList.Builder<Statement> statementsForCommonExportPolicy = ImmutableList.builder();
 
     for (Entry<RedistRuleRefNameOrPrefix, RedistRule> redistRule : redistRules.entrySet()) {
       if (redistRule.getKey().getRedistProfileName() == null) {
@@ -169,35 +170,32 @@ final class Conversions {
                 redistRule.getKey().getRedistProfileName(), vr.getName()));
         continue;
       }
-      RoutingPolicy routingPolicyForRedistRule =
-          redistRuleToRoutingPolicy(redistRule.getValue(), redistProfile, c, vr.getName());
-      if (routingPolicyForRedistRule == null) {
+      If ifStatement = redistRuleToIfStatement(redistRule.getValue(), redistProfile);
+      if (ifStatement == null) {
         continue;
       }
-      disjunctionOfRedistRules.add(new CallExpr(routingPolicyForRedistRule.getName()));
+      statementsForCommonExportPolicy.add(ifStatement);
     }
 
     // all BGP/IBGP type routes should be eligible for export
-    disjunctionOfRedistRules.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
+    statementsForCommonExportPolicy.add(
+        new If(
+            new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
+            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+            ImmutableList.of()));
+
+    // Finally, the export policy ends with returning false: if the route falls through till this
+    // point then it should not be exported
+    statementsForCommonExportPolicy.add(Statements.ReturnFalse.toStaticStatement());
 
     String policyName = generatedBgpCommonExportPolicyName(vr.getName());
     RoutingPolicy commonExportPolicy = new RoutingPolicy(policyName, c);
-    commonExportPolicy
-        .getStatements()
-        .add(
-            new If(
-                new Disjunction(disjunctionOfRedistRules.build()),
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                ImmutableList.of()));
-    // Finally, the export policy ends with returning false: if the route falls through till this
-    // point then it should not be exported
-    commonExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
+    commonExportPolicy.getStatements().addAll(statementsForCommonExportPolicy.build());
     return commonExportPolicy;
   }
 
   @Nullable
-  private static RoutingPolicy redistRuleToRoutingPolicy(
-      RedistRule redistRule, RedistProfile redistProfile, Configuration c, String vrName) {
+  private static If redistRuleToIfStatement(RedistRule redistRule, RedistProfile redistProfile) {
     // TODO: handle priority of redist profile
     RedistProfileFilter filter = redistProfile.getFilter();
     if (filter == null) {
@@ -227,20 +225,12 @@ final class Conversions {
         redistProfile.getAction() == RedistProfile.Action.REDIST
             ? ROUTE_MAP_PERMIT_STATEMENT
             : ROUTE_MAP_DENY_STATEMENT);
-    RoutingPolicy routingPolicy =
-        new NetworkFactory()
-            .routingPolicyBuilder()
-            .setName(getRoutingPolicyNameForRedistRule(vrName, redistProfile.getName()))
-            .setOwner(c)
-            .setStatements(
-                ImmutableList.of(
-                    new If(
-                        new Conjunction(conditionForConjunction.build()),
-                        trueStatements.build(),
-                        // just fall through if the conditions are not matched
-                        ImmutableList.of())))
-            .build();
-    return routingPolicy;
+
+    return new If(
+        new Conjunction(conditionForConjunction.build()),
+        trueStatements.build(),
+        // just fall through if the conditions are not matched
+        ImmutableList.of());
   }
 
   static RoutingPolicy computeAndSetPerPeerExportPolicy(
@@ -250,18 +240,22 @@ final class Conversions {
             .filter(ep -> ep.getUsedBy() != null && ep.getUsedBy().equals(peerGroupName))
             .collect(ImmutableList.toImmutableList());
 
-    ImmutableList.Builder<BooleanExpr> disjunctionOfAllPolicesUsedByPeer = ImmutableList.builder();
+    List<Statement> statementsForExportPolicyRules =
+        exportPolicyRulesUsedByThisPeer.stream()
+            .map(Conversions::toStatement)
+            .collect(ImmutableList.toImmutableList());
 
-    for (PolicyRule policyRule : exportPolicyRulesUsedByThisPeer) {
-      // we would have already generated and stored a routing policy for this policy rule
-      String routingPolicyNameForThisRule =
-          getRoutingPolicyNameForPolicyRule(vr.getName(), policyRule.getName(), true);
-
-      disjunctionOfAllPolicesUsedByPeer.add(new CallExpr(routingPolicyNameForThisRule));
-    }
-
-    BooleanExpr canMatchAnyOfExportRulesForPeer =
-        new Disjunction(disjunctionOfAllPolicesUsedByPeer.build());
+    // making a routing policy for the above statements so we can use it later in a CallExpr (we
+    // need CallExpr to use in a Conjunction as list of If statements cannot be used in a
+    // Conjunction)
+    String policyRulesRpNameForPeer =
+        getRoutingPolicyNameForExportPolicyRulesForPeer(vr.getName(), peer.getName());
+    new NetworkFactory()
+        .routingPolicyBuilder()
+        .setOwner(c)
+        .setName(policyRulesRpNameForPeer)
+        .setStatements(statementsForExportPolicyRules)
+        .build();
 
     // for a route to be exported by this peer, it has to match the common BGP export policy AND
     // "any" of the policy rules used by this peer
@@ -269,7 +263,7 @@ final class Conversions {
         new Conjunction(
             ImmutableList.of(
                 new CallExpr(generatedBgpCommonExportPolicyName(vr.getName())),
-                canMatchAnyOfExportRulesForPeer));
+                new CallExpr(policyRulesRpNameForPeer)));
 
     return new NetworkFactory()
         .routingPolicyBuilder()
@@ -296,40 +290,24 @@ final class Conversions {
       return null;
     }
 
-    ImmutableList.Builder<BooleanExpr> disjunctionOfAllPolicesUsedByPeer = ImmutableList.builder();
-
-    for (PolicyRule policyRule : importPolicyRulesUsedByThisPeer) {
-      // we would have already generated and stored a routing policy for this policy rule
-      String routingPolicyNameForThisRule =
-          getRoutingPolicyNameForPolicyRule(vr.getName(), policyRule.getName(), false);
-
-      disjunctionOfAllPolicesUsedByPeer.add(new CallExpr(routingPolicyNameForThisRule));
-    }
-
-    BooleanExpr canMatchAnyOfImportRulesForPeer =
-        new Disjunction(disjunctionOfAllPolicesUsedByPeer.build());
+    List<Statement> statementsForImportPolicyRules =
+        Stream.concat(
+                importPolicyRulesUsedByThisPeer.stream().map(Conversions::toStatement),
+                // adding a final false statement to reject anything which didn't match any of the
+                // above policy rules
+                Stream.of(Statements.ReturnFalse.toStaticStatement()))
+            .collect(ImmutableList.toImmutableList());
 
     return new NetworkFactory()
         .routingPolicyBuilder()
         .setOwner(c)
         .setName(generatedBgpPeerImportPolicyName(vr.getName(), peer.getName()))
-        .setStatements(
-            ImmutableList.of(
-                new If(
-                    canMatchAnyOfImportRulesForPeer,
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+        .setStatements(statementsForImportPolicyRules)
         .build();
   }
 
-  private static String getRoutingPolicyNameForRedistRule(String vrName, String redistRuleName) {
-    return String.format("~BGP_REDIST_RULE_EXPORT_POLICY:%s:%s~", vrName, redistRuleName);
-  }
-
-  static String getRoutingPolicyNameForPolicyRule(
-      String vrName, String policyRuleName, boolean export) {
-    return String.format(
-        "~BGP_POLICY_RULE_%s_POLICY:%s:%s", export ? "EXPORT" : "IMPORT", vrName, policyRuleName);
+  static String getRoutingPolicyNameForExportPolicyRulesForPeer(String vrName, String peerName) {
+    return String.format("~BGP_POLICY_RULE_EXPORT_POLICY:%s:%s~", vrName, peerName);
   }
 
   private Conversions() {} // don't allow instantiation
