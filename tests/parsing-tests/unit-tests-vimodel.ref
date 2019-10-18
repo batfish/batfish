@@ -18031,7 +18031,7 @@
               {
                 "action" : "PERMIT",
                 "ipWildcard" : "192.0.2.0/24",
-                "lengthRange" : "24-32"
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "PERMIT",

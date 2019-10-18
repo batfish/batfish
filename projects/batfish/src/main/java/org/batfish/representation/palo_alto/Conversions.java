@@ -2,6 +2,7 @@ package org.batfish.representation.palo_alto;
 
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -72,7 +73,7 @@ final class Conversions {
   }
 
   /** Creates and stores a routing policy from the given statement in configuration object */
-  static void statementToExportPolicy(
+  static void statementToRoutingPolicy(
       Statement statement, Configuration c, String routingPolicyName) {
     new NetworkFactory()
         .routingPolicyBuilder()
@@ -254,7 +255,7 @@ final class Conversions {
     for (PolicyRule policyRule : exportPolicyRulesUsedByThisPeer) {
       // we would have already generated and stored a routing policy for this policy rule
       String routingPolicyNameForThisRule =
-          getRoutingPolicyNameForExportPolicyRule(vr.getName(), policyRule.getName());
+          getRoutingPolicyNameForPolicyRule(vr.getName(), policyRule.getName(), true);
 
       disjunctionOfAllPolicesUsedByPeer.add(new CallExpr(routingPolicyNameForThisRule));
     }
@@ -283,12 +284,52 @@ final class Conversions {
         .build();
   }
 
+  @Nullable
+  static RoutingPolicy computeAndSetPerPeerImportPolicy(
+      BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
+    List<PolicyRule> importPolicyRulesUsedByThisPeer =
+        bgpVr.getImportPolicyRules().values().stream()
+            .filter(ep -> ep.getUsedBy() != null && ep.getUsedBy().equals(peerGroupName))
+            .collect(ImmutableList.toImmutableList());
+
+    if (importPolicyRulesUsedByThisPeer.isEmpty()) {
+      return null;
+    }
+
+    ImmutableList.Builder<BooleanExpr> disjunctionOfAllPolicesUsedByPeer = ImmutableList.builder();
+
+    for (PolicyRule policyRule : importPolicyRulesUsedByThisPeer) {
+      // we would have already generated and stored a routing policy for this policy rule
+      String routingPolicyNameForThisRule =
+          getRoutingPolicyNameForPolicyRule(vr.getName(), policyRule.getName(), false);
+
+      disjunctionOfAllPolicesUsedByPeer.add(new CallExpr(routingPolicyNameForThisRule));
+    }
+
+    BooleanExpr canMatchAnyOfImportRulesForPeer =
+        new Disjunction(disjunctionOfAllPolicesUsedByPeer.build());
+
+    return new NetworkFactory()
+        .routingPolicyBuilder()
+        .setOwner(c)
+        .setName(generatedBgpPeerImportPolicyName(vr.getName(), peer.getName()))
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    canMatchAnyOfImportRulesForPeer,
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+        .build();
+  }
+
   private static String getRoutingPolicyNameForRedistRule(String vrName, String redistRuleName) {
     return String.format("~BGP_REDIST_RULE_EXPORT_POLICY:%s:%s~", vrName, redistRuleName);
   }
 
-  static String getRoutingPolicyNameForExportPolicyRule(String vrName, String policyRuleName) {
-    return String.format("~BGP_POLICY_RULE_EXPORT_POLICY:%s:%s", vrName, policyRuleName);
+  static String getRoutingPolicyNameForPolicyRule(
+      String vrName, String policyRuleName, boolean export) {
+    return String.format(
+        "~BGP_POLICY_RULE_%s_POLICY:%s:%s", export ? "EXPORT" : "IMPORT", vrName, policyRuleName);
   }
 
   private Conversions() {} // don't allow instantiation

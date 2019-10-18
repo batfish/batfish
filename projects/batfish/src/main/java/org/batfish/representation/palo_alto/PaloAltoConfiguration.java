@@ -12,9 +12,10 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
+import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
-import static org.batfish.representation.palo_alto.Conversions.getRoutingPolicyNameForExportPolicyRule;
-import static org.batfish.representation.palo_alto.Conversions.statementToExportPolicy;
+import static org.batfish.representation.palo_alto.Conversions.getRoutingPolicyNameForPolicyRule;
+import static org.batfish.representation.palo_alto.Conversions.statementToRoutingPolicy;
 import static org.batfish.representation.palo_alto.Conversions.toStatement;
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
@@ -1321,6 +1322,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     ipv4af.setExportPolicy(
         computeAndSetPerPeerExportPolicy(peer, _c, vr, bgp, pg.getName()).getName());
 
+    @Nullable
+    RoutingPolicy importPolicyForThisPeer =
+        computeAndSetPerPeerImportPolicy(peer, _c, vr, bgp, pg.getName());
+    ipv4af.setImportPolicy(
+        importPolicyForThisPeer == null ? null : importPolicyForThisPeer.getName());
+
     peerB.setIpv4UnicastAddressFamily(ipv4af.build());
 
     peerB.build(); // automatically adds itself to the process
@@ -1355,15 +1362,24 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc, vr));
 
-    // convert policy rules to routing policies which will later be used for per neighbor export
-    // policies
+    // convert policy rules to routing policies which will later be used for per neighbor export or
+    // import policies
     bgp.getExportPolicyRules()
         .forEach(
             (policyRuleName, policyRule) ->
-                statementToExportPolicy(
+                statementToRoutingPolicy(
                     toStatement(policyRule),
                     _c,
-                    getRoutingPolicyNameForExportPolicyRule(vr.getName(), policyRuleName)));
+                    getRoutingPolicyNameForPolicyRule(vr.getName(), policyRuleName, true)));
+
+    bgp.getImportPolicyRules()
+        .forEach(
+            (policyRuleName, policyRule) ->
+                statementToRoutingPolicy(
+                    toStatement(policyRule),
+                    _c,
+                    getRoutingPolicyNameForPolicyRule(vr.getName(), policyRuleName, false)));
+
     return Optional.of(proc);
   }
 
