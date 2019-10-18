@@ -319,12 +319,14 @@ public final class BgpProtocolHelper {
 
     // Skip setting our own next hop if it has already been set by the routing policy
     if (routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
-      if (isEbgp && confedSessionType != ConfedSessionType.WITHIN_CONFED) { // "Pure" eBGP
+      if (isEbgp) {
         routeBuilder.setNextHopIp(localIp);
-      } else {
-        // iBGP session (or eBGP within confederation):
-        // if original route has next-hop ip, preserve it. If not, set our own.
-        // Note: implementation of next-hop-self in the general case is delegated to routing policy
+      } else { // iBGP session
+        /*
+        Note: implementation of next-hop-self in the general case is delegated to routing
+        policy.
+        If original route has next-hop ip, preserve it. If not, set our own.
+        */
         routeBuilder.setNextHopIp(
             originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP) ? localIp : originalRouteNhip);
       }
