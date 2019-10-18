@@ -1,13 +1,14 @@
 policy {
   panorama {
     address {
-      ADDR1 {
-        ip-netmask 1.1.1.2/32;
-        tag [ TAG1 TAG2];
-      }
-      ADDR2 {
+      SOURCE_ADDR {
         ip-netmask 1.2.1.2/32;
-        tag [ TAG3 TAG4];
+      }
+      SERVER_NEW_ADDR {
+        ip-netmask 1.1.1.99/32;
+      }
+      SERVER_OLD_ADDR {
+        ip-netmask 1.1.1.2/32;
       }
     }
     post-rulebase {
@@ -72,7 +73,7 @@ config {
         }
         virtual-router {
           vr1 {
-            interface [ ethernet1/1.1 ethernet1/1.2 ethernet1/2.1 ethernet1/2.2];
+            interface [ ethernet1/1.1 ethernet1/2.1];
           }
         }
       }
@@ -83,20 +84,6 @@ config {
       }
       vsys {
         vsys1 {
-          address {
-            SOURCE_ADDR {
-              ip-netmask 1.2.1.2/32;
-              tag [ TAG3 TAG4];
-            }
-            SERVER_NEW_ADDR {
-              ip-netmask 1.1.1.99/32;
-              tag [ TAG1 TAG2];
-            }
-            SERVER_OLD_ADDR {
-              ip-netmask 1.1.1.2/32;
-              tag [ TAG5];
-            }
-          }
           rulebase {
             security {
               rules {
@@ -131,11 +118,6 @@ config {
             OUTSIDE {
               network {
                 layer3 [ ethernet1/2.1 ethernet1/2.2];
-              }
-            }
-            DUMMY {
-              network {
-                layer3 [ ethernet1/1.3];
               }
             }
           }
