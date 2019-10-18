@@ -449,9 +449,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                           new AssignIpAddressFromPool(
                               TransformationType.SOURCE_NAT, IpField.SOURCE, pool),
                           transformPort);
+              // Note that "to any" is not permitted
               toZoneTransformations.computeIfAbsent(r.getTo(), x -> new ArrayList<>()).add(t);
             });
 
+    Map<String, Transformation> finalZoneTransformations =
+        _zoneOutgoingTransformations.computeIfAbsent(vsys.getName(), v -> new TreeMap<>());
     toZoneTransformations.forEach(
         (zoneName, builders) -> {
           Transformation t = null;
@@ -460,9 +463,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             prevT.setOrElse(t);
             t = prevT.build();
           }
-          _zoneOutgoingTransformations
-              .computeIfAbsent(vsys.getName(), v -> new TreeMap<>())
-              .put(zoneName, t);
+          finalZoneTransformations.put(zoneName, t);
         });
   }
 
@@ -472,6 +473,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
     MatchHeaderSpace matchHeaderSpace =
         new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+
+    if (rule.getFrom().contains(CATCHALL_ZONE_NAME)) {
+      // Rule says "from any" -- no need to match on packet source interface
+      return matchHeaderSpace;
+    }
 
     // Match from
     Set<String> fromIfaces =

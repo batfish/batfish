@@ -1,5 +1,7 @@
 set deviceconfig system hostname rulebase-nat
 
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+
 # No-ops: Shouldn't affect anything
 set rulebase nat
 set rulebase nat rules

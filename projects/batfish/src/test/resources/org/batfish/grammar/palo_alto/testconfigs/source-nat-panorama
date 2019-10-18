@@ -138,7 +138,8 @@ config {
                     }
                   }
                   to OUTSIDE;
-                  from INSIDE;
+                  # Exercise "any" option
+                  from any;
                   source SOURCE_ADDR_BROADER;
                   destination any;
                 }
@@ -148,7 +149,7 @@ config {
               rules {
                 PERMIT_TRANSLATED {
                   to OUTSIDE;
-                  from INSIDE;
+                  from any;
                   source [ VSYS_NAT_NEW_ADDR];
                   destination any;
                   application any;
