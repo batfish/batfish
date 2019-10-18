@@ -892,9 +892,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
     Prefix prefix = Prefix.parse(ctx.ip_prefix.getText());
     int prefixLength = prefix.getPrefixLength();
-    int low = ctx.ge != null ? Integer.parseInt(ctx.ge.getText()) : prefixLength;
-    int high = ctx.le != null ? Integer.parseInt(ctx.le.getText()) : prefixLength;
-    IpPrefixListLine pll = new IpPrefixListLine(action, num, prefix, new SubRange(low, high));
+    SubRange range;
+    if (ctx.le == null && ctx.ge == null) {
+      range = SubRange.singleton(prefixLength);
+    } else {
+      int low = ctx.ge != null ? Integer.parseInt(ctx.ge.getText()) : prefixLength;
+      int high = ctx.le != null ? Integer.parseInt(ctx.le.getText()) : Prefix.MAX_PREFIX_LENGTH;
+      range = new SubRange(low, high);
+    }
+    IpPrefixListLine pll = new IpPrefixListLine(action, num, prefix, range);
     _currentIpPrefixList.getLines().put(num, pll);
   }
 
