@@ -382,4 +382,44 @@ public final class FlowEvaluatorTest {
       assertThat(r.getAction(), equalTo(trueAction));
     }
   }
+
+  @Test
+  public void testConjunction() {
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    {
+      FlowResult result =
+          FlowEvaluator.evaluate(
+              _flow,
+              "Eth0",
+              "otherVrf",
+              singletonPolicy(
+                  new If(
+                      Conjunction.of(org.batfish.datamodel.packet_policy.TrueExpr.instance()),
+                      ImmutableList.of(new Return(fl)))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              ImmutableMap.of());
+
+      assertThat(result.getAction(), equalTo(fl));
+    }
+
+    {
+      FlowResult result =
+          FlowEvaluator.evaluate(
+              _flow,
+              "Eth0",
+              "otherVrf",
+              singletonPolicy(
+                  new If(
+                      Conjunction.of(
+                          org.batfish.datamodel.packet_policy.TrueExpr.instance(),
+                          org.batfish.datamodel.packet_policy.FalseExpr.instance()),
+                      ImmutableList.of(new Return(fl)))),
+              ImmutableMap.of(),
+              ImmutableMap.of(),
+              ImmutableMap.of());
+
+      assertThat(result.getAction(), equalTo(_defaultAction.getAction()));
+    }
+  }
 }
