@@ -77,8 +77,6 @@ public class PaloAltoNatTest {
             outside1Name,
             outside2Name));
 
-    Interface inside1 = c.getAllInterfaces().get(inside1Name);
-    Interface inside2 = c.getAllInterfaces().get(inside2Name);
     Interface outside1 = c.getAllInterfaces().get(outside1Name);
     Interface outside2 = c.getAllInterfaces().get(outside2Name);
 
@@ -92,7 +90,7 @@ public class PaloAltoNatTest {
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     batfish.computeDataPlane();
 
-    // This flow is NAT'd (matches
+    // This flow is NAT'd and should pass through the firewall
     Flow outsideToInsideNat =
         Flow.builder()
             .setTag("test")
@@ -104,6 +102,7 @@ public class PaloAltoNatTest {
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP)
             .build();
+    // This flow is NOT NAT'd (does not match source address constraint)
     Flow outsideToInsideBadSrcIp =
         Flow.builder()
             .setTag("test")
@@ -115,6 +114,7 @@ public class PaloAltoNatTest {
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP)
             .build();
+    // This flow is NOT NAT'd (does not match from interface constraint)
     Flow insideToInsideBadIngressIface =
         Flow.builder()
             .setTag("test")
@@ -136,20 +136,14 @@ public class PaloAltoNatTest {
                 false);
 
     // Flow should be NAT'd and be successful
-    Trace success = traces.get(outsideToInsideNat).get(0);
-    // assertThat(success.getHops().get(0).getSteps(), hasItem(equalTo()));
-    assertTrue(success.getDisposition().isSuccessful());
-    // Flow not matching NAT dest address restriction should not be NAT'd
+    assertTrue(traces.get(outsideToInsideNat).get(0).getDisposition().isSuccessful());
 
-    // And should not be successful
-    // NOTE: I don't think this works because it seems like we're doing security policy lookup on
-    // the pre-NAT flow instead of the post-NAT flow
+    // Flow not matching NAT dest address restriction should not be NAT'd
+    // And therefore should not be successful
     assertFalse(traces.get(outsideToInsideBadSrcIp).get(0).getDisposition().isSuccessful());
 
     // Flow not matching from zone, should not be NAT'd and should be unsuccessful
     assertFalse(traces.get(insideToInsideBadIngressIface).get(0).getDisposition().isSuccessful());
-
-    assertThat(c, notNullValue());
   }
 
   @Test
