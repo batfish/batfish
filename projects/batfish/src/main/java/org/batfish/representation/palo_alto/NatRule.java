@@ -63,7 +63,7 @@ public final class NatRule implements Serializable {
     return _sourceTranslation;
   }
 
-  @Nonnull
+  @Nullable
   public String getTo() {
     return _to;
   }

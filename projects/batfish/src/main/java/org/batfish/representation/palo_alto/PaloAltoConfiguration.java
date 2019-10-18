@@ -11,6 +11,11 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVIC
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
+import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
+import static org.batfish.representation.palo_alto.Conversions.getRoutingPolicyNameForExportPolicyRule;
+import static org.batfish.representation.palo_alto.Conversions.statementToExportPolicy;
+import static org.batfish.representation.palo_alto.Conversions.toStatement;
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
@@ -78,7 +83,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -106,9 +110,6 @@ import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
@@ -340,6 +341,33 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   public static String computeServiceGroupMemberAclName(
       String vsysName, String serviceGroupMemberName) {
     return String.format("%s~%s~SERVICE_GROUP_MEMBER", serviceGroupMemberName, vsysName);
+  }
+
+  /**
+   * Checks whether the given NAT rule's {@link NatRule#getFrom()}, {@link NatRule#getTo()}, {@link
+   * NatRule#getSource()}, and {@link NatRule#getDestination()} are valid (configured and not
+   * empty). Files conversion warnings for any invalid rules if {@code fileWarnings} is set.
+   *
+   * <p>No NAT rule that fails this check should be converted to VI. However, a rule that does pass
+   * should not necessarily be converted to VI -- there may be other reasons not to convert.
+   */
+  private boolean checkNatRuleValid(NatRule rule, boolean fileWarnings) {
+    String missingItem = null;
+    if (rule.getTo() == null) {
+      missingItem = "to zone";
+    } else if (rule.getFrom().isEmpty()) {
+      missingItem = "from zones";
+    } else if (rule.getSource().isEmpty()) {
+      missingItem = "source addresses";
+    } else if (rule.getDestination().isEmpty()) {
+      missingItem = "destination addresses";
+    }
+    if (missingItem != null && fileWarnings) {
+      _w.redFlag(
+          String.format(
+              "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem));
+    }
+    return missingItem == null;
   }
 
   /** Convert vsys components to vendor independent model */
@@ -1204,15 +1232,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private void convertPeerGroup(BgpPeerGroup pg, BgpVr bgp, BgpProcess proc) {
+  private void convertPeerGroup(BgpPeerGroup pg, BgpVr bgp, BgpProcess proc, VirtualRouter vr) {
     if (!pg.getEnable()) {
       return;
     }
 
-    pg.getPeers().forEach((peerName, peer) -> convertPeer(peer, pg, bgp, proc));
+    pg.getPeers().forEach((peerName, peer) -> convertPeer(peer, pg, bgp, proc, vr));
   }
 
-  private void convertPeer(BgpPeer peer, BgpPeerGroup pg, BgpVr bgp, BgpProcess proc) {
+  private void convertPeer(
+      BgpPeer peer, BgpPeerGroup pg, BgpVr bgp, BgpProcess proc, VirtualRouter vr) {
     if (!peer.getEnable()) {
       return;
     }
@@ -1278,18 +1307,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         Ipv4UnicastAddressFamily.builder()
             .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build());
 
-    // BGP routing process expects an export policy to be attached to Ipv4UnicastAddressFamily
-    // TODO flesh out correct export policy, this is just a placeholder allowing BGP
-    String peerExportPolicyName = computePeerExportPolicyName(peer.getPeerAddress().toPrefix());
-    RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
-    peerExportPolicy
-        .getStatements()
-        .add(
-            new If(
-                new MatchProtocol(RoutingProtocol.IBGP, RoutingProtocol.BGP),
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement())));
-    _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
-    ipv4af.setExportPolicy(peerExportPolicyName);
+    ipv4af.setExportPolicy(
+        computeAndSetPerPeerExportPolicy(peer, _c, vr, bgp, pg.getName()).getName());
 
     peerB.setIpv4UnicastAddressFamily(ipv4af.build());
 
@@ -1319,9 +1338,21 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     BgpProcess proc =
         new BgpProcess(
             bgp.getRouterId(), vr.getAdminDists().getEbgp(), vr.getAdminDists().getIbgp());
+    // common BGP export policy (combination of all redist rules at the BgpVr level)
+    RoutingPolicy commonExportPolicy = getBgpCommonExportPolicy(bgp, vr, _w, _c);
+    _c.getRoutingPolicies().put(commonExportPolicy.getName(), commonExportPolicy);
 
-    bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc));
+    bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc, vr));
 
+    // convert policy rules to routing policies which will later be used for per neighbor export
+    // policies
+    bgp.getExportPolicyRules()
+        .forEach(
+            (policyRuleName, policyRule) ->
+                statementToExportPolicy(
+                    toStatement(policyRule),
+                    _c,
+                    getRoutingPolicyNameForExportPolicyRule(vr.getName(), policyRuleName)));
     return Optional.of(proc);
   }
 
