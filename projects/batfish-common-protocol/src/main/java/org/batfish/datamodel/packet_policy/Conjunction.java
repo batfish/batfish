@@ -17,14 +17,20 @@ public class Conjunction implements BoolExpr {
 
   @Nonnull private final List<BoolExpr> _conjuncts;
 
-  public Conjunction(Iterable<BoolExpr> conjuncts) {
+  private Conjunction(List<BoolExpr> conjuncts) {
     _conjuncts = ImmutableList.copyOf(conjuncts);
-    checkArgument(
-        !_conjuncts.isEmpty(), "Do not create empty conjunctions. Please use TrueExpr instead");
   }
 
-  public Conjunction(BoolExpr... conjuncts) {
-    this(Arrays.asList(conjuncts));
+  public static BoolExpr of(Iterable<BoolExpr> exprs) {
+    List<BoolExpr> l = ImmutableList.copyOf(exprs);
+    if (l.isEmpty()) {
+      return TrueExpr.instance();
+    }
+    return new Conjunction(l);
+  }
+
+  public static BoolExpr of(BoolExpr... exprs) {
+    return of(Arrays.asList(exprs));
   }
 
   @Nonnull
@@ -56,7 +62,8 @@ public class Conjunction implements BoolExpr {
   }
 
   @JsonCreator
-  private static Conjunction create(@Nullable @JsonProperty List<BoolExpr> conjuncts) {
+  private static Conjunction create(
+      @Nullable @JsonProperty(PROP_CONJUNCTS) List<BoolExpr> conjuncts) {
     checkArgument(conjuncts != null && !conjuncts.isEmpty(), "Missing %s", PROP_CONJUNCTS);
     return new Conjunction(conjuncts);
   }

@@ -235,11 +235,11 @@ public class BgpProtocolHelperTest {
         _baseBgpRouteBuilder, true, ConfedSessionType.ACROSS_CONFED_BORDER, 1, nextHopIp, DEST_IP);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
-    // eBGP within confederation -- no change
+    // eBGP within confederation -- change
     _baseBgpRouteBuilder.setNextHopIp(null);
     transformBgpRoutePostExport(
         _baseBgpRouteBuilder, true, ConfedSessionType.WITHIN_CONFED, 1, nextHopIp, DEST_IP);
-    assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(DEST_IP));
+    assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // iBGP no confederation -- no change
     _baseBgpRouteBuilder.setNextHopIp(null);

@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
@@ -70,6 +71,14 @@ public class FibLookupOutgoingInterfaceIsOneOf implements BoolExpr {
   @Override
   public int hashCode() {
     return Objects.hash(_vrf, _interfaceNames);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(FibLookupOutgoingInterfaceIsOneOf.class)
+        .add(PROP_VRF, _vrf)
+        .add(PROP_INTERFACES, _interfaceNames)
+        .toString();
   }
 
   @JsonCreator
