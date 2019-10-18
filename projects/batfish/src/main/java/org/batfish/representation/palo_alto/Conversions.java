@@ -150,7 +150,6 @@ final class Conversions {
   static RoutingPolicy getBgpCommonExportPolicy(
       BgpVr bgpVr, VirtualRouter vr, Warnings w, Configuration c) {
     Map<RedistRuleRefNameOrPrefix, RedistRule> redistRules = bgpVr.getRedistRules();
-    ImmutableList.Builder<BooleanExpr> disjunctionOfRedistRules = ImmutableList.builder();
     ImmutableList.Builder<Statement> statementsForCommonExportPolicy = ImmutableList.builder();
 
     for (Entry<RedistRuleRefNameOrPrefix, RedistRule> redistRule : redistRules.entrySet()) {
@@ -171,8 +170,7 @@ final class Conversions {
                 redistRule.getKey().getRedistProfileName(), vr.getName()));
         continue;
       }
-      If ifStatement =
-          redistRuleToIfStatement(redistRule.getValue(), redistProfile, c, vr.getName());
+      If ifStatement = redistRuleToIfStatement(redistRule.getValue(), redistProfile);
       if (ifStatement == null) {
         continue;
       }
@@ -197,8 +195,7 @@ final class Conversions {
   }
 
   @Nullable
-  private static If redistRuleToIfStatement(
-      RedistRule redistRule, RedistProfile redistProfile, Configuration c, String vrName) {
+  private static If redistRuleToIfStatement(RedistRule redistRule, RedistProfile redistProfile) {
     // TODO: handle priority of redist profile
     RedistProfileFilter filter = redistProfile.getFilter();
     if (filter == null) {
