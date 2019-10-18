@@ -28,19 +28,6 @@ policy {
           }
         }
       }
-      security {
-        rules {
-          PERMIT_ALL {
-            to any;
-            from any;
-            source any;
-            destination any;
-            application any;
-            service any;
-            action allow;
-          }
-        }
-      }
     }
     post-rulebase {
       nat {

@@ -104,9 +104,11 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
+import org.batfish.datamodel.packet_policy.BoolExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1206,13 +1208,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
               null,
               null);
 
+      PacketMatchExpr pme = new PacketMatchExpr(matchHeaderSpace);
+      // TODO make this a conjunction of floiioo and packet match
+      BoolExpr condition =
+          new FibLookupOutgoingInterfaceIsOneOf(
+              IngressInterfaceVrf.instance(), toZone.getInterfaceNames());
+
       // Only apply dest NAT if flow is exiting an interface in the to zone
       org.batfish.datamodel.packet_policy.If guard =
           new org.batfish.datamodel.packet_policy.If(
-              new FibLookupOutgoingInterfaceIsOneOf(
-                  IngressInterfaceVrf.instance(), toZone.getInterfaceNames()),
+              condition,
               ImmutableList.of(
                   new ApplyTransformation(transform),
+                  // TODO remove this extra return
                   new Return(new FibLookup(IngressInterfaceVrf.instance()))));
       lines.add(guard);
     }

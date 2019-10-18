@@ -67,6 +67,16 @@ config {
           rulebase {
             nat {
               rules {
+                # Should never apply this NAT since it matches a bogus source address
+                DEST_NAT_NEVER_MATCHED {
+                  destination-translation {
+                    translated-address BOGUS_ADDR;
+                  }
+                  to INSIDE;
+                  from OUTSIDE;
+                  source BOGUS_ADDR;
+                  destination any;
+                }
                 DEST_NAT_NAME {
                   destination-translation {
                     translated-address SERVER_NEW_ADDR;
