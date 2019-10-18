@@ -106,6 +106,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
@@ -801,6 +802,21 @@ public final class PaloAltoGrammarTest {
             ConnectedRoute.builder()
                 .setNetwork(Prefix.parse("1.1.1.0/24"))
                 .setNextHopInterface("iface1")
+                .build(),
+            Bgpv4Route.builder(),
+            Direction.OUT));
+
+    // the common BGP export policy should export any BGP route
+    assertTrue(
+        rdpRoutingPolicy.process(
+            Bgpv4Route.builder()
+                .setAsPath(AsPath.ofSingletonAsSets(2L))
+                .setOriginatorIp(Ip.ZERO)
+                .setOriginType(OriginType.INCOMPLETE)
+                .setProtocol(RoutingProtocol.BGP)
+                .setNextHopIp(Ip.parse("23.23.23.32"))
+                .setNetwork(Prefix.ZERO)
+                .setTag(0L)
                 .build(),
             Bgpv4Route.builder(),
             Direction.OUT));
