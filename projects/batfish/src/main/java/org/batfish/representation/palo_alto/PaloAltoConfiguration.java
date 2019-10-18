@@ -21,19 +21,24 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.Streams;
 import com.google.common.collect.TreeMultiset;
+import com.google.common.collect.TreeRangeSet;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +82,7 @@ import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -84,12 +90,14 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily.Builder;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -98,6 +106,10 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.Zone.Type;
@@ -157,12 +169,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, Vsys> _virtualSystems;
 
+  // vsys name -> zone name -> outgoing transformation
+  private final Map<String, Map<String, Transformation>> _zoneOutgoingTransformations;
+
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
     _interfaces = new TreeMap<>();
     _sharedGateways = new TreeMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
+    _zoneOutgoingTransformations = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -354,6 +370,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private void convertVirtualSystems() {
     for (Vsys vsys : _virtualSystems.values()) {
 
+      populateZoneOutgoingTransformations(vsys);
+
       // Create zone-specific outgoing ACLs.
       for (Zone toZone : vsys.getZones().values()) {
         if (toZone.getType() != Type.LAYER3) {
@@ -386,6 +404,91 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         }
       }
     }
+  }
+
+  @Nonnull
+  private void populateZoneOutgoingTransformations(Vsys vsys) {
+    Map<String, List<Transformation.Builder>> toZoneTransformations = new HashMap<>();
+
+    Stream<NatRule> pre =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPreRulebase().getNatRules().values().stream();
+    Stream<NatRule> post =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPostRulebase().getNatRules().values().stream();
+    Stream<NatRule> rules = vsys.getRulebase().getNatRules().values().stream();
+    TransformationStep transformPort =
+        TransformationStep.assignSourcePort(
+            NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number());
+
+    Streams.concat(pre, rules, post)
+        .filter(r -> checkNatRuleValid(r, false) && r.doesSourceTranslation())
+        .forEach(
+            r -> {
+              RangeSet<Ip> pool =
+                  ipRangeSetFromRuleEndpoints(
+                      // Already filtered out any rules for which these are null
+                      r.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddresses(),
+                      vsys,
+                      _w);
+              if (pool.isEmpty()) {
+                // Can't have source IP translation rules with empty IP pool
+                _w.redFlag(
+                    String.format(
+                        "NAT rule %s ignored for source translation because its source translation pool is empty",
+                        r.getName()));
+                return;
+              }
+              Transformation.Builder t =
+                  Transformation.when(getSourceNatRuleMatchExpr(r, vsys))
+                      .apply(
+                          new AssignIpAddressFromPool(
+                              TransformationType.SOURCE_NAT, IpField.SOURCE, pool),
+                          transformPort);
+              // Note that "to any" is not permitted
+              toZoneTransformations.computeIfAbsent(r.getTo(), x -> new ArrayList<>()).add(t);
+            });
+
+    Map<String, Transformation> finalZoneTransformations =
+        _zoneOutgoingTransformations.computeIfAbsent(vsys.getName(), v -> new TreeMap<>());
+    toZoneTransformations.forEach(
+        (zoneName, builders) -> {
+          Transformation t = null;
+          for (int i = builders.size() - 1; i >= 0; i--) {
+            Transformation.Builder prevT = builders.get(i);
+            prevT.setOrElse(t);
+            t = prevT.build();
+          }
+          finalZoneTransformations.put(zoneName, t);
+        });
+  }
+
+  private AclLineMatchExpr getSourceNatRuleMatchExpr(NatRule rule, Vsys vsys) {
+    // Match source and destination
+    IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
+    IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
+    MatchHeaderSpace matchHeaderSpace =
+        new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+
+    if (rule.getFrom().contains(CATCHALL_ZONE_NAME)) {
+      // Rule says "from any" -- no need to match on packet source interface
+      return matchHeaderSpace;
+    }
+
+    // Match from
+    Set<String> fromIfaces =
+        rule.getFrom().stream()
+            .flatMap(
+                fromZone -> {
+                  Zone zone = vsys.getZones().get(fromZone);
+                  return zone == null ? Stream.of() : zone.getInterfaceNames().stream();
+                })
+            .collect(ImmutableSet.toImmutableSet());
+    MatchSrcInterface matchSrcInterface = new MatchSrcInterface(fromIfaces);
+
+    return new AndMatchExpr(ImmutableList.of(matchHeaderSpace, matchSrcInterface));
   }
 
   /** Convert unique aspects of shared-gateways. */
@@ -805,6 +908,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
   }
 
+  @Nonnull
+  private RangeSet<Ip> ipRangeSetFromRuleEndpoints(
+      Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w) {
+    RangeSet<Ip> rangeSet = TreeRangeSet.create();
+    endpoints.stream()
+        .map(endpoint -> ruleEndpointToIpRangeSet(endpoint, vsys, w))
+        .forEach(rangeSet::addAll);
+    return ImmutableRangeSet.copyOf(rangeSet);
+  }
+
   /** Convert specified firewall rule into an {@link IpAccessListLine}. */
   // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
   // constraints, and service (aka Protocol + Ports) constraints.
@@ -976,6 +1089,56 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
+  /** Converts {@link RuleEndpoint} to IP {@code RangeSet} */
+  @Nonnull
+  @SuppressWarnings("fallthrough")
+  private RangeSet<Ip> ruleEndpointToIpRangeSet(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
+    String endpointValue = endpoint.getValue();
+    // Palo Alto allows object references that look like IP addresses, ranges, etc.
+    // Devices use objects over constants when possible, so, check to see if there is a matching
+    // group or object regardless of the type of endpoint we're expecting.
+    if (vsys.getAddressObjects().containsKey(endpointValue)) {
+      return vsys.getAddressObjects().get(endpointValue).getAddressAsRangeSet();
+    }
+    if (vsys.getAddressGroups().containsKey(endpoint.getValue())) {
+      return vsys.getAddressGroups()
+          .get(endpointValue)
+          .getIpRangeSet(vsys.getAddressObjects(), vsys.getAddressGroups());
+    }
+    switch (vsys.getNamespaceType()) {
+      case LEAF:
+        if (_shared != null) {
+          return ruleEndpointToIpRangeSet(endpoint, _shared, w);
+        }
+        // fall-through
+      case SHARED:
+        if (_panorama != null) {
+          return ruleEndpointToIpRangeSet(endpoint, _panorama, w);
+        }
+        // fall-through
+      default:
+        // No named object found matching this endpoint, so parse the endpoint value as is
+        switch (endpoint.getType()) {
+          case Any:
+            return ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.MAX));
+          case IP_ADDRESS:
+            return ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
+          case IP_PREFIX:
+            Prefix prefix = Prefix.parse(endpointValue);
+            return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
+          case IP_RANGE:
+            String[] ips = endpointValue.split("-");
+            return ImmutableRangeSet.of(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
+          case REFERENCE:
+            // Rely on undefined references to surface this issue (endpoint reference not defined)
+            return ImmutableRangeSet.of();
+          default:
+            w.redFlag("Could not convert RuleEndpoint to RangeSet: " + endpoint);
+            return ImmutableRangeSet.of();
+        }
+    }
+  }
+
   private static InterfaceType batfishInterfaceType(@Nonnull Interface.Type panType, Warnings w) {
     switch (panType) {
       case PHYSICAL:
@@ -1020,6 +1183,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     Zone zone = iface.getZone();
+    // add outgoing transformation
+    if (zone != null) {
+      String vsysName = zone.getVsys().getName();
+      newIface.setOutgoingTransformation(
+          _zoneOutgoingTransformations
+              .getOrDefault(vsysName, ImmutableMap.of())
+              .get(zone.getName()));
+    }
+    // add outgoing filter
     IpAccessList.Builder aclBuilder =
         IpAccessList.builder().setOwner(_c).setName(computeOutgoingFilterName(iface.getName()));
     List<IpAccessListLine> aclLines = new ArrayList<>();

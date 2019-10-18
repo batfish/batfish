@@ -17,11 +17,11 @@ policy {
         rules {
           RULE_1 {
             destination-translation {
-              translated-address DST_ADDRESS_NAME;
+              translated-address 1.1.1.0/24;
             }
             source-translation {
               dynamic-ip-and-port {
-                translated-address SRC_ADDRESS_NAME;
+                translated-address 2.2.2.0/24;
               }
             }
             to TO_ZONE;
