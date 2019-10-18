@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -46,6 +47,11 @@ public class ApplyTransformation implements Statement {
   @Override
   public int hashCode() {
     return Objects.hashCode(_transformation);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(ApplyTransformation.class).toString();
   }
 
   @JsonCreator
