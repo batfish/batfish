@@ -465,6 +465,7 @@ class FlowTracer {
             owner.getIpAccessLists(),
             owner.getIpSpaces(),
             _tracerouteContext.getFibs(_currentNode.getName()));
+    _currentFlow = result.getFinalFlow();
     return new ActionVisitor<Boolean>() {
 
       /** Helper visitor to figure out in which VRF we need to do the FIB lookup */

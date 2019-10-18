@@ -4,7 +4,9 @@ import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -18,6 +20,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -60,12 +63,19 @@ public class PaloAltoNatTest {
     Configuration c = parseConfig("destination-nat");
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/31
     String inside2Name = "ethernet1/1.2"; // 1.1.2.3/31
+    String dummyName = "ethernet1/1.3"; // 1.1.3.3/31
     String outside1Name = "ethernet1/2.1"; // 1.2.1.3/31
     String outside2Name = "ethernet1/2.2"; // 1.2.2.3/31
     assertThat(
         c.getAllInterfaces().keySet(),
         containsInAnyOrder(
-            "ethernet1/1", inside1Name, inside2Name, "ethernet1/2", outside1Name, outside2Name));
+            "ethernet1/1",
+            inside1Name,
+            inside2Name,
+            dummyName,
+            "ethernet1/2",
+            outside1Name,
+            outside2Name));
 
     Interface inside1 = c.getAllInterfaces().get(inside1Name);
     Interface inside2 = c.getAllInterfaces().get(inside2Name);
@@ -82,6 +92,7 @@ public class PaloAltoNatTest {
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     batfish.computeDataPlane();
 
+    // This flow is NAT'd (matches
     Flow outsideToInsideNat =
         Flow.builder()
             .setTag("test")
@@ -89,6 +100,9 @@ public class PaloAltoNatTest {
             .setIngressInterface(outside1Name)
             .setDstIp(Ip.parse("1.1.1.2"))
             .setSrcIp(Ip.parse("1.2.1.2"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
             .build();
     Flow outsideToInsideBadSrcIp =
         Flow.builder()
@@ -97,22 +111,20 @@ public class PaloAltoNatTest {
             .setIngressInterface(outside1Name)
             .setDstIp(Ip.parse("1.1.1.2"))
             .setSrcIp(Ip.parse("1.2.1.200"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
             .build();
-    Flow outsideToInsideBadDstIp =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(outside1Name)
-            .setDstIp(Ip.parse("1.1.1.200"))
-            .setSrcIp(Ip.parse("1.2.1.2"))
-            .build();
-    Flow outsideToInsideBadIngressIface =
+    Flow insideToInsideBadIngressIface =
         Flow.builder()
             .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(inside2Name)
             .setDstIp(Ip.parse("1.1.1.2"))
             .setSrcIp(Ip.parse("1.2.1.2"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
             .build();
 
     SortedMap<Flow, List<Trace>> traces =
@@ -120,11 +132,22 @@ public class PaloAltoNatTest {
             .getTracerouteEngine()
             .computeTraces(
                 ImmutableSet.of(
-                    outsideToInsideNat,
-                    outsideToInsideBadSrcIp,
-                    outsideToInsideBadDstIp,
-                    outsideToInsideBadIngressIface),
+                    outsideToInsideNat, outsideToInsideBadSrcIp, insideToInsideBadIngressIface),
                 false);
+
+    // Flow should be NAT'd and be successful
+    Trace success = traces.get(outsideToInsideNat).get(0);
+    // assertThat(success.getHops().get(0).getSteps(), hasItem(equalTo()));
+    assertTrue(success.getDisposition().isSuccessful());
+    // Flow not matching NAT dest address restriction should not be NAT'd
+
+    // And should not be successful
+    // NOTE: I don't think this works because it seems like we're doing security policy lookup on
+    // the pre-NAT flow instead of the post-NAT flow
+    assertFalse(traces.get(outsideToInsideBadSrcIp).get(0).getDisposition().isSuccessful());
+
+    // Flow not matching from zone, should not be NAT'd and should be unsuccessful
+    assertFalse(traces.get(insideToInsideBadIngressIface).get(0).getDisposition().isSuccessful());
 
     assertThat(c, notNullValue());
   }

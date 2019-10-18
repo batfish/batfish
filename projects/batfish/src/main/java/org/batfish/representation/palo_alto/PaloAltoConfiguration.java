@@ -18,10 +18,13 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.Streams;
@@ -311,7 +314,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Generate RoutingPolicy name given an interface name */
-  static String computeRoutingPolicyName(String interfaceName) {
+  public static String computeRoutingPolicyName(String interfaceName) {
     return String.format("~%s~ROUTING_POLICY~", interfaceName);
   }
 
@@ -936,6 +939,46 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return ret.build();
   }
 
+  /** Converts Destination NAT {@link RuleEndpoint} to {@code RangeSet} */
+  @Nonnull
+  @SuppressWarnings("fallthrough")
+  private RangeSet<Ip> ruleEndpointToRange(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
+    String endpointValue = endpoint.getValue();
+    // Palo Alto allows object references that look like IP addresses, ranges, etc.
+    // Devices use objects over constants when possible, so, check to see if there is a matching
+    // object regardless of the type of endpoint we're expecting.
+    if (vsys.getAddressObjects().containsKey(endpointValue)) {
+      return vsys.getAddressObjects().get(endpointValue).getAddressAsRangeSet();
+    }
+    switch (vsys.getNamespaceType()) {
+      case LEAF:
+        if (_shared != null) {
+          return ruleEndpointToRange(endpoint, _shared, w);
+        }
+        // fall-through
+      case SHARED:
+        if (_panorama != null) {
+          return ruleEndpointToRange(endpoint, _panorama, w);
+        }
+        // fall-through
+      default:
+        // No named object found matching this endpoint, so parse the endpoint value as is
+        switch (endpoint.getType()) {
+          case IP_ADDRESS:
+            return ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
+          case IP_PREFIX:
+            Prefix prefix = Prefix.parse(endpointValue);
+            return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
+          case IP_RANGE:
+            String[] ips = endpointValue.split("-");
+            return ImmutableRangeSet.of(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
+          default:
+            w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
+            return ImmutableRangeSet.of();
+        }
+    }
+  }
+
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
   @Nonnull
   @SuppressWarnings("fallthrough")
@@ -1123,18 +1166,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
       RuleEndpoint translatedAddress = destTranslation.getTranslatedAddress();
       if (translatedAddress != null) {
-        IpSpace translatedAddressSpace = ruleEndpointToIpSpace(translatedAddress, vsys, _w);
         transformationSteps.add(
             new AssignIpAddressFromPool(
                 TransformationType.DEST_NAT,
                 IpField.DESTINATION,
-                // TODO use ip range from address
-                Ip.parse("1.1.1.1"),
-                Ip.parse("1.1.1.255")));
+                ruleEndpointToRange(translatedAddress, vsys, _w)));
       }
 
+      IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
+      IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
+      MatchHeaderSpace matchHeaderSpace =
+          new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
       Transformation transform =
-          new Transformation(TrueExpr.INSTANCE, transformationSteps.build(), null, null);
+          new Transformation(matchHeaderSpace, transformationSteps.build(), null, null);
       transforms.add(new ApplyTransformation(transform));
 
       // asdf
