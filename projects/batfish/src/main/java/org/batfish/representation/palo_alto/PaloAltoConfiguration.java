@@ -112,7 +112,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.Zone.Type;
@@ -1114,8 +1113,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
 
-    // TODO if there is a NAT for this iface, apply it
-    // asdf
+    // If there is a NAT for this iface, apply it
     String packetPolicyName = generatePacketPolicyForIface(iface);
     if (packetPolicyName != null) {
       newIface.setRoutingPolicy(packetPolicyName);
@@ -1125,8 +1123,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Generate packet policy for the specified interface and attach it to the VI config, if
-   * applicable. If no packet policy is applicable, returns {@code null}
+   * Generate packet policy for the specified interface, attach it to the VI config, and return the
+   * name if applicable. If no packet policy is applicable, returns {@code null}
    */
   private @Nullable String generatePacketPolicyForIface(Interface iface) {
     Zone zone = iface.getZone();
@@ -1152,48 +1150,43 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.builder();
     for (Entry<NatRule, Vsys> entry : natEntries) {
       NatRule rule = entry.getKey();
-      Vsys ruleVsys = entry.getValue();
-      String ruleName = computeObjectName(ruleVsys.getName(), rule.getName());
       DestinationTranslation destTranslation = rule.getDestinationTranslation();
       Zone toZone = vsys.getZones().get(rule.getTo());
       if (destTranslation == null || toZone == null) {
         continue;
       }
-
-      ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> transforms =
-          ImmutableList.builder();
-      ImmutableList.Builder<TransformationStep> transformationSteps = ImmutableList.builder();
-
       RuleEndpoint translatedAddress = destTranslation.getTranslatedAddress();
-      if (translatedAddress != null) {
-        transformationSteps.add(
-            new AssignIpAddressFromPool(
-                TransformationType.DEST_NAT,
-                IpField.DESTINATION,
-                ruleEndpointToRange(translatedAddress, vsys, _w)));
+      if (translatedAddress == null) {
+        continue;
       }
 
+      // Headerspace conditions under which to apply dest NAT
       IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
       IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
       MatchHeaderSpace matchHeaderSpace =
           new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
-      Transformation transform =
-          new Transformation(matchHeaderSpace, transformationSteps.build(), null, null);
-      transforms.add(new ApplyTransformation(transform));
 
-      // asdf
+      Transformation transform =
+          new Transformation(
+              matchHeaderSpace,
+              ImmutableList.of(
+                  new AssignIpAddressFromPool(
+                      TransformationType.DEST_NAT,
+                      IpField.DESTINATION,
+                      ruleEndpointToRange(translatedAddress, vsys, _w))),
+              null,
+              null);
+
+      // Only apply dest NAT if flow is exiting an interface in the to zone
       org.batfish.datamodel.packet_policy.If guard =
           new org.batfish.datamodel.packet_policy.If(
               new FibLookupOutgoingInterfaceIsOneOf(
                   IngressInterfaceVrf.instance(), toZone.getInterfaceNames()),
-              transforms.build());
+              ImmutableList.of(new ApplyTransformation(transform)));
       lines.add(guard);
     }
-    // Add the new packet policy
-    PacketPolicy pp =
-        new PacketPolicy(
-            name, lines.build(), new Return(new FibLookup(IngressInterfaceVrf.instance())));
-    return pp;
+    return new PacketPolicy(
+        name, lines.build(), new Return(new FibLookup(IngressInterfaceVrf.instance())));
   }
 
   /** Return a list of all NAT rules associated with the specified interface. */
@@ -1204,7 +1197,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
     Vsys vsys = iface.getZone().getVsys();
     return getAllNatRules(vsys).stream()
-        .filter(e -> e.getKey().getFrom().contains(iface.getZone().getName()))
+        .filter(
+            e ->
+                e.getKey().getFrom().contains(iface.getZone().getName())
+                    || e.getKey().getFrom().contains(CATCHALL_ZONE_NAME))
         .collect(ImmutableList.toImmutableList());
   }
 

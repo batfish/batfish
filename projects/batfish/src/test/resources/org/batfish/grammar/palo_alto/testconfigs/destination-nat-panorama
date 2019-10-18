@@ -10,18 +10,17 @@ policy {
         tag [ TAG3 TAG4];
       }
     }
-    address-group;
     post-rulebase {
       nat {
         rules {
           DEST_NAT_NAME {
             destination-translation {
-              translated-address ADDR1;
+              translated-address SERVER_NEW_ADDR;
             }
             to INSIDE;
             from OUTSIDE;
-            source any;
-            destination ADDR2;
+            source SOURCE_ADDR;
+            destination any;
           }
         }
       }
@@ -60,6 +59,11 @@ config {
                       1.1.2.3/24;
                     }
                   }
+                  ethernet1/1.3 {
+                    ip {
+                      1.1.3.3/24;
+                    }
+                  }
                 }
               }
             }
@@ -94,6 +98,45 @@ config {
       }
       vsys {
         vsys1 {
+          address {
+            SOURCE_ADDR {
+              ip-netmask 1.2.1.2/32;
+              tag [ TAG3 TAG4];
+            }
+            SERVER_NEW_ADDR {
+              ip-netmask 1.1.1.99/32;
+              tag [ TAG1 TAG2];
+            }
+            SERVER_OLD_ADDR {
+              ip-netmask 1.1.1.2/32;
+              tag [ TAG5];
+            }
+          }
+          rulebase {
+            security {
+              rules {
+                PERMIT_TO_SERVER {
+                  to INSIDE;
+                  from OUTSIDE;
+                  source any;
+                  # destination 1.1.1.0/24;
+                  destination [ SERVER_NEW_ADDR];
+                  application any;
+                  service any;
+                  action allow;
+                }
+                DENY_ALL {
+                  to any;
+                  from any;
+                  source any;
+                  destination any;
+                  application any;
+                  service any;
+                  action deny;
+                }
+              }
+            }
+          }
           zone {
             INSIDE {
               network {
@@ -103,6 +146,11 @@ config {
             OUTSIDE {
               network {
                 layer3 [ ethernet1/2.1 ethernet1/2.2];
+              }
+            }
+            DUMMY {
+              network {
+                layer3 [ ethernet1/1.3];
               }
             }
           }

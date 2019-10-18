@@ -147,8 +147,92 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testPanoramaDestNat() {
+  public void testPanoramaDestNat() throws IOException {
+    // Test panorama destination NAT for traffic from outside zone to inside zone
     Configuration c = parseConfig("destination-nat-panorama");
-    assertThat(c, notNullValue());
+
+    String inside1Name = "ethernet1/1.1"; // 1.1.1.3/31
+    String inside2Name = "ethernet1/1.2"; // 1.1.2.3/31
+    String dummyName = "ethernet1/1.3"; // 1.1.3.3/31
+    String outside1Name = "ethernet1/2.1"; // 1.2.1.3/31
+    String outside2Name = "ethernet1/2.2"; // 1.2.2.3/31
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        containsInAnyOrder(
+            "ethernet1/1",
+            inside1Name,
+            inside2Name,
+            dummyName,
+            "ethernet1/2",
+            outside1Name,
+            outside2Name));
+
+    Interface outside1 = c.getAllInterfaces().get(outside1Name);
+    Interface outside2 = c.getAllInterfaces().get(outside2Name);
+
+    String outside1Policy = outside1.getRoutingPolicyName();
+    String outside2Policy = outside2.getRoutingPolicyName();
+
+    // Interfaces in OUTSIDE zone have packet policy
+    assertThat(outside1Policy, notNullValue());
+    assertThat(outside2Policy, notNullValue());
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    batfish.computeDataPlane();
+
+    // This flow is NAT'd and should pass through the firewall
+    Flow outsideToInsideNat =
+        Flow.builder()
+            .setTag("test")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(outside1Name)
+            .setDstIp(Ip.parse("1.1.1.2"))
+            .setSrcIp(Ip.parse("1.2.1.2"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    // This flow is NOT NAT'd (does not match source address constraint)
+    Flow outsideToInsideBadSrcIp =
+        Flow.builder()
+            .setTag("test")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(outside1Name)
+            .setDstIp(Ip.parse("1.1.1.2"))
+            .setSrcIp(Ip.parse("1.2.1.200"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    // This flow is NOT NAT'd (does not match from interface constraint)
+    Flow insideToInsideBadIngressIface =
+        Flow.builder()
+            .setTag("test")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(inside2Name)
+            .setDstIp(Ip.parse("1.1.1.2"))
+            .setSrcIp(Ip.parse("1.2.1.2"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine()
+            .computeTraces(
+                ImmutableSet.of(
+                    outsideToInsideNat, outsideToInsideBadSrcIp, insideToInsideBadIngressIface),
+                false);
+
+    // Flow should be NAT'd and be successful
+    assertTrue(traces.get(outsideToInsideNat).get(0).getDisposition().isSuccessful());
+
+    // Flow not matching NAT dest address restriction should not be NAT'd
+    // And therefore should not be successful
+    assertFalse(traces.get(outsideToInsideBadSrcIp).get(0).getDisposition().isSuccessful());
+
+    // Flow not matching from zone, should not be NAT'd and should be unsuccessful
+    assertFalse(traces.get(insideToInsideBadIngressIface).get(0).getDisposition().isSuccessful());
   }
 }
