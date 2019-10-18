@@ -118,7 +118,7 @@ public class PaloAltoNatTest {
             .getTracerouteEngine()
             .computeTraces(
                 ImmutableSet.of(
-                    outsideToInsideNat /*, outsideToInsideBadSrcIp, insideToInsideBadIngressIface*/),
+                    outsideToInsideNat, outsideToInsideBadSrcIp, insideToInsideBadIngressIface),
                 false);
 
     // Flow should be NAT'd and be successful

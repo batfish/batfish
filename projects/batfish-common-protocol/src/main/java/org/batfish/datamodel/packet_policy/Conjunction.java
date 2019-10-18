@@ -20,7 +20,7 @@ public class Conjunction implements BoolExpr {
   public Conjunction(Iterable<BoolExpr> conjuncts) {
     _conjuncts = ImmutableList.copyOf(conjuncts);
     checkArgument(
-        _conjuncts.isEmpty(), "Do not create empty conjunctions. Please use TrueExpr instead");
+        !_conjuncts.isEmpty(), "Do not create empty conjunctions. Please use TrueExpr instead");
   }
 
   public Conjunction(BoolExpr... conjuncts) {
