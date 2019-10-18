@@ -14,9 +14,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
-import static org.batfish.representation.palo_alto.Conversions.getRoutingPolicyNameForPolicyRule;
-import static org.batfish.representation.palo_alto.Conversions.statementToRoutingPolicy;
-import static org.batfish.representation.palo_alto.Conversions.toStatement;
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
@@ -1183,24 +1180,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _c.getRoutingPolicies().put(commonExportPolicy.getName(), commonExportPolicy);
 
     bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc, vr));
-
-    // convert policy rules to routing policies which will later be used for per neighbor export or
-    // import policies
-    bgp.getExportPolicyRules()
-        .forEach(
-            (policyRuleName, policyRule) ->
-                statementToRoutingPolicy(
-                    toStatement(policyRule),
-                    _c,
-                    getRoutingPolicyNameForPolicyRule(vr.getName(), policyRuleName, true)));
-
-    bgp.getImportPolicyRules()
-        .forEach(
-            (policyRuleName, policyRule) ->
-                statementToRoutingPolicy(
-                    toStatement(policyRule),
-                    _c,
-                    getRoutingPolicyNameForPolicyRule(vr.getName(), policyRuleName, false)));
 
     return Optional.of(proc);
   }
