@@ -1,6 +1,7 @@
 package org.batfish.representation.palo_alto;
 
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -272,7 +273,7 @@ final class Conversions {
     return new NetworkFactory()
         .routingPolicyBuilder()
         .setOwner(c)
-        .setName(getExportPolicyNameForBgpPeer(vr.getName(), peer.getName()))
+        .setName(generatedBgpPeerExportPolicyName(vr.getName(), peer.getName()))
         .setStatements(
             ImmutableList.of(
                 new If(
@@ -288,10 +289,6 @@ final class Conversions {
 
   static String getRoutingPolicyNameForExportPolicyRule(String vrName, String policyRuleName) {
     return String.format("~BGP_POLICY_RULE_EXPORT_POLICY:%s:%s", vrName, policyRuleName);
-  }
-
-  private static String getExportPolicyNameForBgpPeer(String vrName, String bgpPeerName) {
-    return String.format("~BGP_EXPORT_POLICY_PEER~:%s:%s", vrName, bgpPeerName);
   }
 
   private Conversions() {} // don't allow instantiation
