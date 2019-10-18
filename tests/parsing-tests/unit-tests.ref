@@ -71666,8 +71666,7 @@
             "                      (srndt_translated_address",
             "                        TRANSLATED_ADDRESS:'translated-address'",
             "                        (translated_address_list_item",
-            "                          name = (variable",
-            "                            VARIABLE:'DST_ADDRESS_NAME'))))))))))))",
+            "                          prefix = IP_PREFIX:'1.1.1.0/24')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -71694,8 +71693,7 @@
             "                          TRANSLATED_ADDRESS:'translated-address'",
             "                          (translated_address_list",
             "                            (translated_address_list_item",
-            "                              name = (variable",
-            "                                VARIABLE:'SRC_ADDRESS_NAME'))))))))))))))",
+            "                              prefix = IP_PREFIX:'2.2.2.0/24')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -90238,11 +90236,6 @@
                 45
               ]
             },
-            "DST_ADDRESS_NAME~panorama" : {
-              "rulebase nat rules destination-translation" : [
-                20
-              ]
-            },
             "DST_NAME~panorama" : {
               "rulebase nat rules destination" : [
                 35
@@ -90258,11 +90251,6 @@
                 44
               ]
             },
-            "SRC_ADDRESS_NAME~panorama" : {
-              "rulebase nat rules source-translation" : [
-                24
-              ]
-            },
             "SRC_NAME~panorama" : {
               "rulebase nat rules source" : [
                 34
@@ -90270,6 +90258,11 @@
             }
           },
           "address-like or none" : {
+            "1.1.1.0/24~panorama" : {
+              "rulebase nat rules destination-translation" : [
+                20
+              ]
+            },
             "1.1.1.1~panorama" : {
               "rulebase nat rules source-translation" : [
                 40
@@ -90277,6 +90270,7 @@
             },
             "2.2.2.0/24~panorama" : {
               "rulebase nat rules source-translation" : [
+                24,
                 40
               ]
             },
