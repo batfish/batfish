@@ -332,7 +332,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * <p>No NAT rule that fails this check should be converted to VI. However, a rule that does pass
    * should not necessarily be converted to VI -- there may be other reasons not to convert.
    */
-  private boolean checkNatRuleValid(NatRule rule) {
+  private boolean checkNatRuleValid(NatRule rule, boolean fileWarnings) {
     String missingItem = null;
     if (rule.getTo() == null) {
       missingItem = "to zone";
@@ -343,13 +343,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     } else if (rule.getDestination().isEmpty()) {
       missingItem = "destination addresses";
     }
-    if (missingItem != null) {
+    if (missingItem != null && fileWarnings) {
       _w.redFlag(
           String.format(
               "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem));
-      return false;
     }
-    return true;
+    return missingItem == null;
   }
 
   /** Convert vsys components to vendor independent model */
