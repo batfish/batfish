@@ -4,6 +4,9 @@ policy {
       SOURCE_ADDR {
         ip-netmask 1.2.1.2/32;
       }
+      SOURCE_ADDR2 {
+        ip-netmask 1.2.1.4/32;
+      }
       SERVER_NEW_ADDR {
         ip-netmask 1.1.1.99/32;
       }
@@ -11,7 +14,7 @@ policy {
         ip-netmask 1.1.1.2/32;
       }
     }
-    post-rulebase {
+    pre-rulebase {
       nat {
         rules {
           DEST_NAT_NAME {
@@ -35,6 +38,21 @@ policy {
             application any;
             service any;
             action allow;
+          }
+        }
+      }
+    }
+    post-rulebase {
+      nat {
+        rules {
+          DEST_NAT_NEVER_REACHED {
+            destination-translation {
+              translated-address BOGUS_ADDR;
+            }
+            to INSIDE;
+            from OUTSIDE;
+            source SOURCE_ADDR2;
+            destination any;
           }
         }
       }
@@ -84,7 +102,36 @@ config {
       }
       vsys {
         vsys1 {
+          address {
+            BOGUS_ADDR {
+              ip-netmask 11.11.11.11/32;
+            }
+          }
           rulebase {
+            nat {
+              rules {
+                # Should never run this NAT rule since the pre-rulebase rule will always be applied first if applicable
+                DEST_NAT_NEVER_REACHED {
+                  destination-translation {
+                    translated-address BOGUS_ADDR;
+                  }
+                  to INSIDE;
+                  from OUTSIDE;
+                  source SOURCE_ADDR;
+                  destination any;
+                }
+                # This NATs flows from source address 2 before post-rulebase
+                DEST_NAT_NAME {
+                  destination-translation {
+                    translated-address SERVER_NEW_ADDR;
+                  }
+                  to INSIDE;
+                  from OUTSIDE;
+                  source SOURCE_ADDR2;
+                  destination any;
+                }
+              }
+            }
             security {
               rules {
                 PERMIT_TO_SERVER {

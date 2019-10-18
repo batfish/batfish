@@ -59,7 +59,7 @@ public class PaloAltoNatTest {
 
   @Test
   public void testDestNat() throws IOException {
-    // Test destination NAT for traffic from outside zone to inside zone
+    // Test destination NAT for traffic from OUTSIDE zone to INSIDE zone
     Configuration c = parseConfig("destination-nat");
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/31
     String inside2Name = "ethernet1/1.2"; // 1.1.2.3/31
@@ -69,10 +69,8 @@ public class PaloAltoNatTest {
         containsInAnyOrder("ethernet1/1", inside1Name, inside2Name, "ethernet1/2", outside1Name));
 
     Interface outside1 = c.getAllInterfaces().get(outside1Name);
-
     String outside1Policy = outside1.getRoutingPolicyName();
-
-    // Interfaces in OUTSIDE zone have packet policy
+    // Interface in OUTSIDE zone has packet policy
     assertThat(outside1Policy, notNullValue());
 
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
@@ -154,8 +152,8 @@ public class PaloAltoNatTest {
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     batfish.computeDataPlane();
 
-    // This flow is NAT'd and should pass through the firewall
-    Flow outsideToInsideNat =
+    // This flow is NAT'd by the pre-rulebase rule and should pass through the firewall
+    Flow outsideToInsideNatPreRulebase =
         Flow.builder()
             .setTag("test")
             .setIngressNode(c.getHostname())
@@ -167,10 +165,29 @@ public class PaloAltoNatTest {
             .setIpProtocol(IpProtocol.TCP)
             .build();
 
-    SortedMap<Flow, List<Trace>> traces =
-        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(outsideToInsideNat), false);
+    // This flow is NAT'd by the rulebase rule and should pass through the firewall
+    Flow outsideToInsideNatRulebase =
+        Flow.builder()
+            .setTag("test")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(outside1Name)
+            .setDstIp(Ip.parse("1.1.1.2"))
+            .setSrcIp(Ip.parse("1.2.1.4"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
 
-    // Flow should be NAT'd and be successful
-    assertTrue(traces.get(outsideToInsideNat).get(0).getDisposition().isSuccessful());
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine()
+            .computeTraces(
+                ImmutableSet.of(outsideToInsideNatPreRulebase, outsideToInsideNatRulebase), false);
+
+    // First flow should be NAT'd by pre-rulebase rule and be successful
+    assertTrue(traces.get(outsideToInsideNatPreRulebase).get(0).getDisposition().isSuccessful());
+
+    // Second flow should be NAT'd by rulebase (not post-rulebase) rule and be successful
+    assertTrue(traces.get(outsideToInsideNatRulebase).get(0).getDisposition().isSuccessful());
   }
 }

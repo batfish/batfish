@@ -60,6 +60,9 @@ config {
             SERVER_OLD_ADDR {
               ip-netmask 1.1.1.2/32;
             }
+            BOGUS_ADDR {
+              ip-netmask 11.11.11.11/32;
+            }
           }
           rulebase {
             nat {
@@ -67,6 +70,16 @@ config {
                 DEST_NAT_NAME {
                   destination-translation {
                     translated-address SERVER_NEW_ADDR;
+                  }
+                  to INSIDE;
+                  from OUTSIDE;
+                  source SOURCE_ADDR;
+                  destination any;
+                }
+                # Should never apply this NAT since previous rule will always be applied first
+                DEST_NAT_NEVER_REACHED {
+                  destination-translation {
+                    translated-address BOGUS_ADDR;
                   }
                   to INSIDE;
                   from OUTSIDE;

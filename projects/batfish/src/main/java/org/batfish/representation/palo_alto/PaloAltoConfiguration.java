@@ -373,6 +373,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     for (Vsys vsys : _virtualSystems.values()) {
+
       // Create zone-specific outgoing ACLs.
       for (Zone toZone : vsys.getZones().values()) {
         if (toZone.getType() != Type.LAYER3) {
@@ -1210,7 +1211,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
           new org.batfish.datamodel.packet_policy.If(
               new FibLookupOutgoingInterfaceIsOneOf(
                   IngressInterfaceVrf.instance(), toZone.getInterfaceNames()),
-              ImmutableList.of(new ApplyTransformation(transform)));
+              ImmutableList.of(
+                  new ApplyTransformation(transform),
+                  new Return(new FibLookup(IngressInterfaceVrf.instance()))));
       lines.add(guard);
     }
     return new PacketPolicy(
