@@ -327,7 +327,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Checks whether the given NAT rule's {@link NatRule#getFrom()}, {@link NatRule#getTo()}, {@link
    * NatRule#getSource()}, and {@link NatRule#getDestination()} are valid (configured and not
-   * empty). Files conversion warnings for any invalid rules.
+   * empty). Files conversion warnings for any invalid rules if {@code fileWarnings} is set.
    *
    * <p>No NAT rule that fails this check should be converted to VI. However, a rule that does pass
    * should not necessarily be converted to VI -- there may be other reasons not to convert.
