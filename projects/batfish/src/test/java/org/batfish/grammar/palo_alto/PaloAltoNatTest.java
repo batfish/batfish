@@ -63,29 +63,17 @@ public class PaloAltoNatTest {
     Configuration c = parseConfig("destination-nat");
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/31
     String inside2Name = "ethernet1/1.2"; // 1.1.2.3/31
-    String dummyName = "ethernet1/1.3"; // 1.1.3.3/31
     String outside1Name = "ethernet1/2.1"; // 1.2.1.3/31
-    String outside2Name = "ethernet1/2.2"; // 1.2.2.3/31
     assertThat(
         c.getAllInterfaces().keySet(),
-        containsInAnyOrder(
-            "ethernet1/1",
-            inside1Name,
-            inside2Name,
-            dummyName,
-            "ethernet1/2",
-            outside1Name,
-            outside2Name));
+        containsInAnyOrder("ethernet1/1", inside1Name, inside2Name, "ethernet1/2", outside1Name));
 
     Interface outside1 = c.getAllInterfaces().get(outside1Name);
-    Interface outside2 = c.getAllInterfaces().get(outside2Name);
 
     String outside1Policy = outside1.getRoutingPolicyName();
-    String outside2Policy = outside2.getRoutingPolicyName();
 
     // Interfaces in OUTSIDE zone have packet policy
     assertThat(outside1Policy, notNullValue());
-    assertThat(outside2Policy, notNullValue());
 
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     batfish.computeDataPlane();

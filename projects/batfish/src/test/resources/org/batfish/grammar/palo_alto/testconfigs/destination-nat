@@ -21,11 +21,6 @@ config {
                       1.1.2.3/24;
                     }
                   }
-                  ethernet1/1.3 {
-                    ip {
-                      1.1.3.3/24;
-                    }
-                  }
                 }
               }
             }
@@ -37,11 +32,6 @@ config {
                       1.2.1.3/24;
                     }
                   }
-                  ethernet1/2.2 {
-                    ip {
-                      1.2.2.3/24;
-                    }
-                  }
                 }
               }
             }
@@ -49,7 +39,7 @@ config {
         }
         virtual-router {
           vr1 {
-            interface [ ethernet1/1.1 ethernet1/1.2 ethernet1/2.1 ethernet1/2.2];
+            interface [ ethernet1/1.1 ethernet1/1.2 ethernet1/2.1];
           }
         }
       }
@@ -63,15 +53,12 @@ config {
           address {
             SOURCE_ADDR {
               ip-netmask 1.2.1.2/32;
-              tag [ TAG3 TAG4];
             }
             SERVER_NEW_ADDR {
               ip-netmask 1.1.1.99/32;
-              tag [ TAG1 TAG2];
             }
             SERVER_OLD_ADDR {
               ip-netmask 1.1.1.2/32;
-              tag [ TAG5];
             }
           }
           rulebase {
@@ -120,12 +107,7 @@ config {
             }
             OUTSIDE {
               network {
-                layer3 [ ethernet1/2.1 ethernet1/2.2];
-              }
-            }
-            DUMMY {
-              network {
-                layer3 [ ethernet1/1.3];
+                layer3 [ ethernet1/2.1];
               }
             }
           }
