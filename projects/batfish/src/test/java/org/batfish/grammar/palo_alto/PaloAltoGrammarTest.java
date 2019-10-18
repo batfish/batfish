@@ -846,7 +846,7 @@ public final class PaloAltoGrammarTest {
 
     // testing the combined routing policy generated for the peer (conjunction of above two
     // policies)
-    String bgpExportPoliciesPeer1 = "~BGP_EXPORT_POLICY_PEER~:vr1:peer1";
+    String bgpExportPoliciesPeer1 = "~BGP_PEER_EXPORT_POLICY:vr1:peer1~";
     RoutingPolicy routingPolicyForPeer1 = c.getRoutingPolicies().get(bgpExportPoliciesPeer1);
 
     srb =
