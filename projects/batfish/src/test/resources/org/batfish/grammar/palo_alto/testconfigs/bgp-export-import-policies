@@ -28,6 +28,14 @@ set network virtual-router vr1 protocol bgp policy export rules export1 match ad
 set network virtual-router vr1 protocol bgp policy export rules export1 used-by pg1
 set network virtual-router vr1 protocol bgp policy export rules export1 enable yes
 
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update extended-community none
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update community none
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update as-path none
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update origin incomplete
+set network virtual-router vr1 protocol bgp policy import rules import1 match address-prefix 3.2.1.0/24 exact yes
+set network virtual-router vr1 protocol bgp policy import rules import1 used-by pg1
+set network virtual-router vr1 protocol bgp policy import rules import1 enable yes
+
 
 set network virtual-router vr1 protocol bgp peer-group pg1 enable yes
 set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 local-address interface ethernet1/3.5
