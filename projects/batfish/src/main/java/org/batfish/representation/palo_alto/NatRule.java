@@ -69,8 +69,7 @@ public final class NatRule implements Serializable {
   }
 
   public boolean doesSourceTranslation() {
-    return _sourceTranslation != null
-        && _sourceTranslation.getDynamicIpAndPort() != null;
+    return _sourceTranslation != null && _sourceTranslation.getDynamicIpAndPort() != null;
   }
 
   public void setDestinationTranslation(DestinationTranslation destinationTranslation) {
