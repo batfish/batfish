@@ -2,6 +2,7 @@ package org.batfish.grammar.palo_alto;
 
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +23,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -174,16 +177,54 @@ public class PaloAltoNatTest {
             .setIpProtocol(IpProtocol.TCP)
             .build();
 
+    // This flow is NAT'd by the post-rulebase and should pass through the firewall
+    Flow outsideToInsideNatPostRulebase =
+        Flow.builder()
+            .setTag("test")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(outside1Name)
+            .setDstIp(Ip.parse("1.1.1.2"))
+            .setSrcIp(Ip.parse("1.2.1.5"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+
     SortedMap<Flow, List<Trace>> traces =
         batfish
             .getTracerouteEngine()
             .computeTraces(
-                ImmutableSet.of(outsideToInsideNatPreRulebase, outsideToInsideNatRulebase), false);
+                ImmutableSet.of(
+                    outsideToInsideNatPreRulebase,
+                    outsideToInsideNatRulebase,
+                    outsideToInsideNatPostRulebase),
+                false);
 
     // First flow should be NAT'd by pre-rulebase (not rulebase) rule and be successful
-    assertTrue(traces.get(outsideToInsideNatPreRulebase).get(0).getDisposition().isSuccessful());
+    Trace preRulebase = traces.get(outsideToInsideNatPreRulebase).get(0);
+    assertTrue(preRulebase.getDisposition().isSuccessful());
+    ExitOutputIfaceStepDetail preRulebaseDetail =
+        (ExitOutputIfaceStepDetail)
+            Iterables.getLast(preRulebase.getHops().get(0).getSteps()).getDetail();
+    // Confirm the dst IP was rewritten by the pre-rulebase rule
+    assertThat(preRulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.99")));
 
     // Second flow should be NAT'd by rulebase (not post-rulebase) rule and be successful
-    assertTrue(traces.get(outsideToInsideNatRulebase).get(0).getDisposition().isSuccessful());
+    Trace rulebase = traces.get(outsideToInsideNatRulebase).get(0);
+    assertTrue(rulebase.getDisposition().isSuccessful());
+    ExitOutputIfaceStepDetail rulebaseDetail =
+        (ExitOutputIfaceStepDetail)
+            Iterables.getLast(rulebase.getHops().get(0).getSteps()).getDetail();
+    // Confirm the dst IP was rewritten by the rulebase rule
+    assertThat(rulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.100")));
+
+    // Third flow should be NAT'd by rulebase (not post-rulebase) rule and be successful
+    Trace postRulebase = traces.get(outsideToInsideNatPostRulebase).get(0);
+    assertTrue(postRulebase.getDisposition().isSuccessful());
+    ExitOutputIfaceStepDetail postRulebaseDetail =
+        (ExitOutputIfaceStepDetail)
+            Iterables.getLast(postRulebase.getHops().get(0).getSteps()).getDetail();
+    // Confirm the dst IP was rewritten by the post-rulebase rule
+    assertThat(postRulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.101")));
   }
 }

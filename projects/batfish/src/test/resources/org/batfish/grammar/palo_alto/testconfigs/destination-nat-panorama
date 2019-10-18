@@ -7,8 +7,20 @@ policy {
       SOURCE_ADDR2 {
         ip-netmask 1.2.1.4/32;
       }
-      SERVER_NEW_ADDR {
+      SOURCE_ADDR3 {
+        ip-netmask 1.2.1.5/32;
+      }
+      SERVER_NEW_ADDR1 {
         ip-netmask 1.1.1.99/32;
+      }
+      SERVER_NEW_ADDR2 {
+        ip-netmask 1.1.1.100/32;
+      }
+      SERVER_NEW_ADDR3 {
+        ip-netmask 1.1.1.101/32;
+      }
+      SERVER_NEW_ADDRS {
+        ip-netmask 1.1.1.64/26;
       }
       SERVER_OLD_ADDR {
         ip-netmask 1.1.1.2/32;
@@ -19,7 +31,7 @@ policy {
         rules {
           DEST_NAT_NAME {
             destination-translation {
-              translated-address SERVER_NEW_ADDR;
+              translated-address SERVER_NEW_ADDR1;
             }
             to INSIDE;
             from OUTSIDE;
@@ -40,6 +52,15 @@ policy {
             to INSIDE;
             from OUTSIDE;
             source SOURCE_ADDR2;
+            destination any;
+          }
+          DEST_NAT_NAME {
+            destination-translation {
+              translated-address SERVER_NEW_ADDR3;
+            }
+            to INSIDE;
+            from OUTSIDE;
+            source SOURCE_ADDR3;
             destination any;
           }
         }
@@ -111,7 +132,7 @@ config {
                 # This NATs flows from source address 2 before post-rulebase
                 DEST_NAT_NAME {
                   destination-translation {
-                    translated-address SERVER_NEW_ADDR;
+                    translated-address SERVER_NEW_ADDR2;
                   }
                   to INSIDE;
                   from OUTSIDE;
@@ -127,7 +148,7 @@ config {
                   from OUTSIDE;
                   source any;
                   # destination 1.1.1.0/24;
-                  destination [ SERVER_NEW_ADDR];
+                  destination [ SERVER_NEW_ADDRS];
                   application any;
                   service any;
                   action allow;
