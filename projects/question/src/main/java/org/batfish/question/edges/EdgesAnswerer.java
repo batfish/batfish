@@ -230,11 +230,11 @@ public class EdgesAnswerer extends Answerer {
                 .put(COL_NODE, new Node(hostname))
                 .put(COL_IP, unnumbered ? null : sessionProperties.getTailIp())
                 .put(COL_INTERFACE, bgpPeerConfigId.getPeerInterface())
-                .put(COL_AS_NUMBER, bgpPeerConfig.getLocalAs())
+                .put(COL_AS_NUMBER, sessionProperties.getTailAs())
                 .put(COL_REMOTE_NODE, new Node(remoteHostname))
                 .put(COL_REMOTE_IP, unnumbered ? null : sessionProperties.getHeadIp())
                 .put(COL_REMOTE_INTERFACE, remoteBgpPeerConfigId.getPeerInterface())
-                .put(COL_REMOTE_AS_NUMBER, remoteBgpPeerConfig.getLocalAs())
+                .put(COL_REMOTE_AS_NUMBER, sessionProperties.getHeadAs())
                 .build());
       }
     }
