@@ -1,6 +1,7 @@
 package org.batfish.question.bgpproperties;
 
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.CLUSTER_ID;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.CONFEDERATION;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.EXPORT_POLICY;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IMPORT_POLICY;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
@@ -62,6 +63,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
           LOCAL_AS,
           LOCAL_IP,
           COL_LOCAL_INTERFACE,
+          CONFEDERATION,
           REMOTE_AS,
           COL_REMOTE_IP,
           ROUTE_REFLECTOR_CLIENT,

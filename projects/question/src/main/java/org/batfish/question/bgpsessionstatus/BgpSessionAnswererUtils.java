@@ -31,11 +31,13 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 public final class BgpSessionAnswererUtils {
 
   /* Common column names for both BGP session questions*/
+  public static final String COL_LOCAL_CONFEDERATION = "Local_Confederation";
   public static final String COL_LOCAL_INTERFACE = "Local_Interface";
   public static final String COL_LOCAL_AS = "Local_AS";
   public static final String COL_LOCAL_IP = "Local_IP";
   public static final String COL_NODE = "Node";
   public static final String COL_REMOTE_AS = "Remote_AS";
+  public static final String COL_REMOTE_CONFEDERATION = "Remote_Confederation";
   public static final String COL_REMOTE_NODE = "Remote_Node";
   public static final String COL_REMOTE_INTERFACE = "Remote_Interface";
   public static final String COL_REMOTE_IP = "Remote_IP";

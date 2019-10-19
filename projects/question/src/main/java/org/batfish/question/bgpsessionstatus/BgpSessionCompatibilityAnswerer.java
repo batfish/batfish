@@ -6,10 +6,12 @@ import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_F
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_CONFEDERATION;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_NODE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_CONFEDERATION;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_NODE;
@@ -24,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -34,6 +37,7 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
@@ -75,6 +79,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
               COL_LOCAL_INTERFACE, Schema.INTERFACE, "Local interface of the session", false, true),
           new ColumnMetadata(COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false),
           new ColumnMetadata(
+              COL_LOCAL_CONFEDERATION, Schema.LONG, "Local Confederation AS number", false, true),
+          new ColumnMetadata(
               COL_REMOTE_AS,
               Schema.STRING,
               "The remote AS or list of ASes of the session",
@@ -94,6 +100,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
               "Remote IP or prefix for this session",
               true,
               false),
+          new ColumnMetadata(
+              COL_REMOTE_CONFEDERATION, Schema.LONG, "Remote Confederation AS number", false, true),
           new ColumnMetadata(
               COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
           new ColumnMetadata(
@@ -144,7 +152,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
                   BgpActivePeerConfig activePeer = nc.getBgpPointToPointPeerConfig(peerId);
                   assert activePeer != null;
                   return Stream.of(
-                      getActivePeerRow(peerId, activePeer, ipVrfOwners, configuredTopology));
+                      getActivePeerRow(peerId, activePeer, ipVrfOwners, configuredTopology, nc));
                 case DYNAMIC:
                   BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
                   assert passivePeer != null;
@@ -152,7 +160,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
                 case UNNUMBERED:
                   BgpUnnumberedPeerConfig unnumPeer = nc.getBgpUnnumberedPeerConfig(peerId);
                   assert unnumPeer != null;
-                  return Stream.of(getUnnumberedPeerRow(peerId, unnumPeer, configuredTopology));
+                  return Stream.of(getUnnumberedPeerRow(peerId, unnumPeer, configuredTopology, nc));
                 default:
                   throw new BatfishException(
                       String.format("Unsupported type of BGP peer config: %s", peerId.getType()));
@@ -168,24 +176,31 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology) {
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology,
+      NetworkConfigurations nc) {
     // Determine peer's session type and status. If compatible, find its unique remote match
     SessionType type = getSessionType(activePeer);
     ConfiguredSessionStatus status =
         getConfiguredStatus(activeId, activePeer, type, ipVrfOwners, configuredTopology);
     Node remoteNode = null;
+    Long remoteConfed = null;
     if (status == UNIQUE_MATCH) {
-      String remoteNodeName =
-          configuredTopology.adjacentNodes(activeId).iterator().next().getHostname();
-      remoteNode = new Node(remoteNodeName);
+      BgpPeerConfigId remoteConfigId = configuredTopology.adjacentNodes(activeId).iterator().next();
+      remoteNode = new Node(remoteConfigId.getHostname());
+      remoteConfed =
+          Optional.ofNullable(nc.getBgpPeerConfig(remoteConfigId))
+              .map(BgpPeerConfig::getConfederationAsn)
+              .orElse(null);
     }
     return Row.builder(METADATA_MAP)
         .put(COL_CONFIGURED_STATUS, status)
         .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, activePeer.getLocalAs())
         .put(COL_LOCAL_IP, activePeer.getLocalIp())
+        .put(COL_LOCAL_CONFEDERATION, activePeer.getConfederationAsn())
         .put(COL_NODE, new Node(activeId.getHostname()))
         .put(COL_REMOTE_AS, activePeer.getRemoteAsns().toString())
+        .put(COL_REMOTE_CONFEDERATION, remoteConfed)
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
@@ -213,6 +228,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
             .put(COL_LOCAL_AS, passivePeer.getLocalAs())
             .put(COL_LOCAL_IP, passivePeer.getLocalIp())
             .put(COL_NODE, new Node(passiveId.getHostname()))
+            .put(COL_LOCAL_CONFEDERATION, passivePeer.getConfederationAsn())
             .put(COL_REMOTE_AS, passivePeer.getRemoteAsns().toString())
             .put(
                 COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
@@ -240,6 +256,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
                   assert activeRemote != null;
                   return rb.put(COL_CONFIGURED_STATUS, DYNAMIC_MATCH)
                       .put(COL_LOCAL_IP, sessionProps.getTailIp())
+                      .put(COL_REMOTE_CONFEDERATION, activeRemote.getConfederationAsn())
                       .put(COL_REMOTE_AS, LongSpace.of(activeRemote.getLocalAs()).toString())
                       .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
                       .put(
@@ -261,12 +278,18 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
   static Row getUnnumberedPeerRow(
       BgpPeerConfigId unnumId,
       BgpUnnumberedPeerConfig unnumPeer,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology) {
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology,
+      NetworkConfigurations nc) {
     ConfiguredSessionStatus status = getConfiguredStatus(unnumId, unnumPeer, configuredTopology);
     Node remoteNode = null;
     NodeInterfacePair remoteInterface = null;
+    Long remoteConfed = null;
     if (status == UNIQUE_MATCH) {
       BgpPeerConfigId remoteId = configuredTopology.adjacentNodes(unnumId).iterator().next();
+      remoteConfed =
+          Optional.ofNullable(nc.getBgpPeerConfig(remoteId))
+              .map(BgpPeerConfig::getConfederationAsn)
+              .orElse(null);
       remoteNode = new Node(remoteId.getHostname());
       remoteInterface = NodeInterfacePair.of(remoteId.getHostname(), remoteId.getPeerInterface());
     }
@@ -277,7 +300,9 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
             NodeInterfacePair.of(unnumId.getHostname(), unnumPeer.getPeerInterface()))
         .put(COL_LOCAL_AS, unnumPeer.getLocalAs())
         .put(COL_LOCAL_IP, null)
+        .put(COL_LOCAL_CONFEDERATION, unnumPeer.getConfederationAsn())
         .put(COL_NODE, new Node(unnumId.getHostname()))
+        .put(COL_REMOTE_CONFEDERATION, remoteConfed)
         .put(COL_REMOTE_AS, unnumPeer.getRemoteAsns().toString())
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, remoteInterface)

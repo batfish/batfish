@@ -2,10 +2,12 @@ package org.batfish.question.bgpsessionstatus;
 
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_CONFEDERATION;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_NODE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_CONFEDERATION;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_NODE;
@@ -107,18 +109,22 @@ public class BgpSessionCompatibilityAnswererTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    Row row = getActivePeerRow(peerId, peer, ImmutableMap.of(), null);
+    Row row =
+        getActivePeerRow(
+            peerId, peer, ImmutableMap.of(), null, NetworkConfigurations.of(ImmutableMap.of()));
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_LOCAL_IP)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, null)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, LongSpace.of(2L).toString())
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
             .build();
@@ -135,6 +141,7 @@ public class BgpSessionCompatibilityAnswererTest {
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
             .setLocalIp(localIp)
+            .setConfederation(2L)
             .setPeerAddress(remoteIp)
             .setLocalAs(1L)
             .setRemoteAs(2L)
@@ -164,15 +171,19 @@ public class BgpSessionCompatibilityAnswererTest {
     bgpTopology.putEdgeValue(
         remotePeerId, peerId, BgpSessionProperties.from(peer, remotePeer, true));
 
-    Row row = getActivePeerRow(peerId, peer, ipVrfOwners, bgpTopology);
+    Row row =
+        getActivePeerRow(
+            peerId, peer, ipVrfOwners, bgpTopology, NetworkConfigurations.of(ImmutableMap.of()));
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
             .put(COL_LOCAL_INTERFACE, null)
-            .put(COL_LOCAL_IP, localIp)
             .put(COL_LOCAL_AS, 1L)
+            .put(COL_LOCAL_IP, localIp)
+            .put(COL_LOCAL_CONFEDERATION, 2L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, LongSpace.of(2L).toString())
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
@@ -204,8 +215,10 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_LOCAL_IP, Ip.AUTO)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_REMOTE_AS, "")
             .put(COL_REMOTE_NODE, null)
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, remotePrefix))
             .put(COL_SESSION_TYPE, SessionType.UNSET)
@@ -240,12 +253,14 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_MATCH_FOUND)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, remoteAsns.toString())
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, remotePrefix))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -313,9 +328,11 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_LOCAL_AS, 1L)
             .put(COL_LOCAL_IP, localIp)
             .put(COL_NODE, new Node("c1"))
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.DYNAMIC_MATCH)
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_REMOTE_INTERFACE, null);
     Row expected1 =
@@ -341,21 +358,24 @@ public class BgpSessionCompatibilityAnswererTest {
         BgpUnnumberedPeerConfig.builder()
             .setPeerInterface("iface")
             .setLocalAs(1L)
+            .setConfederation(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    Row row = getUnnumberedPeerRow(peerId, peer, null);
+    Row row = getUnnumberedPeerRow(peerId, peer, null, NetworkConfigurations.of(ImmutableMap.of()));
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_REMOTE_AS)
             .put(COL_LOCAL_INTERFACE, NodeInterfacePair.of("c1", "iface"))
             .put(COL_LOCAL_IP, null)
+            .put(COL_LOCAL_CONFEDERATION, 2L)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, "")
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, null)
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -393,16 +413,20 @@ public class BgpSessionCompatibilityAnswererTest {
     bgpTopology.putEdgeValue(peerId, remoteId, BgpSessionProperties.from(remote, peer, false));
     bgpTopology.putEdgeValue(remoteId, peerId, BgpSessionProperties.from(remote, peer, true));
 
-    Row row = getUnnumberedPeerRow(peerId, peer, bgpTopology);
+    Row row =
+        getUnnumberedPeerRow(
+            peerId, peer, bgpTopology, NetworkConfigurations.of(ImmutableMap.of()));
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
             .put(COL_LOCAL_INTERFACE, NodeInterfacePair.of("c1", "iface"))
             .put(COL_LOCAL_IP, null)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, "2")
             .put(COL_REMOTE_NODE, new Node("c2"))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_REMOTE_INTERFACE, NodeInterfacePair.of("c2", "iface2"))
             .put(COL_REMOTE_IP, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_UNNUMBERED)
@@ -423,6 +447,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setLocalIp(ip1)
             .setPeerAddress(ip2)
             .setLocalAs(1L)
+            .setConfederation(12L)
             .setRemoteAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
@@ -432,6 +457,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setLocalIp(ip2)
             .setPeerAddress(ip1)
             .setLocalAs(2L)
+            .setConfederation(12L)
             .setRemoteAs(1L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
@@ -450,9 +476,11 @@ public class BgpSessionCompatibilityAnswererTest {
     Row row1To2 =
         expectedRowBuilder
             .put(COL_LOCAL_IP, ip1)
+            .put(COL_LOCAL_CONFEDERATION, 12L)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, "2")
+            .put(COL_REMOTE_CONFEDERATION, 12L)
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, ip2))
             .put(COL_VRF, "vrf1")
@@ -460,9 +488,11 @@ public class BgpSessionCompatibilityAnswererTest {
     Row row2To1 =
         expectedRowBuilder
             .put(COL_LOCAL_IP, ip2)
+            .put(COL_LOCAL_CONFEDERATION, 12L)
             .put(COL_LOCAL_AS, 2L)
             .put(COL_NODE, new Node("c2"))
             .put(COL_REMOTE_AS, "1")
+            .put(COL_REMOTE_CONFEDERATION, 12L)
             .put(COL_REMOTE_NODE, new Node("c1"))
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, ip1))
             .put(COL_VRF, "vrf2")

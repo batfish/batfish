@@ -4,10 +4,12 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_CONFEDERATION;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_NODE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_CONFEDERATION;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_IP;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_NODE;
@@ -105,18 +107,27 @@ public class BgpSessionStatusAnswererTest {
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     topology.addNode(peerId);
 
-    Row row = getActivePeerRow(peerId, peer, ImmutableMap.of(), topology, topology);
+    Row row =
+        getActivePeerRow(
+            peerId,
+            peer,
+            ImmutableMap.of(),
+            topology,
+            topology,
+            NetworkConfigurations.of(ImmutableMap.of()));
     Row expected =
         Row.builder()
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_COMPATIBLE)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, null)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, LongSpace.of(2L).toString())
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
             .build();
@@ -170,30 +181,53 @@ public class BgpSessionStatusAnswererTest {
         remotePeerId, peerId, BgpSessionProperties.from(peer, remotePeer, true));
 
     // Case 1: Peers are compatible, but can't reach each other (established topology is empty)
-    Row row = getActivePeerRow(peerId, peer, ipVrfOwners, linkedTopology, unlinkedTopology);
+    Row row =
+        getActivePeerRow(
+            peerId,
+            peer,
+            ipVrfOwners,
+            linkedTopology,
+            unlinkedTopology,
+            NetworkConfigurations.of(ImmutableMap.of()));
     Row.RowBuilder expected =
         Row.builder()
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_ESTABLISHED)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, localIp)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, LongSpace.of(2L).toString())
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1");
     assertThat(row, equalTo(expected.build()));
 
     // Case 2: Peers are NOT both compatible, but session comes up (could happen if one peer is
     // missing local IP or has multiple compatible remotes)
-    row = getActivePeerRow(peerId, peer, ipVrfOwners, unlinkedTopology, linkedTopology);
+    row =
+        getActivePeerRow(
+            peerId,
+            peer,
+            ipVrfOwners,
+            unlinkedTopology,
+            linkedTopology,
+            NetworkConfigurations.of(ImmutableMap.of()));
     expected.put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED);
     assertThat(row, equalTo(expected.build()));
 
     // Case 3: Peers are compatible and able to reach each other
-    row = getActivePeerRow(peerId, peer, ipVrfOwners, linkedTopology, linkedTopology);
+    row =
+        getActivePeerRow(
+            peerId,
+            peer,
+            ipVrfOwners,
+            linkedTopology,
+            linkedTopology,
+            NetworkConfigurations.of(ImmutableMap.of()));
     assertThat(row, equalTo(expected.build()));
   }
 
@@ -217,12 +251,14 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_COMPATIBLE)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, "")
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, remotePrefix))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -255,12 +291,14 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_ESTABLISHED)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, remoteAsns.toString())
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, remotePrefix))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -283,18 +321,22 @@ public class BgpSessionStatusAnswererTest {
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     topology.addNode(peerId);
 
-    Row row = getUnnumberedPeerRow(peerId, peer, topology, topology);
+    Row row =
+        getUnnumberedPeerRow(
+            peerId, peer, topology, topology, NetworkConfigurations.of(ImmutableMap.of()));
     Row expected =
         Row.builder()
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_COMPATIBLE)
             .put(COL_LOCAL_INTERFACE, NodeInterfacePair.of("c1", "iface"))
             .put(COL_LOCAL_IP, null)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, "")
             .put(COL_REMOTE_NODE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_REMOTE_IP, null)
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, "vrf1")
             .build();
@@ -331,18 +373,22 @@ public class BgpSessionStatusAnswererTest {
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     bgpTopology.putEdgeValue(peerId, remoteId, BgpSessionProperties.from(remote, peer, false));
     bgpTopology.putEdgeValue(remoteId, peerId, BgpSessionProperties.from(remote, peer, true));
-    Row row = getUnnumberedPeerRow(peerId, peer, bgpTopology, bgpTopology);
+    Row row =
+        getUnnumberedPeerRow(
+            peerId, peer, bgpTopology, bgpTopology, NetworkConfigurations.of(ImmutableMap.of()));
     Row expected =
         Row.builder()
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED)
             .put(COL_LOCAL_INTERFACE, NodeInterfacePair.of("c1", "iface"))
-            .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
+            .put(COL_LOCAL_IP, null)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, "2")
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_INTERFACE, NodeInterfacePair.of("c2", "iface2"))
             .put(COL_REMOTE_IP, null)
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_UNNUMBERED)
             .put(COL_VRF, "vrf1")
             .build();
@@ -423,6 +469,7 @@ public class BgpSessionStatusAnswererTest {
             // Columns that should be the same in both rows
             .put(COL_LOCAL_AS, 1L)
             .put(COL_LOCAL_IP, localIp)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_NODE, new Node("c1"))
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
             .put(COL_VRF, "vrf1")
@@ -433,6 +480,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED)
             .put(COL_REMOTE_AS, "2")
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remote1Ip))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_REMOTE_NODE, new Node("c2"))
             .build();
     Row expected2 =
@@ -440,6 +488,7 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_ESTABLISHED)
             .put(COL_REMOTE_AS, "3")
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remote2Ip))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_REMOTE_NODE, new Node("c3"))
             .build();
     assertThat(rows, containsInAnyOrder(expected1, expected2));
@@ -522,7 +571,13 @@ public class BgpSessionStatusAnswererTest {
                 ImmutableSet.of(DEFAULT_VRF_NAME)));
 
     Row row =
-        getActivePeerRow(peerXId, peerX, ipVrfOwners, configuredTopology, establishedTopology);
+        getActivePeerRow(
+            peerXId,
+            peerX,
+            ipVrfOwners,
+            configuredTopology,
+            establishedTopology,
+            NetworkConfigurations.of(ImmutableMap.of()));
     assertThat(row, hasColumn(COL_REMOTE_NODE, new Node("c4"), Schema.NODE));
   }
 
@@ -571,21 +626,25 @@ public class BgpSessionStatusAnswererTest {
     Row row1To2 =
         expectedRowBuilder
             .put(COL_LOCAL_IP, ip1)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 1L)
             .put(COL_NODE, new Node("c1"))
             .put(COL_REMOTE_AS, "2")
             .put(COL_REMOTE_NODE, new Node("c2"))
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, ip2))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_VRF, "vrf1")
             .build();
     Row row2To1 =
         expectedRowBuilder
             .put(COL_LOCAL_IP, ip2)
+            .put(COL_LOCAL_CONFEDERATION, null)
             .put(COL_LOCAL_AS, 2L)
             .put(COL_NODE, new Node("c2"))
             .put(COL_REMOTE_AS, "1")
             .put(COL_REMOTE_NODE, new Node("c1"))
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, ip1))
+            .put(COL_REMOTE_CONFEDERATION, null)
             .put(COL_VRF, "vrf2")
             .build();
 
