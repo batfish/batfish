@@ -428,8 +428,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         TransformationStep.assignSourcePort(
             NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number());
 
-    getAllNatRules(vsys).stream()
-        .map(Entry::getKey)
+    getAllNatRules(vsys)
         .filter(r -> checkNatRuleValid(r, false) && r.doesSourceTranslation())
         .forEach(
             r -> {
@@ -640,22 +639,17 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Collects the NAT rules from this Vsys and merges the common pre-/post-rulebases from Panorama.
    */
-  private List<Map.Entry<NatRule, Vsys>> getAllNatRules(Vsys vsys) {
-    Stream<Map.Entry<NatRule, Vsys>> pre =
+  private Stream<NatRule> getAllNatRules(Vsys vsys) {
+    Stream<NatRule> pre =
         _panorama == null
             ? Stream.of()
-            : _panorama.getPreRulebase().getNatRules().values().stream()
-                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
-    Stream<Map.Entry<NatRule, Vsys>> post =
+            : _panorama.getPreRulebase().getNatRules().values().stream();
+    Stream<NatRule> post =
         _panorama == null
             ? Stream.of()
-            : _panorama.getPostRulebase().getNatRules().values().stream()
-                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
-    Stream<Map.Entry<NatRule, Vsys>> rules =
-        vsys.getRulebase().getNatRules().values().stream()
-            .map(r -> new SimpleImmutableEntry<>(r, vsys));
-
-    return Stream.concat(Stream.concat(pre, rules), post).collect(ImmutableList.toImmutableList());
+            : _panorama.getPostRulebase().getNatRules().values().stream();
+    Stream<NatRule> rules = vsys.getRulebase().getNatRules().values().stream();
+    return Streams.concat(pre, rules, post);
   }
 
   /**
@@ -1324,11 +1318,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       return null;
     }
     Vsys vsys = zone.getVsys();
-    List<Entry<NatRule, Vsys>> natEntries = getNatPoliciesForIface(iface);
-    if (!natEntries.isEmpty()) {
+    List<NatRule> natRules = getNatPoliciesForIface(iface);
+    if (!natRules.isEmpty()) {
       String packetPolicyName = computePacketPolicyName(iface.getName());
       _c.getPacketPolicies()
-          .put(packetPolicyName, buildPacketPolicy(packetPolicyName, natEntries, vsys));
+          .put(packetPolicyName, buildPacketPolicy(packetPolicyName, natRules, vsys));
       return packetPolicyName;
     }
     return null;
@@ -1341,12 +1335,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Build a routing policy for the specified NAT rule + vsys entries in the specified vsys. */
-  private PacketPolicy buildPacketPolicy(
-      String name, List<Entry<NatRule, Vsys>> natEntries, Vsys vsys) {
+  private PacketPolicy buildPacketPolicy(String name, List<NatRule> natRules, Vsys vsys) {
     ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> lines =
         ImmutableList.builder();
-    for (Entry<NatRule, Vsys> entry : natEntries) {
-      NatRule rule = entry.getKey();
+    for (NatRule rule : natRules) {
       DestinationTranslation destTranslation = rule.getDestinationTranslation();
       Zone toZone = vsys.getZones().get(rule.getTo());
       if (destTranslation == null || !checkNatRuleValid(rule, false)) {
@@ -1390,17 +1382,17 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Return a list of all NAT rules associated with the specified from-interface. */
-  private List<Map.Entry<NatRule, Vsys>> getNatPoliciesForIface(Interface iface) {
+  private List<NatRule> getNatPoliciesForIface(Interface iface) {
     Zone zone = iface.getZone();
     if (zone == null) {
       return ImmutableList.of();
     }
     Vsys vsys = iface.getZone().getVsys();
-    return getAllNatRules(vsys).stream()
+    return getAllNatRules(vsys)
         .filter(
-            e ->
-                e.getKey().getFrom().contains(iface.getZone().getName())
-                    || e.getKey().getFrom().contains(CATCHALL_ZONE_NAME))
+            rule ->
+                rule.getFrom().contains(zone.getName())
+                    || rule.getFrom().contains(CATCHALL_ZONE_NAME))
         .collect(ImmutableList.toImmutableList());
   }
 
