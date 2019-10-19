@@ -397,7 +397,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
-      List<Map.Entry<SecurityRule, Vsys>> rules = getAllRules(vsys);
+      List<Map.Entry<SecurityRule, Vsys>> rules = getAllSecurityRules(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -424,20 +424,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private void populateZoneOutgoingTransformations(Vsys vsys) {
     Map<String, List<Transformation.Builder>> toZoneTransformations = new HashMap<>();
 
-    Stream<NatRule> pre =
-        _panorama == null
-            ? Stream.of()
-            : _panorama.getPreRulebase().getNatRules().values().stream();
-    Stream<NatRule> post =
-        _panorama == null
-            ? Stream.of()
-            : _panorama.getPostRulebase().getNatRules().values().stream();
-    Stream<NatRule> rules = vsys.getRulebase().getNatRules().values().stream();
     TransformationStep transformPort =
         TransformationStep.assignSourcePort(
             NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number());
 
-    Streams.concat(pre, rules, post)
+    getAllNatRules(vsys).stream()
+        .map(Entry::getKey)
         .filter(r -> checkNatRuleValid(r, false) && r.doesSourceTranslation())
         .forEach(
             r -> {
@@ -481,10 +473,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private AclLineMatchExpr getSourceNatRuleMatchExpr(NatRule rule, Vsys vsys) {
     // Match source and destination
-    IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
-    IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
-    MatchHeaderSpace matchHeaderSpace =
-        new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+    MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
 
     if (rule.getFrom().contains(CATCHALL_ZONE_NAME)) {
       // Rule says "from any" -- no need to match on packet source interface
@@ -626,8 +615,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return IpAccessList.builder().setName(crossZoneFilterName).setLines(lines).build();
   }
 
-  /** Collects the rules from this Vsys and merges the common pre-/post-rulebases from Panorama. */
-  private List<Map.Entry<SecurityRule, Vsys>> getAllRules(Vsys vsys) {
+  /**
+   * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
+   * Panorama.
+   */
+  private List<Map.Entry<SecurityRule, Vsys>> getAllSecurityRules(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
             ? Stream.of()
@@ -1342,6 +1334,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return null;
   }
 
+  private MatchHeaderSpace getRuleMatchHeaderSpace(NatRule rule, Vsys vsys) {
+    IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
+    IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
+    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+  }
+
   /** Build a routing policy for the specified NAT rule + vsys entries in the specified vsys. */
   private PacketPolicy buildPacketPolicy(
       String name, List<Entry<NatRule, Vsys>> natEntries, Vsys vsys) {
@@ -1360,10 +1358,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Conditions under which to apply dest NAT
-      IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
-      IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
-      MatchHeaderSpace matchHeaderSpace =
-          new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+      MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
       BoolExpr condition =
           Conjunction.of(
               new PacketMatchExpr(matchHeaderSpace),
