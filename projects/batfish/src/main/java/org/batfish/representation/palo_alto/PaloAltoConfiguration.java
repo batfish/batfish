@@ -397,7 +397,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
-      List<Map.Entry<SecurityRule, Vsys>> rules = getAllRules(vsys);
+      List<Map.Entry<SecurityRule, Vsys>> rules = getAllSecurityRules(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -424,20 +424,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private void populateZoneOutgoingTransformations(Vsys vsys) {
     Map<String, List<Transformation.Builder>> toZoneTransformations = new HashMap<>();
 
-    Stream<NatRule> pre =
-        _panorama == null
-            ? Stream.of()
-            : _panorama.getPreRulebase().getNatRules().values().stream();
-    Stream<NatRule> post =
-        _panorama == null
-            ? Stream.of()
-            : _panorama.getPostRulebase().getNatRules().values().stream();
-    Stream<NatRule> rules = vsys.getRulebase().getNatRules().values().stream();
     TransformationStep transformPort =
         TransformationStep.assignSourcePort(
             NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number());
 
-    Streams.concat(pre, rules, post)
+    getAllNatRules(vsys)
         .filter(r -> checkNatRuleValid(r, false) && r.doesSourceTranslation())
         .forEach(
             r -> {
@@ -481,10 +472,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private AclLineMatchExpr getSourceNatRuleMatchExpr(NatRule rule, Vsys vsys) {
     // Match source and destination
-    IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
-    IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
-    MatchHeaderSpace matchHeaderSpace =
-        new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+    MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
 
     if (rule.getFrom().contains(CATCHALL_ZONE_NAME)) {
       // Rule says "from any" -- no need to match on packet source interface
@@ -626,8 +614,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return IpAccessList.builder().setName(crossZoneFilterName).setLines(lines).build();
   }
 
-  /** Collects the rules from this Vsys and merges the common pre-/post-rulebases from Panorama. */
-  private List<Map.Entry<SecurityRule, Vsys>> getAllRules(Vsys vsys) {
+  /**
+   * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
+   * Panorama.
+   */
+  private List<Map.Entry<SecurityRule, Vsys>> getAllSecurityRules(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
             ? Stream.of()
@@ -648,22 +639,17 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Collects the NAT rules from this Vsys and merges the common pre-/post-rulebases from Panorama.
    */
-  private List<Map.Entry<NatRule, Vsys>> getAllNatRules(Vsys vsys) {
-    Stream<Map.Entry<NatRule, Vsys>> pre =
+  private Stream<NatRule> getAllNatRules(Vsys vsys) {
+    Stream<NatRule> pre =
         _panorama == null
             ? Stream.of()
-            : _panorama.getPreRulebase().getNatRules().values().stream()
-                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
-    Stream<Map.Entry<NatRule, Vsys>> post =
+            : _panorama.getPreRulebase().getNatRules().values().stream();
+    Stream<NatRule> post =
         _panorama == null
             ? Stream.of()
-            : _panorama.getPostRulebase().getNatRules().values().stream()
-                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
-    Stream<Map.Entry<NatRule, Vsys>> rules =
-        vsys.getRulebase().getNatRules().values().stream()
-            .map(r -> new SimpleImmutableEntry<>(r, vsys));
-
-    return Stream.concat(Stream.concat(pre, rules), post).collect(ImmutableList.toImmutableList());
+            : _panorama.getPostRulebase().getNatRules().values().stream();
+    Stream<NatRule> rules = vsys.getRulebase().getNatRules().values().stream();
+    return Streams.concat(pre, rules, post);
   }
 
   /**
@@ -1074,50 +1060,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return ret.build();
   }
 
-  /** Converts Destination NAT {@link RuleEndpoint} to {@code RangeSet} */
-  @Nonnull
-  @SuppressWarnings("fallthrough")
-  private RangeSet<Ip> ruleEndpointToRange(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
-    String endpointValue = endpoint.getValue();
-    // Palo Alto allows object references that look like IP addresses, ranges, etc.
-    // Devices use objects over constants when possible, so, check to see if there is a matching
-    // object regardless of the type of endpoint we're expecting.
-    if (vsys.getAddressObjects().containsKey(endpointValue)) {
-      return vsys.getAddressObjects().get(endpointValue).getAddressAsRangeSet();
-    }
-    switch (vsys.getNamespaceType()) {
-      case LEAF:
-        if (_shared != null) {
-          return ruleEndpointToRange(endpoint, _shared, w);
-        }
-        // fall-through
-      case SHARED:
-        if (_panorama != null) {
-          return ruleEndpointToRange(endpoint, _panorama, w);
-        }
-        // fall-through
-      default:
-        // No named object found matching this endpoint, so parse the endpoint value as is
-        switch (endpoint.getType()) {
-          case IP_ADDRESS:
-            return ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
-          case IP_PREFIX:
-            Prefix prefix = Prefix.parse(endpointValue);
-            return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
-          case IP_RANGE:
-            String[] ips = endpointValue.split("-");
-            return ImmutableRangeSet.of(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
-          case REFERENCE:
-            // Undefined reference
-            w.redFlag("No matching address group/object found for RuleEndpoint: " + endpoint);
-            return ImmutableRangeSet.of();
-          default:
-            w.redFlag("Could not convert RuleEndpoint to RangeSet: " + endpoint);
-            return ImmutableRangeSet.of();
-        }
-    }
-  }
-
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
   @Nonnull
   @SuppressWarnings("fallthrough")
@@ -1332,23 +1274,27 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       return null;
     }
     Vsys vsys = zone.getVsys();
-    List<Entry<NatRule, Vsys>> natEntries = getNatPoliciesForIface(iface);
-    if (!natEntries.isEmpty()) {
+    List<NatRule> natRules = getNatPoliciesForIface(iface);
+    if (!natRules.isEmpty()) {
       String packetPolicyName = computePacketPolicyName(iface.getName());
       _c.getPacketPolicies()
-          .put(packetPolicyName, buildPacketPolicy(packetPolicyName, natEntries, vsys));
+          .put(packetPolicyName, buildPacketPolicy(packetPolicyName, natRules, vsys));
       return packetPolicyName;
     }
     return null;
   }
 
+  private MatchHeaderSpace getRuleMatchHeaderSpace(NatRule rule, Vsys vsys) {
+    IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
+    IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
+    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+  }
+
   /** Build a routing policy for the specified NAT rule + vsys entries in the specified vsys. */
-  private PacketPolicy buildPacketPolicy(
-      String name, List<Entry<NatRule, Vsys>> natEntries, Vsys vsys) {
+  private PacketPolicy buildPacketPolicy(String name, List<NatRule> natRules, Vsys vsys) {
     ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> lines =
         ImmutableList.builder();
-    for (Entry<NatRule, Vsys> entry : natEntries) {
-      NatRule rule = entry.getKey();
+    for (NatRule rule : natRules) {
       DestinationTranslation destTranslation = rule.getDestinationTranslation();
       Zone toZone = vsys.getZones().get(rule.getTo());
       if (destTranslation == null || !checkNatRuleValid(rule, false)) {
@@ -1360,10 +1306,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Conditions under which to apply dest NAT
-      IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
-      IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
-      MatchHeaderSpace matchHeaderSpace =
-          new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+      MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
       BoolExpr condition =
           Conjunction.of(
               new PacketMatchExpr(matchHeaderSpace),
@@ -1379,7 +1322,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                   new AssignIpAddressFromPool(
                       TransformationType.DEST_NAT,
                       IpField.DESTINATION,
-                      ruleEndpointToRange(translatedAddress, vsys, _w))),
+                      ruleEndpointToIpRangeSet(translatedAddress, vsys, _w))),
               null,
               null);
 
@@ -1395,17 +1338,17 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Return a list of all NAT rules associated with the specified from-interface. */
-  private List<Map.Entry<NatRule, Vsys>> getNatPoliciesForIface(Interface iface) {
+  private List<NatRule> getNatPoliciesForIface(Interface iface) {
     Zone zone = iface.getZone();
     if (zone == null) {
       return ImmutableList.of();
     }
     Vsys vsys = iface.getZone().getVsys();
-    return getAllNatRules(vsys).stream()
+    return getAllNatRules(vsys)
         .filter(
-            e ->
-                e.getKey().getFrom().contains(iface.getZone().getName())
-                    || e.getKey().getFrom().contains(CATCHALL_ZONE_NAME))
+            rule ->
+                rule.getFrom().contains(zone.getName())
+                    || rule.getFrom().contains(CATCHALL_ZONE_NAME))
         .collect(ImmutableList.toImmutableList());
   }
 
