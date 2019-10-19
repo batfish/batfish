@@ -1060,50 +1060,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return ret.build();
   }
 
-  /** Converts Destination NAT {@link RuleEndpoint} to {@code RangeSet} */
-  @Nonnull
-  @SuppressWarnings("fallthrough")
-  private RangeSet<Ip> ruleEndpointToRange(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
-    String endpointValue = endpoint.getValue();
-    // Palo Alto allows object references that look like IP addresses, ranges, etc.
-    // Devices use objects over constants when possible, so, check to see if there is a matching
-    // object regardless of the type of endpoint we're expecting.
-    if (vsys.getAddressObjects().containsKey(endpointValue)) {
-      return vsys.getAddressObjects().get(endpointValue).getAddressAsRangeSet();
-    }
-    switch (vsys.getNamespaceType()) {
-      case LEAF:
-        if (_shared != null) {
-          return ruleEndpointToRange(endpoint, _shared, w);
-        }
-        // fall-through
-      case SHARED:
-        if (_panorama != null) {
-          return ruleEndpointToRange(endpoint, _panorama, w);
-        }
-        // fall-through
-      default:
-        // No named object found matching this endpoint, so parse the endpoint value as is
-        switch (endpoint.getType()) {
-          case IP_ADDRESS:
-            return ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
-          case IP_PREFIX:
-            Prefix prefix = Prefix.parse(endpointValue);
-            return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
-          case IP_RANGE:
-            String[] ips = endpointValue.split("-");
-            return ImmutableRangeSet.of(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
-          case REFERENCE:
-            // Undefined reference
-            w.redFlag("No matching address group/object found for RuleEndpoint: " + endpoint);
-            return ImmutableRangeSet.of();
-          default:
-            w.redFlag("Could not convert RuleEndpoint to RangeSet: " + endpoint);
-            return ImmutableRangeSet.of();
-        }
-    }
-  }
-
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
   @Nonnull
   @SuppressWarnings("fallthrough")
@@ -1366,7 +1322,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                   new AssignIpAddressFromPool(
                       TransformationType.DEST_NAT,
                       IpField.DESTINATION,
-                      ruleEndpointToRange(translatedAddress, vsys, _w))),
+                      ruleEndpointToIpRangeSet(translatedAddress, vsys, _w))),
               null,
               null);
 
