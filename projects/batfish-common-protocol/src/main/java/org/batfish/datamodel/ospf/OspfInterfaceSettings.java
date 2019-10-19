@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -83,9 +84,8 @@ public final class OspfInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setNbmaNeighbors(@Nullable Set<Ip> ospfNbmaNeighbors) {
-      _ospfNbmaNeighbors =
-          ospfNbmaNeighbors == null ? null : ImmutableSet.copyOf(ospfNbmaNeighbors);
+    public Builder setNbmaNeighbors(@Nonnull Set<Ip> ospfNbmaNeighbors) {
+      _ospfNbmaNeighbors = ImmutableSet.copyOf(ospfNbmaNeighbors);
       return this;
     }
 
@@ -127,7 +127,7 @@ public final class OspfInterfaceSettings implements Serializable {
   private int _ospfHelloInterval;
   @Nullable private Integer _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
-  @Nullable private Set<Ip> _ospfNbmaNeighbors;
+  @Nonnull private Set<Ip> _ospfNbmaNeighbors;
   @Nullable private OspfNetworkType _ospfNetworkType;
   private boolean _ospfPassive;
   @Nullable private String _ospfProcess;
@@ -170,7 +170,7 @@ public final class OspfInterfaceSettings implements Serializable {
         helloInterval,
         helloMultiplier,
         inboundDistributeListPolicy,
-        nbmaNeighbors,
+        Optional.ofNullable(nbmaNeighbors).orElse(ImmutableSet.of()),
         networkType,
         passive,
         process);
@@ -184,7 +184,7 @@ public final class OspfInterfaceSettings implements Serializable {
       int helloInterval,
       @Nullable Integer helloMultiplier,
       @Nullable String inboundDistributeListPolicy,
-      @Nullable Set<Ip> nbmaNeighbors,
+      @Nonnull Set<Ip> nbmaNeighbors,
       @Nullable OspfNetworkType networkType,
       boolean passive,
       @Nullable String process) {
@@ -195,7 +195,7 @@ public final class OspfInterfaceSettings implements Serializable {
     _ospfHelloInterval = helloInterval;
     _ospfHelloMultiplier = helloMultiplier;
     _ospfInboundDistributeListPolicy = inboundDistributeListPolicy;
-    _ospfNbmaNeighbors = nbmaNeighbors == null ? null : ImmutableSet.copyOf(nbmaNeighbors);
+    _ospfNbmaNeighbors = ImmutableSet.copyOf(nbmaNeighbors);
     _ospfNetworkType = networkType;
     _ospfPassive = passive;
     _ospfProcess = process;
@@ -288,7 +288,7 @@ public final class OspfInterfaceSettings implements Serializable {
   }
 
   @JsonProperty(PROP_NBMB_NEIGHBORS)
-  @Nullable
+  @Nonnull
   public Set<Ip> getNbmaNeighbors() {
     return _ospfNbmaNeighbors;
   }
