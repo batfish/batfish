@@ -1349,7 +1349,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       NatRule rule = entry.getKey();
       DestinationTranslation destTranslation = rule.getDestinationTranslation();
       Zone toZone = vsys.getZones().get(rule.getTo());
-      if (destTranslation == null || toZone == null) {
+      if (destTranslation == null || !checkNatRuleValid(rule, false)) {
         continue;
       }
       RuleEndpoint translatedAddress = destTranslation.getTranslatedAddress();
