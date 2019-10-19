@@ -495,4 +495,30 @@ public class OspfTopologyUtilsTest {
     OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(OspfSessionStatus.DUPLICATE_ROUTER_ID));
   }
+
+  @Test
+  public void testGetSessionStatusNbma() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            Ip.parse("192.0.2.0"),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setNetworkType(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS)
+                .setNbmaNeighbors(ImmutableSet.of(Ip.parse("192.0.2.1")))
+                .build(),
+            Ip.parse("192.0.2.1"),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setNetworkType(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS)
+                .build());
+
+    // if neighbor is specified return ESTABLISHED
+    {
+      OspfSessionStatus val = getSessionStatus(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+      assertThat(val, equalTo(OspfSessionStatus.ESTABLISHED));
+    }
+    // if neighbor is not specified return NO_SESSION
+    {
+      OspfSessionStatus val = getSessionStatus(REMOTE_CONFIG_ID, LOCAL_CONFIG_ID, configs);
+      assertThat(val, equalTo(OspfSessionStatus.NO_SESSION));
+    }
+  }
 }

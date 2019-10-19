@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
@@ -291,6 +292,9 @@ public final class OspfTopologyUtils {
       return OspfSessionStatus.DEAD_INTERVAL_MISMATCH;
     }
 
+    if (!checkNBMANeighorValidation(localOspf, remoteConfigId.getAddress().getIp())) {
+      return OspfSessionStatus.NO_SESSION;
+    }
     /*
      * TODO: check MTU matches; This is complicated because frame/packet MTU support not fully there
      * TODO: check reachability (Make sure ACLs/ARP allow communication)
@@ -299,6 +303,18 @@ public final class OspfTopologyUtils {
      */
 
     return OspfSessionStatus.ESTABLISHED;
+  }
+
+  /** For NBMA interface, ensure the neighbor's IP is in the local config */
+  private static boolean checkNBMANeighorValidation(OspfInterfaceSettings localOspf, Ip remoteIp) {
+    if (localOspf.getNetworkType() != OspfNetworkType.NON_BROADCAST_MULTI_ACCESS) {
+      // non-NBMA type is handled elsewhere
+      return true;
+    }
+
+    return Optional.ofNullable(localOspf.getNbmaNeighbors())
+        .map(x -> x.contains(remoteIp))
+        .orElse(false);
   }
 
   /** Ensure links in the graph are bi-directional */
