@@ -330,6 +330,7 @@ public class PaloAltoNatTest {
     Ip matchNoopSrcIp = Ip.parse("1.1.1.2");
     Ip matchSrcTransRuleIp = Ip.parse("1.1.1.3");
     Ip matchDstTransRuleIp = Ip.parse("1.1.1.6");
+    Ip matchSrcAndDstTransRuleIp = Ip.parse("1.1.1.30");
     Flow.Builder flowBuilder =
         Flow.builder()
             .setTag("test")
@@ -342,6 +343,7 @@ public class PaloAltoNatTest {
     Flow matchesNoopRule = flowBuilder.setSrcIp(matchNoopSrcIp).build();
     Flow matchesSrcTranslationRule = flowBuilder.setSrcIp(matchSrcTransRuleIp).build();
     Flow matchesDstTranslationRule = flowBuilder.setSrcIp(matchDstTransRuleIp).build();
+    Flow matchesSrcAndDstTranslationRule = flowBuilder.setSrcIp(matchSrcAndDstTransRuleIp).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
@@ -350,7 +352,8 @@ public class PaloAltoNatTest {
                 ImmutableSet.of(
                     matchesNoopRule,
                     matchesSrcTranslationRule,
-                    matchesDstTranslationRule),
+                    matchesDstTranslationRule,
+                    matchesSrcAndDstTranslationRule),
                 false);
 
     // All translated IPs will match these translated addresses
@@ -358,7 +361,7 @@ public class PaloAltoNatTest {
     Ip newDstIp = Ip.parse("1.2.1.99");
 
     // First flow should not be NAT'd, should not get past security rules
-    assertFalse( traces.get(matchesNoopRule).get(0).getDisposition().isSuccessful());
+    assertFalse(traces.get(matchesNoopRule).get(0).getDisposition().isSuccessful());
 
     // Second flow should have only its source IP translated
     Trace matchSrcTranslation = traces.get(matchesSrcTranslationRule).get(0);
@@ -376,5 +379,13 @@ public class PaloAltoNatTest {
     assertThat(
         matchDstTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(matchDstTransRuleIp));
     assertThat(matchDstTranslationDetail.getTransformedFlow().getDstIp(), equalTo(newDstIp));
+
+    // Fourth flow should have both IPs translated
+    Trace matchSrcAndDstTranslation = traces.get(matchesSrcAndDstTranslationRule).get(0);
+    ExitOutputIfaceStepDetail matchSrcAndDstTranslationDetail =
+        (ExitOutputIfaceStepDetail)
+            Iterables.getLast(matchSrcAndDstTranslation.getHops().get(0).getSteps()).getDetail();
+    assertThat(matchSrcAndDstTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(newSrcIp));
+    assertThat(matchSrcAndDstTranslationDetail.getTransformedFlow().getDstIp(), equalTo(newDstIp));
   }
 }
