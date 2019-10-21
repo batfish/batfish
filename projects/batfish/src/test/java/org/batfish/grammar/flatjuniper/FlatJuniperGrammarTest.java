@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import static com.google.common.collect.testing.Helpers.assertEmpty;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
@@ -5150,7 +5151,6 @@ public final class FlatJuniperGrammarTest {
         config.getAllInterfaces().get("ge-0/0/0.0").getOspfSettings().getNbmaNeighbors(),
         contains(Ip.parse("1.0.0.1")));
 
-    // not applicable to non-NBMA interfaces
-    assertNull(config.getAllInterfaces().get("ge-0/0/1.0").getOspfSettings().getNbmaNeighbors());
+    assertEmpty(config.getAllInterfaces().get("ge-0/0/1.0").getOspfSettings().getNbmaNeighbors());
   }
 }
