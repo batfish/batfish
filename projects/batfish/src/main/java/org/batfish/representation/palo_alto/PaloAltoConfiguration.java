@@ -323,9 +323,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("~%s~OUTGOING_FILTER~", interfaceOrZoneName);
   }
 
-  /** Generate PacketPolicy name given an interface name */
-  public static String computePacketPolicyName(String interfaceName) {
-    return String.format("~%s~PACKET_POLICY~", interfaceName);
+  /** Generate PacketPolicy name using the given zone's name and vsys name */
+  public static String computePacketPolicyName(Zone zone) {
+    return String.format("~%s~%s~PACKET_POLICY~", zone.getVsys().getName(), zone.getName());
   }
 
   /**
@@ -1254,8 +1254,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
 
-    // If there is a NAT for this iface, apply it
-    String packetPolicyName = generatePacketPolicyForIface(iface);
+    // If there are NAT rules for packets entering this interface's zone, apply them
+    String packetPolicyName = getPacketPolicyForZone(iface.getZone());
     if (packetPolicyName != null) {
       newIface.setRoutingPolicy(packetPolicyName);
     }
@@ -1264,24 +1264,26 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Generate packet policy for the specified interface, attach it to the VI config, and return the
-   * name if applicable. If no packet policy is applicable, returns {@code null}
+   * Get or generate packet policy for entering the specified zone, attach it to the VI config, and
+   * return the name if applicable. If no packet policy is applicable, returns {@code null}.
    */
-  private @Nullable String generatePacketPolicyForIface(Interface iface) {
-    Zone zone = iface.getZone();
+  private @Nullable String getPacketPolicyForZone(@Nullable Zone zone) {
     // Unzoned interfaces don't transmit traffic, so don't need packet policy
     if (zone == null) {
       return null;
     }
-    Vsys vsys = zone.getVsys();
-    List<NatRule> natRules = getNatRulesForIface(iface);
-    if (!natRules.isEmpty()) {
-      String packetPolicyName = computePacketPolicyName(iface.getName());
+    String packetPolicyName = computePacketPolicyName(zone);
+    if (!_c.getPacketPolicies().containsKey(packetPolicyName)) {
+      // Packet policy does not exist for this zone. Check NAT rules and generate policy if needed.
+      List<NatRule> natRules = getNatRulesForEnteringZone(zone);
+      if (natRules.isEmpty()) {
+        // No NAT rules apply to packets entering this zone.
+        return null;
+      }
       _c.getPacketPolicies()
-          .put(packetPolicyName, buildPacketPolicy(packetPolicyName, natRules, vsys));
-      return packetPolicyName;
+          .put(packetPolicyName, buildPacketPolicy(packetPolicyName, natRules, zone.getVsys()));
     }
-    return null;
+    return packetPolicyName;
   }
 
   private MatchHeaderSpace getRuleMatchHeaderSpace(NatRule rule, Vsys vsys) {
@@ -1337,12 +1339,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         name, lines.build(), new Return(new FibLookup(IngressInterfaceVrf.instance())));
   }
 
-  /** Return a list of all valid NAT rules associated with the specified from-interface. */
-  private List<NatRule> getNatRulesForIface(Interface iface) {
-    Zone zone = iface.getZone();
-    if (zone == null) {
-      return ImmutableList.of();
-    }
+  /** Return a list of all valid NAT rules to apply to packets entering the specified zone. */
+  private List<NatRule> getNatRulesForEnteringZone(Zone zone) {
     Vsys vsys = zone.getVsys();
     return getAllNatRules(vsys)
         .filter(
