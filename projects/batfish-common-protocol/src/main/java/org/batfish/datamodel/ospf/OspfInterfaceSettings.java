@@ -129,7 +129,7 @@ public final class OspfInterfaceSettings implements Serializable {
   private int _ospfHelloInterval;
   @Nullable private Integer _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
-  @Nonnull private SortedSet<Ip> _ospfNbmaNeighbors;
+  @Nonnull private Set<Ip> _ospfNbmaNeighbors;
   @Nullable private OspfNetworkType _ospfNetworkType;
   private boolean _ospfPassive;
   @Nullable private String _ospfProcess;
@@ -197,7 +197,7 @@ public final class OspfInterfaceSettings implements Serializable {
     _ospfHelloInterval = helloInterval;
     _ospfHelloMultiplier = helloMultiplier;
     _ospfInboundDistributeListPolicy = inboundDistributeListPolicy;
-    _ospfNbmaNeighbors = ImmutableSortedSet.copyOf(nbmaNeighbors);
+    _ospfNbmaNeighbors = ImmutableSet.copyOf(nbmaNeighbors);
     _ospfNetworkType = networkType;
     _ospfPassive = passive;
     _ospfProcess = process;
@@ -292,11 +292,11 @@ public final class OspfInterfaceSettings implements Serializable {
   @JsonProperty(PROP_NBMA_NEIGHBORS)
   @Nonnull
   private SortedSet<Ip> getJacksonNbmaNeighbors() {
-    return _ospfNbmaNeighbors;
+    return ImmutableSortedSet.copyOf(_ospfNbmaNeighbors);
   }
 
   @Nonnull
-  public SortedSet<Ip> getNbmaNeighbors() {
+  public Set<Ip> getNbmaNeighbors() {
     return _ospfNbmaNeighbors;
   }
 
