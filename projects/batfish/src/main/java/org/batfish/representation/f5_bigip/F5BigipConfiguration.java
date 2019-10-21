@@ -1984,7 +1984,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
                       .map(ImishInterface::getOspf)
                       // If interface being added has no explicit OSPF configuration, use defaults
                       .orElseGet(() -> new OspfInterface());
-              finalizeInterfaceOspfSettings(vlanName, areaId, processName, ospf, passive);
+              finalizeInterfaceOspfSettings(
+                  vlanName, areaId, processName, ospf, proc.getNeighbors(), passive);
             });
     return interfaces.build();
   }
@@ -1994,7 +1995,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private void finalizeInterfaceOspfSettings(
-      String ifaceName, long areaId, String processName, OspfInterface ospf, boolean passive) {
+      String ifaceName,
+      long areaId,
+      String processName,
+      OspfInterface ospf,
+      Set<Ip> ospfNeighbors,
+      boolean passive) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
     OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
     ospfSettings.setCost(ospf.getCost());
@@ -2008,6 +2014,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // TODO: support poll-interval / dead-interval in 'neighbor' command
       ospfSettings.setDeadInterval(DEFAULT_NBMA_DEAD_INTERVAL_S);
       ospfSettings.setHelloInterval(DEFAULT_NBMA_HELLO_INTERVAL_S);
+      ospfSettings.setNbmaNeighbors(ospfNeighbors);
     } else {
       ospfSettings.setDeadInterval(firstNonNull(ospf.getDeadIntervalS(), DEFAULT_DEAD_INTERVAL_S));
       ospfSettings.setHelloInterval(
