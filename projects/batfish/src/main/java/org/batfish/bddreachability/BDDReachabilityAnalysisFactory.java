@@ -1752,8 +1752,6 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private @Nonnull Stream<Interface> getInterfaces() {
-    return _configs.values().stream()
-        .flatMap(c -> c.getActiveInterfaces().values().stream())
-        .filter(Interface::getActive);
+    return _configs.values().stream().flatMap(c -> c.getActiveInterfaces().values().stream());
   }
 }
