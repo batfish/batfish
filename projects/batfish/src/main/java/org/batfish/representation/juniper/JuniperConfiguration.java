@@ -1041,6 +1041,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
     ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceType()));
 
+    if (vsIface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+      // neighbors only for NBMA mode:
+      // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/neighbor-edit-protocols-ospf.html
+      ospfSettings.setNbmaNeighbors(
+          vsIface.getOspfNeighbors().stream()
+              .map(InterfaceOspfNeighbor::getIp)
+              .collect(ImmutableSet.toImmutableSet()));
+    }
+
     iface.setOspfSettings(ospfSettings.build());
   }
 
