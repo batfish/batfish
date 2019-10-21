@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -40,7 +41,6 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -174,18 +174,26 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     ConfiguredSessionStatus status =
         getConfiguredStatus(activeId, activePeer, type, ipVrfOwners, configuredTopology);
     Node remoteNode = null;
+    Long localAs = activePeer.getLocalAs();
+    String remoteAs = activePeer.getRemoteAsns().toString();
     if (status == UNIQUE_MATCH) {
-      String remoteNodeName =
-          configuredTopology.adjacentNodes(activeId).iterator().next().getHostname();
+      BgpPeerConfigId remoteId = configuredTopology.adjacentNodes(activeId).iterator().next();
+      String remoteNodeName = remoteId.getHostname();
       remoteNode = new Node(remoteNodeName);
+      Optional<BgpSessionProperties> sessionProps =
+          configuredTopology.edgeValue(activeId, remoteId);
+      if (sessionProps.isPresent()) {
+        remoteAs = Long.toString(sessionProps.get().getHeadAs());
+        localAs = sessionProps.get().getTailAs();
+      }
     }
     return Row.builder(METADATA_MAP)
         .put(COL_CONFIGURED_STATUS, status)
         .put(COL_LOCAL_INTERFACE, null)
-        .put(COL_LOCAL_AS, activePeer.getLocalAs())
+        .put(COL_LOCAL_AS, localAs)
         .put(COL_LOCAL_IP, activePeer.getLocalIp())
         .put(COL_NODE, new Node(activeId.getHostname()))
-        .put(COL_REMOTE_AS, activePeer.getRemoteAsns().toString())
+        .put(COL_REMOTE_AS, remoteAs)
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
@@ -240,7 +248,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
                   assert activeRemote != null;
                   return rb.put(COL_CONFIGURED_STATUS, DYNAMIC_MATCH)
                       .put(COL_LOCAL_IP, sessionProps.getTailIp())
-                      .put(COL_REMOTE_AS, LongSpace.of(activeRemote.getLocalAs()).toString())
+                      .put(COL_LOCAL_AS, sessionProps.getTailAs())
+                      .put(COL_REMOTE_AS, Long.toString(sessionProps.getHeadAs()))
                       .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
                       .put(
                           COL_REMOTE_IP,
@@ -265,20 +274,27 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     ConfiguredSessionStatus status = getConfiguredStatus(unnumId, unnumPeer, configuredTopology);
     Node remoteNode = null;
     NodeInterfacePair remoteInterface = null;
+    Long localAs = unnumPeer.getLocalAs();
+    String remoteAs = unnumPeer.getRemoteAsns().toString();
     if (status == UNIQUE_MATCH) {
       BgpPeerConfigId remoteId = configuredTopology.adjacentNodes(unnumId).iterator().next();
       remoteNode = new Node(remoteId.getHostname());
       remoteInterface = NodeInterfacePair.of(remoteId.getHostname(), remoteId.getPeerInterface());
+      Optional<BgpSessionProperties> sessionProps = configuredTopology.edgeValue(unnumId, remoteId);
+      if (sessionProps.isPresent()) {
+        remoteAs = Long.toString(sessionProps.get().getHeadAs());
+        localAs = sessionProps.get().getTailAs();
+      }
     }
     return Row.builder(METADATA_MAP)
         .put(COL_CONFIGURED_STATUS, status)
         .put(
             COL_LOCAL_INTERFACE,
             NodeInterfacePair.of(unnumId.getHostname(), unnumPeer.getPeerInterface()))
-        .put(COL_LOCAL_AS, unnumPeer.getLocalAs())
+        .put(COL_LOCAL_AS, localAs)
         .put(COL_LOCAL_IP, null)
         .put(COL_NODE, new Node(unnumId.getHostname()))
-        .put(COL_REMOTE_AS, unnumPeer.getRemoteAsns().toString())
+        .put(COL_REMOTE_AS, remoteAs)
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, remoteInterface)
         .put(COL_REMOTE_IP, null)
