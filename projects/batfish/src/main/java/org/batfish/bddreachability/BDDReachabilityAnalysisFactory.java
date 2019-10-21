@@ -62,6 +62,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -781,6 +782,7 @@ public final class BDDReachabilityAnalysisFactory {
         .map(Map::values)
         .flatMap(Collection::stream)
         .flatMap(vrf -> vrf.getInterfaces().values().stream())
+        .filter(Interface::getActive)
         .map(
             iface -> {
               String aclName = iface.getPostTransformationIncomingFilterName();
@@ -802,6 +804,7 @@ public final class BDDReachabilityAnalysisFactory {
         .map(Map::values)
         .flatMap(Collection::stream)
         .flatMap(vrf -> vrf.getInterfaces().values().stream())
+        .filter(Interface::getActive)
         // Policy-based routing rules are generated elsewhere
         .filter(iface -> iface.getRoutingPolicyName() == null && iface.getIncomingFilter() != null)
         .map(
@@ -827,6 +830,7 @@ public final class BDDReachabilityAnalysisFactory {
         .map(Map::values)
         .flatMap(Collection::stream)
         .flatMap(vrf -> vrf.getInterfaces().values().stream())
+        .filter(Interface::getActive)
         .filter(iface -> iface.getRoutingPolicyName() != null)
         .map(
             i -> {
@@ -850,6 +854,7 @@ public final class BDDReachabilityAnalysisFactory {
         .map(Map::values)
         .flatMap(Collection::stream)
         .flatMap(vrf -> vrf.getInterfaces().values().stream())
+        .filter(Interface::getActive)
         .filter(iface -> iface.getRoutingPolicyName() != null)
         .flatMap(
             iface -> {
@@ -908,6 +913,7 @@ public final class BDDReachabilityAnalysisFactory {
         .map(Map::values)
         .flatMap(Collection::stream)
         .flatMap(vrf -> vrf.getInterfaces().values().stream())
+        .filter(Interface::getActive)
         // Policy-based routing edges handled elsewhere
         .filter(iface -> iface.getRoutingPolicyName() == null)
         .map(
