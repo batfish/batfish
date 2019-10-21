@@ -926,6 +926,7 @@ public final class F5BigipImishGrammarTest {
       assertFalse(ospf.getPassive());
       assertThat(ospf.getHelloInterval(), equalTo(30));
       assertThat(ospf.getDeadInterval(), equalTo(120));
+      assertThat(ospf.getNbmaNeighbors(), contains(Ip.parse("10.0.1.2")));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("/Common/vlan_passive");
