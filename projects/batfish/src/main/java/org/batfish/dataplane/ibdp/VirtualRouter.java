@@ -782,20 +782,15 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting
   void initConnectedRib() {
     // Look at all interfaces in our VRF
-    for (Interface i : _vrf.getInterfaces().values()) {
-      generateConnectedRoutes(i).forEach(r -> _connectedRib.mergeRoute(annotateRoute(r)));
-    }
+    _vrf.getActiveInterfaces()
+        .flatMap(VirtualRouter::generateConnectedRoutes)
+        .forEach(r -> _connectedRib.mergeRoute(annotateRoute(r)));
   }
 
-  /**
-   * Generate connected routes for a given interface. Returns an empty stream if the interface is
-   * not active or has no IP addresses.
-   */
+  /** Generate connected routes for a given active interface. */
   @Nonnull
   private static Stream<ConnectedRoute> generateConnectedRoutes(@Nonnull Interface iface) {
-    if (!iface.getActive()) {
-      return Stream.empty();
-    }
+    assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
         .map(
             addr ->
@@ -839,21 +834,19 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting
   void initLocalRib() {
     // Look at all interfaces in our VRF
-    for (Interface i : _vrf.getInterfaces().values()) {
-      generateLocalRoutes(i).forEach(r -> _localRib.mergeRoute(annotateRoute(r)));
-    }
+    _vrf.getActiveInterfaces()
+        .flatMap(VirtualRouter::generateLocalRoutes)
+        .forEach(r -> _localRib.mergeRoute(annotateRoute(r)));
   }
 
   /**
-   * Generate local routes for a given interface. Returns an empty stream if the interface is not
-   * active or has no valid IP addresses (only addresses with network length of < /32 are
-   * considered).
+   * Generate local routes for a given active interface. Returns an empty stream if the interface
+   * generates no local routes based on {@link ConnectedRouteMetadata#getGenerateLocalRoutes()} or
+   * Batfish policy (only addresses with network length of < /32 are considered).
    */
   @Nonnull
   private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
-    if (!iface.getActive()) {
-      return Stream.empty();
-    }
+    assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
         .filter(
             addr ->
@@ -918,10 +911,11 @@ public class VirtualRouter implements Serializable {
         new IsisRoute.Builder()
             .setArea(proc.getNetAddress().getAreaIdString())
             .setSystemId(proc.getNetAddress().getSystemIdString());
-    for (Interface iface : _vrf.getInterfaces().values()) {
-      generateAllIsisInterfaceRoutes(
-          d1, d2, l1Admin, l2Admin, l1Settings, l2Settings, ifaceRouteBuilder, iface);
-    }
+    _vrf.getActiveInterfaces()
+        .forEach(
+            iface ->
+                generateAllIsisInterfaceRoutes(
+                    d1, d2, l1Admin, l2Admin, l1Settings, l2Settings, ifaceRouteBuilder, iface));
 
     // export default route for L1 neighbors on L1L2 routers that are not overloaded
     if (l1Settings != null && l2Settings != null && !proc.getOverload()) {
