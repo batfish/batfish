@@ -40,6 +40,7 @@ import org.batfish.specifier.parboiled.Grammar;
 @ParametersAreNonnullByDefault
 public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
+  public static final String CONFEDERATION = "confederation";
   public static final String LOCAL_AS = "Local_AS";
   public static final String LOCAL_IP = "Local_IP";
   public static final String IS_PASSIVE = "Is_Passive";
@@ -123,6 +124,10 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
                           .orElse(false),
                   Schema.BOOLEAN,
                   "Whether this peer propagates communities"))
+          .put(
+              CONFEDERATION,
+              new PropertyDescriptor<>(
+                  BgpPeerConfig::getConfederationAsn, Schema.LONG, "Confederation AS number"))
           .build();
 
   /** Returns the property descriptor for {@code property} */

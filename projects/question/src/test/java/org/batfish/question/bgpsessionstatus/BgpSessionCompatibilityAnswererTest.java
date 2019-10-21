@@ -390,8 +390,8 @@ public class BgpSessionCompatibilityAnswererTest {
 
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    bgpTopology.putEdgeValue(peerId, remoteId, BgpSessionProperties.from(remote, peer, false));
-    bgpTopology.putEdgeValue(remoteId, peerId, BgpSessionProperties.from(remote, peer, true));
+    bgpTopology.putEdgeValue(peerId, remoteId, BgpSessionProperties.from(peer, remote, false));
+    bgpTopology.putEdgeValue(remoteId, peerId, BgpSessionProperties.from(peer, remote, true));
 
     Row row = getUnnumberedPeerRow(peerId, peer, bgpTopology);
     Row expected =

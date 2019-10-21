@@ -39,6 +39,8 @@ import org.batfish.specifier.parboiled.Grammar;
 @ParametersAreNonnullByDefault
 public class BgpProcessPropertySpecifier extends PropertySpecifier {
 
+  public static final String CONFEDERATION_ID = "Confederation_ID";
+  public static final String CONFEDERATION_MEMBERS = "Confederation_Members";
   public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE = "Multipath_Match_Mode";
   public static final String MULTIPATH_EBGP = "Multipath_EBGP";
   public static final String MULTIPATH_IBGP = "Multipath_IBGP";
@@ -97,6 +99,24 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
                           .map(Object::toString)
                           .collect(Collectors.joining(", "))
                       + ")"))
+          .put(
+              CONFEDERATION_ID,
+              new PropertyDescriptor<>(
+                  bgpProcess ->
+                      bgpProcess.getConfederation() != null
+                          ? bgpProcess.getConfederation().getId()
+                          : null,
+                  Schema.LONG,
+                  "Externally visible autonomous system number for the confederation"))
+          .put(
+              CONFEDERATION_MEMBERS,
+              new PropertyDescriptor<>(
+                  bgpProcess ->
+                      bgpProcess.getConfederation() != null
+                          ? bgpProcess.getConfederation().getMembers()
+                          : null,
+                  Schema.set(Schema.LONG),
+                  "Set of autonomous system numbers visible only within this BGP confederation"))
           .build();
 
   /** Returns the property descriptor for {@code property} */

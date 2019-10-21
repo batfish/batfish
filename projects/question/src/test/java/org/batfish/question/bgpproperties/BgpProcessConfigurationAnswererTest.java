@@ -1,5 +1,7 @@
 package org.batfish.question.bgpproperties;
 
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.CONFEDERATION_ID;
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.CONFEDERATION_MEMBERS;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -18,6 +20,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -35,6 +38,7 @@ public class BgpProcessConfigurationAnswererTest {
   public void testWithNeighbors() {
     // Create process with active, passive, and unnumbered peers
     BgpProcess proc = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    proc.setConfederation(new BgpConfederation(1L, ImmutableSet.of(2L, 3L)));
     BgpActivePeerConfig.builder()
         .setBgpProcess(proc)
         .setLocalAs(100L)
@@ -84,6 +88,8 @@ public class BgpProcessConfigurationAnswererTest {
             .put(BgpProcessConfigurationAnswerer.COL_NODE, new Node("c"))
             .put(BgpProcessConfigurationAnswerer.COL_VRF, "vrf")
             .put(BgpProcessConfigurationAnswerer.COL_ROUTER_ID, Ip.ZERO)
+            .put(CONFEDERATION_ID, 1L)
+            .put(CONFEDERATION_MEMBERS, ImmutableSet.of(2L, 3L))
             .put(BgpProcessPropertySpecifier.MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE, null)
             .put(BgpProcessPropertySpecifier.MULTIPATH_EBGP, false)
             .put(BgpProcessPropertySpecifier.MULTIPATH_IBGP, false)
