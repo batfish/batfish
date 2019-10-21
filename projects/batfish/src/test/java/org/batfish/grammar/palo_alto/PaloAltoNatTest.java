@@ -76,36 +76,18 @@ public class PaloAltoNatTest {
             .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(inside1Name)
-            .setDstIp(Ip.parse("1.2.1.2"))
             .setSrcIp(Ip.parse("1.1.1.2"))
+            .setDstIp(Ip.parse("1.2.1.2"))
             .setSrcPort(111)
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP)
             .build();
     // This flow is NOT NAT'd (does not match source address constraint)
     Flow insideToOutsideBadSrcIp =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(inside1Name)
-            .setDstIp(Ip.parse("1.2.1.2"))
-            .setSrcIp(Ip.parse("1.2.1.200"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
+        insideToOutside.toBuilder().setSrcIp(Ip.parse("1.2.1.200")).build();
     // This flow is NOT NAT'd (does not match from interface constraint)
     Flow outsideToOutsideBadIngressIface =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(outside2Name)
-            .setDstIp(Ip.parse("1.2.1.2"))
-            .setSrcIp(Ip.parse("1.1.1.2"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
+        insideToOutside.toBuilder().setIngressInterface(outside2Name).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
@@ -146,53 +128,22 @@ public class PaloAltoNatTest {
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     batfish.computeDataPlane();
 
-    Flow hitsPreRulebaseNatRule =
+    Flow.Builder flowBuilder =
         Flow.builder()
             .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(inside1Name)
             .setDstIp(Ip.parse("1.2.1.2"))
-            .setSrcIp(Ip.parse("1.1.1.2"))
             .setSrcPort(111)
             .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
-    Flow hitsVsysNatRule =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(inside1Name)
-            .setDstIp(Ip.parse("1.2.1.2"))
-            // Src IP in 1.1.1.2/30
-            .setSrcIp(Ip.parse("1.1.1.1"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
-    Flow hitsPostRulebaseNatRule =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(inside1Name)
-            .setDstIp(Ip.parse("1.2.1.2"))
-            // Src IP in 1.1.1.2/28 but not 1.1.1.2/30
-            .setSrcIp(Ip.parse("1.1.1.6"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
-    Flow doesNotHitNatRule =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(inside1Name)
-            .setDstIp(Ip.parse("1.2.1.2"))
-            // Src IP not in 1.1.1.2/28
-            .setSrcIp(Ip.parse("1.1.1.30"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
+            .setIpProtocol(IpProtocol.TCP);
+    Flow hitsPreRulebaseNatRule = flowBuilder.setSrcIp(Ip.parse("1.1.1.2")).build();
+    // Src IP in 1.1.1.2/30
+    Flow hitsVsysNatRule = flowBuilder.setSrcIp(Ip.parse("1.1.1.1")).build();
+    // Src IP in 1.1.1.2/28 but not 1.1.1.2/30
+    Flow hitsPostRulebaseNatRule = flowBuilder.setSrcIp(Ip.parse("1.1.1.6")).build();
+    // Src IP not in 1.1.1.2/28
+    Flow doesNotHitNatRule = flowBuilder.setSrcIp(Ip.parse("1.1.1.30")).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
@@ -256,36 +207,18 @@ public class PaloAltoNatTest {
             .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(outside1Name)
-            .setDstIp(Ip.parse("1.1.1.2"))
             .setSrcIp(Ip.parse("1.2.1.2"))
+            .setDstIp(Ip.parse("1.1.1.2"))
             .setSrcPort(111)
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP)
             .build();
     // This flow is NOT NAT'd (does not match source address constraint)
     Flow outsideToInsideBadSrcIp =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(outside1Name)
-            .setDstIp(Ip.parse("1.1.1.2"))
-            .setSrcIp(Ip.parse("1.2.1.200"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
+        outsideToInsideNat.toBuilder().setSrcIp(Ip.parse("1.2.1.200")).build();
     // This flow is NOT NAT'd (does not match from-interface constraint)
     Flow insideToInsideBadIngressIface =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(inside2Name)
-            .setDstIp(Ip.parse("1.1.1.2"))
-            .setSrcIp(Ip.parse("1.2.1.2"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
+        outsideToInsideNat.toBuilder().setIngressInterface(inside2Name).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
@@ -323,8 +256,7 @@ public class PaloAltoNatTest {
     // Interface in OUTSIDE zone has packet policy
     assertThat(outside1Policy, notNullValue());
 
-    // This flow is NAT'd by the pre-rulebase rule and should pass through the firewall
-    Flow outsideToInsideNatPreRulebase =
+    Flow.Builder flowBuilder =
         Flow.builder()
             .setTag("test")
             .setIngressNode(c.getHostname())
@@ -333,34 +265,13 @@ public class PaloAltoNatTest {
             .setSrcIp(Ip.parse("1.2.1.2"))
             .setSrcPort(111)
             .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
-
+            .setIpProtocol(IpProtocol.TCP);
+    // This flow is NAT'd by the pre-rulebase rule and should pass through the firewall
+    Flow outsideToInsideNatPreRulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.2")).build();
     // This flow is NAT'd by the rulebase rule and should pass through the firewall
-    Flow outsideToInsideNatRulebase =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(outside1Name)
-            .setDstIp(Ip.parse("1.1.1.2"))
-            .setSrcIp(Ip.parse("1.2.1.4"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
-
+    Flow outsideToInsideNatRulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.4")).build();
     // This flow is NAT'd by the post-rulebase and should pass through the firewall
-    Flow outsideToInsideNatPostRulebase =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(outside1Name)
-            .setDstIp(Ip.parse("1.1.1.2"))
-            .setSrcIp(Ip.parse("1.2.1.5"))
-            .setSrcPort(111)
-            .setDstPort(222)
-            .setIpProtocol(IpProtocol.TCP)
-            .build();
+    Flow outsideToInsideNatPostRulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.5")).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
