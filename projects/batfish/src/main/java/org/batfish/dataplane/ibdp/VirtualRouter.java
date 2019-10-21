@@ -787,15 +787,10 @@ public class VirtualRouter implements Serializable {
         .forEach(r -> _connectedRib.mergeRoute(annotateRoute(r)));
   }
 
-  /**
-   * Generate connected routes for a given interface. Returns an empty stream if the interface is
-   * not active or has no IP addresses.
-   */
+  /** Generate connected routes for a given active interface. */
   @Nonnull
   private static Stream<ConnectedRoute> generateConnectedRoutes(@Nonnull Interface iface) {
-    if (!iface.getActive()) {
-      return Stream.empty();
-    }
+    assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
         .map(
             addr ->
@@ -845,15 +840,14 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Generate local routes for a given interface. Returns an empty stream if the interface is not
-   * active or has no valid IP addresses (only addresses with network length of < /32 are
-   * considered).
+   * Generate local routes for a given active interface. Returns an empty stream if the interface
+   * generates no local routes IP addresses based on {@link
+   * ConnectedRouteMetadata#getGenerateLocalRoutes()} or local policy (only addresses with network
+   * length of < /32 are considered).
    */
   @Nonnull
   private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
-    if (!iface.getActive()) {
-      return Stream.empty();
-    }
+    assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
         .filter(
             addr ->
