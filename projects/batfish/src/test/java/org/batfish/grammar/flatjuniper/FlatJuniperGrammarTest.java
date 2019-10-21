@@ -5100,7 +5100,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaInterfaceNeighbor() {
+  public void testOspfAreaInterfaceNeighborExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("ospf-area-interface-neighbor");
     assertNotNull(juniperConfiguration);
     assertNotNull(juniperConfiguration.getMasterLogicalSystem().getInterfaces().get("ge-0/0/0"));
@@ -5139,5 +5139,18 @@ public final class FlatJuniperGrammarTest {
             .get("ge-0/0/1.0")
             .getOspfNeighbors(),
         contains(neighbor));
+  }
+
+  @Test
+  public void testOspfAreaInterfaceNeighborConversion() {
+    Configuration config = parseConfig("ospf-area-interface-neighbor");
+
+    assertNotNull(config.getAllInterfaces().get("ge-0/0/0.0").getOspfSettings().getNbmaNeighbors());
+    assertThat(
+        config.getAllInterfaces().get("ge-0/0/0.0").getOspfSettings().getNbmaNeighbors(),
+        contains(Ip.parse("1.0.0.1")));
+
+    assertThat(
+        config.getAllInterfaces().get("ge-0/0/1.0").getOspfSettings().getNbmaNeighbors(), empty());
   }
 }
