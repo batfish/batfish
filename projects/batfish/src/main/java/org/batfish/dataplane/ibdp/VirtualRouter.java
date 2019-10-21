@@ -841,9 +841,8 @@ public class VirtualRouter implements Serializable {
 
   /**
    * Generate local routes for a given active interface. Returns an empty stream if the interface
-   * generates no local routes IP addresses based on {@link
-   * ConnectedRouteMetadata#getGenerateLocalRoutes()} or local policy (only addresses with network
-   * length of < /32 are considered).
+   * generates no local routes based on {@link ConnectedRouteMetadata#getGenerateLocalRoutes()} or
+   * Batfish policy (only addresses with network length of < /32 are considered).
    */
   @Nonnull
   private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
