@@ -1,0 +1,141 @@
+policy {
+  panorama {
+  }
+}
+config {
+  devices {
+    localhost.localdomain {
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer3 {
+                units {
+                  ethernet1/1.1 {
+                    ip {
+                      1.1.1.3/24;
+                    }
+                  }
+                  ethernet1/1.2 {
+                    ip {
+                      1.1.2.3/24;
+                    }
+                  }
+                }
+              }
+            }
+            ethernet1/2 {
+              layer3 {
+                units {
+                  ethernet1/2.1 {
+                    ip {
+                      1.2.1.3/24;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          vr1 {
+            interface [ ethernet1/1.1 ethernet1/1.2 ethernet1/2.1];
+          }
+        }
+      }
+      deviceconfig {
+        system {
+          hostname destination-nat;
+        }
+      }
+      vsys {
+        vsys1 {
+          address {
+            SOURCE_ADDR {
+              ip-netmask 1.2.1.2/32;
+            }
+            SERVER_NEW_ADDR {
+              ip-netmask 1.1.1.99/32;
+            }
+            SERVER_OLD_ADDR {
+              ip-netmask 1.1.1.2/32;
+            }
+            BOGUS_ADDR {
+              ip-netmask 11.11.11.11/32;
+            }
+          }
+          rulebase {
+            nat {
+              rules {
+                # Should never apply this NAT since it matches a bogus source address
+                DEST_NAT_NEVER_MATCHED {
+                  destination-translation {
+                    translated-address BOGUS_ADDR;
+                  }
+                  to INSIDE;
+                  from OUTSIDE;
+                  source BOGUS_ADDR;
+                  destination any;
+                }
+                DEST_NAT_NAME {
+                  destination-translation {
+                    translated-address SERVER_NEW_ADDR;
+                  }
+                  to INSIDE;
+                  from OUTSIDE;
+                  source SOURCE_ADDR;
+                  destination any;
+                }
+                # Should never apply this NAT since previous rule will always be applied first
+                DEST_NAT_NEVER_REACHED {
+                  destination-translation {
+                    translated-address BOGUS_ADDR;
+                  }
+                  to INSIDE;
+                  from OUTSIDE;
+                  source SOURCE_ADDR;
+                  destination any;
+                }
+              }
+            }
+            security {
+              rules {
+                PERMIT_TO_SERVER {
+                  to INSIDE;
+                  from OUTSIDE;
+                  source any;
+                  # destination 1.1.1.0/24;
+                  destination [ SERVER_NEW_ADDR];
+                  application any;
+                  service any;
+                  action allow;
+                }
+                DENY_ALL {
+                  to any;
+                  from any;
+                  source any;
+                  destination any;
+                  application any;
+                  service any;
+                  action deny;
+                }
+              }
+            }
+          }
+          zone {
+            INSIDE {
+              network {
+                layer3 [ ethernet1/1.1 ethernet1/1.2];
+              }
+            }
+            OUTSIDE {
+              network {
+                layer3 [ ethernet1/2.1];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,6 +2,9 @@ package org.batfish.grammar.palo_alto;
 
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
+import static org.batfish.datamodel.OriginType.EGP;
+import static org.batfish.datamodel.OriginType.IGP;
+import static org.batfish.datamodel.OriginType.INCOMPLETE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
@@ -104,11 +107,14 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -138,6 +144,8 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
@@ -614,7 +622,7 @@ public final class PaloAltoGrammarTest {
     PolicyRule export1 = bgp.getExportPolicyRules().get("export1");
     assertThat(export1.getAction(), equalTo(Action.ALLOW));
     assertThat(export1.getUsedBy(), equalTo("pg1"));
-    assertThat(export1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(OriginType.IGP)));
+    assertThat(export1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(IGP)));
     assertThat(export1.getMatchAddressPrefixSet(), not(nullValue()));
     assertThat(
         export1.getMatchAddressPrefixSet().getAddressPrefixes(),
@@ -697,7 +705,7 @@ public final class PaloAltoGrammarTest {
         bgp.getRedistRules().get(new RedistRuleRefNameOrPrefix(Prefix.parse("2.2.2.2/32")));
     assertThat(ipAddressRedistRule, not(nullValue()));
     assertThat(ipAddressRedistRule.getEnable(), equalTo(Boolean.FALSE));
-    assertThat(ipAddressRedistRule.getOrigin(), equalTo(OriginType.IGP));
+    assertThat(ipAddressRedistRule.getOrigin(), equalTo(IGP));
     assertThat(
         ipAddressRedistRule.getAddressFamilyIdentifier(), equalTo(AddressFamilyIdentifier.IPV6));
     assertThat(ipAddressRedistRule.getRouteTableType(), equalTo(RouteTableType.MULTICAST));
@@ -761,6 +769,127 @@ public final class PaloAltoGrammarTest {
     String exportPolicyName = peer.getIpv4UnicastAddressFamily().getExportPolicy();
     assertThat(exportPolicyName, not(nullValue()));
     assertThat(c.getRoutingPolicies().get(exportPolicyName), not(nullValue()));
+  }
+
+  @Test
+  public void testBgpExportImportPolicyConversion() {
+    Configuration c = parseConfig("bgp-export-import-policies");
+
+    // test process level common export policy
+    String bgpCommonExportPolicyName = "~BGP_COMMON_EXPORT_POLICY:vr1~";
+    RoutingPolicy bgpCommonExportPolicy = c.getRoutingPolicies().get(bgpCommonExportPolicyName);
+
+    org.batfish.datamodel.StaticRoute.Builder srb =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setAdmin(5)
+            .setMetric(10L);
+
+    Bgpv4Route.Builder bgpBuilder = Bgpv4Route.builder();
+    boolean accepted = bgpCommonExportPolicy.process(srb.build(), bgpBuilder, Direction.OUT);
+    assertTrue(accepted);
+    assertThat(bgpBuilder.getOriginType(), equalTo(IGP));
+
+    // rejected because of mismatching prefix
+    assertFalse(
+        bgpCommonExportPolicy.process(
+            srb.setNetwork(Prefix.parse("4.4.4.0/24")).build(),
+            Bgpv4Route.builder(),
+            Direction.OUT));
+
+    // rejected because of mismatching protocol
+    assertFalse(
+        bgpCommonExportPolicy.process(
+            ConnectedRoute.builder()
+                .setNetwork(Prefix.parse("1.1.1.0/24"))
+                .setNextHopInterface("iface1")
+                .build(),
+            Bgpv4Route.builder(),
+            Direction.OUT));
+
+    // the common BGP export policy should export any BGP route
+    assertTrue(
+        bgpCommonExportPolicy.process(
+            Bgpv4Route.builder()
+                .setAsPath(AsPath.ofSingletonAsSets(2L))
+                .setOriginatorIp(Ip.ZERO)
+                .setOriginType(OriginType.INCOMPLETE)
+                .setProtocol(RoutingProtocol.BGP)
+                .setNextHopIp(Ip.parse("23.23.23.32"))
+                .setNetwork(Prefix.ZERO)
+                .setTag(0L)
+                .build(),
+            Bgpv4Route.builder(),
+            Direction.OUT));
+
+    // test the routing policy generated by for all export policy rules used by this peer
+    String bgpExportPolicyRuleRoutingPolicyName = "~BGP_POLICY_RULE_EXPORT_POLICY:vr1:peer1~";
+    RoutingPolicy routingPolicyForExportPolicy =
+        c.getRoutingPolicies().get(bgpExportPolicyRuleRoutingPolicyName);
+
+    srb =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setAdmin(5)
+            .setMetric(10L);
+    bgpBuilder = Bgpv4Route.builder();
+    accepted = routingPolicyForExportPolicy.process(srb.build(), bgpBuilder, Direction.OUT);
+    assertTrue(accepted);
+    assertThat(bgpBuilder.getMetric(), equalTo(2323L));
+    assertThat(bgpBuilder.getOriginType(), equalTo(EGP));
+
+    // only 1.1.1.0/24 allowed by the export policy rule
+    assertFalse(
+        routingPolicyForExportPolicy.process(
+            srb.setNetwork(Prefix.parse("2.2.2.0/24")).build(),
+            Bgpv4Route.builder(),
+            Direction.OUT));
+
+    // testing the combined routing policy generated for the peer (conjunction of above two
+    // policies)
+    String bgpExportPoliciesPeer1 = "~BGP_PEER_EXPORT_POLICY:vr1:peer1~";
+    RoutingPolicy routingPolicyForPeer1 = c.getRoutingPolicies().get(bgpExportPoliciesPeer1);
+
+    srb =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setAdmin(5)
+            .setMetric(10L);
+    bgpBuilder = Bgpv4Route.builder();
+    accepted = routingPolicyForPeer1.process(srb.build(), bgpBuilder, Direction.OUT);
+    assertTrue(accepted);
+    assertThat(bgpBuilder.getMetric(), equalTo(2323L));
+    // Peer export policy rule overrides the BGP common export policy rule
+    assertThat(bgpBuilder.getOriginType(), equalTo(EGP));
+
+    // only 1.1.1.0/24 allowed by the export policy rule
+    assertFalse(
+        routingPolicyForPeer1.process(
+            srb.setNetwork(Prefix.parse("2.2.2.0/24")).build(),
+            Bgpv4Route.builder(),
+            Direction.OUT));
+
+    // testing import policy generated for peer 1
+    String importPolicyPeer1Name = "~BGP_PEER_IMPORT_POLICY:vr1:peer1~";
+    RoutingPolicy importRoutingPolicyPeer1 = c.getRoutingPolicies().get(importPolicyPeer1Name);
+
+    srb =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.parse("3.2.1.0/24"))
+            .setAdmin(5)
+            .setMetric(10L);
+
+    bgpBuilder = Bgpv4Route.builder();
+    accepted = importRoutingPolicyPeer1.process(srb.build(), bgpBuilder, Direction.IN);
+    assertTrue(accepted);
+    assertThat(bgpBuilder.getOriginType(), equalTo(INCOMPLETE));
+
+    // rejected because of mismatching prefix
+    assertFalse(
+        importRoutingPolicyPeer1.process(
+            srb.setNetwork(Prefix.parse("1.1.1.0/24")).build(),
+            Bgpv4Route.builder(),
+            Direction.IN));
   }
 
   @Test
@@ -1506,7 +1635,7 @@ public final class PaloAltoGrammarTest {
     assertThat(rule1.getSource(), contains(anyRuleEndpoint));
     assertThat(rule1.getDestination(), contains(anyRuleEndpoint));
     assertThat(
-        rule1.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddress(),
+        rule1.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddresses(),
         contains(
             new RuleEndpoint(IP_ADDRESS, "1.1.1.1"),
             new RuleEndpoint(IP_PREFIX, "2.2.2.0/24"),
@@ -1528,7 +1657,7 @@ public final class PaloAltoGrammarTest {
             new RuleEndpoint(REFERENCE, "DST_2"),
             new RuleEndpoint(REFERENCE, "DST_3")));
     assertThat(
-        rule2.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddress(),
+        rule2.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddresses(),
         contains(
             new RuleEndpoint(REFERENCE, "SRC_1"),
             new RuleEndpoint(REFERENCE, "SRC_2"),

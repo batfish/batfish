@@ -518,7 +518,9 @@ public class OspfTopologyUtilsTest {
     // if neighbor is not specified return NO_SESSION
     {
       OspfSessionStatus val = getSessionStatus(REMOTE_CONFIG_ID, LOCAL_CONFIG_ID, configs);
-      assertThat(val, equalTo(OspfSessionStatus.NO_SESSION));
+      // TODO: estabilished for now. turing this into NO_SESSION when nbma conversion for all
+      // vendors done
+      assertThat(val, equalTo(OspfSessionStatus.ESTABLISHED));
     }
   }
 }

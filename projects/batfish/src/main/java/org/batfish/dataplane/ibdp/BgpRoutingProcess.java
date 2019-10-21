@@ -50,6 +50,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
@@ -958,7 +959,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         sessionProperties.getConfedSessionType(),
         sessionProperties.getHeadAs(),
         sessionProperties.getHeadIp(),
-        sessionProperties.getHeadIp());
+        Route.UNSET_ROUTE_NEXT_HOP_IP);
 
     // Successfully exported route
     Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();

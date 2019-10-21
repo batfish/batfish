@@ -11,6 +11,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVIC
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
+import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
+import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
@@ -18,19 +21,24 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.Streams;
 import com.google.common.collect.TreeMultiset;
+import com.google.common.collect.TreeRangeSet;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -74,20 +82,22 @@ import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily.Builder;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -95,10 +105,20 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubSettings;
+import org.batfish.datamodel.packet_policy.ApplyTransformation;
+import org.batfish.datamodel.packet_policy.BoolExpr;
+import org.batfish.datamodel.packet_policy.Conjunction;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketMatchExpr;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.Zone.Type;
@@ -158,12 +178,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, Vsys> _virtualSystems;
 
+  // vsys name -> zone name -> outgoing transformation
+  private final Map<String, Map<String, Transformation>> _zoneOutgoingTransformations;
+
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
     _interfaces = new TreeMap<>();
     _sharedGateways = new TreeMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
+    _zoneOutgoingTransformations = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -299,6 +323,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("~%s~OUTGOING_FILTER~", interfaceOrZoneName);
   }
 
+  /** Generate PacketPolicy name using the given zone's name and vsys name */
+  public static String computePacketPolicyName(Zone zone) {
+    return String.format("~%s~%s~PACKET_POLICY~", zone.getVsys().getName(), zone.getName());
+  }
+
   /**
    * Extract object name from a name with an embedded namespace. For example: {@code
    * nameWithNamespace} might be `SERVICE1~vsys1`, where `SERVICE1` is the object name extracted and
@@ -324,9 +353,38 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s~SERVICE_GROUP_MEMBER", serviceGroupMemberName, vsysName);
   }
 
+  /**
+   * Checks whether the given NAT rule's {@link NatRule#getFrom()}, {@link NatRule#getTo()}, {@link
+   * NatRule#getSource()}, and {@link NatRule#getDestination()} are valid (configured and not
+   * empty). Files conversion warnings for any invalid rules if {@code fileWarnings} is set.
+   *
+   * <p>No NAT rule that fails this check should be converted to VI. However, a rule that does pass
+   * should not necessarily be converted to VI -- there may be other reasons not to convert.
+   */
+  private boolean checkNatRuleValid(NatRule rule, boolean fileWarnings) {
+    String missingItem = null;
+    if (rule.getTo() == null) {
+      missingItem = "to zone";
+    } else if (rule.getFrom().isEmpty()) {
+      missingItem = "from zones";
+    } else if (rule.getSource().isEmpty()) {
+      missingItem = "source addresses";
+    } else if (rule.getDestination().isEmpty()) {
+      missingItem = "destination addresses";
+    }
+    if (missingItem != null && fileWarnings) {
+      _w.redFlag(
+          String.format(
+              "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem));
+    }
+    return missingItem == null;
+  }
+
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     for (Vsys vsys : _virtualSystems.values()) {
+
+      populateZoneOutgoingTransformations(vsys);
 
       // Create zone-specific outgoing ACLs.
       for (Zone toZone : vsys.getZones().values()) {
@@ -339,7 +397,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
-      List<Map.Entry<SecurityRule, Vsys>> rules = getAllRules(vsys);
+      List<Map.Entry<SecurityRule, Vsys>> rules = getAllSecurityRules(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -360,6 +418,80 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         }
       }
     }
+  }
+
+  @Nonnull
+  private void populateZoneOutgoingTransformations(Vsys vsys) {
+    Map<String, List<Transformation.Builder>> toZoneTransformations = new HashMap<>();
+
+    TransformationStep transformPort =
+        TransformationStep.assignSourcePort(
+            NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number());
+
+    getAllNatRules(vsys)
+        // This method is run once and goes through all NAT rules. File invalid rule warnings here.
+        .filter(r -> checkNatRuleValid(r, true) && r.doesSourceTranslation())
+        .forEach(
+            r -> {
+              RangeSet<Ip> pool =
+                  ipRangeSetFromRuleEndpoints(
+                      // Already filtered out any rules for which these are null
+                      r.getSourceTranslation().getDynamicIpAndPort().getTranslatedAddresses(),
+                      vsys,
+                      _w);
+              if (pool.isEmpty()) {
+                // Can't have source IP translation rules with empty IP pool
+                _w.redFlag(
+                    String.format(
+                        "NAT rule %s ignored for source translation because its source translation pool is empty",
+                        r.getName()));
+                return;
+              }
+              Transformation.Builder t =
+                  Transformation.when(getSourceNatRuleMatchExpr(r, vsys))
+                      .apply(
+                          new AssignIpAddressFromPool(
+                              TransformationType.SOURCE_NAT, IpField.SOURCE, pool),
+                          transformPort);
+              // Note that "to any" is not permitted
+              toZoneTransformations.computeIfAbsent(r.getTo(), x -> new ArrayList<>()).add(t);
+            });
+
+    Map<String, Transformation> finalZoneTransformations =
+        _zoneOutgoingTransformations.computeIfAbsent(vsys.getName(), v -> new TreeMap<>());
+    toZoneTransformations.forEach(
+        (zoneName, builders) -> {
+          Transformation t = null;
+          for (int i = builders.size() - 1; i >= 0; i--) {
+            Transformation.Builder prevT = builders.get(i);
+            prevT.setOrElse(t);
+            t = prevT.build();
+          }
+          finalZoneTransformations.put(zoneName, t);
+        });
+  }
+
+  private AclLineMatchExpr getSourceNatRuleMatchExpr(NatRule rule, Vsys vsys) {
+    // Match source and destination
+    MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
+
+    if (rule.getFrom().contains(CATCHALL_ZONE_NAME)) {
+      // Rule says "from any" -- no need to match on packet source interface
+      return matchHeaderSpace;
+    }
+
+    // Match from
+    Set<String> fromIfaces =
+        rule.getFrom().stream()
+            .flatMap(
+                fromZone -> {
+                  Zone zone = vsys.getZones().get(fromZone);
+                  return zone == null ? Stream.of() : zone.getInterfaceNames().stream();
+                })
+            .collect(ImmutableSet.toImmutableSet());
+    MatchSrcInterface matchSrcInterface = new MatchSrcInterface(fromIfaces);
+
+    return new AndMatchExpr(ImmutableList.of(matchHeaderSpace, matchSrcInterface));
   }
 
   /** Convert unique aspects of shared-gateways. */
@@ -483,8 +615,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return IpAccessList.builder().setName(crossZoneFilterName).setLines(lines).build();
   }
 
-  /** Collects the rules from this Vsys and merges the common pre-/post-rulebases from Panorama. */
-  private List<Map.Entry<SecurityRule, Vsys>> getAllRules(Vsys vsys) {
+  /**
+   * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
+   * Panorama.
+   */
+  private List<Map.Entry<SecurityRule, Vsys>> getAllSecurityRules(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
             ? Stream.of()
@@ -500,6 +635,22 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             .map(r -> new SimpleImmutableEntry<>(r, vsys));
 
     return Stream.concat(Stream.concat(pre, rules), post).collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Collects the NAT rules from this Vsys and merges the common pre-/post-rulebases from Panorama.
+   */
+  private Stream<NatRule> getAllNatRules(Vsys vsys) {
+    Stream<NatRule> pre =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPreRulebase().getNatRules().values().stream();
+    Stream<NatRule> post =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPostRulebase().getNatRules().values().stream();
+    Stream<NatRule> rules = vsys.getRulebase().getNatRules().values().stream();
+    return Streams.concat(pre, rules, post);
   }
 
   /**
@@ -779,6 +930,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
   }
 
+  @Nonnull
+  private RangeSet<Ip> ipRangeSetFromRuleEndpoints(
+      Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w) {
+    RangeSet<Ip> rangeSet = TreeRangeSet.create();
+    endpoints.stream()
+        .map(endpoint -> ruleEndpointToIpRangeSet(endpoint, vsys, w))
+        .forEach(rangeSet::addAll);
+    return ImmutableRangeSet.copyOf(rangeSet);
+  }
+
   /** Convert specified firewall rule into an {@link IpAccessListLine}. */
   // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
   // constraints, and service (aka Protocol + Ports) constraints.
@@ -940,12 +1101,61 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             String[] ips = endpointValue.split("-");
             return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
           case REFERENCE:
-            // Undefined reference
-            w.redFlag("No matching address group/object found for RuleEndpoint: " + endpoint);
+            // Rely on undefined references to surface this issue (endpoint reference not defined)
             return EmptyIpSpace.INSTANCE;
           default:
             w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
             return EmptyIpSpace.INSTANCE;
+        }
+    }
+  }
+
+  /** Converts {@link RuleEndpoint} to IP {@code RangeSet} */
+  @Nonnull
+  @SuppressWarnings("fallthrough")
+  private RangeSet<Ip> ruleEndpointToIpRangeSet(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
+    String endpointValue = endpoint.getValue();
+    // Palo Alto allows object references that look like IP addresses, ranges, etc.
+    // Devices use objects over constants when possible, so, check to see if there is a matching
+    // group or object regardless of the type of endpoint we're expecting.
+    if (vsys.getAddressObjects().containsKey(endpointValue)) {
+      return vsys.getAddressObjects().get(endpointValue).getAddressAsRangeSet();
+    }
+    if (vsys.getAddressGroups().containsKey(endpoint.getValue())) {
+      return vsys.getAddressGroups()
+          .get(endpointValue)
+          .getIpRangeSet(vsys.getAddressObjects(), vsys.getAddressGroups());
+    }
+    switch (vsys.getNamespaceType()) {
+      case LEAF:
+        if (_shared != null) {
+          return ruleEndpointToIpRangeSet(endpoint, _shared, w);
+        }
+        // fall-through
+      case SHARED:
+        if (_panorama != null) {
+          return ruleEndpointToIpRangeSet(endpoint, _panorama, w);
+        }
+        // fall-through
+      default:
+        // No named object found matching this endpoint, so parse the endpoint value as is
+        switch (endpoint.getType()) {
+          case Any:
+            return ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.MAX));
+          case IP_ADDRESS:
+            return ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
+          case IP_PREFIX:
+            Prefix prefix = Prefix.parse(endpointValue);
+            return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
+          case IP_RANGE:
+            String[] ips = endpointValue.split("-");
+            return ImmutableRangeSet.of(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
+          case REFERENCE:
+            // Rely on undefined references to surface this issue (endpoint reference not defined)
+            return ImmutableRangeSet.of();
+          default:
+            w.redFlag("Could not convert RuleEndpoint to RangeSet: " + endpoint);
+            return ImmutableRangeSet.of();
         }
     }
   }
@@ -994,6 +1204,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     Zone zone = iface.getZone();
+    // add outgoing transformation
+    if (zone != null) {
+      String vsysName = zone.getVsys().getName();
+      newIface.setOutgoingTransformation(
+          _zoneOutgoingTransformations
+              .getOrDefault(vsysName, ImmutableMap.of())
+              .get(zone.getName()));
+    }
+    // add outgoing filter
     IpAccessList.Builder aclBuilder =
         IpAccessList.builder().setOwner(_c).setName(computeOutgoingFilterName(iface.getName()));
     List<IpAccessListLine> aclLines = new ArrayList<>();
@@ -1034,18 +1253,114 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
+
+    // If there are NAT rules for packets entering this interface's zone, apply them
+    String packetPolicyName = getPacketPolicyForZone(iface.getZone());
+    if (packetPolicyName != null) {
+      newIface.setRoutingPolicy(packetPolicyName);
+    }
+
     return newIface;
   }
 
-  private void convertPeerGroup(BgpPeerGroup pg, BgpVr bgp, BgpProcess proc) {
+  /**
+   * Get or generate packet policy for entering the specified zone, attach it to the VI config, and
+   * return the name if applicable. If no packet policy is applicable, returns {@code null}.
+   */
+  private @Nullable String getPacketPolicyForZone(@Nullable Zone zone) {
+    // Unzoned interfaces don't transmit traffic, so don't need packet policy
+    if (zone == null) {
+      return null;
+    }
+    String packetPolicyName = computePacketPolicyName(zone);
+    if (!_c.getPacketPolicies().containsKey(packetPolicyName)) {
+      // Packet policy does not exist for this zone. Check NAT rules and generate policy if needed.
+      List<NatRule> natRules = getNatRulesForEnteringZone(zone);
+      if (natRules.isEmpty()) {
+        // No NAT rules apply to packets entering this zone.
+        return null;
+      }
+      _c.getPacketPolicies()
+          .put(packetPolicyName, buildPacketPolicy(packetPolicyName, natRules, zone.getVsys()));
+    }
+    return packetPolicyName;
+  }
+
+  private MatchHeaderSpace getRuleMatchHeaderSpace(NatRule rule, Vsys vsys) {
+    IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
+    IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
+    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+  }
+
+  /** Build a routing policy for the specified NAT rule + vsys entries in the specified vsys. */
+  private PacketPolicy buildPacketPolicy(String name, List<NatRule> natRules, Vsys vsys) {
+    ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> lines =
+        ImmutableList.builder();
+    for (NatRule rule : natRules) {
+      RuleEndpoint translatedAddress =
+          Optional.ofNullable(rule.getDestinationTranslation())
+              .map(DestinationTranslation::getTranslatedAddress)
+              .orElse(null);
+      Zone toZone = vsys.getZones().get(rule.getTo());
+      if (translatedAddress == null || toZone == null) {
+        continue;
+      }
+
+      // Conditions under which to apply dest NAT
+      MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
+      BoolExpr condition =
+          Conjunction.of(
+              new PacketMatchExpr(matchHeaderSpace),
+              // Only apply dest NAT if flow is exiting an interface in the to-zone
+              new FibLookupOutgoingInterfaceIsOneOf(
+                  IngressInterfaceVrf.instance(), toZone.getInterfaceNames()));
+
+      // Actual dest NAT transformation
+      Transformation transform =
+          new Transformation(
+              // No need to guard since packet policy already encodes this rule's match conditions
+              TrueExpr.INSTANCE,
+              ImmutableList.of(
+                  new AssignIpAddressFromPool(
+                      TransformationType.DEST_NAT,
+                      IpField.DESTINATION,
+                      ruleEndpointToIpRangeSet(translatedAddress, vsys, _w))),
+              null,
+              null);
+
+      lines.add(
+          new org.batfish.datamodel.packet_policy.If(
+              condition,
+              ImmutableList.of(
+                  new ApplyTransformation(transform),
+                  new Return(new FibLookup(IngressInterfaceVrf.instance())))));
+    }
+    return new PacketPolicy(
+        name, lines.build(), new Return(new FibLookup(IngressInterfaceVrf.instance())));
+  }
+
+  /** Return a list of all valid NAT rules to apply to packets entering the specified zone. */
+  private List<NatRule> getNatRulesForEnteringZone(Zone zone) {
+    Vsys vsys = zone.getVsys();
+    return getAllNatRules(vsys)
+        .filter(
+            rule ->
+                checkNatRuleValid(rule, false)
+                    && (rule.getFrom().contains(zone.getName())
+                        || rule.getFrom().contains(CATCHALL_ZONE_NAME)))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private void convertPeerGroup(BgpPeerGroup pg, BgpVr bgp, BgpProcess proc, VirtualRouter vr) {
     if (!pg.getEnable()) {
       return;
     }
 
-    pg.getPeers().forEach((peerName, peer) -> convertPeer(peer, pg, bgp, proc));
+    pg.getPeers().forEach((peerName, peer) -> convertPeer(peer, pg, bgp, proc, vr));
   }
 
-  private void convertPeer(BgpPeer peer, BgpPeerGroup pg, BgpVr bgp, BgpProcess proc) {
+  private void convertPeer(
+      BgpPeer peer, BgpPeerGroup pg, BgpVr bgp, BgpProcess proc, VirtualRouter vr) {
     if (!peer.getEnable()) {
       return;
     }
@@ -1111,18 +1426,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         Ipv4UnicastAddressFamily.builder()
             .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build());
 
-    // BGP routing process expects an export policy to be attached to Ipv4UnicastAddressFamily
-    // TODO flesh out correct export policy, this is just a placeholder allowing BGP
-    String peerExportPolicyName = computePeerExportPolicyName(peer.getPeerAddress().toPrefix());
-    RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
-    peerExportPolicy
-        .getStatements()
-        .add(
-            new If(
-                new MatchProtocol(RoutingProtocol.IBGP, RoutingProtocol.BGP),
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement())));
-    _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
-    ipv4af.setExportPolicy(peerExportPolicyName);
+    ipv4af.setExportPolicy(
+        computeAndSetPerPeerExportPolicy(peer, _c, vr, bgp, pg.getName()).getName());
+
+    @Nullable
+    RoutingPolicy importPolicyForThisPeer =
+        computeAndSetPerPeerImportPolicy(peer, _c, vr, bgp, pg.getName());
+    ipv4af.setImportPolicy(
+        importPolicyForThisPeer == null ? null : importPolicyForThisPeer.getName());
 
     peerB.setIpv4UnicastAddressFamily(ipv4af.build());
 
@@ -1152,8 +1463,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     BgpProcess proc =
         new BgpProcess(
             bgp.getRouterId(), vr.getAdminDists().getEbgp(), vr.getAdminDists().getIbgp());
+    // common BGP export policy (combination of all redist rules at the BgpVr level)
+    RoutingPolicy commonExportPolicy = getBgpCommonExportPolicy(bgp, vr, _w, _c);
+    _c.getRoutingPolicies().put(commonExportPolicy.getName(), commonExportPolicy);
 
-    bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc));
+    bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc, vr));
 
     return Optional.of(proc);
   }

@@ -985,12 +985,12 @@ public final class F5BigipImishGrammarTest {
     assertThat(plDeny20.getPrefix(), equalTo(Prefix.parse("10.0.0.0/16")));
 
     // check entry length-ranges
-    assertThat(plSimple10.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(plSimple10.getLengthRange(), equalTo(SubRange.singleton(24)));
     assertThat(plLe10.getLengthRange(), equalTo(new SubRange(16, 24)));
     assertThat(plGe10.getLengthRange(), equalTo(new SubRange(24, 32)));
     assertThat(plGeLe10.getLengthRange(), equalTo(new SubRange(24, 28)));
     assertThat(plDeny10.getLengthRange(), equalTo(SubRange.singleton(32)));
-    assertThat(plDeny20.getLengthRange(), equalTo(new SubRange(16, 32)));
+    assertThat(plDeny20.getLengthRange(), equalTo(SubRange.singleton(16)));
   }
 
   @Test

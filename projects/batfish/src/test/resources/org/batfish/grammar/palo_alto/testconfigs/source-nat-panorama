@@ -1,0 +1,178 @@
+policy {
+  panorama {
+    address {
+      SOURCE_ADDR {
+        ip-netmask 1.1.1.2/32;
+      }
+      SOURCE_ADDR_BROADER {
+        ip-netmask 1.1.1.2/30;
+      }
+      SOURCE_ADDR_BROADEST {
+        ip-netmask 1.1.1.2/28;
+      }
+      PAN_PRE_NEW_ADDR {
+        ip-netmask 1.1.1.99/32;
+      }
+      VSYS_NAT_NEW_ADDR {
+        ip-netmask 1.1.1.100/32;
+      }
+      PAN_POST_NEW_ADDR {
+        ip-netmask 1.1.1.101/32;
+      }
+      SERVER_OLD_ADDR {
+        ip-netmask 1.1.1.2/32;
+      }
+    }
+    pre-rulebase {
+      nat {
+        rules {
+          SOURCE_NAT_NAME {
+            source-translation {
+              dynamic-ip-and-port {
+                translated-address PAN_PRE_NEW_ADDR;
+              }
+            }
+            to OUTSIDE;
+            from INSIDE;
+            source SOURCE_ADDR;
+            destination any;
+          }
+        }
+      }
+      security {
+        rules {
+          PERMIT_TRANSLATED {
+            to OUTSIDE;
+            from INSIDE;
+            source [ PAN_PRE_NEW_ADDR];
+            destination any;
+            application any;
+            service any;
+            action allow;
+          }
+        }
+      }
+    }
+    post-rulebase {
+      nat {
+        rules {
+          SOURCE_NAT_NAME {
+            source-translation {
+              dynamic-ip-and-port {
+                translated-address PAN_POST_NEW_ADDR;
+              }
+            }
+            to OUTSIDE;
+            from INSIDE;
+            source SOURCE_ADDR_BROADEST;
+            destination any;
+          }
+        }
+      }
+      security {
+        rules {
+          PERMIT_TRANSLATED {
+            to OUTSIDE;
+            from INSIDE;
+            source [ PAN_POST_NEW_ADDR];
+            destination any;
+            application any;
+            service any;
+            action allow;
+          }
+        }
+      }
+    }
+  }
+}
+config {
+  devices {
+    localhost.localdomain {
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer3 {
+                units {
+                  ethernet1/1.1 {
+                    ip {
+                      1.1.1.3/24;
+                    }
+                  }
+                }
+              }
+            }
+            ethernet1/2 {
+              layer3 {
+                units {
+                  ethernet1/2.1 {
+                    ip {
+                      1.2.1.3/24;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          vr1 {
+            interface [ ethernet1/1.1 ethernet1/2.1];
+          }
+        }
+      }
+      deviceconfig {
+        system {
+          hostname source-nat-panorama;
+        }
+      }
+      vsys {
+        vsys1 {
+          rulebase {
+            nat {
+              rules {
+                SOURCE_NAT_NAME {
+                  source-translation {
+                    dynamic-ip-and-port {
+                      translated-address VSYS_NAT_NEW_ADDR;
+                    }
+                  }
+                  to OUTSIDE;
+                  # Exercise "any" option
+                  from any;
+                  source SOURCE_ADDR_BROADER;
+                  destination any;
+                }
+              }
+            }
+            security {
+              rules {
+                PERMIT_TRANSLATED {
+                  to OUTSIDE;
+                  from any;
+                  source [ VSYS_NAT_NEW_ADDR];
+                  destination any;
+                  application any;
+                  service any;
+                  action allow;
+                }
+              }
+            }
+          }
+          zone {
+            INSIDE {
+              network {
+                layer3 [ ethernet1/1.1];
+              }
+            }
+            OUTSIDE {
+              network {
+                layer3 [ ethernet1/2.1];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

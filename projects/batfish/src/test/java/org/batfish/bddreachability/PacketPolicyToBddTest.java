@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collections;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.PacketPolicyToBdd.BoolExprToBdd;
@@ -35,7 +36,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
+import org.batfish.datamodel.packet_policy.Conjunction;
 import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FalseExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
 import org.batfish.datamodel.packet_policy.If;
@@ -43,6 +46,7 @@ import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.TrueExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.hamcrest.Matcher;
@@ -239,6 +243,40 @@ public final class PacketPolicyToBddTest {
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces = new IpsRoutedOutInterfaces(fib);
       BoolExprToBdd toBdd = new BoolExprToBdd(_ipAccessListToBdd, ipsRoutedOutInterfaces);
       assertEquals(prefix1Bdd.or(prefix2Bdd), toBdd.visit(expr));
+    }
+  }
+
+  @Test
+  public void testConjunction() {
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    {
+      PacketPolicyToBdd evaluator =
+          PacketPolicyToBdd.evaluate(
+              new PacketPolicy(
+                  "name",
+                  ImmutableList.of(
+                      new If(
+                          Conjunction.of(TrueExpr.instance()),
+                          Collections.singletonList(new Return(fl)))),
+                  new Return(Drop.instance())),
+              _ipAccessListToBdd,
+              EMPTY_IPS_ROUTED_OUT_INTERFACES);
+      assertThat(evaluator.getFibLookups().get(fl), mapsOne(_one));
+    }
+
+    {
+      PacketPolicyToBdd evaluator =
+          PacketPolicyToBdd.evaluate(
+              new PacketPolicy(
+                  "name",
+                  ImmutableList.of(
+                      new If(
+                          Conjunction.of(TrueExpr.instance(), FalseExpr.instance()),
+                          Collections.singletonList(new Return(fl)))),
+                  new Return(Drop.instance())),
+              _ipAccessListToBdd,
+              EMPTY_IPS_ROUTED_OUT_INTERFACES);
+      assertThat(evaluator.getToDrop(), mapsOne(_one));
     }
   }
 }
