@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.SortedMap;
@@ -201,10 +200,8 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  public Map<String, Interface> getActiveInterfaces() {
-    return _interfaces.entrySet().stream()
-        .filter(e -> e.getValue().getActive())
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  public @Nonnull Stream<Interface> getActiveInterfaces() {
+    return _interfaces.values().stream().filter(Interface::getActive);
   }
 
   /** IS-IS routing process for this VRF. */
