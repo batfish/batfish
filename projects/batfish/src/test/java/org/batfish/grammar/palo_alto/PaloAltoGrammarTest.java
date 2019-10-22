@@ -1514,7 +1514,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "security-no-explicit-match";
     Configuration c = parseConfig(hostname);
     String ifaceName = "ethernet1/1.1";
-    IpAccessList ifaceOutgoingAccessList =
+    IpAccessList ifaceOutgoingFilter =
         c.getIpAccessLists().get(computeOutgoingFilterName(ifaceName));
 
     Flow notMatchingZoneSecurity =
@@ -1534,23 +1534,23 @@ public final class PaloAltoGrammarTest {
 
     // Interface outgoing filter ends with an OriginatingFromDevice match.
     // If flow doesn't match zone rules, it should fall through to that.
-    int lastLineIndex = ifaceOutgoingAccessList.getLines().size() - 1;
+    int lastLineIndex = ifaceOutgoingFilter.getLines().size() - 1;
     FilterResult originatingFromDeviceResult =
-        ifaceOutgoingAccessList.filter(
+        ifaceOutgoingFilter.filter(
             notMatchingZoneSecurity, null, c.getIpAccessLists(), ImmutableMap.of());
     assertThat(originatingFromDeviceResult.getAction(), equalTo(LineAction.PERMIT));
     assertThat(originatingFromDeviceResult.getMatchLine(), equalTo(lastLineIndex));
 
     // Flow is from interface inside the zone and is rejected by zone security rules
     FilterResult rejectedByZoneSecurityResult =
-        ifaceOutgoingAccessList.filter(
+        ifaceOutgoingFilter.filter(
             rejectedByZoneSecurity, ifaceName, c.getIpAccessLists(), ImmutableMap.of());
     assertThat(rejectedByZoneSecurityResult.getAction(), equalTo(LineAction.DENY));
     assertThat(rejectedByZoneSecurityResult.getMatchLine(), lessThan(lastLineIndex));
 
     // Flow is from interface inside the zone and is permitted by zone security rules
     FilterResult acceptedByZoneSecurityResult =
-        ifaceOutgoingAccessList.filter(
+        ifaceOutgoingFilter.filter(
             acceptedByZoneSecurity, ifaceName, c.getIpAccessLists(), ImmutableMap.of());
     assertThat(acceptedByZoneSecurityResult.getAction(), equalTo(LineAction.PERMIT));
     assertThat(acceptedByZoneSecurityResult.getMatchLine(), lessThan(lastLineIndex));

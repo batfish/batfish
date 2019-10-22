@@ -32463,7 +32463,20 @@
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
                   "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
                   "defaultAccept" : false
-                }
+                },
+                "name" : "~zl3~vsys10~OUTGOING_FILTER~-EXPLICITLY-PERMITTED"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.NotMatchExpr",
+                  "operand" : {
+                    "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                    "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
+                    "defaultAccept" : true
+                  }
+                },
+                "name" : "~zl3~vsys10~OUTGOING_FILTER~-EXPLICITLY-DENIED"
               },
               {
                 "action" : "PERMIT",
