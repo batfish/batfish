@@ -52,6 +52,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VR
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeOutgoingFilterName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
@@ -83,6 +84,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -92,6 +94,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -118,6 +121,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -129,6 +133,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -1497,6 +1502,58 @@ public final class PaloAltoGrammarTest {
 
     // Confirm flow from the device itself is permitted
     assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(fromDevicePermitted, null, c))));
+  }
+
+  @Test
+  public void testSecurityRulesNotExplicitlyMatched() {
+    /*
+    Setup: Device has an interface in a zone with intrazone security rules. If flows leaving the
+    interface match an intrazone rule, its action should be taken (whether permit or deny). Other
+    flows should fall through to the rest of the interface outgoing filter.
+     */
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String ifaceName = "ethernet1/1.1";
+    IpAccessList ifaceOutgoingFilter =
+        c.getIpAccessLists().get(computeOutgoingFilterName(ifaceName));
+
+    Flow notMatchingZoneSecurity =
+        Flow.builder()
+            .setTag("test")
+            .setIngressNode(c.getHostname())
+            .setDstIp(Ip.parse("10.10.10.10"))
+            .setSrcIp(Ip.parse("10.10.10.20"))
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    Flow rejectedByZoneSecurity =
+        notMatchingZoneSecurity.toBuilder().setSrcIp(Ip.parse("2.2.2.2")).build();
+    Flow acceptedByZoneSecurity =
+        notMatchingZoneSecurity.toBuilder().setSrcIp(Ip.parse("3.3.3.3")).build();
+
+    // Interface outgoing filter ends with an OriginatingFromDevice match.
+    // If flow doesn't match zone rules, it should fall through to that.
+    int lastLineIndex = ifaceOutgoingFilter.getLines().size() - 1;
+    FilterResult originatingFromDeviceResult =
+        ifaceOutgoingFilter.filter(
+            notMatchingZoneSecurity, null, c.getIpAccessLists(), ImmutableMap.of());
+    assertThat(originatingFromDeviceResult.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(originatingFromDeviceResult.getMatchLine(), equalTo(lastLineIndex));
+
+    // Flow is from interface inside the zone and is rejected by zone security rules
+    FilterResult rejectedByZoneSecurityResult =
+        ifaceOutgoingFilter.filter(
+            rejectedByZoneSecurity, ifaceName, c.getIpAccessLists(), ImmutableMap.of());
+    assertThat(rejectedByZoneSecurityResult.getAction(), equalTo(LineAction.DENY));
+    assertThat(rejectedByZoneSecurityResult.getMatchLine(), lessThan(lastLineIndex));
+
+    // Flow is from interface inside the zone and is permitted by zone security rules
+    FilterResult acceptedByZoneSecurityResult =
+        ifaceOutgoingFilter.filter(
+            acceptedByZoneSecurity, ifaceName, c.getIpAccessLists(), ImmutableMap.of());
+    assertThat(acceptedByZoneSecurityResult.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(acceptedByZoneSecurityResult.getMatchLine(), lessThan(lastLineIndex));
   }
 
   @Test

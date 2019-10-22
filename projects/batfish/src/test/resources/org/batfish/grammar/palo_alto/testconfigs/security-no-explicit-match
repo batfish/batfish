@@ -1,0 +1,72 @@
+policy {
+  panorama {
+  }
+}
+config {
+  devices {
+    localhost.localdomain {
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer3 {
+                units {
+                  ethernet1/1.1 {
+                    ip {
+                      1.1.1.2/24;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          vr1 {
+            interface [ ethernet1/1.1];
+          }
+        }
+      }
+      deviceconfig {
+        system {
+          hostname security-no-explicit-match;
+        }
+      }
+      vsys {
+        vsys1 {
+          rulebase {
+            security {
+              rules {
+                DENY {
+                  to any;
+                  from any;
+                  source 2.2.2.2/32;
+                  destination any;
+                  application any;
+                  service any;
+                  action deny;
+                }
+                PERMIT {
+                  to any;
+                  from any;
+                  source 3.3.3.3/32;
+                  destination any;
+                  application any;
+                  service any;
+                  action allow;
+                }
+              }
+            }
+          }
+          zone {
+            ZONE {
+              network {
+                layer3 [ ethernet1/1.1];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
