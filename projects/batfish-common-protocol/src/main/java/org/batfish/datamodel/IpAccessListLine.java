@@ -126,11 +126,11 @@ public final class IpAccessListLine implements Serializable {
     return Stream.of(
         IpAccessListLine.accepting()
             .setMatchCondition(new PermittedByAcl(aclName, false))
-            .setName(aclName + "-EXPLICTLY-PERMITTED")
+            .setName(aclName + "-EXPLICITLY-PERMITTED")
             .build(),
         IpAccessListLine.rejecting()
             .setMatchCondition(not(new PermittedByAcl(aclName, true)))
-            .setName(aclName + "-EXPLICTLY-DENIED")
+            .setName(aclName + "-EXPLICITLY-DENIED")
             .build());
   }
 
