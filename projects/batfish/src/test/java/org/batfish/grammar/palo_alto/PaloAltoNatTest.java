@@ -262,7 +262,6 @@ public class PaloAltoNatTest {
             .setIngressNode(c.getHostname())
             .setIngressInterface(outside1Name)
             .setDstIp(Ip.parse("1.1.1.2"))
-            .setSrcIp(Ip.parse("1.2.1.2"))
             .setSrcPort(111)
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP);
@@ -387,5 +386,47 @@ public class PaloAltoNatTest {
             Iterables.getLast(matchSrcAndDstTranslation.getHops().get(0).getSteps()).getDetail();
     assertThat(matchSrcAndDstTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(newSrcIp));
     assertThat(matchSrcAndDstTranslationDetail.getTransformedFlow().getDstIp(), equalTo(newDstIp));
+  }
+
+  @Test
+  public void testNatRulesWithEmptyPools() throws IOException {
+    /*
+    Setup: 2 NAT rules
+    - First rule matches src 1.1.1.2, has source and dest nat but both pools are empty
+    - Second rule matches src 1.1.1.2/30, translates both source and dest
+    Security rules only permit flows with either translated source or translated dest.
+     */
+    Configuration c = parseConfig("nat-rules-empty-pool");
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    batfish.computeDataPlane();
+    String ingressIfaceName = "ethernet1/1.1"; // 1.1.1.3/24
+
+    // Create flows to match each rule
+    Ip dstIp = Ip.parse("1.2.1.2");
+    Ip matchEmptyPoolsSrcIp = Ip.parse("1.1.1.2");
+    Ip matchSrcAndDstTransRuleIp = Ip.parse("1.1.1.3");
+    Flow.Builder flowBuilder =
+        Flow.builder()
+            .setTag("test")
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(ingressIfaceName)
+            .setDstIp(dstIp)
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP);
+    Flow matchesEmptyPoolsRule = flowBuilder.setSrcIp(matchEmptyPoolsSrcIp).build();
+    Flow matchesSrcAndDstTranslationRule = flowBuilder.setSrcIp(matchSrcAndDstTransRuleIp).build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine()
+            .computeTraces(
+                ImmutableSet.of(matchesEmptyPoolsRule, matchesSrcAndDstTranslationRule), false);
+
+    // Flow that matches rule with empty pools should not undergo any transformation, so should fail
+    assertFalse(traces.get(matchesEmptyPoolsRule).get(0).getDisposition().isSuccessful());
+
+    // Flow that matches src and dst translation rule (with non-empty pools) should pass security
+    assertTrue(traces.get(matchesSrcAndDstTranslationRule).get(0).getDisposition().isSuccessful());
   }
 }

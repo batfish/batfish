@@ -448,8 +448,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                   // TODO: Check real behavior in this scenario
                   _w.redFlag(
                       String.format(
-                          "NAT rule %s ignored for source translation because its source translation pool is empty",
-                          r.getName()));
+                          "NAT rule %s of VSYS %s will not apply source translation because its source translation pool is empty",
+                          r.getName(), vsys.getName()));
                 } else {
                   t.apply(
                       new AssignIpAddressFromPool(
@@ -1328,8 +1328,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
           // TODO: Check real behavior in this scenario
           _w.redFlag(
               String.format(
-                  "NAT rule %s ignored for destination translation because its destination translation pool is empty",
-                  rule.getName()));
+                  "NAT rule %s of VSYS %s will not apply destination translation because its destination translation pool is empty",
+                  rule.getName(), vsys.getName()));
         } else {
           Transformation transform =
               new Transformation(
