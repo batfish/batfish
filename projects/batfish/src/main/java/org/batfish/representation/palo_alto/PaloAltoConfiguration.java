@@ -6,6 +6,7 @@ import static com.google.common.base.Predicates.not;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.IpAccessListLine.takingExplicitActionsOf;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -1223,19 +1224,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     if (sharedGatewayOptional.isPresent()) {
       Vsys sharedGateway = sharedGatewayOptional.get();
       String sgName = sharedGateway.getName();
-      aclLines.add(
-          accepting(permittedByAcl(computeOutgoingFilterName(computeObjectName(sgName, sgName)))));
+      takingExplicitActionsOf(computeOutgoingFilterName(computeObjectName(sgName, sgName)))
+          .forEach(aclLines::add);
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               true, sharedGateway.getImportedInterfaces(), null, null));
     } else if (zone != null) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
-        aclLines.add(
-            accepting(
-                permittedByAcl(
-                    computeOutgoingFilterName(
-                        computeObjectName(zone.getVsys().getName(), zone.getName())))));
+        takingExplicitActionsOf(
+                computeOutgoingFilterName(
+                    computeObjectName(zone.getVsys().getName(), zone.getName())))
+            .forEach(aclLines::add);
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
