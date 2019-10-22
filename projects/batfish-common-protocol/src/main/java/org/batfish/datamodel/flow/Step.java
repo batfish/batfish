@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
   @JsonSubTypes.Type(value = MatchSessionStep.class, name = "MatchSession"),
   @JsonSubTypes.Type(value = OriginateStep.class, name = "Originate"),
   @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
+  @JsonSubTypes.Type(value = PolicyStep.class, name = "Policy"),
   @JsonSubTypes.Type(value = SetupSessionStep.class, name = "SetupSession"),
   @JsonSubTypes.Type(value = TransformationStep.class, name = "Transformation"),
 })

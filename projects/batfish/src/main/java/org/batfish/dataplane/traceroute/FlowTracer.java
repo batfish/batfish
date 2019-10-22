@@ -66,7 +66,6 @@ import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
-import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
@@ -76,6 +75,8 @@ import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
+import org.batfish.datamodel.flow.PolicyStep;
+import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
@@ -484,7 +485,7 @@ class FlowTracer {
 
       @Override
       public Boolean visitDrop(@Nonnull Drop drop) {
-        _steps.add(new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), DENIED));
+        _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), DENIED));
         return true;
       }
 
@@ -570,8 +571,7 @@ class FlowTracer {
       }
 
       private void makePermittedStep() {
-        _steps.add(
-            new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), PERMITTED));
+        _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), PERMITTED));
       }
     }.visit(result.getAction());
   }
