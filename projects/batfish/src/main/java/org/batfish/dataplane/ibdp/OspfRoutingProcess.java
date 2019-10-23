@@ -343,7 +343,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       }
 
       // Create a route for each interface address
-      // Only create a /32 host address for this interface if 1. it is a loopback and the network type
+      // Only create a /32 host address for this interface if 1. it is a loopback and the network
+      // type
       // is not P2P or 2. its type is p2mp (See RFC 2328 Section 2.1.1)
       Set<OspfIntraAreaRoute> allRoutes =
           (isLoopbackNotInP2PModeOrP2MP(iface)
