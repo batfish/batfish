@@ -1,0 +1,181 @@
+#TMSH-VERSION: 12.1.4
+
+sys global-settings {
+  hostname f5_bigip_structured_cm
+}
+
+cm cert /Common/dtca-bundle.crt {
+    certificate-key-size 2048
+    checksum SHA1:1289:feeafe406f68672c94737122950bbb8e46a6a468
+    create-time 2019-10-10:15:26:27
+    created-by %devmgmtd
+    expiration-date 1886106387
+    expiration-string "Oct  7 22:26:27 2029 GMT"
+    issuer CN=f281b74a-799b-4504-9ee00c24bdb8b600
+    key-type rsa-public
+    last-update-time 2019-10-10:15:26:27
+    mode 33188
+    revision 1
+    serial-number 684308
+    size 1289
+    subject CN=f281b74a-799b-4504-9ee00c24bdb8b600
+    updated-by %devmgmtd
+    version 3
+}
+cm cert /Common/dtca.crt {
+    certificate-key-size 2048
+    checksum SHA1:1289:feeafe406f68672c94737122950bbb8e46a6a468
+    create-time 2019-10-10:15:26:27
+    created-by %devmgmtd
+    expiration-date 1886106387
+    expiration-string "Oct  7 22:26:27 2029 GMT"
+    issuer CN=f281b74a-799b-4504-9ee00c24bdb8b600
+    key-type rsa-public
+    last-update-time 2019-10-10:15:26:27
+    mode 33188
+    revision 1
+    serial-number 684308
+    size 1289
+    subject CN=f281b74a-799b-4504-9ee00c24bdb8b600
+    updated-by %devmgmtd
+    version 3
+}
+cm cert /Common/dtdi.crt {
+    certificate-key-size 2048
+    checksum SHA1:1220:f379fff6337035d90a59a7dbacd2ce6a36b32e25
+    create-time 2019-10-10:15:26:27
+    created-by %devmgmtd
+    expiration-date 1886106387
+    expiration-string "Oct  7 22:26:27 2029 GMT"
+    issuer CN=f281b74a-799b-4504-9ee00c24bdb8b600
+    key-type rsa-public
+    last-update-time 2019-10-10:15:26:27
+    mode 33188
+    revision 1
+    serial-number 819858
+    size 1220
+    subject CN=bigip1
+    updated-by %devmgmtd
+    version 3
+}
+cm device /Common/f5_bigip_structured_cm {
+    active-modules { "redacted" }
+    base-mac 00:00:00:00:00:01
+    build 0.55.8
+    cert /Common/dtdi.crt
+    chassis-id f5-foo-bar
+    configsync-ip 192.0.2.1
+    edition "foobar"
+    hostname f5_bigip_structured_cm
+    key /Common/dtdi.key
+    management-ip 192.0.2.2
+    marketing-name "barbaz"
+    optional-modules { "foobedy" }
+    platform-id C109
+    product BIG-IP
+    self-device true
+    time-zone UTC
+    unicast-address {
+        {
+            effective-ip 192.0.2.1
+            effective-port 1026
+            ip 192.0.2.1
+        }
+        {
+            effective-ip management-ip
+            effective-port 1026
+            ip management-ip
+        }
+    }
+    version 12.1.4
+}
+cm device /Common/f5_bigip_structured_cm2 {
+    active-modules { "redacted" }
+    base-mac 00:00:00:00:00:02
+    build 0.55.8
+    cert /Common/dtdi.crt
+    chassis-id f5-foo-bar2
+    configsync-ip 192.0.2.3
+    edition "foobar"
+    hostname f5_bigip_structured_cm
+    key /Common/dtdi.key
+    management-ip 192.0.2.4
+    marketing-name "barbaz"
+    optional-modules { "foobedy" }
+    platform-id C109
+    product BIG-IP
+    time-zone UTC
+    unicast-address {
+        {
+            effective-ip 192.0.2.3
+            effective-port 1026
+            ip 192.0.2.3
+        }
+        {
+            effective-ip management-ip
+            effective-port 1026
+            ip management-ip
+        }
+    }
+    version 12.1.4
+}
+cm device-group /Common/device_group_snc {
+    devices {
+        /Common/f5_bigip_structured_cm { }
+        /Common/f5_bigip_structured_cm2 { }
+    }
+    type sync-failover
+}
+cm device-group /Common/device_trust_group {
+    auto-sync enabled
+    devices {
+        /Common/f5_bigip_structured_cm { }
+        /Common/f5_bigip_structured_cm2 { }
+    }
+    hidden true
+    network-failover disabled
+}
+cm device-group /Common/gtm {
+    devices {
+        /Common/f5_bigip_structured_cm { }
+    }
+    hidden true
+    network-failover disabled
+}
+cm key /Common/dtca.key {
+    checksum SHA1:1708:074c7e4f35ef59c343d02ffec595e55546bdb130
+    create-time 2019-10-10:15:26:27
+    created-by %devmgmtd
+    key-size 2048
+    last-update-time 2019-10-10:15:26:27
+    mode 33184
+    revision 1
+    size 1708
+    updated-by %devmgmtd
+}
+cm key /Common/dtdi.key {
+    checksum SHA1:1704:46c9b5f1629e6c431543274e59d31cf99e1a7ab4
+    create-time 2019-10-10:15:26:27
+    created-by %devmgmtd
+    key-size 2048
+    last-update-time 2019-10-10:15:26:27
+    mode 33184
+    revision 1
+    size 1704
+    updated-by %devmgmtd
+}
+cm traffic-group /Common/traffic-group-1 {
+    ha-group /Common/t1
+    mac 00:00:00:00:00:03
+    unit-id 1
+}
+cm traffic-group /Common/traffic-group-local-only { }
+cm trust-domain /Common/Root {
+    ca-cert /Common/dtca.crt
+    ca-cert-bundle /Common/dtca-bundle.crt
+    ca-devices { /Common/f5_bigip_structured_cm /Common/f5_bigip_structured_cm2 }
+    ca-key /Common/dtca.key
+    guid 00000000-0000-0000-0000000000000000
+    status standalone
+    trust-group /Common/device_trust_group
+}

@@ -869,6 +869,349 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 61,
+        "Text" : "cm device /Common/f5_bigip_structured_cm {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 65,
+        "Text" : "cert /Common/dtdi.crt",
+        "Parser_Context" : "[cmd_cert cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 67,
+        "Text" : "configsync-ip 192.0.2.1",
+        "Parser_Context" : "[cmd_configsync_ip cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 69,
+        "Text" : "hostname f5_bigip_structured_cm",
+        "Parser_Context" : "[cmd_hostname cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 70,
+        "Text" : "key /Common/dtdi.key",
+        "Parser_Context" : "[cmd_key cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 71,
+        "Text" : "management-ip 192.0.2.2",
+        "Parser_Context" : "[cmd_management_ip cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 76,
+        "Text" : "self-device true",
+        "Parser_Context" : "[cmd_self_device cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 78,
+        "Text" : "unicast-address {",
+        "Parser_Context" : "[cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 80,
+        "Text" : "effective-ip 192.0.2.1",
+        "Parser_Context" : "[cmduaa_effective_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 81,
+        "Text" : "effective-port 1026",
+        "Parser_Context" : "[cmduaa_effective_port cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 82,
+        "Text" : "ip 192.0.2.1",
+        "Parser_Context" : "[cmduaa_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 85,
+        "Text" : "effective-ip management-ip",
+        "Parser_Context" : "[cmduaa_effective_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 86,
+        "Text" : "effective-port 1026",
+        "Parser_Context" : "[cmduaa_effective_port cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 87,
+        "Text" : "ip management-ip",
+        "Parser_Context" : "[cmduaa_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 92,
+        "Text" : "cm device /Common/f5_bigip_structured_cm2 {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 96,
+        "Text" : "cert /Common/dtdi.crt",
+        "Parser_Context" : "[cmd_cert cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 98,
+        "Text" : "configsync-ip 192.0.2.3",
+        "Parser_Context" : "[cmd_configsync_ip cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 100,
+        "Text" : "hostname f5_bigip_structured_cm",
+        "Parser_Context" : "[cmd_hostname cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 101,
+        "Text" : "key /Common/dtdi.key",
+        "Parser_Context" : "[cmd_key cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 102,
+        "Text" : "management-ip 192.0.2.4",
+        "Parser_Context" : "[cmd_management_ip cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 108,
+        "Text" : "unicast-address {",
+        "Parser_Context" : "[cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 110,
+        "Text" : "effective-ip 192.0.2.3",
+        "Parser_Context" : "[cmduaa_effective_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 111,
+        "Text" : "effective-port 1026",
+        "Parser_Context" : "[cmduaa_effective_port cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 112,
+        "Text" : "ip 192.0.2.3",
+        "Parser_Context" : "[cmduaa_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 115,
+        "Text" : "effective-ip management-ip",
+        "Parser_Context" : "[cmduaa_effective_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 116,
+        "Text" : "effective-port 1026",
+        "Parser_Context" : "[cmduaa_effective_port cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 117,
+        "Text" : "ip management-ip",
+        "Parser_Context" : "[cmduaa_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 122,
+        "Text" : "cm device-group /Common/device_group_snc {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 123,
+        "Text" : "devices {",
+        "Parser_Context" : "[cmdg_devices cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 127,
+        "Text" : "type sync-failover",
+        "Parser_Context" : "[cmdg_type cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 129,
+        "Text" : "cm device-group /Common/device_trust_group {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 130,
+        "Text" : "auto-sync enabled",
+        "Parser_Context" : "[cmdg_auto_sync cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 131,
+        "Text" : "devices {",
+        "Parser_Context" : "[cmdg_devices cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 135,
+        "Text" : "hidden true",
+        "Parser_Context" : "[cmdg_hidden cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 136,
+        "Text" : "network-failover disabled",
+        "Parser_Context" : "[cmdg_network_failover cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 138,
+        "Text" : "cm device-group /Common/gtm {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 139,
+        "Text" : "devices {",
+        "Parser_Context" : "[cmdg_devices cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 142,
+        "Text" : "hidden true",
+        "Parser_Context" : "[cmdg_hidden cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 143,
+        "Text" : "network-failover disabled",
+        "Parser_Context" : "[cmdg_network_failover cm_device_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 145,
+        "Text" : "cm key /Common/dtca.key {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 156,
+        "Text" : "cm key /Common/dtdi.key {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 167,
+        "Text" : "cm traffic-group /Common/traffic-group-1 {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 168,
+        "Text" : "ha-group /Common/t1",
+        "Parser_Context" : "[cmtg_ha_group cm_traffic_group s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 172,
+        "Text" : "cm traffic-group /Common/traffic-group-local-only { }",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 173,
+        "Text" : "cm trust-domain /Common/Root {",
+        "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 174,
+        "Text" : "ca-cert /Common/dtca.crt",
+        "Parser_Context" : "[cmtd_ca_cert cm_trust_domain s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 175,
+        "Text" : "ca-cert-bundle /Common/dtca-bundle.crt",
+        "Parser_Context" : "[cmtd_ca_cert_bundle cm_trust_domain s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 176,
+        "Text" : "ca-devices { /Common/f5_bigip_structured_cm /Common/f5_bigip_structured_cm2 }",
+        "Parser_Context" : "[cmtd_ca_devices cm_trust_domain s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
+        "Line" : 180,
+        "Text" : "trust-group /Common/device_trust_group",
+        "Parser_Context" : "[cmtd_trust_group cm_trust_domain s_cm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "configs/f5_bigip/f5_bigip_structured_ltm",
         "Line" : 96,
         "Text" : "persist {",
@@ -1402,10 +1745,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 194 results",
+      "notes" : "Found 243 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 194
+      "numResults" : 243
     }
   }
 ]
