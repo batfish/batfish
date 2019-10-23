@@ -33,6 +33,11 @@ ACTIVATE
   'activate'
 ;
 
+ACTIVE_MODULES
+:
+  'active-modules'
+;
+
 ADAPTIVE
 :
   'adaptive'
@@ -103,9 +108,24 @@ ARP
   'arp'
 ;
 
+AUTO_SYNC
+:
+  'auto-sync'
+;
+
+BASE_MAC
+:
+  'base-mac'
+;
+
 BGP
 :
   'bgp'
+;
+
+BUILD
+:
+  'build'
 ;
 
 BUNDLE
@@ -116,6 +136,26 @@ BUNDLE
 BUNDLE_SPEED
 :
   'bundle-speed'
+;
+
+CA_CERT
+:
+  'ca-cert'
+;
+
+CA_CERT_BUNDLE
+:
+  'ca-cert-bundle'
+;
+
+CA_DEVICES
+:
+  'ca-devices'
+;
+
+CA_KEY
+:
+  'ca-key'
 ;
 
 CACHE_SIZE
@@ -168,6 +208,11 @@ CHAIN
   'chain'
 ;
 
+CHASSIS_ID
+:
+  'chassis-id'
+;
+
 CIPHER_GROUP
 :
   'cipher-group'
@@ -198,6 +243,11 @@ CLIENT_SSL
   'client-ssl'
 ;
 
+CM
+:
+  'cm'
+;
+
 COMMUNITY
 :
   'community'
@@ -206,6 +256,11 @@ COMMUNITY
 COMPATIBILITY
 :
   'compatibility'
+;
+
+CONFIGSYNC_IP
+:
+  'configsync-ip'
 ;
 
 COOKIE
@@ -248,6 +303,21 @@ DESTINATION
   'destination'
 ;
 
+DEVICE
+:
+  'device'
+;
+
+DEVICE_GROUP
+:
+  'device-group'
+;
+
+DEVICES
+:
+  'devices'
+;
+
 DHCPV4
 :
   'dhcpv4'
@@ -288,6 +358,21 @@ EBGP_MULTIHOP
   'ebgp-multihop'
 ;
 
+EDITION
+:
+  'edition'
+;
+
+EFFECTIVE_IP
+:
+  'effective-ip'
+;
+
+EFFECTIVE_PORT
+:
+  'effective-port'
+;
+
 ENABLED
 :
   'enabled'
@@ -311,6 +396,11 @@ EXTERNAL
 FALL_OVER
 :
   'fall-over'
+;
+
+FALSE
+:
+  'false'
 ;
 
 FASTHTTP
@@ -393,14 +483,29 @@ GUI_SETUP
   'gui-setup'
 ;
 
+GUID
+:
+  'guid'
+;
+
 GW
 :
   'gw'
 ;
 
+HA_GROUP
+:
+  'ha-group'
+;
+
 HANDSHAKE_TIMEOUT
 :
   'handshake-timeout'
+;
+
+HIDDEN_LITERAL
+:
+  'hidden'
 ;
 
 HOSTNAME
@@ -493,6 +598,11 @@ INTERVAL
   'interval'
 ;
 
+IP
+:
+  'ip'
+;
+
 IP_DSCP
 :
   'ip-dscp'
@@ -583,6 +693,11 @@ LTM
   'ltm'
 ;
 
+MAC
+:
+  'mac'
+;
+
 MANAGEMENT_DHCP
 :
   'management-dhcp'
@@ -601,6 +716,11 @@ MANAGEMENT_ROUTE
 MAP_T
 :
   'map-t'
+;
+
+MARKETING_NAME
+:
+  'marketing-name'
 ;
 
 MASK
@@ -718,6 +838,11 @@ NETWORK
   'network'
 ;
 
+NETWORK_FAILOVER
+:
+  'network-failover'
+;
+
 NODE
 :
   'node'
@@ -746,6 +871,11 @@ ONE_CONNECT
 ONE_HUNDRED_G
 :
   '100G'
+;
+
+OPTIONAL_MODULES
+: 
+  'optional-modules'
 ;
 
 OPTIONS
@@ -798,6 +928,11 @@ PERSISTENCE
   'persistence'
 ;
 
+PLATFORM_ID
+:
+  'platform-id'
+;
+
 POOL
 :
   'pool'
@@ -826,6 +961,11 @@ PREFIX_LIST
 PRIORITY_GROUP
 :
   'priority-group'
+;
+
+PRODUCT
+:
+  'product'
 ;
 
 PROFILE
@@ -1024,6 +1164,11 @@ SELF_ALLOW
   'self-allow'
 ;
 
+SELF_DEVICE
+:
+  'self-device'
+;
+
 SEND
 :
   'send'
@@ -1194,6 +1339,11 @@ STATISTICS
   'statistics'
 ;
 
+STATUS
+:
+  'status'
+;
+
 STATUS_AGE
 :
   'status-age'
@@ -1217,6 +1367,16 @@ STREAM
 STRICT_RESUME
 :
   'strict-resume'
+;
+
+SYNC_FAILOVER
+:
+  'sync-failover'
+;
+
+SYNC_ONLY
+:
+  'sync-only'
 ;
 
 SYS
@@ -1249,6 +1409,11 @@ TIME_UNTIL_UP
   'time-until-up'
 ;
 
+TIME_ZONE
+:
+  'time-zone'
+;
+
 TIMEOUT
 :
   'timeout'
@@ -1279,9 +1444,24 @@ TRANSLATE_PORT
   'translate-port'
 ;
 
+TRUE
+:
+  'true'
+;
+
 TRUNK
 :
   'trunk'
+;
+
+TRUST_DOMAIN
+:
+  'trust-domain'
+;
+
+TRUST_GROUP
+:
+  'trust-group'
 ;
 
 TRUSTED_RESPONDERS
@@ -1314,6 +1494,16 @@ UNCLEAN_SHUTDOWN
   'unclean-shutdown'
 ;
 
+UNICAST_ADDRESS
+:
+  'unicast-address'
+;
+
+UNIT_ID
+:
+  'unit-id'
+;
+
 UPDATE_SOURCE
 :
   'update-source'
@@ -1322,6 +1512,11 @@ UPDATE_SOURCE
 VALUE
 :
   'value'
+;
+
+VERSION
+:
+  'version'
 ;
 
 VIRTUAL
@@ -1415,6 +1610,11 @@ COMMENT_LINE
 COMMENT_TAIL
 :
   '#' F_NonNewlineChar* -> channel ( HIDDEN )
+;
+
+MAC_ADDRESS
+:
+  F_MacAddress
 ;
 
 VLAN_ID
@@ -1768,6 +1968,17 @@ F_IruleVarName
   (
     '::' [0-9A-Za-z_]+
   )*
+;
+
+fragment
+F_MacAddress
+:
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit
 ;
 
 fragment

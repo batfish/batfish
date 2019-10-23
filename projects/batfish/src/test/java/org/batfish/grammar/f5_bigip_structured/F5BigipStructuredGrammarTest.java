@@ -150,6 +150,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -674,6 +675,11 @@ public final class F5BigipStructuredGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(Prefix.strict("10.0.3.2/32"), hasLocalIp(nullValue())))));
+  }
+
+  @Test
+  public void testCmParsing() {
+    assertNotNull(parseVendorConfig("f5_bigip_structured_cm"));
   }
 
   @Test
