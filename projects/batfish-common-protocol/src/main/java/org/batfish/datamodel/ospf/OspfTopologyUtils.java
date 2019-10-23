@@ -293,9 +293,7 @@ public final class OspfTopologyUtils {
     }
 
     if (!checkNBMANeighorValidation(localOspf, remoteConfigId.getAddress().getIp())) {
-      // For now we return ESTABLISHED optimistically.
-      // TODO: once conversion for all vendors are done, flip this to NO_SESSION
-      return OspfSessionStatus.ESTABLISHED;
+      return OspfSessionStatus.NO_SESSION;
     }
     /*
      * TODO: check MTU matches; This is complicated because frame/packet MTU support not fully there
