@@ -16,7 +16,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
@@ -102,68 +101,79 @@ public final class TracerouteAnswererHelper {
   private void setSrcIp(
       PacketHeaderConstraints constraints, Location srcLocation, Flow.Builder builder) {
     String headerSrcIp = constraints.getSrcIps();
-    if (headerSrcIp != null) {
-      // interpret given Src IP "flexibly"
-      IpSpaceSpecifier srcIpSpecifier =
-          SpecifierFactories.getIpSpaceSpecifierOrDefault(
-              headerSrcIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
-      // Resolve to set of locations/IPs
-      IpSpaceAssignment srcIps = srcIpSpecifier.resolve(ImmutableSet.of(), _specifierContext);
-      // Filter out empty IP assignments
-      List<Entry> nonEmptyIpSpaces =
-          srcIps.getEntries().stream()
-              .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
-              .collect(ImmutableList.toImmutableList());
-      checkArgument(
-          !nonEmptyIpSpaces.isEmpty(),
-          "Specified source '%s' could not be resolved to any IP.",
-          headerSrcIp);
-      checkArgument(
-          nonEmptyIpSpaces.size() == 1,
-          "Specified source '%s' resolves to more than one location/IP: %s",
-          headerSrcIp,
-          nonEmptyIpSpaces);
-      IpSpace space = srcIps.getEntries().iterator().next().getIpSpace();
-      Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(space);
-      // Extra check to ensure that we actually got an IP
-      checkArgument(srcIp.isPresent(), "Specified source '%s' has no IPs", headerSrcIp);
-      builder.setSrcIp(srcIp.get());
-    } else {
-      // Use from source location to determine header Src IP
-      Optional<Entry> entry =
-          _sourceIpAssignment.getEntries().stream()
-              .filter(e -> e.getLocations().contains(srcLocation))
-              .findFirst();
+    Ip srcIp =
+        headerSrcIp != null
+            ? inferSrcIpFromHeaderSrcIp(headerSrcIp)
+            : inferSrcIpFromSourceLocation(srcLocation);
+    builder.setSrcIp(srcIp);
+  }
 
-      checkArgument(
-          entry.isPresent(),
-          "Cannot resolve a source IP address from location %s",
-          _sourceLocationStr);
-      Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(entry.get().getIpSpace());
-      checkArgument(
-          srcIp.isPresent(),
-          "At least one source IP is required, location %s produced none",
-          srcLocation);
-      builder.setSrcIp(srcIp.get());
-    }
+  private Ip inferSrcIpFromHeaderSrcIp(String headerSrcIp) {
+    IpSpaceAssignment srcIps = resolverHeaderIp(headerSrcIp);
+    // Filter out empty IP assignments
+    List<Entry> nonEmptyIpSpaces =
+        srcIps.getEntries().stream()
+            .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
+            .collect(ImmutableList.toImmutableList());
+    checkArgument(
+        !nonEmptyIpSpaces.isEmpty(),
+        "Specified source '%s' could not be resolved to any IP.",
+        headerSrcIp);
+    checkArgument(
+        nonEmptyIpSpaces.size() == 1,
+        "Specified source '%s' resolves to more than one location/IP: %s",
+        headerSrcIp,
+        nonEmptyIpSpaces);
+    Optional<Ip> srcIp = pickRepresentativeFromIpSpaceAssignment(srcIps);
+    // Extra check to ensure that we actually got an IP
+    checkArgument(srcIp.isPresent(), "Specified source '%s' has no IPs", headerSrcIp);
+    return srcIp.get();
+  }
+
+  private Ip inferSrcIpFromSourceLocation(Location srcLocation) {
+    Optional<Entry> entry =
+        _sourceIpAssignment.getEntries().stream()
+            .filter(e -> e.getLocations().contains(srcLocation))
+            .findFirst();
+    checkArgument(
+        entry.isPresent(),
+        "Cannot resolve a source IP address from location %s",
+        _sourceLocationStr);
+    Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(entry.get().getIpSpace());
+    checkArgument(
+        srcIp.isPresent(),
+        "At least one source IP is required, location %s produced none",
+        srcLocation);
+    return srcIp.get();
   }
 
   private void setDstIp(PacketHeaderConstraints constraints, Flow.Builder builder) {
     String headerDstIp = constraints.getDstIps();
-    checkArgument(
-        constraints.getDstIps() != null, "Cannot perform traceroute without a destination");
-    IpSpaceSpecifier dstIpSpecifier =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
-            headerDstIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
-    IpSpaceAssignment dstIps = dstIpSpecifier.resolve(ImmutableSet.of(), _specifierContext);
+    checkArgument(headerDstIp != null, "Cannot perform traceroute without a destination");
+    IpSpaceAssignment dstIps = resolverHeaderIp(headerDstIp);
     checkArgument(
         dstIps.getEntries().size() == 1,
         "Specified destination '%s' resolves to more than one IP",
         headerDstIp);
-    IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
-    Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
+    Optional<Ip> dstIp = pickRepresentativeFromIpSpaceAssignment(dstIps);
     checkArgument(dstIp.isPresent(), "Specified destination '%s' has no IPs.", headerDstIp);
     builder.setDstIp(dstIp.get());
+  }
+
+  private IpSpaceAssignment resolverHeaderIp(String headerIp) {
+    // interpret given IP "flexibly"
+    IpSpaceSpecifier ipSpecifier =
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+            headerIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
+
+    // Resolve to set of locations/IPs
+    return ipSpecifier.resolve(ImmutableSet.of(), _specifierContext);
+  }
+
+  private Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
+      IpSpaceAssignment ipSpaceAssignment) {
+    return _ipSpaceRepresentative.getRepresentative(
+        ipSpaceAssignment.getEntries().iterator().next().getIpSpace());
   }
 
   /**
