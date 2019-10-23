@@ -1133,4 +1133,75 @@ public class OspfRoutingProcessTest {
             .collect(Collectors.toList()),
         equalTo(routes.getActions().collect(Collectors.toList())));
   }
+
+  // For p2mp interfaces, initial route is the interface IP instead of subnet
+  @Test
+  public void testInitializeRoutesByArea_p2mp() {
+    NetworkFactory nf = new NetworkFactory();
+    _c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(HOSTNAME)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).setOwner(_c).build();
+    OspfInterfaceSettings.Builder ospf =
+        OspfInterfaceSettings.defaultSettingsBuilder().setProcess("1").setEnabled(true);
+
+    Interface activeIface =
+        nf.interfaceBuilder()
+            .setActive(true)
+            .setVrf(vrf)
+            .setOwner(_c)
+            .setType(InterfaceType.PHYSICAL)
+            .setBandwidth(1e8)
+            .setName(ACTIVE_IFACE_NAME)
+            .setAddresses(ACTIVE_ADDR_1)
+            .setOspfSettings(
+                ospf.setCost(1).setNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT).build())
+            .build();
+
+    AREA0_CONFIG =
+        OspfArea.builder(nf)
+            .setNumber(0)
+            .setInterfaces(ImmutableSet.of(activeIface.getName()))
+            .build();
+
+    OspfNeighborConfigId id =
+        new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
+
+    OspfProcess ospfProcess =
+        nf.ospfProcessBuilder()
+            .setProcessId("1")
+            .setRouterId(ACTIVE_ADDR_1.getIp())
+            .setReferenceBandwidth(10e9)
+            .setVrf(vrf)
+            .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG))
+            .setAdminCosts(ADMIN_COSTS)
+            .setNeighborConfigs(
+                ImmutableMap.of(
+                    id,
+                    OspfNeighborConfig.builder()
+                        .setHostname(HOSTNAME)
+                        .setVrfName(VRF_NAME)
+                        .setInterfaceName(ACTIVE_IFACE_NAME)
+                        .setIp(ACTIVE_ADDR_1.getIp())
+                        .setArea(0L)
+                        .build()))
+            .build();
+    _routingProcess = new OspfRoutingProcess(ospfProcess, VRF_NAME, _c, _emptyOspfTopology);
+    RibDelta<OspfIntraAreaRoute> routes = _routingProcess.initializeRoutesByArea(AREA0_CONFIG);
+    assertThat(
+        routes.getActions().collect(ImmutableList.toImmutableList()),
+        contains(
+            new RouteAdvertisement<>(
+                new OspfIntraAreaRoute(
+                    Prefix.parse("2.2.2.2/32"),
+                    Ip.parse("2.2.2.2"),
+                    100,
+                    1,
+                    0,
+                    -1,
+                    false,
+                    false))));
+  }
 }
