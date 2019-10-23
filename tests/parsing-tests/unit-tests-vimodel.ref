@@ -17382,6 +17382,29 @@
           }
         }
       },
+      "f5_bigip_structured_cm" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_cm",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_cm" : {
+            "name" : "pools~on~f5_bigip_structured_cm"
+          },
+          "virtualAddresses~on~f5_bigip_structured_cm" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_cm"
+          }
+        },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "f5_bigip_structured_ltm" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
         "name" : "f5_bigip_structured_ltm",

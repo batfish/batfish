@@ -214,6 +214,31 @@ import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_deviceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_device_groupContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_keyContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_traffic_groupContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_trust_domainContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_certContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_configsync_ipContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_hostnameContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_keyContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_management_ipContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_self_deviceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_unicast_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_auto_syncContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_devicesContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_hiddenContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_network_failoverContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_typeContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmduaa_effective_ipContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmduaa_effective_portContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmduaa_ipContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtd_ca_certContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtd_ca_cert_bundleContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtd_ca_devicesContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtd_trust_groupContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtg_ha_groupContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.IgnoredContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Imish_chunkContext;
@@ -675,6 +700,131 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterF5_bigip_structured_configuration(F5_bigip_structured_configurationContext ctx) {
     _c = new F5BigipConfiguration();
+  }
+
+  @Override
+  public void enterCm_device(Cm_deviceContext ctx) {
+    todo(ctx.getParent());
+  }
+
+  @Override
+  public void enterCm_device_group(Cm_device_groupContext ctx) {
+    todo(ctx.getParent());
+  }
+
+  @Override
+  public void enterCm_key(Cm_keyContext ctx) {
+    todo(ctx.getParent());
+  }
+
+  @Override
+  public void enterCm_traffic_group(Cm_traffic_groupContext ctx) {
+    todo(ctx.getParent());
+  }
+
+  @Override
+  public void enterCm_trust_domain(Cm_trust_domainContext ctx) {
+    todo(ctx.getParent());
+  }
+
+  @Override
+  public void exitCmd_cert(Cmd_certContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmd_configsync_ip(Cmd_configsync_ipContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmd_hostname(Cmd_hostnameContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmd_key(Cmd_keyContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmd_management_ip(Cmd_management_ipContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmd_self_device(Cmd_self_deviceContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void enterCmd_unicast_address(Cmd_unicast_addressContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmduaa_effective_ip(Cmduaa_effective_ipContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmduaa_effective_port(Cmduaa_effective_portContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmduaa_ip(Cmduaa_ipContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmdg_auto_sync(Cmdg_auto_syncContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmdg_devices(Cmdg_devicesContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmdg_hidden(Cmdg_hiddenContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmdg_network_failover(Cmdg_network_failoverContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmdg_type(Cmdg_typeContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmtg_ha_group(Cmtg_ha_groupContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmtd_ca_cert(Cmtd_ca_certContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmtd_ca_cert_bundle(Cmtd_ca_cert_bundleContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmtd_ca_devices(Cmtd_ca_devicesContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitCmtd_trust_group(Cmtd_trust_groupContext ctx) {
+    todo(ctx);
   }
 
   @Override
