@@ -14,7 +14,6 @@ public class HierarchyTest {
     assertThat(Hierarchy.matchWithJuniperRegex("test", "*"), equalTo(true));
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/2128")
   @Test
   public void testMatchWithJuniperRegex2() {
     assertThat(Hierarchy.matchWithJuniperRegex("testexpression", "*.*"), equalTo(false));
@@ -25,11 +24,10 @@ public class HierarchyTest {
     assertThat(Hierarchy.matchWithJuniperRegex("test.expression", "*.*"), equalTo(true));
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/2128")
   @Test
+  @Ignore("https://github.com/batfish/batfish/issues/2128")
   public void testMatchWithJuniperRegex4() {
-    // throws an exception currently
-    assertThat(Hierarchy.matchWithJuniperRegex("[test", "["), equalTo(true));
+    assertThat(Hierarchy.matchWithJuniperRegex("[test", "["), equalTo(false));
   }
 
   @Test
@@ -66,13 +64,11 @@ public class HierarchyTest {
     assertThat(Hierarchy.matchWithJuniperRegex("test3", "test[!3-4]"), equalTo(false));
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/2128")
   @Test
   public void testMatchingJuniperRegex11() {
     assertThat(Hierarchy.matchWithJuniperRegex("test5", "test?"), equalTo(true));
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/2128")
   @Test
   public void testMatchingJuniperRegex12() {
     assertThat(Hierarchy.matchWithJuniperRegex("tes", "test?"), equalTo(false));
