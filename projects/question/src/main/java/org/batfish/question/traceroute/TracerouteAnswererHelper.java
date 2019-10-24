@@ -70,7 +70,6 @@ public final class TracerouteAnswererHelper {
 
     _packetHeaderConstraintToFlowHelper =
         new PacketHeaderContraintToFlowHelper(
-            sourceLocationStr,
             initSourceIpAssignment(
                 _sourceLocationStr, _packetHeaderConstraints.getSrcIps(), _specifierContext),
             _specifierContext);

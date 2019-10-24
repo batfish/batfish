@@ -2,22 +2,18 @@ package org.batfish.question;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
-import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -28,16 +24,12 @@ import org.batfish.specifier.SpecifierFactories;
 public class PacketHeaderContraintToFlowHelper {
 
   private final IpSpaceRepresentative _ipSpaceRepresentative;
-  private final String _sourceLocationStr;
   private final IpSpaceAssignment _sourceIpAssignment;
   private final SpecifierContext _specifierContext;
 
   public PacketHeaderContraintToFlowHelper(
-      String sourceLocationStr,
-      IpSpaceAssignment sourceIpAssignment,
-      SpecifierContext specifierContext) {
+      IpSpaceAssignment sourceIpAssignment, SpecifierContext specifierContext) {
     _ipSpaceRepresentative = new IpSpaceRepresentative();
-    _sourceLocationStr = sourceLocationStr;
     _specifierContext = specifierContext;
     _sourceIpAssignment = sourceIpAssignment;
   }
@@ -71,9 +63,7 @@ public class PacketHeaderContraintToFlowHelper {
             .filter(e -> e.getLocations().contains(srcLocation))
             .findFirst();
     checkArgument(
-        entry.isPresent(),
-        "Cannot resolve a source IP address from location %s",
-        _sourceLocationStr);
+        entry.isPresent(), "Cannot resolve a source IP address from location %s", srcLocation);
     Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(entry.get().getIpSpace());
     checkArgument(
         srcIp.isPresent(),
