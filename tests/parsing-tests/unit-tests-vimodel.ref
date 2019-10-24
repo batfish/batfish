@@ -17995,6 +17995,29 @@
           }
         }
       },
+      "f5_bigip_structured_sys_ha_group" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_sys_ha_group",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_sys_ha_group" : {
+            "name" : "pools~on~f5_bigip_structured_sys_ha_group"
+          },
+          "virtualAddresses~on~f5_bigip_structured_sys_ha_group" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_sys_ha_group"
+          }
+        },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "f5_bigip_structured_with_imish" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
         "name" : "f5_bigip_structured_with_imish",

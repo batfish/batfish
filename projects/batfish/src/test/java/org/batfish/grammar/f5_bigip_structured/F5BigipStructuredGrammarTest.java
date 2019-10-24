@@ -246,6 +246,9 @@ import org.batfish.representation.f5_bigip.DeviceGroupDevice;
 import org.batfish.representation.f5_bigip.DeviceGroupType;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
+import org.batfish.representation.f5_bigip.HaGroup;
+import org.batfish.representation.f5_bigip.HaGroupPool;
+import org.batfish.representation.f5_bigip.HaGroupTrunk;
 import org.batfish.representation.f5_bigip.ManagementIp;
 import org.batfish.representation.f5_bigip.Route;
 import org.batfish.representation.f5_bigip.TrafficGroup;
@@ -1013,6 +1016,39 @@ public final class F5BigipStructuredGrammarTest {
     }
   }
 
+  @Test
+  public void testHaGroupExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_sys_ha_group");
+    
+    assertThat(vc.getHaGroups(), hasKeys("g1"));
+    {
+      HaGroup g = vc.getHaGroups().get("g1");
+      assertThat(g.getActiveBonus(), equalTo(12));
+      
+      // pools
+      assertThat(g.getPools(), hasKeys("/Common/p1", "/Common/p2"));
+      {
+        HaGroupPool p = g.getPools().get("/Common/p1");
+        assertThat(p.getWeight(), equalTo(34));
+      }
+      {
+        HaGroupPool p = g.getPools().get("/Common/p2");
+        assertThat(p.getWeight(), nullValue());
+      }
+
+      // trunks
+      assertThat(g.getTrunks(), hasKeys("t1", "t2"));
+      {
+        HaGroupTrunk t = g.getTrunks().get("t1");
+        assertThat(t.getWeight(), equalTo(56));
+      }
+      {
+        HaGroupTrunk t = g.getTrunks().get("t2");
+        assertThat(t.getWeight(), nullValue());
+      }
+}
+  }
+    
   @Test
   public void testHostname() throws IOException {
     String filename = "f5_bigip_structured_hostname";

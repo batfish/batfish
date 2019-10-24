@@ -513,6 +513,9 @@
         "f5_bigip_structured_sys" : [
           "configs/f5_bigip/f5_bigip_structured_sys"
         ],
+        "f5_bigip_structured_sys_ha_group" : [
+          "configs/f5_bigip/f5_bigip_structured_sys_ha_group"
+        ],
         "f5_bigip_structured_with_imish" : [
           "configs/f5_bigip/f5_bigip_structured_with_imish"
         ],
@@ -1082,6 +1085,7 @@
         "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : "PASSED",
         "configs/f5_bigip/f5_bigip_structured_sys" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : "PASSED",
         "configs/f5_bigip/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
@@ -48478,6 +48482,97 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : {
+          "sentences" : [
+            "(f5_bigip_structured_configuration",
+            "  (statement",
+            "    (s_sys",
+            "      SYS:'sys'",
+            "      (sys_global_settings",
+            "        GLOBAL_SETTINGS:'global-settings'",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (sgs_hostname",
+            "          HOSTNAME:'hostname'",
+            "          hostname = (word",
+            "            WORD_ID:'f5_bigip_structured_sys_ha_group')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_sys",
+            "      SYS:'sys'",
+            "      (sys_ha_group",
+            "        HA_GROUP:'ha-group'",
+            "        name = (structure_name",
+            "          (word_id",
+            "            WORD_ID:'g1'))",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (sh_active_bonus",
+            "          ACTIVE_BONUS:'active-bonus'",
+            "          bonus = (uint16",
+            "            VLAN_ID:'12')",
+            "          NEWLINE:'\\n')",
+            "        (sh_pools",
+            "          POOLS:'pools'",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (shp_pool",
+            "            name = (structure_name",
+            "              partition = PARTITION:'/Common/'",
+            "              (word_id",
+            "                WORD_ID:'p1'))",
+            "            BRACE_LEFT:'{'",
+            "            NEWLINE:'\\n'",
+            "            (shpp_weight",
+            "              WEIGHT:'weight'",
+            "              weight = (uint16",
+            "                VLAN_ID:'34')",
+            "              NEWLINE:'\\n')",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          (shp_pool",
+            "            name = (structure_name",
+            "              partition = PARTITION:'/Common/'",
+            "              (word_id",
+            "                WORD_ID:'p2'))",
+            "            BRACE_LEFT:'{'",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n')",
+            "        (sh_trunks",
+            "          TRUNKS:'trunks'",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (sht_trunk",
+            "            name = (structure_name",
+            "              (word_id",
+            "                WORD_ID:'t1'))",
+            "            BRACE_LEFT:'{'",
+            "            NEWLINE:'\\n'",
+            "            (shtt_weight",
+            "              WEIGHT:'weight'",
+            "              weight = (uint16",
+            "                VLAN_ID:'56')",
+            "              NEWLINE:'\\n')",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          (sht_trunk",
+            "            name = (structure_name",
+            "              (word_id",
+            "                WORD_ID:'t2'))",
+            "            BRACE_LEFT:'{'",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/f5_bigip/f5_bigip_structured_with_imish" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
@@ -77830,6 +77925,7 @@
         "f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "f5_bigip_structured_net_routing_route_map" : "PASSED",
         "f5_bigip_structured_sys" : "PASSED",
+        "f5_bigip_structured_sys_ha_group" : "PASSED",
         "f5_bigip_structured_with_imish" : "WARNINGS",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
@@ -81848,6 +81944,30 @@
           }
         },
         "configs/f5_bigip/f5_bigip_structured_sys" : { },
+        "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : {
+          "ha-group" : {
+            "g1" : {
+              "definitionLines" : [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/f5_bigip/f5_bigip_structured_with_imish" : {
           "IMISH interface" : {
             "lo" : {
@@ -86353,6 +86473,9 @@
         "configs/f5_bigip/f5_bigip_structured_sys" : [
           "f5_bigip_structured_sys"
         ],
+        "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : [
+          "f5_bigip_structured_sys_ha_group"
+        ],
         "configs/f5_bigip/f5_bigip_structured_with_imish" : [
           "f5_bigip_structured_with_imish"
         ],
@@ -89512,6 +89635,32 @@
             "/Common/MY_PREFIX_LIST2" : {
               "route-map match ipv4 address prefix-list" : [
                 29
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : {
+          "pool" : {
+            "/Common/p1" : {
+              "ha-group pool" : [
+                10
+              ]
+            },
+            "/Common/p2" : {
+              "ha-group pool" : [
+                13
+              ]
+            }
+          },
+          "trunk" : {
+            "t1" : {
+              "ha-group trunk" : [
+                16
+              ]
+            },
+            "t2" : {
+              "ha-group trunk" : [
+                19
               ]
             }
           }
@@ -95150,6 +95299,7 @@
         "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : "PASSED",
         "configs/f5_bigip/f5_bigip_structured_sys" : "PASSED",
+        "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : "PASSED",
         "configs/f5_bigip/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
