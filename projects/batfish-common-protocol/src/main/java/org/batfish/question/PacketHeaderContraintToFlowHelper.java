@@ -58,7 +58,8 @@ public class PacketHeaderContraintToFlowHelper {
         "Specified source '%s' resolves to more than one location/IP: %s",
         headerSrcIp,
         nonEmptyIpSpaces);
-    Optional<Ip> srcIp = pickRepresentativeFromIpSpaceAssignment(srcIps);
+    Optional<Ip> srcIp =
+        pickRepresentativeFromIpSpaceAssignment(nonEmptyIpSpaces.iterator().next());
     // Extra check to ensure that we actually got an IP
     checkArgument(srcIp.isPresent(), "Specified source '%s' has no IPs", headerSrcIp);
     return srcIp.get();
@@ -91,8 +92,8 @@ public class PacketHeaderContraintToFlowHelper {
     return ipSpecifier.resolve(ImmutableSet.of(), _specifierContext);
   }
 
-  public Optional<Ip> pickRepresentativeFromIpSpaceAssignment(IpSpaceAssignment ipSpaceAssignment) {
-    return _ipSpaceRepresentative.getRepresentative(
-        ipSpaceAssignment.getEntries().iterator().next().getIpSpace());
+  public Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
+      IpSpaceAssignment.Entry ipSpaceAssignmentEntry) {
+    return _ipSpaceRepresentative.getRepresentative(ipSpaceAssignmentEntry.getIpSpace());
   }
 }

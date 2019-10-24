@@ -114,7 +114,8 @@ public final class TracerouteAnswererHelper {
         "Specified destination '%s' resolves to more than one IP",
         headerDstIp);
     Optional<Ip> dstIp =
-        _packetHeaderConstraintToFlowHelper.pickRepresentativeFromIpSpaceAssignment(dstIps);
+        _packetHeaderConstraintToFlowHelper.pickRepresentativeFromIpSpaceAssignment(
+            dstIps.getEntries().iterator().next());
     checkArgument(dstIp.isPresent(), "Specified destination '%s' has no IPs.", headerDstIp);
     builder.setDstIp(dstIp.get());
   }
