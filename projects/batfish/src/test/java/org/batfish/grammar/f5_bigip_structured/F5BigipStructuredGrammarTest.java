@@ -1019,12 +1019,12 @@ public final class F5BigipStructuredGrammarTest {
   @Test
   public void testHaGroupExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_sys_ha_group");
-    
+
     assertThat(vc.getHaGroups(), hasKeys("g1"));
     {
       HaGroup g = vc.getHaGroups().get("g1");
       assertThat(g.getActiveBonus(), equalTo(12));
-      
+
       // pools
       assertThat(g.getPools(), hasKeys("/Common/p1", "/Common/p2"));
       {
@@ -1046,9 +1046,9 @@ public final class F5BigipStructuredGrammarTest {
         HaGroupTrunk t = g.getTrunks().get("t2");
         assertThat(t.getWeight(), nullValue());
       }
-}
+    }
   }
-    
+
   @Test
   public void testHostname() throws IOException {
     String filename = "f5_bigip_structured_hostname";
