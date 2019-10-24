@@ -128,7 +128,8 @@ sy_root_authentication
 :
    ROOT_AUTHENTICATION
    (
-      syr_encrypted_password
+      apply
+      | syr_encrypted_password
    )
 ;
 

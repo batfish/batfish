@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
+import org.batfish.grammar.juniper.JuniperParser.Braced_clauseContext;
 import org.batfish.grammar.juniper.JuniperParser.Bracketed_clauseContext;
 import org.batfish.grammar.juniper.JuniperParser.Juniper_configurationContext;
 import org.batfish.grammar.juniper.JuniperParser.StatementContext;
@@ -31,6 +32,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   private FlattenerLineMap _lineMap;
   private SetStatementTree _root;
   private List<List<WordContext>> _stack;
+  private boolean _inEmptyBracedClause;
 
   public JuniperFlattener(String header) {
     _header = header;
@@ -40,6 +42,21 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _stack = new ArrayList<>();
     _root = new SetStatementTree();
     _allSetStatements = new ArrayList<>();
+  }
+
+  @Override
+  public void enterBraced_clause(Braced_clauseContext ctx) {
+    if (_inactiveStatement == null) {
+      _inEmptyBracedClause = true;
+    }
+  }
+
+  @Override
+  public void exitBraced_clause(Braced_clauseContext ctx) {
+    if (_inEmptyBracedClause && _inactiveStatement == null) {
+      constructSetLine();
+      _inEmptyBracedClause = false;
+    }
   }
 
   @Override
@@ -58,6 +75,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   @Override
   public void enterStatement(StatementContext ctx) {
     if (_inactiveStatement == null) {
+      _inEmptyBracedClause = false;
       if (ctx.INACTIVE() != null) {
         _inactiveStatement = ctx;
       } else {
