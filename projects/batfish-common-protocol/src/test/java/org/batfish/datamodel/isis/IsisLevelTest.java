@@ -23,19 +23,27 @@ public class IsisLevelTest {
   }
 
   @Test
-  public void testIntersection() {
+  public void testIntersectionForVariableNumberOfLevels() {
     assertThat(intersection(), nullValue());
     assertThat(intersection(LEVEL_1), equalTo(LEVEL_1));
-    assertThat(intersection(LEVEL_1, LEVEL_2), nullValue());
-    assertThat(intersection(LEVEL_1, LEVEL_1_2), equalTo(LEVEL_1));
     assertThat(intersection(LEVEL_1, LEVEL_1_2, LEVEL_2), nullValue());
-    assertThat(intersection(LEVEL_1, null), nullValue());
   }
 
   @Test
-  public void testUnion() {
-    assertThat(union(null, null), nullValue());
-    assertThat(union(null, LEVEL_1), equalTo(LEVEL_1));
-    assertThat(union(LEVEL_1, LEVEL_2), equalTo(LEVEL_1_2));
+  public void testUnionAndIntersectionForTwoLevels() {
+    testUnionAndIntersection(null, null, null, null);
+    testUnionAndIntersection(null, LEVEL_1, LEVEL_1, null);
+    testUnionAndIntersection(null, LEVEL_1_2, LEVEL_1_2, null);
+    testUnionAndIntersection(LEVEL_1, LEVEL_1, LEVEL_1, LEVEL_1);
+    testUnionAndIntersection(LEVEL_1, LEVEL_2, LEVEL_1_2, null);
+    testUnionAndIntersection(LEVEL_1, LEVEL_1_2, LEVEL_1_2, LEVEL_1);
+  }
+
+  private void testUnionAndIntersection(
+      IsisLevel first, IsisLevel second, IsisLevel expectedUnion, IsisLevel expectedIntersection) {
+    assertThat(union(first, second), equalTo(expectedUnion));
+    assertThat(union(second, first), equalTo(expectedUnion));
+    assertThat(intersection(first, second), equalTo(expectedIntersection));
+    assertThat(intersection(second, first), equalTo(expectedIntersection));
   }
 }

@@ -38,22 +38,13 @@ public enum IsisLevel {
   }
 
   @Nullable
-  public static IsisLevel union(@Nullable IsisLevel level1, @Nullable IsisLevel level2) {
-    if (level1 == level2) {
-      return level1;
+  public static IsisLevel union(@Nullable IsisLevel first, @Nullable IsisLevel second) {
+    if (first == second || second == null) {
+      return first;
+    } else if (first == null) {
+      return second;
     }
-    if (level1 == LEVEL_1_2 || level2 == LEVEL_1_2) {
-      return LEVEL_1_2;
-    }
-    if (level1 == LEVEL_1 || level2 == LEVEL_1) {
-      // other is null or LEVEL_2
-      if (level1 == LEVEL_2 || level2 == LEVEL_2) {
-        return LEVEL_1_2;
-      }
-      // other is null
-      return LEVEL_1;
-    }
-    // one is null and one is LEVEL_2
-    return LEVEL_2;
+    // Both nonnull, and different from each other: must include both levels
+    return LEVEL_1_2;
   }
 }
