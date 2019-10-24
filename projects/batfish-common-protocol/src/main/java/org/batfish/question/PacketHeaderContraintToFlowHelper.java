@@ -25,14 +25,14 @@ import org.batfish.specifier.SpecifierFactories;
  * Wrapper for utility functions used to infer src / dst Ips in a flow used by test filter and
  * traceroute
  */
-class PacketHeaderContraintToFlowHelper {
+public class PacketHeaderContraintToFlowHelper {
 
   private final IpSpaceRepresentative _ipSpaceRepresentative;
   private final String _sourceLocationStr;
   private final IpSpaceAssignment _sourceIpAssignment;
   private final SpecifierContext _specifierContext;
 
-  PacketHeaderContraintToFlowHelper(
+  public PacketHeaderContraintToFlowHelper(
       String sourceLocationStr,
       IpSpaceAssignment sourceIpAssignment,
       SpecifierContext specifierContext) {
@@ -42,24 +42,7 @@ class PacketHeaderContraintToFlowHelper {
     _sourceIpAssignment = sourceIpAssignment;
   }
 
-  @VisibleForTesting
-  static IpSpaceAssignment initSourceIpAssignment(
-      String sourceLocation, String sourceIps, SpecifierContext specifierContext) {
-    /* construct specifiers */
-    LocationSpecifier sourceLocationSpecifier =
-        SpecifierFactories.getLocationSpecifierOrDefault(
-            sourceLocation, AllInterfacesLocationSpecifier.INSTANCE);
-
-    IpSpaceSpecifier sourceIpSpaceSpecifier =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
-            sourceIps, InferFromLocationIpSpaceSpecifier.INSTANCE);
-
-    /* resolve specifiers */
-    Set<Location> sourceLocations = sourceLocationSpecifier.resolve(specifierContext);
-    return sourceIpSpaceSpecifier.resolve(sourceLocations, specifierContext);
-  }
-
-  Ip inferSrcIpFromHeaderSrcIp(String headerSrcIp) {
+  public Ip inferSrcIpFromHeaderSrcIp(String headerSrcIp) {
     IpSpaceAssignment srcIps = resolverHeaderIp(headerSrcIp);
     // Filter out empty IP assignments
     List<Entry> nonEmptyIpSpaces =
@@ -81,7 +64,7 @@ class PacketHeaderContraintToFlowHelper {
     return srcIp.get();
   }
 
-  Ip inferSrcIpFromSourceLocation(Location srcLocation) {
+  public Ip inferSrcIpFromSourceLocation(Location srcLocation) {
     Optional<Entry> entry =
         _sourceIpAssignment.getEntries().stream()
             .filter(e -> e.getLocations().contains(srcLocation))
@@ -98,7 +81,7 @@ class PacketHeaderContraintToFlowHelper {
     return srcIp.get();
   }
 
-  private IpSpaceAssignment resolverHeaderIp(String headerIp) {
+  public IpSpaceAssignment resolverHeaderIp(String headerIp) {
     // interpret given IP "flexibly"
     IpSpaceSpecifier ipSpecifier =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
@@ -108,8 +91,7 @@ class PacketHeaderContraintToFlowHelper {
     return ipSpecifier.resolve(ImmutableSet.of(), _specifierContext);
   }
 
-  private Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
-      IpSpaceAssignment ipSpaceAssignment) {
+  public Optional<Ip> pickRepresentativeFromIpSpaceAssignment(IpSpaceAssignment ipSpaceAssignment) {
     return _ipSpaceRepresentative.getRepresentative(
         ipSpaceAssignment.getEntries().iterator().next().getIpSpace());
   }

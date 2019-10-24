@@ -4,14 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -19,13 +16,12 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
-import org.batfish.datamodel.visitors.IpSpaceRepresentative;
+import org.batfish.question.PacketHeaderContraintToFlowHelper;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
-import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
@@ -38,11 +34,10 @@ import org.batfish.specifier.SpecifierFactories;
  * question parameters and constructs {@link Flow Flows} for the backend engine.
  */
 public final class TracerouteAnswererHelper {
-  private final IpSpaceRepresentative _ipSpaceRepresentative;
   private final PacketHeaderConstraints _packetHeaderConstraints;
   private final String _sourceLocationStr;
-  private final IpSpaceAssignment _sourceIpAssignment;
   private final SpecifierContext _specifierContext;
+  private final PacketHeaderContraintToFlowHelper _packetHeaderConstraintToFlowHelper;
   private final LocationVisitor<Boolean> _isActiveLocation =
       new LocationVisitor<Boolean>() {
         private boolean isActiveInterface(String hostname, String ifaceName) {
@@ -69,14 +64,16 @@ public final class TracerouteAnswererHelper {
       PacketHeaderConstraints packetHeaderConstraints,
       String sourceLocationStr,
       SpecifierContext specifierContext) {
-    _ipSpaceRepresentative = new IpSpaceRepresentative();
     _packetHeaderConstraints = packetHeaderConstraints;
     _sourceLocationStr = sourceLocationStr;
     _specifierContext = specifierContext;
 
-    _sourceIpAssignment =
-        initSourceIpAssignment(
-            _sourceLocationStr, _packetHeaderConstraints.getSrcIps(), _specifierContext);
+    _packetHeaderConstraintToFlowHelper =
+        new PacketHeaderContraintToFlowHelper(
+            sourceLocationStr,
+            initSourceIpAssignment(
+                _sourceLocationStr, _packetHeaderConstraints.getSrcIps(), _specifierContext),
+            _specifierContext);
   }
 
   private static final int TRACEROUTE_PORT = 33434;
@@ -103,77 +100,23 @@ public final class TracerouteAnswererHelper {
     String headerSrcIp = constraints.getSrcIps();
     Ip srcIp =
         headerSrcIp != null
-            ? inferSrcIpFromHeaderSrcIp(headerSrcIp)
-            : inferSrcIpFromSourceLocation(srcLocation);
+            ? _packetHeaderConstraintToFlowHelper.inferSrcIpFromHeaderSrcIp(headerSrcIp)
+            : _packetHeaderConstraintToFlowHelper.inferSrcIpFromSourceLocation(srcLocation);
     builder.setSrcIp(srcIp);
-  }
-
-  private Ip inferSrcIpFromHeaderSrcIp(String headerSrcIp) {
-    IpSpaceAssignment srcIps = resolverHeaderIp(headerSrcIp);
-    // Filter out empty IP assignments
-    List<Entry> nonEmptyIpSpaces =
-        srcIps.getEntries().stream()
-            .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
-            .collect(ImmutableList.toImmutableList());
-    checkArgument(
-        !nonEmptyIpSpaces.isEmpty(),
-        "Specified source '%s' could not be resolved to any IP.",
-        headerSrcIp);
-    checkArgument(
-        nonEmptyIpSpaces.size() == 1,
-        "Specified source '%s' resolves to more than one location/IP: %s",
-        headerSrcIp,
-        nonEmptyIpSpaces);
-    Optional<Ip> srcIp = pickRepresentativeFromIpSpaceAssignment(srcIps);
-    // Extra check to ensure that we actually got an IP
-    checkArgument(srcIp.isPresent(), "Specified source '%s' has no IPs", headerSrcIp);
-    return srcIp.get();
-  }
-
-  private Ip inferSrcIpFromSourceLocation(Location srcLocation) {
-    Optional<Entry> entry =
-        _sourceIpAssignment.getEntries().stream()
-            .filter(e -> e.getLocations().contains(srcLocation))
-            .findFirst();
-    checkArgument(
-        entry.isPresent(),
-        "Cannot resolve a source IP address from location %s",
-        _sourceLocationStr);
-    Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(entry.get().getIpSpace());
-    checkArgument(
-        srcIp.isPresent(),
-        "At least one source IP is required, location %s produced none",
-        srcLocation);
-    return srcIp.get();
   }
 
   private void setDstIp(PacketHeaderConstraints constraints, Flow.Builder builder) {
     String headerDstIp = constraints.getDstIps();
     checkArgument(headerDstIp != null, "Cannot perform traceroute without a destination");
-    IpSpaceAssignment dstIps = resolverHeaderIp(headerDstIp);
+    IpSpaceAssignment dstIps = _packetHeaderConstraintToFlowHelper.resolverHeaderIp(headerDstIp);
     checkArgument(
         dstIps.getEntries().size() == 1,
         "Specified destination '%s' resolves to more than one IP",
         headerDstIp);
-    Optional<Ip> dstIp = pickRepresentativeFromIpSpaceAssignment(dstIps);
+    Optional<Ip> dstIp =
+        _packetHeaderConstraintToFlowHelper.pickRepresentativeFromIpSpaceAssignment(dstIps);
     checkArgument(dstIp.isPresent(), "Specified destination '%s' has no IPs.", headerDstIp);
     builder.setDstIp(dstIp.get());
-  }
-
-  private IpSpaceAssignment resolverHeaderIp(String headerIp) {
-    // interpret given IP "flexibly"
-    IpSpaceSpecifier ipSpecifier =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
-            headerIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
-
-    // Resolve to set of locations/IPs
-    return ipSpecifier.resolve(ImmutableSet.of(), _specifierContext);
-  }
-
-  private Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
-      IpSpaceAssignment ipSpaceAssignment) {
-    return _ipSpaceRepresentative.getRepresentative(
-        ipSpaceAssignment.getEntries().iterator().next().getIpSpace());
   }
 
   /**
