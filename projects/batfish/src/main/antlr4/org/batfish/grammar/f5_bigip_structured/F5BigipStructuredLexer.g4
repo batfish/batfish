@@ -938,6 +938,11 @@ POOL
   'pool'
 ;
 
+PORT
+:
+  'port'
+;
+
 PPTP
 :
   'pptp'
@@ -1217,6 +1222,11 @@ SESSION_TICKET_TIMEOUT
 SET
 :
   'set'
+;
+
+SET_SYNC_LEADER
+:
+  'set-sync-leader'
 ;
 
 SFLOW

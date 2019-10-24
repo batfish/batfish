@@ -5,6 +5,9 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGH
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.DATA_GROUP_EXTERNAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.DATA_GROUP_INTERNAL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.DEVICE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.DEVICE_GROUP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.HA_GROUP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_DNS;
@@ -84,6 +87,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNATPOOL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRANSLATION;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.TRAFFIC_GROUP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
@@ -96,6 +100,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIG
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.DATA_GROUP_EXTERNAL_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.DATA_GROUP_INTERNAL_SELF_REFERENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.DEVICE_GROUP_DEVICE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_DNS_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_GATEWAY_ICMP_DEFAULTS_FROM;
@@ -173,7 +178,10 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNATPOOL
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_SNATPOOL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_VLANS_VLAN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.TRAFFIC_GROUP_HA_GROUP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.TRUNK_INTERFACE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.TRUST_DOMAIN_CA_DEVICE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.TRUST_DOMAIN_TRUST_GROUP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_DESTINATION;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_PERSIST_PERSISTENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_POOL;
@@ -204,6 +212,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.SubRange;
@@ -219,26 +228,32 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_device
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_keyContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_traffic_groupContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_trust_domainContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_base_macContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_certContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_configsync_ipContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_hostnameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_keyContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_management_ipContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_self_deviceContext;
-import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmd_unicast_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_auto_syncContext;
-import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_devicesContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_hiddenContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_network_failoverContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdg_typeContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdgd_deviceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdgdd_set_sync_leaderContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmdua_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmduaa_effective_ipContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmduaa_effective_portContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmduaa_ipContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmduaa_portContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtd_ca_certContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtd_ca_cert_bundleContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtd_ca_devicesContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtd_trust_groupContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtg_ha_groupContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtg_macContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cmtg_unit_idContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Device_group_typeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.IgnoredContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Imish_chunkContext;
@@ -437,6 +452,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvp_persi
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvr_ruleContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvsat_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvv_vlanContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Mac_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_routeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_route_domainContext;
@@ -508,6 +524,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_manag
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_ntpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_snmpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Uint16Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Unicast_address_ipContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.UnrecognizedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Vlan_idContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.WordContext;
@@ -521,6 +538,11 @@ import org.batfish.representation.f5_bigip.BgpRedistributionPolicy;
 import org.batfish.representation.f5_bigip.BuiltinMonitor;
 import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
+import org.batfish.representation.f5_bigip.ConcreteUnicastAddressIp;
+import org.batfish.representation.f5_bigip.Device;
+import org.batfish.representation.f5_bigip.DeviceGroup;
+import org.batfish.representation.f5_bigip.DeviceGroupDevice;
+import org.batfish.representation.f5_bigip.DeviceGroupType;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipRoutingProtocol;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
@@ -528,6 +550,7 @@ import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
 import org.batfish.representation.f5_bigip.Interface;
 import org.batfish.representation.f5_bigip.Ipv4Origin;
 import org.batfish.representation.f5_bigip.Ipv6Origin;
+import org.batfish.representation.f5_bigip.ManagementIp;
 import org.batfish.representation.f5_bigip.Node;
 import org.batfish.representation.f5_bigip.Pool;
 import org.batfish.representation.f5_bigip.PoolMember;
@@ -542,7 +565,10 @@ import org.batfish.representation.f5_bigip.Self;
 import org.batfish.representation.f5_bigip.Snat;
 import org.batfish.representation.f5_bigip.SnatPool;
 import org.batfish.representation.f5_bigip.SnatTranslation;
+import org.batfish.representation.f5_bigip.TrafficGroup;
 import org.batfish.representation.f5_bigip.Trunk;
+import org.batfish.representation.f5_bigip.UnicastAddress;
+import org.batfish.representation.f5_bigip.UnicastAddressIp;
 import org.batfish.representation.f5_bigip.UpdateSourceInterface;
 import org.batfish.representation.f5_bigip.Vlan;
 import org.batfish.representation.f5_bigip.VlanInterface;
@@ -655,6 +681,9 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable BgpNeighborAddressFamily _currentBgpNeighborAddressFamily;
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable BgpRedistributionPolicy _currentBgpRedistributionPolicy;
+  private Device _currentDevice;
+  private DeviceGroup _currentDeviceGroup;
+  private DeviceGroupDevice _currentDeviceGroupDevice;
   private IgnoredContext _currentIgnored;
   private @Nullable Interface _currentInterface;
   private @Nullable Node _currentNode;
@@ -669,7 +698,9 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable Snat _currentSnat;
   private @Nullable SnatPool _currentSnatPool;
   private @Nullable SnatTranslation _currentSnatTranslation;
+  private TrafficGroup _currentTrafficGroup;
   private @Nullable Trunk _currentTrunk;
+  private UnicastAddress _currentUnicastAddress;
   private @Nullable UnrecognizedContext _currentUnrecognized;
   private @Nullable Virtual _currentVirtual;
   private @Nullable VirtualAddress _currentVirtualAddress;
@@ -704,27 +735,23 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterCm_device(Cm_deviceContext ctx) {
-    todo(ctx.getParent());
+    String name = toName(ctx.name);
+    _currentDevice = _c.getDevices().computeIfAbsent(name, Device::new);
+    _c.defineStructure(DEVICE, name, ctx.getParent());
   }
 
   @Override
-  public void enterCm_device_group(Cm_device_groupContext ctx) {
-    todo(ctx.getParent());
+  public void exitCm_device(Cm_deviceContext ctx) {
+    _currentDevice = null;
   }
 
   @Override
-  public void enterCm_key(Cm_keyContext ctx) {
-    todo(ctx.getParent());
+  public void exitCmd_base_mac(Cmd_base_macContext ctx) {
+    _currentDevice.setBaseMac(toMacAddress(ctx.mac));
   }
 
-  @Override
-  public void enterCm_traffic_group(Cm_traffic_groupContext ctx) {
-    todo(ctx.getParent());
-  }
-
-  @Override
-  public void enterCm_trust_domain(Cm_trust_domainContext ctx) {
-    todo(ctx.getParent());
+  private static @Nonnull MacAddress toMacAddress(Mac_addressContext ctx) {
+    return MacAddress.parse(ctx.getText());
   }
 
   @Override
@@ -734,12 +761,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitCmd_configsync_ip(Cmd_configsync_ipContext ctx) {
-    todo(ctx);
+    _currentDevice.setConfigSyncIp(toIp(ctx.ip));
   }
 
   @Override
   public void exitCmd_hostname(Cmd_hostnameContext ctx) {
-    todo(ctx);
+    _currentDevice.setHostname(unquote(ctx.hostname.getText()).toLowerCase());
   }
 
   @Override
@@ -749,62 +776,150 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitCmd_management_ip(Cmd_management_ipContext ctx) {
-    todo(ctx);
+    _currentDevice.setManagementIp(toIp(ctx.ip));
   }
 
   @Override
   public void exitCmd_self_device(Cmd_self_deviceContext ctx) {
-    todo(ctx);
+    _currentDevice.setSelfDevice(ctx.TRUE() != null);
   }
 
   @Override
-  public void enterCmd_unicast_address(Cmd_unicast_addressContext ctx) {
-    todo(ctx);
+  public void enterCmdua_address(Cmdua_addressContext ctx) {
+    _currentUnicastAddress = new UnicastAddress();
+    _currentDevice.getUnicastAddresses().add(_currentUnicastAddress);
+  }
+
+  @Override
+  public void exitCmdua_address(Cmdua_addressContext ctx) {
+    _currentUnicastAddress = null;
   }
 
   @Override
   public void exitCmduaa_effective_ip(Cmduaa_effective_ipContext ctx) {
-    todo(ctx);
+    _currentUnicastAddress.setEffectiveIp(toUnicastAddressIp(ctx.ip));
+  }
+
+  private static @Nonnull UnicastAddressIp toUnicastAddressIp(Unicast_address_ipContext ctx) {
+    if (ctx.MANAGEMENT_IP() != null) {
+      return ManagementIp.instance();
+    } else {
+      assert ctx.ip != null;
+      return new ConcreteUnicastAddressIp(toIp(ctx.ip));
+    }
   }
 
   @Override
   public void exitCmduaa_effective_port(Cmduaa_effective_portContext ctx) {
-    todo(ctx);
+    _currentUnicastAddress.setEffectivePort(toInteger(ctx.port));
   }
 
   @Override
   public void exitCmduaa_ip(Cmduaa_ipContext ctx) {
-    todo(ctx);
+    _currentUnicastAddress.setIp(toUnicastAddressIp(ctx.ip));
+  }
+
+  @Override
+  public void exitCmduaa_port(Cmduaa_portContext ctx) {
+    _currentUnicastAddress.setPort(toInteger(ctx.port));
+  }
+
+  @Override
+  public void enterCm_device_group(Cm_device_groupContext ctx) {
+    String name = toName(ctx.name);
+    _currentDeviceGroup = _c.getDeviceGroups().computeIfAbsent(name, DeviceGroup::new);
+    _c.defineStructure(DEVICE_GROUP, name, ctx.getParent());
+  }
+
+  @Override
+  public void exitCm_device_group(Cm_device_groupContext ctx) {
+    _currentDeviceGroup = null;
   }
 
   @Override
   public void exitCmdg_auto_sync(Cmdg_auto_syncContext ctx) {
-    todo(ctx);
+    _currentDeviceGroup.setAutoSync(ctx.ENABLED() != null);
   }
 
   @Override
-  public void exitCmdg_devices(Cmdg_devicesContext ctx) {
-    todo(ctx);
+  public void enterCmdgd_device(Cmdgd_deviceContext ctx) {
+    String name = toName(ctx.name);
+    _currentDeviceGroupDevice =
+        _currentDeviceGroup.getDevices().computeIfAbsent(name, DeviceGroupDevice::new);
+    _c.referenceStructure(DEVICE, name, DEVICE_GROUP_DEVICE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitCmdgd_device(Cmdgd_deviceContext ctx) {
+    _currentDeviceGroupDevice = null;
+  }
+
+  @Override
+  public void exitCmdgdd_set_sync_leader(Cmdgdd_set_sync_leaderContext ctx) {
+    _currentDeviceGroupDevice.setSetSyncLeader(true);
   }
 
   @Override
   public void exitCmdg_hidden(Cmdg_hiddenContext ctx) {
-    todo(ctx);
+    _currentDeviceGroup.setHidden(ctx.TRUE() != null);
   }
 
   @Override
   public void exitCmdg_network_failover(Cmdg_network_failoverContext ctx) {
-    todo(ctx);
+    _currentDeviceGroup.setNetworkFailover(ctx.ENABLED() != null);
   }
 
   @Override
   public void exitCmdg_type(Cmdg_typeContext ctx) {
-    todo(ctx);
+    _currentDeviceGroup.setType(toType(ctx.type));
+  }
+
+  private static @Nonnull DeviceGroupType toType(Device_group_typeContext ctx) {
+    if (ctx.SYNC_FAILOVER() != null) {
+      return DeviceGroupType.SYNC_FAILOVER;
+    } else {
+      assert ctx.SYNC_ONLY() != null;
+      return DeviceGroupType.SYNC_ONLY;
+    }
+  }
+
+  @Override
+  public void enterCm_key(Cm_keyContext ctx) {
+    todo(ctx.getParent());
+  }
+
+  @Override
+  public void enterCm_traffic_group(Cm_traffic_groupContext ctx) {
+    String name = toName(ctx.name);
+    _currentTrafficGroup = _c.getTrafficGroups().computeIfAbsent(name, TrafficGroup::new);
+    _c.defineStructure(TRAFFIC_GROUP, name, ctx.getParent());
+  }
+
+  @Override
+  public void exitCm_traffic_group(Cm_traffic_groupContext ctx) {
+    _currentTrafficGroup = null;
   }
 
   @Override
   public void exitCmtg_ha_group(Cmtg_ha_groupContext ctx) {
-    todo(ctx);
+    String name = toName(ctx.name);
+    _currentTrafficGroup.setHaGroup(name);
+    _c.referenceStructure(HA_GROUP, name, TRAFFIC_GROUP_HA_GROUP, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitCmtg_mac(Cmtg_macContext ctx) {
+    _currentTrafficGroup.setMac(toMacAddress(ctx.mac));
+  }
+
+  @Override
+  public void exitCmtg_unit_id(Cmtg_unit_idContext ctx) {
+    _currentTrafficGroup.setUnitId(toInteger(ctx.id));
+  }
+
+  @Override
+  public void enterCm_trust_domain(Cm_trust_domainContext ctx) {
+    todo(ctx.getParent());
   }
 
   @Override
@@ -819,12 +934,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitCmtd_ca_devices(Cmtd_ca_devicesContext ctx) {
-    todo(ctx);
+    ctx.names.forEach(
+        name ->
+            _c.referenceStructure(
+                DEVICE, toName(name), TRUST_DOMAIN_CA_DEVICE, name.getStart().getLine()));
   }
 
   @Override
   public void exitCmtd_trust_group(Cmtd_trust_groupContext ctx) {
-    todo(ctx);
+    _c.referenceStructure(
+        DEVICE_GROUP, toName(ctx.name), TRUST_DOMAIN_TRUST_GROUP, ctx.name.getStart().getLine());
   }
 
   @Override

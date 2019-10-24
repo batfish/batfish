@@ -43516,7 +43516,8 @@
             "            NEWLINE:'\\n'))",
             "        (cmd_base_mac",
             "          BASE_MAC:'base-mac'",
-            "          MAC_ADDRESS:'00:00:00:00:00:01'",
+            "          mac = (mac_address",
+            "            MAC_ADDRESS:'00:00:00:00:00:01')",
             "          NEWLINE:'\\n')",
             "        (cmd_null",
             "          BUILD:'build'",
@@ -43619,8 +43620,9 @@
             "            NEWLINE:'\\n'",
             "            (cmduaa_effective_ip",
             "              EFFECTIVE_IP:'effective-ip'",
-            "              ip = (ip_address",
-            "                IP_ADDRESS:'192.0.2.1')",
+            "              ip = (unicast_address_ip",
+            "                ip = (ip_address",
+            "                  IP_ADDRESS:'192.0.2.1'))",
             "              NEWLINE:'\\n')",
             "            (cmduaa_effective_port",
             "              EFFECTIVE_PORT:'effective-port'",
@@ -43629,8 +43631,9 @@
             "              NEWLINE:'\\n')",
             "            (cmduaa_ip",
             "              IP:'ip'",
-            "              ip = (ip_address",
-            "                IP_ADDRESS:'192.0.2.1')",
+            "              ip = (unicast_address_ip",
+            "                ip = (ip_address",
+            "                  IP_ADDRESS:'192.0.2.1'))",
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
@@ -43639,7 +43642,8 @@
             "            NEWLINE:'\\n'",
             "            (cmduaa_effective_ip",
             "              EFFECTIVE_IP:'effective-ip'",
-            "              MANAGEMENT_IP:'management-ip'",
+            "              ip = (unicast_address_ip",
+            "                MANAGEMENT_IP:'management-ip')",
             "              NEWLINE:'\\n')",
             "            (cmduaa_effective_port",
             "              EFFECTIVE_PORT:'effective-port'",
@@ -43648,7 +43652,8 @@
             "              NEWLINE:'\\n')",
             "            (cmduaa_ip",
             "              IP:'ip'",
-            "              MANAGEMENT_IP:'management-ip'",
+            "              ip = (unicast_address_ip",
+            "                MANAGEMENT_IP:'management-ip')",
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
@@ -43686,7 +43691,8 @@
             "            NEWLINE:'\\n'))",
             "        (cmd_base_mac",
             "          BASE_MAC:'base-mac'",
-            "          MAC_ADDRESS:'00:00:00:00:00:02'",
+            "          mac = (mac_address",
+            "            MAC_ADDRESS:'00:00:00:00:00:02')",
             "          NEWLINE:'\\n')",
             "        (cmd_null",
             "          BUILD:'build'",
@@ -43785,8 +43791,9 @@
             "            NEWLINE:'\\n'",
             "            (cmduaa_effective_ip",
             "              EFFECTIVE_IP:'effective-ip'",
-            "              ip = (ip_address",
-            "                IP_ADDRESS:'192.0.2.3')",
+            "              ip = (unicast_address_ip",
+            "                ip = (ip_address",
+            "                  IP_ADDRESS:'192.0.2.3'))",
             "              NEWLINE:'\\n')",
             "            (cmduaa_effective_port",
             "              EFFECTIVE_PORT:'effective-port'",
@@ -43795,8 +43802,9 @@
             "              NEWLINE:'\\n')",
             "            (cmduaa_ip",
             "              IP:'ip'",
-            "              ip = (ip_address",
-            "                IP_ADDRESS:'192.0.2.3')",
+            "              ip = (unicast_address_ip",
+            "                ip = (ip_address",
+            "                  IP_ADDRESS:'192.0.2.3'))",
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
@@ -43805,7 +43813,8 @@
             "            NEWLINE:'\\n'",
             "            (cmduaa_effective_ip",
             "              EFFECTIVE_IP:'effective-ip'",
-            "              MANAGEMENT_IP:'management-ip'",
+            "              ip = (unicast_address_ip",
+            "                MANAGEMENT_IP:'management-ip')",
             "              NEWLINE:'\\n')",
             "            (cmduaa_effective_port",
             "              EFFECTIVE_PORT:'effective-port'",
@@ -43814,7 +43823,8 @@
             "              NEWLINE:'\\n')",
             "            (cmduaa_ip",
             "              IP:'ip'",
-            "              MANAGEMENT_IP:'management-ip'",
+            "              ip = (unicast_address_ip",
+            "                MANAGEMENT_IP:'management-ip')",
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
@@ -43864,7 +43874,8 @@
             "          NEWLINE:'\\n')",
             "        (cmdg_type",
             "          TYPE:'type'",
-            "          SYNC_FAILOVER:'sync-failover'",
+            "          type = (device_group_type",
+            "            SYNC_FAILOVER:'sync-failover')",
             "          NEWLINE:'\\n')",
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n')))",
@@ -44146,11 +44157,12 @@
             "          NEWLINE:'\\n')",
             "        (cmtg_mac",
             "          MAC:'mac'",
-            "          MAC_ADDRESS:'00:00:00:00:00:03'",
+            "          mac = (mac_address",
+            "            MAC_ADDRESS:'00:00:00:00:00:03')",
             "          NEWLINE:'\\n')",
             "        (cmtg_unit_id",
             "          UNIT_ID:'unit-id'",
-            "          (uint16",
+            "          id = (uint16",
             "            VLAN_ID:'1')",
             "          NEWLINE:'\\n')",
             "        BRACE_RIGHT:'}'",
@@ -76935,27 +76947,9 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 61,
-              "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "cm device /Common/f5_bigip_structured_cm {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 65,
               "Parser_Context" : "[cmd_cert cm_device s_cm statement f5_bigip_structured_configuration]",
               "Text" : "cert /Common/dtdi.crt"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 67,
-              "Parser_Context" : "[cmd_configsync_ip cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "configsync-ip 192.0.2.1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 69,
-              "Parser_Context" : "[cmd_hostname cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "hostname f5_bigip_structured_cm"
             },
             {
               "Comment" : "This feature is not currently supported",
@@ -76965,207 +76959,15 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 71,
-              "Parser_Context" : "[cmd_management_ip cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "management-ip 192.0.2.2"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 76,
-              "Parser_Context" : "[cmd_self_device cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "self-device true"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 78,
-              "Parser_Context" : "[cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "unicast-address {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 80,
-              "Parser_Context" : "[cmduaa_effective_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "effective-ip 192.0.2.1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 81,
-              "Parser_Context" : "[cmduaa_effective_port cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "effective-port 1026"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 82,
-              "Parser_Context" : "[cmduaa_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "ip 192.0.2.1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 85,
-              "Parser_Context" : "[cmduaa_effective_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "effective-ip management-ip"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 86,
-              "Parser_Context" : "[cmduaa_effective_port cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "effective-port 1026"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 87,
-              "Parser_Context" : "[cmduaa_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "ip management-ip"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 92,
-              "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "cm device /Common/f5_bigip_structured_cm2 {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 96,
               "Parser_Context" : "[cmd_cert cm_device s_cm statement f5_bigip_structured_configuration]",
               "Text" : "cert /Common/dtdi.crt"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 98,
-              "Parser_Context" : "[cmd_configsync_ip cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "configsync-ip 192.0.2.3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 100,
-              "Parser_Context" : "[cmd_hostname cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "hostname f5_bigip_structured_cm"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 101,
               "Parser_Context" : "[cmd_key cm_device s_cm statement f5_bigip_structured_configuration]",
               "Text" : "key /Common/dtdi.key"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 102,
-              "Parser_Context" : "[cmd_management_ip cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "management-ip 192.0.2.4"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 108,
-              "Parser_Context" : "[cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "unicast-address {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 110,
-              "Parser_Context" : "[cmduaa_effective_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "effective-ip 192.0.2.3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 111,
-              "Parser_Context" : "[cmduaa_effective_port cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "effective-port 1026"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 112,
-              "Parser_Context" : "[cmduaa_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "ip 192.0.2.3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 115,
-              "Parser_Context" : "[cmduaa_effective_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "effective-ip management-ip"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 116,
-              "Parser_Context" : "[cmduaa_effective_port cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "effective-port 1026"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 117,
-              "Parser_Context" : "[cmduaa_ip cmdua_address cmd_unicast_address cm_device s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "ip management-ip"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 122,
-              "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "cm device-group /Common/device_group_snc {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 123,
-              "Parser_Context" : "[cmdg_devices cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "devices {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 127,
-              "Parser_Context" : "[cmdg_type cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "type sync-failover"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 129,
-              "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "cm device-group /Common/device_trust_group {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 130,
-              "Parser_Context" : "[cmdg_auto_sync cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "auto-sync enabled"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 131,
-              "Parser_Context" : "[cmdg_devices cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "devices {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 135,
-              "Parser_Context" : "[cmdg_hidden cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "hidden true"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 136,
-              "Parser_Context" : "[cmdg_network_failover cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "network-failover disabled"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 138,
-              "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "cm device-group /Common/gtm {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 139,
-              "Parser_Context" : "[cmdg_devices cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "devices {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 142,
-              "Parser_Context" : "[cmdg_hidden cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "hidden true"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 143,
-              "Parser_Context" : "[cmdg_network_failover cm_device_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "network-failover disabled"
             },
             {
               "Comment" : "This feature is not currently supported",
@@ -77178,24 +76980,6 @@
               "Line" : 156,
               "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
               "Text" : "cm key /Common/dtdi.key {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 167,
-              "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "cm traffic-group /Common/traffic-group-1 {"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 168,
-              "Parser_Context" : "[cmtg_ha_group cm_traffic_group s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "ha-group /Common/t1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 172,
-              "Parser_Context" : "[s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "cm traffic-group /Common/traffic-group-local-only { }"
             },
             {
               "Comment" : "This feature is not currently supported",
@@ -77214,18 +76998,6 @@
               "Line" : 175,
               "Parser_Context" : "[cmtd_ca_cert_bundle cm_trust_domain s_cm statement f5_bigip_structured_configuration]",
               "Text" : "ca-cert-bundle /Common/dtca-bundle.crt"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 176,
-              "Parser_Context" : "[cmtd_ca_devices cm_trust_domain s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "ca-devices { /Common/f5_bigip_structured_cm /Common/f5_bigip_structured_cm2 }"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 180,
-              "Parser_Context" : "[cmtd_trust_group cm_trust_domain s_cm statement f5_bigip_structured_configuration]",
-              "Text" : "trust-group /Common/device_trust_group"
             }
           ]
         },
@@ -81168,7 +80940,139 @@
             }
           }
         },
-        "configs/f5_bigip/f5_bigip_structured_cm" : { },
+        "configs/f5_bigip/f5_bigip_structured_cm" : {
+          "device" : {
+            "/Common/f5_bigip_structured_cm" : {
+              "definitionLines" : [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ],
+              "numReferrers" : 4
+            },
+            "/Common/f5_bigip_structured_cm2" : {
+              "definitionLines" : [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ],
+              "numReferrers" : 3
+            }
+          },
+          "device-group" : {
+            "/Common/device_group_snc" : {
+              "definitionLines" : [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "numReferrers" : 0
+            },
+            "/Common/device_trust_group" : {
+              "definitionLines" : [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ],
+              "numReferrers" : 1
+            },
+            "/Common/gtm" : {
+              "definitionLines" : [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "traffic-group" : {
+            "/Common/traffic-group-1" : {
+              "definitionLines" : [
+                167,
+                168,
+                169,
+                170,
+                171
+              ],
+              "numReferrers" : 0
+            },
+            "/Common/traffic-group-local-only" : {
+              "definitionLines" : [
+                172
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "monitor http" : {
             "/Common/SOME_MONITOR1" : {
@@ -89305,6 +89209,43 @@
             }
           }
         },
+        "configs/f5_bigip/f5_bigip_structured_cm" : {
+          "device" : {
+            "/Common/f5_bigip_structured_cm" : {
+              "device-group device" : [
+                124,
+                132,
+                140
+              ],
+              "trust-domain ca-device" : [
+                176
+              ]
+            },
+            "/Common/f5_bigip_structured_cm2" : {
+              "device-group device" : [
+                125,
+                133
+              ],
+              "trust-domain ca-device" : [
+                176
+              ]
+            }
+          },
+          "device-group" : {
+            "/Common/device_trust_group" : {
+              "trust-domain trust-group" : [
+                180
+              ]
+            }
+          },
+          "ha-group" : {
+            "/Common/t1" : {
+              "traffic-group ha-group" : [
+                168
+              ]
+            }
+          }
+        },
         "configs/f5_bigip/f5_bigip_structured_ltm" : {
           "monitor" : {
             "/Common/SOME_MONITOR" : {
@@ -93507,6 +93448,15 @@
               ],
               "neighbor peer-group route-map out" : [
                 22
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip/f5_bigip_structured_cm" : {
+          "ha-group" : {
+            "/Common/t1" : {
+              "traffic-group ha-group" : [
+                168
               ]
             }
           }
