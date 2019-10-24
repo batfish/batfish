@@ -47,7 +47,7 @@ cm_device
 
 cmd_base_mac
 :
-  BASE_MAC MAC_ADDRESS NEWLINE
+  BASE_MAC mac = mac_address NEWLINE
 ;
 
 cmd_cert
@@ -115,17 +115,20 @@ cmdua_address
     cmduaa_effective_ip
     | cmduaa_effective_port
     | cmduaa_ip
+    | cmduaa_port
     | unrecognized
   )* BRACE_RIGHT NEWLINE
 ;
 
 cmduaa_effective_ip
 :
-  EFFECTIVE_IP
-  (
-    ip = ip_address
-    | MANAGEMENT_IP
-  ) NEWLINE
+  EFFECTIVE_IP ip = unicast_address_ip NEWLINE
+;
+
+unicast_address_ip
+:
+  ip = ip_address
+  | MANAGEMENT_IP
 ;
 
 cmduaa_effective_port
@@ -135,11 +138,12 @@ cmduaa_effective_port
 
 cmduaa_ip
 :
-  IP
-  (
-    ip = ip_address
-    | MANAGEMENT_IP
-  ) NEWLINE
+  IP ip = unicast_address_ip NEWLINE
+;
+
+cmduaa_port
+:
+  PORT port = uint16 NEWLINE
 ;
 
 cm_device_group
@@ -179,8 +183,17 @@ cmdgd_device
 :
   name = structure_name BRACE_LEFT
   (
-    NEWLINE unrecognized*
+    NEWLINE
+    (
+      cmdgdd_set_sync_leader
+      | unrecognized
+    )*
   )? BRACE_RIGHT NEWLINE
+;
+
+cmdgdd_set_sync_leader
+:
+  SET_SYNC_LEADER NEWLINE
 ;
 
 cmdg_hidden
@@ -203,11 +216,13 @@ cmdg_network_failover
 
 cmdg_type
 :
-  TYPE
-  (
-    SYNC_FAILOVER
-    | SYNC_ONLY
-  ) NEWLINE
+  TYPE type = device_group_type NEWLINE
+;
+
+device_group_type
+:
+  SYNC_FAILOVER
+  | SYNC_ONLY
 ;
 
 cm_key
@@ -236,12 +251,12 @@ cmtg_ha_group
 
 cmtg_mac
 :
-  MAC MAC_ADDRESS NEWLINE
+  MAC mac = mac_address NEWLINE
 ;
 
 cmtg_unit_id
 :
-  UNIT_ID uint16 NEWLINE
+  UNIT_ID id = uint16 NEWLINE
 ;
 
 cm_trust_domain
