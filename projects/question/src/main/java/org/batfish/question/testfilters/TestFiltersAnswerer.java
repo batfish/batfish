@@ -13,7 +13,6 @@ import com.google.common.collect.Multiset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
@@ -21,14 +20,12 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
@@ -42,11 +39,10 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.datamodel.visitors.IpSpaceRepresentative;
+import org.batfish.question.PacketHeaderContraintToFlowHelper;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
-import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
@@ -64,14 +60,14 @@ public class TestFiltersAnswerer extends Answerer {
   public static final String COL_TRACE = "Trace";
   private static final Ip DEFAULT_IP_ADDRESS = Ip.parse("8.8.8.8");
 
-  private final IpSpaceRepresentative _ipSpaceRepresentative;
-  private final IpSpaceAssignment _sourceIpAssignment;
+  private final PacketHeaderContraintToFlowHelper _packetHeaderContraintToFlowHelper;
 
   public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
-    _ipSpaceRepresentative = new IpSpaceRepresentative();
-    _sourceIpAssignment =
-        initSourceIpAssignment((TestFiltersQuestion) question, batfish.specifierContext());
+    _packetHeaderContraintToFlowHelper =
+        new PacketHeaderContraintToFlowHelper(
+            initSourceIpAssignment((TestFiltersQuestion) question, batfish.specifierContext()),
+            _batfish.specifierContext());
   }
 
   private static IpSpaceAssignment initSourceIpAssignment(
@@ -270,83 +266,24 @@ public class TestFiltersAnswerer extends Answerer {
 
   private void setDstIp(PacketHeaderConstraints constraints, Builder builder) {
     String headerDstIp = constraints.getDstIps();
-    if (headerDstIp != null) {
-      IpSpaceSpecifier dstIpSpecifier =
-          SpecifierFactories.getIpSpaceSpecifierOrDefault(
-              headerDstIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
-      IpSpaceAssignment dstIps =
-          dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
-      // Filter out empty IP assignments
-      ImmutableList<Entry> nonEmptyIpSpaces =
-          dstIps.getEntries().stream()
-              .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
-              .collect(ImmutableList.toImmutableList());
-      checkArgument(
-          nonEmptyIpSpaces.size() > 0,
-          "Specified destination '%s' could not be resolved to any IP.",
-          headerDstIp);
-      checkArgument(
-          nonEmptyIpSpaces.size() == 1,
-          "Specified destination '%s' resolves to more than one location/IP: %s",
-          headerDstIp,
-          nonEmptyIpSpaces);
-      IpSpace space = nonEmptyIpSpaces.iterator().next().getIpSpace();
-      Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
-      checkArgument(dstIp.isPresent(), "Specified destination '%s' has no IPs", headerDstIp);
-      builder.setDstIp(dstIp.get());
-    } else {
-      builder.setDstIp(DEFAULT_IP_ADDRESS);
-    }
+    Ip dstIp =
+        headerDstIp != null
+            ? _packetHeaderContraintToFlowHelper.inferDstIpFromHeaderDstIp(headerDstIp)
+            : DEFAULT_IP_ADDRESS;
+    builder.setDstIp(dstIp);
   }
 
   private void setSrcIp(
       PacketHeaderConstraints constraints, Location srcLocation, Builder builder) {
     // Extract source IP from header constraints,
     String headerSrcIp = constraints.getSrcIps();
-    if (headerSrcIp != null) {
-      // interpret given Src IP flexibly
-      IpSpaceSpecifier srcIpSpecifier =
-          SpecifierFactories.getIpSpaceSpecifierOrDefault(
-              headerSrcIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
-      // Resolve to set of locations/IPs
-      IpSpaceAssignment srcIps =
-          srcIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
-      // Filter out empty IP assignments
-      ImmutableList<Entry> nonEmptyIpSpaces =
-          srcIps.getEntries().stream()
-              .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
-              .collect(ImmutableList.toImmutableList());
-      checkArgument(
-          nonEmptyIpSpaces.size() > 0,
-          "Specified source '%s' could not be resolve to any IP.",
-          headerSrcIp);
-      checkArgument(
-          nonEmptyIpSpaces.size() == 1,
-          "Specified source '%s' resolves to more than one location/IP: %s",
-          headerSrcIp,
-          nonEmptyIpSpaces);
-      // Pick a representative from the remaining space
-      IpSpace space = nonEmptyIpSpaces.iterator().next().getIpSpace();
-      Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(space);
-      checkArgument(srcIp.isPresent(), "Specified source '%s' has no IPs", headerSrcIp);
-      builder.setSrcIp(srcIp.get());
-    } else if (srcLocation == null) {
-      builder.setSrcIp(DEFAULT_IP_ADDRESS);
-    } else {
-      // Use source location to determine header Src IP
-      Optional<Entry> entry =
-          _sourceIpAssignment.getEntries().stream()
-              .filter(e -> e.getLocations().contains(srcLocation))
-              .findFirst();
+    Ip srcIp =
+        headerSrcIp != null
+            ? _packetHeaderContraintToFlowHelper.inferSrcIpFromHeaderSrcIp(headerSrcIp)
+            : srcLocation == null
+                ? DEFAULT_IP_ADDRESS
+                : _packetHeaderContraintToFlowHelper.inferSrcIpFromSourceLocation(srcLocation);
 
-      checkArgument(
-          entry.isPresent(), "Cannot resolve a source IP address from location %s", srcLocation);
-      Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(entry.get().getIpSpace());
-      checkArgument(
-          srcIp.isPresent(),
-          "At least one source IP is required, location %s produced none",
-          srcLocation);
-      builder.setSrcIp(srcIp.get());
-    }
+    builder.setSrcIp(srcIp);
   }
 }

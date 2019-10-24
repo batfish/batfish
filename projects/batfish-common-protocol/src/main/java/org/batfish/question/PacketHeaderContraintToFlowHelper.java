@@ -27,6 +27,9 @@ public class PacketHeaderContraintToFlowHelper {
   private final IpSpaceAssignment _sourceIpAssignment;
   private final SpecifierContext _specifierContext;
 
+  private static final String SOURCE = "source";
+  private static final String DESTINATION = "destination";
+
   public PacketHeaderContraintToFlowHelper(
       IpSpaceAssignment sourceIpAssignment, SpecifierContext specifierContext) {
     _ipSpaceRepresentative = new IpSpaceRepresentative();
@@ -35,26 +38,11 @@ public class PacketHeaderContraintToFlowHelper {
   }
 
   public Ip inferSrcIpFromHeaderSrcIp(String headerSrcIp) {
-    IpSpaceAssignment srcIps = resolverHeaderIp(headerSrcIp);
-    // Filter out empty IP assignments
-    List<Entry> nonEmptyIpSpaces =
-        srcIps.getEntries().stream()
-            .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
-            .collect(ImmutableList.toImmutableList());
-    checkArgument(
-        !nonEmptyIpSpaces.isEmpty(),
-        "Specified source '%s' could not be resolved to any IP.",
-        headerSrcIp);
-    checkArgument(
-        nonEmptyIpSpaces.size() == 1,
-        "Specified source '%s' resolves to more than one location/IP: %s",
-        headerSrcIp,
-        nonEmptyIpSpaces);
-    Optional<Ip> srcIp =
-        pickRepresentativeFromIpSpaceAssignment(nonEmptyIpSpaces.iterator().next());
-    // Extra check to ensure that we actually got an IP
-    checkArgument(srcIp.isPresent(), "Specified source '%s' has no IPs", headerSrcIp);
-    return srcIp.get();
+    return inferIpFromHeaderIpString(headerSrcIp, SOURCE);
+  }
+
+  public Ip inferDstIpFromHeaderDstIp(String headerDstIp) {
+    return inferIpFromHeaderIpString(headerDstIp, DESTINATION);
   }
 
   public Ip inferSrcIpFromSourceLocation(Location srcLocation) {
@@ -85,5 +73,29 @@ public class PacketHeaderContraintToFlowHelper {
   public Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
       IpSpaceAssignment.Entry ipSpaceAssignmentEntry) {
     return _ipSpaceRepresentative.getRepresentative(ipSpaceAssignmentEntry.getIpSpace());
+  }
+
+  private Ip inferIpFromHeaderIpString(String headerIp, String field) {
+    IpSpaceAssignment ips = resolverHeaderIp(headerIp);
+    // Filter out empty IP assignments
+    List<Entry> nonEmptyIpSpaces =
+        ips.getEntries().stream()
+            .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
+            .collect(ImmutableList.toImmutableList());
+    checkArgument(
+        !nonEmptyIpSpaces.isEmpty(),
+        "Specified '%s' '%s' could not be resolved to any IP.",
+        field,
+        headerIp);
+    checkArgument(
+        nonEmptyIpSpaces.size() == 1,
+        "Specified '%s' '%s' resolves to more than one location/IP: %s",
+        field,
+        headerIp,
+        nonEmptyIpSpaces);
+    Optional<Ip> ip = pickRepresentativeFromIpSpaceAssignment(nonEmptyIpSpaces.iterator().next());
+    // Extra check to ensure that we actually got an IP
+    checkArgument(ip.isPresent(), "Specified '%s' '%s' has no IPs", field, headerIp);
+    return ip.get();
   }
 }
