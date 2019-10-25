@@ -12,7 +12,7 @@ import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /**
- * A class that converts Juniper group wilcards to a Java Regex.
+ * A class that converts Juniper group wildcards to a Java Regex.
  *
  * @see <a
  *     href="https://www.juniper.net/documentation/en_US/junos/topics/topic-map/configuration-groups-usage.html#id-using-wildcards-with-configuration-groups"></a>
@@ -35,17 +35,22 @@ public class GroupWildcard extends BaseParser<String> {
   }
 
   Rule Element() {
-    return FirstOf(Op_Asterisk(), Op_QuestionMark(), CharacterClass(), AllLiterals());
+    return FirstOf(
+        Op_Asterisk(),
+        Op_QuestionMark(),
+        CharacterClass(),
+        AllLiterals(),
+        OpenBracket(),
+        CloseBracket());
   }
 
   Rule CharacterClass() {
     return Sequence(
         Ch('['),
-        // TODO: properly handle negation
-        Optional(Op_Bang()),
+        Sequence(push(""), Optional(Op_Bang(), push(pop(1) + pop()))),
         ClassLiterals(),
         Ch(']'),
-        push(String.format("[%s]", pop())));
+        push(String.format("[%s%s]", pop(1), pop())));
   }
 
   /** Characters that can be used inside of a character class */
@@ -67,8 +72,7 @@ public class GroupWildcard extends BaseParser<String> {
    */
   @SuppressSubnodes
   Rule AllLiterals() {
-    // Skip special characters until proven otherwise
-    // TODO: handle singleton brackets
+    // Skipping special characters until proven otherwise
     Rule base = FirstOf(ClassLiterals(), Dot());
     return Sequence(
         base, // pop()
