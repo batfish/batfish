@@ -3398,8 +3398,10 @@ public final class FlatJuniperGrammarTest {
     String loopback = "lo0.0";
     String prefix1 = "1.1.1.1/32";
     String prefix2 = "3.3.3.3/32";
+    String prefix3 = "88.1.2.3/32";
     String prefixList1 = "p1";
     String prefixList2 = "p2";
+    String prefixList3 = "p3";
     Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
 
     Configuration c = parseConfig(hostname);
@@ -3422,6 +3424,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasRouteFilterList(prefixList2, permits(Prefix.parse(prefix2))));
     assertThat(c, hasRouteFilterLists(not(hasKey("<*>"))));
 
+    /* prefix-list p3 should get only address from ge-0/0/0.0*/
+    assertThat(c, hasRouteFilterList(prefixList3, permits(Prefix.parse(prefix3))));
+    assertThat(
+        c, hasRouteFilterList(prefixList3, RouteFilterListMatchers.rejects(Prefix.parse(prefix1))));
+    assertThat(
+        c, hasRouteFilterList(prefixList3, RouteFilterListMatchers.rejects(Prefix.parse(prefix2))));
+
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborPrefix)))));
   }
@@ -3442,7 +3451,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9)));
+            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(filename, PREFIX_LIST, "p2", containsInAnyOrder(5)));
@@ -3451,7 +3460,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReferenceWithReferenceLines(
-            filename, INTERFACE, "et-0/0/0.0", OSPF_AREA_INTERFACE, containsInAnyOrder(6, 14)));
+            filename, INTERFACE, "et-0/0/0.0", OSPF_AREA_INTERFACE, containsInAnyOrder(6, 17)));
   }
 
   @Test
