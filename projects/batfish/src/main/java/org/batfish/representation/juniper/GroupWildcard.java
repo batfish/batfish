@@ -41,8 +41,8 @@ public class GroupWildcard extends BaseParser<String> {
   Rule CharacterClass() {
     return Sequence(
         Ch('['),
-        // TODO: negation
-        //            Optional(Op_Bang()),
+        // TODO: properly handle negation
+        Optional(Op_Bang()),
         ClassLiterals(),
         Ch(']'),
         push(String.format("[%s]", pop())));
