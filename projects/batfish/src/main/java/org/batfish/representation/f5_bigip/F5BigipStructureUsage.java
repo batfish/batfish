@@ -20,6 +20,8 @@ public enum F5BigipStructureUsage implements StructureUsage {
   DATA_GROUP_EXTERNAL_SELF_REFERENCE("data-group external self-reference"),
   DATA_GROUP_INTERNAL_SELF_REFERENCE("data-group internal self-reference"),
   DEVICE_GROUP_DEVICE("device-group device"),
+  HA_GROUP_POOL("ha-group pool"),
+  HA_GROUP_TRUNK("ha-group trunk"),
   IMISH_INTERFACE_SELF_REFERENCE("IMISH interface self-reference"),
   INTERFACE_SELF_REFERENCE("interface self-reference"),
   MONITOR_DNS_DEFAULTS_FROM("monitor dns defaults-from"),

@@ -88,6 +88,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNATPOOL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRANSLATION;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.TRAFFIC_GROUP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.TRUNK;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
@@ -101,6 +102,8 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROC
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.DATA_GROUP_EXTERNAL_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.DATA_GROUP_INTERNAL_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.DEVICE_GROUP_DEVICE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.HA_GROUP_POOL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.HA_GROUP_TRUNK;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_DNS_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_GATEWAY_ICMP_DEFAULTS_FROM;
@@ -515,10 +518,16 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_adv
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_map_actionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.S_securityContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sgs_hostnameContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sh_active_bonusContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Shp_poolContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Shpp_weightContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sht_trunkContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Shtt_weightContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Standard_communityContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Structure_nameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Structure_name_with_portContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_dnsContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_ha_groupContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_management_ipContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_management_routeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_ntpContext;
@@ -547,6 +556,9 @@ import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipRoutingProtocol;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
+import org.batfish.representation.f5_bigip.HaGroup;
+import org.batfish.representation.f5_bigip.HaGroupPool;
+import org.batfish.representation.f5_bigip.HaGroupTrunk;
 import org.batfish.representation.f5_bigip.Interface;
 import org.batfish.representation.f5_bigip.Ipv4Origin;
 import org.batfish.representation.f5_bigip.Ipv6Origin;
@@ -684,6 +696,9 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private Device _currentDevice;
   private DeviceGroup _currentDeviceGroup;
   private DeviceGroupDevice _currentDeviceGroupDevice;
+  private HaGroup _currentHaGroup;
+  private HaGroupPool _currentHaGroupPool;
+  private HaGroupTrunk _currentHaGroupTrunk;
   private IgnoredContext _currentIgnored;
   private @Nullable Interface _currentInterface;
   private @Nullable Node _currentNode;
@@ -3004,6 +3019,57 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitSys_dns(Sys_dnsContext ctx) {
     todo(ctx);
+  }
+
+  @Override
+  public void enterSys_ha_group(Sys_ha_groupContext ctx) {
+    String name = toName(ctx.name);
+    _c.defineStructure(HA_GROUP, name, ctx.getParent());
+    _currentHaGroup = _c.getHaGroups().computeIfAbsent(name, HaGroup::new);
+  }
+
+  @Override
+  public void exitSys_ha_group(Sys_ha_groupContext ctx) {
+    _currentHaGroup = null;
+  }
+
+  @Override
+  public void exitSh_active_bonus(Sh_active_bonusContext ctx) {
+    _currentHaGroup.setActiveBonus(toInteger(ctx.bonus));
+  }
+
+  @Override
+  public void enterShp_pool(Shp_poolContext ctx) {
+    String name = toName(ctx.name);
+    _c.referenceStructure(POOL, name, HA_GROUP_POOL, ctx.name.getStart().getLine());
+    _currentHaGroupPool = _currentHaGroup.getPools().computeIfAbsent(name, HaGroupPool::new);
+  }
+
+  @Override
+  public void exitShp_pool(Shp_poolContext ctx) {
+    _currentHaGroupPool = null;
+  }
+
+  @Override
+  public void exitShpp_weight(Shpp_weightContext ctx) {
+    _currentHaGroupPool.setWeight(toInteger(ctx.weight));
+  }
+
+  @Override
+  public void enterSht_trunk(Sht_trunkContext ctx) {
+    String name = toName(ctx.name);
+    _c.referenceStructure(TRUNK, name, HA_GROUP_TRUNK, ctx.name.getStart().getLine());
+    _currentHaGroupTrunk = _currentHaGroup.getTrunks().computeIfAbsent(name, HaGroupTrunk::new);
+  }
+
+  @Override
+  public void exitSht_trunk(Sht_trunkContext ctx) {
+    _currentHaGroupTrunk = null;
+  }
+
+  @Override
+  public void exitShtt_weight(Shtt_weightContext ctx) {
+    _currentHaGroupTrunk.setWeight(toInteger(ctx.weight));
   }
 
   @Override
