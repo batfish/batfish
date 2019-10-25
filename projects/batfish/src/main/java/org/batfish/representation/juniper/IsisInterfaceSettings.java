@@ -5,17 +5,12 @@ import java.io.Serializable;
 public class IsisInterfaceSettings implements Serializable {
 
   private Integer _bfdLivenessDetectionMinimumInterval;
-
   private Integer _bfdLivenessDetectionMultiplier;
-
-  private boolean _enabled;
-
+  // Enabled by default
+  private boolean _enabled = true;
   private final IsisInterfaceLevelSettings _level1Settings;
-
   private final IsisInterfaceLevelSettings _level2Settings;
-
   private boolean _passive;
-
   private boolean _pointToPoint;
 
   public IsisInterfaceSettings() {

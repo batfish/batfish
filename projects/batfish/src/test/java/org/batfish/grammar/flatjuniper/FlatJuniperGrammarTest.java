@@ -250,6 +250,8 @@ import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
@@ -3075,6 +3077,39 @@ public final class FlatJuniperGrammarTest {
     // Should contain an IS-IS process even though no level is explicitly configured.
     Configuration c = parseConfig("isis-minimal");
     assertThat(c, hasDefaultVrf(hasIsisProcess(notNullValue())));
+  }
+
+  @Test
+  public void testIsisL1Disabled() {
+    // This config has a loopback with an ISO address and "set protocols isis interface lo0.0".
+    // Then in [protocols isis level 1] it sets "disable" and "wide-metrics-only".
+    // Setting wide-metrics-only should not re-enable level 1.
+    // None of the level 1 configuration should affect level 2 (which is enabled by default).
+    Configuration c = parseConfig("isis-disabled-l1");
+    IsisProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getIsisProcess();
+    assertThat(proc.getLevel1(), nullValue());
+    assertThat(proc.getLevel2(), notNullValue());
+  }
+
+  @Test
+  public void testIsisInterfaceAndLevelDisable() {
+    Configuration c = parseConfig("isis-interface-and-level-disable");
+    IsisProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getIsisProcess();
+    assertThat(proc.getLevel1(), notNullValue());
+    assertThat(proc.getLevel2(), notNullValue());
+
+    // Interfaces ge-0/0/0.0, ge-0/0/1.0, and ge-0/0/2.0 all have ISO addresses
+    // ge-0/0/0.0 is disabled for IS-IS: set protocols isis interface ge-0/0/0.0 disable
+    // ge-0/0/1.0 has level 1 disabled: set protocols isis interface ge-0/0/1.0 level 1 disable
+    // ge-0/0/2.0 doesn't have anything disabled
+    IsisInterfaceSettings iface0Settings = c.getActiveInterfaces().get("ge-0/0/0.0").getIsis();
+    IsisInterfaceSettings iface1Settings = c.getActiveInterfaces().get("ge-0/0/1.0").getIsis();
+    IsisInterfaceSettings iface2Settings = c.getActiveInterfaces().get("ge-0/0/2.0").getIsis();
+    assertNull(iface0Settings);
+    assertThat(iface1Settings.getLevel1(), nullValue());
+    assertThat(iface1Settings.getLevel2(), notNullValue());
+    assertThat(iface2Settings.getLevel1(), notNullValue());
+    assertThat(iface2Settings.getLevel2(), notNullValue());
   }
 
   @Test

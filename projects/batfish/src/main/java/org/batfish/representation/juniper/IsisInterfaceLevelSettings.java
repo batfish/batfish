@@ -6,20 +6,14 @@ import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 
 public class IsisInterfaceLevelSettings implements Serializable {
 
-  private boolean _enabled;
-
+  // Enabled by default
+  private boolean _enabled = true;
   @Nullable private String _helloAuthenticationKey;
-
   @Nullable private IsisHelloAuthenticationType _helloAuthenticationType;
-
   @Nullable private Integer _helloInterval;
-
   @Nullable private Integer _holdTime;
-
   @Nullable private Long _metric;
-
   private boolean _passive;
-
   @Nullable private Long _teMetric;
 
   public boolean getEnabled() {
