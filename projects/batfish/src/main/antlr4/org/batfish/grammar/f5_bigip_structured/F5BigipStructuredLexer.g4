@@ -33,6 +33,11 @@ ACTIVATE
   'activate'
 ;
 
+ACTIVE_BONUS
+:
+  'active-bonus'
+;
+
 ACTIVE_MODULES
 :
   'active-modules'
@@ -938,6 +943,11 @@ POOL
   'pool'
 ;
 
+POOLS
+:
+  'pools'
+;
+
 PORT
 :
   'port'
@@ -1464,6 +1474,11 @@ TRUNK
   'trunk'
 ;
 
+TRUNKS
+:
+  'trunks'
+;
+
 TRUST_DOMAIN
 :
   'trust-domain'
@@ -1572,6 +1587,11 @@ WEB_SECURITY
 WEBSOCKET
 :
   'websocket'
+;
+
+WEIGHT
+:
+  'weight'
 ;
 
 XML

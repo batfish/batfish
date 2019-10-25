@@ -228,6 +228,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, DeviceGroup> _deviceGroups;
   private transient Map<String, Virtual> _enabledVirtuals;
   private ConfigurationFormat _format;
+  private final @Nonnull Map<String, HaGroup> _haGroups;
   private String _hostname;
   private boolean _imish;
   private final Map<String, ImishInterface> _imishInterfaces;
@@ -264,6 +265,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _bgpProcesses = new HashMap<>();
     _devices = new HashMap<>();
     _deviceGroups = new HashMap<>();
+    _haGroups = new HashMap<>();
     _imishInterfaces = new HashMap<>();
     _interfaces = new HashMap<>();
     _nodes = new HashMap<>();
@@ -782,6 +784,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, DeviceGroup> getDeviceGroups() {
     return _deviceGroups;
+  }
+
+  public @Nonnull Map<String, HaGroup> getHaGroups() {
+    return _haGroups;
   }
 
   @Override

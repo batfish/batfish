@@ -1,0 +1,21 @@
+#TMSH-VERSION: 12.1.4
+
+sys global-settings {
+  hostname f5_bigip_structured_sys_ha_group
+}
+
+sys ha-group g1 {
+    active-bonus 12
+    pools {
+        /Common/p1 {
+            weight 34
+        }
+        /Common/p2 { }
+    }
+    trunks {
+        t1 {
+            weight 56
+        }
+        t2 { }
+    }
+}
