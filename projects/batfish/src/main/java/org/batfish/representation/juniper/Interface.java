@@ -71,7 +71,7 @@ public class Interface implements Serializable {
   private @Nullable String _incomingFilter;
   private @Nullable List<String> _incomingFilterList;
   private transient boolean _inherited;
-  @Nonnull private final IsisInterfaceSettings _isisSettings;
+  @Nullable private IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
   private Integer _mtu;
   private final String _name;
@@ -104,7 +104,6 @@ public class Interface implements Serializable {
     _allAddresses = new LinkedHashSet<>();
     _allAddressIps = new LinkedHashSet<>();
     _bandwidth = getDefaultBandwidthByName(name);
-    _isisSettings = new IsisInterfaceSettings();
     _name = name;
     _ospfInterfaceType = OspfInterfaceType.BROADCAST;
     _ospfNeighbors = new HashSet<>();
@@ -165,7 +164,7 @@ public class Interface implements Serializable {
     return _incomingFilterList;
   }
 
-  @Nonnull
+  @Nullable
   public IsisInterfaceSettings getIsisSettings() {
     return _isisSettings;
   }
@@ -312,6 +311,13 @@ public class Interface implements Serializable {
     }
     if (_redundantParentInterface == null) {
       _redundantParentInterface = bestower._redundantParentInterface;
+    }
+  }
+
+  /** Initializes {@link IsisInterfaceSettings} for this interface if not already initialized */
+  public void initIsisSettings() {
+    if (_isisSettings == null) {
+      _isisSettings = new IsisInterfaceSettings();
     }
   }
 

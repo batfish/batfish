@@ -846,7 +846,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
       @Nonnull IsisSettings settings, Interface iface, boolean level1, boolean level2) {
     IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
-    if (!interfaceSettings.getEnabled()) {
+    if (interfaceSettings == null || !interfaceSettings.getEnabled()) {
       return null;
     }
     // If a reference bandwidth is set, calculate default cost as (reference bandwidth) / (interface

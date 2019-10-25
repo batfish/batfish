@@ -154,6 +154,7 @@ public class JuniperConfigurationTest {
       @Nullable Double referenceBandwidth) {
     Interface iface = new Interface("iface");
     iface.setBandwidth(ifaceBandwidth);
+    iface.initIsisSettings();
     iface.getIsisSettings().setEnabled(true);
     if (configuredIfaceIsisMetric != null) {
       iface.getIsisSettings().getLevel1Settings().setMetric(configuredIfaceIsisMetric);

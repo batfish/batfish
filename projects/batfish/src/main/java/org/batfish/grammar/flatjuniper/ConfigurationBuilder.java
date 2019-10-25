@@ -2428,6 +2428,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
     _currentIsisInterface = initInterface(ctx.id);
+    _currentIsisInterface.initIsisSettings();
     _configuration.referenceStructure(
         INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
   }
