@@ -73,4 +73,10 @@ public class HierarchyTest {
   public void testMatchingJuniperRegex12() {
     assertThat(Hierarchy.matchWithJuniperRegex("tes", "test?"), equalTo(false));
   }
+
+  @Test
+  public void testIPs() {
+    assertThat(Hierarchy.matchWithJuniperRegex("2001:dead::beef::1553:1", "*.*"), equalTo(false));
+    assertThat(Hierarchy.matchWithJuniperRegex("2001:dead::beef::1553:1", "*:*"), equalTo(true));
+  }
 }

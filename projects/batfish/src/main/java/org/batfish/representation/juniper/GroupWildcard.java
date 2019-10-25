@@ -53,7 +53,12 @@ public class GroupWildcard extends BaseParser<String> {
     return Sequence(
         OneOrMore(
             FirstOf(
-                CharRange('a', 'z'), CharRange('A', 'Z'), CharRange('0', '9'), Ch('-'), Ch('_'))),
+                CharRange('a', 'z'),
+                CharRange('A', 'Z'),
+                CharRange('0', '9'),
+                Ch('-'),
+                Ch('_'),
+                Ch(':'))),
         push(match()));
   }
 
