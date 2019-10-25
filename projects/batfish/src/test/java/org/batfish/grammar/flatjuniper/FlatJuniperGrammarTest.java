@@ -3070,6 +3070,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIsisMinimal() {
+    // This config only has a loopback with an ISO address and "set protocols isis interface lo0.0".
+    // Should contain an IS-IS process even though no level is explicitly configured.
+    Configuration c = parseConfig("isis-minimal");
+    assertThat(c, hasDefaultVrf(hasIsisProcess(notNullValue())));
+  }
+
+  @Test
   public void testJuniperIsisNoIsoAddress() {
     Configuration c = parseConfig("juniper-isis-no-iso");
 
