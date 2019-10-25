@@ -56,6 +56,7 @@ public class HierarchyTest {
   @Test
   public void testMatchingJuniperRegex10() {
     assertThat(Hierarchy.matchWithJuniperRegex("test3", "test[!3-4]"), equalTo(false));
+    assertThat(Hierarchy.matchWithJuniperRegex("test4", "test[!3-5]"), equalTo(false));
   }
 
   @Test
