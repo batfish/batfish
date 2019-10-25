@@ -719,8 +719,9 @@ public final class Hierarchy {
         int currentDepth,
         List<HierarchyChildNode> prefixes) {
       if (currentDepth == path._nodes.size() - 1) {
+        HierarchyChildNode currentPathNode = path._nodes.get(currentDepth);
         for (HierarchyChildNode currentChild : currentNode.getChildren().values()) {
-          if (!currentChild.isWildcard()) {
+          if (!currentChild.isWildcard() && currentPathNode.matches(currentChild)) {
             prefixes.add(currentChild);
           }
         }
