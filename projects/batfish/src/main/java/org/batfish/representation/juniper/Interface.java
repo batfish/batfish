@@ -169,6 +169,14 @@ public class Interface implements Serializable {
     return _isisSettings;
   }
 
+  /** Initializes {@link IsisInterfaceSettings} for this interface if not already initialized */
+  public IsisInterfaceSettings getOrInitIsisSettings() {
+    if (_isisSettings == null) {
+      _isisSettings = new IsisInterfaceSettings();
+    }
+    return _isisSettings;
+  }
+
   public IsoAddress getIsoAddress() {
     return _isoAddress;
   }
@@ -311,13 +319,6 @@ public class Interface implements Serializable {
     }
     if (_redundantParentInterface == null) {
       _redundantParentInterface = bestower._redundantParentInterface;
-    }
-  }
-
-  /** Initializes {@link IsisInterfaceSettings} for this interface if not already initialized */
-  public void initIsisSettings() {
-    if (_isisSettings == null) {
-      _isisSettings = new IsisInterfaceSettings();
     }
   }
 
