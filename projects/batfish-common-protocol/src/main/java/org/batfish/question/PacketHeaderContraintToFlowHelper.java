@@ -37,14 +37,17 @@ public class PacketHeaderContraintToFlowHelper {
     _sourceIpAssignment = sourceIpAssignment;
   }
 
+  /** infer source IP from packet header contraints */
   public Ip inferSrcIpFromHeaderSrcIp(String headerSrcIp) {
     return inferIpFromHeaderIpString(headerSrcIp, SOURCE);
   }
 
+  /** infer destination IP from packet header contraints */
   public Ip inferDstIpFromHeaderDstIp(String headerDstIp) {
     return inferIpFromHeaderIpString(headerDstIp, DESTINATION);
   }
 
+  /** infer source IP from source location */
   public Ip inferSrcIpFromSourceLocation(Location srcLocation) {
     Optional<Entry> entry =
         _sourceIpAssignment.getEntries().stream()
@@ -60,6 +63,7 @@ public class PacketHeaderContraintToFlowHelper {
     return srcIp.get();
   }
 
+  /** resolve IP by the specifier context */
   public IpSpaceAssignment resolverHeaderIp(String headerIp) {
     // interpret given IP "flexibly"
     IpSpaceSpecifier ipSpecifier =
@@ -70,6 +74,7 @@ public class PacketHeaderContraintToFlowHelper {
     return ipSpecifier.resolve(ImmutableSet.of(), _specifierContext);
   }
 
+  /** pick a representative IP from an IP space assignment entry */
   public Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
       IpSpaceAssignment.Entry ipSpaceAssignmentEntry) {
     return _ipSpaceRepresentative.getRepresentative(ipSpaceAssignmentEntry.getIpSpace());
