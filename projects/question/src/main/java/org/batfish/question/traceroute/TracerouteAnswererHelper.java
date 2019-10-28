@@ -107,16 +107,8 @@ public final class TracerouteAnswererHelper {
   private void setDstIp(PacketHeaderConstraints constraints, Flow.Builder builder) {
     String headerDstIp = constraints.getDstIps();
     checkArgument(headerDstIp != null, "Cannot perform traceroute without a destination");
-    IpSpaceAssignment dstIps = _packetHeaderConstraintToFlowHelper.resolverHeaderIp(headerDstIp);
-    checkArgument(
-        dstIps.getEntries().size() == 1,
-        "Specified destination '%s' resolves to more than one IP",
-        headerDstIp);
-    Optional<Ip> dstIp =
-        _packetHeaderConstraintToFlowHelper.pickRepresentativeFromIpSpaceAssignment(
-            dstIps.getEntries().iterator().next());
-    checkArgument(dstIp.isPresent(), "Specified destination '%s' has no IPs.", headerDstIp);
-    builder.setDstIp(dstIp.get());
+    Ip dstIp = _packetHeaderConstraintToFlowHelper.inferDstIpFromHeaderDstIp(headerDstIp);
+    builder.setDstIp(dstIp);
   }
 
   /**

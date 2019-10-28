@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
@@ -21,6 +23,7 @@ import org.batfish.specifier.SpecifierFactories;
  * Wrapper for utility functions used to infer src / dst Ips in a flow used by test filter and
  * traceroute
  */
+@ParametersAreNonnullByDefault
 public class PacketHeaderContraintToFlowHelper {
 
   private final IpSpaceRepresentative _ipSpaceRepresentative;
@@ -80,7 +83,7 @@ public class PacketHeaderContraintToFlowHelper {
     return _ipSpaceRepresentative.getRepresentative(ipSpaceAssignmentEntry.getIpSpace());
   }
 
-  private Ip inferIpFromHeaderIpString(String headerIp, String field) {
+  private Ip inferIpFromHeaderIpString(@Nonnull String headerIp, @Nonnull String field) {
     IpSpaceAssignment ips = resolverHeaderIp(headerIp);
     // Filter out empty IP assignments
     List<Entry> nonEmptyIpSpaces =
