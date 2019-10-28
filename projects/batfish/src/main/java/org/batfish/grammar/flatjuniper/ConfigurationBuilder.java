@@ -299,7 +299,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_point_to_pointConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isib_minimum_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isib_multiplierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_disableContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authentication_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_intervalContext;
@@ -2429,9 +2428,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
     _currentIsisInterface = initInterface(ctx.id);
+    _currentIsisInterface.getOrInitIsisSettings();
     _configuration.referenceStructure(
         INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
-    _currentIsisInterface.getIsisSettings().setEnabled(true);
   }
 
   @Override
@@ -2448,7 +2447,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       default:
         throw new BatfishException("invalid level: " + level);
     }
-    _currentIsisLevelSettings.setEnabled(true);
   }
 
   @Override
@@ -2466,7 +2464,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       default:
         throw new BatfishException("invalid IS-IS level: " + level);
     }
-    _currentIsisInterfaceLevelSettings.setEnabled(true);
   }
 
   @Override
@@ -4462,11 +4459,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitIsil_disable(Isil_disableContext ctx) {
     _currentIsisInterfaceLevelSettings.setEnabled(false);
-  }
-
-  @Override
-  public void exitIsil_enable(Isil_enableContext ctx) {
-    _currentIsisInterfaceLevelSettings.setEnabled(true);
   }
 
   @Override
