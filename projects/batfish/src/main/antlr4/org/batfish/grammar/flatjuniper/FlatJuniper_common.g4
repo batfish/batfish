@@ -518,6 +518,29 @@ port
   | XDMCP
 ;
 
+proposal_list
+:
+  (
+    proposal
+    |
+    (
+      OPEN_BRACKET
+        (
+          proposal
+        )*
+      CLOSE_BRACKET
+    )
+  )
+;
+
+proposal
+:
+  ~(
+     CLOSE_BRACKET
+     | NEWLINE
+   )
+;
+
 range
 :
   range_list += subrange
