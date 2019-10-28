@@ -54,7 +54,6 @@ is_level
   )
   (
     isl_disable
-    | isl_enable
     | isl_null
     | isl_wide_metrics_only
   )
@@ -122,7 +121,6 @@ isi_level
   LEVEL DEC
   (
     isil_disable
-    | isil_enable
     | isil_hello_authentication_key
     | isil_hello_authentication_type
     | isil_hello_interval
@@ -170,11 +168,6 @@ isil_disable
   DISABLE
 ;
 
-isil_enable
-:
-  ENABLE
-;
-
 isil_hello_authentication_key
 :
   HELLO_AUTHENTICATION_KEY key = string
@@ -218,11 +211,6 @@ isil_te_metric
 isl_disable
 :
   DISABLE
-;
-
-isl_enable
-:
-  ENABLE
 ;
 
 isl_null
