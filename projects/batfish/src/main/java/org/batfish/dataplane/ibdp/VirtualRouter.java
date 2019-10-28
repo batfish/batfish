@@ -1506,7 +1506,7 @@ public class VirtualRouter implements Serializable {
         activeLevels = IsisLevel.union(activeLevels, IsisLevel.LEVEL_2);
       }
       if (activeLevels == null) {
-        return;
+        continue;
       }
 
       VirtualRouter remoteVr =
