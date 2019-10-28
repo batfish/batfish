@@ -21,4 +21,7 @@ set security ipsec policy policy4 perfect-forward-secrecy keys group19
 set security ipsec policy policy5 perfect-forward-secrecy keys group20
 #
 set security ipsec policy policy6 perfect-forward-secrecy keys group5
+#
+set security ipsec policy policy7 perfect-forward-secrecy keys group14
+set security ipsec policy policy7 proposals TRANSFORM-SET1
 

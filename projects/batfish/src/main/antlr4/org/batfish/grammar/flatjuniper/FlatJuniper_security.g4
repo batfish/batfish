@@ -807,11 +807,18 @@ seikp_proposal_set
 
 seikp_proposals
 :
-   PROPOSALS OPEN_BRACKET
-   (
-       proposals += variable
-   )+
-   CLOSE_BRACKET
+   PROPOSALS
+      (
+         proposal = variable
+         |
+         (
+            OPEN_BRACKET
+               (
+                  proposals += variable
+               )+
+            CLOSE_BRACKET
+         )
+      )
 ;
 
 seikpr_authentication_algorithm
@@ -892,11 +899,18 @@ seipp_proposal_set
 
 seipp_proposals
 :
-   PROPOSALS OPEN_BRACKET
+   PROPOSALS
    (
-       proposals += variable
-   )+
-   CLOSE_BRACKET
+      proposal = variable
+      |
+      (
+         OPEN_BRACKET
+         (
+            proposals += variable
+         )+
+         CLOSE_BRACKET
+      )
+   )
 ;
 
 seippr_authentication_algorithm

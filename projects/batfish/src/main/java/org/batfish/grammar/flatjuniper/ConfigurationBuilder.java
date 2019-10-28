@@ -5490,8 +5490,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeikp_proposals(Seikp_proposalsContext ctx) {
+    String name;
+    if (ctx.proposal != null) {
+      name = ctx.proposal.getText();
+      _currentIkePolicy.getProposals().add(name);
+      _configuration.referenceStructure(
+          IKE_PROPOSAL, name, IKE_POLICY_IKE_PROPOSAL, getLine(ctx.proposal.getStart()));
+      return;
+    }
     for (VariableContext proposal : ctx.proposals) {
-      String name = proposal.getText();
+      name = proposal.getText();
       _currentIkePolicy.getProposals().add(name);
       _configuration.referenceStructure(
           IKE_PROPOSAL, name, IKE_POLICY_IKE_PROPOSAL, getLine(proposal.getStart()));
@@ -5559,8 +5567,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeipp_proposals(Seipp_proposalsContext ctx) {
+    String name;
+    if (ctx.proposal != null) {
+      name = ctx.proposal.getText();
+      _currentIpsecPolicy.getProposals().add(name);
+      _configuration.referenceStructure(
+          IPSEC_PROPOSAL, name, IPSEC_POLICY_IPSEC_PROPOSAL, getLine(ctx.proposal.getStart()));
+      return;
+    }
     for (VariableContext proposal : ctx.proposals) {
-      String name = proposal.getText();
+      name = proposal.getText();
       _currentIpsecPolicy.getProposals().add(name);
       _configuration.referenceStructure(
           IPSEC_PROPOSAL, name, IPSEC_POLICY_IPSEC_PROPOSAL, getLine(proposal.getStart()));
