@@ -2368,6 +2368,16 @@ public final class FlatJuniperGrammarTest {
                     IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "policy2",
+            allOf(
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKeyHash(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
   }
 
   @Test
@@ -2691,6 +2701,15 @@ public final class FlatJuniperGrammarTest {
             allOf(
                 IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of())),
                 IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP5)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy7",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(
+                    equalTo(ImmutableList.of("TRANSFORM-SET1"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
   }
 
   @Test

@@ -9,3 +9,6 @@ set security ike proposal proposal1 lifetime-seconds 50000
 #
 set security ike policy policy1 proposals [ proposal1 ]
 set security ike policy policy1 pre-shared-key ascii-text "psk1"
+#
+set security ike policy policy2 proposals proposal1
+set security ike policy policy2 pre-shared-key ascii-text "psk1"
