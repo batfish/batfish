@@ -1218,7 +1218,7 @@ public class VirtualRouter implements Serializable {
 
             // Do not propagate route if ISIS interface is not active at this level
             if (isisLevelSettings.getMode() != IsisInterfaceMode.ACTIVE) {
-              break;
+              continue;
             }
             boolean withdraw = routeAdvert.isWithdrawn();
             int adminCost = routeLevel == IsisLevel.LEVEL_1 ? l1Admin : l2Admin;
