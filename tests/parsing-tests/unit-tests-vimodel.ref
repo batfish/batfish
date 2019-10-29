@@ -5011,7 +5011,7 @@
         "name" : "cadant_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
+        "deviceType" : "ROUTER",
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "cadant_isis"
@@ -9356,7 +9356,7 @@
         "name" : "cisco_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
+        "deviceType" : "ROUTER",
         "interfaces" : {
           "GigabitEthernet0/0" : {
             "name" : "GigabitEthernet0/0",
