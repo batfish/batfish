@@ -29,6 +29,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_host_nameContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
+import org.batfish.representation.juniper.GroupWildcard;
 
 public final class Hierarchy {
 
@@ -718,8 +719,9 @@ public final class Hierarchy {
         int currentDepth,
         List<HierarchyChildNode> prefixes) {
       if (currentDepth == path._nodes.size() - 1) {
+        HierarchyChildNode currentPathNode = path._nodes.get(currentDepth);
         for (HierarchyChildNode currentChild : currentNode.getChildren().values()) {
-          if (!currentChild.isWildcard()) {
+          if (!currentChild.isWildcard() && currentPathNode.matches(currentChild)) {
             prefixes.add(currentChild);
           }
         }
@@ -829,7 +831,7 @@ public final class Hierarchy {
   }
 
   static boolean matchWithJuniperRegex(String candidate, String juniperRegex) {
-    String regex = juniperRegex.replaceAll("\\*", ".*");
+    String regex = GroupWildcard.toJavaRegex(juniperRegex);
     return candidate.matches(regex);
   }
 

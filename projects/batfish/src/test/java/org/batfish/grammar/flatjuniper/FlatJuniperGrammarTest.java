@@ -250,6 +250,8 @@ import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
@@ -2366,6 +2368,16 @@ public final class FlatJuniperGrammarTest {
                     IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "policy2",
+            allOf(
+                hasIkePhase1Key(
+                    IkePhase1KeyMatchers.hasKeyHash(
+                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("proposal1"))))));
   }
 
   @Test
@@ -2689,6 +2701,15 @@ public final class FlatJuniperGrammarTest {
             allOf(
                 IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of())),
                 IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP5)))));
+
+    assertThat(
+        c,
+        hasIpsecPhase2Policy(
+            "policy7",
+            allOf(
+                IpsecPhase2PolicyMatchers.hasIpsecProposals(
+                    equalTo(ImmutableList.of("TRANSFORM-SET1"))),
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
   }
 
   @Test
@@ -3070,6 +3091,47 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIsisMinimal() {
+    // This config only has a loopback with an ISO address and "set protocols isis interface lo0.0".
+    // Should contain an IS-IS process even though no level is explicitly configured.
+    Configuration c = parseConfig("isis-minimal");
+    assertThat(c, hasDefaultVrf(hasIsisProcess(notNullValue())));
+  }
+
+  @Test
+  public void testIsisL1Disabled() {
+    // This config has a loopback with an ISO address and "set protocols isis interface lo0.0".
+    // Then in [protocols isis level 1] it sets "disable" and "wide-metrics-only".
+    // Setting wide-metrics-only should not re-enable level 1.
+    // None of the level 1 configuration should affect level 2 (which is enabled by default).
+    Configuration c = parseConfig("isis-disabled-l1");
+    IsisProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getIsisProcess();
+    assertThat(proc.getLevel1(), nullValue());
+    assertThat(proc.getLevel2(), notNullValue());
+  }
+
+  @Test
+  public void testIsisInterfaceAndLevelDisable() {
+    Configuration c = parseConfig("isis-interface-and-level-disable");
+    IsisProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getIsisProcess();
+    assertThat(proc.getLevel1(), notNullValue());
+    assertThat(proc.getLevel2(), notNullValue());
+
+    // Interfaces ge-0/0/0.0, ge-0/0/1.0, and ge-0/0/2.0 all have ISO addresses
+    // ge-0/0/0.0 is disabled for IS-IS: set protocols isis interface ge-0/0/0.0 disable
+    // ge-0/0/1.0 has level 1 disabled: set protocols isis interface ge-0/0/1.0 level 1 disable
+    // ge-0/0/2.0 doesn't have anything disabled
+    IsisInterfaceSettings iface0Settings = c.getActiveInterfaces().get("ge-0/0/0.0").getIsis();
+    IsisInterfaceSettings iface1Settings = c.getActiveInterfaces().get("ge-0/0/1.0").getIsis();
+    IsisInterfaceSettings iface2Settings = c.getActiveInterfaces().get("ge-0/0/2.0").getIsis();
+    assertNull(iface0Settings);
+    assertThat(iface1Settings.getLevel1(), nullValue());
+    assertThat(iface1Settings.getLevel2(), notNullValue());
+    assertThat(iface2Settings.getLevel1(), notNullValue());
+    assertThat(iface2Settings.getLevel2(), notNullValue());
+  }
+
+  @Test
   public void testJuniperIsisNoIsoAddress() {
     Configuration c = parseConfig("juniper-isis-no-iso");
 
@@ -3398,8 +3460,10 @@ public final class FlatJuniperGrammarTest {
     String loopback = "lo0.0";
     String prefix1 = "1.1.1.1/32";
     String prefix2 = "3.3.3.3/32";
+    String prefix3 = "88.1.2.3/32";
     String prefixList1 = "p1";
     String prefixList2 = "p2";
+    String prefixList3 = "p3";
     Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
 
     Configuration c = parseConfig(hostname);
@@ -3422,6 +3486,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasRouteFilterList(prefixList2, permits(Prefix.parse(prefix2))));
     assertThat(c, hasRouteFilterLists(not(hasKey("<*>"))));
 
+    /* prefix-list p3 should get only address from ge-0/0/0.0*/
+    assertThat(c, hasRouteFilterList(prefixList3, permits(Prefix.parse(prefix3))));
+    assertThat(
+        c, hasRouteFilterList(prefixList3, RouteFilterListMatchers.rejects(Prefix.parse(prefix1))));
+    assertThat(
+        c, hasRouteFilterList(prefixList3, RouteFilterListMatchers.rejects(Prefix.parse(prefix2))));
+
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborPrefix)))));
   }
@@ -3442,7 +3513,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9)));
+            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(filename, PREFIX_LIST, "p2", containsInAnyOrder(5)));
@@ -3451,7 +3522,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReferenceWithReferenceLines(
-            filename, INTERFACE, "et-0/0/0.0", OSPF_AREA_INTERFACE, containsInAnyOrder(6, 14)));
+            filename, INTERFACE, "et-0/0/0.0", OSPF_AREA_INTERFACE, containsInAnyOrder(6, 17)));
   }
 
   @Test

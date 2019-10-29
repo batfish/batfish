@@ -1,0 +1,9 @@
+#
+set system host-name isis-disabled-l1
+#
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32 
+set interfaces lo0 unit 0 family iso address 12.1234.1234.1234.1234.00 
+#
+set protocols isis interface lo0
+set protocols isis level 1 disable
+set protocols isis level 1 wide-metrics-only

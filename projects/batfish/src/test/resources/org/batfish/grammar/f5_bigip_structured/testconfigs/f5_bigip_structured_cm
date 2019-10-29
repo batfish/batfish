@@ -85,6 +85,7 @@ cm device /Common/f5_bigip_structured_cm {
             effective-ip management-ip
             effective-port 1026
             ip management-ip
+            port 1026
         }
     }
     version 12.1.4
@@ -97,7 +98,7 @@ cm device /Common/f5_bigip_structured_cm2 {
     chassis-id f5-foo-bar2
     configsync-ip 192.0.2.3
     edition "foobar"
-    hostname f5_bigip_structured_cm
+    hostname f5_bigip_structured_cm2
     key /Common/dtdi.key
     management-ip 192.0.2.4
     marketing-name "barbaz"
@@ -115,6 +116,7 @@ cm device /Common/f5_bigip_structured_cm2 {
             effective-ip management-ip
             effective-port 1026
             ip management-ip
+            port 1026
         }
     }
     version 12.1.4
@@ -130,10 +132,13 @@ cm device-group /Common/device_trust_group {
     auto-sync enabled
     devices {
         /Common/f5_bigip_structured_cm { }
-        /Common/f5_bigip_structured_cm2 { }
+        /Common/f5_bigip_structured_cm2 {
+            set-sync-leader
+        }
     }
     hidden true
     network-failover disabled
+    type sync-only
 }
 cm device-group /Common/gtm {
     devices {

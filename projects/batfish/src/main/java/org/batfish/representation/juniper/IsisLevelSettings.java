@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class IsisLevelSettings implements Serializable {
 
-  private boolean _enabled;
-
+  // Enabled by default
+  private boolean _enabled = true;
   private boolean _wideMetricsOnly;
 
   public boolean getEnabled() {

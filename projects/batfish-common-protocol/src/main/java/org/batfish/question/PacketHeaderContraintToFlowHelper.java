@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
@@ -67,7 +66,7 @@ public class PacketHeaderContraintToFlowHelper {
   }
 
   /** resolve IP by the specifier context */
-  public IpSpaceAssignment resolverHeaderIp(String headerIp) {
+  private IpSpaceAssignment resolverHeaderIp(String headerIp) {
     // interpret given IP "flexibly"
     IpSpaceSpecifier ipSpecifier =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
@@ -78,12 +77,12 @@ public class PacketHeaderContraintToFlowHelper {
   }
 
   /** pick a representative IP from an IP space assignment entry */
-  public Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
+  private Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
       IpSpaceAssignment.Entry ipSpaceAssignmentEntry) {
     return _ipSpaceRepresentative.getRepresentative(ipSpaceAssignmentEntry.getIpSpace());
   }
 
-  private Ip inferIpFromHeaderIpString(@Nonnull String headerIp, @Nonnull String field) {
+  private Ip inferIpFromHeaderIpString(String headerIp, String field) {
     IpSpaceAssignment ips = resolverHeaderIp(headerIp);
     // Filter out empty IP assignments
     List<Entry> nonEmptyIpSpaces =

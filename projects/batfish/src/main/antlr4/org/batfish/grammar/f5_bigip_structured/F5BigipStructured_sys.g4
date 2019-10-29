@@ -37,6 +37,75 @@ sys_global_settings
   )? BRACE_RIGHT NEWLINE
 ;
 
+sys_ha_group
+:
+  HA_GROUP name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      sh_active_bonus
+      | sh_pools
+      | sh_trunks
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sh_active_bonus
+:
+  ACTIVE_BONUS bonus = uint16 NEWLINE 
+;
+
+sh_pools
+:
+  POOLS BRACE_LEFT
+  (
+    NEWLINE shp_pool*
+  )? BRACE_RIGHT NEWLINE
+;
+
+shp_pool
+:
+  name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      shpp_weight
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+shpp_weight
+:
+  WEIGHT weight = uint16 NEWLINE
+;
+
+sh_trunks
+:
+  TRUNKS BRACE_LEFT
+  (
+    NEWLINE sht_trunk*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sht_trunk
+:
+  name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      shtt_weight
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+shtt_weight
+:
+  WEIGHT weight = uint16 NEWLINE
+;
+
 sys_management_ip
 :
   MANAGEMENT_IP ignored
@@ -96,6 +165,7 @@ s_sys
   (
     sys_dns
     | sys_global_settings
+    | sys_ha_group
     | sys_management_ip
     | sys_management_route
     | sys_ntp

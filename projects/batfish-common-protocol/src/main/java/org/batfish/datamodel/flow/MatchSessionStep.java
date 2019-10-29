@@ -22,10 +22,8 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
 
   @JsonCreator
   private static MatchSessionStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) MatchSessionStepDetail detail,
       @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
-    checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new MatchSessionStep();
   }
 }

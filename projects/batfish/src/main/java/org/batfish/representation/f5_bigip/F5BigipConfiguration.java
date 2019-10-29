@@ -224,8 +224,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final Map<String, AccessList> _accessLists;
   private final @Nonnull Map<String, BgpProcess> _bgpProcesses;
   private transient Configuration _c;
+  private final @Nonnull Map<String, Device> _devices;
+  private final @Nonnull Map<String, DeviceGroup> _deviceGroups;
   private transient Map<String, Virtual> _enabledVirtuals;
   private ConfigurationFormat _format;
+  private final @Nonnull Map<String, HaGroup> _haGroups;
   private String _hostname;
   private boolean _imish;
   private final Map<String, ImishInterface> _imishInterfaces;
@@ -245,6 +248,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Snat> _snats;
   private transient SortedMap<String, SimpleTransformation> _snatTransformations;
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
+  private final @Nonnull Map<String, TrafficGroup> _trafficGroups;
   private final @Nonnull Map<String, Trunk> _trunks;
   private transient Map<String, Set<IpSpace>> _virtualAdditionalDnatArpIps;
   private transient Map<String, Set<IpSpace>> _virtualAdditionalSnatArpIps;
@@ -259,6 +263,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
   public F5BigipConfiguration() {
     _accessLists = new HashMap<>();
     _bgpProcesses = new HashMap<>();
+    _devices = new HashMap<>();
+    _deviceGroups = new HashMap<>();
+    _haGroups = new HashMap<>();
     _imishInterfaces = new HashMap<>();
     _interfaces = new HashMap<>();
     _nodes = new HashMap<>();
@@ -272,6 +279,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _snats = new HashMap<>();
     _snatPools = new HashMap<>();
     _snatTranslations = new HashMap<>();
+    _trafficGroups = new HashMap<>();
     _trunks = new HashMap<>();
     _virtualAddresses = new HashMap<>();
     _virtuals = new HashMap<>();
@@ -770,6 +778,18 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .orElse(Ip.ZERO);
   }
 
+  public @Nonnull Map<String, Device> getDevices() {
+    return _devices;
+  }
+
+  public @Nonnull Map<String, DeviceGroup> getDeviceGroups() {
+    return _deviceGroups;
+  }
+
+  public @Nonnull Map<String, HaGroup> getHaGroups() {
+    return _haGroups;
+  }
+
   @Override
   public String getHostname() {
     return _hostname;
@@ -826,6 +846,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, SnatTranslation> getSnatTranslations() {
     return _snatTranslations;
+  }
+
+  public @Nonnull Map<String, TrafficGroup> getTrafficGroups() {
+    return _trafficGroups;
   }
 
   public @Nonnull Map<String, Trunk> getTrunks() {
@@ -1046,6 +1070,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.BGP_PROCESS, F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE);
     markConcreteStructure(F5BigipStructureType.DATA_GROUP_EXTERNAL);
     markConcreteStructure(F5BigipStructureType.DATA_GROUP_INTERNAL);
+    markConcreteStructure(F5BigipStructureType.DEVICE);
+    markConcreteStructure(F5BigipStructureType.DEVICE_GROUP);
+    markConcreteStructure(F5BigipStructureType.HA_GROUP);
     markConcreteStructure(
         F5BigipStructureType.IMISH_INTERFACE,
         F5BigipStructureUsage.IMISH_INTERFACE_SELF_REFERENCE,
@@ -1309,6 +1336,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.SNATPOOL,
         F5BigipStructureUsage.SNAT_SNATPOOL,
         F5BigipStructureUsage.VIRTUAL_SOURCE_ADDRESS_TRANSLATION_POOL);
+    markConcreteStructure(F5BigipStructureType.TRAFFIC_GROUP);
     markConcreteStructure(
         F5BigipStructureType.VIRTUAL, F5BigipStructureUsage.VIRTUAL_SELF_REFERENCE);
     markConcreteStructure(

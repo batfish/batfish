@@ -145,12 +145,12 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -161,6 +161,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -197,6 +198,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -237,9 +239,20 @@ import org.batfish.representation.f5_bigip.Builtin;
 import org.batfish.representation.f5_bigip.BuiltinMonitor;
 import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
+import org.batfish.representation.f5_bigip.ConcreteUnicastAddressIp;
+import org.batfish.representation.f5_bigip.Device;
+import org.batfish.representation.f5_bigip.DeviceGroup;
+import org.batfish.representation.f5_bigip.DeviceGroupDevice;
+import org.batfish.representation.f5_bigip.DeviceGroupType;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
+import org.batfish.representation.f5_bigip.HaGroup;
+import org.batfish.representation.f5_bigip.HaGroupPool;
+import org.batfish.representation.f5_bigip.HaGroupTrunk;
+import org.batfish.representation.f5_bigip.ManagementIp;
 import org.batfish.representation.f5_bigip.Route;
+import org.batfish.representation.f5_bigip.TrafficGroup;
+import org.batfish.representation.f5_bigip.UnicastAddress;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -678,8 +691,152 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testCmParsing() {
-    assertNotNull(parseVendorConfig("f5_bigip_structured_cm"));
+  public void testCmExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_cm");
+
+    // cm device
+    assertThat(
+        vc.getDevices(),
+        hasKeys("/Common/f5_bigip_structured_cm", "/Common/f5_bigip_structured_cm2"));
+    {
+      Device d = vc.getDevices().get("/Common/f5_bigip_structured_cm");
+      assertThat(d.getBaseMac(), equalTo(MacAddress.parse("00:00:00:00:00:01")));
+      assertThat(d.getConfigSyncIp(), equalTo(Ip.parse("192.0.2.1")));
+      assertThat(d.getHostname(), equalTo("f5_bigip_structured_cm"));
+      assertThat(d.getManagementIp(), equalTo(Ip.parse("192.0.2.2")));
+      assertThat(d.getSelfDevice(), equalTo(Boolean.TRUE));
+
+      // unicast-address
+      Iterator<UnicastAddress> unicastAddresses = d.getUnicastAddresses().iterator();
+      {
+        UnicastAddress ua = unicastAddresses.next();
+        assertThat(ua.getEffectiveIp(), instanceOf(ConcreteUnicastAddressIp.class));
+        assertThat(ua.getEffectivePort(), equalTo(1026));
+        assertThat(
+            ((ConcreteUnicastAddressIp) ua.getEffectiveIp()).getIp(),
+            equalTo(Ip.parse("192.0.2.1")));
+        assertThat(ua.getIp(), instanceOf(ConcreteUnicastAddressIp.class));
+        assertThat(((ConcreteUnicastAddressIp) ua.getIp()).getIp(), equalTo(Ip.parse("192.0.2.1")));
+        assertThat(ua.getPort(), nullValue());
+      }
+      {
+        UnicastAddress ua = unicastAddresses.next();
+        assertThat(ua.getEffectiveIp(), instanceOf(ManagementIp.class));
+        assertThat(ua.getEffectivePort(), equalTo(1026));
+        assertThat(ua.getIp(), instanceOf(ManagementIp.class));
+        assertThat(ua.getPort(), equalTo(1026));
+      }
+      assertFalse(unicastAddresses.hasNext());
+    }
+    {
+      Device d = vc.getDevices().get("/Common/f5_bigip_structured_cm2");
+      assertThat(d.getBaseMac(), equalTo(MacAddress.parse("00:00:00:00:00:02")));
+      assertThat(d.getConfigSyncIp(), equalTo(Ip.parse("192.0.2.3")));
+      assertThat(d.getHostname(), equalTo("f5_bigip_structured_cm2"));
+      assertThat(d.getManagementIp(), equalTo(Ip.parse("192.0.2.4")));
+      assertThat(d.getSelfDevice(), nullValue());
+
+      // unicast-address
+      Iterator<UnicastAddress> unicastAddresses = d.getUnicastAddresses().iterator();
+      {
+        UnicastAddress ua = unicastAddresses.next();
+        assertThat(ua.getEffectiveIp(), instanceOf(ConcreteUnicastAddressIp.class));
+        assertThat(ua.getEffectivePort(), equalTo(1026));
+        assertThat(
+            ((ConcreteUnicastAddressIp) ua.getEffectiveIp()).getIp(),
+            equalTo(Ip.parse("192.0.2.3")));
+        assertThat(ua.getIp(), instanceOf(ConcreteUnicastAddressIp.class));
+        assertThat(((ConcreteUnicastAddressIp) ua.getIp()).getIp(), equalTo(Ip.parse("192.0.2.3")));
+        assertThat(ua.getPort(), nullValue());
+      }
+      {
+        UnicastAddress ua = unicastAddresses.next();
+        assertThat(ua.getEffectiveIp(), instanceOf(ManagementIp.class));
+        assertThat(ua.getEffectivePort(), equalTo(1026));
+        assertThat(ua.getIp(), instanceOf(ManagementIp.class));
+        assertThat(ua.getPort(), equalTo(1026));
+      }
+      assertFalse(unicastAddresses.hasNext());
+    }
+
+    // device-group
+    assertThat(
+        vc.getDeviceGroups(),
+        hasKeys("/Common/device_group_snc", "/Common/device_trust_group", "/Common/gtm"));
+    {
+      DeviceGroup dg = vc.getDeviceGroups().get("/Common/device_group_snc");
+      assertThat(dg.getAutoSync(), nullValue());
+
+      // devices
+      assertThat(
+          dg.getDevices(),
+          hasKeys("/Common/f5_bigip_structured_cm", "/Common/f5_bigip_structured_cm2"));
+      {
+        DeviceGroupDevice dgd = dg.getDevices().get("/Common/f5_bigip_structured_cm");
+        assertFalse(dgd.getSetSyncLeader());
+      }
+      {
+        DeviceGroupDevice dgd = dg.getDevices().get("/Common/f5_bigip_structured_cm2");
+        assertFalse(dgd.getSetSyncLeader());
+      }
+
+      assertThat(dg.getHidden(), nullValue());
+      assertThat(dg.getNetworkFailover(), nullValue());
+      assertThat(dg.getType(), equalTo(DeviceGroupType.SYNC_FAILOVER));
+    }
+    {
+      DeviceGroup dg = vc.getDeviceGroups().get("/Common/device_trust_group");
+      assertThat(dg.getAutoSync(), equalTo(Boolean.TRUE));
+
+      // devices
+      assertThat(
+          dg.getDevices(),
+          hasKeys("/Common/f5_bigip_structured_cm", "/Common/f5_bigip_structured_cm2"));
+      {
+        DeviceGroupDevice dgd = dg.getDevices().get("/Common/f5_bigip_structured_cm");
+        assertFalse(dgd.getSetSyncLeader());
+      }
+      {
+        DeviceGroupDevice dgd = dg.getDevices().get("/Common/f5_bigip_structured_cm2");
+        assertTrue(dgd.getSetSyncLeader());
+      }
+
+      assertThat(dg.getHidden(), equalTo(Boolean.TRUE));
+      assertThat(dg.getNetworkFailover(), equalTo(Boolean.FALSE));
+      assertThat(dg.getType(), equalTo(DeviceGroupType.SYNC_ONLY));
+    }
+    {
+      DeviceGroup dg = vc.getDeviceGroups().get("/Common/gtm");
+      assertThat(dg.getAutoSync(), nullValue());
+
+      // devices
+      assertThat(dg.getDevices(), hasKeys("/Common/f5_bigip_structured_cm"));
+      {
+        DeviceGroupDevice dgd = dg.getDevices().get("/Common/f5_bigip_structured_cm");
+        assertFalse(dgd.getSetSyncLeader());
+      }
+
+      assertThat(dg.getHidden(), equalTo(Boolean.TRUE));
+      assertThat(dg.getNetworkFailover(), equalTo(Boolean.FALSE));
+      assertThat(dg.getType(), nullValue());
+    }
+
+    // traffic-group
+    assertThat(
+        vc.getTrafficGroups(),
+        hasKeys("/Common/traffic-group-1", "/Common/traffic-group-local-only"));
+    {
+      TrafficGroup tg = vc.getTrafficGroups().get("/Common/traffic-group-1");
+      assertThat(tg.getHaGroup(), equalTo("/Common/t1"));
+      assertThat(tg.getMac(), equalTo(MacAddress.parse("00:00:00:00:00:03")));
+      assertThat(tg.getUnitId(), equalTo(1));
+    }
+    {
+      TrafficGroup tg = vc.getTrafficGroups().get("/Common/traffic-group-local-only");
+      assertThat(tg.getHaGroup(), nullValue());
+      assertThat(tg.getMac(), nullValue());
+      assertThat(tg.getUnitId(), nullValue());
+    }
   }
 
   @Test
@@ -856,6 +1013,39 @@ public final class F5BigipStructuredGrammarTest {
               equalTo(
                   FlowDiff.flowDiff(
                       IpField.SOURCE, Ip.parse("192.0.2.10"), Ip.parse("192.0.2.1")))));
+    }
+  }
+
+  @Test
+  public void testHaGroupExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_sys_ha_group");
+
+    assertThat(vc.getHaGroups(), hasKeys("g1"));
+    {
+      HaGroup g = vc.getHaGroups().get("g1");
+      assertThat(g.getActiveBonus(), equalTo(12));
+
+      // pools
+      assertThat(g.getPools(), hasKeys("/Common/p1", "/Common/p2"));
+      {
+        HaGroupPool p = g.getPools().get("/Common/p1");
+        assertThat(p.getWeight(), equalTo(34));
+      }
+      {
+        HaGroupPool p = g.getPools().get("/Common/p2");
+        assertThat(p.getWeight(), nullValue());
+      }
+
+      // trunks
+      assertThat(g.getTrunks(), hasKeys("t1", "t2"));
+      {
+        HaGroupTrunk t = g.getTrunks().get("t1");
+        assertThat(t.getWeight(), equalTo(56));
+      }
+      {
+        HaGroupTrunk t = g.getTrunks().get("t2");
+        assertThat(t.getWeight(), nullValue());
+      }
     }
   }
 

@@ -55,6 +55,11 @@ list
   | u_list
 ;
 
+mac_address
+:
+  MAC_ADDRESS
+;
+
 structure_name
 :
   partition = PARTITION? word_id

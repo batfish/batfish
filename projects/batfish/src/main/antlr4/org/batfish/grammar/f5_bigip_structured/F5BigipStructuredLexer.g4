@@ -33,6 +33,11 @@ ACTIVATE
   'activate'
 ;
 
+ACTIVE_BONUS
+:
+  'active-bonus'
+;
+
 ACTIVE_MODULES
 :
   'active-modules'
@@ -938,6 +943,16 @@ POOL
   'pool'
 ;
 
+POOLS
+:
+  'pools'
+;
+
+PORT
+:
+  'port'
+;
+
 PPTP
 :
   'pptp'
@@ -1219,6 +1234,11 @@ SET
   'set'
 ;
 
+SET_SYNC_LEADER
+:
+  'set-sync-leader'
+;
+
 SFLOW
 :
   'sflow'
@@ -1454,6 +1474,11 @@ TRUNK
   'trunk'
 ;
 
+TRUNKS
+:
+  'trunks'
+;
+
 TRUST_DOMAIN
 :
   'trust-domain'
@@ -1562,6 +1587,11 @@ WEB_SECURITY
 WEBSOCKET
 :
   'websocket'
+;
+
+WEIGHT
+:
+  'weight'
 ;
 
 XML

@@ -299,7 +299,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_point_to_pointConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isib_minimum_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isib_multiplierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_disableContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authentication_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_intervalContext;
@@ -401,6 +400,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.PortContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.ProposalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
@@ -2429,9 +2430,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
     _currentIsisInterface = initInterface(ctx.id);
+    _currentIsisInterface.getOrInitIsisSettings();
     _configuration.referenceStructure(
         INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
-    _currentIsisInterface.getIsisSettings().setEnabled(true);
   }
 
   @Override
@@ -2448,7 +2449,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       default:
         throw new BatfishException("invalid level: " + level);
     }
-    _currentIsisLevelSettings.setEnabled(true);
   }
 
   @Override
@@ -2466,7 +2466,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       default:
         throw new BatfishException("invalid IS-IS level: " + level);
     }
-    _currentIsisInterfaceLevelSettings.setEnabled(true);
   }
 
   @Override
@@ -4465,11 +4464,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitIsil_enable(Isil_enableContext ctx) {
-    _currentIsisInterfaceLevelSettings.setEnabled(true);
-  }
-
-  @Override
   public void exitIsil_hello_authentication_key(Isil_hello_authentication_keyContext ctx) {
     String key = unquote(ctx.key.getText());
     String decodedKeyHash = decryptIfNeededAndHash(key, getLine(ctx.key.getStart()));
@@ -5498,7 +5492,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeikp_proposals(Seikp_proposalsContext ctx) {
-    for (VariableContext proposal : ctx.proposals) {
+    for (ProposalContext proposal : proposals(ctx.proposal_list())) {
       String name = proposal.getText();
       _currentIkePolicy.getProposals().add(name);
       _configuration.referenceStructure(
@@ -5567,7 +5561,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeipp_proposals(Seipp_proposalsContext ctx) {
-    for (VariableContext proposal : ctx.proposals) {
+    for (ProposalContext proposal : proposals(ctx.proposal_list())) {
       String name = proposal.getText();
       _currentIpsecPolicy.getProposals().add(name);
       _configuration.referenceStructure(
@@ -6324,6 +6318,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       throw new BatfishException("invalid dh-group");
     }
+  }
+
+  /** A helper function to extract all proposals from an optional list. */
+  private static List<ProposalContext> proposals(@Nullable Proposal_listContext ctx) {
+    if (ctx == null || ctx.proposal() == null) {
+      return ImmutableList.of();
+    }
+    return ctx.proposal();
   }
 
   private void todo(ParserRuleContext ctx) {

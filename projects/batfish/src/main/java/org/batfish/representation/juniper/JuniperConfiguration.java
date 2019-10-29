@@ -846,7 +846,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
       @Nonnull IsisSettings settings, Interface iface, boolean level1, boolean level2) {
     IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
-    if (!interfaceSettings.getEnabled()) {
+    if (interfaceSettings == null || !interfaceSettings.getEnabled()) {
       return null;
     }
     // If a reference bandwidth is set, calculate default cost as (reference bandwidth) / (interface
@@ -889,11 +889,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
+  @Nullable
   private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
       IsisLevelSettings levelSettings,
       IsisInterfaceSettings interfaceSettings,
       IsisInterfaceLevelSettings interfaceLevelSettings,
       long defaultCost) {
+    // Process and interface settings have already been checked to ensure IS-IS is enabled on iface
+    if (!interfaceLevelSettings.getEnabled()) {
+      return null;
+    }
     long cost = firstNonNull(interfaceLevelSettings.getMetric(), defaultCost);
     if (!levelSettings.getWideMetricsOnly()) {
       cost = Math.min(cost, MAX_ISIS_COST_WITHOUT_WIDE_METRICS);
