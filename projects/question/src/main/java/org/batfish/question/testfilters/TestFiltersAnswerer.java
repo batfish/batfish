@@ -32,9 +32,6 @@ import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.phc_to_flow.DstIpExtractorDefault;
-import org.batfish.datamodel.phc_to_flow.PacketHeaderConstraintToFlowConverter;
-import org.batfish.datamodel.phc_to_flow.SrcIpExtractorDefault;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -135,19 +132,10 @@ public class TestFiltersAnswerer extends Answerer {
 
     ImmutableSortedSet.Builder<Flow> setBuilder = ImmutableSortedSet.naturalOrder();
 
-    PacketHeaderConstraintToFlowConverter phcToFlowConverter =
-        PacketHeaderConstraintToFlowConverter.builder()
-            .setSrcIpExtractor(new SrcIpExtractorDefault(_packetHeaderContraintToFlowHelper))
-            .setDstIpExtractor(new DstIpExtractorDefault(_packetHeaderContraintToFlowHelper))
-            .build();
-
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
       try {
-
-        Flow.Builder flowBuilder = phcToFlowConverter.toFlow(question.getHeaders(), null);
-
-        //        Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), null);
+        Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), null);
         flowBuilder.setIngressNode(node);
         flowBuilder.setIngressInterface(null);
         flowBuilder.setIngressVrf(
