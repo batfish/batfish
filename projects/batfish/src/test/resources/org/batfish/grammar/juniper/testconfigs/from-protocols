@@ -1,0 +1,10 @@
+#
+set system host-name from-protocols
+#
+set policy-options policy-statement from-isis term t1 from protocol isis
+set policy-options policy-statement from-isis term t1 then accept
+set policy-options policy-statement from-isis then reject
+#
+set policy-options policy-statement from-ospf term t1 from protocol ospf
+set policy-options policy-statement from-ospf term t1 then accept
+set policy-options policy-statement from-ospf then reject

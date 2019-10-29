@@ -5,6 +5,7 @@ import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -221,13 +222,18 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
+import org.batfish.datamodel.OspfInterAreaRoute;
+import org.batfish.datamodel.OspfIntraAreaRoute;
+import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterLine;
@@ -251,6 +257,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
@@ -4467,6 +4474,69 @@ public final class FlatJuniperGrammarTest {
             .call(eb.setOriginalRoute(connectedRouteMaskInvalidLength).build())
             .getBooleanValue(),
         equalTo(false));
+  }
+
+  @Test
+  public void testMatchFromProtocols() {
+    Configuration c = parseConfig("from-protocols");
+    RoutingPolicy fromIsis = c.getRoutingPolicies().get("from-isis");
+    RoutingPolicy fromOspf = c.getRoutingPolicies().get("from-ospf");
+
+    // Build IS-IS and OSPF routes of every protocol
+    IsisRoute.Builder isisBuilder =
+        IsisRoute.builder()
+            .setArea("area")
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP)
+            .setSystemId("systemId");
+    IsisRoute isisL1 =
+        isisBuilder.setLevel(IsisLevel.LEVEL_1).setProtocol(RoutingProtocol.ISIS_L1).build();
+    IsisRoute isisL2 =
+        isisBuilder.setLevel(IsisLevel.LEVEL_2).setProtocol(RoutingProtocol.ISIS_L2).build();
+    IsisRoute isisEl1 =
+        isisBuilder.setLevel(IsisLevel.LEVEL_1).setProtocol(RoutingProtocol.ISIS_EL1).build();
+    IsisRoute isisEl2 =
+        isisBuilder.setLevel(IsisLevel.LEVEL_2).setProtocol(RoutingProtocol.ISIS_EL2).build();
+    OspfRoute ospfIntra = OspfIntraAreaRoute.builder().setNetwork(Prefix.ZERO).setArea(1).build();
+    OspfRoute ospfInter = OspfInterAreaRoute.builder().setNetwork(Prefix.ZERO).setArea(1).build();
+    OspfRoute ospfE1 =
+        OspfExternalType1Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setLsaMetric(1)
+            .setArea(1)
+            .setCostToAdvertiser(1)
+            .setAdvertiser("")
+            .build();
+    OspfRoute ospfE2 =
+        OspfExternalType2Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setLsaMetric(1)
+            .setArea(1)
+            .setCostToAdvertiser(1)
+            .setAdvertiser("")
+            .build();
+
+    // Make sure all the OSPF protocols are as expected
+    assertThat(ospfIntra.getProtocol(), equalTo(RoutingProtocol.OSPF));
+    assertThat(ospfInter.getProtocol(), equalTo(RoutingProtocol.OSPF_IA));
+    assertThat(ospfE1.getProtocol(), equalTo(RoutingProtocol.OSPF_E1));
+    assertThat(ospfE2.getProtocol(), equalTo(RoutingProtocol.OSPF_E2));
+
+    // "from protocol isis" should match any type of IS-IS route
+    assertTrue(fromIsis.process(isisL1, IsisRoute.builder(), Direction.IN));
+    assertTrue(fromIsis.process(isisL2, IsisRoute.builder(), Direction.IN));
+    assertTrue(fromIsis.process(isisEl1, IsisRoute.builder(), Direction.IN));
+    assertTrue(fromIsis.process(isisEl2, IsisRoute.builder(), Direction.IN));
+
+    // "from protocol ospf" should match any type of OSPF route
+    assertTrue(fromOspf.process(ospfIntra, ospfIntra.toBuilder(), Direction.IN));
+    assertTrue(fromOspf.process(ospfInter, ospfInter.toBuilder(), Direction.IN));
+    assertTrue(fromOspf.process(ospfE1, ospfE1.toBuilder(), Direction.IN));
+    assertTrue(fromOspf.process(ospfE2, ospfE2.toBuilder(), Direction.IN));
+
+    // Neither policy should match routes of other protocols
+    assertFalse(fromIsis.process(ospfIntra, IsisRoute.builder(), Direction.IN));
+    assertFalse(fromOspf.process(isisL1, ospfIntra.toBuilder(), Direction.IN));
   }
 
   @Test
