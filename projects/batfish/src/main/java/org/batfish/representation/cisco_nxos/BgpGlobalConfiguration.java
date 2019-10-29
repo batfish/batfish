@@ -58,6 +58,10 @@ public final class BgpGlobalConfiguration implements Serializable {
     return _templatePeers.get(name);
   }
 
+  public @Nonnull Map<String, BgpVrfNeighborConfiguration> getTemplatePeers() {
+    return Collections.unmodifiableMap(_templatePeers);
+  }
+
   public BgpVrfNeighborAddressFamilyConfiguration getOrCreateTemplatePeerPolicy(String name) {
     return _templatePeerPolicies.computeIfAbsent(
         name, n -> new BgpVrfNeighborAddressFamilyConfiguration());

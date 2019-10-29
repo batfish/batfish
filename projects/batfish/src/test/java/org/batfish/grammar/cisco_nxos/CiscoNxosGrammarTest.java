@@ -250,6 +250,8 @@ import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguratio
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
+import org.batfish.representation.cisco_nxos.BgpVrfNeighborAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
@@ -508,6 +510,32 @@ public final class CiscoNxosGrammarTest {
 
     // Just test that parser does not choke.
     assertThat(parseVendorConfig(hostname), notNullValue());
+  }
+
+  /** See: https://github.com/batfish/batfish/issues/5081 */
+  @Test
+  public void testBgpPeerTemplateGH5081Extraction() {
+    String peerName = "peer-rr-overlay";
+
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_peer_template");
+    BgpGlobalConfiguration bgp = vc.getBgpGlobalConfiguration();
+    assertThat(bgp.getTemplatePeers(), hasKeys(peerName));
+    BgpVrfNeighborConfiguration peer = bgp.getOrCreateTemplatePeer(peerName);
+    assertThat(peer.getLocalAs(), equalTo(64603L));
+    assertThat(peer.getL2VpnEvpnAddressFamily(), notNullValue());
+    BgpVrfNeighborAddressFamilyConfiguration l2vpn = peer.getL2VpnEvpnAddressFamily();
+    assertThat(l2vpn.getSendCommunityStandard(), equalTo(Boolean.TRUE));
+    assertThat(l2vpn.getSendCommunityExtended(), equalTo(Boolean.TRUE));
+    assertThat(l2vpn.getOutboundRouteMap(), equalTo("rm_rr_overlay_out"));
+
+    Ip nIp = Ip.parse("10.0.0.1");
+    BgpVrfConfiguration vrf = bgp.getVrfs().get(DEFAULT_VRF_NAME);
+    assertThat(vrf.getNeighbors(), hasKeys(nIp));
+    BgpVrfNeighborConfiguration neighbor = vrf.getNeighbors().get(nIp);
+    assertThat(neighbor.getInheritPeer(), equalTo(peerName));
+    assertThat(neighbor.getShutdown(), equalTo(Boolean.FALSE));
+    assertThat(neighbor.getRemoteAs(), equalTo(64602L));
+    assertThat(neighbor.getUpdateSource(), equalTo("Ethernet1/10"));
   }
 
   @Test
