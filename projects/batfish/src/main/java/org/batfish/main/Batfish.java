@@ -1740,9 +1740,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
               vrf ->
                   vrf.getBgpProcess() != null
                       || !vrf.getEigrpProcesses().isEmpty()
+                      || vrf.getIsisProcess() != null
                       || !vrf.getOspfProcesses().isEmpty()
                       || vrf.getRipProcess() != null)) {
-        // If any vrf on device has BGP, EIGRP, OSPF, or RIP, set device type to router
         c.setDeviceType(DeviceType.ROUTER);
       } else {
         // If device was not a host or router, call it a switch
