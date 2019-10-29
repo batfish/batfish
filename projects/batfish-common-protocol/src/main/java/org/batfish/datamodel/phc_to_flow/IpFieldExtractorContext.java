@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.datamodel.phc_to_flow;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
@@ -18,10 +19,11 @@ import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
- * Wrapper for utility functions used to infer src / dst Ips in a flow used by test filter and
- * traceroute
+ * Context and utility functions used to infer src / dst Ips from {@link
+ * org.batfish.datamodel.PacketHeaderConstraints}.
  */
-public class PacketHeaderContraintToFlowHelper {
+@ParametersAreNonnullByDefault
+public class IpFieldExtractorContext {
 
   private final IpSpaceRepresentative _ipSpaceRepresentative;
   private final IpSpaceAssignment _sourceIpAssignment;
@@ -30,7 +32,7 @@ public class PacketHeaderContraintToFlowHelper {
   private static final String SOURCE = "source";
   private static final String DESTINATION = "destination";
 
-  public PacketHeaderContraintToFlowHelper(
+  public IpFieldExtractorContext(
       IpSpaceAssignment sourceIpAssignment, SpecifierContext specifierContext) {
     _ipSpaceRepresentative = new IpSpaceRepresentative();
     _specifierContext = specifierContext;
@@ -64,7 +66,7 @@ public class PacketHeaderContraintToFlowHelper {
   }
 
   /** resolve IP by the specifier context */
-  public IpSpaceAssignment resolverHeaderIp(String headerIp) {
+  private IpSpaceAssignment resolverHeaderIp(String headerIp) {
     // interpret given IP "flexibly"
     IpSpaceSpecifier ipSpecifier =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
@@ -75,7 +77,7 @@ public class PacketHeaderContraintToFlowHelper {
   }
 
   /** pick a representative IP from an IP space assignment entry */
-  public Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
+  private Optional<Ip> pickRepresentativeFromIpSpaceAssignment(
       IpSpaceAssignment.Entry ipSpaceAssignmentEntry) {
     return _ipSpaceRepresentative.getRepresentative(ipSpaceAssignmentEntry.getIpSpace());
   }
