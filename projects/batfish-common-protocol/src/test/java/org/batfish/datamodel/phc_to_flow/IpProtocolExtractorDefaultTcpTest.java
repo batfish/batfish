@@ -17,13 +17,13 @@ public class IpProtocolExtractorDefaultTcpTest {
     assertThat(IpProtocolExtractorDefaultTcp.INSTANCE.getValue(phc, null), equalTo(IpProtocol.UDP));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testGetValue_multipleProtocol() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setIpProtocols(ImmutableSet.of(IpProtocol.UDP, IpProtocol.TCP))
             .build();
-    IpProtocolExtractorDefaultTcp.INSTANCE.getValue(phc, null);
+    assertThat(IpProtocolExtractorDefaultTcp.INSTANCE.getValue(phc, null), equalTo(IpProtocol.UDP));
   }
 
   @Test
