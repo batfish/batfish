@@ -37,6 +37,8 @@ public class RoutingProtocolSpecifier {
   //      ISIS
   //          ISIS-L1
   //          ISIS-L2
+  //          ISIS-EL1
+  //          ISIS-EL2
   //      EIGRP
   //          EIGRP-INT
   //          EIGRP-EXT
@@ -63,6 +65,8 @@ public class RoutingProtocolSpecifier {
   public static final String ISIS = "isis";
   public static final String ISIS_L1 = "isis-l1";
   public static final String ISIS_L2 = "isis-l2";
+  public static final String ISIS_EL1 = "isis-el1";
+  public static final String ISIS_EL2 = "isis-el2";
   public static final String LOCAL = "local";
   public static final String OSPF = "ospf";
   public static final String OSPF_EXT = "ospf-ext";
@@ -82,6 +86,8 @@ public class RoutingProtocolSpecifier {
   private static final RoutingProtocol IBGP_PROTOCOL = RoutingProtocol.IBGP;
   private static final RoutingProtocol ISIS_L1_PROTOCOL = RoutingProtocol.ISIS_L1;
   private static final RoutingProtocol ISIS_L2_PROTOCOL = RoutingProtocol.ISIS_L2;
+  private static final RoutingProtocol ISIS_EL1_PROTOCOL = RoutingProtocol.ISIS_EL1;
+  private static final RoutingProtocol ISIS_EL2_PROTOCOL = RoutingProtocol.ISIS_EL2;
   private static final RoutingProtocol LOCAL_PROTOCOL = RoutingProtocol.LOCAL;
   private static final RoutingProtocol OSPF_EXT1_PROTOCOL = RoutingProtocol.OSPF_E1;
   private static final RoutingProtocol OSPF_EXT2_PROTOCOL = RoutingProtocol.OSPF_E2;
@@ -101,6 +107,8 @@ public class RoutingProtocolSpecifier {
           IBGP,
           ISIS_L1,
           ISIS_L2,
+          ISIS_EL1,
+          ISIS_EL2,
           LOCAL,
           OSPF_EXT1,
           OSPF_EXT2,
@@ -142,7 +150,8 @@ public class RoutingProtocolSpecifier {
             .addAll(OSPF_INT_PROTOCOLS)
             .build();
 
-    ISIS_PROTOCOLS = ImmutableSet.of(ISIS_L1_PROTOCOL, ISIS_L2_PROTOCOL);
+    ISIS_PROTOCOLS =
+        ImmutableSet.of(ISIS_L1_PROTOCOL, ISIS_L2_PROTOCOL, ISIS_EL1_PROTOCOL, ISIS_EL2_PROTOCOL);
 
     EIGRP_PROTOCOLS = ImmutableSet.of(EIGRP_INT_PROTOCOL, EIGRP_EXT_PROTOCOL);
 
@@ -171,6 +180,8 @@ public class RoutingProtocolSpecifier {
             .put(ISIS, ISIS_PROTOCOLS)
             .put(ISIS_L1, ImmutableSet.of(ISIS_L1_PROTOCOL))
             .put(ISIS_L2, ImmutableSet.of(ISIS_L2_PROTOCOL))
+            .put(ISIS_EL1, ImmutableSet.of(ISIS_EL1_PROTOCOL))
+            .put(ISIS_EL2, ImmutableSet.of(ISIS_EL2_PROTOCOL))
             .put(LOCAL, ImmutableSet.of(LOCAL_PROTOCOL))
             .put(OSPF, OSPF_PROTOCOLS)
             .put(OSPF_EXT, OSPF_EXT_PROTOCOLS)

@@ -41,7 +41,9 @@ public final class RoutingProtocolSpecifierTest {
                 RoutingProtocol.BGP,
                 RoutingProtocol.IBGP,
                 RoutingProtocol.ISIS_L1,
-                RoutingProtocol.ISIS_L2)));
+                RoutingProtocol.ISIS_L2,
+                RoutingProtocol.ISIS_EL1,
+                RoutingProtocol.ISIS_EL2)));
   }
 
   @Test
@@ -119,6 +121,8 @@ public final class RoutingProtocolSpecifierTest {
                 RoutingProtocol.OSPF_E2,
                 RoutingProtocol.ISIS_L1,
                 RoutingProtocol.ISIS_L2,
+                RoutingProtocol.ISIS_EL1,
+                RoutingProtocol.ISIS_EL2,
                 RoutingProtocol.EIGRP,
                 RoutingProtocol.EIGRP_EX,
                 RoutingProtocol.RIP)));
@@ -128,7 +132,12 @@ public final class RoutingProtocolSpecifierTest {
   public void testIsis() {
     assertThat(
         RoutingProtocolSpecifier.create("isis").getProtocols(),
-        equalTo(ImmutableSet.of(RoutingProtocol.ISIS_L1, RoutingProtocol.ISIS_L2)));
+        equalTo(
+            ImmutableSet.of(
+                RoutingProtocol.ISIS_L1,
+                RoutingProtocol.ISIS_L2,
+                RoutingProtocol.ISIS_EL1,
+                RoutingProtocol.ISIS_EL2)));
   }
 
   @Test
