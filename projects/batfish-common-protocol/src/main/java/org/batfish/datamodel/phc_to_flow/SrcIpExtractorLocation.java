@@ -6,7 +6,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.PacketHeaderConstraints;
-import org.batfish.question.PacketHeaderContraintToFlowHelper;
 import org.batfish.specifier.Location;
 
 /**
@@ -15,7 +14,7 @@ import org.batfish.specifier.Location;
  */
 @ParametersAreNonnullByDefault
 public final class SrcIpExtractorLocation implements FieldExtractor<Ip> {
-  public SrcIpExtractorLocation(PacketHeaderContraintToFlowHelper helper) {
+  public SrcIpExtractorLocation(IpFieldExtractorContext helper) {
     _helper = helper;
   }
 
@@ -31,5 +30,5 @@ public final class SrcIpExtractorLocation implements FieldExtractor<Ip> {
     return _helper.inferSrcIpFromSourceLocation(srcLocation);
   }
 
-  private @Nonnull PacketHeaderContraintToFlowHelper _helper;
+  private @Nonnull IpFieldExtractorContext _helper;
 }

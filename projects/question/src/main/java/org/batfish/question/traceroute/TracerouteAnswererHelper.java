@@ -5,7 +5,6 @@ import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
@@ -16,7 +15,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
-import org.batfish.question.PacketHeaderContraintToFlowHelper;
+import org.batfish.datamodel.phc_to_flow.IpFieldExtractorContext;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
@@ -37,7 +36,7 @@ public final class TracerouteAnswererHelper {
   private final PacketHeaderConstraints _packetHeaderConstraints;
   private final String _sourceLocationStr;
   private final SpecifierContext _specifierContext;
-  private final PacketHeaderContraintToFlowHelper _packetHeaderConstraintToFlowHelper;
+  private final IpFieldExtractorContext _packetHeaderConstraintToFlowHelper;
   private final LocationVisitor<Boolean> _isActiveLocation =
       new LocationVisitor<Boolean>() {
         private boolean isActiveInterface(String hostname, String ifaceName) {
@@ -69,7 +68,7 @@ public final class TracerouteAnswererHelper {
     _specifierContext = specifierContext;
 
     _packetHeaderConstraintToFlowHelper =
-        new PacketHeaderContraintToFlowHelper(
+        new IpFieldExtractorContext(
             initSourceIpAssignment(
                 _sourceLocationStr, _packetHeaderConstraints.getSrcIps(), _specifierContext),
             _specifierContext);

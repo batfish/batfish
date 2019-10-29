@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.PacketHeaderConstraints;
-import org.batfish.question.PacketHeaderContraintToFlowHelper;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
@@ -15,8 +14,8 @@ import org.junit.Test;
 /** Tests for {@link SrcIpExtractorDefault} */
 public class SrcIpExtractorDefaultTest {
   private static Location LOC = new InterfaceLocation("host1", "interface1");
-  private static PacketHeaderContraintToFlowHelper HELPER =
-      new PacketHeaderContraintToFlowHelper(
+  private static IpFieldExtractorContext HELPER =
+      new IpFieldExtractorContext(
           IpSpaceAssignment.builder().assign(LOC, Ip.parse("1.2.3.4").toIpSpace()).build(),
           MockSpecifierContext.builder().build());
 

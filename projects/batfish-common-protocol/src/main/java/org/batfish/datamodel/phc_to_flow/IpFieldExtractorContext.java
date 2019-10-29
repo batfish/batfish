@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.datamodel.phc_to_flow;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -19,11 +19,11 @@ import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
- * Wrapper for utility functions used to infer src / dst Ips in a flow used by test filter and
- * traceroute
+ * Context and utility functions used to infer src / dst Ips from {@link
+ * org.batfish.datamodel.PacketHeaderConstraints}.
  */
 @ParametersAreNonnullByDefault
-public class PacketHeaderContraintToFlowHelper {
+public class IpFieldExtractorContext {
 
   private final IpSpaceRepresentative _ipSpaceRepresentative;
   private final IpSpaceAssignment _sourceIpAssignment;
@@ -32,7 +32,7 @@ public class PacketHeaderContraintToFlowHelper {
   private static final String SOURCE = "source";
   private static final String DESTINATION = "destination";
 
-  public PacketHeaderContraintToFlowHelper(
+  public IpFieldExtractorContext(
       IpSpaceAssignment sourceIpAssignment, SpecifierContext specifierContext) {
     _ipSpaceRepresentative = new IpSpaceRepresentative();
     _specifierContext = specifierContext;

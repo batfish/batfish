@@ -6,13 +6,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.PacketHeaderConstraints;
-import org.batfish.question.PacketHeaderContraintToFlowHelper;
 import org.batfish.specifier.Location;
 
 /** Extract destination Ip only from {@link PacketHeaderConstraints}. */
 @ParametersAreNonnullByDefault
 public final class DstIpExtractorPhcOnly implements FieldExtractor<Ip> {
-  public DstIpExtractorPhcOnly(PacketHeaderContraintToFlowHelper helper) {
+  public DstIpExtractorPhcOnly(IpFieldExtractorContext helper) {
     _helper = helper;
   }
 
@@ -23,5 +22,5 @@ public final class DstIpExtractorPhcOnly implements FieldExtractor<Ip> {
     return _helper.inferDstIpFromHeaderDstIp(headerDstIp);
   }
 
-  private @Nonnull final PacketHeaderContraintToFlowHelper _helper;
+  private @Nonnull final IpFieldExtractorContext _helper;
 }
