@@ -29,6 +29,12 @@ public final class PsFromProtocol extends PsFrom {
           RoutingProtocol.ISIS_EL2,
           RoutingProtocol.ISIS_L1,
           RoutingProtocol.ISIS_L2);
+    } else if (_protocol == RoutingProtocol.OSPF) {
+      return new MatchProtocol(
+          RoutingProtocol.OSPF,
+          RoutingProtocol.OSPF_IA,
+          RoutingProtocol.OSPF_E1,
+          RoutingProtocol.OSPF_E2);
     } else {
       return new MatchProtocol(_protocol);
     }
