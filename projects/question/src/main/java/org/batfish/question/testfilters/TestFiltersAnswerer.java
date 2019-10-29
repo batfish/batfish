@@ -32,6 +32,7 @@ import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.phc_to_flow.IpFieldExtractorContext;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -39,7 +40,6 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.PacketHeaderContraintToFlowHelper;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -60,12 +60,12 @@ public class TestFiltersAnswerer extends Answerer {
   public static final String COL_TRACE = "Trace";
   private static final Ip DEFAULT_IP_ADDRESS = Ip.parse("8.8.8.8");
 
-  private final PacketHeaderContraintToFlowHelper _packetHeaderContraintToFlowHelper;
+  private final IpFieldExtractorContext _ipFieldExtractorContext;
 
   public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
-    _packetHeaderContraintToFlowHelper =
-        new PacketHeaderContraintToFlowHelper(
+    _ipFieldExtractorContext =
+        new IpFieldExtractorContext(
             initSourceIpAssignment((TestFiltersQuestion) question, batfish.specifierContext()),
             _batfish.specifierContext());
   }
@@ -268,7 +268,7 @@ public class TestFiltersAnswerer extends Answerer {
     String headerDstIp = constraints.getDstIps();
     Ip dstIp =
         headerDstIp != null
-            ? _packetHeaderContraintToFlowHelper.inferDstIpFromHeaderDstIp(headerDstIp)
+            ? _ipFieldExtractorContext.inferDstIpFromHeaderDstIp(headerDstIp)
             : DEFAULT_IP_ADDRESS;
     builder.setDstIp(dstIp);
   }
@@ -279,10 +279,10 @@ public class TestFiltersAnswerer extends Answerer {
     String headerSrcIp = constraints.getSrcIps();
     Ip srcIp =
         headerSrcIp != null
-            ? _packetHeaderContraintToFlowHelper.inferSrcIpFromHeaderSrcIp(headerSrcIp)
+            ? _ipFieldExtractorContext.inferSrcIpFromHeaderSrcIp(headerSrcIp)
             : srcLocation == null
                 ? DEFAULT_IP_ADDRESS
-                : _packetHeaderContraintToFlowHelper.inferSrcIpFromSourceLocation(srcLocation);
+                : _ipFieldExtractorContext.inferSrcIpFromSourceLocation(srcLocation);
 
     builder.setSrcIp(srcIp);
   }
