@@ -8,13 +8,13 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.junit.Test;
 
-/** Tests for {@link IpProtocolExtractorDefaultTcp} */
-public class IpProtocolExtractorDefaultTcpTest {
+/** Tests for {@link IpProtocolExtractorDefault} */
+public class IpProtocolExtractorDefaultTest {
   @Test
   public void testGetValue_inferFromPhc() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder().setIpProtocols(ImmutableSet.of(IpProtocol.UDP)).build();
-    assertThat(IpProtocolExtractorDefaultTcp.INSTANCE.getValue(phc, null), equalTo(IpProtocol.UDP));
+    assertThat(IpProtocolExtractorDefault.TCP.getValue(phc, null), equalTo(IpProtocol.UDP));
   }
 
   @Test
@@ -23,12 +23,12 @@ public class IpProtocolExtractorDefaultTcpTest {
         PacketHeaderConstraints.builder()
             .setIpProtocols(ImmutableSet.of(IpProtocol.UDP, IpProtocol.TCP))
             .build();
-    assertThat(IpProtocolExtractorDefaultTcp.INSTANCE.getValue(phc, null), equalTo(IpProtocol.UDP));
+    assertThat(IpProtocolExtractorDefault.TCP.getValue(phc, null), equalTo(IpProtocol.UDP));
   }
 
   @Test
   public void testGetValue_noPhc() {
     PacketHeaderConstraints phc = PacketHeaderConstraints.unconstrained();
-    assertThat(IpProtocolExtractorDefaultTcp.INSTANCE.getValue(phc, null), equalTo(IpProtocol.TCP));
+    assertThat(IpProtocolExtractorDefault.TCP.getValue(phc, null), equalTo(IpProtocol.TCP));
   }
 }
