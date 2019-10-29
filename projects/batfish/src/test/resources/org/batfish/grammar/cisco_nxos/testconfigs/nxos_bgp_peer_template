@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_peer_template
+feature bgp
+feature nv overlay
+!
+router bgp 64603
+  template peer peer-rr-overlay
+    local-as 64603
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-map rm_rr_overlay_out out
+  neighbor 10.0.0.1
+    inherit peer peer-rr-overlay
+    remote-as 64602
+    no shutdown
+    update-source Ethernet1/10
