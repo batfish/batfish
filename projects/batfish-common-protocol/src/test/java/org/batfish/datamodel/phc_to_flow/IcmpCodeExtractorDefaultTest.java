@@ -1,7 +1,7 @@
 package org.batfish.datamodel.phc_to_flow;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Range;
 import org.batfish.datamodel.IntegerSpace;
