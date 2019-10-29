@@ -12,6 +12,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -419,6 +420,20 @@ public class Bgpv4RibTest {
     _bestPathRib.mergeRoute(bestPath);
     // Oldest route should win despite newer having lower in Originator IP
     _bestPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("1.1.0.1")).build());
+
+    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+  }
+
+  @Test
+  public void testBestPathSelectionTieBreakingEbgpOnly() {
+    _bestPathRib = new Bgpv4Rib(null, BgpTieBreaker.ARRIVAL_ORDER, 1, null, false);
+    Bgpv4Route bestPath =
+        _rb.setProtocol(RoutingProtocol.IBGP).setClusterList(ImmutableSet.of()).build();
+    Bgpv4Route earliestPath =
+        _rb.setProtocol(RoutingProtocol.IBGP).setClusterList(ImmutableSet.of(3L)).build();
+    // ibgp should not care about arrival order
+    _bestPathRib.mergeRoute(earliestPath);
+    _bestPathRib.mergeRoute(bestPath);
 
     assertThat(_bestPathRib.getRoutes(), contains(bestPath));
   }
