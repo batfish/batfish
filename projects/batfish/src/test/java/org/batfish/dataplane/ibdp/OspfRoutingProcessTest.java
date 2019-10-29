@@ -7,6 +7,7 @@ import static org.batfish.dataplane.ibdp.OspfRoutingProcess.applyDistributeList;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.computeDefaultInterAreaRouteToInject;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.convertAndFilterIntraAreaRoutesToPropagate;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.filterInterAreaRoutesToPropagateAtABR;
+import static org.batfish.dataplane.ibdp.OspfRoutingProcess.getIfaceAddressesForIntraAreaRoutes;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.transformInterAreaRoutesOnExportNonABR;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.transformIntraAreaRoutesOnExport;
 import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.ADD;
@@ -1203,5 +1204,48 @@ public class OspfRoutingProcessTest {
                     -1,
                     false,
                     false))));
+  }
+
+  @Test
+  public void testGetIfaceAddressesForIARoutes() {
+    ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.0/24");
+    ConcreteInterfaceAddress secondary = ConcreteInterfaceAddress.parse("2.2.2.0/24");
+    Interface.Builder ifaceBuilder =
+        Interface.builder().setName("iface").setAddresses(primary, secondary);
+
+    // Default case (not loopback or P2MP): Should return stream of all interface addresses
+    assertThat(
+        getIfaceAddressesForIntraAreaRoutes(ifaceBuilder.build())
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(primary, secondary));
+
+    // P2MP: Should return all interface addresses converted to /32s
+    ConcreteInterfaceAddress primarySlash32 = ConcreteInterfaceAddress.create(primary.getIp(), 32);
+    ConcreteInterfaceAddress secondarySlash32 =
+        ConcreteInterfaceAddress.create(secondary.getIp(), 32);
+    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder().setPassive(false);
+    OspfInterfaceSettings p2mpOspf =
+        ospfSettings.setNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT).build();
+    Interface p2mpIface = ifaceBuilder.setOspfSettings(p2mpOspf).build();
+    assertThat(
+        getIfaceAddressesForIntraAreaRoutes(p2mpIface).collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(primarySlash32, secondarySlash32));
+
+    // Loopback (not P2MP): Should return all interface addresses converted to /32s
+    OspfInterfaceSettings broadcastOspf =
+        ospfSettings.setNetworkType(OspfNetworkType.BROADCAST).build();
+    Interface loopback =
+        ifaceBuilder.setType(InterfaceType.LOOPBACK).setOspfSettings(broadcastOspf).build();
+    assertThat(
+        getIfaceAddressesForIntraAreaRoutes(loopback).collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(primarySlash32, secondarySlash32));
+
+    // P2P loopback: Should return original interface addresses
+    OspfInterfaceSettings p2pOspf =
+        ospfSettings.setNetworkType(OspfNetworkType.POINT_TO_POINT).build();
+    Interface p2pLoopback = ifaceBuilder.setOspfSettings(p2pOspf).build();
+    assertThat(
+        getIfaceAddressesForIntraAreaRoutes(p2pLoopback).collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(primary, secondary));
   }
 }

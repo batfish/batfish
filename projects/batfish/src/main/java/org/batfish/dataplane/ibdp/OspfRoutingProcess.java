@@ -344,14 +344,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
       // Create a route for each interface address
       // Only create a /32 host address for this interface if 1. it is a loopback and the network
-      // type
-      // is not P2P or 2. its type is p2mp (See RFC 2328 Section 2.1.1)
+      // type is not P2P or 2. its type is p2mp (See RFC 2328 Section 2.1.1)
       Set<OspfIntraAreaRoute> allRoutes =
-          (isLoopbackNotInP2PModeOrP2MP(iface)
-                  ? Stream.of(
-                      ConcreteInterfaceAddress.create(
-                          iface.getConcreteAddress().getIp(), Prefix.MAX_PREFIX_LENGTH))
-                  : iface.getAllConcreteAddresses().stream())
+          getIfaceAddressesForIntraAreaRoutes(iface)
               .map(
                   ifaceAddr ->
                       computeIntraAreaRouteFromInterface(area.getAreaNumber(), iface, ifaceAddr))
@@ -360,6 +355,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       allRoutes.forEach(r -> deltaBuilder.from(_intraAreaRib.mergeRouteGetDelta(r)));
     }
     return deltaBuilder.build();
+  }
+
+  @VisibleForTesting
+  static Stream<ConcreteInterfaceAddress> getIfaceAddressesForIntraAreaRoutes(Interface iface) {
+    return (isLoopbackNotInP2PModeOrP2MP(iface)
+        ? iface.getAllConcreteAddresses().stream()
+            .map(
+                ifaceAddr ->
+                    ConcreteInterfaceAddress.create(ifaceAddr.getIp(), Prefix.MAX_PREFIX_LENGTH))
+        : iface.getAllConcreteAddresses().stream());
   }
 
   private static boolean isLoopbackNotInP2PModeOrP2MP(Interface iface) {
