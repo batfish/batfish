@@ -12,7 +12,7 @@ import org.batfish.common.Warnings;
  * <p>Configuration commands entered at the CLI {@code config-router-neighbor-af} or {@code
  * config-router-vrf-neighbor-af} levels.
  */
-public class BgpVrfNeighborAddressFamilyConfiguration implements Serializable {
+public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializable {
 
   public BgpVrfNeighborAddressFamilyConfiguration() {
     _inheritPeerPolicies = new TreeMap<>();
