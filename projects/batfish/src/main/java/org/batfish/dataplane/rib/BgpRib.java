@@ -214,8 +214,10 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    */
   @VisibleForTesting
   int bestPathComparator(R lhs, R rhs) {
-    // Skip arrival order unless requested
-    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
+    // Skip arrival order unless requested, only applies if both routes are eBGP.
+    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER
+        && lhs.getProtocol() == RoutingProtocol.BGP
+        && rhs.getProtocol() == RoutingProtocol.BGP) {
       int result =
           Comparator.<R, Long>comparing(
                   r -> _logicalArrivalTime.getOrDefault(r, _logicalClock),
