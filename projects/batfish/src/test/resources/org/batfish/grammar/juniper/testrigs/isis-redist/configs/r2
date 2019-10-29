@@ -1,0 +1,43 @@
+system {
+    host-name r2;
+}
+interfaces {
+    ge-0/0/1 {
+        unit 0 {
+            family inet {
+                address 10.0.0.37/30;   
+            }
+            family iso;
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.9.7/32;
+            }
+            family iso {
+                address 49.0002.0172.0016.0907.00;
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        route 5.6.7.8/30 discard;
+        route 2.2.2.0/30 discard;
+    }
+}                                       
+protocols {
+    isis {
+        export export-static;
+        interface ge-0/0/1.0;
+        interface lo0.0;
+    }
+}
+policy-options {
+    policy-statement export-static {
+        from protocol static;
+        from route-filter 5.0.0.0/8 longer;
+        then accept;
+    }
+}

@@ -2,7 +2,12 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
@@ -24,10 +29,13 @@ import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -36,20 +44,26 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -58,10 +72,18 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.dataplane.rib.RibId;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class JuniperConfigurationTest {
+
+  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/juniper/testrigs/";
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private static JuniperConfiguration createConfig() {
     JuniperConfiguration config = new JuniperConfiguration();
@@ -232,6 +254,52 @@ public class JuniperConfigurationTest {
             new Warning(
                 "Cannot use IS-IS reference bandwidth for interface 'iface' because interface bandwidth is 0.",
                 TAG_PEDANTIC)));
+  }
+
+  @Test
+  public void testIsisRedistribution() throws IOException {
+    /*
+    Setup: r1 and r2 share an IS-IS edge.
+
+    r1 has a static route 1.2.3.4/30, but no IS-IS export policy. r2 should not have that route.
+
+    r2 has static routes 2.2.2.0/30 and 5.6.7.8/30. Its IS-IS export policy exports static routes
+    with destinations in 5.0.0.0/8. r1 should have an IS-IS route for 5.6.7.8/30 but not 2.2.2.0/30.
+     */
+    String testrigName = "isis-redist";
+    String r1 = "r1";
+    String r2 = "r2";
+    List<String> configurationNames = ImmutableList.of(r1, r2);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // 1.2.3.4/30 does not get exported to r2 because r1 has no IS-IS export policy.
+    assertThat(r1Routes, hasItem(hasPrefix(Prefix.parse("1.2.3.4/30"))));
+    assertThat(r2Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/30")))));
+
+    // 2.2.2.0/30 does not get exported to r1 because it doesn't match r2's IS-IS export policy.
+    assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("2.2.2.0/30")))));
+    assertThat(r2Routes, hasItem(hasPrefix(Prefix.parse("2.2.2.0/30"))));
+
+    // 5.6.7.8/30 does get exported to r1. Should be an external L1 route with default IS-IS metric.
+    RoutingProtocol protocol = RoutingProtocol.ISIS_EL1;
+    int adminCost = protocol.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER);
+    assertThat(
+        r1Routes,
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("5.6.7.8/30")),
+                hasProtocol(protocol),
+                hasAdministrativeCost(adminCost),
+                hasMetric(Integer.toUnsignedLong(DEFAULT_ISIS_COST)))));
   }
 
   @Test
