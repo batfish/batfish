@@ -14,7 +14,9 @@ public enum IpProtocolExtractorDefault implements FieldExtractor<IpProtocol> {
   /** default TCP */
   TCP(IpProtocol.TCP),
   /** default UDP */
-  UDP(IpProtocol.UDP);
+  UDP(IpProtocol.UDP),
+  /** default ICMP */
+  ICMP(IpProtocol.ICMP);
 
   @Override
   public IpProtocol getValue(PacketHeaderConstraints phc, Location srcLoction) {

@@ -5,6 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -24,7 +26,7 @@ public class PacketHeaderConstraintToFlowConverterTest {
   private static DstIpExtractorDefault DST_IP_EXTRACTOR = new DstIpExtractorDefault(HELPER);
 
   @Test
-  public void testToFlow() {
+  public void testToFlow_defaultTcp() {
     PacketHeaderConstraintToFlowConverter converter =
         PacketHeaderConstraintToFlowConverter.builder()
             .setSrcIpExtractor(SRC_IP_EXTRACTOR)
@@ -44,6 +46,43 @@ public class PacketHeaderConstraintToFlowConverterTest {
         Flow.builder()
             .setSrcIp(Ip.parse("2.3.4.5"))
             .setDstIp(Ip.parse("1.2.3.4"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .setDstPort(NamedPort.HTTP.number())
+            .setIngressNode("host1")
+            .setIngressVrf("vrf1")
+            .setTag("tag")
+            .build();
+    assertThat(flow, equalTo(expectedFlow));
+  }
+
+  @Test
+  public void testToFlow_icmp() {
+    PacketHeaderConstraintToFlowConverter converter =
+        PacketHeaderConstraintToFlowConverter.builder()
+            .setSrcIpExtractor(SRC_IP_EXTRACTOR)
+            .setDstIpExtractor(DST_IP_EXTRACTOR)
+            .setIpProtocolExtractor(IpProtocolExtractorDefault.ICMP)
+            .build();
+
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setSrcIp("2.3.4.5").setDstIp("1.2.3.4").build();
+    Flow flow =
+        converter
+            .toFlow(phc, LOC)
+            .setIngressNode("host1")
+            .setIngressVrf("vrf1")
+            .setTag("tag")
+            .build();
+    Flow expectedFlow =
+        Flow.builder()
+            .setSrcIp(Ip.parse("2.3.4.5"))
+            .setDstIp(Ip.parse("1.2.3.4"))
+            .setIpProtocol(IpProtocol.ICMP)
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .setDstPort(NamedPort.HTTP.number())
+            .setIcmpType(8)
+            .setIcmpCode(0)
             .setIngressNode("host1")
             .setIngressVrf("vrf1")
             .setTag("tag")
