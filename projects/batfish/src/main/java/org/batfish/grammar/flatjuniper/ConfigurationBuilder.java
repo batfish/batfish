@@ -4393,8 +4393,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       policies.add(policy.getText());
     }
     _currentRoutingInstance.getIsisSettings().getExportPolicies().addAll(policies);
-    // Needs data plane implementation
-    todo(ctx);
   }
 
   @Override
