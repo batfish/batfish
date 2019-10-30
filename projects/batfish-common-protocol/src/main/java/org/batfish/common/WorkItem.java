@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import io.opentracing.ActiveSpan;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -84,7 +85,7 @@ public class WorkItem {
     return getSourceSpan(GlobalTracer.get());
   }
 
-  // visible for testing
+  @VisibleForTesting
   SpanContext getSourceSpan(Tracer tracer) {
     return tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
   }
@@ -119,7 +120,7 @@ public class WorkItem {
     setSourceSpan(activeSpan, GlobalTracer.get());
   }
 
-  // visible for testing
+  @VisibleForTesting
   void setSourceSpan(@Nullable ActiveSpan activeSpan, Tracer tracer) {
     if (activeSpan == null) {
       return;
