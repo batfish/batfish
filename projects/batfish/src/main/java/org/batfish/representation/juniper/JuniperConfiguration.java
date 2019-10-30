@@ -229,7 +229,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .put(RoutingProtocol.IBGP, DEFAULT_BGP_IMPORT_POLICY_NAME)
           .build();
 
-  @VisibleForTesting static final int DEFAULT_ISIS_COST = 10;
+  @VisibleForTesting public static final int DEFAULT_ISIS_COST = 10;
 
   /** Maximum IS-IS route cost if wide-metrics-only is not set */
   @VisibleForTesting static final int MAX_ISIS_COST_WITHOUT_WIDE_METRICS = 63;
