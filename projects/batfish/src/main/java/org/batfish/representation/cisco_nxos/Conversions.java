@@ -710,7 +710,7 @@ final class Conversions {
   /** Get export statements for EVPN address family */
   private static List<Statement> getExportStatementsForEvpn(
       Configuration configuration,
-      @Nullable BgpVrfNeighborAddressFamilyConfiguration naf,
+      BgpVrfNeighborAddressFamilyConfiguration naf,
       BgpVrfNeighborConfiguration neighbor) {
     ImmutableList.Builder<Statement> statementsBuilder = ImmutableList.builder();
 
@@ -729,10 +729,7 @@ final class Conversions {
     // Always export BGP or IBGP routes
     List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
     peerExportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
-    // if neighbor level AF is not defined then no outbound route-map will be present
-    if (naf == null) {
-      return statementsBuilder.build();
-    }
+
     // Export policy generated for outbound route-map (if any)
     String outboundMap = naf.getOutboundRouteMap();
     if (outboundMap != null && configuration.getRoutingPolicies().containsKey(outboundMap)) {
