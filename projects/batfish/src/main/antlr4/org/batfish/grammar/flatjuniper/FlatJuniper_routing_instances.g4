@@ -653,7 +653,12 @@ rosr_preference
 
 rosr_qualified_next_hop
 :
-   QUALIFIED_NEXT_HOP nexthop = IP_ADDRESS rosr_common?
+   QUALIFIED_NEXT_HOP
+   (
+      IP_ADDRESS
+      | interface_id
+   )
+   rosrqnh_common?
 ;
 
 rosr_readvertise
@@ -677,6 +682,30 @@ rosr_retain
 ;
 
 rosr_tag
+:
+   TAG tag = DEC
+;
+
+rosrqnh_common
+:
+   (
+      rosrqnhc_metric
+      | rosrqnhc_preference
+      | rosrqnhc_tag
+   )
+;
+
+rosrqnhc_metric
+:
+   METRIC metric = DEC
+;
+
+rosrqnhc_preference
+:
+   PREFERENCE pref = DEC
+;
+
+rosrqnhc_tag
 :
    TAG tag = DEC
 ;
