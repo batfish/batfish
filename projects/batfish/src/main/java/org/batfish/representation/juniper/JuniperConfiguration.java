@@ -229,7 +229,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .put(RoutingProtocol.IBGP, DEFAULT_BGP_IMPORT_POLICY_NAME)
           .build();
 
-  @VisibleForTesting static final int DEFAULT_ISIS_COST = 10;
+  @VisibleForTesting public static final int DEFAULT_ISIS_COST = 10;
 
   /** Maximum IS-IS route cost if wide-metrics-only is not set */
   @VisibleForTesting static final int MAX_ISIS_COST_WITHOUT_WIDE_METRICS = 63;
@@ -798,13 +798,42 @@ public final class JuniperConfiguration extends VendorConfiguration {
     IsisProcess.Builder newProc = IsisProcess.builder();
     newProc.setNetAddress(netAddress);
     IsisSettings settings = _masterLogicalSystem.getDefaultRoutingInstance().getIsisSettings();
-    for (String policyName : settings.getExportPolicies()) {
-      RoutingPolicy policy = _c.getRoutingPolicies().get(policyName);
-      if (policy == null) {
-        continue;
-      } else {
-        // TODO: support IS-IS export policy-statements
-      }
+    if (!settings.getExportPolicies().isEmpty()) {
+      // Process has export policies for redistribution. Create process export policy
+      List<Statement> statements = new ArrayList<>();
+
+      // If a route falls through all the specified export policies, it should be rejected.
+      // FirstMatchChain applies environment's default policy in this scenario, so set it to reject.
+      initDefaultRejectPolicy();
+      statements.add(new SetDefaultPolicy(DEFAULT_REJECT_POLICY_NAME));
+
+      // Apply the specified export policies
+      List<BooleanExpr> callExprs =
+          settings.getExportPolicies().stream()
+              .map(
+                  calledPolicyName -> {
+                    PolicyStatement importPolicy =
+                        _masterLogicalSystem.getPolicyStatements().get(calledPolicyName);
+                    if (importPolicy != null) {
+                      setPolicyStatementReferent(calledPolicyName);
+                      return new CallExpr(calledPolicyName);
+                    }
+                    return null;
+                  })
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      statements.add(
+          new If(
+              new FirstMatchChain(callExprs),
+              ImmutableList.of(Statements.ReturnTrue.toStaticStatement())));
+
+      String exportPolicyName = computeIsisExportPolicyName(routingInstance.getName());
+      newProc.setExportPolicy(exportPolicyName);
+      RoutingPolicy.builder()
+          .setOwner(_c)
+          .setName(exportPolicyName)
+          .setStatements(statements)
+          .build();
     }
     boolean level1 = settings.getLevel1Settings().getEnabled();
     boolean level2 = settings.getLevel2Settings().getEnabled();
@@ -1444,6 +1473,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static String computeGeneratedRouteGenerationPolicyName(Prefix prefix) {
     return String.format("~GENERATED_ROUTE_POLICY:%s~", prefix);
+  }
+
+  public static String computeIsisExportPolicyName(String routingInstanceName) {
+    return String.format("~ISIS_EXPORT_POLICY:%s~", routingInstanceName);
   }
 
   private org.batfish.datamodel.GeneratedRoute ospfSummaryToAggregateRoute(

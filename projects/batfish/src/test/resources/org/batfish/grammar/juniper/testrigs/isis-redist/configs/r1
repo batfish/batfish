@@ -1,0 +1,35 @@
+system {
+    host-name r1;
+}
+interfaces {
+    ge-0/0/1 {
+        unit 0 {
+            description to-R2;
+            family inet {
+                address 10.0.0.38/30;
+            }
+            family iso;                 
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.3.5/32;
+            }
+            family iso {
+                address 49.0002.0172.0016.0305.00;
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        route 1.2.3.4/30 discard;
+    }
+} 
+protocols {
+    isis {
+        interface ge-0/0/1.0;
+        interface lo0.0;
+    }
+}

@@ -13,7 +13,9 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.D
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
@@ -118,6 +120,7 @@ import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
+import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
@@ -259,6 +262,7 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
@@ -3095,6 +3099,53 @@ public final class FlatJuniperGrammarTest {
         hasInterface(
             "ge-1/0/0.0",
             hasAllAddresses(contains(ConcreteInterfaceAddress.create(Ip.parse("10.1.1.1"), 24)))));
+  }
+
+  @Test
+  public void testIsisRedistribution() throws IOException {
+    /*
+    Setup: r1 and r2 share an IS-IS edge.
+
+    r1 has a static route 1.2.3.4/30, but no IS-IS export policy. r2 should not have that route.
+
+    r2 has static routes 2.2.2.0/30 and 5.6.7.8/30. Its IS-IS export policy exports static routes
+    with destinations in 5.0.0.0/8. r1 should have an IS-IS route for 5.6.7.8/30 but not 2.2.2.0/30.
+     */
+    String testrigName = "isis-redist";
+    String r1 = "r1";
+    String r2 = "r2";
+    List<String> configurationNames = ImmutableList.of(r1, r2);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // 1.2.3.4/30 does not get exported to r2 because r1 has no IS-IS export policy.
+    assertThat(r1Routes, hasItem(hasPrefix(Prefix.parse("1.2.3.4/30"))));
+    assertThat(r2Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/30")))));
+
+    // 2.2.2.0/30 does not get exported to r1 because it doesn't match r2's IS-IS export policy.
+    assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("2.2.2.0/30")))));
+    assertThat(r2Routes, hasItem(hasPrefix(Prefix.parse("2.2.2.0/30"))));
+
+    // 5.6.7.8/30 does get exported to r1. Should be an external L1 route with default IS-IS metric.
+    RoutingProtocol protocol = RoutingProtocol.ISIS_EL1;
+    int adminCost = protocol.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER);
+    assertThat(
+        r1Routes,
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("5.6.7.8/30")),
+                hasProtocol(protocol),
+                hasAdministrativeCost(adminCost),
+                AbstractRouteDecoratorMatchers.hasMetric(
+                    Integer.toUnsignedLong(DEFAULT_ISIS_COST)))));
   }
 
   @Test
