@@ -466,7 +466,6 @@ public class WorkMgr extends AbstractCoordinator {
     Task task = new Task(TaskStatus.UnreachableOrBadResponse);
 
     Client client = null;
-    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
     try (ActiveSpan checkTaskSpan =
         GlobalTracer.get()
             .buildSpan("Checking Task Status")
