@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.representation.juniper.QualifiedNextHop.QualifiedNextHopKey;
 
 public class StaticRoute implements Serializable {
 
@@ -38,7 +37,7 @@ public class StaticRoute implements Serializable {
    * Each qualified next hop will produce a separate static route using properties of the static
    * route and overriding with properties of {@link QualifiedNextHop}
    */
-  private Map<QualifiedNextHopKey, QualifiedNextHop> _qualifiedNextHops;
+  private Map<NextHop, QualifiedNextHop> _qualifiedNextHops;
 
   private Long _tag;
 
@@ -90,11 +89,11 @@ public class StaticRoute implements Serializable {
     return _prefix;
   }
 
-  public QualifiedNextHop getOrCreateQualifiedNextHop(QualifiedNextHopKey qualifiedNextHopKey) {
-    return _qualifiedNextHops.computeIfAbsent(qualifiedNextHopKey, QualifiedNextHop::new);
+  public QualifiedNextHop getOrCreateQualifiedNextHop(NextHop nextHop) {
+    return _qualifiedNextHops.computeIfAbsent(nextHop, QualifiedNextHop::new);
   }
 
-  public Map<QualifiedNextHopKey, QualifiedNextHop> getQualifiedNextHops() {
+  public Map<NextHop, QualifiedNextHop> getQualifiedNextHops() {
     return _qualifiedNextHops;
   }
 

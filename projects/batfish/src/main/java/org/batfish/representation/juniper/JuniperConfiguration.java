@@ -2568,9 +2568,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return thenStatements;
   }
 
-  private List<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {
-    ImmutableList.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes =
-        ImmutableList.builder();
+  private Set<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {
+    ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
 
     String nextHopInterface =
         route.getDrop()
@@ -2595,11 +2594,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
           org.batfish.datamodel.StaticRoute.builder()
               .setNetwork(route.getPrefix())
               .setNextHopIp(
-                  firstNonNull(qualifiedNextHop.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
+                  firstNonNull(
+                      qualifiedNextHop.getNextHop().getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
               .setNextHopInterface(
                   route.getDrop()
                       ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
-                      : qualifiedNextHop.getNextHopInterface())
+                      : qualifiedNextHop.getNextHop().getNextHopInterface())
               .setAdministrativeCost(
                   firstNonNull(qualifiedNextHop.getPreference(), route.getDistance()))
               .setMetric(firstNonNull(qualifiedNextHop.getMetric(), route.getMetric()))

@@ -696,6 +696,7 @@ import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
+import org.batfish.representation.juniper.NextHop;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
@@ -741,7 +742,6 @@ import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
 import org.batfish.representation.juniper.QualifiedNextHop;
-import org.batfish.representation.juniper.QualifiedNextHop.QualifiedNextHopKey;
 import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.RibGroup;
 import org.batfish.representation.juniper.Route4FilterLine;
@@ -5294,14 +5294,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterRosr_qualified_next_hop(Rosr_qualified_next_hopContext ctx) {
     if (ctx.IP_ADDRESS() != null) {
       Ip ip = Ip.parse(ctx.IP_ADDRESS().getText());
-      _currentQualifiedNextHop =
-          _currentStaticRoute.getOrCreateQualifiedNextHop(new QualifiedNextHopKey(ip));
+      _currentQualifiedNextHop = _currentStaticRoute.getOrCreateQualifiedNextHop(new NextHop(ip));
       return;
     }
     assert ctx.interface_id() != null;
     String ifaceName = getInterfaceFullName(ctx.interface_id());
     _currentQualifiedNextHop =
-        _currentStaticRoute.getOrCreateQualifiedNextHop(new QualifiedNextHopKey(ifaceName));
+        _currentStaticRoute.getOrCreateQualifiedNextHop(new NextHop(ifaceName));
     _configuration.referenceStructure(
         INTERFACE,
         ifaceName,
