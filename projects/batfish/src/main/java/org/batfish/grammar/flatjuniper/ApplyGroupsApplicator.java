@@ -93,7 +93,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
   @Override
   public void enterApply_groups_except(Apply_groups_exceptContext ctx) {
     if (_inGroup) {
-      _w.redFlag("Do not know how to handle apply-groups-except occcurring within group statement");
+      _w.redFlag("Do not know how to handle apply-groups-except occurring within group statement");
     }
     _newConfigurationLines.remove(_currentSetLine);
   }

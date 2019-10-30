@@ -2562,16 +2562,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
       assert parseNetworkConfigsSpan != null; // avoid unused warning
 
-      // user filename (configs/foo) -> text of configs/foo
-      Map<String, String> keyedConfigText =
-          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger)
-              .entrySet().stream()
-              .collect(
-                  ImmutableMap.toImmutableMap(
-                      e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
-      List<ParseVendorConfigurationJob> jobs =
-          makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
-      AtomicInteger batch = newBatch("Parse network configs", keyedConfigText.size());
+      List<ParseVendorConfigurationJob> jobs;
+      try (ActiveSpan makeJobsSpan =
+          GlobalTracer.get().buildSpan("Read files and make jobs").startActive()) {
+        assert makeJobsSpan != null; // avoid unused warning
+        // user filename (configs/foo) -> text of configs/foo
+        Map<String, String> keyedConfigText =
+            readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger)
+                .entrySet().stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
+        jobs = makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
+      }
+
+      AtomicInteger batch = newBatch("Parse network configs", jobs.size());
       parseResults =
           jobs.parallelStream()
               .map(

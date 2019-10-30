@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentracing.SpanContext;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,8 +27,10 @@ public class QueuedWork {
 
   Task _lastTaskCheckResult;
   WorkStatusCode _status;
-
   WorkItem _workItem;
+
+  /** For tracing */
+  private SpanContext _postAssignmentContext;
 
   public QueuedWork(WorkItem workItem, WorkDetails details) {
     _workItem = workItem;
@@ -66,6 +69,14 @@ public class QueuedWork {
 
   public Task getLastTaskCheckResult() {
     return _lastTaskCheckResult;
+  }
+
+  SpanContext getPostAssignmentContext() {
+    return _postAssignmentContext;
+  }
+
+  void setPostAssignmentContext(SpanContext postAssignmentContext) {
+    _postAssignmentContext = postAssignmentContext;
   }
 
   public WorkStatusCode getStatus() {
