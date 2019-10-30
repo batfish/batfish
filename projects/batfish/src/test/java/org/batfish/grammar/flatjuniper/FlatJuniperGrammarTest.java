@@ -4505,6 +4505,32 @@ public final class FlatJuniperGrammarTest {
                             .setNextHopIp(Ip.parse("10.0.0.2"))
                             .setAdministrativeCost(5)
                             .build())))));
+
+    assertThat(
+        c,
+        hasVrf(
+            "ri3",
+            hasStaticRoutes(
+                containsInAnyOrder(
+                    // normal next-hop
+                    StaticRoute.builder()
+                        .setNetwork(Prefix.parse("5.5.5.0/24"))
+                        .setNextHopIp(Ip.parse("2.3.4.5"))
+                        .setAdministrativeCost(150)
+                        .build(),
+                    // inherits admin from the static route preference
+                    StaticRoute.builder()
+                        .setNetwork(Prefix.parse("5.5.5.0/24"))
+                        .setNextHopInterface("ge-0/0/0.0")
+                        .setAdministrativeCost(150)
+                        .build(),
+                    // qualified next-hop overrides admin and tag
+                    StaticRoute.builder()
+                        .setNetwork(Prefix.parse("5.5.5.0/24"))
+                        .setNextHopIp(Ip.parse("1.2.3.4"))
+                        .setAdministrativeCost(180)
+                        .setTag(12L)
+                        .build()))));
   }
 
   @Test

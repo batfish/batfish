@@ -2,13 +2,16 @@ package org.batfish.representation.juniper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.representation.juniper.QualifiedNextHop.QualifiedNextHopKey;
 
 public class StaticRoute implements Serializable {
 
@@ -31,6 +34,12 @@ public class StaticRoute implements Serializable {
 
   private Prefix _prefix;
 
+  /**
+   * Each qualified next hop will produce a separate static route using properties of the static
+   * route and overriding with properties of {@link QualifiedNextHop}
+   */
+  private Map<QualifiedNextHopKey, QualifiedNextHop> _qualifiedNextHops;
+
   private Long _tag;
 
   private Boolean _noInstall;
@@ -41,6 +50,7 @@ public class StaticRoute implements Serializable {
     _policies = new ArrayList<>();
     // default admin costs for static routes in Juniper
     _distance = DEFAULT_ADMIN_DISTANCE;
+    _qualifiedNextHops = new HashMap<>();
   }
 
   public Set<Community> getCommunities() {
@@ -78,6 +88,14 @@ public class StaticRoute implements Serializable {
 
   public Prefix getPrefix() {
     return _prefix;
+  }
+
+  public QualifiedNextHop getOrCreateQualifiedNextHop(QualifiedNextHopKey qualifiedNextHopKey) {
+    return _qualifiedNextHops.computeIfAbsent(qualifiedNextHopKey, QualifiedNextHop::new);
+  }
+
+  public Map<QualifiedNextHopKey, QualifiedNextHop> getQualifiedNextHops() {
+    return _qualifiedNextHops;
   }
 
   public Long getTag() {

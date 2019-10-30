@@ -2568,21 +2568,49 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return thenStatements;
   }
 
-  private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
+  private List<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {
+    ImmutableList.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes =
+        ImmutableList.builder();
+
     String nextHopInterface =
         route.getDrop()
             ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
 
-    return org.batfish.datamodel.StaticRoute.builder()
-        .setNetwork(route.getPrefix())
-        .setNextHopIp(firstNonNull(route.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
-        .setNextHopInterface(nextHopInterface)
-        .setAdministrativeCost(route.getDistance())
-        .setMetric(route.getMetric())
-        .setTag(firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG))
-        .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
-        .build();
+    // static route corresponding to the next hop
+    viStaticRoutes.add(
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(route.getPrefix())
+            .setNextHopIp(firstNonNull(route.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
+            .setNextHopInterface(nextHopInterface)
+            .setAdministrativeCost(route.getDistance())
+            .setMetric(route.getMetric())
+            .setTag(firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG))
+            .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
+            .build());
+
+    // populating static routes from each qualified next hop while overriding applicable properties
+    for (QualifiedNextHop qualifiedNextHop : route.getQualifiedNextHops().values()) {
+      viStaticRoutes.add(
+          org.batfish.datamodel.StaticRoute.builder()
+              .setNetwork(route.getPrefix())
+              .setNextHopIp(
+                  firstNonNull(qualifiedNextHop.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
+              .setNextHopInterface(
+                  route.getDrop()
+                      ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
+                      : qualifiedNextHop.getNextHopInterface())
+              .setAdministrativeCost(
+                  firstNonNull(qualifiedNextHop.getPreference(), route.getDistance()))
+              .setMetric(firstNonNull(qualifiedNextHop.getMetric(), route.getMetric()))
+              .setTag(
+                  firstNonNull(
+                      qualifiedNextHop.getTag(),
+                      firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG)))
+              .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
+              .build());
+    }
+    return viStaticRoutes.build();
   }
 
   @Override
@@ -2961,8 +2989,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // static routes
       for (StaticRoute route : ri.getRibs().get(RIB_IPV4_UNICAST).getStaticRoutes().values()) {
-        org.batfish.datamodel.StaticRoute newStaticRoute = toStaticRoute(route);
-        vrf.getStaticRoutes().add(newStaticRoute);
+        vrf.getStaticRoutes().addAll(toStaticRoutes(route));
       }
 
       // aggregate routes
