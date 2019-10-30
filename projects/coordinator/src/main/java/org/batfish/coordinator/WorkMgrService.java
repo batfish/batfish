@@ -1911,7 +1911,10 @@ public class WorkMgrService {
 
       QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
       if (work != null) {
-        return failureResponse(new JSONObject().put("Duplicate workId", work.getId()));
+        return failureResponse(
+            new JSONObject()
+                .put("Duplicate workId", work.getId())
+                .put("This workId", workItem.getId()));
       }
       boolean result = Main.getWorkMgr().queueWork(workItem);
 
