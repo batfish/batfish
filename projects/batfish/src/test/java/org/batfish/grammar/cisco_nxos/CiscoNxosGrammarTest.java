@@ -538,6 +538,13 @@ public final class CiscoNxosGrammarTest {
     assertThat(neighbor.getUpdateSource(), equalTo("Ethernet1/10"));
   }
 
+  /** See: https://github.com/batfish/batfish/issues/5081 */
+  @Test
+  public void testBgpPeerTemplateGH5081Conversion() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_peer_template");
+    assertThat(c, notNullValue());
+  }
+
   @Test
   public void testClassMapParsing() {
     // TODO: make into an extraction test
