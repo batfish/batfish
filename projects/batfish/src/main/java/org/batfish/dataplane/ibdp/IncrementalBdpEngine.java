@@ -330,7 +330,7 @@ class IncrementalBdpEngine {
             .values()
             .parallelStream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(vr -> vr.initIsisExports(allNodes, networkConfigurations));
+            .forEach(vr -> vr.initIsisExports(iteration, allNodes, networkConfigurations));
       }
 
       // IS-IS route propagation
