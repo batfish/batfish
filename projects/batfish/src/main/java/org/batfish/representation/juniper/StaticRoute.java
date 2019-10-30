@@ -2,7 +2,9 @@ package org.batfish.representation.juniper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
@@ -31,6 +33,12 @@ public class StaticRoute implements Serializable {
 
   private Prefix _prefix;
 
+  /**
+   * Each qualified next hop will produce a separate static route using properties of the static
+   * route and overriding with properties of {@link QualifiedNextHop}
+   */
+  private Map<NextHop, QualifiedNextHop> _qualifiedNextHops;
+
   private Long _tag;
 
   private Boolean _noInstall;
@@ -41,6 +49,7 @@ public class StaticRoute implements Serializable {
     _policies = new ArrayList<>();
     // default admin costs for static routes in Juniper
     _distance = DEFAULT_ADMIN_DISTANCE;
+    _qualifiedNextHops = new HashMap<>();
   }
 
   public Set<Community> getCommunities() {
@@ -78,6 +87,14 @@ public class StaticRoute implements Serializable {
 
   public Prefix getPrefix() {
     return _prefix;
+  }
+
+  public QualifiedNextHop getOrCreateQualifiedNextHop(NextHop nextHop) {
+    return _qualifiedNextHops.computeIfAbsent(nextHop, QualifiedNextHop::new);
+  }
+
+  public Map<NextHop, QualifiedNextHop> getQualifiedNextHops() {
+    return _qualifiedNextHops;
   }
 
   public Long getTag() {

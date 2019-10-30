@@ -449,8 +449,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_installContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_qualified_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_preferenceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_packet_locationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
@@ -694,6 +698,7 @@ import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
+import org.batfish.representation.juniper.NextHop;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
@@ -738,6 +743,7 @@ import org.batfish.representation.juniper.PsThenNextPolicy;
 import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
+import org.batfish.representation.juniper.QualifiedNextHop;
 import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.RibGroup;
 import org.batfish.representation.juniper.Route4FilterLine;
@@ -2008,6 +2014,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private PsTerm _currentPsTerm;
 
   private Set<PsThen> _currentPsThens;
+
+  private QualifiedNextHop _currentQualifiedNextHop;
 
   private RoutingInformationBase _currentRib;
 
@@ -5280,6 +5288,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRosr_tag(Rosr_tagContext ctx) {
     int tag = toInt(ctx.tag);
     _currentStaticRoute.setTag(tag);
+  }
+
+  @Override
+  public void enterRosr_qualified_next_hop(Rosr_qualified_next_hopContext ctx) {
+    if (ctx.IP_ADDRESS() != null) {
+      Ip ip = Ip.parse(ctx.IP_ADDRESS().getText());
+      _currentQualifiedNextHop = _currentStaticRoute.getOrCreateQualifiedNextHop(new NextHop(ip));
+      return;
+    }
+    assert ctx.interface_id() != null;
+    String ifaceName = getInterfaceFullName(ctx.interface_id());
+    _currentQualifiedNextHop =
+        _currentStaticRoute.getOrCreateQualifiedNextHop(new NextHop(ifaceName));
+    _configuration.referenceStructure(
+        INTERFACE,
+        ifaceName,
+        STATIC_ROUTE_NEXT_HOP_INTERFACE,
+        getLine(ctx.interface_id().getStop()));
+  }
+
+  @Override
+  public void exitRosrqnhc_metric(Rosrqnhc_metricContext ctx) {
+    _currentQualifiedNextHop.setMetric(toInt(ctx.metric));
+  }
+
+  @Override
+  public void exitRosrqnhc_preference(Rosrqnhc_preferenceContext ctx) {
+    _currentQualifiedNextHop.setPreference(toInt(ctx.pref));
+  }
+
+  @Override
+  public void exitRosrqnhc_tag(Rosrqnhc_tagContext ctx) {
+    _currentQualifiedNextHop.setTag(toLong(ctx.tag));
   }
 
   @Override

@@ -4691,7 +4691,7 @@ Q931
 
 QUALIFIED_NEXT_HOP
 :
-   'qualified-next-hop'
+   'qualified-next-hop' -> pushMode(M_Interface)
 ;
 
 QUICK_START_OPTION
