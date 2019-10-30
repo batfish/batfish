@@ -1889,6 +1889,7 @@ public class VirtualRouter implements Serializable {
             Stream.of(_isisIncomingRoutes, _crossVrfIncomingRoutes)
                 .flatMap(m -> m.values().stream())
                 .flatMap(Queue::stream),
+            Stream.of(_routesForIsisRedistribution),
             // Processes
             Stream.of(_ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode)),
             Stream.of(_eigrpProcesses)
