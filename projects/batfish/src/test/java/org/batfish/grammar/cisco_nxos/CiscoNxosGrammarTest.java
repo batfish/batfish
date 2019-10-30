@@ -541,8 +541,6 @@ public final class CiscoNxosGrammarTest {
   /** See: https://github.com/batfish/batfish/issues/5081 */
   @Test
   public void testBgpPeerTemplateGH5081Conversion() throws IOException {
-    String peerName = "peer-rr-overlay";
-
     Configuration c = parseConfig("nxos_bgp_peer_template");
     assertThat(c, notNullValue());
   }
