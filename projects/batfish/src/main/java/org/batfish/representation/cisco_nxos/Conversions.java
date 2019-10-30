@@ -375,13 +375,15 @@ final class Conversions {
       newNeighborBuilder.setIpv4UnicastAddressFamily(ipv4FamilyBuilder.build());
     }
 
+    // If neighbor has EVPN configured, set it up.
     @Nullable
     BgpVrfNeighborAddressFamilyConfiguration neighborL2VpnAf = neighbor.getL2VpnEvpnAddressFamily();
-    @Nullable
-    BgpVrfL2VpnEvpnAddressFamilyConfiguration vrfL2VpnAf = vrfConfig.getL2VpnEvpnAddressFamily();
-    EvpnAddressFamily.Builder evpnFamilyBuilder = EvpnAddressFamily.builder();
-
     if (neighborL2VpnAf != null) {
+      @Nullable
+      BgpVrfL2VpnEvpnAddressFamilyConfiguration vrfL2VpnAf = vrfConfig.getL2VpnEvpnAddressFamily();
+      EvpnAddressFamily.Builder evpnFamilyBuilder =
+          EvpnAddressFamily.builder().setPropagateUnmatched(false);
+
       evpnFamilyBuilder.setAddressFamilyCapabilities(
           getAddressFamilyCapabilities(neighborL2VpnAf, false));
       // set import policy
@@ -393,18 +395,17 @@ final class Conversions {
                   : null)
           .setRouteReflectorClient(
               firstNonNull(neighborL2VpnAf.getRouteReflectorClient(), Boolean.FALSE));
-    }
-    if (vrfL2VpnAf != null) {
-      if (vrfL2VpnAf.getRetainMode() == RetainRouteType.ROUTE_MAP) {
-        warnings.redFlag("retain route-target is not supported for route-maps");
-      } else {
-        evpnFamilyBuilder.setPropagateUnmatched(vrfL2VpnAf.getRetainMode() == RetainRouteType.ALL);
+      if (vrfL2VpnAf != null) {
+        if (vrfL2VpnAf.getRetainMode() == RetainRouteType.ROUTE_MAP) {
+          warnings.redFlag("retain route-target is not supported for route-maps");
+        } else {
+          evpnFamilyBuilder.setPropagateUnmatched(
+              vrfL2VpnAf.getRetainMode() == RetainRouteType.ALL);
+        }
       }
-    }
-    evpnFamilyBuilder.setL2Vnis(getL2VniConfigs(c, vrf, proc, localAs, vsConfig, warnings));
-    evpnFamilyBuilder.setL3Vnis(getL3VniConfigs(c, vrf, proc, localAs, vsConfig, warnings));
+      evpnFamilyBuilder.setL2Vnis(getL2VniConfigs(c, vrf, proc, localAs, vsConfig, warnings));
+      evpnFamilyBuilder.setL3Vnis(getL3VniConfigs(c, vrf, proc, localAs, vsConfig, warnings));
 
-    if (neighborL2VpnAf != null || vrfL2VpnAf != null) {
       List<Statement> evpnStatements = getExportStatementsForEvpn(c, neighborL2VpnAf, neighbor);
       RoutingPolicy exportPolicy =
           createExportPolicyFromStatements(
@@ -709,7 +710,7 @@ final class Conversions {
   /** Get export statements for EVPN address family */
   private static List<Statement> getExportStatementsForEvpn(
       Configuration configuration,
-      @Nullable BgpVrfNeighborAddressFamilyConfiguration naf,
+      BgpVrfNeighborAddressFamilyConfiguration naf,
       BgpVrfNeighborConfiguration neighbor) {
     ImmutableList.Builder<Statement> statementsBuilder = ImmutableList.builder();
 
@@ -728,10 +729,7 @@ final class Conversions {
     // Always export BGP or IBGP routes
     List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
     peerExportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
-    // if neighbor level AF is not defined then no outbound route-map will be present
-    if (naf == null) {
-      return statementsBuilder.build();
-    }
+
     // Export policy generated for outbound route-map (if any)
     String outboundMap = naf.getOutboundRouteMap();
     if (outboundMap != null && configuration.getRoutingPolicies().containsKey(outboundMap)) {
