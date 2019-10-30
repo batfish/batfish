@@ -358,6 +358,10 @@ public class WorkMgr extends AbstractCoordinator {
           assignmentError = true;
         } else {
           assigned = true;
+          try (ActiveSpan postAssignmentSpan =
+              GlobalTracer.get().buildSpan("Post-assignment task operations").startActive()) {
+            work.setPostAssignmentContext(postAssignmentSpan.context());
+          }
         }
       }
     } catch (ProcessingException e) {
@@ -466,7 +470,7 @@ public class WorkMgr extends AbstractCoordinator {
     try (ActiveSpan checkTaskSpan =
         GlobalTracer.get()
             .buildSpan("Checking Task Status")
-            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
+            .addReference(References.FOLLOWS_FROM, work.getPostAssignmentContext())
             .startActive()) {
       assert checkTaskSpan != null; // avoid unused warning
       client =
@@ -2033,7 +2037,7 @@ public class WorkMgr extends AbstractCoordinator {
     SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
     try (ActiveSpan killTaskSpan =
         GlobalTracer.get()
-            .buildSpan("Checking Task Status")
+            .buildSpan("Killing task")
             .addReference(References.FOLLOWS_FROM, queueWorkSpan)
             .startActive()) {
       assert killTaskSpan != null; // avoid unused warning
