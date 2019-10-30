@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import io.opentracing.ActiveSpan;
@@ -347,10 +348,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     VendorConfiguration vc = extractor.getVendorConfiguration();
     vc.setVendor(format);
     vc.setFilename(_filename);
-    if (vc.getHostname() == null) {
+    if (Strings.isNullOrEmpty(vc.getHostname())) {
       _warnings.redFlag("No hostname set in file: '" + _filename.replace("\\", "/") + "'\n");
       String guessedHostname =
-          Paths.get(_filename).getFileName().toString().replaceAll("\\.(cfg|conf)$", "");
+          Paths.get(_filename)
+              .getFileName()
+              .toString()
+              .toLowerCase()
+              .replaceAll("\\.(cfg|conf)$", "");
       _logger.redflag(
           "\tNo hostname set! Guessing hostname from filename: '"
               + _filename
