@@ -73,7 +73,6 @@ public class PacketHeaderConstraintsUtil {
     }
     return ImmutableSortedSet.copyOf(space.getSubRanges());
   }
-
   /**
    * Convert packet header constraints to a {@link HeaderSpace.Builder}
    *
@@ -101,6 +100,56 @@ public class PacketHeaderConstraintsUtil {
       builder.setEcns(ImmutableSortedSet.copyOf(phc.getEcns().enumerate()));
     }
     return builder;
+  }
+
+  /**
+   * Convert packet header constraints to a {@link HeaderSpace.Builder}
+   *
+   * <p><b>Does not resolve/set source and destination IPs</b>
+   */
+  public static HeaderSpace toHeaderSpace(PacketHeaderConstraints phc, IpSpeci) {
+    // Note: headerspace builder does not accept nulls, so we have to convert nulls to empty sets
+    HeaderSpace.Builder builder =
+        HeaderSpace.builder()
+            .setIpProtocols(firstNonNull(phc.resolveIpProtocols(), ImmutableSortedSet.of()))
+            .setSrcPorts(extractSubranges(phc.getSrcPorts()))
+            .setDstPorts(extractSubranges(phc.resolveDstPorts()))
+            .setIcmpCodes(extractSubranges(phc.getIcmpCodes()))
+            .setIcmpTypes(extractSubranges(phc.getIcmpTypes()))
+            .setDstProtocols(firstNonNull(phc.getApplications(), ImmutableSortedSet.of()))
+            .setFragmentOffsets(extractSubranges(phc.getFragmentOffsets()))
+            .setPacketLengths(extractSubranges(phc.getPacketLengths()))
+            .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()))
+            .setStates(firstNonNull(phc.getFlowStates(), ImmutableSortedSet.of()));
+
+    if (phc.getDscps() != null) {
+      builder.setDscps(phc.getDscps().enumerate());
+    }
+    if (phc.getEcns() != null) {
+      builder.setEcns(ImmutableSortedSet.copyOf(phc.getEcns().enumerate()));
+    }
+    return builder.build();
+  }
+
+  public Ip inferSrcIpFromSourceLocation(Location srcLocation) {
+    Optional<Entry> entry =
+        _sourceIpAssignment.getEntries().stream()
+            .filter(e -> e.getLocations().contains(srcLocation))
+            .findFirst();
+    Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(entry.get().getIpSpace());
+
+    return srcIp.get();
+  }
+
+  /** resolve IP by the specifier context */
+  private IpSpaceAssignment resolverHeaderIp(String headerIp) {
+    // interpret given IP "flexibly"
+    IpSpaceSpecifier ipSpecifier =
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+            headerIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
+
+    // Resolve to set of locations/IPs
+    return ipSpecifier.resolve(ImmutableSet.of(), _specifierContext);
   }
 
   /**

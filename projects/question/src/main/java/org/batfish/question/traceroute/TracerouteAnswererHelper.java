@@ -5,13 +5,19 @@ import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.HeaderSpace.Builder;
+import org.batfish.datamodel.HeaderSpaceToFlow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
@@ -21,12 +27,14 @@ import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.SpecifierFactories.Version;
 
 /**
  * Helper for {@link TracerouteAnswerer} and {@link BidirectionalTracerouteAnswerer}. Processes
@@ -155,8 +163,35 @@ public final class TracerouteAnswererHelper {
     checkArgument(
         !srcLocations.isEmpty(), "Found no active locations matching %s", _sourceLocationStr);
 
+    IpSpaceAssignment srcIpAssignment =
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+                _packetHeaderConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+            .resolve(srcLocations, _specifierContext);
+
+    IpSpace dstIps =
+        SpecifierFactories.getIpSpaceSpecifier(_packetHeaderConstraints.getDstIps(), Version.V1)
+            .resolve(ImmutableSet.of(), _specifierContext).getEntries().stream()
+            .findFirst()
+            .get()
+            .getIpSpace();
+
     ImmutableSet.Builder<Flow> setBuilder = ImmutableSet.builder();
     ImmutableSet.Builder<String> allProblems = ImmutableSet.builder();
+
+    Builder hsBuilder =
+        PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(_packetHeaderConstraints)
+            .setDstIps(dstIps);
+
+    for (Entry entry : srcIpAssignment.getEntries()) {
+      hsBuilder.setSrcIps(entry.getIpSpace());
+      Optional<Flow.Builder> flowBuilder =
+          HeaderSpaceToFlow.getRepresentativeFlow(hsBuilder.build(), FlowPreference.APPLICATION);
+      flowBuilder.setTag(tag);
+      for (Location srcLocation : entry.getLocations()) {
+        setStartLocation(_specifierContext.getConfigs(), flowBuilder, srcLocation);
+        setBuilder.add(flowBuilder.build());
+      }
+    }
 
     // Perform cross-product of all locations to flows
     for (Location srcLocation : srcLocations) {
