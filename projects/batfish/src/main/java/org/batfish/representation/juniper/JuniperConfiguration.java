@@ -1548,13 +1548,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Convert a non-unit interface to the VI {@link org.batfish.datamodel.Interface}.
+   * Convert a non-unit interface to the VI {@link org.batfish.datamodel.Interface}. Returns null if
+   * the interface is not eligible for conversion
    *
    * <p>Note that bulk of the configuration is stored at the logical interface level, see {@link
    * #toInterface(Interface)} for those conversions. Here we convert aggregation and bandwidth
    * settings; track VRF membership.
    */
+  @Nullable
   private org.batfish.datamodel.Interface toInterfaceNonUnit(Interface iface) {
+    if (!iface.isDefined()) {
+      // if this is false then it definitely means interface was created only because it was
+      // referred somewhere but never defined so skipping conversion
+      return null;
+    }
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
@@ -1585,7 +1592,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIface;
   }
 
+  /**
+   * Converts an Interface unit to VI model. If the interface is not eligible for conversion (is
+   * only referred by never defined in the config) then null is returned
+   *
+   * @param iface a {@link Interface}
+   * @return {@link org.batfish.datamodel.Interface}
+   */
+  @Nullable
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
+    if (!iface.isDefined()) {
+      // if this is false then it definitely means interface was created only because it was
+      // referred somewhere but never defined so skipping conversion
+      return null;
+    }
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder().setName(name).setOwner(_c).build();
@@ -3398,6 +3418,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
               // Process parent interface
               iface.inheritUnsetFields();
               org.batfish.datamodel.Interface newParentIface = toInterfaceNonUnit(iface);
+              if (newParentIface == null) {
+                return;
+              }
               resolveInterfacePointers(iface.getName(), iface, newParentIface);
 
               // Process the units, which hold the bulk of the configuration
@@ -3408,6 +3431,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       unit -> {
                         unit.inheritUnsetFields();
                         org.batfish.datamodel.Interface newUnitInterface = toInterface(unit);
+                        if (newUnitInterface == null) {
+                          return;
+                        }
                         String name = newUnitInterface.getName();
                         // set IRB VLAN ID if assigned
                         newUnitInterface.setVlan(irbVlanIds.get(name));

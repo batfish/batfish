@@ -68,6 +68,7 @@ public class Interface implements Serializable {
   private final List<String> _allowedVlanNames;
   private double _bandwidth;
   private String _description;
+  private boolean _defined;
   private @Nullable String _incomingFilter;
   private @Nullable List<String> _incomingFilterList;
   private transient boolean _inherited;
@@ -104,6 +105,7 @@ public class Interface implements Serializable {
     _allAddresses = new LinkedHashSet<>();
     _allAddressIps = new LinkedHashSet<>();
     _bandwidth = getDefaultBandwidthByName(name);
+    _defined = false;
     _name = name;
     _ospfInterfaceType = OspfInterfaceType.BROADCAST;
     _ospfNeighbors = new HashSet<>();
@@ -322,6 +324,16 @@ public class Interface implements Serializable {
     }
   }
 
+  /**
+   * Returns true if the interface was defined in the config. Needed to check if interface was
+   * referred but not defined
+   *
+   * @return true if interface was defined.
+   */
+  public boolean isDefined() {
+    return _defined;
+  }
+
   public void set8023adInterface(String interfaceName) {
     _agg8023adInterface = interfaceName;
   }
@@ -340,6 +352,10 @@ public class Interface implements Serializable {
 
   public void setBandwidth(double bandwidth) {
     _bandwidth = bandwidth;
+  }
+
+  public void setDefined(boolean defined) {
+    _defined = defined;
   }
 
   public void setDescription(String description) {

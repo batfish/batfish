@@ -2330,6 +2330,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentInterfaceOrRange.setParent(_currentMasterInterface);
       units.put(unitFullName, _currentInterfaceOrRange);
     }
+    _currentInterfaceOrRange.setDefined(true);
     _configuration.defineFlattenedStructure(INTERFACE, unitFullName, ctx, _parser);
     _configuration.referenceStructure(
         INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, getLine(ctx.num));
@@ -2392,6 +2393,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           _currentLogicalSystem.getDefaultRoutingInstance().getName());
       currentInterfaceRange.setParent(_currentLogicalSystem.getGlobalMasterInterface());
     }
+    currentInterfaceRange.setDefined(true);
     _currentInterfaceOrRange = currentInterfaceRange;
   }
 
@@ -2427,6 +2429,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         currentInterface.setParent(_currentLogicalSystem.getGlobalMasterInterface());
         interfaces.put(fullIfaceName, currentInterface);
       }
+      currentInterface.setDefined(true);
       _configuration.defineFlattenedStructure(INTERFACE, currentInterface.getName(), ctx, _parser);
       _configuration.referenceStructure(
           INTERFACE, currentInterface.getName(), INTERFACE_SELF_REFERENCE, getLine(ctx.getStart()));
@@ -6187,6 +6190,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String unitFullName = name + "." + unit;
     Interface iface = interfaces.get(name);
     if (iface == null) {
+      // TODO: this is not ideal, interface should not be created here as we are not sure if the
+      // interface was defined
       iface = new Interface(name);
       iface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
       interfaces.put(name, iface);
@@ -6195,6 +6200,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Map<String, Interface> units = iface.getUnits();
       iface = units.get(unitFullName);
       if (iface == null) {
+        // TODO: this is not ideal, interface should not be created here as we are not sure if the
+        // interface was defined
         iface = new Interface(unitFullName);
         iface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
         units.put(unitFullName, iface);

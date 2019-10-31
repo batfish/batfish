@@ -141,6 +141,7 @@ public class LogicalSystem implements Serializable {
             iname -> {
               Interface iface = _interfaces.computeIfAbsent(iname, Interface::new);
               iface.inheritUnsetPhysicalFields(interfaceRange);
+              iface.setDefined(interfaceRange.isDefined());
               iface.setRoutingInstance(interfaceRange.getRoutingInstance());
               iface.setParent(interfaceRange.getParent());
             });
