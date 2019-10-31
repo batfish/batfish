@@ -14,4 +14,4 @@ set protocols ospf area 0.0.0.0 interface xe-0/0/0.2
 #
 set protocols ospf area 0.0.0.1 interface xe-0/0/0.3 passive
 #
-
+set protocols ospf area 0.0.0.1 interface ge-0/0/0.1 passive
