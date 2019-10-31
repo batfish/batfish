@@ -237,10 +237,10 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testIfaceBridgeVids() {
-    String input = "iface swp1\n bridge-vids 1 2 3 4\n";
+    String input = "iface swp1\n bridge-vids 1 2 5-8 4\n";
     InterfaceBridgeSettings bridgeSettings =
         parse(input).getInterfaces().get("swp1").getBridgeSettings();
-    assertThat(bridgeSettings.getVids().enumerate(), contains(1, 2, 3, 4));
+    assertThat(bridgeSettings.getVids().enumerate(), contains(1, 2, 4, 5, 6, 7, 8));
   }
 
   @Test

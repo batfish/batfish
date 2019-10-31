@@ -84,6 +84,18 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
   }
 
   /**
+   * Create a new {@link IntegerSpace} containing the union of the given {@link IntegerSpace
+   * spaces}.
+   */
+  public static @Nonnull IntegerSpace unionOf(IntegerSpace... spaces) {
+    Builder ret = builder();
+    for (IntegerSpace space : spaces) {
+      ret.including(space);
+    }
+    return ret.build();
+  }
+
+  /**
    * Create a new {@link IntegerSpace} containing the union of the given {@link SubRange subRanges}.
    */
   public static @Nonnull IntegerSpace unionOf(SubRange... subRanges) {

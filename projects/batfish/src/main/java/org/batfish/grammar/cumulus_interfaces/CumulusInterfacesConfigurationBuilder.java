@@ -1,7 +1,6 @@
 package org.batfish.grammar.cumulus_interfaces;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
@@ -10,13 +9,13 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
@@ -44,6 +43,8 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.RangeContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.representation.cumulus.Bridge;
@@ -196,14 +197,11 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
-    List<NumberContext> vidCtxs = ctx.number();
     IntegerSpace vids =
         IntegerSpace.unionOf(
-            vidCtxs.stream()
-                .map(ParseTree::getText)
-                .map(Integer::parseInt)
-                .map(Range::singleton)
-                .collect(ImmutableList.toImmutableList()));
+            ctx.number_or_range().stream()
+                .map(CumulusInterfacesConfigurationBuilder::toInts)
+                .toArray(IntegerSpace[]::new));
     _currentIface.createOrGetBridgeSettings().setVids(vids);
   }
 
@@ -367,6 +365,40 @@ public final class CumulusInterfacesConfigurationBuilder
       _config.setVxlans(converter.convertVxlans());
     } catch (BatfishException e) {
       _w.redFlag("Error converting vxlans to vendor-specific model");
+    }
+  }
+
+  private static int toInt(NumberContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static IntegerSpace toInts(RangeContext ctx) {
+    return IntegerSpace.of(Range.closed(toInt(ctx.lo), toInt(ctx.hi)));
+  }
+
+  private static IntegerSpace toInts(Number_or_rangeContext ctx) {
+    if (ctx.number() != null) {
+      return IntegerSpace.of(toInt(ctx.number()));
+    } else {
+      assert ctx.range() != null;
+      return toInts(ctx.range());
+    }
+  }
+
+  private static long toLong(NumberContext ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
+  private static LongSpace toLongs(RangeContext ctx) {
+    return LongSpace.of(Range.closed(toLong(ctx.lo), toLong(ctx.hi)));
+  }
+
+  private static LongSpace toLongs(Number_or_rangeContext ctx) {
+    if (ctx.number() != null) {
+      return LongSpace.of(toLong(ctx.number()));
+    } else {
+      assert ctx.range() != null;
+      return toLongs(ctx.range());
     }
   }
 }
