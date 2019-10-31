@@ -15,7 +15,6 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
@@ -382,23 +381,6 @@ public final class CumulusInterfacesConfigurationBuilder
     } else {
       assert ctx.range() != null;
       return toInts(ctx.range());
-    }
-  }
-
-  private static long toLong(NumberContext ctx) {
-    return Long.parseLong(ctx.getText());
-  }
-
-  private static LongSpace toLongs(RangeContext ctx) {
-    return LongSpace.of(Range.closed(toLong(ctx.lo), toLong(ctx.hi)));
-  }
-
-  private static LongSpace toLongs(Number_or_rangeContext ctx) {
-    if (ctx.number() != null) {
-      return LongSpace.of(toLong(ctx.number()));
-    } else {
-      assert ctx.range() != null;
-      return toLongs(ctx.range());
     }
   }
 }
