@@ -235,7 +235,7 @@ public final class BgpProtocolHelper {
          */
         .setOriginatorIp(routerId)
         .setOriginType(OriginType.INCOMPLETE)
-        .setReceivedFromIp(Ip.ZERO)
+        .setReceivedFromIp(nextHopIp)
         .setNonRouting(nonRouting)
         .build();
   }
