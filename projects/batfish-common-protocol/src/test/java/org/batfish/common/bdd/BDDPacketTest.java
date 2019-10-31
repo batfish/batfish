@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -166,6 +167,25 @@ public class BDDPacketTest {
     bdd = bdd.and(icmpbdd.not()).and(udpbdd.not());
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
+    assertTrue("Unsat", flowBuilder.isPresent());
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+
+    assertThat(flow, hasDstIp(dstIp));
+    assertThat(flow, hasSrcIp(srcIp));
+    assertThat(flow, hasIpProtocol(IpProtocol.TCP));
+    assertThat(flow, not(hasDstPort(0)));
+    assertThat(flow, not(hasSrcPort(0)));
+  }
+
+  @Test
+  public void testGetFlowPreference_preferenceApplication() {
+    BDDPacket pkt = new BDDPacket();
+    Ip dstIp = Ip.parse("123.45.78.0");
+    Ip srcIp = Ip.parse("1.2.3.4");
+
+    BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
+
+    Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd, FlowPreference.APPLICATION);
     assertTrue("Unsat", flowBuilder.isPresent());
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
 

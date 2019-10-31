@@ -20,6 +20,7 @@ import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -97,13 +98,9 @@ public class BDDPacket {
   private final IpSpaceToBDD _dstIpSpaceToBDD;
   private final IpSpaceToBDD _srcIpSpaceToBDD;
 
-  // Picking representative flows
-  private final Supplier<BDDRepresentativePicker> _picker =
-      Suppliers.memoize(
-          () ->
-              new BDDRepresentativePicker(
-                  new BDDFlowConstraintGenerator(this)
-                      .generateFlowPreference(FlowPreference.DEBUGGING)));
+  // Generating flow preference for representative flow picking
+  private final Supplier<BDDFlowConstraintGenerator> _flowConstraintGeneratorSupplier =
+      Suppliers.memoize(() -> new BDDFlowConstraintGenerator(this));
 
   /*
    * Creates a collection of BDD variables representing the
@@ -243,12 +240,16 @@ public class BDDPacket {
    * @param bdd a BDD representing a set of packet headers
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
+  public Optional<Flow.Builder> getFlow(BDD bdd, FlowPreference preference) {
+    BDD representativeBDD =
+        BDDRepresentativePicker.pickRepresentative(
+            bdd, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
+
+    return getFlowFromRepresentativeBDD(representativeBDD);
+  }
+
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    BDD representativeBDD = _picker.get().pickRepresentative(bdd);
-    if (representativeBDD.isZero()) {
-      return Optional.empty();
-    }
-    return Optional.of(getFlowFromAssignment(representativeBDD));
+    return getFlow(bdd, FlowPreference.DEBUGGING);
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {
@@ -455,5 +456,12 @@ public class BDDPacket {
 
   public BDD swapSourceAndDestinationFields(BDD bdd) {
     return bdd.replace(_swapSourceAndDestinationPairing);
+  }
+
+  private Optional<Builder> getFlowFromRepresentativeBDD(BDD representativeBDD) {
+    if (representativeBDD.isZero()) {
+      return Optional.empty();
+    }
+    return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 }

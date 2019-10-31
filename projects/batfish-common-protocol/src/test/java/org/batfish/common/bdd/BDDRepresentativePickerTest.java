@@ -14,9 +14,8 @@ public class BDDRepresentativePickerTest {
     BDDPacket pkt = new BDDPacket();
     BDD bdd1 = pkt.getIpProtocol().value(IpProtocol.UDP);
     BDD bdd2 = pkt.getIpProtocol().value(IpProtocol.TCP);
-    BDDRepresentativePicker picker = new BDDRepresentativePicker(ImmutableList.of(bdd1, bdd2));
     BDD bdd = pkt.getIpProtocol().value(IpProtocol.UDP);
-    BDD pickedBDD = picker.pickRepresentative(bdd);
+    BDD pickedBDD = BDDRepresentativePicker.pickRepresentative(bdd, ImmutableList.of(bdd1, bdd2));
     // check pickedBDD is in bdd
     assertThat(pickedBDD.and(bdd), equalTo(pickedBDD));
   }
@@ -26,9 +25,8 @@ public class BDDRepresentativePickerTest {
     BDDPacket pkt = new BDDPacket();
     BDD bdd1 = pkt.getIpProtocol().value(IpProtocol.UDP);
     BDD bdd2 = pkt.getIpProtocol().value(IpProtocol.TCP);
-    BDDRepresentativePicker picker = new BDDRepresentativePicker(ImmutableList.of(bdd1, bdd2));
     BDD bdd = pkt.getIpProtocol().value(IpProtocol.TCP);
-    BDD pickedBDD = picker.pickRepresentative(bdd);
+    BDD pickedBDD = BDDRepresentativePicker.pickRepresentative(bdd, ImmutableList.of(bdd1, bdd2));
     // check pickedBDD is in bdd
     assertThat(pickedBDD.and(bdd), equalTo(pickedBDD));
   }
