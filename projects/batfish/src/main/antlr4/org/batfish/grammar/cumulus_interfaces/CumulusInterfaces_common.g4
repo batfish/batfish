@@ -16,12 +16,7 @@ number
 
 number_or_range
 :
-  number | range
-;
-
-range
-:
-  lo = number DASH hi = number
+  lo = number (DASH hi = number)?
 ;
 
 vlan_id

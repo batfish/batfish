@@ -43,7 +43,6 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressC
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
-import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.RangeContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.representation.cumulus.Bridge;
@@ -371,16 +370,12 @@ public final class CumulusInterfacesConfigurationBuilder
     return Integer.parseInt(ctx.getText());
   }
 
-  private static IntegerSpace toInts(RangeContext ctx) {
-    return IntegerSpace.of(Range.closed(toInt(ctx.lo), toInt(ctx.hi)));
-  }
-
   private static IntegerSpace toInts(Number_or_rangeContext ctx) {
-    if (ctx.number() != null) {
-      return IntegerSpace.of(toInt(ctx.number()));
+    int lo = toInt(ctx.lo);
+    if (ctx.hi != null) {
+      return IntegerSpace.of(Range.closed(lo, toInt(ctx.hi)));
     } else {
-      assert ctx.range() != null;
-      return toInts(ctx.range());
+      return IntegerSpace.of(lo);
     }
   }
 }
