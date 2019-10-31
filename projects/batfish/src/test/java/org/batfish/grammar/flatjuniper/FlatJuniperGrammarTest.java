@@ -4217,6 +4217,7 @@ public final class FlatJuniperGrammarTest {
     /* Properly configured interfaces should be present in respective areas. */
     assertThat(c, hasInterface("xe-0/0/0.0", hasOspfAreaName(0L)));
     assertThat(c, hasInterface("xe-0/0/0.0", isOspfPassive(equalTo(false))));
+    assertThat(c.getAllInterfaces(), not(hasKey("ge-0/0/0.1")));
     assertThat(
         c,
         hasDefaultVrf(

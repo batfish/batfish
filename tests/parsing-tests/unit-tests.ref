@@ -78008,7 +78008,7 @@
         "ip_prefix_list_single_line" : "PASSED",
         "isr_crypto_gdoi" : "PASSED",
         "isr_voip" : "PASSED",
-        "juniper-ospf" : "WARNINGS",
+        "juniper-ospf" : "PASSED",
         "juniper-tcpflags" : "WARNINGS",
         "juniper_application" : "PASSED",
         "juniper_apply_macro" : "PASSED",
@@ -94928,26 +94928,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot create IS-IS process without specifying net-address"
-            }
-          ]
-        },
-        "juniper-ospf" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign interface ae16.0 to area 0.1.2.3 because it has no IP address."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign interface xe-0/0/1.0 to area 0.1.2.3 because it has no IP address."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign interface xe-0/0/20:0.0 to area 0.1.2.3 because it has no IP address."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign interface xe-0/0/21:0.0 to area 0.1.2.3 because it has no IP address."
             }
           ]
         },
