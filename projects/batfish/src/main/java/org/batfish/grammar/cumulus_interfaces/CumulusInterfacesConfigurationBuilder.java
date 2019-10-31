@@ -1,7 +1,6 @@
 package org.batfish.grammar.cumulus_interfaces;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
@@ -10,7 +9,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -44,6 +42,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.representation.cumulus.Bridge;
@@ -196,14 +195,11 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
-    List<NumberContext> vidCtxs = ctx.number();
     IntegerSpace vids =
         IntegerSpace.unionOf(
-            vidCtxs.stream()
-                .map(ParseTree::getText)
-                .map(Integer::parseInt)
-                .map(Range::singleton)
-                .collect(ImmutableList.toImmutableList()));
+            ctx.number_or_range().stream()
+                .map(CumulusInterfacesConfigurationBuilder::toInts)
+                .toArray(IntegerSpace[]::new));
     _currentIface.createOrGetBridgeSettings().setVids(vids);
   }
 
@@ -367,6 +363,19 @@ public final class CumulusInterfacesConfigurationBuilder
       _config.setVxlans(converter.convertVxlans());
     } catch (BatfishException e) {
       _w.redFlag("Error converting vxlans to vendor-specific model");
+    }
+  }
+
+  private static int toInt(NumberContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static IntegerSpace toInts(Number_or_rangeContext ctx) {
+    int lo = toInt(ctx.lo);
+    if (ctx.hi != null) {
+      return IntegerSpace.of(Range.closed(lo, toInt(ctx.hi)));
+    } else {
+      return IntegerSpace.of(lo);
     }
   }
 }

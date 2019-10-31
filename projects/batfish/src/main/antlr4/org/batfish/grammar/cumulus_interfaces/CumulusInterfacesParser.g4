@@ -132,7 +132,7 @@ i_bridge_pvid
 
 i_bridge_vids
 :
-  BRIDGE_VIDS number+ NEWLINE
+  BRIDGE_VIDS number_or_range+ NEWLINE
 ;
 
 i_bridge_vlan_aware
