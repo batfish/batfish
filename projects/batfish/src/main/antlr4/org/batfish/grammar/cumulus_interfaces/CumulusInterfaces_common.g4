@@ -14,6 +14,11 @@ number
   NUMBER
 ;
 
+number_or_range
+:
+  lo = number (DASH hi = number)?
+;
+
 vlan_id
 :
   v = NUMBER

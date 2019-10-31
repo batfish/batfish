@@ -99,6 +99,11 @@ CLAGD_SYS_MAC
   'clagd-sys-mac'
 ;
 
+DASH
+:
+  '-'
+;
+
 GATEWAY
 :
   'gateway'
