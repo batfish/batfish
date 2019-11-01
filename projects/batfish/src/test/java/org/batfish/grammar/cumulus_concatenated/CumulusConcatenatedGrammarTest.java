@@ -121,6 +121,12 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
+  public void testConcatenationWithLeadingNewlines() {
+    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation_with_leading_newlines");
+    assertThat(cfg.getHostname(), equalTo("hostname"));
+  }
+
+  @Test
   public void testPortsUnrecognized() {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);

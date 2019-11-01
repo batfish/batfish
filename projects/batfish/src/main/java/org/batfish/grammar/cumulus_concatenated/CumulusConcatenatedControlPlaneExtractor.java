@@ -3,6 +3,8 @@ package org.batfish.grammar.cumulus_concatenated;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -28,6 +30,7 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
+  private static final Pattern LINE_PATTERN = Pattern.compile("(?m)^(.*)$");
   private static final String START_OF_FRR_FILE = "frr version";
   private static final String START_OF_PORTS_FILE = "# ports.conf --";
 
@@ -125,11 +128,19 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   }
 
   private void parseHostname() {
-    int endOfHostname = _text.indexOf("\n");
-    String hostname = _text.substring(0, endOfHostname).trim();
+    _line = 1;
+    int start = 0;
+    Matcher m = LINE_PATTERN.matcher(_text);
+    String hostname;
+    do {
+      boolean found = m.find(start);
+      assert found;
+      hostname = m.group(1);
+      _line++;
+      start = m.end() + 1; // $ in Pattern does not count for offset of last character matched
+    } while (hostname.isEmpty());
     _configuration.setHostname(hostname);
-    _line = 2;
-    _offset = endOfHostname + 1;
+    _offset = start;
   }
 
   /** merge in parse tree if desired */
