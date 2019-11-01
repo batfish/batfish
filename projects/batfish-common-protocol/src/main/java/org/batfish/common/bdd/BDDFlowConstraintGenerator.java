@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IcmpType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 
@@ -20,13 +21,15 @@ public final class BDDFlowConstraintGenerator {
    */
   public enum FlowPreference {
     DEBUGGING,
-    APPLICATION
+    APPLICATION,
+    TESTFILTER
   }
 
   private BDDPacket _bddPacket;
   private BDD _icmpFlow;
   private BDD _udpFlow;
   private BDD _tcpFlow;
+  private BDD _httpFlow;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
     try (ActiveSpan span =
@@ -36,6 +39,7 @@ public final class BDDFlowConstraintGenerator {
       _icmpFlow = computeICMPConstraint();
       _udpFlow = computeUDPConstraint();
       _tcpFlow = computeTCPConstraint();
+      _httpFlow = computeHTTPConstraint();
     }
   }
 
@@ -95,12 +99,31 @@ public final class BDDFlowConstraintGenerator {
     return _bddPacket.getIpProtocol().value(IpProtocol.UDP).and(bdd1.or(bdd2));
   }
 
+  // Get HTTP packets with names ports:
+  // 1. Dst Ip is 8.8.8.8
+  // 2. Dst port is HTTP
+  // 3. Src port is the lowest ephemeral port
+  private BDD computeHTTPConstraint() {
+    BDDInteger dstIp = _bddPacket.getDstIp();
+    BDDInteger dstPort = _bddPacket.getDstPort();
+    BDDInteger srcPort = _bddPacket.getSrcPort();
+    BDDIpProtocol ipProtocol = _bddPacket.getIpProtocol();
+
+    return dstIp
+        .value(Ip.parse("8.8.8.8").asLong())
+        .and(ipProtocol.value(IpProtocol.TCP))
+        .and(srcPort.value(NamedPort.EPHEMERAL_LOWEST.number()))
+        .and(dstPort.value(NamedPort.HTTP.number()));
+  }
+
   public List<BDD> generateFlowPreference(FlowPreference preference) {
     switch (preference) {
       case DEBUGGING:
         return ImmutableList.of(_icmpFlow, _udpFlow, _tcpFlow);
       case APPLICATION:
         return ImmutableList.of(_tcpFlow, _udpFlow, _icmpFlow);
+      case TESTFILTER:
+        return ImmutableList.of(_httpFlow);
       default:
         throw new BatfishException("Not supported flow preference");
     }
