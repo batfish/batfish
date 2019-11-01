@@ -17,7 +17,7 @@ set protocols isis interface ge-0/0/0.0 level 2 hold-time 3
 set protocols isis interface ge-0/0/0.0 level 2 metric 5
 set protocols isis interface ge-0/0/0.0 point-to-point
 #
-set protocols isis interface lo0.0 passive
+set protocols isis interface lo0.0
 #
 set protocols isis level 1 disable
 set protocols isis level 2 wide-metrics-only
