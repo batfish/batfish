@@ -198,6 +198,24 @@ public class BDDPacketTest {
   }
 
   @Test
+  public void testGetFlowPreference_preferenceHTTP() {
+    BDDPacket pkt = new BDDPacket();
+    Ip srcIp = Ip.parse("1.2.3.4");
+
+    BDD bdd = pkt.getSrcIp().value(srcIp.asLong());
+
+    Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd, FlowPreference.TESTFILTER);
+    assertTrue("Unsat", flowBuilder.isPresent());
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+
+    assertThat(flow, hasDstIp(Ip.parse("8.8.8.8")));
+    assertThat(flow, hasSrcIp(srcIp));
+    assertThat(flow, hasIpProtocol(IpProtocol.TCP));
+    assertThat(flow, hasDstPort(80));
+    assertThat(flow, hasSrcPort(NamedPort.EPHEMERAL_LOWEST.number()));
+  }
+
+  @Test
   public void testSwapSourceAndDestinationFields() {
     BDDPacket pkt = new BDDPacket();
     BDDInteger dstIp = pkt.getDstIp();
