@@ -863,17 +863,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .get(routingInstance.getName())
         .getInterfaces()
         .forEach(
-            (ifaceName, newIface) ->
-                newIface.setIsis(
-                    toIsisInterfaceSettings(
-                        routingInstance.getIsisSettings(),
-                        routingInstance.getInterfaces().get(ifaceName),
-                        level1,
-                        level2)));
+            (ifaceName, newIface) -> {
+              newIface.setIsis(
+                  toIsisInterfaceSettings(
+                      routingInstance.getIsisSettings(),
+                      routingInstance.getInterfaces().get(ifaceName),
+                      level1,
+                      level2,
+                      newIface.isLoopback()));
+            });
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
-      @Nonnull IsisSettings settings, Interface iface, boolean level1, boolean level2) {
+      @Nonnull IsisSettings settings,
+      Interface iface,
+      boolean level1,
+      boolean level2,
+      boolean isLoopback) {
     IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
     if (interfaceSettings == null || !interfaceSettings.getEnabled()) {
       return null;
@@ -899,7 +905,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
               settings.getLevel1Settings(),
               interfaceSettings,
               interfaceSettings.getLevel1Settings(),
-              defaultCost));
+              defaultCost,
+              isLoopback));
     }
     if (level2) {
       newInterfaceSettingsBuilder.setLevel2(
@@ -907,7 +914,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
               settings.getLevel2Settings(),
               interfaceSettings,
               interfaceSettings.getLevel2Settings(),
-              defaultCost));
+              defaultCost,
+              isLoopback));
     }
     return newInterfaceSettingsBuilder
         .setBfdLivenessDetectionMinimumInterval(
@@ -923,7 +931,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IsisLevelSettings levelSettings,
       IsisInterfaceSettings interfaceSettings,
       IsisInterfaceLevelSettings interfaceLevelSettings,
-      long defaultCost) {
+      long defaultCost,
+      boolean isLoopback) {
     // Process and interface settings have already been checked to ensure IS-IS is enabled on iface
     if (!interfaceLevelSettings.getEnabled()) {
       return null;
@@ -939,7 +948,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .setHelloInterval(interfaceLevelSettings.getHelloInterval())
         .setHoldTime(interfaceLevelSettings.getHoldTime())
         .setMode(
-            interfaceSettings.getPassive() || interfaceLevelSettings.getPassive()
+            // Loopbacks are always passive regardless of whether it is explicitly configured
+            isLoopback || interfaceSettings.getPassive() || interfaceLevelSettings.getPassive()
                 ? IsisInterfaceMode.PASSIVE
                 : IsisInterfaceMode.ACTIVE)
         .build();
