@@ -245,7 +245,10 @@ public class BDDPacket {
         BDDRepresentativePicker.pickRepresentative(
             bdd, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
 
-    return getFlowFromRepresentativeBDD(representativeBDD);
+    if (representativeBDD.isZero()) {
+      return Optional.empty();
+    }
+    return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 
   public Optional<Flow.Builder> getFlow(BDD bdd) {
@@ -456,12 +459,5 @@ public class BDDPacket {
 
   public BDD swapSourceAndDestinationFields(BDD bdd) {
     return bdd.replace(_swapSourceAndDestinationPairing);
-  }
-
-  private Optional<Builder> getFlowFromRepresentativeBDD(BDD representativeBDD) {
-    if (representativeBDD.isZero()) {
-      return Optional.empty();
-    }
-    return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 }

@@ -4,6 +4,10 @@ import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 
+/**
+ * Class for picking a representative flow from a BDD according to the given preference as a list of
+ * BDDs
+ */
 @ParametersAreNonnullByDefault
 public final class BDDRepresentativePicker {
 

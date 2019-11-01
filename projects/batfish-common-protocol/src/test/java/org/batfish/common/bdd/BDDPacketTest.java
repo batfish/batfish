@@ -28,6 +28,7 @@ import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.NamedPort;
 import org.junit.Test;
 
 public class BDDPacketTest {
@@ -192,8 +193,8 @@ public class BDDPacketTest {
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasIpProtocol(IpProtocol.TCP));
-    assertThat(flow, not(hasDstPort(0)));
-    assertThat(flow, not(hasSrcPort(0)));
+    assertThat(flow, hasDstPort(1));
+    assertThat(flow, hasSrcPort(NamedPort.EPHEMERAL_LOWEST.number()));
   }
 
   @Test
