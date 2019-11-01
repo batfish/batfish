@@ -9,15 +9,17 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 /** Class for picking a representative flow from a header space. */
 public final class HeaderSpaceToFlow {
 
-  public HeaderSpaceToFlow(Map<String, IpSpace> ipSpaces) {
+  public HeaderSpaceToFlow(Map<String, IpSpace> ipSpaces, FlowPreference preference) {
     _headerSpaceToBDD = new HeaderSpaceToBDD(BDD_PACKET, ipSpaces);
+    _preference = preference;
   }
 
   /** Get a representative flow from a header space according to a flow preference. */
-  public Optional<Flow.Builder> getRepresentativeFlow(HeaderSpace hs, FlowPreference preference) {
-    return BDD_PACKET.getFlow(_headerSpaceToBDD.toBDD(hs), preference);
+  public Optional<Flow.Builder> getRepresentativeFlow(HeaderSpace hs) {
+    return BDD_PACKET.getFlow(_headerSpaceToBDD.toBDD(hs), _preference);
   }
 
   private static final BDDPacket BDD_PACKET = new BDDPacket();
   private final HeaderSpaceToBDD _headerSpaceToBDD;
+  private final FlowPreference _preference;
 }
