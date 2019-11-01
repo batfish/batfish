@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
@@ -25,6 +26,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
  * Flat Juniper pre-processor that removes parse tree nodes corresponding to deleted lines, as well
  * as delete statements themselves.
  */
+@ParametersAreNonnullByDefault
 public class Deleter extends FlatJuniperParserBaseListener {
 
   /*
@@ -38,7 +40,17 @@ public class Deleter extends FlatJuniperParserBaseListener {
    * - build out the deactivate (or set) StatementTree, using each word as a key.
    * - add the parse-tree to the set of parse-trees stored at the node correpsonding to the last word
    *
+   * Each time a 'delete' parse-tree is encountered:
+   * - record the words following 'delete'
+   * - for both the 'deactivate' and 'set' StatementTrees
+   *   - find the node corresponding to the last word
+   *   - collect all parse-trees stored there and in its subtrees
+   *   - mark those parse-trees as deleted
+   *   - remove the node (and therefore its subtrees) from the tree
+   * - Mark the 'delete' parse-tree itself as deleted
    *
+   * After visiting all child parse-trees of the configuration, replace its list of children with a
+   * new list containing only those parse-trees not marked for deletion.
    */
 
   public Deleter() {
@@ -118,6 +130,8 @@ public class Deleter extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
+    // Replace the list of children with a new list containing only those nodes not marked for
+    // deletion.
     ctx.children =
         ctx.children.stream().filter(not(_deletedStatements::contains)).collect(toList());
   }
@@ -129,6 +143,10 @@ public class Deleter extends FlatJuniperParserBaseListener {
     }
   }
 
+  /*
+   * - Build out a path in tree, using each word as a key.
+   * - Add ctx to the set of parse-trees stored at the node correpsonding to the last word
+   */
   private void addStatementToTree(StatementTree tree, ParseTree ctx) {
     StatementTree subtree = tree;
     for (String word : _words) {
@@ -137,6 +155,11 @@ public class Deleter extends FlatJuniperParserBaseListener {
     _statementsByTree.put(subtree, ctx);
   }
 
+  /*
+   * - Find the node corresponding to the last word of tree
+   * - Mark for deletion all parse-trees stored there and in its subtrees
+   * - Remove the node (and therefore its subtrees) from tree
+   */
   private void deleteSubtree(StatementTree tree) {
     StatementTree subtree = tree;
     String lastWord = null;
