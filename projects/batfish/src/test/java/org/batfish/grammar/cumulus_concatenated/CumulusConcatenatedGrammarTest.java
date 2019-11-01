@@ -6,6 +6,8 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGe
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
@@ -34,6 +36,7 @@ import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -121,9 +124,15 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testConcatenationWithLeadingNewlines() {
-    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation_with_leading_newlines");
+  public void testConcatenationWithLeadingGarbage() {
+    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation_with_leading_garbage");
     assertThat(cfg.getHostname(), equalTo("hostname"));
+  }
+
+  @Test
+  public void testConcatenationWithMissingHostname() {
+    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation_with_missing_hostname");
+    assertThat(cfg.getHostname(), emptyString());
   }
 
   @Test

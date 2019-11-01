@@ -1,7 +1,8 @@
 
-
+#comment
+  
 hostname
-# Should not choke on extra newlines above hostname
+# Should not choke on extra newlines, comments, spaces above hostname
 # This file describes the network interfaces
 # Now we're in /etc/interfaces
 

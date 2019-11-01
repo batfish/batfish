@@ -32,6 +32,8 @@ import org.batfish.vendor.VendorConfiguration;
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
   private static final Pattern LINE_PATTERN = Pattern.compile("(?m)^(.*)$");
   private static final String START_OF_FRR_FILE = "frr version";
+  private static final String START_OF_INTERFACES_FILE =
+      "# This file describes the network interfaces";
   private static final String START_OF_PORTS_FILE = "# ports.conf --";
 
   private final String _text;
@@ -135,10 +137,14 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     do {
       boolean found = m.find(start);
       assert found;
-      hostname = m.group(1);
+      hostname = m.group(1).trim();
       _line++;
       start = m.end() + 1; // $ in Pattern does not count for offset of last character matched
-    } while (hostname.isEmpty());
+      if (hostname.equals(START_OF_INTERFACES_FILE)) {
+        hostname = "";
+        break;
+      }
+    } while (hostname.startsWith("#") || hostname.isEmpty());
     _configuration.setHostname(hostname);
     _offset = start;
   }
