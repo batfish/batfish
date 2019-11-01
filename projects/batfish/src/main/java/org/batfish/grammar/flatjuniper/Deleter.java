@@ -1,7 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static com.google.common.base.Predicates.not;
 import static java.util.stream.Collectors.toList;
-import static org.glassfish.jersey.internal.guava.Predicates.not;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
