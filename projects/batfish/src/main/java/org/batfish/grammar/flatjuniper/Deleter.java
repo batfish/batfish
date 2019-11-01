@@ -27,24 +27,25 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
  */
 public class Deleter extends FlatJuniperParserBaseListener {
 
-  private boolean _enablePathRecording;
-  private boolean _reenablePathRecording;
-  private final @Nonnull StatementTree _deactivateStatementTree;
-  private final @Nonnull StatementTree _setStatementTree;
-  private List<String> _words;
-  private Set<ParseTree> _deletedStatements;
-  private Multimap<StatementTree, ParseTree> _statementsByTree;
+  /*
+   * Implementation overview:
+   *
+   * Iterate through each child parse-tree of the configuration. Each corresponds to a set,
+   * deactivate, or delete line.
+   *
+   * Each time a 'deactivate' or 'set' parse-tree is encountered:
+   * - record the words following 'deactivate' or 'set'
+   * - build out the deactivate (or set) StatementTree, using each word as a key.
+   * - add the parse-tree to the set of parse-trees stored at the node correpsonding to the last word
+   *
+   *
+   */
 
   public Deleter() {
     _deactivateStatementTree = new StatementTree();
     _deletedStatements = new HashSet<>();
     _setStatementTree = new StatementTree();
     _statementsByTree = HashMultimap.create();
-  }
-
-  @Override
-  public void exitDeactivate_line(Deactivate_lineContext ctx) {
-    addStatementToTree(_deactivateStatementTree, ctx);
   }
 
   @Override
@@ -56,6 +57,11 @@ public class Deleter extends FlatJuniperParserBaseListener {
   @Override
   public void exitDeactivate_line_tail(Deactivate_line_tailContext ctx) {
     _enablePathRecording = false;
+  }
+
+  @Override
+  public void exitDeactivate_line(Deactivate_lineContext ctx) {
+    addStatementToTree(_deactivateStatementTree, ctx);
   }
 
   @Override
@@ -148,4 +154,12 @@ public class Deleter extends FlatJuniperParserBaseListener {
             });
     subtree.getParent().deleteSubtree(lastWord);
   }
+
+  private boolean _enablePathRecording;
+  private boolean _reenablePathRecording;
+  private final @Nonnull StatementTree _deactivateStatementTree;
+  private final @Nonnull StatementTree _setStatementTree;
+  private List<String> _words;
+  private Set<ParseTree> _deletedStatements;
+  private Multimap<StatementTree, ParseTree> _statementsByTree;
 }
