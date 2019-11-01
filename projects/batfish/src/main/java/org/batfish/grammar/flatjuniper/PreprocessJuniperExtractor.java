@@ -52,6 +52,11 @@ public final class PreprocessJuniperExtractor {
       FlatJuniperCombinedParser parser,
       Warnings w) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
+    try (ActiveSpan span = GlobalTracer.get().buildSpan("FlatJuniper::Deleter").startActive()) {
+      assert span != null; // avoid unused warning
+      Deleter d = new Deleter();
+      walker.walk(d, tree);
+    }
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("FlatJuniper::DeactivateTreeBuilder").startActive()) {
       assert span != null; // avoid unused warning

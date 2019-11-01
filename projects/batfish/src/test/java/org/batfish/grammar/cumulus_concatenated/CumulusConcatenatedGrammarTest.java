@@ -6,6 +6,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGe
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
@@ -118,6 +119,18 @@ public class CumulusConcatenatedGrammarTest {
   public void testConcatenation() {
     CumulusNcluConfiguration cfg = parseVendorConfig("concatenation");
     assertThat(cfg.getHostname(), equalTo("hostname"));
+  }
+
+  @Test
+  public void testConcatenationWithLeadingGarbage() {
+    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation_with_leading_garbage");
+    assertThat(cfg.getHostname(), equalTo("hostname"));
+  }
+
+  @Test
+  public void testConcatenationWithMissingHostname() {
+    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation_with_missing_hostname");
+    assertThat(cfg.getHostname(), emptyString());
   }
 
   @Test
