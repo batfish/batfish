@@ -74,6 +74,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
+import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasCost;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHelloAuthenticationType;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHoldTime;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasMode;
@@ -3033,9 +3034,6 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testJuniperIsis() {
     String hostname = "juniper-isis";
-    String loopback = "lo0.0";
-    String physical = "ge-0/0/0.0";
-
     Configuration c = parseConfig(hostname);
 
     double expectedReferenceBandwidth = 100E9;
@@ -3048,57 +3046,40 @@ public final class FlatJuniperGrammarTest {
         hasDefaultVrf(
             hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth(expectedReferenceBandwidth))));
 
-    assertThat(
-        c,
-        hasInterface(
-            loopback, hasIsis(hasIsoAddress(new IsoAddress("12.1234.1234.1234.1234.00")))));
-    assertThat(c, hasInterface(loopback, hasIsis(hasLevel1(nullValue()))));
-    assertThat(c, hasInterface(loopback, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.PASSIVE)))));
+    Interface loopback = c.getActiveInterfaces().get("lo0.0");
+    assertThat(loopback, hasIsis(hasIsoAddress(new IsoAddress("12.1234.1234.1234.1234.00"))));
+    assertThat(loopback, hasIsis(hasLevel1(nullValue())));
+    // Loopbacks are always passive for IS-IS regardless of configuration
+    assertThat(loopback, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.PASSIVE))));
 
     // Loopback did not set an IS-IS metric, so its cost should be based on the reference bandwidth.
     // First confirm the expected cost isn't coincidentally equal to the Juniper default cost of 10.
     // No need to worry about getBandwidth() returning null for Juniper interfaces.
-    long expectedCost =
-        Math.max(
-            (long) (expectedReferenceBandwidth / c.getAllInterfaces().get(loopback).getBandwidth()),
-            1L);
+    long expectedCost = Math.max((long) (expectedReferenceBandwidth / loopback.getBandwidth()), 1L);
     assertThat(expectedCost, not(equalTo(10L)));
-    assertThat(
-        c,
-        hasInterface(
-            loopback,
-            hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(expectedCost)))));
+    assertThat(loopback, hasIsis(hasLevel2(hasCost(expectedCost))));
 
+    Interface physical = c.getActiveInterfaces().get("ge-0/0/0.0");
+    assertThat(physical, hasIsis(hasIsoAddress(new IsoAddress("12.1234.1234.1234.1234.01"))));
+    assertThat(physical, hasIsis(hasBfdLivenessDetectionMinimumInterval(250)));
+    assertThat(physical, hasIsis(hasBfdLivenessDetectionMultiplier(3)));
+    assertThat(physical, hasIsis(IsisInterfaceSettingsMatchers.hasPointToPoint()));
+    assertThat(physical, hasIsis(hasLevel1(nullValue())));
+    assertThat(physical, hasIsis(hasLevel2(hasCost(5L))));
+    // Explicitly configured passive
+    assertThat(physical, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.ACTIVE))));
     assertThat(
-        c,
-        hasInterface(
-            physical, hasIsis(hasIsoAddress(new IsoAddress("12.1234.1234.1234.1234.01")))));
-    assertThat(c, hasInterface(physical, hasIsis(hasBfdLivenessDetectionMinimumInterval(250))));
-    assertThat(c, hasInterface(physical, hasIsis(hasBfdLivenessDetectionMultiplier(3))));
-    assertThat(c, hasInterface(physical, hasIsis(IsisInterfaceSettingsMatchers.hasPointToPoint())));
-    assertThat(c, hasInterface(physical, hasIsis(hasLevel1(nullValue()))));
+        physical, hasIsis(hasLevel2(hasHelloAuthenticationType(IsisHelloAuthenticationType.MD5))));
     assertThat(
-        c,
-        hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(5L)))));
-    assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.ACTIVE)))));
-    assertThat(
-        c,
-        hasInterface(
-            physical,
-            hasIsis(hasLevel2(hasHelloAuthenticationType(IsisHelloAuthenticationType.MD5)))));
-    assertThat(
-        c,
-        hasInterface(
-            physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasHelloInterval(1)))));
-    assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasHoldTime(3)))));
+        physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasHelloInterval(1))));
+    assertThat(physical, hasIsis(hasLevel2(hasHoldTime(3))));
 
     // Assert non-ISIS interface has no ISIS, but has IP address
-    assertThat(c, hasInterface("ge-1/0/0.0", hasIsis(nullValue())));
+    Interface nonIsis = c.getActiveInterfaces().get("ge-1/0/0.0");
+    assertThat(nonIsis, hasIsis(nullValue()));
     assertThat(
-        c,
-        hasInterface(
-            "ge-1/0/0.0",
-            hasAllAddresses(contains(ConcreteInterfaceAddress.create(Ip.parse("10.1.1.1"), 24)))));
+        nonIsis,
+        hasAllAddresses(contains(ConcreteInterfaceAddress.create(Ip.parse("10.1.1.1"), 24))));
   }
 
   @Test
@@ -3213,9 +3194,7 @@ public final class FlatJuniperGrammarTest {
     // With no set metric or reference bandwidth, Juniper IS-IS cost should default to 10
     assertThat(
         c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth((Double) null))));
-    assertThat(
-        c,
-        hasInterface("lo0.0", hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(10L)))));
+    assertThat(c, hasInterface("lo0.0", hasIsis(hasLevel2(hasCost(10L)))));
   }
 
   @Test
@@ -3231,16 +3210,24 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsisPassiveLevel() {
-    Configuration c = parseConfig("juniper-isis-passive-level");
+  public void testJuniperIsisPassive() {
+    Configuration c = parseConfig("juniper-isis-passive");
+    Interface passiveL1 = c.getActiveInterfaces().get("ge-1/2/0.0");
+    Interface passiveIface = c.getActiveInterfaces().get("ge-1/2/0.1");
+    // set protocols isis interface ge-1/2/0.0 level 1 passive
     assertThat(
-        c,
-        hasInterface(
-            "ge-1/2/0.0",
-            hasIsis(
-                allOf(
-                    hasLevel1(hasMode(IsisInterfaceMode.PASSIVE)),
-                    hasLevel2(hasMode(IsisInterfaceMode.ACTIVE))))));
+        passiveL1,
+        hasIsis(
+            allOf(
+                hasLevel1(hasMode(IsisInterfaceMode.PASSIVE)),
+                hasLevel2(hasMode(IsisInterfaceMode.ACTIVE)))));
+    // set protocols isis interface ge-1/2/0.1 passive
+    assertThat(
+        passiveIface,
+        hasIsis(
+            allOf(
+                hasLevel1(hasMode(IsisInterfaceMode.PASSIVE)),
+                hasLevel2(hasMode(IsisInterfaceMode.PASSIVE)))));
   }
 
   @Test
