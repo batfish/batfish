@@ -1032,8 +1032,6 @@ public final class FlatJuniperGrammarTest {
   public void testPsFromCommunity() {
     Configuration c = parseConfig("community");
 
-    assertThat(c.getRoutingPolicies(), hasKey("match"));
-    RoutingPolicy rp = c.getRoutingPolicies().get("match");
     Bgpv4Route base =
         Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
@@ -1042,23 +1040,50 @@ public final class FlatJuniperGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
-    // deny route with communities only matching one element of named community
-    assertFalse(
-        routingPolicyPermitsRoute(
-            rp,
-            base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(0, 1))).build()));
-    // permit route with communities matching all elements of named community
-    assertTrue(
-        routingPolicyPermitsRoute(
-            rp,
-            base.toBuilder()
-                .setCommunities(
-                    ImmutableSet.of(
-                        StandardCommunity.of(0, 1),
-                        StandardCommunity.of(0, 2),
-                        StandardCommunity.of(1, 1),
-                        StandardCommunity.of(0, 3)))
-                .build()));
+    {
+      assertThat(c.getRoutingPolicies(), hasKey("match"));
+      RoutingPolicy rp = c.getRoutingPolicies().get("match");
+      // deny route with communities only matching one element of named community
+      assertFalse(
+          routingPolicyPermitsRoute(
+              rp,
+              base.toBuilder()
+                  .setCommunities(ImmutableSet.of(StandardCommunity.of(0, 1)))
+                  .build()));
+      // permit route with communities matching all elements of named community
+      assertTrue(
+          routingPolicyPermitsRoute(
+              rp,
+              base.toBuilder()
+                  .setCommunities(
+                      ImmutableSet.of(
+                          StandardCommunity.of(0, 1),
+                          StandardCommunity.of(0, 2),
+                          StandardCommunity.of(1, 1),
+                          StandardCommunity.of(0, 3)))
+                  .build()));
+    }
+    {
+      assertThat(c.getRoutingPolicies(), hasKey("invert"));
+      RoutingPolicy rp = c.getRoutingPolicies().get("invert");
+      StandardCommunity bad = StandardCommunity.of(0, 12345);
+      StandardCommunity other = StandardCommunity.of(0, 1);
+
+      // permit base route with no communities
+      assertTrue(routingPolicyPermitsRoute(rp, base));
+      // deny route with the mentioned community
+      assertFalse(
+          routingPolicyPermitsRoute(
+              rp, base.toBuilder().setCommunities(ImmutableSet.of(bad)).build()));
+      // deny route that includes the mentioned community
+      assertFalse(
+          routingPolicyPermitsRoute(
+              rp, base.toBuilder().setCommunities(ImmutableSet.of(bad, other)).build()));
+      // permit route with some other community
+      assertTrue(
+          routingPolicyPermitsRoute(
+              rp, base.toBuilder().setCommunities(ImmutableSet.of(other)).build()));
+    }
   }
 
   @Test
