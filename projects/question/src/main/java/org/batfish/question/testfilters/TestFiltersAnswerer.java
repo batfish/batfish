@@ -13,22 +13,29 @@ import com.google.common.collect.Multiset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.HeaderSpaceToFlow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
@@ -43,6 +50,7 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
@@ -132,31 +140,80 @@ public class TestFiltersAnswerer extends Answerer {
 
     ImmutableSortedSet.Builder<Flow> setBuilder = ImmutableSortedSet.naturalOrder();
 
+    PacketHeaderConstraints constraints = question.getHeaders();
+
+    // if src ip is specified, srcIpAssignments would have only one entry (srcLocatoins,
+    // resovledIpSpace)
+    // if src ip is not specified and location is specified, srcIpAssignments would have a set of
+    // entries of
+    // (srcLocation, IpSpacePerLocation)
+    IpSpaceAssignment srcIpAssignments =
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+                constraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+            .resolve(srcLocations, _batfish.specifierContext());
+
+    IpSpace dstIps =
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+                constraints.getDstIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+            .resolve(ImmutableSet.of(), _batfish.specifierContext()).getEntries().stream()
+            .findFirst()
+            .map(Entry::getIpSpace)
+            .orElse(UniverseIpSpace.INSTANCE);
+
+    HeaderSpaceToFlow headerSpaceToFlow =
+        new HeaderSpaceToFlow(c.getIpSpaces(), FlowPreference.TESTFILTER);
+
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
       try {
-        Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), null);
+        Builder flowBuilder =
+            headerSpaceToFlow
+                .getRepresentativeFlow(
+                    PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(constraints)
+                        .setSrcIps(
+                            srcIpAssignments.getEntries().stream().findFirst().get().getIpSpace())
+                        .setDstIps(dstIps)
+                        .build())
+                .get();
+
         flowBuilder.setIngressNode(node);
         flowBuilder.setIngressInterface(null);
         flowBuilder.setIngressVrf(
             Configuration.DEFAULT_VRF_NAME); // dummy because Flow needs non-null interface or vrf
         flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
         setBuilder.add(flowBuilder.build());
+      } catch (NoSuchElementException e) {
+        allProblems.add("cannot get a flow from the specifier");
       } catch (IllegalArgumentException e) {
         allProblems.add(e.getMessage());
       }
     }
 
     // Perform cross-product of all locations to flows
-    for (Location srcLocation : srcLocations) {
-      try {
-        Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), srcLocation);
-        setStartLocation(ImmutableMap.of(node, c), flowBuilder, srcLocation);
-        flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
-        setBuilder.add(flowBuilder.build());
-      } catch (IllegalArgumentException e) {
-        // record this error but try to keep going
-        allProblems.add(e.getMessage());
+    for (Entry entry : srcIpAssignments.getEntries()) {
+      Set<Location> locations = entry.getLocations();
+      IpSpace srcIps = entry.getIpSpace();
+      for (Location location : locations) {
+        try {
+          Flow.Builder flowBuilder =
+              headerSpaceToFlow
+                  .getRepresentativeFlow(
+                      PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(constraints)
+                          .setSrcIps(srcIps)
+                          .setDstIps(dstIps)
+                          .build())
+                  .get();
+
+          setStartLocation(ImmutableMap.of(node, c), flowBuilder, location);
+          flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
+          setBuilder.add(flowBuilder.build());
+        } catch (NoSuchElementException e) {
+          allProblems.add(
+              "cannot get a flow from the specifier for location %s", location.toString());
+        } catch (IllegalArgumentException e) {
+          // record this error but try to keep going
+          allProblems.add(e.getMessage());
+        }
       }
     }
 
