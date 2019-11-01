@@ -1,0 +1,11 @@
+
+# no hostname here
+ 
+# This file describes the network interfaces
+# Now we're in /etc/interfaces
+
+# ports.conf --
+# We're in ports.conf
+
+frr version 4.0+cl3u8
+! Now we're in /etc/frr/frr.conf
