@@ -232,11 +232,10 @@ public class BDDPacket {
   }
 
   /**
-   * Get a representative flow in a BDD. First, try to get an ICMP echo request flow; second, try to
-   * get a UDP flow used for traceroute; third, try to get a TCP flow with a named port; finally try
-   * to get an arbitrary one.
+   * Get a representative flow in a BDD according to a given preference.
    *
    * @param bdd a BDD representing a set of packet headers
+   * @param preference a FlowPreference representing flow preference
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd, FlowPreference preference) {
@@ -250,6 +249,14 @@ public class BDDPacket {
     return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 
+  /**
+   * Get a representative flow in a BDD. First, try to get an ICMP echo request flow; second, try to
+   * get a UDP flow used for traceroute; third, try to get a TCP flow with a named port; finally try
+   * to get an arbitrary one.
+   *
+   * @param bdd a BDD representing a set of packet headers
+   * @return A Flow.Builder for a representative of the set, if it's non-empty
+   */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
     return getFlow(bdd, FlowPreference.DEBUGGING);
   }
