@@ -1,17 +1,11 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
-import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -21,7 +15,7 @@ public final class HaGroup implements Serializable {
   public static final class Builder {
 
     public @Nonnull HaGroup build() {
-      checkArgument(_name != null, "Missing %s", PROP_NAME);
+      checkArgument(_name != null, "Missing name");
       return new HaGroup(_activeBonus, _name, _pools.build(), _trunks.build());
     }
 
@@ -70,34 +64,20 @@ public final class HaGroup implements Serializable {
     return new Builder();
   }
 
-  @JsonProperty(PROP_ACTIVE_BONUS)
   public @Nullable Integer getActiveBonus() {
     return _activeBonus;
   }
 
-  @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
   }
 
-  @JsonIgnore
   public @Nonnull Map<String, HaGroupPool> getPools() {
     return _pools;
   }
 
-  @JsonProperty(PROP_POOLS)
-  private @Nonnull SortedMap<String, HaGroupPool> getPoolsSorted() {
-    return ImmutableSortedMap.copyOf(_pools);
-  }
-
-  @JsonIgnore
   public @Nonnull Map<String, HaGroupTrunk> getTrunks() {
     return _trunks;
-  }
-
-  @JsonProperty(PROP_TRUNKS)
-  private @Nonnull SortedMap<String, HaGroupTrunk> getTrunksSorted() {
-    return ImmutableSortedMap.copyOf(_trunks);
   }
 
   @Override
@@ -118,24 +98,6 @@ public final class HaGroup implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_activeBonus, _name, _pools, _trunks);
-  }
-
-  private static final String PROP_ACTIVE_BONUS = "activeBonus";
-  private static final String PROP_NAME = "name";
-  private static final String PROP_POOLS = "pools";
-  private static final String PROP_TRUNKS = "trunks";
-
-  @JsonCreator
-  private static @Nonnull HaGroup create(
-      @JsonProperty(PROP_ACTIVE_BONUS) @Nullable Integer activeBonus,
-      @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_POOLS) @Nullable Map<String, HaGroupPool> pools,
-      @JsonProperty(PROP_TRUNKS) @Nullable Map<String, HaGroupTrunk> trunks) {
-    Builder builder = builder().setActiveBonus(activeBonus);
-    ofNullable(name).ifPresent(builder::setName);
-    ofNullable(pools).ifPresent(p -> p.values().forEach(builder::addPool));
-    ofNullable(trunks).ifPresent(t -> t.values().forEach(builder::addTrunk));
-    return builder.build();
   }
 
   private final @Nullable Integer _activeBonus;

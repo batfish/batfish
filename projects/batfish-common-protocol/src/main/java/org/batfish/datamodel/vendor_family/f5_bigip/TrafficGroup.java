@@ -1,10 +1,7 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -20,7 +17,7 @@ public final class TrafficGroup implements Serializable {
   public static final class Builder {
 
     public @Nonnull TrafficGroup build() {
-      checkArgument(_name != null, "Missing %s", PROP_NAME);
+      checkArgument(_name != null, "Missing name");
       return new TrafficGroup(_haGroup, _mac, _name, _unitId);
     }
 
@@ -56,22 +53,18 @@ public final class TrafficGroup implements Serializable {
     return new Builder();
   }
 
-  @JsonProperty(PROP_HA_GROUP)
   public @Nullable String getHaGroup() {
     return _haGroup;
   }
 
-  @JsonProperty(PROP_MAC)
   public @Nullable MacAddress getMac() {
     return _mac;
   }
 
-  @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
   }
 
-  @JsonProperty(PROP_UNIT_ID)
   public @Nullable Integer getUnitId() {
     return _unitId;
   }
@@ -94,22 +87,6 @@ public final class TrafficGroup implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_haGroup, _mac, _name, _unitId);
-  }
-
-  private static final String PROP_HA_GROUP = "haGroup";
-  private static final String PROP_MAC = "mac";
-  private static final String PROP_NAME = "name";
-  private static final String PROP_UNIT_ID = "unitId";
-
-  @JsonCreator
-  private static @Nonnull TrafficGroup create(
-      @JsonProperty(PROP_HA_GROUP) @Nullable String haGroup,
-      @JsonProperty(PROP_MAC) @Nullable MacAddress mac,
-      @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_UNIT_ID) @Nullable Integer unitId) {
-    Builder builder = builder().setHaGroup(haGroup).setMac(mac);
-    ofNullable(name).ifPresent(builder::setName);
-    return builder.setUnitId(unitId).build();
   }
 
   private final @Nullable String _haGroup;

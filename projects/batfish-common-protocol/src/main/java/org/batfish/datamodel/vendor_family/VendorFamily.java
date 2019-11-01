@@ -1,6 +1,8 @@
 package org.batfish.datamodel.vendor_family;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -27,7 +29,7 @@ public class VendorFamily implements Serializable {
   private static final String PROP_CISCO = "cisco";
   private static final String PROP_CISCO_NXOS = "cisco_nxos";
   private static final String PROP_CUMULUS = "cumulus";
-  private static final String PROP_F5_BIGIP = "f5Bigip";
+  @Deprecated private static final String PROP_F5_BIGIP = "f5Bigip";
   private static final String PROP_JUNIPER = "juniper";
 
   private static Type toFamilyType(Object family) {
@@ -74,7 +76,6 @@ public class VendorFamily implements Serializable {
     return _cumulus;
   }
 
-  @JsonProperty(PROP_F5_BIGIP)
   public F5BigipFamily getF5Bigip() {
     return _f5Bigip;
   }
@@ -104,10 +105,14 @@ public class VendorFamily implements Serializable {
     _cumulus = cumulus;
   }
 
-  @JsonProperty(PROP_F5_BIGIP)
+  @JsonIgnore
   public void setF5Bigip(F5BigipFamily f5Bigip) {
     _f5Bigip = f5Bigip;
   }
+
+  @Deprecated
+  @JsonProperty(PROP_F5_BIGIP)
+  private void setF5BigipDeprecated(JsonNode ignored) {}
 
   @JsonProperty(PROP_JUNIPER)
   public void setJuniper(JuniperFamily juniper) {

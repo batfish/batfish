@@ -1,10 +1,7 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -51,22 +48,18 @@ public final class UnicastAddress implements Serializable {
     return new Builder();
   }
 
-  @JsonProperty(PROP_EFFECTIVE_IP)
   public @Nullable UnicastAddressIp getEffectiveIp() {
     return _effectiveIp;
   }
 
-  @JsonProperty(PROP_EFFECTIVE_PORT)
   public int getEffectivePort() {
     return _effectivePort;
   }
 
-  @JsonProperty(PROP_IP)
   public @Nullable UnicastAddressIp getIp() {
     return _ip;
   }
 
-  @JsonProperty(PROP_PORT)
   public @Nullable Integer getPort() {
     return _port;
   }
@@ -92,21 +85,6 @@ public final class UnicastAddress implements Serializable {
   }
 
   private static final int DEFAULT_EFFECTIVE_PORT = 1026;
-  private static final String PROP_EFFECTIVE_IP = "effectiveIp";
-  private static final String PROP_EFFECTIVE_PORT = "effectivePort";
-  private static final String PROP_IP = "ip";
-  private static final String PROP_PORT = "port";
-
-  @JsonCreator
-  private static @Nonnull UnicastAddress create(
-      @JsonProperty(PROP_EFFECTIVE_IP) @Nullable UnicastAddressIp effectiveIp,
-      @JsonProperty(PROP_EFFECTIVE_PORT) @Nullable Integer effectivePort,
-      @JsonProperty(PROP_IP) @Nullable UnicastAddressIp ip,
-      @JsonProperty(PROP_PORT) @Nullable Integer port) {
-    Builder builder = builder().setEffectiveIp(effectiveIp);
-    Optional.ofNullable(effectivePort).ifPresent(builder::setEffectivePort);
-    return builder.setIp(ip).setPort(port).build();
-  }
 
   private final @Nullable UnicastAddressIp _effectiveIp;
   private final int _effectivePort;

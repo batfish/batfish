@@ -1,17 +1,11 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
-import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -21,7 +15,7 @@ public final class DeviceGroup implements Serializable {
   public static final class Builder {
 
     public @Nonnull DeviceGroup build() {
-      checkArgument(_name != null, "Missing %s", PROP_NAME);
+      checkArgument(_name != null, "Missing name");
       return new DeviceGroup(_autoSync, _devices.build(), _hidden, _name, _networkFailover, _type);
     }
 
@@ -76,37 +70,26 @@ public final class DeviceGroup implements Serializable {
     return new Builder();
   }
 
-  @JsonProperty(PROP_AUTO_SYNC)
   public @Nullable Boolean getAutoSync() {
     return _autoSync;
   }
 
-  @JsonIgnore
   public @Nonnull Map<String, DeviceGroupDevice> getDevices() {
     return _devices;
   }
 
-  @JsonProperty(PROP_DEVICES)
-  private @Nonnull SortedMap<String, DeviceGroupDevice> getDevicesSorted() {
-    return ImmutableSortedMap.copyOf(_devices);
-  }
-
-  @JsonProperty(PROP_HIDDEN)
   public @Nullable Boolean getHidden() {
     return _hidden;
   }
 
-  @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
   }
 
-  @JsonProperty(PROP_NETWORK_FAILOVER)
   public @Nullable Boolean getNetworkFailover() {
     return _networkFailover;
   }
 
-  @JsonProperty(PROP_TYPE)
   public @Nullable DeviceGroupType getType() {
     return _type;
   }
@@ -137,28 +120,6 @@ public final class DeviceGroup implements Serializable {
         _name,
         _networkFailover,
         _type != null ? _type.ordinal() : null);
-  }
-
-  private static final String PROP_AUTO_SYNC = "autoSync";
-  private static final String PROP_DEVICES = "devices";
-  private static final String PROP_HIDDEN = "hidden";
-  private static final String PROP_NAME = "name";
-  private static final String PROP_NETWORK_FAILOVER = "networkFailover";
-  private static final String PROP_TYPE = "type";
-
-  @JsonCreator
-  private static @Nonnull DeviceGroup create(
-      @JsonProperty(PROP_AUTO_SYNC) @Nullable Boolean autoSync,
-      @JsonProperty(PROP_DEVICES) @Nullable Map<String, DeviceGroupDevice> devices,
-      @JsonProperty(PROP_HIDDEN) @Nullable Boolean hidden,
-      @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_NETWORK_FAILOVER) @Nullable Boolean networkFailover,
-      @JsonProperty(PROP_TYPE) @Nullable DeviceGroupType type) {
-    Builder builder = builder().setAutoSync(autoSync);
-    ofNullable(devices).ifPresent(d -> d.values().forEach(builder::addDevice));
-    builder.setHidden(hidden);
-    ofNullable(name).ifPresent(builder::setName);
-    return builder.setNetworkFailover(networkFailover).setType(type).build();
   }
 
   private DeviceGroup(

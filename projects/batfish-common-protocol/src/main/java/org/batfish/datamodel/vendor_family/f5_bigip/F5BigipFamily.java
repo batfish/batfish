@@ -1,16 +1,9 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static java.util.Optional.ofNullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
-import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -122,74 +115,32 @@ public final class F5BigipFamily implements Serializable {
     return new Builder();
   }
 
-  @JsonIgnore
   public @Nonnull Map<String, Device> getDevices() {
     return _devices;
   }
 
-  @JsonProperty(PROP_DEVICES)
-  private @Nonnull SortedMap<String, Device> getDevicesSorted() {
-    return ImmutableSortedMap.copyOf(_devices);
-  }
-
-  @JsonIgnore
   public @Nonnull Map<String, DeviceGroup> getDeviceGroups() {
     return _deviceGroups;
   }
 
-  @JsonProperty(PROP_DEVICE_GROUPS)
-  private @Nonnull SortedMap<String, DeviceGroup> getDeviceGroupsSorted() {
-    return ImmutableSortedMap.copyOf(_deviceGroups);
-  }
-
-  @JsonIgnore
   public @Nonnull Map<String, HaGroup> getHaGroups() {
     return _haGroups;
   }
 
-  @JsonProperty(PROP_HA_GROUPS)
-  private @Nonnull SortedMap<String, HaGroup> getHaGroupsSorted() {
-    return ImmutableSortedMap.copyOf(_haGroups);
-  }
-
-  @JsonIgnore
   public @Nonnull Map<String, Pool> getPools() {
     return _pools;
   }
 
-  @JsonProperty(PROP_POOLS)
-  private @Nonnull SortedMap<String, Pool> getPoolsSorted() {
-    return ImmutableSortedMap.copyOf(_pools);
-  }
-
-  @JsonIgnore
   public @Nonnull Map<String, TrafficGroup> getTrafficGroups() {
     return _trafficGroups;
   }
 
-  @JsonProperty(PROP_TRAFFIC_GROUPS)
-  private @Nonnull SortedMap<String, TrafficGroup> getTrafficGroupsSorted() {
-    return ImmutableSortedMap.copyOf(_trafficGroups);
-  }
-
-  @JsonIgnore
   public @Nonnull Map<String, VirtualAddress> getVirtualAddresses() {
     return _virtualAddresses;
   }
 
-  @JsonProperty(PROP_VIRTUAL_ADDRESSES)
-  private @Nonnull SortedMap<String, VirtualAddress> getVirtualAddressesSorted() {
-    return ImmutableSortedMap.copyOf(_virtualAddresses);
-  }
-
-  @JsonIgnore
   public @Nonnull Map<String, Virtual> getVirtuals() {
     return _virtuals;
-  }
-
-  @JsonProperty(PROP_VIRTUALS)
-  public @Nonnull SortedMap<String, Virtual> getVirtualsSorted() {
-    return ImmutableSortedMap.copyOf(_virtuals);
   }
 
   @Override
@@ -214,35 +165,6 @@ public final class F5BigipFamily implements Serializable {
   public int hashCode() {
     return Objects.hash(
         _devices, _deviceGroups, _haGroups, _pools, _trafficGroups, _virtualAddresses, _virtuals);
-  }
-
-  private static final String PROP_DEVICES = "devices";
-  private static final String PROP_DEVICE_GROUPS = "deviceGroups";
-  private static final String PROP_HA_GROUPS = "haGroups";
-  private static final String PROP_POOLS = "pools";
-  private static final String PROP_TRAFFIC_GROUPS = "trafficGroups";
-  private static final String PROP_VIRTUAL_ADDRESSES = "virtualAddresses";
-  private static final String PROP_VIRTUALS = "virtuals";
-
-  @JsonCreator
-  private static final @Nonnull F5BigipFamily create(
-      @JsonProperty(PROP_DEVICES) @Nullable Map<String, Device> devices,
-      @JsonProperty(PROP_DEVICE_GROUPS) @Nullable Map<String, DeviceGroup> deviceGroups,
-      @JsonProperty(PROP_HA_GROUPS) @Nullable Map<String, HaGroup> haGroups,
-      @JsonProperty(PROP_POOLS) @Nullable Map<String, Pool> pools,
-      @JsonProperty(PROP_TRAFFIC_GROUPS) @Nullable Map<String, TrafficGroup> trafficGroups,
-      @JsonProperty(PROP_VIRTUALS) @Nullable Map<String, Virtual> virtuals,
-      @JsonProperty(PROP_VIRTUAL_ADDRESSES) @Nullable
-          Map<String, VirtualAddress> virtualAddresses) {
-    Builder builder = builder();
-    ofNullable(devices).ifPresent(builder::setDevices);
-    ofNullable(deviceGroups).ifPresent(builder::setDeviceGroups);
-    ofNullable(haGroups).ifPresent(builder::setHaGroups);
-    ofNullable(pools).ifPresent(builder::setPools);
-    ofNullable(trafficGroups).ifPresent(builder::setTrafficGroups);
-    ofNullable(virtuals).ifPresent(builder::setVirtuals);
-    ofNullable(virtualAddresses).ifPresent(builder::setVirtualAddresses);
-    return builder.build();
   }
 
   private final @Nonnull Map<String, Device> _devices;

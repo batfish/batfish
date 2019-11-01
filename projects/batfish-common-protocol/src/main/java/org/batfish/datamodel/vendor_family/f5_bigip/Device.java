@@ -1,10 +1,7 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
@@ -20,7 +17,7 @@ public final class Device implements Serializable {
   public static final class Builder {
 
     public @Nonnull Device build() {
-      checkArgument(_name != null, "Missing %s", PROP_NAME);
+      checkArgument(_name != null, "Missing name");
       return new Device(
           _baseMac,
           _configSyncIp,
@@ -105,37 +102,30 @@ public final class Device implements Serializable {
     _unicastAddresses = unicastAddresses;
   }
 
-  @JsonProperty(PROP_BASE_MAC)
   public @Nullable MacAddress getBaseMac() {
     return _baseMac;
   }
 
-  @JsonProperty(PROP_CONFIG_SYNC_IP)
   public @Nullable Ip getConfigSyncIp() {
     return _configSyncIp;
   }
 
-  @JsonProperty(PROP_HOSTNAME)
   public @Nullable String getHostname() {
     return _hostname;
   }
 
-  @JsonProperty(PROP_MANAGEMENT_IP)
   public @Nullable Ip getManagementIp() {
     return _managementIp;
   }
 
-  @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
   }
 
-  @JsonProperty(PROP_SELF_DEVICE)
   public @Nullable Boolean getSelfDevice() {
     return _selfDevice;
   }
 
-  @JsonProperty(PROP_UNICAST_ADDRESSES)
   public @Nonnull List<UnicastAddress> getUnicastAddresses() {
     return _unicastAddresses;
   }
@@ -162,36 +152,6 @@ public final class Device implements Serializable {
   public int hashCode() {
     return Objects.hash(
         _baseMac, _configSyncIp, _hostname, _managementIp, _name, _selfDevice, _unicastAddresses);
-  }
-
-  private static final String PROP_BASE_MAC = "baseMac";
-  private static final String PROP_CONFIG_SYNC_IP = "configSyncIp";
-  private static final String PROP_HOSTNAME = "hostname";
-  private static final String PROP_MANAGEMENT_IP = "managementIp";
-  private static final String PROP_NAME = "name";
-  private static final String PROP_SELF_DEVICE = "selfDevice";
-  private static final String PROP_UNICAST_ADDRESSES = "unicastAddresses";
-
-  @JsonCreator
-  private static @Nonnull Device create(
-      @JsonProperty(PROP_BASE_MAC) @Nullable MacAddress baseMac,
-      @JsonProperty(PROP_CONFIG_SYNC_IP) @Nullable Ip configSyncIp,
-      @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
-      @JsonProperty(PROP_MANAGEMENT_IP) @Nullable Ip managementIp,
-      @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_SELF_DEVICE) @Nullable Boolean selfDevice,
-      @JsonProperty(PROP_UNICAST_ADDRESSES) @Nullable List<UnicastAddress> unicastAddresses) {
-    checkArgument(name != null, "Missing %s", PROP_NAME);
-    Device.Builder builder =
-        Device.builder()
-            .setBaseMac(baseMac)
-            .setConfigSyncIp(configSyncIp)
-            .setHostname(hostname)
-            .setManagementIp(managementIp);
-    ofNullable(name).ifPresent(builder::setName);
-    builder.setSelfDevice(selfDevice);
-    ofNullable(unicastAddresses).ifPresent(ua -> ua.forEach(builder::addUnicastAddress));
-    return builder.build();
   }
 
   private final @Nullable MacAddress _baseMac;

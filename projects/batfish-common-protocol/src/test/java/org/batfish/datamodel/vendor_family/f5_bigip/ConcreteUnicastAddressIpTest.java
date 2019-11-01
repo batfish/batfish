@@ -3,9 +3,7 @@ package org.batfish.datamodel.vendor_family.f5_bigip;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
@@ -26,10 +24,5 @@ public final class ConcreteUnicastAddressIpTest {
   @Test
   public void testJavaSerialization() {
     assertEquals(OBJ, SerializationUtils.clone(OBJ));
-  }
-
-  @Test
-  public void testJacksonSerialization() throws IOException {
-    assertEquals(OBJ, BatfishObjectMapper.clone(OBJ, ConcreteUnicastAddressIp.class));
   }
 }

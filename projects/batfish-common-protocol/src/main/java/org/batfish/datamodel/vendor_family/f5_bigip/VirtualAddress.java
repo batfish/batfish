@@ -1,10 +1,7 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -18,7 +15,7 @@ public final class VirtualAddress implements Serializable {
   public static class Builder {
 
     public @Nonnull VirtualAddress build() {
-      checkArgument(_name != null, "Missing %s", PROP_NAME);
+      checkArgument(_name != null, "Missing name");
       return new VirtualAddress(
           _address,
           _address6,
@@ -87,42 +84,34 @@ public final class VirtualAddress implements Serializable {
     return new Builder();
   }
 
-  @JsonProperty(PROP_ADDRESS)
   public @Nullable Ip getAddress() {
     return _address;
   }
 
-  @JsonProperty(PROP_ADDRESS6)
   public @Nullable Ip6 getAddress6() {
     return _address6;
   }
 
-  @JsonProperty(PROP_ARP_DISABLED)
   public @Nullable Boolean getArpDisabled() {
     return _arpDisabled;
   }
 
-  @JsonProperty(PROP_ICMP_ECHO_DISABLED)
   public @Nullable Boolean getIcmpEchoDisabled() {
     return _icmpEchoDisabled;
   }
 
-  @JsonProperty(PROP_MASK)
   public @Nullable Ip getMask() {
     return _mask;
   }
 
-  @JsonProperty(PROP_MASK6)
   public @Nullable Ip6 getMask6() {
     return _mask6;
   }
 
-  @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
   }
 
-  @JsonProperty(PROP_ROUTE_ADVERTISEMENT_MODE)
   public @Nullable RouteAdvertisementMode getRouteAdvertisementMode() {
     return _routeAdvertisementMode;
   }
@@ -157,38 +146,6 @@ public final class VirtualAddress implements Serializable {
         _mask6,
         _name,
         _routeAdvertisementMode != null ? _routeAdvertisementMode.ordinal() : null);
-  }
-
-  private static final String PROP_ADDRESS = "address";
-  private static final String PROP_ADDRESS6 = "address6";
-  private static final String PROP_ARP_DISABLED = "arpDisabled";
-  private static final String PROP_ICMP_ECHO_DISABLED = "icmpEchoDisabled";
-  private static final String PROP_MASK = "mask";
-  private static final String PROP_MASK6 = "mask6";
-  private static final String PROP_NAME = "name";
-  private static final String PROP_ROUTE_ADVERTISEMENT_MODE = "routeAdvertisementMode";
-
-  @JsonCreator
-  private static @Nonnull VirtualAddress create(
-      @JsonProperty(PROP_ADDRESS) @Nullable Ip address,
-      @JsonProperty(PROP_ADDRESS6) @Nullable Ip6 address6,
-      @JsonProperty(PROP_ARP_DISABLED) @Nullable Boolean arpDisabled,
-      @JsonProperty(PROP_ICMP_ECHO_DISABLED) @Nullable Boolean icmpEchoDisabled,
-      @JsonProperty(PROP_MASK) @Nullable Ip mask,
-      @JsonProperty(PROP_MASK6) @Nullable Ip6 mask6,
-      @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_ROUTE_ADVERTISEMENT_MODE) @Nullable
-          RouteAdvertisementMode routeAdvertisementMode) {
-    Builder builder =
-        builder()
-            .setAddress(address)
-            .setAddress6(address6)
-            .setArpDisabled(arpDisabled)
-            .setIcmpEchoDisabled(icmpEchoDisabled)
-            .setMask(mask)
-            .setMask6(mask6);
-    ofNullable(name).ifPresent(builder::setName);
-    return builder.setRouteAdvertisementMode(routeAdvertisementMode).build();
   }
 
   private final @Nullable Ip _address;

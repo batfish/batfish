@@ -5,9 +5,7 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,12 +35,6 @@ public final class PoolTest {
         .addEqualityGroup(_builder.setName("n2").build())
         .addEqualityGroup(new Object())
         .testEquals();
-  }
-
-  @Test
-  public void testJacksonSerialization() throws IOException {
-    Pool obj = _builder.build();
-    assertEquals(obj, BatfishObjectMapper.clone(obj, Pool.class));
   }
 
   @Test

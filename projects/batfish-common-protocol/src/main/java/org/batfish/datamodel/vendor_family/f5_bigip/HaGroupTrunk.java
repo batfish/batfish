@@ -1,10 +1,7 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -16,7 +13,7 @@ public final class HaGroupTrunk implements Serializable {
   public static final class Builder {
 
     public @Nonnull HaGroupTrunk build() {
-      checkArgument(_name != null, "Missing %s", PROP_NAME);
+      checkArgument(_name != null, "Missing name");
       return new HaGroupTrunk(_name, _weight);
     }
 
@@ -40,12 +37,10 @@ public final class HaGroupTrunk implements Serializable {
     return new Builder();
   }
 
-  @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
   }
 
-  @JsonProperty(PROP_WEIGHT)
   public @Nullable Integer getWeight() {
     return _weight;
   }
@@ -65,18 +60,6 @@ public final class HaGroupTrunk implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_name, _weight);
-  }
-
-  private static final String PROP_NAME = "name";
-  private static final String PROP_WEIGHT = "weight";
-
-  @JsonCreator
-  private static @Nonnull HaGroupTrunk create(
-      @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_WEIGHT) @Nullable Integer weight) {
-    Builder builder = builder();
-    ofNullable(name).ifPresent(builder::setName);
-    return builder.setWeight(weight).build();
   }
 
   private final @Nonnull String _name;

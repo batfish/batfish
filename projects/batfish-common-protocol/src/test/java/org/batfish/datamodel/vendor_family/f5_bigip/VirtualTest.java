@@ -4,9 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
@@ -69,12 +67,6 @@ public final class VirtualTest {
         .addEqualityGroup(_builder.setVlansEnabled(false).build())
         .addEqualityGroup(new Object())
         .testEquals();
-  }
-
-  @Test
-  public void testJacksonSerialization() throws IOException {
-    Virtual obj = _builder.build();
-    assertEquals(obj, BatfishObjectMapper.clone(obj, Virtual.class));
   }
 
   @Test

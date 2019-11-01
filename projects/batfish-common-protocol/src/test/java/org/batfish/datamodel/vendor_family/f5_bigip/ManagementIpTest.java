@@ -3,9 +3,7 @@ package org.batfish.datamodel.vendor_family.f5_bigip;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Test of {@link ManagementIp}. */
@@ -22,12 +20,5 @@ public final class ManagementIpTest {
   @Test
   public void testJavaSerialization() {
     assertEquals(ManagementIp.instance(), SerializationUtils.clone(ManagementIp.instance()));
-  }
-
-  @Test
-  public void testJacksonSerialization() throws IOException {
-    assertEquals(
-        ManagementIp.instance(),
-        BatfishObjectMapper.clone(ManagementIp.instance(), ManagementIp.class));
   }
 }

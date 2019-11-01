@@ -3,9 +3,7 @@ package org.batfish.datamodel.vendor_family.f5_bigip;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,12 +26,6 @@ public final class HaGroupTrunkTest {
         .addEqualityGroup(_builder.setWeight(null).build())
         .addEqualityGroup(new Object())
         .testEquals();
-  }
-
-  @Test
-  public void testJacksonSerialization() throws IOException {
-    HaGroupTrunk obj = _builder.build();
-    assertEquals(obj, BatfishObjectMapper.clone(obj, HaGroupTrunk.class));
   }
 
   @Test

@@ -3,9 +3,7 @@ package org.batfish.datamodel.vendor_family.f5_bigip;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.junit.Before;
@@ -40,12 +38,6 @@ public final class PoolMemberTest {
         .addEqualityGroup(_builder.setNode("n2").build())
         .addEqualityGroup(_builder.setPort(2).build())
         .testEquals();
-  }
-
-  @Test
-  public void testJacksonSerialization() throws IOException {
-    PoolMember obj = _builder.build();
-    assertEquals(obj, BatfishObjectMapper.clone(obj, PoolMember.class));
   }
 
   @Test

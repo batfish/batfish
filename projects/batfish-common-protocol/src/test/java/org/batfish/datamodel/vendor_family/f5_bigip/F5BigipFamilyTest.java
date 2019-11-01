@@ -4,9 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,12 +39,6 @@ public final class F5BigipFamilyTest {
         .addEqualityGroup(_builder.setVirtualAddresses(ImmutableMap.of()).build())
         .addEqualityGroup(_builder.setVirtuals(ImmutableMap.of()).build())
         .testEquals();
-  }
-
-  @Test
-  public void testJacksonSerialization() throws IOException {
-    F5BigipFamily obj = _builder.build();
-    assertEquals(obj, BatfishObjectMapper.clone(obj, F5BigipFamily.class));
   }
 
   @Test

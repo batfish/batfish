@@ -1,17 +1,11 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -26,7 +20,7 @@ public final class Virtual implements Serializable {
   public static final class Builder {
 
     public @Nonnull Virtual build() {
-      checkArgument(_name != null, "Missing %s", PROP_NAME);
+      checkArgument(_name != null, "Missing name");
       return new Virtual(
           _description,
           _destination,
@@ -172,97 +166,74 @@ public final class Virtual implements Serializable {
     return new Builder();
   }
 
-  @JsonProperty(PROP_DESCRIPTION)
   public @Nullable String getDescription() {
     return _description;
   }
 
-  @JsonProperty(PROP_DESTINATION)
   public @Nullable String getDestination() {
     return _destination;
   }
 
-  @JsonProperty(PROP_DESTINATION_PORT)
   public @Nullable Integer getDestinationPort() {
     return _destinationPort;
   }
 
-  @JsonProperty(PROP_DISABLED)
   public @Nullable Boolean getDisabled() {
     return _disabled;
   }
 
-  @JsonProperty(PROP_IP_FORWARD)
   public boolean getIpForward() {
     return _ipForward;
   }
 
-  @JsonProperty(PROP_IP_PROTOCOL)
   public @Nullable IpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
-  @JsonProperty(PROP_MASK)
   public @Nullable Ip getMask() {
     return _mask;
   }
 
-  @JsonProperty(PROP_MASK6)
   public @Nullable Ip6 getMask6() {
     return _mask6;
   }
 
-  @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
   }
 
-  @JsonProperty(PROP_POOL)
   public @Nullable String getPool() {
     return _pool;
   }
 
-  @JsonProperty(PROP_REJECT)
   public boolean getReject() {
     return _reject;
   }
 
-  @JsonProperty(PROP_SOURCE)
   public @Nullable Prefix getSource() {
     return _source;
   }
 
-  @JsonProperty(PROP_SOURCE6)
   public @Nullable Prefix6 getSource6() {
     return _source6;
   }
 
-  @JsonProperty(PROP_SOURCE_ADDRESS_TRANSLATION_POOL)
   public @Nullable String getSourceAddressTranslationPool() {
     return _sourceAddressTranslationPool;
   }
 
-  @JsonProperty(PROP_TRANSLATE_ADDRESS)
   public @Nullable Boolean getTranslateAddress() {
     return _translateAddress;
   }
 
-  @JsonProperty(PROP_TRANSLATE_PORT)
   public @Nullable Boolean getTranslatePort() {
     return _translatePort;
   }
 
-  @JsonIgnore
   public @Nonnull Set<String> getVlans() {
     return _vlans;
   }
 
-  @JsonProperty(PROP_VLANS)
-  private @Nonnull SortedSet<String> getVlansSorted() {
-    return ImmutableSortedSet.copyOf(_vlans);
-  }
-
-  @JsonProperty(PROP_VLANS_ENABLED)
   public boolean getVlansEnabled() {
     return _vlansEnabled;
   }
@@ -317,68 +288,6 @@ public final class Virtual implements Serializable {
         _translatePort,
         _vlans,
         _vlansEnabled);
-  }
-
-  private static final String PROP_DESCRIPTION = "description";
-  private static final String PROP_DESTINATION = "destination";
-  private static final String PROP_DESTINATION_PORT = "destinationPort";
-  private static final String PROP_DISABLED = "disabled";
-  private static final String PROP_IP_FORWARD = "ipForward";
-  private static final String PROP_IP_PROTOCOL = "ipProtocol";
-  private static final String PROP_MASK = "mask";
-  private static final String PROP_MASK6 = "mask6";
-  private static final String PROP_NAME = "name";
-  private static final String PROP_POOL = "pool";
-  private static final String PROP_REJECT = "reject";
-  private static final String PROP_SOURCE = "source";
-  private static final String PROP_SOURCE_ADDRESS_TRANSLATION_POOL = "sourceAddressTranslationPool";
-  private static final String PROP_SOURCE6 = "source6";
-  private static final String PROP_TRANSLATE_ADDRESS = "translateAddress";
-  private static final String PROP_TRANSLATE_PORT = "translatePort";
-  private static final String PROP_VLANS = "vlans";
-  private static final String PROP_VLANS_ENABLED = "vlansEnabled";
-
-  @JsonCreator
-  private static @Nonnull Virtual create(
-      @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
-      @JsonProperty(PROP_DESTINATION) @Nullable String destination,
-      @JsonProperty(PROP_DESTINATION_PORT) @Nullable Integer destinationPort,
-      @JsonProperty(PROP_DISABLED) @Nullable Boolean disabled,
-      @JsonProperty(PROP_IP_FORWARD) @Nullable Boolean ipForward,
-      @JsonProperty(PROP_IP_PROTOCOL) @Nullable IpProtocol ipProtocol,
-      @JsonProperty(PROP_MASK) @Nullable Ip mask,
-      @JsonProperty(PROP_MASK6) @Nullable Ip6 mask6,
-      @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_POOL) @Nullable String pool,
-      @JsonProperty(PROP_REJECT) @Nullable Boolean reject,
-      @JsonProperty(PROP_SOURCE) @Nullable Prefix source,
-      @JsonProperty(PROP_SOURCE6) @Nullable Prefix6 source6,
-      @JsonProperty(PROP_SOURCE_ADDRESS_TRANSLATION_POOL) @Nullable
-          String sourceAddressTranslationPool,
-      @JsonProperty(PROP_TRANSLATE_ADDRESS) @Nullable Boolean translateAddress,
-      @JsonProperty(PROP_TRANSLATE_PORT) @Nullable Boolean translatePort,
-      @JsonProperty(PROP_VLANS) @Nullable Set<String> vlans,
-      @JsonProperty(PROP_VLANS_ENABLED) @Nullable Boolean vlansEnabled) {
-    Builder builder =
-        builder()
-            .setDescription(description)
-            .setDestination(destination)
-            .setDestinationPort(destinationPort)
-            .setDisabled(disabled);
-    ofNullable(ipForward).ifPresent(builder::setIpForward);
-    builder.setIpProtocol(ipProtocol).setMask(mask).setMask6(mask6);
-    ofNullable(name).ifPresent(builder::setName);
-    builder.setPool(pool);
-    ofNullable(reject).ifPresent(builder::setReject);
-    builder
-        .setSource(source)
-        .setSource6(source6)
-        .setSourceAddressTranslationPool(sourceAddressTranslationPool)
-        .setTranslateAddress(translateAddress)
-        .setTranslatePort(translatePort);
-    ofNullable(vlans).ifPresent(builder::setVlans);
-    ofNullable(vlansEnabled).ifPresent(builder::setVlansEnabled);
-    return builder.build();
   }
 
   private final @Nullable String _description;

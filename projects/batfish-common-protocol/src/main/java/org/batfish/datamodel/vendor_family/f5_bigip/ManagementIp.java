@@ -1,6 +1,5 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -12,11 +11,6 @@ public class ManagementIp implements UnicastAddressIp {
   }
 
   private static final ManagementIp INSTANCE = new ManagementIp();
-
-  @JsonCreator
-  private static @Nonnull ManagementIp create() {
-    return INSTANCE;
-  }
 
   @Override
   public boolean equals(@Nullable Object obj) {
