@@ -21,10 +21,24 @@ deactivate_line_tail
    )*
 ;
 
+delete_line
+:
+   DELETE delete_line_tail NEWLINE
+;
+
+delete_line_tail
+:
+   (
+      interface_id
+      | ~NEWLINE
+   )*
+;
+
 flat_juniper_configuration
 :
    (
       deactivate_line
+      | delete_line
       | protect_line
       | set_line
       | newline

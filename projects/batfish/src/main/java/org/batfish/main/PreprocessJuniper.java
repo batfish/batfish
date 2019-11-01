@@ -37,6 +37,7 @@ public final class PreprocessJuniper {
     }
 
     Settings settings = new Settings(new String[] {"-storagebase", "/"});
+    settings.setDisableUnrecognized(true);
     BatfishLogger logger = new BatfishLogger(BatfishLogger.LEVELSTR_WARN, false, System.out);
     settings.setLogger(logger);
     new PreprocessJuniper(new Batfish(settings, null, null, null, null, null))
