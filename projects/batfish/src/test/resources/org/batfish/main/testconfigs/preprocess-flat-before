@@ -4,3 +4,17 @@ set system host-name preprocess-flat
 set groups g1 interfaces lo0 disable
 set interfaces lo0 apply-groups g1
 set interfaces lo0 unit 0 family inet address 192.0.2.1/24
+set groups g2 interfaces et-0/0/2 disable
+set groups g3 interfaces et-0/0/3 disable
+set groups g3 routing-options autonomous-system 1
+set groups g4 interfaces et-0/0/4 disable
+set interfaces apply-groups g2
+set interfaces apply-groups g3
+set interfaces apply-groups g4
+set interfaces et-0/0/2 unit 0 family inet address 192.168.0.1/24
+deactivate interfaces et-0/0/2
+set interfaces et-0/0/4 apply-groups-except g4
+delete interfaces et-0/0/2
+delete interfaces et-0/0/4
+delete groups g3 interfaces
+set interfaces et-0/0/2 unit 0 family iso
