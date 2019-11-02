@@ -15,6 +15,9 @@ set policy-options policy-statement p3 term t1 then community set regex
 set policy-options policy-statement p4 term t1 then community add well-known
 set policy-options policy-statement p5 term t1 then community add mixed
 set policy-options policy-statement p6 term t1 then community add regex
+set policy-options policy-statement p7 term t1 then community delete well-known
+set policy-options policy-statement p8 term t1 then community delete mixed
+set policy-options policy-statement p9 term t1 then community delete regex
 
 set policy-options policy-statement match term t1 from community mixed
 set policy-options policy-statement match term t1 then accept
