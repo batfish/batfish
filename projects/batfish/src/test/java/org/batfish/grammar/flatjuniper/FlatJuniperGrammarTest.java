@@ -1085,6 +1085,19 @@ public final class FlatJuniperGrammarTest {
       assertThat(
           outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(0, 2))));
     }
+    {
+      // p10 - delete inverted
+      RoutingPolicy rp = c.getRoutingPolicies().get("p10");
+      Bgpv4Route.Builder builder =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(0, 1), StandardCommunity.of(0, 12345)));
+      rp.process(builder.build(), builder, Direction.OUT);
+      Bgpv4Route outputRoute = builder.build();
+
+      assertThat(
+          outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(0, 12345))));
+    }
   }
 
   @Test
