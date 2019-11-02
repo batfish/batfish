@@ -122,9 +122,11 @@ import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -710,8 +712,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /**
    * Returns a {@link CommunitySet} containing each {@link LiteralCommunityMember} of {@code
    * namedCommunity}, or {@code null} if {@code namedCommunity} doesn't contain any.
+   *
+   * <p>Note that the value of {@link NamedCommunity#getInvertMatch()} does not affect behavior when
+   * using a {@link NamedCommunity} as a {@link CommunitySet}.
    */
-  private @Nullable CommunitySet toCommunitySet(NamedCommunity namedCommunity) {
+  private static @Nullable CommunitySet toCommunitySet(NamedCommunity namedCommunity) {
     Set<Community> communities =
         namedCommunity.getMembers().stream()
             .map(member -> member.accept(CommunityMemberToCommunity.INSTANCE))
@@ -747,11 +752,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * Returns a {@link CommunityMatchExpr} that matches an individual {@link Community} if it is
    * matched by any {@link CommunityMember} of {@code namedCommunity}.
    */
-  private @Nonnull CommunityMatchExpr toCommunityMatchExpr(NamedCommunity namedCommunity) {
-    return new CommunityMatchAny(
-        namedCommunity.getMembers().stream()
-            .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
-            .collect(ImmutableSet.toImmutableSet()));
+  private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(NamedCommunity namedCommunity) {
+    CommunityMatchExpr match =
+        new CommunityMatchAny(
+            namedCommunity.getMembers().stream()
+                .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
+                .collect(ImmutableSet.toImmutableSet()));
+    if (namedCommunity.getInvertMatch()) {
+      return new CommunityNot(match);
+    }
+    return match;
   }
 
   /**
@@ -759,12 +769,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * {@link CommunityMember} of {@code namedCommunity} matches at least one {@link Community} of the
    * {@link CommunitySet}.
    */
-  private @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(NamedCommunity namedCommunity) {
-    return new CommunitySetMatchAll(
-        namedCommunity.getMembers().stream()
-            .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
-            .map(HasCommunity::new)
-            .collect(ImmutableSet.toImmutableSet()));
+  private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
+      NamedCommunity namedCommunity) {
+    CommunitySetMatchExpr match =
+        new CommunitySetMatchAll(
+            namedCommunity.getMembers().stream()
+                .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
+                .map(HasCommunity::new)
+                .collect(ImmutableSet.toImmutableSet()));
+    if (namedCommunity.getInvertMatch()) {
+      return new CommunitySetNot(match);
+    }
+    return match;
   }
 
   private void applyLocalRoutePolicy(RoutingInstance routingInstance, RoutingPolicy targetPolicy) {
