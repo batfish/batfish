@@ -17,7 +17,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
@@ -26,20 +25,15 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.HeaderSpaceToFlow;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.phc_to_flow.IpFieldExtractorContext;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -51,11 +45,8 @@ import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
-import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationVisitor;
-import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 public class TestFiltersAnswerer extends Answerer {
@@ -66,30 +57,9 @@ public class TestFiltersAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_LINE_CONTENT = "Line_Content";
   public static final String COL_TRACE = "Trace";
-  private static final Ip DEFAULT_IP_ADDRESS = Ip.parse("8.8.8.8");
-
-  private final IpFieldExtractorContext _ipFieldExtractorContext;
 
   public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
-    _ipFieldExtractorContext =
-        new IpFieldExtractorContext(
-            initSourceIpAssignment((TestFiltersQuestion) question, batfish.specifierContext()),
-            _batfish.specifierContext());
-  }
-
-  private static IpSpaceAssignment initSourceIpAssignment(
-      TestFiltersQuestion question, SpecifierContext ctxt) {
-    /* construct specifiers */
-    LocationSpecifier sourceLocationSpecifier = question.getStartLocationSpecifier();
-
-    IpSpaceSpecifier sourceIpSpaceSpecifier =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
-            question.getHeaders().getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE);
-
-    /* resolve specifiers */
-    Set<Location> sourceLocations = sourceLocationSpecifier.resolve(ctxt);
-    return sourceIpSpaceSpecifier.resolve(sourceLocations, ctxt);
   }
 
   /**
@@ -293,54 +263,5 @@ public class TestFiltersAnswerer extends Answerer {
         "No valid flow found for specified parameters. Potential problems: %s",
         String.join(",", allProblems.build()));
     return rows;
-  }
-
-  /**
-   * Generate a flow builder given some set of packet header constraints.
-   *
-   * @param constraints {@link PacketHeaderConstraints}
-   * @throws IllegalArgumentException if the {@code constraints} cannot be resolved to a single
-   *     value.
-   */
-  private Flow.Builder headerConstraintsToFlow(
-      PacketHeaderConstraints constraints, Location srcLocation) throws IllegalArgumentException {
-    Flow.Builder builder = PacketHeaderConstraintsUtil.toFlow(constraints);
-    setSrcIp(constraints, srcLocation, builder);
-    setDstIp(constraints, builder);
-
-    // Set defaults for protocol, and ports and packet lengths:
-    if (builder.getIpProtocol() == null) {
-      builder.setIpProtocol(IpProtocol.TCP);
-    }
-    if (builder.getDstPort() == null) {
-      builder.setDstPort(NamedPort.HTTP.number());
-    }
-    if (builder.getSrcPort() == null) {
-      builder.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
-    }
-    return builder;
-  }
-
-  private void setDstIp(PacketHeaderConstraints constraints, Builder builder) {
-    String headerDstIp = constraints.getDstIps();
-    Ip dstIp =
-        headerDstIp != null
-            ? _ipFieldExtractorContext.inferDstIpFromHeaderDstIp(headerDstIp)
-            : DEFAULT_IP_ADDRESS;
-    builder.setDstIp(dstIp);
-  }
-
-  private void setSrcIp(
-      PacketHeaderConstraints constraints, Location srcLocation, Builder builder) {
-    // Extract source IP from header constraints,
-    String headerSrcIp = constraints.getSrcIps();
-    Ip srcIp =
-        headerSrcIp != null
-            ? _ipFieldExtractorContext.inferSrcIpFromHeaderSrcIp(headerSrcIp)
-            : srcLocation == null
-                ? DEFAULT_IP_ADDRESS
-                : _ipFieldExtractorContext.inferSrcIpFromSourceLocation(srcLocation);
-
-    builder.setSrcIp(srcIp);
   }
 }
