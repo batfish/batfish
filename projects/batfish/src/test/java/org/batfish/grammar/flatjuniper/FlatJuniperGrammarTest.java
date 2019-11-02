@@ -1029,6 +1029,65 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testDeleteCommunity() {
+    Configuration c = parseConfig("community");
+
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    {
+      // p7 - delete well-known
+      RoutingPolicy rp = c.getRoutingPolicies().get("p7");
+      Bgpv4Route.Builder builder =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      StandardCommunity.of(5L),
+                      StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+      rp.process(builder.build(), builder, Direction.OUT);
+      Bgpv4Route outputRoute = builder.build();
+
+      assertThat(outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
+    }
+    {
+      // p8 - delete mixed
+      RoutingPolicy rp = c.getRoutingPolicies().get("p8");
+      Bgpv4Route.Builder builder =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      StandardCommunity.of(0, 1),
+                      StandardCommunity.of(0, 11),
+                      StandardCommunity.of(0, 2),
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(0, 3)));
+      rp.process(builder.build(), builder, Direction.OUT);
+      Bgpv4Route outputRoute = builder.build();
+
+      assertThat(
+          outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(0, 11))));
+    }
+    {
+      // p9 - delete regex
+      RoutingPolicy rp = c.getRoutingPolicies().get("p9");
+      Bgpv4Route.Builder builder =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(0, 1), StandardCommunity.of(0, 2)));
+      rp.process(builder.build(), builder, Direction.OUT);
+      Bgpv4Route outputRoute = builder.build();
+
+      assertThat(
+          outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(0, 2))));
+    }
+  }
+
+  @Test
   public void testPsFromCommunity() {
     Configuration c = parseConfig("community");
 

@@ -97,13 +97,9 @@ public class BDDPacket {
   private final IpSpaceToBDD _dstIpSpaceToBDD;
   private final IpSpaceToBDD _srcIpSpaceToBDD;
 
-  // Picking representative flows
-  private final Supplier<BDDRepresentativePicker> _picker =
-      Suppliers.memoize(
-          () ->
-              new BDDRepresentativePicker(
-                  new BDDFlowConstraintGenerator(this)
-                      .generateFlowPreference(FlowPreference.DEBUGGING)));
+  // Generating flow preference for representative flow picking
+  private final Supplier<BDDFlowConstraintGenerator> _flowConstraintGeneratorSupplier =
+      Suppliers.memoize(() -> new BDDFlowConstraintGenerator(this));
 
   /*
    * Creates a collection of BDD variables representing the
@@ -236,6 +232,24 @@ public class BDDPacket {
   }
 
   /**
+   * Get a representative flow in a BDD according to a given preference.
+   *
+   * @param bdd a BDD representing a set of packet headers
+   * @param preference a FlowPreference representing flow preference
+   * @return A Flow.Builder for a representative of the set, if it's non-empty
+   */
+  public Optional<Flow.Builder> getFlow(BDD bdd, FlowPreference preference) {
+    BDD representativeBDD =
+        BDDRepresentativePicker.pickRepresentative(
+            bdd, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
+
+    if (representativeBDD.isZero()) {
+      return Optional.empty();
+    }
+    return Optional.of(getFlowFromAssignment(representativeBDD));
+  }
+
+  /**
    * Get a representative flow in a BDD. First, try to get an ICMP echo request flow; second, try to
    * get a UDP flow used for traceroute; third, try to get a TCP flow with a named port; finally try
    * to get an arbitrary one.
@@ -244,11 +258,7 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    BDD representativeBDD = _picker.get().pickRepresentative(bdd);
-    if (representativeBDD.isZero()) {
-      return Optional.empty();
-    }
-    return Optional.of(getFlowFromAssignment(representativeBDD));
+    return getFlow(bdd, FlowPreference.DEBUGGING);
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {
