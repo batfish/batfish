@@ -11,7 +11,7 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_interfaces/parsing:cumulus_interfaces_base",
-        "@antlr4_runtime//:compile",
+        "@maven//:org_antlr_antlr4_runtime",
     ],
 )
 

@@ -8,7 +8,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
-        "@antlr4_runtime//:compile",
-        "@jsr305//:compile",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:org_antlr_antlr4_runtime",
     ],
 )

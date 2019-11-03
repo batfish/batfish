@@ -12,6 +12,6 @@ junit_tests(
     ]),
     deps = [
         "//projects/batfish/src/main/java/org/batfish/grammar/juniper",
-        "@hamcrest//:compile",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )

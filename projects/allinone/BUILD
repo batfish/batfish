@@ -7,7 +7,7 @@ java_binary(
     main_class = "org.batfish.allinone.Main",
     runtime_deps = [
         ":allinone",
-        "@slf4j_jdk14//:runtime",
+        "@maven//:org_slf4j_slf4j_jdk14",
     ],
 )
 
@@ -26,8 +26,9 @@ java_library(
         "//projects/batfish-client:client",
         "//projects/batfish-common-protocol:common",
         "//projects/coordinator",
-        "@guava//:compile",
-        "@jaeger_core//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_uber_jaeger_jaeger_core",
+        "@maven//:io_opentracing_opentracing_util",
     ],
 )
 
@@ -44,8 +45,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -60,8 +61,8 @@ junit_tests(
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -77,7 +78,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@hamcrest//:compile",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -94,8 +95,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -111,8 +112,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -129,8 +130,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -146,8 +147,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -163,8 +164,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -181,8 +182,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -198,8 +199,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -217,8 +218,8 @@ junit_tests(
         "//projects/minesweeper",
         "//projects/minesweeper:matchers",
         "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 

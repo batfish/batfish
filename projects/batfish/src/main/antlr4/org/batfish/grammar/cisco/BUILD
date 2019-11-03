@@ -11,7 +11,7 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco/parsing:cisco_base_parser",
-        "@antlr4_runtime//:compile",
+        "@maven//:org_antlr_antlr4_runtime",
     ],
 )
 

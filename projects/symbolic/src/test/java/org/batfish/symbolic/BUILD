@@ -8,7 +8,7 @@ junit_tests(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/symbolic/src/main/java/org/batfish/symbolic:core",
-        "@jsr305//:compile",
-        "@junit//:compile",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:junit_junit",
     ],
 )

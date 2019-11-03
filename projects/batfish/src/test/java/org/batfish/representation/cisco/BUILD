@@ -14,7 +14,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco",
-        "@guava//:compile",
-        "@guava_testlib//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )

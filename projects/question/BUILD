@@ -16,11 +16,13 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/bdd",
-        "@auto_service//:compile",
-        "@commons_lang3//:compile",
-        "@jackson_annotations//:compile",
-        "@jackson_core//:compile",
-        "@jackson_databind//:compile",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_google_auto_service_auto_service",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_commons_commons_lang3",
     ],
 )
 
@@ -37,10 +39,10 @@ java_library(
         ":question",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
-        "@guava//:compile",
-        "@hamcrest//:compile",
-        "@jsr305//:compile",
-        "@junit//:compile",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -57,7 +59,7 @@ junit_tests(
         "src/test/resources/**",
     ]),
     runtime_deps = [
-        "@slf4j_jdk14//:runtime",
+        "@maven//:org_slf4j_slf4j_jdk14",
     ],
     deps = [
         ":question",
@@ -65,13 +67,13 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/bdd",
-        "@auto_service//:compile",
-        "@commons_lang3//:compile",
-        "@guava//:compile",
-        "@guava_testlib//:compile",
-        "@hamcrest//:compile",
-        "@jackson_databind//:compile",
-        "@junit//:compile",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_google_auto_service_auto_service",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
+        "@maven//:junit_junit",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 

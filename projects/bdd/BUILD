@@ -8,7 +8,7 @@ java_library(
         "src/main/java/**/*.java",
     ]),
     deps = [
-        "@jsr305//:compile",
+        "@maven//:com_google_code_findbugs_jsr305",
     ],
 )
 
@@ -22,7 +22,8 @@ java_library(
     ),
     deps = [
         ":bdd",
-        "@junit//:compile",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -35,6 +36,6 @@ junit_tests(
     deps = [
         ":bdd",
         ":bdd_testlib",
-        "@hamcrest//:compile",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
