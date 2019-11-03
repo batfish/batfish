@@ -474,8 +474,8 @@
                 "sha256": "dfb7bae2f404cfe0b72b4d23944698cb716b7665171812a0a4d0f5926c0fac79"
             },
             {
-                "coord": "commons-beanutils:commons-beanutils:1.9.3",
-                "file": "v1/https/repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.3/commons-beanutils-1.9.3.jar",
+                "coord": "commons-beanutils:commons-beanutils:1.9.4",
+                "file": "v1/https/repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.4/commons-beanutils-1.9.4.jar",
                 "directDependencies": [
                     "commons-collections:commons-collections:3.2.2",
                     "commons-logging:commons-logging:1.2"
@@ -487,11 +487,11 @@
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.3/commons-beanutils-1.9.3.jar",
+                "url": "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.4/commons-beanutils-1.9.4.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.3/commons-beanutils-1.9.3.jar"
+                    "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.4/commons-beanutils-1.9.4.jar"
                 ],
-                "sha256": "c058e39c7c64203d3a448f3adb588cb03d6378ed808485618f26e137f29dae73"
+                "sha256": "7d938c81789028045c08c065e94be75fc280527620d5bd62b519d5838532368a"
             },
             {
                 "coord": "commons-cli:commons-cli:1.4",
@@ -848,22 +848,22 @@
                 "directDependencies": [
                     "org.antlr:antlr4-runtime:4.7.2",
                     "commons-io:commons-io:2.6",
-                    "org.apache.commons:commons-lang3:3.8.1",
                     "net.sourceforge.saxon:saxon:9.1.0.8",
                     "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
                     "com.google.code.gson:gson:2.8.5",
                     "net.java.dev.javacc:javacc:5.0",
+                    "org.apache.commons:commons-lang3:3.9",
                     "org.ow2.asm:asm:7.1",
                     "com.beust:jcommander:1.72"
                 ],
                 "dependencies": [
                     "org.antlr:antlr4-runtime:4.7.2",
                     "commons-io:commons-io:2.6",
-                    "org.apache.commons:commons-lang3:3.8.1",
                     "net.sourceforge.saxon:saxon:9.1.0.8",
                     "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
                     "com.google.code.gson:gson:2.8.5",
                     "net.java.dev.javacc:javacc:5.0",
+                    "org.apache.commons:commons-lang3:3.9",
                     "org.ow2.asm:asm:7.1",
                     "com.beust:jcommander:1.72"
                 ],
@@ -881,22 +881,22 @@
                 "file": "v1/https/repo1.maven.org/maven2/net/sourceforge/pmd/pmd-java/6.14.0/pmd-java-6.14.0.jar",
                 "directDependencies": [
                     "commons-io:commons-io:2.6",
-                    "org.apache.commons:commons-lang3:3.8.1",
                     "net.sourceforge.pmd:pmd-core:6.14.0",
                     "net.sourceforge.saxon:saxon:9.1.0.8",
                     "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
                     "net.java.dev.javacc:javacc:5.0",
+                    "org.apache.commons:commons-lang3:3.9",
                     "org.ow2.asm:asm:7.1"
                 ],
                 "dependencies": [
                     "org.antlr:antlr4-runtime:4.7.2",
                     "commons-io:commons-io:2.6",
-                    "org.apache.commons:commons-lang3:3.8.1",
                     "net.sourceforge.pmd:pmd-core:6.14.0",
                     "net.sourceforge.saxon:saxon:9.1.0.8",
                     "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
                     "com.google.code.gson:gson:2.8.5",
                     "net.java.dev.javacc:javacc:5.0",
+                    "org.apache.commons:commons-lang3:3.9",
                     "org.ow2.asm:asm:7.1",
                     "com.beust:jcommander:1.72"
                 ],
@@ -952,70 +952,72 @@
                 "sha256": "4c518b87d4bdff8b44cd8cbc1af816e944b62a3fe5b80b781501cf1f4759bbc4"
             },
             {
-                "coord": "org.apache.commons:commons-collections4:4.2",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.2/commons-collections4-4.2.jar",
+                "coord": "org.apache.commons:commons-collections4:4.4",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.2/commons-collections4-4.2.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.2/commons-collections4-4.2.jar"
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar"
                 ],
-                "sha256": "6a594721d51444fd97b3eaefc998a77f606dedb03def494f74755aead3c9df3e"
+                "sha256": "1df8b9430b5c8ed143d7815e403e33ef5371b2400aadbe9bda0883762e0846d1"
             },
             {
-                "coord": "org.apache.commons:commons-configuration2:2.3",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.3/commons-configuration2-2.3.jar",
+                "coord": "org.apache.commons:commons-configuration2:2.6",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.6/commons-configuration2-2.6.jar",
                 "directDependencies": [
                     "commons-logging:commons-logging:1.2",
-                    "org.apache.commons:commons-lang3:3.8.1"
+                    "org.apache.commons:commons-lang3:3.9",
+                    "org.apache.commons:commons-text:1.8"
                 ],
                 "dependencies": [
+                    "org.apache.commons:commons-lang3:3.9",
                     "commons-logging:commons-logging:1.2",
-                    "org.apache.commons:commons-lang3:3.8.1"
+                    "org.apache.commons:commons-text:1.8"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.3/commons-configuration2-2.3.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.6/commons-configuration2-2.6.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.3/commons-configuration2-2.3.jar"
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.6/commons-configuration2-2.6.jar"
                 ],
-                "sha256": "378fcc33a3731b368bb741dce19ae6c66372f228409744f0a779addb2e9b6af5"
+                "sha256": "225788911e53af0b29a31a18e0d03b05d86aa9c9e0b3c6686982c30c10f931fb"
             },
             {
-                "coord": "org.apache.commons:commons-lang3:3.8.1",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar",
+                "coord": "org.apache.commons:commons-lang3:3.9",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar"
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar"
                 ],
-                "sha256": "dac807f65b07698ff39b1b07bfef3d87ae3fd46d91bbf8a2bc02b2a831616f68"
+                "sha256": "de2e1dcdcf3ef917a8ce858661a06726a9a944f28e33ad7f9e08bea44dc3c230"
             },
             {
-                "coord": "org.apache.commons:commons-text:1.6",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar",
+                "coord": "org.apache.commons:commons-text:1.8",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-text/1.8/commons-text-1.8.jar",
                 "directDependencies": [
-                    "org.apache.commons:commons-lang3:3.8.1"
+                    "org.apache.commons:commons-lang3:3.9"
                 ],
                 "dependencies": [
-                    "org.apache.commons:commons-lang3:3.8.1"
+                    "org.apache.commons:commons-lang3:3.9"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-text/1.8/commons-text-1.8.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar"
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-text/1.8/commons-text-1.8.jar"
                 ],
-                "sha256": "df45e56549b63e0fe716953c9d43cc158f8bf008baf60498e7c17f3faa00a70b"
+                "sha256": "6fe7ad4ad5349d6b77e7a0e1c9f6037108a1ee48c42e7e6eb4b18f56d324f7b2"
             },
             {
                 "coord": "org.apache.httpcomponents:httpclient:4.2.5",
@@ -2038,6 +2040,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 1449401928
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -1872820123
     }
 }
