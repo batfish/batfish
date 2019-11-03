@@ -12,7 +12,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
-        "@antlr4_runtime//:compile",
+        "@maven//:org_antlr_antlr4_runtime",
     ],
 )
 
@@ -34,9 +34,9 @@ junit_tests(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/representation/juniper",
-        "@antlr4_runtime//:compile",
-        "@commons_lang3//:compile",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )

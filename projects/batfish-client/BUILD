@@ -7,7 +7,7 @@ java_binary(
     main_class = "org.batfish.client.Main",
     runtime_deps = [
         ":client",
-        "@slf4j_jdk14//:runtime",
+        "@maven//:org_slf4j_slf4j_jdk14",
     ],
 )
 
@@ -22,22 +22,22 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "@commons_io//:compile",
-        "@commons_lang3//:compile",
-        "@diffutils//:compile",
-        "@guava//:compile",
-        "@jackson_annotations//:compile",
-        "@jackson_core//:compile",
-        "@jackson_databind//:compile",
-        "@jaeger_core//:compile",
-        "@jaxrs_api//:compile",
-        "@jersey_media_multipart//:compile",
-        "@jettison//:compile",
-        "@jline3//:compile",
-        "@jsonassert//:compile",
-        "@jsr305//:compile",
-        "@opentracing_api//:compile",
-        "@opentracing_util//:compile",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_github_wumpz_diffutils",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_uber_jaeger_jaeger_core",
+        "@maven//:commons_io_commons_io",
+        "@maven//:io_opentracing_opentracing_api",
+        "@maven//:io_opentracing_opentracing_util",
+        "@maven//:javax_ws_rs_javax_ws_rs_api",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_codehaus_jettison_jettison",
+        "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
+        "@maven//:org_jline_jline",
+        "@maven//:org_skyscreamer_jsonassert",
     ],
 )
 
@@ -53,8 +53,8 @@ java_library(
     deps = [
         ":client",
         "//projects/batfish-common-protocol:common",
-        "@guava//:compile",
-        "@jackson_annotations//:compile",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_google_guava_guava",
     ],
 )
 
@@ -71,12 +71,12 @@ junit_tests(
         ":client",
         ":client_testlib",
         "//projects/batfish-common-protocol:common",
-        "@commons_lang3//:compile",
-        "@diffutils//:compile",
-        "@guava//:compile",
-        "@hamcrest//:compile",
-        "@jackson_databind//:compile",
-        "@jettison//:compile",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_github_wumpz_diffutils",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_codehaus_jettison_jettison",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 

@@ -10,7 +10,8 @@ java_library(
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "@guava//:compile",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
     ],
 )
 

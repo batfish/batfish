@@ -20,7 +20,7 @@ junit_tests(
         "//projects/batfish",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )

@@ -4,6 +4,6 @@ java_plugin(
     name = "auto_service_plugin",
     processor_class = "com.google.auto.service.processor.AutoServiceProcessor",
     deps = [
-        "@auto_service//:compile",
+        "@maven//:com_google_auto_service_auto_service",
     ],
 )

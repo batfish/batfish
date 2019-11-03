@@ -15,11 +15,11 @@ java_library(
         "//projects/bdd",
         "//projects/lib/z3",
         "//projects/question",
-        "@auto_service//:compile",
-        "@commons_lang3//:compile",
-        "@guava//:compile",
-        "@jackson_annotations//:compile",
-        "@jsr305//:compile",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_google_auto_service_auto_service",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_commons_commons_lang3",
     ],
 )
 
@@ -33,11 +33,11 @@ java_library(
         exclude = ["src/test/java/**/*Test.java"],
     ),
     runtime_deps = [
-        "@slf4j_jdk14//:runtime",
+        "@maven//:org_slf4j_slf4j_jdk14",
     ],
     deps = [
         ":minesweeper",
-        "@hamcrest//:compile",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
@@ -48,7 +48,7 @@ junit_tests(
         "src/test/java/**/*Test.java",
     ]),
     runtime_deps = [
-        "@slf4j_jdk14//:runtime",
+        "@maven//:org_slf4j_slf4j_jdk14",
     ],
     deps = [
         ":minesweeper",
@@ -58,10 +58,10 @@ junit_tests(
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/bdd",
         "//projects/lib/z3",
-        "@guava//:compile",
-        "@guava_testlib//:compile",
-        "@hamcrest//:compile",
-        "@junit//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 
