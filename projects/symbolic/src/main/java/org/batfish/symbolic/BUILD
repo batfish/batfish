@@ -10,7 +10,7 @@ java_library(
     srcs = ["IngressLocation.java"],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "@jsr305//:compile",
+        "@maven//:com_google_code_findbugs_jsr305",
     ],
 )
 

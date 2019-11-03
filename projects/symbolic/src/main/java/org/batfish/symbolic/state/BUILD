@@ -8,7 +8,7 @@ java_library(
         "*.java",
     ]),
     deps = [
-        "@jsr305//:compile",
+        "@maven//:com_google_code_findbugs_jsr305",
     ],
 )
 

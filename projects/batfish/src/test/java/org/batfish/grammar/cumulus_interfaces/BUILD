@@ -17,8 +17,8 @@ junit_tests(
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_interfaces",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus_interfaces",
-        "@commons_lang3//:compile",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )

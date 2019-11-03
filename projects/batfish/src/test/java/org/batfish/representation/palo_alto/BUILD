@@ -14,7 +14,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/java/org/batfish/representation/palo_alto",
-        "@guava//:compile",
-        "@hamcrest//:compile",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
