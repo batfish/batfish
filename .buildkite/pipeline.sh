@@ -88,7 +88,10 @@ EOF
 ###### Ensure the code still compiles with Bazel
 cat <<EOF
   - label: ":bazel: Bazel"
-    command: "bazel build -- //..."
+    command:
+      - "python3 -m virtualenv .venv"
+      - ". .venv/bin/activate"
+      - "bazel build -- //..."
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
