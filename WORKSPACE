@@ -969,26 +969,6 @@ load("@lz4//:rules.bzl", "lz4_compile")
 
 lz4_compile()
 
-# Maven-Artifact
-maven_repository(
-    name = "maven_artifact",
-    force = [
-        "org.apache.commons:commons-lang3:3.8.1",
-    ],
-    transitive_deps = [
-        "6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1",
-        "9c905d5a9c144e6f0d30c9db748090e807fed60e:org.apache.maven:maven-artifact:3.5.4",
-        "60eecb6f15abdb1c653ad80abaac6fe188b3feaa:org.codehaus.plexus:plexus-utils:3.1.0",
-    ],
-    deps = [
-        "org.apache.maven:maven-artifact:3.5.4",
-    ],
-)
-
-load("@maven_artifact//:rules.bzl", "maven_artifact_compile")
-
-maven_artifact_compile()
-
 # Opentracing
 maven_repository(
     name = "opentracing_api",
@@ -1107,21 +1087,6 @@ maven_repository(
 load("@pmd//:rules.bzl", "pmd_compile")
 
 pmd_compile()
-
-# scala_library
-maven_repository(
-    name = "scala_library",
-    transitive_deps = [
-        "270fc1cda47bc255f3cd03152ec8c2ed7d224e2b:org.scala-lang:scala-library:2.12.0",
-    ],
-    deps = [
-        "org.scala-lang:scala-library:2.12.0",
-    ],
-)
-
-load("@scala_library//:rules.bzl", "scala_library_compile")
-
-scala_library_compile()
 
 # slf4j
 maven_repository(

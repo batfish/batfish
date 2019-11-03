@@ -11,7 +11,7 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
-"//projects/batfish/src/test/resources/org/batfish/grammar/cumulus_concatenated/testconfigs",
+        "//projects/batfish/src/test/resources/org/batfish/grammar/cumulus_concatenated/testconfigs",
     ],
     deps = [
         "//projects/batfish",

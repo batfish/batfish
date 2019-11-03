@@ -98,7 +98,6 @@ java_library(
         "@jsonassert//:compile",
         "@jsr305//:compile",
         "@lz4//:compile",
-        "@maven_artifact//:compile",
         "@opentracing_api//:compile",
         "@opentracing_contrib_jaxrs//:compile",
         "@opentracing_util//:compile",

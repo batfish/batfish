@@ -38,7 +38,6 @@ java_library(
         "@jsr305//:compile",
         "@opentracing_api//:compile",
         "@opentracing_util//:compile",
-        "@scala_library//:compile",
     ],
 )
 
