@@ -62,7 +62,7 @@
     <diffutils.version>3.0</diffutils.version>
     <errorprone.version>2.3.1</errorprone.version>
     <grizzly.version>2.4.3</grizzly.version>
-    <guava.version>26.0-jre</guava.version>
+    <guava.version>28.0-jre</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
     <hamcrest.version>2.2</hamcrest.version>
     <icu4j.version>63.1</icu4j.version>

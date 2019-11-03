@@ -1,6 +1,8 @@
 {
     "dependency_tree": {
-        "conflict_resolution": {},
+        "conflict_resolution": {
+            "com.google.errorprone:error_prone_annotations:2.3.1": "com.google.errorprone:error_prone_annotations:2.3.2"
+        },
         "dependencies": [
             {
                 "coord": "com.beust:jcommander:1.72",
@@ -70,18 +72,20 @@
                 "directDependencies": [
                     "com.fasterxml.jackson.core:jackson-core:2.9.8",
                     "com.fasterxml.jackson.core:jackson-databind:2.9.8",
-                    "com.google.guava:guava:26.0-jre"
+                    "com.google.guava:guava:28.0-jre"
                 ],
                 "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "com.google.j2objc:j2objc-annotations:1.3",
                     "com.fasterxml.jackson.core:jackson-databind:2.9.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
-                    "com.google.errorprone:error_prone_annotations:2.3.1",
-                    "com.google.j2objc:j2objc-annotations:1.1",
+                    "com.google.guava:guava:28.0-jre",
+                    "org.checkerframework:checker-qual:2.8.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+                    "com.google.guava:failureaccess:1.0.1",
                     "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
-                    "com.google.guava:guava:26.0-jre",
-                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
-                    "org.checkerframework:checker-qual:2.5.2"
+                    "com.google.errorprone:error_prone_annotations:2.3.2",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
@@ -201,16 +205,18 @@
                 "file": "v1/https/repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc4/auto-service-1.0-rc4.jar",
                 "directDependencies": [
                     "com.google.auto:auto-common:0.8",
-                    "com.google.guava:guava:26.0-jre"
+                    "com.google.guava:guava:28.0-jre"
                 ],
                 "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "com.google.j2objc:j2objc-annotations:1.3",
                     "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.guava:guava:28.0-jre",
                     "com.google.auto:auto-common:0.8",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
-                    "com.google.errorprone:error_prone_annotations:2.3.1",
-                    "com.google.j2objc:j2objc-annotations:1.1",
-                    "com.google.guava:guava:26.0-jre",
-                    "org.checkerframework:checker-qual:2.5.2"
+                    "org.checkerframework:checker-qual:2.8.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "com.google.errorprone:error_prone_annotations:2.3.2"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
@@ -225,15 +231,17 @@
                 "coord": "com.google.auto:auto-common:0.8",
                 "file": "v1/https/repo1.maven.org/maven2/com/google/auto/auto-common/0.8/auto-common-0.8.jar",
                 "directDependencies": [
-                    "com.google.guava:guava:26.0-jre"
+                    "com.google.guava:guava:28.0-jre"
                 ],
                 "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "com.google.j2objc:j2objc-annotations:1.3",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
-                    "com.google.errorprone:error_prone_annotations:2.3.1",
-                    "com.google.j2objc:j2objc-annotations:1.1",
-                    "com.google.guava:guava:26.0-jre",
-                    "org.checkerframework:checker-qual:2.5.2"
+                    "com.google.guava:guava:28.0-jre",
+                    "org.checkerframework:checker-qual:2.8.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "com.google.errorprone:error_prone_annotations:2.3.2"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
@@ -273,87 +281,121 @@
                 "sha256": "233a0149fc365c9f6edbd683cfe266b19bdc773be98eabdaf6b3c924b48e7d81"
             },
             {
-                "coord": "com.google.errorprone:error_prone_annotations:2.3.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.jar",
+                "coord": "com.google.errorprone:error_prone_annotations:2.3.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.2/error_prone_annotations-2.3.2.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.2/error_prone_annotations-2.3.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.jar"
+                    "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.2/error_prone_annotations-2.3.2.jar"
                 ],
-                "sha256": "10a5949aa0f95c8de4fd47edfe20534d2acefd8c224f8afea1f607e112816120"
+                "sha256": "357cd6cfb067c969226c442451502aee13800a24e950fdfde77bcdb4565a668d"
             },
             {
-                "coord": "com.google.guava:guava-testlib:26.0-jre",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava-testlib/26.0-jre/guava-testlib-26.0-jre.jar",
-                "directDependencies": [
-                    "com.google.code.findbugs:jsr305:3.0.2",
-                    "junit:junit:4.12",
-                    "com.google.errorprone:error_prone_annotations:2.3.1",
-                    "com.google.j2objc:j2objc-annotations:1.1",
-                    "com.google.guava:guava:26.0-jre",
-                    "org.checkerframework:checker-qual:2.5.2"
-                ],
-                "dependencies": [
-                    "com.google.code.findbugs:jsr305:3.0.2",
-                    "junit:junit:4.12",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
-                    "com.google.errorprone:error_prone_annotations:2.3.1",
-                    "com.google.j2objc:j2objc-annotations:1.1",
-                    "com.google.guava:guava:26.0-jre",
-                    "org.checkerframework:checker-qual:2.5.2"
-                ],
-                "exclusions": [
-                    "org.hamcrest:hamcrest-core"
-                ],
-                "url": "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/26.0-jre/guava-testlib-26.0-jre.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/26.0-jre/guava-testlib-26.0-jre.jar"
-                ],
-                "sha256": "3e738516af017c9de105bf3a7f0a9f69183e47520446cb6df9bc24050834011e"
-            },
-            {
-                "coord": "com.google.guava:guava:26.0-jre",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/26.0-jre/guava-26.0-jre.jar",
-                "directDependencies": [
-                    "com.google.code.findbugs:jsr305:3.0.2",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
-                    "com.google.errorprone:error_prone_annotations:2.3.1",
-                    "com.google.j2objc:j2objc-annotations:1.1",
-                    "org.checkerframework:checker-qual:2.5.2"
-                ],
-                "dependencies": [
-                    "com.google.code.findbugs:jsr305:3.0.2",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
-                    "com.google.errorprone:error_prone_annotations:2.3.1",
-                    "com.google.j2objc:j2objc-annotations:1.1",
-                    "org.checkerframework:checker-qual:2.5.2"
-                ],
-                "exclusions": [
-                    "org.hamcrest:hamcrest-core"
-                ],
-                "url": "https://repo1.maven.org/maven2/com/google/guava/guava/26.0-jre/guava-26.0-jre.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/guava/guava/26.0-jre/guava-26.0-jre.jar"
-                ],
-                "sha256": "a0e9cabad665bc20bcd2b01f108e5fc03f756e13aea80abaadb9f407033bea2c"
-            },
-            {
-                "coord": "com.google.j2objc:j2objc-annotations:1.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar",
+                "coord": "com.google.guava:failureaccess:1.0.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"
+                    "https://repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar"
                 ],
-                "sha256": "2994a7eb78f2710bd3d3bfb639b2c94e219cedac0d4d084d516e78c16dddecf6"
+                "sha256": "a171ee4c734dd2da837e4b16be9df4661afab72a41adaf31eb84dfdaf936ca26"
+            },
+            {
+                "coord": "com.google.guava:guava-testlib:28.0-jre",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava-testlib/28.0-jre/guava-testlib-28.0-jre.jar",
+                "directDependencies": [
+                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "junit:junit:4.12",
+                    "com.google.guava:guava:28.0-jre",
+                    "org.checkerframework:checker-qual:2.8.1",
+                    "com.google.errorprone:error_prone_annotations:2.3.2"
+                ],
+                "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "junit:junit:4.12",
+                    "com.google.guava:guava:28.0-jre",
+                    "org.checkerframework:checker-qual:2.8.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "com.google.errorprone:error_prone_annotations:2.3.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/28.0-jre/guava-testlib-28.0-jre.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/28.0-jre/guava-testlib-28.0-jre.jar"
+                ],
+                "sha256": "a24c8d89f96e76038028d1150bffcabd7b30578d893fe36107aa66da467c8f9c"
+            },
+            {
+                "coord": "com.google.guava:guava:28.0-jre",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/28.0-jre/guava-28.0-jre.jar",
+                "directDependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "org.checkerframework:checker-qual:2.8.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "com.google.errorprone:error_prone_annotations:2.3.2"
+                ],
+                "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "org.checkerframework:checker-qual:2.8.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "com.google.errorprone:error_prone_annotations:2.3.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/guava/guava/28.0-jre/guava-28.0-jre.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/guava/guava/28.0-jre/guava-28.0-jre.jar"
+                ],
+                "sha256": "73e4d6ae5f0e8f9d292a4db83a2479b5468f83d972ac1ff36d6d0b43943b4f91"
+            },
+            {
+                "coord": "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
+                ],
+                "sha256": "b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99"
+            },
+            {
+                "coord": "com.google.j2objc:j2objc-annotations:1.3",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar"
+                ],
+                "sha256": "21af30c92267bd6122c0e0b4d20cccb6641a37eaf956c6540ec471d584e64a7b"
             },
             {
                 "coord": "com.ibm.icu:icu4j:63.1",
@@ -1080,18 +1122,18 @@
                 "sha256": "d7f37db17a5418c151258dd03b604cdfd3e2aa55cdba34528f86a2478c46fe8f"
             },
             {
-                "coord": "org.checkerframework:checker-qual:2.5.2",
-                "file": "v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar",
+                "coord": "org.checkerframework:checker-qual:2.8.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/2.8.1/checker-qual-2.8.1.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar",
+                "url": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/2.8.1/checker-qual-2.8.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar"
+                    "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/2.8.1/checker-qual-2.8.1.jar"
                 ],
-                "sha256": "64b02691c8b9d4e7700f8ee2e742dce7ea2c6e81e662b7522c9ee3bf568c040a"
+                "sha256": "9103499008bcecd4e948da29b17864abb64304e15706444ae209d17ebe0575df"
             },
             {
                 "coord": "org.codehaus.jettison:jettison:1.4.0",
@@ -1108,18 +1150,18 @@
                 "sha256": "769f05ee4e57a69734bad235f129f3fc2197193df2ef746bcd7cca43c999fba3"
             },
             {
-                "coord": "org.codehaus.mojo:animal-sniffer-annotations:1.14",
-                "file": "v1/https/repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar",
+                "coord": "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+                "file": "v1/https/repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar",
+                "url": "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar"
+                    "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar"
                 ],
-                "sha256": "2068320bd6bad744c3673ab048f67e30bef8f518996fa380033556600669905d"
+                "sha256": "92654f493ecfec52082e76354f0ebf87648dc3d5cec2e3c3cdb947c016747a53"
             },
             {
                 "coord": "org.eclipse.jgit:org.eclipse.jgit:4.4.1.201607150455-r",
@@ -2040,6 +2082,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -1872820123
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 368041040
     }
 }
