@@ -178,11 +178,6 @@
 
     <dependency>
       <groupId>io.opentracing</groupId>
-      <artifactId>opentracing-mock</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.opentracing</groupId>
       <artifactId>opentracing-noop</artifactId>
     </dependency>
 
@@ -288,6 +283,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava-testlib</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-mock</artifactId>
       <scope>test</scope>
     </dependency>
 
