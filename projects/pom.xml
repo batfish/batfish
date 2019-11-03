@@ -64,7 +64,7 @@
     <grizzly.version>2.4.3</grizzly.version>
     <guava.version>26.0-jre</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
-    <hamcrest.version>2.1</hamcrest.version>
+    <hamcrest.version>2.2</hamcrest.version>
     <icu4j.version>63.1</icu4j.version>
     <jackson.version>2.9.8</jackson.version>
     <javax-activation.version>1.1</javax-activation.version>
