@@ -1,0 +1,2043 @@
+{
+    "dependency_tree": {
+        "conflict_resolution": {},
+        "dependencies": [
+            {
+                "coord": "com.beust:jcommander:1.72",
+                "file": "v1/https/repo1.maven.org/maven2/com/beust/jcommander/1.72/jcommander-1.72.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/beust/jcommander/1.72/jcommander-1.72.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/beust/jcommander/1.72/jcommander-1.72.jar"
+                ],
+                "sha256": "e0de160b129b2414087e01fe845609cd55caec6820cfd4d0c90fabcc7bdb8c1e"
+            },
+            {
+                "coord": "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.9.8/jackson-annotations-2.9.8.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.9.8/jackson-annotations-2.9.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.9.8/jackson-annotations-2.9.8.jar"
+                ],
+                "sha256": "fdca896161766ca4a2c3e06f02f6a5ede22a5b3a55606541cd2838eace08ca23"
+            },
+            {
+                "coord": "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.jar"
+                ],
+                "sha256": "d934dab0bd48994eeea2c1b493cb547158a338a80b58c4fbc8e85fb0905e105f"
+            },
+            {
+                "coord": "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.jar",
+                "directDependencies": [
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8"
+                ],
+                "dependencies": [
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.jar"
+                ],
+                "sha256": "2351c3eba73a545db9079f5d6d768347ad72666537362c8220fe3e950a55a864"
+            },
+            {
+                "coord": "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-guava/2.9.8/jackson-datatype-guava-2.9.8.jar",
+                "directDependencies": [
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                    "com.google.guava:guava:26.0-jre"
+                ],
+                "dependencies": [
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
+                    "com.google.errorprone:error_prone_annotations:2.3.1",
+                    "com.google.j2objc:j2objc-annotations:1.1",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
+                    "com.google.guava:guava:26.0-jre",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "org.checkerframework:checker-qual:2.5.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-guava/2.9.8/jackson-datatype-guava-2.9.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-guava/2.9.8/jackson-datatype-guava-2.9.8.jar"
+                ],
+                "sha256": "b13534d712572c848faaf27f7fd4fa2f2a11cef4185d79d995aceef3a778ee59"
+            },
+            {
+                "coord": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.8/jackson-datatype-jdk8-2.9.8.jar",
+                "directDependencies": [
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+                ],
+                "dependencies": [
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.8/jackson-datatype-jdk8-2.9.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.8/jackson-datatype-jdk8-2.9.8.jar"
+                ],
+                "sha256": "6d0e43d927c63b25d94130dc95d9b26c031e4516a2b1dfb984dea99bfd49b003"
+            },
+            {
+                "coord": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.8/jackson-datatype-jsr310-2.9.8.jar",
+                "directDependencies": [
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+                ],
+                "dependencies": [
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.8/jackson-datatype-jsr310-2.9.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.8/jackson-datatype-jsr310-2.9.8.jar"
+                ],
+                "sha256": "ab71c4f31c3dd583ba22e15837e9142360f056ad1677f1c2cf2c832d826c8dab"
+            },
+            {
+                "coord": "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.9.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.9.8/jackson-jaxrs-base-2.9.8.jar",
+                "directDependencies": [
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+                ],
+                "dependencies": [
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.9.8/jackson-jaxrs-base-2.9.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.9.8/jackson-jaxrs-base-2.9.8.jar"
+                ],
+                "sha256": "499feebfda22f77f59b69f0716a02a2c5548274cc47bebc12cea91dacf188a52"
+            },
+            {
+                "coord": "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.8.10",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.8.10/jackson-module-jaxb-annotations-2.8.10.jar",
+                "directDependencies": [
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+                ],
+                "dependencies": [
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.8.10/jackson-module-jaxb-annotations-2.8.10.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.8.10/jackson-module-jaxb-annotations-2.8.10.jar"
+                ],
+                "sha256": "c333a59c2ef0ec6ed2370e74ae5d9747f21b5d84507f7f36337eceda8d0e3b9b"
+            },
+            {
+                "coord": "com.github.wumpz:diffutils:2.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/github/wumpz/diffutils/2.2/diffutils-2.2.jar",
+                "directDependencies": [
+                    "org.eclipse.jgit:org.eclipse.jgit:4.4.1.201607150455-r"
+                ],
+                "dependencies": [
+                    "org.eclipse.jgit:org.eclipse.jgit:4.4.1.201607150455-r"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/github/wumpz/diffutils/2.2/diffutils-2.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/github/wumpz/diffutils/2.2/diffutils-2.2.jar"
+                ],
+                "sha256": "df78fbcb23b86cda037a4a28cb255c5dd9f2f110d977656902586d18c61cfeb4"
+            },
+            {
+                "coord": "com.google.auto.service:auto-service:1.0-rc4",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc4/auto-service-1.0-rc4.jar",
+                "directDependencies": [
+                    "com.google.auto:auto-common:0.8",
+                    "com.google.guava:guava:26.0-jre"
+                ],
+                "dependencies": [
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.auto:auto-common:0.8",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
+                    "com.google.errorprone:error_prone_annotations:2.3.1",
+                    "com.google.j2objc:j2objc-annotations:1.1",
+                    "com.google.guava:guava:26.0-jre",
+                    "org.checkerframework:checker-qual:2.5.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc4/auto-service-1.0-rc4.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc4/auto-service-1.0-rc4.jar"
+                ],
+                "sha256": "e422d49c312fd2031222e7306e8108c1b4118eb9c049f1b51eca280bed87e924"
+            },
+            {
+                "coord": "com.google.auto:auto-common:0.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/auto/auto-common/0.8/auto-common-0.8.jar",
+                "directDependencies": [
+                    "com.google.guava:guava:26.0-jre"
+                ],
+                "dependencies": [
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
+                    "com.google.errorprone:error_prone_annotations:2.3.1",
+                    "com.google.j2objc:j2objc-annotations:1.1",
+                    "com.google.guava:guava:26.0-jre",
+                    "org.checkerframework:checker-qual:2.5.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/auto/auto-common/0.8/auto-common-0.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/auto/auto-common/0.8/auto-common-0.8.jar"
+                ],
+                "sha256": "97db1709f57b91b32edacb596ef4641872f227b7d99ad90e467f0d77f5ba134a"
+            },
+            {
+                "coord": "com.google.code.findbugs:jsr305:3.0.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"
+                ],
+                "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7"
+            },
+            {
+                "coord": "com.google.code.gson:gson:2.8.5",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar"
+                ],
+                "sha256": "233a0149fc365c9f6edbd683cfe266b19bdc773be98eabdaf6b3c924b48e7d81"
+            },
+            {
+                "coord": "com.google.errorprone:error_prone_annotations:2.3.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.jar"
+                ],
+                "sha256": "10a5949aa0f95c8de4fd47edfe20534d2acefd8c224f8afea1f607e112816120"
+            },
+            {
+                "coord": "com.google.guava:guava-testlib:26.0-jre",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava-testlib/26.0-jre/guava-testlib-26.0-jre.jar",
+                "directDependencies": [
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "junit:junit:4.12",
+                    "com.google.errorprone:error_prone_annotations:2.3.1",
+                    "com.google.j2objc:j2objc-annotations:1.1",
+                    "com.google.guava:guava:26.0-jre",
+                    "org.checkerframework:checker-qual:2.5.2"
+                ],
+                "dependencies": [
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "junit:junit:4.12",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
+                    "com.google.errorprone:error_prone_annotations:2.3.1",
+                    "com.google.j2objc:j2objc-annotations:1.1",
+                    "com.google.guava:guava:26.0-jre",
+                    "org.checkerframework:checker-qual:2.5.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/26.0-jre/guava-testlib-26.0-jre.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/26.0-jre/guava-testlib-26.0-jre.jar"
+                ],
+                "sha256": "3e738516af017c9de105bf3a7f0a9f69183e47520446cb6df9bc24050834011e"
+            },
+            {
+                "coord": "com.google.guava:guava:26.0-jre",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/26.0-jre/guava-26.0-jre.jar",
+                "directDependencies": [
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
+                    "com.google.errorprone:error_prone_annotations:2.3.1",
+                    "com.google.j2objc:j2objc-annotations:1.1",
+                    "org.checkerframework:checker-qual:2.5.2"
+                ],
+                "dependencies": [
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.14",
+                    "com.google.errorprone:error_prone_annotations:2.3.1",
+                    "com.google.j2objc:j2objc-annotations:1.1",
+                    "org.checkerframework:checker-qual:2.5.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/guava/guava/26.0-jre/guava-26.0-jre.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/guava/guava/26.0-jre/guava-26.0-jre.jar"
+                ],
+                "sha256": "a0e9cabad665bc20bcd2b01f108e5fc03f756e13aea80abaadb9f407033bea2c"
+            },
+            {
+                "coord": "com.google.j2objc:j2objc-annotations:1.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"
+                ],
+                "sha256": "2994a7eb78f2710bd3d3bfb639b2c94e219cedac0d4d084d516e78c16dddecf6"
+            },
+            {
+                "coord": "com.ibm.icu:icu4j:63.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/ibm/icu/icu4j/63.1/icu4j-63.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/ibm/icu/icu4j/63.1/icu4j-63.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/ibm/icu/icu4j/63.1/icu4j-63.1.jar"
+                ],
+                "sha256": "0940c61d12667413a58206a010ab5ca0758cc44ad9e9957ea98e0f871ab5eda0"
+            },
+            {
+                "coord": "com.squareup.okhttp3:okhttp:3.8.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1.jar",
+                "directDependencies": [
+                    "com.squareup.okio:okio:1.13.0"
+                ],
+                "dependencies": [
+                    "com.squareup.okio:okio:1.13.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1.jar"
+                ],
+                "sha256": "c1d57f913f74f61d424d4250a92723ba9a61affc12a0ab194d84cc179b472841"
+            },
+            {
+                "coord": "com.squareup.okio:okio:1.13.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar"
+                ],
+                "sha256": "734269c3ebc5090e3b23566db558f421f0b4027277c79ad5d176b8ec168bb850"
+            },
+            {
+                "coord": "com.uber.jaeger:jaeger-core:0.21.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "com.uber.jaeger:jaeger-thrift:0.21.0",
+                    "com.squareup.okhttp3:okhttp:3.8.1",
+                    "org.slf4j:slf4j-api:1.7.25",
+                    "com.google.code.gson:gson:2.8.5",
+                    "io.opentracing:opentracing-util:0.30.0"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "org.apache.httpcomponents:httpcore:4.2.4",
+                    "commons-logging:commons-logging:1.2",
+                    "com.uber.jaeger:jaeger-thrift:0.21.0",
+                    "io.opentracing:opentracing-noop:0.30.0",
+                    "com.squareup.okhttp3:okhttp:3.8.1",
+                    "org.slf4j:slf4j-api:1.7.25",
+                    "org.apache.thrift:libthrift:0.9.2",
+                    "com.squareup.okio:okio:1.13.0",
+                    "com.google.code.gson:gson:2.8.5",
+                    "org.apache.httpcomponents:httpclient:4.2.5",
+                    "io.opentracing:opentracing-util:0.30.0",
+                    "commons-codec:commons-codec:1.6"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0.jar"
+                ],
+                "sha256": "bd6506c790993f5b5138cc1aa1f7a75bb20ce8fd6645e9227ca0897f4360c91c"
+            },
+            {
+                "coord": "com.uber.jaeger:jaeger-thrift:0.21.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0.jar",
+                "directDependencies": [
+                    "org.apache.thrift:libthrift:0.9.2"
+                ],
+                "dependencies": [
+                    "org.apache.httpcomponents:httpcore:4.2.4",
+                    "commons-logging:commons-logging:1.2",
+                    "org.slf4j:slf4j-api:1.7.25",
+                    "org.apache.thrift:libthrift:0.9.2",
+                    "org.apache.httpcomponents:httpclient:4.2.5",
+                    "commons-codec:commons-codec:1.6"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0.jar"
+                ],
+                "sha256": "22128fc46504703c3b282b32e42886d7defa20f495fa29ac31d3b2e791d4645b"
+            },
+            {
+                "coord": "com.vaadin.external.google:android-json:0.0.20131108.vaadin1",
+                "file": "v1/https/repo1.maven.org/maven2/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar"
+                ],
+                "sha256": "dfb7bae2f404cfe0b72b4d23944698cb716b7665171812a0a4d0f5926c0fac79"
+            },
+            {
+                "coord": "commons-beanutils:commons-beanutils:1.9.3",
+                "file": "v1/https/repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.3/commons-beanutils-1.9.3.jar",
+                "directDependencies": [
+                    "commons-collections:commons-collections:3.2.2",
+                    "commons-logging:commons-logging:1.2"
+                ],
+                "dependencies": [
+                    "commons-collections:commons-collections:3.2.2",
+                    "commons-logging:commons-logging:1.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.3/commons-beanutils-1.9.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.3/commons-beanutils-1.9.3.jar"
+                ],
+                "sha256": "c058e39c7c64203d3a448f3adb588cb03d6378ed808485618f26e137f29dae73"
+            },
+            {
+                "coord": "commons-cli:commons-cli:1.4",
+                "file": "v1/https/repo1.maven.org/maven2/commons-cli/commons-cli/1.4/commons-cli-1.4.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/commons-cli/commons-cli/1.4/commons-cli-1.4.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/commons-cli/commons-cli/1.4/commons-cli-1.4.jar"
+                ],
+                "sha256": "fd3c7c9545a9cdb2051d1f9155c4f76b1e4ac5a57304404a6eedb578ffba7328"
+            },
+            {
+                "coord": "commons-codec:commons-codec:1.6",
+                "file": "v1/https/repo1.maven.org/maven2/commons-codec/commons-codec/1.6/commons-codec-1.6.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.6/commons-codec-1.6.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"
+                ],
+                "sha256": "54b34e941b8e1414bd3e40d736efd3481772dc26db3296f6aa45cec9f6203d86"
+            },
+            {
+                "coord": "commons-collections:commons-collections:3.2.2",
+                "file": "v1/https/repo1.maven.org/maven2/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar"
+                ],
+                "sha256": "eeeae917917144a68a741d4c0dff66aa5c5c5fd85593ff217bced3fc8ca783b8"
+            },
+            {
+                "coord": "commons-io:commons-io:2.6",
+                "file": "v1/https/repo1.maven.org/maven2/commons-io/commons-io/2.6/commons-io-2.6.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/commons-io/commons-io/2.6/commons-io-2.6.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/commons-io/commons-io/2.6/commons-io-2.6.jar"
+                ],
+                "sha256": "f877d304660ac2a142f3865badfc971dec7ed73c747c7f8d5d2f5139ca736513"
+            },
+            {
+                "coord": "commons-logging:commons-logging:1.2",
+                "file": "v1/https/repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "logkit:logkit",
+                    "avalon-framework:avalon-framework",
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"
+                ],
+                "sha256": "daddea1ea0be0f56978ab3006b8ac92834afeefbd9b7e4e6316fca57df0fa636"
+            },
+            {
+                "coord": "commons-logging:commons-logging:1.2",
+                "file": "v1/https/repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"
+                ],
+                "sha256": "daddea1ea0be0f56978ab3006b8ac92834afeefbd9b7e4e6316fca57df0fa636"
+            },
+            {
+                "coord": "io.opentracing.contrib:opentracing-concurrent:0.0.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing:opentracing-noop:0.30.0"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing:opentracing-noop:0.30.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1.jar"
+                ],
+                "sha256": "39b16086190e5c163ead48edd8f1fa45772cf577ca8c5c9d17ffd747d55647da"
+            },
+            {
+                "coord": "io.opentracing.contrib:opentracing-jaxrs2:0.0.9",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing.contrib:opentracing-concurrent:0.0.1",
+                    "io.opentracing.contrib:opentracing-web-servlet-filter:0.0.9"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing.contrib:opentracing-concurrent:0.0.1",
+                    "io.opentracing:opentracing-noop:0.30.0",
+                    "io.opentracing.contrib:opentracing-web-servlet-filter:0.0.9",
+                    "io.opentracing:opentracing-util:0.30.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9.jar"
+                ],
+                "sha256": "98be8f937ee8cbf026b16986f1783e489cf4f09ba75717fa6eaa7112f542079b"
+            },
+            {
+                "coord": "io.opentracing.contrib:opentracing-web-servlet-filter:0.0.9",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing:opentracing-util:0.30.0"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-util:0.30.0",
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing:opentracing-noop:0.30.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9.jar"
+                ],
+                "sha256": "73c0d15ae89ca6db88210c4a98b7e6fd7f0feacfa5f0fe1eae19f8df23124abf"
+            },
+            {
+                "coord": "io.opentracing:opentracing-api:0.30.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0.jar"
+                ],
+                "sha256": "c04b450e587879b8cfd5f4ec6f93d430c167bde8e30495b6adc0562830868636"
+            },
+            {
+                "coord": "io.opentracing:opentracing-mock:0.30.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing:opentracing-noop:0.30.0"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing:opentracing-noop:0.30.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0.jar"
+                ],
+                "sha256": "0ff34d32b9239fc90cc4efa35ae60915c9b4027804f83a51737e3441cb3e52f1"
+            },
+            {
+                "coord": "io.opentracing:opentracing-noop:0.30.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.30.0"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-api:0.30.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0.jar"
+                ],
+                "sha256": "53017404723b06c93c327a8e88e751814faab41e7c7d6ebccedd04be9b9916ee"
+            },
+            {
+                "coord": "io.opentracing:opentracing-util:0.30.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing:opentracing-noop:0.30.0"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-api:0.30.0",
+                    "io.opentracing:opentracing-noop:0.30.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0.jar"
+                ],
+                "sha256": "0dcdb996c8e2f739b5fe6a7a5f789696e755fbc6bb9bec7ee5e48cbe2ac8225f"
+            },
+            {
+                "coord": "javax.activation:activation:1.1",
+                "file": "v1/https/repo1.maven.org/maven2/javax/activation/activation/1.1/activation-1.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/javax/activation/activation/1.1/activation-1.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/javax/activation/activation/1.1/activation-1.1.jar"
+                ],
+                "sha256": "2881c79c9d6ef01c58e62beea13e9d1ac8b8baa16f2fc198ad6e6776defdcdd3"
+            },
+            {
+                "coord": "javax.annotation:javax.annotation-api:1.3.2",
+                "file": "v1/https/repo1.maven.org/maven2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar"
+                ],
+                "sha256": "e04ba5195bcd555dc95650f7cc614d151e4bcd52d29a10b8aa2197f3ab89ab9b"
+            },
+            {
+                "coord": "javax.inject:javax.inject:1",
+                "file": "v1/https/repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar"
+                ],
+                "sha256": "91c77044a50c481636c32d916fd89c9118a72195390452c81065080f957de7ff"
+            },
+            {
+                "coord": "javax.servlet:javax.servlet-api:4.0.0",
+                "file": "v1/https/repo1.maven.org/maven2/javax/servlet/javax.servlet-api/4.0.0/javax.servlet-api-4.0.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/javax/servlet/javax.servlet-api/4.0.0/javax.servlet-api-4.0.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/javax/servlet/javax.servlet-api/4.0.0/javax.servlet-api-4.0.0.jar"
+                ],
+                "sha256": "d2999d25223fe1b2408671550beb395a055498d967e0f9ef15901d1eeab49a7c"
+            },
+            {
+                "coord": "javax.validation:validation-api:1.1.0.Final",
+                "file": "v1/https/repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar"
+                ],
+                "sha256": "f39d7ba7253e35f5ac48081ec1bc28c5df9b32ac4b7db20853e5a8e76bf7b0ed"
+            },
+            {
+                "coord": "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                "file": "v1/https/repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar"
+                ],
+                "sha256": "2c309eb2c9455ffee9da8518c70a3b6d46be2a269b2e2a101c806a537efe79a4"
+            },
+            {
+                "coord": "javax.xml.bind:jaxb-api:2.3.0",
+                "file": "v1/https/repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar"
+                ],
+                "sha256": "883007989d373d19f352ba9792b25dec21dc7d0e205a710a93a3815101bb3d03"
+            },
+            {
+                "coord": "junit:junit:4.12",
+                "file": "v1/https/repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar"
+                ],
+                "sha256": "59721f0805e223d84b90677887d9ff567dc534d7c502ca903c0c2b17f05c116a"
+            },
+            {
+                "coord": "net.java.dev.javacc:javacc:5.0",
+                "file": "v1/https/repo1.maven.org/maven2/net/java/dev/javacc/javacc/5.0/javacc-5.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/java/dev/javacc/javacc/5.0/javacc-5.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/java/dev/javacc/javacc/5.0/javacc-5.0.jar"
+                ],
+                "sha256": "71113161bc8cf6641515541c2818028b87c78ec2e8ffaa75317686ee08967b89"
+            },
+            {
+                "coord": "net.sourceforge.pmd:pmd-core:6.14.0",
+                "file": "v1/https/repo1.maven.org/maven2/net/sourceforge/pmd/pmd-core/6.14.0/pmd-core-6.14.0.jar",
+                "directDependencies": [
+                    "org.antlr:antlr4-runtime:4.7.2",
+                    "commons-io:commons-io:2.6",
+                    "org.apache.commons:commons-lang3:3.8.1",
+                    "net.sourceforge.saxon:saxon:9.1.0.8",
+                    "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
+                    "com.google.code.gson:gson:2.8.5",
+                    "net.java.dev.javacc:javacc:5.0",
+                    "org.ow2.asm:asm:7.1",
+                    "com.beust:jcommander:1.72"
+                ],
+                "dependencies": [
+                    "org.antlr:antlr4-runtime:4.7.2",
+                    "commons-io:commons-io:2.6",
+                    "org.apache.commons:commons-lang3:3.8.1",
+                    "net.sourceforge.saxon:saxon:9.1.0.8",
+                    "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
+                    "com.google.code.gson:gson:2.8.5",
+                    "net.java.dev.javacc:javacc:5.0",
+                    "org.ow2.asm:asm:7.1",
+                    "com.beust:jcommander:1.72"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/sourceforge/pmd/pmd-core/6.14.0/pmd-core-6.14.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/sourceforge/pmd/pmd-core/6.14.0/pmd-core-6.14.0.jar"
+                ],
+                "sha256": "eb7b86ec6003eb02f62c0be6a19fa3de379bce5c12c97680b69a9aebbe54c4fb"
+            },
+            {
+                "coord": "net.sourceforge.pmd:pmd-java:6.14.0",
+                "file": "v1/https/repo1.maven.org/maven2/net/sourceforge/pmd/pmd-java/6.14.0/pmd-java-6.14.0.jar",
+                "directDependencies": [
+                    "commons-io:commons-io:2.6",
+                    "org.apache.commons:commons-lang3:3.8.1",
+                    "net.sourceforge.pmd:pmd-core:6.14.0",
+                    "net.sourceforge.saxon:saxon:9.1.0.8",
+                    "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
+                    "net.java.dev.javacc:javacc:5.0",
+                    "org.ow2.asm:asm:7.1"
+                ],
+                "dependencies": [
+                    "org.antlr:antlr4-runtime:4.7.2",
+                    "commons-io:commons-io:2.6",
+                    "org.apache.commons:commons-lang3:3.8.1",
+                    "net.sourceforge.pmd:pmd-core:6.14.0",
+                    "net.sourceforge.saxon:saxon:9.1.0.8",
+                    "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
+                    "com.google.code.gson:gson:2.8.5",
+                    "net.java.dev.javacc:javacc:5.0",
+                    "org.ow2.asm:asm:7.1",
+                    "com.beust:jcommander:1.72"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/sourceforge/pmd/pmd-java/6.14.0/pmd-java-6.14.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/sourceforge/pmd/pmd-java/6.14.0/pmd-java-6.14.0.jar"
+                ],
+                "sha256": "448b6547425cdaa4f24583c344fa45753e56cab76e082096262219546750277e"
+            },
+            {
+                "coord": "net.sourceforge.saxon:saxon:9.1.0.8",
+                "file": "v1/https/repo1.maven.org/maven2/net/sourceforge/saxon/saxon/9.1.0.8/saxon-9.1.0.8.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/sourceforge/saxon/saxon/9.1.0.8/saxon-9.1.0.8.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/sourceforge/saxon/saxon/9.1.0.8/saxon-9.1.0.8.jar"
+                ],
+                "sha256": "f3dcde81066c75db4ffca341d543555dbbbba7fff7ba6d1c2e7de1101dea394a"
+            },
+            {
+                "coord": "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
+                "file": "v1/https/repo1.maven.org/maven2/net/sourceforge/saxon/saxon/9.1.0.8/saxon-9.1.0.8-dom.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/sourceforge/saxon/saxon/9.1.0.8/saxon-9.1.0.8-dom.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/sourceforge/saxon/saxon/9.1.0.8/saxon-9.1.0.8-dom.jar"
+                ],
+                "sha256": "c6cf3ecc7f4b65ab8b613d00fd9e9c0648a5aa03264a941ba0fd2da5339f917a"
+            },
+            {
+                "coord": "org.antlr:antlr4-runtime:4.7.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.jar"
+                ],
+                "sha256": "4c518b87d4bdff8b44cd8cbc1af816e944b62a3fe5b80b781501cf1f4759bbc4"
+            },
+            {
+                "coord": "org.apache.commons:commons-collections4:4.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.2/commons-collections4-4.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.2/commons-collections4-4.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.2/commons-collections4-4.2.jar"
+                ],
+                "sha256": "6a594721d51444fd97b3eaefc998a77f606dedb03def494f74755aead3c9df3e"
+            },
+            {
+                "coord": "org.apache.commons:commons-configuration2:2.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.3/commons-configuration2-2.3.jar",
+                "directDependencies": [
+                    "commons-logging:commons-logging:1.2",
+                    "org.apache.commons:commons-lang3:3.8.1"
+                ],
+                "dependencies": [
+                    "commons-logging:commons-logging:1.2",
+                    "org.apache.commons:commons-lang3:3.8.1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.3/commons-configuration2-2.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.3/commons-configuration2-2.3.jar"
+                ],
+                "sha256": "378fcc33a3731b368bb741dce19ae6c66372f228409744f0a779addb2e9b6af5"
+            },
+            {
+                "coord": "org.apache.commons:commons-lang3:3.8.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar"
+                ],
+                "sha256": "dac807f65b07698ff39b1b07bfef3d87ae3fd46d91bbf8a2bc02b2a831616f68"
+            },
+            {
+                "coord": "org.apache.commons:commons-text:1.6",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar",
+                "directDependencies": [
+                    "org.apache.commons:commons-lang3:3.8.1"
+                ],
+                "dependencies": [
+                    "org.apache.commons:commons-lang3:3.8.1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar"
+                ],
+                "sha256": "df45e56549b63e0fe716953c9d43cc158f8bf008baf60498e7c17f3faa00a70b"
+            },
+            {
+                "coord": "org.apache.httpcomponents:httpclient:4.2.5",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar",
+                "directDependencies": [
+                    "commons-codec:commons-codec:1.6",
+                    "commons-logging:commons-logging:1.2",
+                    "org.apache.httpcomponents:httpcore:4.2.4"
+                ],
+                "dependencies": [
+                    "commons-codec:commons-codec:1.6",
+                    "commons-logging:commons-logging:1.2",
+                    "org.apache.httpcomponents:httpcore:4.2.4"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar"
+                ],
+                "sha256": "c7fb05b793a586633d2d801a889e0846f3f21c7f8dc3dab776421383f49ebb8c"
+            },
+            {
+                "coord": "org.apache.httpcomponents:httpcore:4.2.4",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4.jar"
+                ],
+                "sha256": "bda2b9e0464f7a0e122d5e9bff7b384f3bc3a91af18ad51e029deaaa599e5db3"
+            },
+            {
+                "coord": "org.apache.thrift:libthrift:0.9.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar",
+                "directDependencies": [
+                    "org.apache.httpcomponents:httpclient:4.2.5",
+                    "org.apache.httpcomponents:httpcore:4.2.4",
+                    "org.slf4j:slf4j-api:1.7.25"
+                ],
+                "dependencies": [
+                    "org.apache.httpcomponents:httpcore:4.2.4",
+                    "commons-logging:commons-logging:1.2",
+                    "org.slf4j:slf4j-api:1.7.25",
+                    "org.apache.httpcomponents:httpclient:4.2.5",
+                    "commons-codec:commons-codec:1.6"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar"
+                ],
+                "sha256": "d7f37db17a5418c151258dd03b604cdfd3e2aa55cdba34528f86a2478c46fe8f"
+            },
+            {
+                "coord": "org.checkerframework:checker-qual:2.5.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar"
+                ],
+                "sha256": "64b02691c8b9d4e7700f8ee2e742dce7ea2c6e81e662b7522c9ee3bf568c040a"
+            },
+            {
+                "coord": "org.codehaus.jettison:jettison:1.4.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/codehaus/jettison/jettison/1.4.0/jettison-1.4.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/codehaus/jettison/jettison/1.4.0/jettison-1.4.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/codehaus/jettison/jettison/1.4.0/jettison-1.4.0.jar"
+                ],
+                "sha256": "769f05ee4e57a69734bad235f129f3fc2197193df2ef746bcd7cca43c999fba3"
+            },
+            {
+                "coord": "org.codehaus.mojo:animal-sniffer-annotations:1.14",
+                "file": "v1/https/repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar"
+                ],
+                "sha256": "2068320bd6bad744c3673ab048f67e30bef8f518996fa380033556600669905d"
+            },
+            {
+                "coord": "org.eclipse.jgit:org.eclipse.jgit:4.4.1.201607150455-r",
+                "file": "v1/https/repo1.maven.org/maven2/org/eclipse/jgit/org.eclipse.jgit/4.4.1.201607150455-r/org.eclipse.jgit-4.4.1.201607150455-r.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "com.jcraft:jsch",
+                    "commons-logging:commons-logging",
+                    "commons-codec:commons-codec",
+                    "com.googlecode.javaewah:JavaEWAH",
+                    "org.hamcrest:hamcrest-core",
+                    "org.slf4j:slf4j-api",
+                    "org.apache.httpcomponents:httpclient"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/eclipse/jgit/org.eclipse.jgit/4.4.1.201607150455-r/org.eclipse.jgit-4.4.1.201607150455-r.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/eclipse/jgit/org.eclipse.jgit/4.4.1.201607150455-r/org.eclipse.jgit-4.4.1.201607150455-r.jar"
+                ],
+                "sha256": "0b2447b324e86351e35e08e091436194a846d469d79e97644398533c73d01fe0"
+            },
+            {
+                "coord": "org.glassfish.grizzly:grizzly-framework:2.4.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-framework/2.4.3/grizzly-framework-2.4.3.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-framework/2.4.3/grizzly-framework-2.4.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-framework/2.4.3/grizzly-framework-2.4.3.jar"
+                ],
+                "sha256": "3c3e6e6f5188ca7264fc37e0ebb1f0dc90ee0b892bf3a7cc98d09f5586566751"
+            },
+            {
+                "coord": "org.glassfish.grizzly:grizzly-http-server:2.4.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http-server/2.4.3/grizzly-http-server-2.4.3.jar",
+                "directDependencies": [
+                    "org.glassfish.grizzly:grizzly-http:2.4.3"
+                ],
+                "dependencies": [
+                    "org.glassfish.grizzly:grizzly-framework:2.4.3",
+                    "org.glassfish.grizzly:grizzly-http:2.4.3"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http-server/2.4.3/grizzly-http-server-2.4.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http-server/2.4.3/grizzly-http-server-2.4.3.jar"
+                ],
+                "sha256": "abcc69296c1b91552ebd0d676cd13d18f0da57d967ae93fa94775355e0a59854"
+            },
+            {
+                "coord": "org.glassfish.grizzly:grizzly-http-servlet:2.4.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http-servlet/2.4.0/grizzly-http-servlet-2.4.0.jar",
+                "directDependencies": [
+                    "org.glassfish.grizzly:grizzly-http-server:2.4.3"
+                ],
+                "dependencies": [
+                    "org.glassfish.grizzly:grizzly-framework:2.4.3",
+                    "org.glassfish.grizzly:grizzly-http-server:2.4.3",
+                    "org.glassfish.grizzly:grizzly-http:2.4.3"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http-servlet/2.4.0/grizzly-http-servlet-2.4.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http-servlet/2.4.0/grizzly-http-servlet-2.4.0.jar"
+                ],
+                "sha256": "9dccd3ef307206487bce480cae96c2fa819029f1d00251aa09349c9b2e675006"
+            },
+            {
+                "coord": "org.glassfish.grizzly:grizzly-http:2.4.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http/2.4.3/grizzly-http-2.4.3.jar",
+                "directDependencies": [
+                    "org.glassfish.grizzly:grizzly-framework:2.4.3"
+                ],
+                "dependencies": [
+                    "org.glassfish.grizzly:grizzly-framework:2.4.3"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http/2.4.3/grizzly-http-2.4.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/grizzly/grizzly-http/2.4.3/grizzly-http-2.4.3.jar"
+                ],
+                "sha256": "9d2d344bb8482b4579f403c0b55df94c5ba7cf199b9ce1223ee69120ae71024d"
+            },
+            {
+                "coord": "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b42",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged/2.5.0-b42/aopalliance-repackaged-2.5.0-b42.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged/2.5.0-b42/aopalliance-repackaged-2.5.0-b42.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged/2.5.0-b42/aopalliance-repackaged-2.5.0-b42.jar"
+                ],
+                "sha256": "669869a9d7e98fcea34580de250db54531550487d03571f26b9592e712897423"
+            },
+            {
+                "coord": "org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/hk2/external/javax.inject/2.5.0-b42/javax.inject-2.5.0-b42.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "javax.inject:javax.inject",
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/hk2/external/javax.inject/2.5.0-b42/javax.inject-2.5.0-b42.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/hk2/external/javax.inject/2.5.0-b42/javax.inject-2.5.0-b42.jar"
+                ],
+                "sha256": "3bcf096beb918c9586be829190903090a21ac40513c1401e1b986e6030addc98"
+            },
+            {
+                "coord": "org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/hk2/external/javax.inject/2.5.0-b42/javax.inject-2.5.0-b42.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/hk2/external/javax.inject/2.5.0-b42/javax.inject-2.5.0-b42.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/hk2/external/javax.inject/2.5.0-b42/javax.inject-2.5.0-b42.jar"
+                ],
+                "sha256": "3bcf096beb918c9586be829190903090a21ac40513c1401e1b986e6030addc98"
+            },
+            {
+                "coord": "org.glassfish.hk2:hk2-api:2.5.0-b42",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/hk2/hk2-api/2.5.0-b42/hk2-api-2.5.0-b42.jar",
+                "directDependencies": [
+                    "javax.inject:javax.inject:1",
+                    "org.glassfish.hk2:hk2-utils:2.5.0-b42",
+                    "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b42"
+                ],
+                "dependencies": [
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b42",
+                    "org.glassfish.hk2:hk2-utils:2.5.0-b42",
+                    "javax.inject:javax.inject:1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-api/2.5.0-b42/hk2-api-2.5.0-b42.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-api/2.5.0-b42/hk2-api-2.5.0-b42.jar"
+                ],
+                "sha256": "4d328e5b1cb5e8dcf3f97e1348d960f439e597009aa9d994dd5325bcef367908"
+            },
+            {
+                "coord": "org.glassfish.hk2:hk2-locator:2.5.0-b42",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator/2.5.0-b42/hk2-locator-2.5.0-b42.jar",
+                "directDependencies": [
+                    "org.javassist:javassist:3.22.0-CR2",
+                    "org.glassfish.hk2:hk2-utils:2.5.0-b42",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b42",
+                    "org.glassfish.hk2:hk2-api:2.5.0-b42",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "dependencies": [
+                    "org.javassist:javassist:3.22.0-CR2",
+                    "org.glassfish.hk2:hk2-utils:2.5.0-b42",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b42",
+                    "javax.inject:javax.inject:1",
+                    "org.glassfish.hk2:hk2-api:2.5.0-b42",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator/2.5.0-b42/hk2-locator-2.5.0-b42.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator/2.5.0-b42/hk2-locator-2.5.0-b42.jar"
+                ],
+                "sha256": "2a3766079d1cd21e715e4fd75e8189ebd58f9bf852885f1679253f0a27039b72"
+            },
+            {
+                "coord": "org.glassfish.hk2:hk2-utils:2.5.0-b42",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/hk2/hk2-utils/2.5.0-b42/hk2-utils-2.5.0-b42.jar",
+                "directDependencies": [
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "javax.inject:javax.inject:1"
+                ],
+                "dependencies": [
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "javax.inject:javax.inject:1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-utils/2.5.0-b42/hk2-utils-2.5.0-b42.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-utils/2.5.0-b42/hk2-utils-2.5.0-b42.jar"
+                ],
+                "sha256": "5edb176086ad0be1d4abbc0a1d26d519d088a01ee24f9ee064c657895a86e3ee"
+            },
+            {
+                "coord": "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/hk2/osgi-resource-locator/1.0.1/osgi-resource-locator-1.0.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/hk2/osgi-resource-locator/1.0.1/osgi-resource-locator-1.0.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/hk2/osgi-resource-locator/1.0.1/osgi-resource-locator-1.0.1.jar"
+                ],
+                "sha256": "775003be577e8806f51b6e442be1033d83be2cb2207227b349be0bf16e6c0843"
+            },
+            {
+                "coord": "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-grizzly2-http/2.27/jersey-container-grizzly2-http-2.27.jar",
+                "directDependencies": [
+                    "org.glassfish.grizzly:grizzly-http-server:2.4.3",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "org.glassfish.jersey.core:jersey-server:2.27",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.grizzly:grizzly-framework:2.4.3",
+                    "org.glassfish.jersey.core:jersey-client:2.27",
+                    "org.glassfish.grizzly:grizzly-http:2.4.3",
+                    "org.glassfish.grizzly:grizzly-http-server:2.4.3",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.jersey.core:jersey-server:2.27",
+                    "javax.validation:validation-api:1.1.0.Final",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-grizzly2-http/2.27/jersey-container-grizzly2-http-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-grizzly2-http/2.27/jersey-container-grizzly2-http-2.27.jar"
+                ],
+                "sha256": "b57171841ec06720e720215bfecd890b452c949367cd43bf7d4e254fbec7de26"
+            },
+            {
+                "coord": "org.glassfish.jersey.containers:jersey-container-grizzly2-servlet:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-grizzly2-servlet/2.27/jersey-container-grizzly2-servlet-2.27.jar",
+                "directDependencies": [
+                    "org.glassfish.grizzly:grizzly-http-servlet:2.4.0",
+                    "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "org.glassfish.jersey.core:jersey-server:2.27",
+                    "javax.servlet:javax.servlet-api:4.0.0",
+                    "org.glassfish.jersey.containers:jersey-container-servlet:2.27"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.grizzly:grizzly-framework:2.4.3",
+                    "org.glassfish.jersey.core:jersey-client:2.27",
+                    "org.glassfish.grizzly:grizzly-http-servlet:2.4.0",
+                    "org.glassfish.grizzly:grizzly-http:2.4.3",
+                    "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
+                    "org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+                    "org.glassfish.grizzly:grizzly-http-server:2.4.3",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.jersey.core:jersey-server:2.27",
+                    "javax.validation:validation-api:1.1.0.Final",
+                    "javax.servlet:javax.servlet-api:4.0.0",
+                    "org.glassfish.jersey.containers:jersey-container-servlet:2.27",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-grizzly2-servlet/2.27/jersey-container-grizzly2-servlet-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-grizzly2-servlet/2.27/jersey-container-grizzly2-servlet-2.27.jar"
+                ],
+                "sha256": "06aef4b32e347144ff0260a152e5ae4b7fc8f371e02a4676f8e3996ebbb27120"
+            },
+            {
+                "coord": "org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet-core/2.27/jersey-container-servlet-core-2.27.jar",
+                "directDependencies": [
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.core:jersey-server:2.27"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.jersey.core:jersey-client:2.27",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.jersey.core:jersey-server:2.27",
+                    "javax.validation:validation-api:1.1.0.Final",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet-core/2.27/jersey-container-servlet-core-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet-core/2.27/jersey-container-servlet-core-2.27.jar"
+                ],
+                "sha256": "39e9fee46f5c6b5d4e49dc03f54741671bd4261090c5f7b5c72541a232873946"
+            },
+            {
+                "coord": "org.glassfish.jersey.containers:jersey-container-servlet:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet/2.27/jersey-container-servlet-2.27.jar",
+                "directDependencies": [
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.core:jersey-server:2.27"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.jersey.core:jersey-client:2.27",
+                    "org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.jersey.core:jersey-server:2.27",
+                    "javax.validation:validation-api:1.1.0.Final",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet/2.27/jersey-container-servlet-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet/2.27/jersey-container-servlet-2.27.jar"
+                ],
+                "sha256": "40349db8dabf6327a01ad59eaff172bd9a5f8927b2411bcdc59ceb05ce7731c1"
+            },
+            {
+                "coord": "org.glassfish.jersey.core:jersey-client:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-client/2.27/jersey-client-2.27.jar",
+                "directDependencies": [
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+                    "org.glassfish.jersey.core:jersey-common:2.27"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-client/2.27/jersey-client-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-client/2.27/jersey-client-2.27.jar"
+                ],
+                "sha256": "aba407bda94df54f590041b4cde5f2fa31db45bd8b4cf7575af48c1f8f81bb04"
+            },
+            {
+                "coord": "org.glassfish.jersey.core:jersey-common:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-common/2.27/jersey-common-2.27.jar",
+                "directDependencies": [
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-common/2.27/jersey-common-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-common/2.27/jersey-common-2.27.jar"
+                ],
+                "sha256": "9a9578c6dac52b96195a614150f696d455db6b6d267a645c3120a4d0ee495789"
+            },
+            {
+                "coord": "org.glassfish.jersey.core:jersey-server:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-server/2.27/jersey-server-2.27.jar",
+                "directDependencies": [
+                    "org.glassfish.jersey.core:jersey-client:2.27",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "javax.validation:validation-api:1.1.0.Final",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.jersey.core:jersey-client:2.27",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "javax.validation:validation-api:1.1.0.Final",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-server/2.27/jersey-server-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-server/2.27/jersey-server-2.27.jar"
+                ],
+                "sha256": "45a2e1e87566cb9808953d1f5ce0b4d99ede51be4a0f22ed92a7ceda7ba9417e"
+            },
+            {
+                "coord": "org.glassfish.jersey.ext:jersey-entity-filtering:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-entity-filtering/2.27/jersey-entity-filtering-2.27.jar",
+                "directDependencies": [
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1"
+                ],
+                "dependencies": [
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-entity-filtering/2.27/jersey-entity-filtering-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-entity-filtering/2.27/jersey-entity-filtering-2.27.jar"
+                ],
+                "sha256": "529b7ee7830441cffe98851b1e6edc0edd30e8b066052999daa5de63c56302b2"
+            },
+            {
+                "coord": "org.glassfish.jersey.inject:jersey-hk2:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/inject/jersey-hk2/2.27/jersey-hk2-2.27.jar",
+                "directDependencies": [
+                    "org.glassfish.hk2:hk2-locator:2.5.0-b42",
+                    "org.glassfish.jersey.core:jersey-common:2.27"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.javassist:javassist:3.22.0-CR2",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "org.glassfish.hk2:hk2-utils:2.5.0-b42",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b42",
+                    "javax.inject:javax.inject:1",
+                    "org.glassfish.hk2:hk2-api:2.5.0-b42",
+                    "org.glassfish.hk2:hk2-locator:2.5.0-b42",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/inject/jersey-hk2/2.27/jersey-hk2-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/inject/jersey-hk2/2.27/jersey-hk2-2.27.jar"
+                ],
+                "sha256": "634a2790f08c2f33feb78586b22a23005a2f8aa483c316ae2435729be0943968"
+            },
+            {
+                "coord": "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-jaxb/2.27/jersey-media-jaxb-2.27.jar",
+                "directDependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+                    "org.glassfish.jersey.core:jersey-common:2.27"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-jaxb/2.27/jersey-media-jaxb-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-jaxb/2.27/jersey-media-jaxb-2.27.jar"
+                ],
+                "sha256": "b295e0d7ca93dbb084abd22a01ae7f54d5ffa244dd4b3ce1a6792eda148e76b2"
+            },
+            {
+                "coord": "org.glassfish.jersey.media:jersey-media-json-jackson:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/2.27/jersey-media-json-jackson-2.27.jar",
+                "directDependencies": [
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                    "org.glassfish.jersey.ext:jersey-entity-filtering:2.27",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
+                    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.8.10"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "com.fasterxml.jackson.core:jackson-databind:2.9.8",
+                    "org.glassfish.jersey.ext:jersey-entity-filtering:2.27",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
+                    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.8.10",
+                    "com.fasterxml.jackson.core:jackson-core:2.9.8"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/2.27/jersey-media-json-jackson-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/2.27/jersey-media-json-jackson-2.27.jar"
+                ],
+                "sha256": "815a783428d87e3f74591c6a9e4fd9c4bf37f5492e4c574b0a3e26a731dabc86"
+            },
+            {
+                "coord": "org.glassfish.jersey.media:jersey-media-json-jettison:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jettison/2.27/jersey-media-json-jettison-2.27.jar",
+                "directDependencies": [
+                    "org.codehaus.jettison:jettison:1.4.0",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.codehaus.jettison:jettison:1.4.0",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jettison/2.27/jersey-media-json-jettison-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jettison/2.27/jersey-media-json-jettison-2.27.jar"
+                ],
+                "sha256": "4d47c292b18ff67fb33ccb68f4ad42c315b24d71961d3314a3f69774e19d562e"
+            },
+            {
+                "coord": "org.glassfish.jersey.media:jersey-media-multipart:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-multipart/2.27/jersey-media-multipart-2.27.jar",
+                "directDependencies": [
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.jvnet.mimepull:mimepull:1.9.6"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.jvnet.mimepull:mimepull:1.9.6",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-multipart/2.27/jersey-media-multipart-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-multipart/2.27/jersey-media-multipart-2.27.jar"
+                ],
+                "sha256": "08b303988e99546364283c63da5aa2d79c7c823f7b0d1ca5deabe66fbbb6374e"
+            },
+            {
+                "coord": "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/test-framework/providers/jersey-test-framework-provider-grizzly2/2.27/jersey-test-framework-provider-grizzly2-2.27.jar",
+                "directDependencies": [
+                    "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
+                    "junit:junit:4.12",
+                    "org.glassfish.jersey.containers:jersey-container-grizzly2-servlet:2.27",
+                    "org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27",
+                    "javax.servlet:javax.servlet-api:4.0.0"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.grizzly:grizzly-framework:2.4.3",
+                    "org.glassfish.jersey.core:jersey-client:2.27",
+                    "org.glassfish.grizzly:grizzly-http-servlet:2.4.0",
+                    "org.glassfish.grizzly:grizzly-http:2.4.3",
+                    "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
+                    "org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+                    "org.glassfish.grizzly:grizzly-http-server:2.4.3",
+                    "junit:junit:4.12",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.containers:jersey-container-grizzly2-servlet:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.jersey.core:jersey-server:2.27",
+                    "javax.validation:validation-api:1.1.0.Final",
+                    "javax.servlet:javax.servlet-api:4.0.0",
+                    "org.glassfish.jersey.containers:jersey-container-servlet:2.27",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/test-framework/providers/jersey-test-framework-provider-grizzly2/2.27/jersey-test-framework-provider-grizzly2-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/test-framework/providers/jersey-test-framework-provider-grizzly2/2.27/jersey-test-framework-provider-grizzly2-2.27.jar"
+                ],
+                "sha256": "1b4e270e00bb53b38603a99ece9bd5625f545a3a41eb356a1654c291c8f623f9"
+            },
+            {
+                "coord": "org.glassfish.jersey.test-framework:jersey-test-framework-core:2.27",
+                "file": "v1/https/repo1.maven.org/maven2/org/glassfish/jersey/test-framework/jersey-test-framework-core/2.27/jersey-test-framework-core-2.27.jar",
+                "directDependencies": [
+                    "javax.servlet:javax.servlet-api:4.0.0",
+                    "junit:junit:4.12",
+                    "org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+                    "org.glassfish.jersey.core:jersey-server:2.27"
+                ],
+                "dependencies": [
+                    "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.glassfish.jersey.core:jersey-client:2.27",
+                    "org.glassfish.jersey.containers:jersey-container-servlet-core:2.27",
+                    "junit:junit:4.12",
+                    "org.glassfish.jersey.core:jersey-common:2.27",
+                    "org.glassfish.jersey.media:jersey-media-jaxb:2.27",
+                    "javax.ws.rs:javax.ws.rs-api:2.1.1",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.glassfish.jersey.core:jersey-server:2.27",
+                    "javax.validation:validation-api:1.1.0.Final",
+                    "javax.servlet:javax.servlet-api:4.0.0",
+                    "org.glassfish.hk2.external:javax.inject:2.5.0-b42"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/test-framework/jersey-test-framework-core/2.27/jersey-test-framework-core-2.27.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/glassfish/jersey/test-framework/jersey-test-framework-core/2.27/jersey-test-framework-core-2.27.jar"
+                ],
+                "sha256": "f2d6a9b9163643864b488f390325ef29c733996ca90089b0dbfa010032421139"
+            },
+            {
+                "coord": "org.hamcrest:hamcrest:2.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/hamcrest/hamcrest/2.1/hamcrest-2.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/hamcrest/hamcrest/2.1/hamcrest-2.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/hamcrest/hamcrest/2.1/hamcrest-2.1.jar"
+                ],
+                "sha256": "ba93b2e3a562322ba432f0a1b53addcc55cb188253319a020ed77f824e692050"
+            },
+            {
+                "coord": "org.javassist:javassist:3.22.0-CR2",
+                "file": "v1/https/repo1.maven.org/maven2/org/javassist/javassist/3.22.0-CR2/javassist-3.22.0-CR2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/javassist/javassist/3.22.0-CR2/javassist-3.22.0-CR2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/javassist/javassist/3.22.0-CR2/javassist-3.22.0-CR2.jar"
+                ],
+                "sha256": "230267ffd7bfe404c1b87faf215dd012f607ba3151bd7099562c305c09de6a7a"
+            },
+            {
+                "coord": "org.jgrapht:jgrapht-core:1.2.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.2.0/jgrapht-core-1.2.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.2.0/jgrapht-core-1.2.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.2.0/jgrapht-core-1.2.0.jar"
+                ],
+                "sha256": "1f428a197bb9fdd47cd1734a15ba54fa6e41e46b044d1b367549eca20a314a45"
+            },
+            {
+                "coord": "org.jline:jline:3.9.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/jline/jline/3.9.0/jline-3.9.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jline/jline/3.9.0/jline-3.9.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jline/jline/3.9.0/jline-3.9.0.jar"
+                ],
+                "sha256": "d2b986fd15d05e0b900faba776c1de9b4dc4a4fcdfeaa12a8ab8fb2b290ed527"
+            },
+            {
+                "coord": "org.jvnet.mimepull:mimepull:1.9.6",
+                "file": "v1/https/repo1.maven.org/maven2/org/jvnet/mimepull/mimepull/1.9.6/mimepull-1.9.6.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jvnet/mimepull/mimepull/1.9.6/mimepull-1.9.6.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jvnet/mimepull/mimepull/1.9.6/mimepull-1.9.6.jar"
+                ],
+                "sha256": "2d1ee56aa89837ba9ea55431542e7939fa9d425552c2e6c8ddfb3b77877721b7"
+            },
+            {
+                "coord": "org.lz4:lz4-java:1.5.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/lz4/lz4-java/1.5.0/lz4-java-1.5.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/lz4/lz4-java/1.5.0/lz4-java-1.5.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/lz4/lz4-java/1.5.0/lz4-java-1.5.0.jar"
+                ],
+                "sha256": "88a92c42e32f921a7cb37cd3ad30817c1e07c95fc7d52b53cd9e212bfe3b358f"
+            },
+            {
+                "coord": "org.ow2.asm:asm-analysis:7.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/ow2/asm/asm-analysis/7.1/asm-analysis-7.1.jar",
+                "directDependencies": [
+                    "org.ow2.asm:asm-tree:7.1"
+                ],
+                "dependencies": [
+                    "org.ow2.asm:asm:7.1",
+                    "org.ow2.asm:asm-tree:7.1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/7.1/asm-analysis-7.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/7.1/asm-analysis-7.1.jar"
+                ],
+                "sha256": "4612c0511a63db2a2570f07ad1959e19ed8eb703e4114da945cb85682519a55c"
+            },
+            {
+                "coord": "org.ow2.asm:asm-tree:7.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/ow2/asm/asm-tree/7.1/asm-tree-7.1.jar",
+                "directDependencies": [
+                    "org.ow2.asm:asm:7.1"
+                ],
+                "dependencies": [
+                    "org.ow2.asm:asm:7.1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/7.1/asm-tree-7.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/7.1/asm-tree-7.1.jar"
+                ],
+                "sha256": "c0e82b220b0a52c71c7ca2a58c99a2530696c7b58b173052b9d48fe3efb10073"
+            },
+            {
+                "coord": "org.ow2.asm:asm-util:7.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/ow2/asm/asm-util/7.1/asm-util-7.1.jar",
+                "directDependencies": [
+                    "org.ow2.asm:asm:7.1",
+                    "org.ow2.asm:asm-analysis:7.1",
+                    "org.ow2.asm:asm-tree:7.1"
+                ],
+                "dependencies": [
+                    "org.ow2.asm:asm:7.1",
+                    "org.ow2.asm:asm-analysis:7.1",
+                    "org.ow2.asm:asm-tree:7.1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/ow2/asm/asm-util/7.1/asm-util-7.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/ow2/asm/asm-util/7.1/asm-util-7.1.jar"
+                ],
+                "sha256": "a24485517596ae1003dcf2329c044a2a861e5c25d4476a695ccaacf560c74d1a"
+            },
+            {
+                "coord": "org.ow2.asm:asm:7.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/ow2/asm/asm/7.1/asm-7.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/ow2/asm/asm/7.1/asm-7.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/ow2/asm/asm/7.1/asm-7.1.jar"
+                ],
+                "sha256": "4ab2fa2b6d2cc9ccb1eaa05ea329c407b47b13ed2915f62f8c4b8cc96258d4de"
+            },
+            {
+                "coord": "org.parboiled:parboiled-core:1.3.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/parboiled/parboiled-core/1.3.1/parboiled-core-1.3.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/parboiled/parboiled-core/1.3.1/parboiled-core-1.3.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/parboiled/parboiled-core/1.3.1/parboiled-core-1.3.1.jar"
+                ],
+                "sha256": "0774bd58aee27d92fa2c0b38041231f839af313ea7eb91a690774b198417451d"
+            },
+            {
+                "coord": "org.parboiled:parboiled-java:1.3.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/parboiled/parboiled-java/1.3.1/parboiled-java-1.3.1.jar",
+                "directDependencies": [
+                    "org.parboiled:parboiled-core:1.3.1",
+                    "org.ow2.asm:asm-util:7.1",
+                    "org.ow2.asm:asm-analysis:7.1",
+                    "org.ow2.asm:asm-tree:7.1",
+                    "org.ow2.asm:asm:7.1"
+                ],
+                "dependencies": [
+                    "org.parboiled:parboiled-core:1.3.1",
+                    "org.ow2.asm:asm-util:7.1",
+                    "org.ow2.asm:asm-analysis:7.1",
+                    "org.ow2.asm:asm-tree:7.1",
+                    "org.ow2.asm:asm:7.1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/parboiled/parboiled-java/1.3.1/parboiled-java-1.3.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/parboiled/parboiled-java/1.3.1/parboiled-java-1.3.1.jar"
+                ],
+                "sha256": "a73cf55788c08e560f9f6dda71e93b304455959e095b9cbe58268333ad403ced"
+            },
+            {
+                "coord": "org.skyscreamer:jsonassert:1.5.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/skyscreamer/jsonassert/1.5.0/jsonassert-1.5.0.jar",
+                "directDependencies": [
+                    "com.vaadin.external.google:android-json:0.0.20131108.vaadin1"
+                ],
+                "dependencies": [
+                    "com.vaadin.external.google:android-json:0.0.20131108.vaadin1"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/skyscreamer/jsonassert/1.5.0/jsonassert-1.5.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/skyscreamer/jsonassert/1.5.0/jsonassert-1.5.0.jar"
+                ],
+                "sha256": "a310bc79c3f4744e2b2e993702fcebaf3696fec0063643ffdc6b49a8fb03ef39"
+            },
+            {
+                "coord": "org.slf4j:slf4j-api:1.7.25",
+                "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"
+                ],
+                "sha256": "18c4a0095d5c1da6b817592e767bb23d29dd2f560ad74df75ff3961dbde25b79"
+            },
+            {
+                "coord": "org.slf4j:slf4j-jdk14:1.7.25",
+                "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-jdk14/1.7.25/slf4j-jdk14-1.7.25.jar",
+                "directDependencies": [
+                    "org.slf4j:slf4j-api:1.7.25"
+                ],
+                "dependencies": [
+                    "org.slf4j:slf4j-api:1.7.25"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/slf4j/slf4j-jdk14/1.7.25/slf4j-jdk14-1.7.25.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/slf4j/slf4j-jdk14/1.7.25/slf4j-jdk14-1.7.25.jar"
+                ],
+                "sha256": "9b8b9b8279959b17e71432d40b8cf4175c761c3bc6ebc2c7ec0f2ae8ff223feb"
+            },
+            {
+                "coord": "org.xerial:sqlite-jdbc:3.25.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.25.2/sqlite-jdbc-3.25.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.25.2/sqlite-jdbc-3.25.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.25.2/sqlite-jdbc-3.25.2.jar"
+                ],
+                "sha256": "a45da61abed61568a533fdece125093180828edeb0d4b6f6d572e0cf457465f6"
+            }
+        ],
+        "version": "0.1.0",
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 1871284796
+    }
+}
