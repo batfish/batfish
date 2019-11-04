@@ -201,35 +201,51 @@
                 "sha256": "f2ac0477c29ea62bff1905af7dcca3d3f81b611a0b57acba7efe010ab76e7175"
             },
             {
-                "coord": "com.google.auto.service:auto-service:1.0-rc4",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc4/auto-service-1.0-rc4.jar",
-                "directDependencies": [
-                    "com.google.auto:auto-common:0.8",
-                    "com.google.guava:guava:28.0-jre"
-                ],
-                "dependencies": [
-                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
-                    "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:28.0-jre",
-                    "com.google.auto:auto-common:0.8",
-                    "org.checkerframework:checker-qual:2.8.1",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.17",
-                    "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.3.2"
-                ],
+                "coord": "com.google.auto.service:auto-service-annotations:1.0-rc6",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/auto/service/auto-service-annotations/1.0-rc6/auto-service-annotations-1.0-rc6.jar",
+                "directDependencies": [],
+                "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc4/auto-service-1.0-rc4.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/auto/service/auto-service-annotations/1.0-rc6/auto-service-annotations-1.0-rc6.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc4/auto-service-1.0-rc4.jar"
+                    "https://repo1.maven.org/maven2/com/google/auto/service/auto-service-annotations/1.0-rc6/auto-service-annotations-1.0-rc6.jar"
                 ],
-                "sha256": "e422d49c312fd2031222e7306e8108c1b4118eb9c049f1b51eca280bed87e924"
+                "sha256": "f55aee753b45bb49464d3aaa998ff0c48e4bf99240ab381842fa490d1d644e48"
             },
             {
-                "coord": "com.google.auto:auto-common:0.8",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/auto/auto-common/0.8/auto-common-0.8.jar",
+                "coord": "com.google.auto.service:auto-service:1.0-rc6",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc6/auto-service-1.0-rc6.jar",
+                "directDependencies": [
+                    "com.google.auto:auto-common:0.10",
+                    "com.google.auto.service:auto-service-annotations:1.0-rc6",
+                    "com.google.guava:guava:28.0-jre"
+                ],
+                "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.auto.service:auto-service-annotations:1.0-rc6",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.auto:auto-common:0.10",
+                    "com.google.guava:guava:28.0-jre",
+                    "org.checkerframework:checker-qual:2.8.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "com.google.errorprone:error_prone_annotations:2.3.2"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc6/auto-service-1.0-rc6.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/auto/service/auto-service/1.0-rc6/auto-service-1.0-rc6.jar"
+                ],
+                "sha256": "f68be5342c64d093273b89a74a22a5d21d42ff5328526986fba9044ddd403e41"
+            },
+            {
+                "coord": "com.google.auto:auto-common:0.10",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/auto/auto-common/0.10/auto-common-0.10.jar",
                 "directDependencies": [
                     "com.google.guava:guava:28.0-jre"
                 ],
@@ -246,11 +262,11 @@
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/auto/auto-common/0.8/auto-common-0.8.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/auto/auto-common/0.10/auto-common-0.10.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/auto/auto-common/0.8/auto-common-0.8.jar"
+                    "https://repo1.maven.org/maven2/com/google/auto/auto-common/0.10/auto-common-0.10.jar"
                 ],
-                "sha256": "97db1709f57b91b32edacb596ef4641872f227b7d99ad90e467f0d77f5ba134a"
+                "sha256": "b876b5fddaceeba7d359667f6c4fb8c6f8658da1ab902ffb79ec9a415deede5f"
             },
             {
                 "coord": "com.google.code.findbugs:jsr305:3.0.2",
@@ -2082,6 +2098,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -71525235
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 1176886189
     }
 }

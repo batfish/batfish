@@ -49,7 +49,7 @@
     <antlr4.version>4.7.2</antlr4.version>
     <antlr4-runtime.version>4.7.2</antlr4-runtime.version>
     <asm.version>7.0</asm.version>
-    <autoservice.version>1.0-rc4</autoservice.version>
+    <autoservice.version>1.0-rc6</autoservice.version>
     <beanutils.version>1.9.4</beanutils.version>
     <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
     <commons-cli.version>1.4</commons-cli.version>
@@ -130,6 +130,13 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven-compiler-plugin.version}</version>
           <configuration>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>com.google.auto.service</groupId>
+                <artifactId>auto-service</artifactId>
+                <version>${autoservice.version}</version>
+              </path>
+            </annotationProcessorPaths>
             <source>1.8</source>
             <target>1.8</target>
             <showWarnings>true</showWarnings>
@@ -662,6 +669,12 @@
       <dependency>
         <groupId>com.google.auto.service</groupId>
         <artifactId>auto-service</artifactId>
+        <version>${autoservice.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.auto.service</groupId>
+        <artifactId>auto-service-annotations</artifactId>
         <version>${autoservice.version}</version>
       </dependency>
 
