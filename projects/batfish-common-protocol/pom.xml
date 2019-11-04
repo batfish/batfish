@@ -34,7 +34,7 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service-annotations
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils
                   </ignoredUnusedDeclaredDependency>
@@ -132,7 +132,7 @@
 
     <dependency>
       <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service-annotations</artifactId>
+      <artifactId>auto-service</artifactId>
     </dependency>
 
     <dependency>
