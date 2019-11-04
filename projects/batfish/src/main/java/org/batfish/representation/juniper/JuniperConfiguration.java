@@ -867,10 +867,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Process interface settings. Enabled levels in the IS-IS process should be limited to union of
     // enabled levels on non-loopback interfaces.
     IsisLevel allEnabledLevels = processIsisInterfaceSettings(routingInstance, level1, level2);
-    if (!allEnabledLevels.includes(IsisLevel.LEVEL_1)) {
+    if (allEnabledLevels == null || !allEnabledLevels.includes(IsisLevel.LEVEL_1)) {
       newProc.setLevel1(null);
     }
-    if (!allEnabledLevels.includes(IsisLevel.LEVEL_2)) {
+    if (allEnabledLevels == null || !allEnabledLevels.includes(IsisLevel.LEVEL_2)) {
       newProc.setLevel2(null);
     }
 
