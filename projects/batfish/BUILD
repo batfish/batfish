@@ -48,7 +48,7 @@ java_library(
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
-        "@maven//:com_google_auto_service_auto_service",
+        "@maven//:com_google_auto_service_auto_service_annotations",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:com_uber_jaeger_jaeger_core",

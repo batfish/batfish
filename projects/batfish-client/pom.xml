@@ -98,8 +98,8 @@
     </dependency>
 
     <dependency>
-      <groupId>com.github.wumpz</groupId>
-      <artifactId>diffutils</artifactId>
+      <groupId>io.github.java-diff-utils</groupId>
+      <artifactId>java-diff-utils</artifactId>
     </dependency>
 
     <dependency>
