@@ -1,6 +1,7 @@
 package org.batfish.datamodel.isis;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
@@ -139,6 +140,13 @@ public class IsisInterfaceSettings implements Serializable {
   @JsonProperty(PROP_BFD_LIVENESS_DETECTION_MULTIPLIER)
   public @Nullable Integer getBfdLivenessDetectionMultiplier() {
     return _bfdLivenessDetectionMultiplier;
+  }
+
+  @JsonIgnore
+  public IsisLevel getEnabledLevels() {
+    IsisLevel l1 = _level1 == null ? null : IsisLevel.LEVEL_1;
+    IsisLevel l2 = _level2 == null ? null : IsisLevel.LEVEL_2;
+    return IsisLevel.union(l1, l2);
   }
 
   @JsonProperty(PROP_ISO_ADDRESS)
