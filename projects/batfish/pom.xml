@@ -32,7 +32,7 @@
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
                   </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service-annotations
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
                   </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
@@ -282,7 +282,8 @@
 
     <dependency>
       <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service-annotations</artifactId>
+      <artifactId>auto-service</artifactId>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
