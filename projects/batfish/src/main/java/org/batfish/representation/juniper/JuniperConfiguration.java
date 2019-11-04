@@ -106,6 +106,7 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
@@ -862,7 +863,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (level2) {
       newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
     }
-    processIsisInterfaceSettings(routingInstance, level1, level2);
+
+    // Process interface settings. Enabled levels in the IS-IS process should be limited to union of
+    // enabled levels on non-loopback interfaces.
+    IsisLevel allEnabledLevels = processIsisInterfaceSettings(routingInstance, level1, level2);
+    if (!allEnabledLevels.includes(IsisLevel.LEVEL_1)) {
+      newProc.setLevel1(null);
+    }
+    if (!allEnabledLevels.includes(IsisLevel.LEVEL_2)) {
+      newProc.setLevel2(null);
+    }
 
     // If overload is set with a timeout, just pretend overload isn't set at all
     if (settings.getOverload() && settings.getOverloadTimeout() == null) {
@@ -872,22 +882,31 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newProc.build();
   }
 
+  /** Returns union of IS-IS levels enabled on non-loopback interfaces in {@code routingInstance} */
   @VisibleForTesting
-  void processIsisInterfaceSettings(
+  IsisLevel processIsisInterfaceSettings(
       RoutingInstance routingInstance, boolean level1, boolean level2) {
-    _c.getVrfs()
-        .get(routingInstance.getName())
-        .getInterfaces()
-        .forEach(
-            (ifaceName, newIface) -> {
-              newIface.setIsis(
+    return _c.getVrfs().get(routingInstance.getName()).getInterfaces().entrySet().stream()
+        .map(
+            e -> {
+              String ifaceName = e.getKey();
+              org.batfish.datamodel.Interface newIface = e.getValue();
+              org.batfish.datamodel.isis.IsisInterfaceSettings settings =
                   toIsisInterfaceSettings(
                       routingInstance.getIsisSettings(),
                       routingInstance.getInterfaces().get(ifaceName),
                       level1,
                       level2,
-                      newIface.isLoopback()));
-            });
+                      newIface.isLoopback());
+              newIface.setIsis(settings);
+              if (settings == null || newIface.isLoopback()) {
+                return null;
+              }
+              return settings.getEnabledLevels();
+            })
+        .filter(Objects::nonNull)
+        .reduce(IsisLevel::union) // will not return null as long as parameters are not null
+        .orElse(null);
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceSettings toIsisInterfaceSettings(
