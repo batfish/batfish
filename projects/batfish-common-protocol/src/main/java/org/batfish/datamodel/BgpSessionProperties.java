@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -39,7 +40,7 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
  *   <li>Some properties of the session are directional (such as head/tail IPs) and therefore must
  *       be reciprocal if the edge is reversed. Others are negotiated by devices and therefore must
  *       be equal in both directions. See {@link #from(BgpPeerConfig, BgpPeerConfig, boolean, long,
- *       long)} for more details.
+ *       long, ConfedSessionType)} for more details.
  * </ul>
  */
 @ParametersAreNonnullByDefault
@@ -455,6 +456,20 @@ public final class BgpSessionProperties {
         _confedSessionType.ordinal());
   }
 
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("addressFamilies", _addressFamilies)
+        .add("routeExchangeSettings", _routeExchangeSettings)
+        .add("headAs", _headAs)
+        .add("tailAs", _tailAs)
+        .add("headIp", _headIp)
+        .add("tailIp", _tailIp)
+        .add("sessionType", _sessionType)
+        .add("confedSessionType", _confedSessionType)
+        .toString();
+  }
+
   /** Different types of BGP sessions */
   public enum SessionType {
     // these should all be upper case for the parse function below to work
@@ -533,6 +548,15 @@ public final class BgpSessionProperties {
     @Override
     public int hashCode() {
       return Objects.hash(_additionalPaths, _advertiseExternal, _advertiseInactive);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .add("additionalPaths", _additionalPaths)
+          .add("advertiseExternal", _advertiseExternal)
+          .add("advertiseInactive", _advertiseInactive)
+          .toString();
     }
   }
 }
