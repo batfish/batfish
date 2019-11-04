@@ -3238,7 +3238,7 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testIsisMinimal() {
-    // This config only has a loopback with an ISO address and "set protocols isis interface lo0.0".
+    // This config has an IS-IS loopback and IS-IS interface.
     // Should contain an IS-IS process even though no level is explicitly configured.
     Configuration c = parseConfig("isis-minimal");
     assertThat(c, hasDefaultVrf(hasIsisProcess(notNullValue())));
@@ -3246,7 +3246,8 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testIsisL1Disabled() {
-    // This config has a loopback with an ISO address and "set protocols isis interface lo0.0".
+    // This config has a loopback with an ISO address and "set protocols isis interface lo0.0" and
+    // an interface ge-0/0/1.0 with both levels enabled.
     // Then in [protocols isis level 1] it sets "disable" and "wide-metrics-only".
     // Setting wide-metrics-only should not re-enable level 1.
     // None of the level 1 configuration should affect level 2 (which is enabled by default).

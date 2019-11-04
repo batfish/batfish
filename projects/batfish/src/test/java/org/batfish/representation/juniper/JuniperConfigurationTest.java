@@ -46,6 +46,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -58,6 +59,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.dataplane.rib.RibId;
+import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.junit.Test;
 
@@ -154,7 +156,7 @@ public class JuniperConfigurationTest {
       @Nullable Double referenceBandwidth) {
     Interface iface = new Interface("iface");
     iface.setBandwidth(ifaceBandwidth);
-    iface.getOrInitIsisSettings().setEnabled(true);
+    iface.getOrInitIsisSettings();
     if (configuredIfaceIsisMetric != null) {
       iface.getIsisSettings().getLevel1Settings().setMetric(configuredIfaceIsisMetric);
     }
@@ -166,6 +168,79 @@ public class JuniperConfigurationTest {
     }
 
     return routingInstance;
+  }
+
+  @Test
+  public void testProcessIsisInterfaceSettings() {
+    // Config with loopback and two other interfaces
+    JuniperConfiguration config = createConfig();
+    String loopbackName = "lo0.0";
+    String iface1Name = "iface1";
+    String iface2Name = "iface2";
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder()
+            .setName(loopbackName)
+            .setType(InterfaceType.LOOPBACK)
+            .build();
+    org.batfish.datamodel.Interface iface1 =
+        org.batfish.datamodel.Interface.builder().setName(iface1Name).build();
+    org.batfish.datamodel.Interface iface2 =
+        org.batfish.datamodel.Interface.builder().setName(iface2Name).build();
+    Vrf vrf = new Vrf("vrf");
+    vrf.setInterfaces(
+        ImmutableSortedMap.of(loopbackName, loopback, iface1Name, iface1, iface2Name, iface2));
+    config._c.setVrfs(ImmutableMap.of("vrf", vrf));
+
+    // Loopback has IS-IS enabled at both levels; other interfaces' IS-IS settings vary by test
+    RoutingInstance routingInstance = new RoutingInstance("vrf");
+    Interface vsLoopback = new Interface(loopbackName);
+    vsLoopback.getOrInitIsisSettings();
+    routingInstance.getInterfaces().put(loopbackName, vsLoopback);
+
+    {
+      // LEVEL_1_2 if both enabled in process and each enabled on at least one interface
+      Interface vsIface1 = new Interface(iface1Name);
+      Interface vsIface2 = new Interface(iface2Name);
+      vsIface1.getOrInitIsisSettings().getLevel1Settings().setEnabled(false);
+      vsIface2.getOrInitIsisSettings().getLevel2Settings().setEnabled(false);
+      routingInstance.getInterfaces().put(iface1Name, vsIface1);
+      routingInstance.getInterfaces().put(iface2Name, vsIface2);
+      assertThat(
+          config.processIsisInterfaceSettings(routingInstance, true, true),
+          equalTo(IsisLevel.LEVEL_1_2));
+
+      // LEVEL_1 if process doesn't have L2 enabled; LEVEL_2 if process doesn't have L1 enabled
+      assertThat(
+          config.processIsisInterfaceSettings(routingInstance, true, false),
+          equalTo(IsisLevel.LEVEL_1));
+      assertThat(
+          config.processIsisInterfaceSettings(routingInstance, false, true),
+          equalTo(IsisLevel.LEVEL_2));
+    }
+
+    {
+      // LEVEL_1 if both enabled in process but only L1 enabled on non-loopback interfaces
+      Interface vsIface1 = new Interface(iface1Name);
+      Interface vsIface2 = new Interface(iface2Name);
+      vsIface1.getOrInitIsisSettings().getLevel2Settings().setEnabled(false);
+      routingInstance.getInterfaces().put(iface1Name, vsIface1);
+      routingInstance.getInterfaces().put(iface2Name, vsIface2);
+      assertThat(
+          config.processIsisInterfaceSettings(routingInstance, true, true),
+          equalTo(IsisLevel.LEVEL_1));
+    }
+
+    {
+      // LEVEL_2 if both enabled in process but only L2 enabled on non-loopback interfaces
+      Interface vsIface1 = new Interface(iface1Name);
+      Interface vsIface2 = new Interface(iface2Name);
+      vsIface1.getOrInitIsisSettings().getLevel1Settings().setEnabled(false);
+      routingInstance.getInterfaces().put(iface1Name, vsIface1);
+      routingInstance.getInterfaces().put(iface2Name, vsIface2);
+      assertThat(
+          config.processIsisInterfaceSettings(routingInstance, true, true),
+          equalTo(IsisLevel.LEVEL_2));
+    }
   }
 
   @Test
