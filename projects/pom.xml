@@ -59,7 +59,7 @@
     <commons-io.version>2.6</commons-io.version>
     <commons-lang3.version>3.9</commons-lang3.version>
     <commons-text.version>1.8</commons-text.version>
-    <diffutils.version>3.0</diffutils.version>
+    <diffutils.version>4.0</diffutils.version>
     <errorprone.version>2.3.1</errorprone.version>
     <grizzly.version>2.4.3</grizzly.version>
     <guava.version>28.0-jre</guava.version>
@@ -661,8 +661,8 @@
       </dependency>
 
       <dependency>
-        <groupId>com.github.wumpz</groupId>
-        <artifactId>diffutils</artifactId>
+        <groupId>io.github.java-diff-utils</groupId>
+        <artifactId>java-diff-utils</artifactId>
         <version>${diffutils.version}</version>
       </dependency>
 

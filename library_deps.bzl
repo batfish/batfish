@@ -35,7 +35,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.commons:commons-lang3:3.9",
     "org.apache.commons:commons-text:1.8",
     "org.codehaus.jettison:jettison:1.4.0",
-    "com.github.wumpz:diffutils:3.0",
+    "io.github.java-diff-utils:java-diff-utils:4.0",
     "org.glassfish.grizzly:grizzly-http-server:2.4.3",
     "org.glassfish.grizzly:grizzly-framework:2.4.3",
     "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
