@@ -16,7 +16,7 @@ java_library(
         "//projects/lib/z3",
         "//projects/question",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
-        "@maven//:com_google_auto_service_auto_service",
+        "@maven//:com_google_auto_service_auto_service_annotations",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_apache_commons_commons_lang3",
