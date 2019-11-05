@@ -25,6 +25,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.HeaderSpaceToFlow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -41,6 +42,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -124,7 +126,7 @@ public class TestFiltersAnswerer extends Answerer {
 
     IpSpace dstIps =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                constraints.getDstIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+                constraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .resolve(ImmutableSet.of(), _batfish.specifierContext()).getEntries().stream()
             .findFirst()
             .map(Entry::getIpSpace)
@@ -133,16 +135,21 @@ public class TestFiltersAnswerer extends Answerer {
     HeaderSpaceToFlow headerSpaceToFlow =
         new HeaderSpaceToFlow(c.getIpSpaces(), FlowPreference.TESTFILTER);
 
+    HeaderSpace.Builder hsBuilder =
+        PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(constraints).setDstIps(dstIps);
+
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
       try {
         Builder flowBuilder =
             headerSpaceToFlow
                 .getRepresentativeFlow(
-                    PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(constraints)
+                    hsBuilder
                         .setSrcIps(
-                            srcIpAssignments.getEntries().stream().findFirst().get().getIpSpace())
-                        .setDstIps(dstIps)
+                            srcIpAssignments.getEntries().stream()
+                                .findFirst()
+                                .map(Entry::getIpSpace)
+                                .orElse(UniverseIpSpace.INSTANCE))
                         .build())
                 .get();
 
@@ -163,19 +170,15 @@ public class TestFiltersAnswerer extends Answerer {
     for (Entry entry : srcIpAssignments.getEntries()) {
       Set<Location> locations = entry.getLocations();
       IpSpace srcIps = entry.getIpSpace();
+      Flow.Builder flowBuilder =
+          headerSpaceToFlow
+              .getRepresentativeFlow(hsBuilder.setSrcIps(srcIps).build())
+              .get()
+              .setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
+
       for (Location location : locations) {
         try {
-          Flow.Builder flowBuilder =
-              headerSpaceToFlow
-                  .getRepresentativeFlow(
-                      PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(constraints)
-                          .setSrcIps(srcIps)
-                          .setDstIps(dstIps)
-                          .build())
-                  .get();
-
           setStartLocation(ImmutableMap.of(node, c), flowBuilder, location);
-          flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
           setBuilder.add(flowBuilder.build());
         } catch (NoSuchElementException e) {
           allProblems.add(

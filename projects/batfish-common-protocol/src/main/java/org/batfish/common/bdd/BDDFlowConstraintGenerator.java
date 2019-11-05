@@ -1,8 +1,10 @@
 package org.batfish.common.bdd;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -116,6 +118,26 @@ public final class BDDFlowConstraintGenerator {
         .and(dstPort.value(NamedPort.HTTP.number()));
   }
 
+  private List<BDD> computeTestFilterPreference() {
+    BDDInteger dstIp = _bddPacket.getDstIp();
+    BDDInteger dstPort = _bddPacket.getDstPort();
+    BDDInteger srcPort = _bddPacket.getSrcPort();
+    BDDIpProtocol ipProtocol = _bddPacket.getIpProtocol();
+
+    BDD dstIpBdd = dstIp.value(Ip.parse("8.8.8.8").asLong());
+    BDD ipProtocolBdd = ipProtocol.value(IpProtocol.TCP);
+    BDD srcPortBdd = srcPort.value(NamedPort.EPHEMERAL_LOWEST.number());
+    BDD dstPortBdd = dstPort.value(NamedPort.HTTP.number());
+
+    BDD bdd = _bddPacket.getFactory().one();
+    List<BDD> prefList = new ArrayList<>();
+    for (BDD fieldBdd : ImmutableList.of(dstPortBdd, srcPortBdd, ipProtocolBdd, dstIpBdd)) {
+      bdd = bdd.and(fieldBdd);
+      prefList.add(bdd);
+    }
+    return Lists.reverse(prefList);
+  }
+
   public List<BDD> generateFlowPreference(FlowPreference preference) {
     switch (preference) {
       case DEBUGGING:
@@ -123,7 +145,7 @@ public final class BDDFlowConstraintGenerator {
       case APPLICATION:
         return ImmutableList.of(_tcpFlow, _udpFlow, _icmpFlow);
       case TESTFILTER:
-        return ImmutableList.of(_httpFlow);
+        return computeTestFilterPreference();
       default:
         throw new BatfishException("Not supported flow preference");
     }

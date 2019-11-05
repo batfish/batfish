@@ -38,4 +38,23 @@ public class HeaderSpaceToFlowTest {
     assertTrue(flowBuilder.isPresent());
     assertThat(flowBuilder.get().getSrcIp(), equalTo(Ip.parse("1.2.3.4")));
   }
+
+  @Test
+  public void testGetRepresentativeFlow_testFilterPref() {
+    HeaderSpaceToFlow headerSpaceToFlow =
+        new HeaderSpaceToFlow(ImmutableMap.of(), FlowPreference.TESTFILTER);
+    Optional<Builder> flowBuilder =
+        headerSpaceToFlow.getRepresentativeFlow(
+            HeaderSpace.builder()
+                .setDstIps(Ip.parse("1.1.1.1").toIpSpace())
+                .setSrcIps(Ip.parse("2.2.2.2").toIpSpace())
+                .build());
+
+    assertTrue(flowBuilder.isPresent());
+    assertThat(flowBuilder.get().getDstIp(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(flowBuilder.get().getSrcIp(), equalTo(Ip.parse("2.2.2.2")));
+    assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.TCP));
+    assertThat(flowBuilder.get().getSrcPort(), equalTo(NamedPort.EPHEMERAL_LOWEST.number()));
+    assertThat(flowBuilder.get().getDstPort(), equalTo(NamedPort.HTTP.number()));
+  }
 }
