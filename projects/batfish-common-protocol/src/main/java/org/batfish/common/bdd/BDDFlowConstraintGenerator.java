@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory.BDDOp;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
@@ -129,13 +130,26 @@ public final class BDDFlowConstraintGenerator {
     BDD srcPortBdd = srcPort.value(NamedPort.EPHEMERAL_LOWEST.number());
     BDD dstPortBdd = dstPort.value(NamedPort.HTTP.number());
 
-    BDD bdd = _bddPacket.getFactory().one();
-    List<BDD> prefList = new ArrayList<>();
-    for (BDD fieldBdd : ImmutableList.of(dstPortBdd, srcPortBdd, ipProtocolBdd, dstIpBdd)) {
-      bdd = bdd.and(fieldBdd);
-      prefList.add(bdd);
-    }
-    return Lists.reverse(prefList);
+    BDDOps bddOps = new BDDOps(_bddPacket.getFactory());
+    // generate all combinations in order to enforce the following logic: when a field in the input
+    // bdd contains the default value for that field, then use that value; otherwise use a value
+    // in BDD of the field.
+    return ImmutableList.of(
+        bddOps.and(dstIpBdd, ipProtocolBdd, srcPortBdd, dstPortBdd),
+        bddOps.and(ipProtocolBdd, srcPortBdd, dstPortBdd),
+        bddOps.and(dstIpBdd, srcPortBdd, dstPortBdd),
+        bddOps.and(dstIpBdd, ipProtocolBdd, dstPortBdd),
+        bddOps.and(dstIpBdd, ipProtocolBdd, srcPortBdd),
+        bddOps.and(dstIpBdd, ipProtocolBdd),
+        bddOps.and(dstIpBdd, srcPortBdd),
+        bddOps.and(ipProtocolBdd, srcPortBdd),
+        bddOps.and(dstIpBdd, dstPortBdd),
+        bddOps.and(ipProtocolBdd, dstPortBdd),
+        bddOps.and(srcPortBdd, dstPortBdd),
+        bddOps.and(dstIpBdd),
+        bddOps.and(ipProtocolBdd),
+        bddOps.and(srcPortBdd),
+        bddOps.and(dstPortBdd));
   }
 
   public List<BDD> generateFlowPreference(FlowPreference preference) {
