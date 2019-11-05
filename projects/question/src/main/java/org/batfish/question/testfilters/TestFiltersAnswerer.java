@@ -170,23 +170,26 @@ public class TestFiltersAnswerer extends Answerer {
     for (Entry entry : srcIpAssignments.getEntries()) {
       Set<Location> locations = entry.getLocations();
       IpSpace srcIps = entry.getIpSpace();
+      Flow.Builder flowBuilder;
       try {
-        Flow.Builder flowBuilder =
+        flowBuilder =
             headerSpaceToFlow
                 .getRepresentativeFlow(hsBuilder.setSrcIps(srcIps).build())
                 .get()
                 .setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
-        for (Location location : locations) {
-          try {
-            setStartLocation(ImmutableMap.of(node, c), flowBuilder, location);
-            setBuilder.add(flowBuilder.build());
-          } catch (IllegalArgumentException e) {
-            // record this error but try to keep going
-            allProblems.add(e.getMessage());
-          }
-        }
       } catch (NoSuchElementException e) {
         allProblems.add("cannot get a flow from the specifier");
+        continue;
+      }
+
+      for (Location location : locations) {
+        try {
+          setStartLocation(ImmutableMap.of(node, c), flowBuilder, location);
+          setBuilder.add(flowBuilder.build());
+        } catch (IllegalArgumentException e) {
+          // record this error but try to keep going
+          allProblems.add(e.getMessage());
+        }
       }
     }
 
