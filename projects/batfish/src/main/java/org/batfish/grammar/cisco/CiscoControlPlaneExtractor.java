@@ -7949,6 +7949,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitNeighbor_block_rb_stanza(Neighbor_block_rb_stanzaContext ctx) {
     resetPeerGroups();
     if (_inBlockNeighbor) {
+      _inBlockNeighbor = false;
       popPeer();
     }
   }
