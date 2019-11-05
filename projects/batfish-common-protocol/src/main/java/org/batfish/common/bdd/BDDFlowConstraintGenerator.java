@@ -1,15 +1,12 @@
 package org.batfish.common.bdd;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory.BDDOp;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;

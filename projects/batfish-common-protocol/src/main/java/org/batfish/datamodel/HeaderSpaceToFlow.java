@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import java.util.Map;
 import java.util.Optional;
-import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
