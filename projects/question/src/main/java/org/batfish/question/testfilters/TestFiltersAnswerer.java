@@ -1,6 +1,7 @@
 package org.batfish.question.testfilters;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -155,6 +156,7 @@ public class TestFiltersAnswerer extends Answerer {
 
         flowBuilder.setIngressNode(node);
         flowBuilder.setIngressInterface(null);
+        flowBuilder.setPacketLength(DEFAULT_PACKET_LENGTH);
         flowBuilder.setIngressVrf(
             Configuration.DEFAULT_VRF_NAME); // dummy because Flow needs non-null interface or vrf
         flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
@@ -175,6 +177,7 @@ public class TestFiltersAnswerer extends Answerer {
             headerSpaceToFlow
                 .getRepresentativeFlow(hsBuilder.setSrcIps(srcIps).build())
                 .get()
+                .setPacketLength(DEFAULT_PACKET_LENGTH)
                 .setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
         for (Location location : locations) {
           try {
