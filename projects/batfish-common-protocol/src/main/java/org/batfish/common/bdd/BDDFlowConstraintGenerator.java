@@ -29,7 +29,6 @@ public final class BDDFlowConstraintGenerator {
   private BDD _icmpFlow;
   private BDD _udpFlow;
   private BDD _tcpFlow;
-  private BDD _httpFlow;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
     try (ActiveSpan span =
@@ -39,7 +38,6 @@ public final class BDDFlowConstraintGenerator {
       _icmpFlow = computeICMPConstraint();
       _udpFlow = computeUDPConstraint();
       _tcpFlow = computeTCPConstraint();
-      _httpFlow = computeHTTPConstraint();
     }
   }
 
@@ -97,23 +95,6 @@ public final class BDDFlowConstraintGenerator {
     BDD bdd1 = dstPort.range(33434, 33534).and(srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
     BDD bdd2 = _bddPacket.swapSourceAndDestinationFields(bdd1);
     return _bddPacket.getIpProtocol().value(IpProtocol.UDP).and(bdd1.or(bdd2));
-  }
-
-  // Get HTTP packets with names ports:
-  // 1. Dst Ip is 8.8.8.8
-  // 2. Dst port is HTTP
-  // 3. Src port is the lowest ephemeral port
-  private BDD computeHTTPConstraint() {
-    BDDInteger dstIp = _bddPacket.getDstIp();
-    BDDInteger dstPort = _bddPacket.getDstPort();
-    BDDInteger srcPort = _bddPacket.getSrcPort();
-    BDDIpProtocol ipProtocol = _bddPacket.getIpProtocol();
-
-    return dstIp
-        .value(Ip.parse("8.8.8.8").asLong())
-        .and(ipProtocol.value(IpProtocol.TCP))
-        .and(srcPort.value(NamedPort.EPHEMERAL_LOWEST.number()))
-        .and(dstPort.value(NamedPort.HTTP.number()));
   }
 
   private List<BDD> computeTestFilterPreference() {
