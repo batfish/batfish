@@ -11,7 +11,6 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco.CiscoAsaNat.ANY_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_AF_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR_GROUP;
@@ -453,7 +452,6 @@ import org.batfish.grammar.cisco.CiscoParser.As_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
-import org.batfish.grammar.cisco.CiscoParser.As_path_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Asa_ag_globalContext;
 import org.batfish.grammar.cisco.CiscoParser.Asa_ag_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Asa_banner_headerContext;
@@ -1094,7 +1092,6 @@ import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.cisco.AccessListAddressSpecifier;
 import org.batfish.representation.cisco.AccessListServiceSpecifier;
 import org.batfish.representation.cisco.AristaDynamicSourceNat;
-import org.batfish.representation.cisco.AsPathSet;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco.BgpAggregateIpv6Network;
 import org.batfish.representation.cisco.BgpNetwork;
@@ -4775,22 +4772,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAs_path_multipath_relax_rb_stanza(As_path_multipath_relax_rb_stanzaContext ctx) {
     currentVrf().getBgpProcess().setAsPathMultipathRelax(ctx.NO() == null);
-  }
-
-  @Override
-  public void exitAs_path_set_stanza(As_path_set_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    AsPathSet asPathSet = _configuration.getAsPathSets().get(name);
-    if (asPathSet != null) {
-      warn(ctx, "Redeclaration of as-path-set: '" + name + "'.");
-    }
-    asPathSet = new AsPathSet(name);
-    _configuration.getAsPathSets().put(name, asPathSet);
-    for (As_path_set_elemContext elemCtx : ctx.elems) {
-      AsPathSetElem elem = toAsPathSetElem(elemCtx);
-      asPathSet.getElements().add(elem);
-    }
-    _configuration.defineStructure(AS_PATH_SET, name, ctx);
   }
 
   @Override

@@ -3689,7 +3689,6 @@ stanza
    appletalk_access_list_stanza
    | asa_comment_stanza
    | asa_access_group
-   | as_path_set_stanza
    | del_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza

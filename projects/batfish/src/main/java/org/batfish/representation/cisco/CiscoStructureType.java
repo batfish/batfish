@@ -5,7 +5,6 @@ import org.batfish.vendor.StructureType;
 public enum CiscoStructureType implements StructureType {
   ACCESS_LIST("acl"),
   AS_PATH_ACCESS_LIST("as-path access-list"),
-  AS_PATH_SET("as-path-set"),
   BFD_TEMPLATE("bfd-template"),
   BGP_AF_GROUP("bgp af-group"),
   BGP_NEIGHBOR_GROUP("bgp neighbor-group"),
@@ -51,7 +50,6 @@ public enum CiscoStructureType implements StructureType {
   NETWORK_OBJECT_GROUP("object-group network"),
   POLICY_MAP("policy-map"),
   PREFIX_LIST("ipv4 prefix-list"),
-  PREFIX_SET("prefix-set"),
   PREFIX6_LIST("ipv6 prefix-list"),
   PROTOCOL_OBJECT("object protocol"),
   PROTOCOL_OBJECT_GROUP("object-group protocol"),

@@ -105,22 +105,6 @@ aruba_appcategory
    PEER_TO_PEER
 ;
 
-as_path_set_elem
-:
-   IOS_REGEX AS_PATH_SET_REGEX
-;
-
-as_path_set_stanza
-:
-   AS_PATH_SET name = variable NEWLINE
-   (
-      elems += as_path_set_elem NEWLINE?
-      (
-         COMMA NEWLINE? elems += as_path_set_elem NEWLINE?
-      )*
-   )? END_SET NEWLINE
-;
-
 asa_access_group
 :
    ACCESS_GROUP
