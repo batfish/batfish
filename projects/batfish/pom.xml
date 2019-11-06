@@ -90,6 +90,18 @@
             </configuration>
           </execution>
           <execution>
+            <id>antlr4-cisco-xr</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/CiscoXrLexer.g4,**/CiscoXrParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cisco_xr</libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-cisco-xr
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
             <id>antlr4-cumulus-concatenated</id>
             <goals>
               <goal>antlr4</goal>
@@ -240,7 +252,7 @@
             <configuration>
               <includes>**/*.g4</includes>
               <excludes>
-                **/cisco/*.g4,**/cisco_nxos/*.g4,**/cumulus_concatenated/*.g4,**/cumulus_frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+                **/cisco/*.g4,**/cisco_nxos/*.g4,**/cisco_xr/*.g4,**/cumulus_concatenated/*.g4,**/cumulus_frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
               </excludes>
             </configuration>
           </execution>
