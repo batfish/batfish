@@ -95,11 +95,6 @@ eos_vlan_id
    )*
 ;
 
-eos_vxlan_interface_name
-:
-   VXLAN DEC
-;
-
 exit_line
 :
    EXIT NEWLINE
