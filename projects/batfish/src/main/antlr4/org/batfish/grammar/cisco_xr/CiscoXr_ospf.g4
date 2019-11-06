@@ -323,14 +323,6 @@ ro_passive_interface
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
-ro_redistribute_bgp_arista
-:
-   REDISTRIBUTE BGP
-   (
-      ROUTE_MAP map = VARIABLE
-   )? NEWLINE
-;
-
 ro_redistribute_bgp_cisco_xr
 :
    REDISTRIBUTE BGP bgp_asn
@@ -678,8 +670,7 @@ s_router_ospf
       | ro_network
       | ro_passive_interface_default
       | ro_passive_interface
-      | { _eos }? ro_redistribute_bgp_arista
-      | { !_eos }? ro_redistribute_bgp_cisco_xr
+      | ro_redistribute_bgp_cisco_xr
       | ro_redistribute_connected
       | ro_redistribute_eigrp
       | ro_redistribute_ospf_null

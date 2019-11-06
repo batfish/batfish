@@ -883,7 +883,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passive_interface_defaultContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_bgp_aristaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_bgp_cisco_xrContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_connectedContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_eigrpContext;
@@ -8135,23 +8134,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
      * We assume that others use this sane default too. TODO: verify more vendors.
      */
     return format != CISCO_IOS;
-  }
-
-  @Override
-  public void exitRo_redistribute_bgp_arista(Ro_redistribute_bgp_aristaContext ctx) {
-    OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
-      r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, mapLine);
-    }
-    r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-    r.setOnlyClassfulRoutes(false);
   }
 
   @Override
