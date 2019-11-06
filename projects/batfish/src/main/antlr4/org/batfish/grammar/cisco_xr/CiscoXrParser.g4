@@ -2,9 +2,6 @@ parser grammar CiscoXrParser;
 
 import
 CiscoXr_common,
-Arista_bgp,
-Arista_mlag,
-Arista_vlan,
 CiscoXr_aaa,
 CiscoXr_acl,
 CiscoXr_bgp,
@@ -3370,19 +3367,6 @@ s_vlan_cisco
    )*
 ;
 
-s_vlan_eos
-:
-   VLAN eos_vlan_id NEWLINE
-   (
-     eos_vlan_name
-     | eos_vlan_state
-     | eos_vlan_trunk
-     | eos_vlan_no_name
-     | eos_vlan_no_state
-     | eos_vlan_no_trunk
-   )*
-;
-
 s_vlan_internal_cisco
 :
    NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
@@ -3789,7 +3773,6 @@ stanza
    | s_dspfarm
    | s_dynamic_access_policy_record
    | s_enable
-   | s_eos_mlag
    | s_ephone_dn_template
    | s_ethernet_services
    | s_event
@@ -3864,8 +3847,6 @@ stanza
    | s_no_access_list_standard
    | s_no_bfd
    | s_no_enable
-   | { _eos }? s_no_vlan_internal_eos
-   | { _eos }? s_no_vlan_eos
    | s_ntp
    | s_null
    | s_nv
@@ -3919,9 +3900,7 @@ stanza
    | s_username
    | s_username_attributes
    | { !_eos && !isAsa() }? s_vlan_cisco
-   | { _eos }? s_vlan_eos
    | { !_eos && !isAsa() }? s_vlan_internal_cisco
-   | { _eos }? s_vlan_internal_eos
    | s_vlan_name
    | s_voice
    | s_voice_card

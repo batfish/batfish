@@ -70,12 +70,10 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_O
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRAFFIC_ZONE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.VXLAN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_MATCH_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_PREFIX6_LIST;
@@ -103,10 +101,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTB
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_RIP_MAP;
@@ -195,8 +190,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.LINE_ACC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.LINE_ACCESS_CLASS_LIST6;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MLAG_CONFIGURATION_LOCAL_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MLAG_CONFIGURATION_PEER_LINK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MSDP_PEER_SA_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
@@ -284,7 +277,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TWICE_NA
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TWICE_NAT_REAL_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VXLAN_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VXLAN_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.WCCP_REDIRECT_LIST;
@@ -609,83 +601,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Elseif_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Empty_neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Enable_secretContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_bandwidth_specifierContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_mlag_domainContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_mlag_local_interfaceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_mlag_peer_addressContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_mlag_peer_linkContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_mlag_reload_delayContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_mlag_shutdownContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_aa_modifiersContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_aa_v4Context;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_af_evpnContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_af_evpn_neighborContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_af_evpn_no_neighborContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_af_ipv4Context;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_af_ipv6_unicastContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_vab_vlanContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_vlanContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_vlan_aware_bundleContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_vlan_tail_rdContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_vlan_tail_redistributeContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_vlan_tail_route_targetContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rb_vrfContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbafipv4_no_neighborContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbafipv4u_neighborContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbafipv6u_neighborContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbafnc_activateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbafnc_route_mapContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbafnonc_activateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_default_metricContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_distanceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_maximum_pathsContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_neighbor4Context;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_network4Context;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_network6Context;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_peer_groupContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_router_idContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_shutdownContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbi_timersContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbibbp_tie_breakContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbibbpa_multipath_relaxContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbibl_limitContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbibl_rangeContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbin_peer_groupContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_additional_pathsContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_allowas_inContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_default_originateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_descriptionContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_dont_capability_negotiateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_ebgp_multihopContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_enforce_first_asContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_export_localprefContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_local_asContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_maximum_accepted_routesContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_maximum_routesContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_next_hop_selfContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_next_hop_unchangedContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_remote_asContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_remove_private_asContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_send_communityContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_shutdownContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinc_update_sourceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbino_bgp_default_ipv4_unicastContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbino_neighborContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbinon_enforce_first_asContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbir_attached_hostContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbir_connectedContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbir_dynamicContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbir_isisContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbir_ospf3Context;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbir_ospfContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbir_ripContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbir_staticContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbv_local_asContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbv_rdContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_rbv_route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_vlan_idContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_vlan_nameContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_vlan_trunkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_vxif_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_vxif_vxlan_floodContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_vxif_vxlan_multicast_groupContext;
@@ -1032,8 +948,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_class_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_depi_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_domain_nameContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_eos_mlagContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_eos_vxlan_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_hostnameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ip_default_gatewayContext;
@@ -1070,8 +984,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_system_service_policyContext
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_trackContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_usernameContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_vlan_eosContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_vlan_internal_eosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_vrf_definitionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_zoneContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_zone_pairContext;
@@ -1239,7 +1151,6 @@ import org.batfish.representation.cisco_xr.Keyring;
 import org.batfish.representation.cisco_xr.MacAccessList;
 import org.batfish.representation.cisco_xr.MasterBgpPeerGroup;
 import org.batfish.representation.cisco_xr.MatchSemantics;
-import org.batfish.representation.cisco_xr.MlagConfiguration;
 import org.batfish.representation.cisco_xr.NamedBgpPeerGroup;
 import org.batfish.representation.cisco_xr.NamedRsaPubKey;
 import org.batfish.representation.cisco_xr.NatPool;
@@ -1386,23 +1297,13 @@ import org.batfish.representation.cisco_xr.XrRoutePolicySetCommunity;
 import org.batfish.representation.cisco_xr.XrUint16RangeExpr;
 import org.batfish.representation.cisco_xr.XrUint16Reference;
 import org.batfish.representation.cisco_xr.eos.AristaBgpAggregateNetwork;
-import org.batfish.representation.cisco_xr.eos.AristaBgpBestpathTieBreaker;
-import org.batfish.representation.cisco_xr.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.cisco_xr.eos.AristaBgpNeighbor;
 import org.batfish.representation.cisco_xr.eos.AristaBgpNeighborAddressFamily;
-import org.batfish.representation.cisco_xr.eos.AristaBgpNetworkConfiguration;
-import org.batfish.representation.cisco_xr.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.cisco_xr.eos.AristaBgpProcess;
-import org.batfish.representation.cisco_xr.eos.AristaBgpV4DynamicNeighbor;
-import org.batfish.representation.cisco_xr.eos.AristaBgpV4Neighbor;
-import org.batfish.representation.cisco_xr.eos.AristaBgpVlan;
-import org.batfish.representation.cisco_xr.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.cisco_xr.eos.AristaBgpVlanBase;
 import org.batfish.representation.cisco_xr.eos.AristaBgpVrf;
 import org.batfish.representation.cisco_xr.eos.AristaBgpVrfAddressFamily;
-import org.batfish.representation.cisco_xr.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.cisco_xr.eos.AristaEosVxlan;
-import org.batfish.representation.cisco_xr.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
@@ -2409,705 +2310,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterEos_rb_aa_v4(Eos_rb_aa_v4Context ctx) {
-    Prefix prefix =
-        ctx.prefix != null
-            ? Prefix.parse(ctx.prefix.getText())
-            : Prefix.create(toIp(ctx.ip), toIp(ctx.mask));
-    _currentAristaBgpAggregateNetwork = new AristaBgpAggregateNetwork();
-    _currentAristaBgpVrf.getV4aggregates().put(prefix, _currentAristaBgpAggregateNetwork);
-  }
-
-  @Override
-  public void exitEos_rb_aa_v4(Eos_rb_aa_v4Context ctx) {
-    _currentAristaBgpAggregateNetwork = null;
-  }
-
-  @Override
-  public void exitEos_rb_aa_modifiers(Eos_rb_aa_modifiersContext ctx) {
-    if (ctx.ADVERTISE_ONLY() != null) {
-      _currentAristaBgpAggregateNetwork.setAdvertiseOnly(true);
-    }
-    if (ctx.AS_SET() != null) {
-      _currentAristaBgpAggregateNetwork.setAsSet(true);
-    }
-    if (ctx.ATTRIBUTE_MAP() != null) {
-      String routeMapName = ctx.attr_map.getText();
-      _currentAristaBgpAggregateNetwork.setAttributeMap(routeMapName);
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.getStart().getLine());
-    }
-    if (ctx.MATCH_MAP() != null) {
-      String routeMapName = ctx.match_map.getText();
-      _currentAristaBgpAggregateNetwork.setMatchMap(routeMapName);
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMapName, BGP_AGGREGATE_MATCH_MAP, ctx.getStart().getLine());
-    }
-    if (ctx.SUMMARY_ONLY() != null) {
-      _currentAristaBgpAggregateNetwork.setSummaryOnly(true);
-    }
-  }
-
-  @Override
-  public void enterEos_rb_af_evpn(Eos_rb_af_evpnContext ctx) {
-    _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateEvpnAf();
-  }
-
-  @Override
-  public void exitEos_rb_af_evpn(Eos_rb_af_evpnContext ctx) {
-    _currentAristaBgpVrfAf = null;
-  }
-
-  @Override
-  public void enterEos_rb_af_evpn_neighbor(Eos_rb_af_evpn_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
-      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
-      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
-    } else if (ctx.v6 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
-    } else {
-      throw new IllegalStateException(
-          String.format("Unknown neighbor type in %s", getFullText(ctx)));
-    }
-  }
-
-  @Override
-  public void exitEos_rb_af_evpn_neighbor(Eos_rb_af_evpn_neighborContext ctx) {
-    _currentAristaBgpNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void enterEos_rb_af_evpn_no_neighbor(Eos_rb_af_evpn_no_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
-      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
-      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
-    } else if (ctx.v6 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
-    } else {
-      throw new IllegalStateException(
-          String.format("Unknown neighbor type in %s", getFullText(ctx)));
-    }
-  }
-
-  @Override
-  public void exitEos_rb_af_evpn_no_neighbor(Eos_rb_af_evpn_no_neighborContext ctx) {
-    _currentAristaBgpNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void enterEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
-    _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateV4UnicastAf();
-  }
-
-  @Override
-  public void exitEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
-    _currentAristaBgpVrfAf = null;
-  }
-
-  @Override
-  public void enterEos_rb_af_ipv6_unicast(Eos_rb_af_ipv6_unicastContext ctx) {
-    _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateV6UnicastAf();
-  }
-
-  @Override
-  public void exitEos_rb_af_ipv6_unicast(Eos_rb_af_ipv6_unicastContext ctx) {
-    _currentAristaBgpVrfAf = null;
-  }
-
-  @Override
-  public void enterEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
-      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
-      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
-    } else if (ctx.v6 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
-    } else {
-      throw new IllegalStateException(
-          String.format("Unknown neighbor type in %s", getFullText(ctx)));
-    }
-  }
-
-  @Override
-  public void exitEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
-    _currentAristaBgpNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void enterEos_rbafipv6u_neighbor(Eos_rbafipv6u_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
-      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
-      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
-    } else if (ctx.v6 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
-    } else {
-      throw new IllegalStateException(
-          String.format("Unknown neighbor type in %s", getFullText(ctx)));
-    }
-  }
-
-  @Override
-  public void exitEos_rbafipv6u_neighbor(Eos_rbafipv6u_neighborContext ctx) {
-    _currentAristaBgpNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void enterEos_rbafnonc_activate(Eos_rbafnonc_activateContext ctx) {
-    _currentAristaBgpNeighborAddressFamily.setActivate(false);
-  }
-
-  @Override
-  public void exitEos_rbafnc_activate(Eos_rbafnc_activateContext ctx) {
-    _currentAristaBgpNeighborAddressFamily.setActivate(true);
-  }
-
-  @Override
-  public void exitEos_rbafnc_route_map(Eos_rbafnc_route_mapContext ctx) {
-    if (ctx.IN() != null) {
-      _currentAristaBgpNeighborAddressFamily.setRouteMapIn(ctx.name.getText());
-    } else if (ctx.OUT() != null) {
-      _currentAristaBgpNeighborAddressFamily.setRouteMapOut(ctx.name.getText());
-    } else {
-      throw new IllegalStateException("Invalid route map direction for neighbor");
-    }
-  }
-
-  @Override
-  public void enterEos_rbafipv4_no_neighbor(Eos_rbafipv4_no_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
-      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
-      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
-      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
-    } else if (ctx.v6 != null) {
-      _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
-    } else {
-      throw new IllegalStateException(
-          String.format("Unknown neighbor type in %s", getFullText(ctx)));
-    }
-  }
-
-  @Override
-  public void exitEos_rbafipv4_no_neighbor(Eos_rbafipv4_no_neighborContext ctx) {
-    _currentAristaBgpNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void exitEos_rbafnonc_activate(Eos_rbafnonc_activateContext ctx) {
-    _currentAristaBgpNeighborAddressFamily.setDefaultActivate(false);
-  }
-
-  @Override
-  public void exitEos_rbibbpa_multipath_relax(Eos_rbibbpa_multipath_relaxContext ctx) {
-    _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(true);
-  }
-
-  @Override
-  public void exitEos_rbibbp_tie_break(Eos_rbibbp_tie_breakContext ctx) {
-    if (ctx.ROUTER_ID() != null) {
-      _currentAristaBgpVrf.setBestpathTieBreaker(AristaBgpBestpathTieBreaker.ROUTER_ID);
-    } else if (ctx.CLUSTER_LIST_LENGTH() != null) {
-      _currentAristaBgpVrf.setBestpathTieBreaker(AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH);
-    } else {
-      throw new IllegalStateException(
-          String.format("Unrecognized 'bgp bestpath tie-break' value: %s", getFullText(ctx)));
-    }
-  }
-
-  @Override
-  public void exitEos_rbibl_limit(Eos_rbibl_limitContext ctx) {
-    _currentAristaBgpVrf.setListenLimit(toInteger(ctx.num));
-  }
-
-  @Override
-  public void exitEos_rbibl_range(Eos_rbibl_rangeContext ctx) {
-    Prefix prefix;
-    if (ctx.prefix != null) {
-      prefix = toPrefix(ctx.prefix);
-    } else if (ctx.ip != null) {
-      prefix = Prefix.create(toIp(ctx.ip), toIp(ctx.mask));
-    } else {
-      // IPv6, currently ignored.
-      return;
-    }
-    AristaBgpV4DynamicNeighbor neighbor = _currentAristaBgpVrf.getOrCreateV4DynamicNeighbor(prefix);
-    assert ctx.pg != null; // parser guarantee
-    neighbor.setPeerGroup(ctx.pg.getText());
-    if (ctx.asn != null) {
-      neighbor.setRemoteAs(toAsNum(ctx.asn));
-    }
-    if (ctx.peer_filter != null) {
-      warn(ctx, "Peer filters are currently not supported");
-    }
-  }
-
-  @Override
-  public void exitEos_rbi_default_metric(Eos_rbi_default_metricContext ctx) {
-    _currentAristaBgpVrf.setDefaultMetric(toLong(ctx.metric));
-  }
-
-  @Override
-  public void exitEos_rbi_distance(Eos_rbi_distanceContext ctx) {
-    _currentAristaBgpVrf.setEbgpAdminDistance(toInteger(ctx.external));
-    if (ctx.internal != null) {
-      _currentAristaBgpVrf.setIbgpAdminDistance(toInteger(ctx.internal));
-    }
-    if (ctx.local != null) {
-      _currentAristaBgpVrf.setLocalAdminDistance(toInteger(ctx.local));
-    }
-  }
-
-  @Override
-  public void exitEos_rbi_maximum_paths(Eos_rbi_maximum_pathsContext ctx) {
-    _currentAristaBgpVrf.setMaxPaths(toInteger(ctx.num));
-    if (ctx.ecmp != null) {
-      _currentAristaBgpVrf.setMaxPathsEcmp(toInteger(ctx.ecmp));
-    }
-  }
-
-  @Override
-  public void enterEos_rbi_neighbor4(Eos_rbi_neighbor4Context ctx) {
-    Ip ip = toIp(ctx.name);
-    _currentAristaBgpNeighbor =
-        _currentAristaBgpVrf.getV4neighbors().computeIfAbsent(ip, AristaBgpV4Neighbor::new);
-    _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
-  }
-
-  @Override
-  public void exitEos_rbi_neighbor4(Eos_rbi_neighbor4Context ctx) {
-    _currentAristaBgpNeighbor = null;
-    _currentAristaBgpNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void exitEos_rbinc_additional_paths(Eos_rbinc_additional_pathsContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEos_rbinc_allowas_in(Eos_rbinc_allowas_inContext ctx) {
-    int num = ctx.num != null ? toInteger(ctx.num) : Integer.MAX_VALUE;
-    _currentAristaBgpNeighbor.setAllowAsIn(num);
-  }
-
-  @Override
-  public void exitEos_rbinc_default_originate(Eos_rbinc_default_originateContext ctx) {
-    todo(ctx);
-    if (ctx.rm != null) {
-      String routeMapName = ctx.rm.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitEos_rbinc_description(Eos_rbinc_descriptionContext ctx) {
-    _currentAristaBgpNeighbor.setDescription(ctx.desc.getText().trim());
-  }
-
-  @Override
-  public void exitEos_rbinc_dont_capability_negotiate(
-      Eos_rbinc_dont_capability_negotiateContext ctx) {
-    _currentAristaBgpNeighbor.setDontCapabilityNegotiate(true);
-  }
-
-  @Override
-  public void exitEos_rbinc_ebgp_multihop(Eos_rbinc_ebgp_multihopContext ctx) {
-    int num = ctx.num != null ? toInteger(ctx.num) : Integer.MAX_VALUE;
-    _currentAristaBgpNeighbor.setEbgpMultihop(num);
-  }
-
-  @Override
-  public void exitEos_rbinc_enforce_first_as(Eos_rbinc_enforce_first_asContext ctx) {
-    _currentAristaBgpNeighbor.setEnforceFirstAs(true);
-  }
-
-  @Override
-  public void exitEos_rbinc_export_localpref(Eos_rbinc_export_localprefContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEos_rbinc_local_as(Eos_rbinc_local_asContext ctx) {
-    _currentAristaBgpNeighbor.setLocalAs(toAsNum(ctx.asn));
-  }
-
-  @Override
-  public void exitEos_rbinc_maximum_accepted_routes(Eos_rbinc_maximum_accepted_routesContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEos_rbinc_maximum_routes(Eos_rbinc_maximum_routesContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void enterEos_rbinc_next_hop_self(Eos_rbinc_next_hop_selfContext ctx) {
-    _currentAristaBgpNeighbor.setNextHopSelf(true);
-  }
-
-  @Override
-  public void exitEos_rbinc_next_hop_unchanged(Eos_rbinc_next_hop_unchangedContext ctx) {
-    _currentAristaBgpNeighbor.setNextHopUnchanged(true);
-  }
-
-  @Override
-  public void exitEos_rbinc_remote_as(Eos_rbinc_remote_asContext ctx) {
-    _currentAristaBgpNeighbor.setRemoteAs(toAsNum(ctx.asn));
-  }
-
-  @Override
-  public void exitEos_rbinc_remove_private_as(Eos_rbinc_remove_private_asContext ctx) {
-    if (ctx.REPLACE_AS() != null) {
-      _currentAristaBgpNeighbor.setRemovePrivateAsMode(
-          AristaBgpNeighbor.RemovePrivateAsMode.REPLACE_AS);
-    } else if (ctx.ALL() != null) {
-      _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.ALL);
-    } else {
-      _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.BASIC);
-    }
-  }
-
-  @Override
-  public void exitEos_rbinc_send_community(Eos_rbinc_send_communityContext ctx) {
-    _currentAristaBgpNeighbor.setSendCommunity(true);
-    if (ctx.ADD() != null || !ctx.EXTENDED().isEmpty() || ctx.REMOVE() != null) {
-      // TODO: figure out all the valid modifiers/combos
-      todo(ctx);
-    }
-  }
-
-  @Override
-  public void exitEos_rbinc_shutdown(Eos_rbinc_shutdownContext ctx) {
-    _currentAristaBgpNeighbor.setShutdown(true);
-  }
-
-  @Override
-  public void exitEos_rbinc_update_source(Eos_rbinc_update_sourceContext ctx) {
-    _currentAristaBgpNeighbor.setUpdateSource(ctx.iface.getText());
-  }
-
-  @Override
-  public void exitEos_rbi_network4(Eos_rbi_network4Context ctx) {
-    AristaBgpVrfIpv4UnicastAddressFamily af = _currentAristaBgpVrf.getOrCreateV4UnicastAf();
-    Prefix network =
-        ctx.prefix != null
-            ? Prefix.parse(ctx.prefix.getText())
-            : Prefix.create(toIp(ctx.ip), toIp(ctx.mask));
-    AristaBgpNetworkConfiguration conf = af.getOrCreateNetwork(network);
-    String routeMapName = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMapName != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMapName, BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.getStart().getLine());
-      conf.setRouteMap(routeMapName);
-    }
-  }
-
-  @Override
-  public void exitEos_rbi_network6(Eos_rbi_network6Context ctx) {
-    if (ctx.rm != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, ctx.rm.getText(), BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitEos_rbino_bgp_bpa_multipath_relax(Eos_rbino_bgp_bpa_multipath_relaxContext ctx) {
-    _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(false);
-  }
-
-  @Override
-  public void exitEos_rbino_bgp_default_ipv4_unicast(
-      Eos_rbino_bgp_default_ipv4_unicastContext ctx) {
-    _currentAristaBgpVrf.setDefaultIpv4Unicast(false);
-  }
-
-  @Override
-  public void enterEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
-      _currentAristaBgpNeighbor =
-          _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
-      _currentAristaBgpNeighbor =
-          _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
-    } else if (ctx.v6 != null) {
-      // TODO: v6 neighbors
-      _currentAristaBgpNeighbor = new AristaBgpPeerGroupNeighbor("dummy");
-    } else {
-      throw new IllegalStateException(
-          String.format("Unknown neighbor type in %s", getFullText(ctx)));
-    }
-  }
-
-  @Override
-  public void exitEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
-    _currentAristaBgpNeighbor = null;
-  }
-
-  @Override
-  public void exitEos_rbinon_enforce_first_as(Eos_rbinon_enforce_first_asContext ctx) {
-    _currentAristaBgpNeighbor.setEnforceFirstAs(false);
-  }
-
-  @Override
-  public void exitEos_rbin_peer_group(Eos_rbin_peer_groupContext ctx) {
-    assert _currentAristaBgpNeighbor instanceof AristaBgpHasPeerGroup;
-    String peerGroupName = ctx.name.getText();
-    ((AristaBgpHasPeerGroup) _currentAristaBgpNeighbor).setPeerGroup(peerGroupName);
-    _configuration.referenceStructure(
-        BGP_PEER_GROUP, peerGroupName, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void enterEos_rbi_peer_group(Eos_rbi_peer_groupContext ctx) {
-    String peerGroupName = ctx.name.getText();
-    _currentAristaBgpNeighbor =
-        _currentAristaBgpProcess
-            .getPeerGroups()
-            .computeIfAbsent(peerGroupName, AristaBgpPeerGroupNeighbor::new);
-    _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
-    _configuration.defineStructure(BGP_PEER_GROUP, peerGroupName, ctx);
-  }
-
-  @Override
-  public void exitEos_rbi_peer_group(Eos_rbi_peer_groupContext ctx) {
-    _currentAristaBgpNeighbor = null;
-    _currentAristaBgpNeighborAddressFamily = null;
-  }
-
-  @Override
-  public void exitEos_rbir_attached_host(Eos_rbir_attached_hostContext ctx) {
-    todo(ctx);
-    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMap != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_ATTACHED_HOST_MAP, ctx.getStart().getLine());
-    }
-    _currentAristaBgpVrf.addRedistributionPolicy(AristaRedistributeType.ATTACHED_HOST, routeMap);
-  }
-
-  @Override
-  public void exitEos_rbir_connected(Eos_rbir_connectedContext ctx) {
-    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMap != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_CONNECTED_MAP, ctx.getStart().getLine());
-    }
-    _currentAristaBgpVrf.addRedistributionPolicy(AristaRedistributeType.CONNECTED, routeMap);
-  }
-
-  @Override
-  public void exitEos_rbir_dynamic(Eos_rbir_dynamicContext ctx) {
-    todo(ctx);
-    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMap != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_DYNAMIC_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitEos_rbir_isis(Eos_rbir_isisContext ctx) {
-    todo(ctx);
-    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMap != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_ISIS_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitEos_rbir_ospf(Eos_rbir_ospfContext ctx) {
-    todo(ctx);
-    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMap != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_OSPF_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitEos_rbir_ospf3(Eos_rbir_ospf3Context ctx) {
-    todo(ctx);
-    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMap != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_OSPFV3_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitEos_rbir_rip(Eos_rbir_ripContext ctx) {
-    todo(ctx);
-    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMap != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_RIP_MAP, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitEos_rbir_static(Eos_rbir_staticContext ctx) {
-    String routeMap = ctx.rm == null ? null : ctx.rm.getText();
-    if (routeMap != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_STATIC_MAP, ctx.getStart().getLine());
-    }
-    _currentAristaBgpVrf.addRedistributionPolicy(AristaRedistributeType.STATIC, routeMap);
-  }
-
-  @Override
-  public void exitEos_rbi_router_id(Eos_rbi_router_idContext ctx) {
-    _currentAristaBgpVrf.setRouterId(toIp(ctx.id));
-  }
-
-  @Override
-  public void exitEos_rbi_timers(Eos_rbi_timersContext ctx) {
-    _currentAristaBgpVrf.setHoldTimer(toInteger(ctx.hold));
-    _currentAristaBgpVrf.setKeepAliveTimer(toInteger(ctx.keepalive));
-  }
-
-  @Override
-  public void exitEos_rbi_shutdown(Eos_rbi_shutdownContext ctx) {
-    _currentAristaBgpVrf.setShutdown(true);
-  }
-
-  @Override
-  public void exitEos_rb_vab_vlan(Eos_rb_vab_vlanContext ctx) {
-    // Enforced by the grammar
-    assert _currentAristaBgpVlan instanceof AristaBgpVlanAwareBundle;
-    ((AristaBgpVlanAwareBundle) _currentAristaBgpVlan).setVlans(toIntegerSpace(ctx.vlans));
-  }
-
-  @Override
-  public void enterEos_rb_vlan(Eos_rb_vlanContext ctx) {
-    int vlan = toInteger(ctx.id);
-    _currentAristaBgpVlan =
-        _currentAristaBgpProcess.getVlans().computeIfAbsent(vlan, AristaBgpVlan::new);
-  }
-
-  @Override
-  public void exitEos_rb_vlan(Eos_rb_vlanContext ctx) {
-    _currentAristaBgpVlan = null;
-  }
-
-  @Override
-  public void exitEos_rb_vlan_tail_rd(Eos_rb_vlan_tail_rdContext ctx) {
-    _currentAristaBgpVlan.setRd(toRouteDistinguisher(ctx.rd));
-  }
-
-  @Override
-  public void exitEos_rb_vlan_tail_redistribute(Eos_rb_vlan_tail_redistributeContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEos_rb_vlan_tail_route_target(Eos_rb_vlan_tail_route_targetContext ctx) {
-    ExtendedCommunity rt = toRouteTarget(ctx.rt);
-    if (ctx.IMPORT() != null || ctx.BOTH() != null) {
-      _currentAristaBgpVlan.setRtImport(rt);
-    }
-    if (ctx.EXPORT() != null || ctx.BOTH() != null) {
-      _currentAristaBgpVlan.setRtExport(rt);
-    }
-  }
-
-  @Override
-  public void enterEos_rb_vlan_aware_bundle(Eos_rb_vlan_aware_bundleContext ctx) {
-    _currentAristaBgpVlan =
-        _currentAristaBgpProcess
-            .getVlanAwareBundles()
-            .computeIfAbsent(ctx.name.getText(), AristaBgpVlanAwareBundle::new);
-  }
-
-  @Override
-  public void exitEos_rb_vlan_aware_bundle(Eos_rb_vlan_aware_bundleContext ctx) {
-    _currentAristaBgpVlan = null;
-  }
-
-  @Override
-  public void enterEos_rb_vrf(Eos_rb_vrfContext ctx) {
-    String name = ctx.name.getText();
-    _currentAristaBgpVrf =
-        _currentAristaBgpProcess.getVrfs().computeIfAbsent(name, AristaBgpVrf::new);
-  }
-
-  @Override
-  public void exitEos_rb_vrf(Eos_rb_vrfContext ctx) {
-    _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
-  }
-
-  @Override
-  public void exitEos_rbv_local_as(Eos_rbv_local_asContext ctx) {
-    _currentAristaBgpVrf.setLocalAs(toAsNum(ctx.asn));
-  }
-
-  @Override
-  public void exitEos_rbv_rd(Eos_rbv_rdContext ctx) {
-    _currentAristaBgpVrf.setRouteDistinguisher(toRouteDistinguisher(ctx.rd));
-  }
-
-  @Override
-  public void exitEos_rbv_route_target(Eos_rbv_route_targetContext ctx) {
-    if (ctx.EVPN() == null && ctx.p != null) {
-      warn(ctx, "Only EVPN is supported");
-      return;
-    }
-    if (ctx.EXPORT() != null) {
-      _currentAristaBgpVrf.setExportRouteTarget(toRouteTarget(ctx.rt));
-    }
-    if (ctx.IMPORT() != null) {
-      _currentAristaBgpVrf.setImportRouteTarget(toRouteTarget(ctx.rt));
-    }
-  }
-
-  @Override
   public void enterEos_vlan_id(Eos_vlan_idContext ctx) {
     _currentVlans = toIntegerSpace(ctx);
-  }
-
-  @Override
-  public void enterS_eos_vxlan_interface(S_eos_vxlan_interfaceContext ctx) {
-    String canonicalVxlanName = getCanonicalInterfaceName(ctx.iname.getText());
-    if (_eosVxlan == null) {
-      _eosVxlan = new AristaEosVxlan(canonicalVxlanName);
-    } else if (!_eosVxlan.getInterfaceName().equals(canonicalVxlanName)) {
-      warn(ctx, "Only one VXLAN interface may be defined, appending to existing interface");
-    }
-    _configuration.setEosVxlan(_eosVxlan);
-    _configuration.defineStructure(VXLAN, canonicalVxlanName, ctx);
-    _configuration.referenceStructure(
-        VXLAN, canonicalVxlanName, VXLAN_SELF_REF, ctx.iname.getStart().getLine());
   }
 
   @Override
@@ -4355,13 +3559,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     String name = ctx.name.getText();
     _configuration.getCf().getDepiTunnels().computeIfAbsent(name, DepiTunnel::new);
     _configuration.defineStructure(DEPI_TUNNEL, name, ctx);
-  }
-
-  @Override
-  public void enterS_eos_mlag(S_eos_mlagContext ctx) {
-    if (_configuration.getEosMlagConfiguration() == null) {
-      _configuration.setEosMlagConfiguration(new MlagConfiguration());
-    }
   }
 
   @Override
@@ -7874,69 +7071,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitEos_mlag_domain(Eos_mlag_domainContext ctx) {
-    _configuration.getEosMlagConfiguration().setDomainId(ctx.id.getText());
-  }
-
-  @Override
-  public void exitEos_mlag_local_interface(Eos_mlag_local_interfaceContext ctx) {
-    String iface = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.getEosMlagConfiguration().setLocalInterface(iface);
-    _configuration.referenceStructure(
-        INTERFACE, iface, MLAG_CONFIGURATION_LOCAL_INTERFACE, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
-    _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
-  }
-
-  @Override
-  public void exitEos_mlag_peer_link(Eos_mlag_peer_linkContext ctx) {
-    String iface = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.getEosMlagConfiguration().setPeerLink(iface);
-    _configuration.referenceStructure(
-        INTERFACE, iface, MLAG_CONFIGURATION_PEER_LINK, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitEos_mlag_reload_delay(Eos_mlag_reload_delayContext ctx) {
-    Integer period = ctx.INFINITY() != null ? Integer.MAX_VALUE : toInteger(ctx.period);
-    if (ctx.MLAG() != null) {
-      _configuration.getEosMlagConfiguration().setReloadDelayMlag(period);
-    } else if (ctx.NON_MLAG() != null) {
-      _configuration.getEosMlagConfiguration().setReloadDelayNonMlag(period);
-    } else {
-      _configuration.getEosMlagConfiguration().setReloadDelayMlag(period);
-      _configuration.getEosMlagConfiguration().setReloadDelayNonMlag(period);
-    }
-  }
-
-  @Override
-  public void exitEos_mlag_shutdown(Eos_mlag_shutdownContext ctx) {
-    _configuration.getEosMlagConfiguration().setShutdown(ctx.NO() == null);
-  }
-
-  @Override
-  public void exitEos_vlan_name(Eos_vlan_nameContext ctx) {
-    _configuration.getNamedVlans().put(ctx.name.getText(), _currentVlans);
-  }
-
-  @Override
-  public void exitS_vlan_internal_eos(S_vlan_internal_eosContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEos_vlan_trunk(Eos_vlan_trunkContext ctx) {
-    String groupName = ctx.name.getText();
-    VlanTrunkGroup trunkGroup =
-        _configuration.getEosVlanTrunkGroups().computeIfAbsent(groupName, VlanTrunkGroup::new);
-    assert _currentVlans != null;
-    trunkGroup.addVlans(_currentVlans);
-  }
-
-  @Override
   public void exitNeighbor_block_address_family(Neighbor_block_address_familyContext ctx) {
     if (_inBlockNeighbor) {
       popPeer();
@@ -9941,11 +9075,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitS_username(S_usernameContext ctx) {
     _currentUser = null;
-  }
-
-  @Override
-  public void exitS_vlan_eos(S_vlan_eosContext ctx) {
-    _currentVlans = null;
   }
 
   @Override

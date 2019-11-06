@@ -882,10 +882,8 @@ router_bgp_stanza
    ROUTER BGP
    (
       procnum = bgp_asn
-   )? NEWLINE (
-      {!_aristaBgp}? router_bgp_stanza_tail
-      | {_aristaBgp}? eos_router_bgp_tail
-   )*
+   )? NEWLINE
+   router_bgp_stanza_tail*
 ;
 
 router_bgp_stanza_tail
