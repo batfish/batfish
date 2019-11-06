@@ -582,7 +582,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Filter_list_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Flan_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Flan_unitContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hash_commentContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Icmp_inline_object_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Icmp_object_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_autostateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bandwidthContext;
@@ -4850,17 +4849,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _configuration.referenceStructure(
           SERVICE_OBJECT, name, EXTENDED_ACCESS_LIST_SERVICE_OBJECT, line);
       return new ServiceObjectServiceSpecifier(name);
-    } else if (ctx.inline_obj != null) {
-      // ASA inline service object for a particular protocol
-      return SimpleExtendedAccessListServiceSpecifier.builder()
-          .setProtocol(toIpProtocol(ctx.inline_obj))
-          .build();
-    } else if (ctx.inline_obj_icmp != null) {
-      // ASA inline service object for a particular ICMP type
-      return SimpleExtendedAccessListServiceSpecifier.builder()
-          .setProtocol(IpProtocol.ICMP)
-          .setIcmpType(toIcmpType(ctx.inline_obj_icmp))
-          .build();
     } else {
       return convProblem(
           AccessListServiceSpecifier.class, ctx, UnimplementedAccessListServiceSpecifier.INSTANCE);
@@ -9603,51 +9591,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return IcmpType.DESTINATION_UNREACHABLE;
     } else if (ctx.UNSET() != null) {
       return IcmpType.UNSET;
-    } else {
-      throw convError(IcmpType.class, ctx);
-    }
-  }
-
-  // Handle ASA style ICMP codes
-  private Integer toIcmpType(Icmp_inline_object_typeContext ctx) {
-    if (ctx.ICMP_ALTERNATE_ADDRESS() != null) {
-      return IcmpType.ALTERNATE_ADDRESS;
-    } else if (ctx.ICMP_CONVERSION_ERROR() != null) {
-      return IcmpType.CONVERSION_ERROR;
-    } else if (ctx.ICMP_ECHO() != null) {
-      return IcmpType.ECHO_REQUEST;
-    } else if (ctx.ICMP_ECHO_REPLY() != null) {
-      return IcmpType.ECHO_REPLY;
-    } else if (ctx.ICMP_INFORMATION_REPLY() != null) {
-      return IcmpType.INFO_REPLY;
-    } else if (ctx.ICMP_INFORMATION_REQUEST() != null) {
-      return IcmpType.INFO_REQUEST;
-    } else if (ctx.ICMP_MASK_REPLY() != null) {
-      return IcmpType.MASK_REPLY;
-    } else if (ctx.ICMP_MASK_REQUEST() != null) {
-      return IcmpType.MASK_REQUEST;
-    } else if (ctx.ICMP_MOBILE_REDIRECT() != null) {
-      return IcmpType.MOBILE_REDIRECT;
-    } else if (ctx.ICMP_PARAMETER_PROBLEM() != null) {
-      return IcmpType.PARAMETER_PROBLEM;
-    } else if (ctx.ICMP_REDIRECT() != null) {
-      return IcmpType.REDIRECT_MESSAGE;
-    } else if (ctx.ICMP_ROUTER_ADVERTISEMENT() != null) {
-      return IcmpType.ROUTER_ADVERTISEMENT;
-    } else if (ctx.ICMP_ROUTER_SOLICITATION() != null) {
-      return IcmpType.ROUTER_SOLICITATION;
-    } else if (ctx.ICMP_SOURCE_QUENCH() != null) {
-      return IcmpType.SOURCE_QUENCH;
-    } else if (ctx.ICMP_TIME_EXCEEDED() != null) {
-      return IcmpType.TIME_EXCEEDED;
-    } else if (ctx.ICMP_TIMESTAMP_REPLY() != null) {
-      return IcmpType.TIMESTAMP_REPLY;
-    } else if (ctx.ICMP_TIMESTAMP_REQUEST() != null) {
-      return IcmpType.TIMESTAMP_REQUEST;
-    } else if (ctx.ICMP_TRACEROUTE() != null) {
-      return IcmpType.TRACEROUTE;
-    } else if (ctx.ICMP_UNREACHABLE() != null) {
-      return IcmpType.DESTINATION_UNREACHABLE;
     } else {
       throw convError(IcmpType.class, ctx);
     }

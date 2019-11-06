@@ -15458,20 +15458,6 @@ M_AuthenticationUsernamePromptText_DOUBLE_QUOTE
    '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
-mode M_BannerAsa;
-// Initial whitespace character after banner type should have been consumed if present.
-// Further whitespace is part of body.
-
-M_BannerAsa_BANNER_BODY
-:
-  F_NonNewline+ -> type(BANNER_BODY)
-;
-
-M_BannerAsa_NEWLINE
-:
-  F_Newline+ -> type(NEWLINE), popMode
-;
-
 mode M_BannerIosDelimiter;
 // whitespace should have been consumed before entering this mode
 
