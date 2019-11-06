@@ -111,14 +111,20 @@ public final class Flow implements Comparable<Flow>, Serializable {
         icmpType = null;
       }
 
+      @Nullable Integer srcPort = _srcPort;
+      @Nullable Integer dstPort = _dstPort;
+      if (!IpProtocol.IP_PROTOCOLS_WITH_PORTS.contains(_ipProtocol)) {
+        srcPort = dstPort = null;
+      }
+
       return new Flow(
           _ingressNode,
           _ingressInterface,
           _ingressVrf,
           _srcIp,
           _dstIp,
-          _srcPort,
-          _dstPort,
+          srcPort,
+          dstPort,
           firstNonNull(_ipProtocol, IpProtocol.fromNumber(0)),
           _dscp,
           _ecn,

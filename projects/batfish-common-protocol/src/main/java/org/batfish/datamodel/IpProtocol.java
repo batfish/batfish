@@ -2,7 +2,9 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
+import java.util.Set;
 import org.batfish.common.BatfishException;
 
 /**
@@ -268,6 +270,9 @@ public enum IpProtocol {
   XNET(15),
   XNS_IDP(22),
   XTP(36);
+
+  public static final Set<IpProtocol> IP_PROTOCOLS_WITH_PORTS =
+      ImmutableSet.of(TCP, UDP, DCCP, SCTP);
 
   private static final Map<Integer, IpProtocol> NUMBER_TO_PROTOCOL_MAP = buildNumberToProtocolMap();
 

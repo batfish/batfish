@@ -24,4 +24,22 @@ public class FlowTest {
     assertThat(flow.getIcmpCode(), nullValue());
     assertThat(flow.getIcmpType(), nullValue());
   }
+
+  @Test
+  public void testBuildNonPortFlow() {
+    // IP protocol does not have ports, so don't include source or dest port.
+    Flow flow =
+        Flow.builder()
+            .setIngressNode("node")
+            .setIngressVrf("vrf")
+            .setTag("tag")
+            .setSrcPort(1)
+            .setDstPort(2)
+            .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpCode(1)
+            .setIcmpType(2)
+            .build();
+    assertThat(flow.getSrcPort(), nullValue());
+    assertThat(flow.getDstPort(), nullValue());
+  }
 }
