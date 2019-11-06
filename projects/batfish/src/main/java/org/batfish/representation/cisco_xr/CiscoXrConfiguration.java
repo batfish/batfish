@@ -2625,46 +2625,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       defineSingleLineStructure(CiscoXrStructureType.INTERFACE, "Null0", firstRefToNull0.get());
     }
 
-    markConcreteStructure(
-        CiscoXrStructureType.BFD_TEMPLATE, CiscoXrStructureUsage.INTERFACE_BFD_TEMPLATE);
-
-    markConcreteStructure(
-        CiscoXrStructureType.COMMUNITY_SET,
-        CiscoXrStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY,
-        CiscoXrStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY,
-        CiscoXrStructureUsage.ROUTE_POLICY_DELETE_COMMUNITY_IN,
-        CiscoXrStructureUsage.ROUTE_POLICY_SET_COMMUNITY);
-
-    markConcreteStructure(
-        CiscoXrStructureType.INTERFACE,
-        CiscoXrStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
-        CiscoXrStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
-        CiscoXrStructureUsage.EIGRP_AF_INTERFACE,
-        CiscoXrStructureUsage.EIGRP_PASSIVE_INTERFACE,
-        CiscoXrStructureUsage.FAILOVER_LAN_INTERFACE,
-        CiscoXrStructureUsage.FAILOVER_LINK_INTERFACE,
-        CiscoXrStructureUsage.INTERFACE_SELF_REF,
-        CiscoXrStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
-        CiscoXrStructureUsage.IP_ROUTE_NHINT,
-        CiscoXrStructureUsage.IP_TACACS_SOURCE_INTERFACE,
-        CiscoXrStructureUsage.NTP_SOURCE_INTERFACE,
-        CiscoXrStructureUsage.OBJECT_NAT_MAPPED_INTERFACE,
-        CiscoXrStructureUsage.OBJECT_NAT_REAL_INTERFACE,
-        CiscoXrStructureUsage.OSPF_AREA_INTERFACE,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoXrStructureUsage.ROUTER_STATIC_ROUTE,
-        CiscoXrStructureUsage.ROUTER_VRRP_INTERFACE,
-        CiscoXrStructureUsage.SERVICE_POLICY_INTERFACE,
-        CiscoXrStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
-        CiscoXrStructureUsage.SNMP_SERVER_TRAP_SOURCE,
-        CiscoXrStructureUsage.TACACS_SOURCE_INTERFACE,
-        CiscoXrStructureUsage.TRACK_INTERFACE,
-        CiscoXrStructureUsage.VXLAN_SOURCE_INTERFACE);
+    markConcreteStructure(CiscoXrStructureType.BFD_TEMPLATE);
+    markConcreteStructure(CiscoXrStructureType.COMMUNITY_SET);
+    markConcreteStructure(CiscoXrStructureType.INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -2725,110 +2688,45 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.WCCP_REDIRECT_LIST,
         CiscoXrStructureUsage.WCCP_SERVICE_LIST);
 
-    markConcreteStructure(
-        CiscoXrStructureType.PREFIX_LIST,
-        CiscoXrStructureUsage.BGP_INBOUND_PREFIX_LIST,
-        CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT);
-    markConcreteStructure(
-        CiscoXrStructureType.PREFIX6_LIST,
-        CiscoXrStructureUsage.BGP_INBOUND_PREFIX6_LIST,
-        CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
-        CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT);
+    markConcreteStructure(CiscoXrStructureType.PREFIX_LIST);
+    markConcreteStructure(CiscoXrStructureType.PREFIX6_LIST);
 
-    markConcreteStructure(
-        CiscoXrStructureType.PREFIX_SET, CiscoXrStructureUsage.ROUTE_POLICY_PREFIX_SET);
+    markConcreteStructure(CiscoXrStructureType.PREFIX_SET);
 
-    markConcreteStructure(
-        CiscoXrStructureType.ROUTE_POLICY,
-        CiscoXrStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
-        CiscoXrStructureUsage.BGP_AGGREGATE_ROUTE_POLICY,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT,
-        CiscoXrStructureUsage.ROUTE_POLICY_APPLY);
+    markConcreteStructure(CiscoXrStructureType.ROUTE_POLICY);
 
     // Cable
-    markConcreteStructure(
-        CiscoXrStructureType.DEPI_CLASS, CiscoXrStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
-    markConcreteStructure(
-        CiscoXrStructureType.DEPI_TUNNEL,
-        CiscoXrStructureUsage.CONTROLLER_DEPI_TUNNEL,
-        CiscoXrStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
-    markConcreteStructure(
-        CiscoXrStructureType.DOCSIS_POLICY, CiscoXrStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
-    markConcreteStructure(
-        CiscoXrStructureType.DOCSIS_POLICY_RULE,
-        CiscoXrStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
-    markConcreteStructure(
-        CiscoXrStructureType.SERVICE_CLASS, CiscoXrStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
+    markConcreteStructure(CiscoXrStructureType.DEPI_CLASS);
+    markConcreteStructure(CiscoXrStructureType.DEPI_TUNNEL);
+    markConcreteStructure(CiscoXrStructureType.DOCSIS_POLICY);
+    markConcreteStructure(CiscoXrStructureType.DOCSIS_POLICY_RULE);
+    markConcreteStructure(CiscoXrStructureType.SERVICE_CLASS);
 
     // L2tp
-    markConcreteStructure(
-        CiscoXrStructureType.L2TP_CLASS, CiscoXrStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
+    markConcreteStructure(CiscoXrStructureType.L2TP_CLASS);
 
     // Crypto, Isakmp, and IPSec
-    markConcreteStructure(
-        CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET,
-        CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET);
-    markConcreteStructure(
-        CiscoXrStructureType.ISAKMP_PROFILE,
-        CiscoXrStructureUsage.ISAKMP_PROFILE_SELF_REF,
-        CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE,
-        CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
-    markConcreteStructure(
-        CiscoXrStructureType.ISAKMP_POLICY, CiscoXrStructureUsage.ISAKMP_POLICY_SELF_REF);
-    markConcreteStructure(
-        CiscoXrStructureType.IPSEC_PROFILE, CiscoXrStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
-    markConcreteStructure(
-        CiscoXrStructureType.IPSEC_TRANSFORM_SET,
-        CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
-        CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
-    markConcreteStructure(
-        CiscoXrStructureType.KEYRING, CiscoXrStructureUsage.ISAKMP_PROFILE_KEYRING);
-    markConcreteStructure(
-        CiscoXrStructureType.NAMED_RSA_PUB_KEY, CiscoXrStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);
+    markConcreteStructure(CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET);
+    markConcreteStructure(CiscoXrStructureType.ISAKMP_PROFILE);
+    markConcreteStructure(CiscoXrStructureType.ISAKMP_POLICY);
+    markConcreteStructure(CiscoXrStructureType.IPSEC_PROFILE);
+    markConcreteStructure(CiscoXrStructureType.IPSEC_TRANSFORM_SET);
+    markConcreteStructure(CiscoXrStructureType.KEYRING);
+    markConcreteStructure(CiscoXrStructureType.NAMED_RSA_PUB_KEY);
 
     // class-map
-    markConcreteStructure(
-        CiscoXrStructureType.INSPECT_CLASS_MAP,
-        CiscoXrStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
-    markConcreteStructure(
-        CiscoXrStructureType.CLASS_MAP,
-        CiscoXrStructureUsage.POLICY_MAP_CLASS,
-        CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS);
+    markConcreteStructure(CiscoXrStructureType.INSPECT_CLASS_MAP);
+    markConcreteStructure(CiscoXrStructureType.CLASS_MAP);
 
     // policy-map
     markConcreteStructure(CiscoXrStructureType.INSPECT_POLICY_MAP);
-    markConcreteStructure(
-        CiscoXrStructureType.POLICY_MAP,
-        CiscoXrStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT,
-        CiscoXrStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT,
-        CiscoXrStructureUsage.INTERFACE_SERVICE_POLICY,
-        CiscoXrStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER,
-        CiscoXrStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
-        CiscoXrStructureUsage.SERVICE_POLICY_GLOBAL,
-        CiscoXrStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);
+    markConcreteStructure(CiscoXrStructureType.POLICY_MAP);
 
     // object-group
-    markConcreteStructure(
-        CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP,
-        CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_ICMP_TYPE_OBJECT_GROUP,
-        CiscoXrStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
-    markConcreteStructure(
-        CiscoXrStructureType.NETWORK_OBJECT_GROUP,
-        CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
-        CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
-        CiscoXrStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP);
-    markConcreteStructure(
-        CiscoXrStructureType.PROTOCOL_OBJECT_GROUP,
-        CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
-        CiscoXrStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
-    markConcreteStructure(
-        CiscoXrStructureType.SERVICE_OBJECT_GROUP,
-        CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
-        CiscoXrStructureUsage.SERVICE_OBJECT_GROUP_GROUP_OBJECT);
+    markConcreteStructure(CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP);
+    markConcreteStructure(CiscoXrStructureType.NETWORK_OBJECT_GROUP);
+    markConcreteStructure(CiscoXrStructureType.PROTOCOL_OBJECT_GROUP);
+    markConcreteStructure(CiscoXrStructureType.SERVICE_OBJECT_GROUP);
     markAbstractStructure(
         CiscoXrStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
@@ -2836,69 +2734,34 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             CiscoXrStructureType.PROTOCOL_OBJECT_GROUP, CiscoXrStructureType.SERVICE_OBJECT_GROUP));
 
     // objects
-    markConcreteStructure(
-        CiscoXrStructureType.ICMP_TYPE_OBJECT,
-        CiscoXrStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
-    markConcreteStructure(
-        CiscoXrStructureType.NETWORK_OBJECT,
-        CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
-        CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
-        CiscoXrStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-        CiscoXrStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT);
-    markConcreteStructure(
-        CiscoXrStructureType.SERVICE_OBJECT,
-        CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,
-        CiscoXrStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
-    markConcreteStructure(
-        CiscoXrStructureType.PROTOCOL_OBJECT,
-        CiscoXrStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
+    markConcreteStructure(CiscoXrStructureType.ICMP_TYPE_OBJECT);
+    markConcreteStructure(CiscoXrStructureType.NETWORK_OBJECT);
+    markConcreteStructure(CiscoXrStructureType.SERVICE_OBJECT);
+    markConcreteStructure(CiscoXrStructureType.PROTOCOL_OBJECT);
 
     // service template
-    markConcreteStructure(
-        CiscoXrStructureType.SERVICE_TEMPLATE,
-        CiscoXrStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
-        CiscoXrStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
-        CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+    markConcreteStructure(CiscoXrStructureType.SERVICE_TEMPLATE);
 
     // track
-    markConcreteStructure(
-        CiscoXrStructureType.TRACK, CiscoXrStructureUsage.INTERFACE_STANDBY_TRACK);
+    markConcreteStructure(CiscoXrStructureType.TRACK);
 
     // VXLAN
-    markConcreteStructure(CiscoXrStructureType.VXLAN, CiscoXrStructureUsage.VXLAN_SELF_REF);
+    markConcreteStructure(CiscoXrStructureType.VXLAN);
 
-    markConcreteStructure(CiscoXrStructureType.NAT_POOL, CiscoXrStructureUsage.IP_NAT_SOURCE_POOL);
-    markConcreteStructure(
-        CiscoXrStructureType.AS_PATH_ACCESS_LIST,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST);
+    markConcreteStructure(CiscoXrStructureType.NAT_POOL);
+    markConcreteStructure(CiscoXrStructureType.AS_PATH_ACCESS_LIST);
 
-    markConcreteStructure(
-        CiscoXrStructureType.AS_PATH_SET, CiscoXrStructureUsage.ROUTE_POLICY_AS_PATH_IN);
+    markConcreteStructure(CiscoXrStructureType.AS_PATH_SET);
 
     // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
-    markConcreteStructure(
-        CiscoXrStructureType.BGP_AF_GROUP, CiscoXrStructureUsage.BGP_USE_AF_GROUP);
-    markConcreteStructure(
-        CiscoXrStructureType.BGP_NEIGHBOR_GROUP, CiscoXrStructureUsage.BGP_USE_NEIGHBOR_GROUP);
-    markConcreteStructure(
-        CiscoXrStructureType.BGP_PEER_GROUP,
-        CiscoXrStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_STATEMENT);
-    markConcreteStructure(
-        CiscoXrStructureType.BGP_SESSION_GROUP, CiscoXrStructureUsage.BGP_USE_SESSION_GROUP);
-    markConcreteStructure(
-        CiscoXrStructureType.BGP_TEMPLATE_PEER_POLICY,
-        CiscoXrStructureUsage.BGP_INHERITED_PEER_POLICY);
-    markConcreteStructure(
-        CiscoXrStructureType.BGP_TEMPLATE_PEER_SESSION,
-        CiscoXrStructureUsage.BGP_INHERITED_SESSION);
-    markConcreteStructure(
-        CiscoXrStructureType.BGP_UNDECLARED_PEER,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS);
-    markConcreteStructure(
-        CiscoXrStructureType.BGP_UNDECLARED_PEER_GROUP,
-        CiscoXrStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
+    markConcreteStructure(CiscoXrStructureType.BGP_AF_GROUP);
+    markConcreteStructure(CiscoXrStructureType.BGP_NEIGHBOR_GROUP);
+    markConcreteStructure(CiscoXrStructureType.BGP_PEER_GROUP);
+    markConcreteStructure(CiscoXrStructureType.BGP_SESSION_GROUP);
+    markConcreteStructure(CiscoXrStructureType.BGP_TEMPLATE_PEER_POLICY);
+    markConcreteStructure(CiscoXrStructureType.BGP_TEMPLATE_PEER_SESSION);
+    markConcreteStructure(CiscoXrStructureType.BGP_UNDECLARED_PEER);
+    markConcreteStructure(CiscoXrStructureType.BGP_UNDECLARED_PEER_GROUP);
 
     return ImmutableList.of(c);
   }
