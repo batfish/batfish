@@ -18,7 +18,6 @@ tokens {
    ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
    BANNER_DELIMITER_CADANT,
-   BANNER_DELIMITER_EOS,
    BANNER_DELIMITER_IOS,
    BANNER_BODY,
    COMMUNITY_LIST_NUM_EXPANDED,
@@ -7063,8 +7062,6 @@ LOGIN
   {
     if (isCadant()) {
       pushMode(M_BannerCadant);
-    } else if (isEos()) {
-      pushMode(M_BannerEos);
     }
   }
 ;
@@ -14638,7 +14635,6 @@ COMMENT_LINE
       switch(lastTokenType()) {
         case -1:
         case BANNER_DELIMITER_CADANT:
-        case BANNER_DELIMITER_EOS:
         case NEWLINE:
           return true;
         default:
@@ -15573,38 +15569,6 @@ M_BannerCadant_BODY
   F_NonNewline* F_Newline+
   {
     if (bannerCadantDelimiterFollows()) {
-      setType(BANNER_BODY);
-    } else {
-      more();
-    }
-  }
-;
-
-mode M_BannerEos;
-
-M_BannerEos_NEWLINE
-:
-  // Consume single newline. Subsequent newlines are part of banner.
-  F_Newline -> type(NEWLINE), mode(M_BannerEosText)
-;
-
-M_BannerEos_WS
-:
-  F_Whitespace+ -> channel(HIDDEN)
-;
-
-mode M_BannerEosText;
-
-M_BannerEos_BANNER_DELIMITER_EOS
-:
-  'EOF' F_Newline+ -> type(BANNER_DELIMITER_EOS), popMode
-;
-
-M_BannerEos_BODY
-:
-  F_NonNewline* F_Newline+
-  {
-    if (bannerEosDelimiterFollows()) {
       setType(BANNER_BODY);
     } else {
       more();

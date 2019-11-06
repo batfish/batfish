@@ -2338,21 +2338,10 @@ asa_banner_header
 
 s_banner_cadant
 :
-  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
+  BANNER type = cadant_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
 ;
 
 cadant_banner_type
-:
-  LOGIN
-  | MOTD
-;
-
-s_banner_eos
-:
-  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_EOS // delimiter includes newline
-;
-
-eos_banner_type
 :
   LOGIN
   | MOTD
@@ -3736,7 +3725,6 @@ stanza
    | s_authentication
    | s_banner_asa
    | s_banner_cadant
-   | s_banner_eos
    | s_banner_ios
    | s_bfd
    | s_bfd_template

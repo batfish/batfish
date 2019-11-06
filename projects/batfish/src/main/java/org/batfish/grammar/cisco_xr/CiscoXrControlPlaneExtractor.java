@@ -927,7 +927,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_access_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_asa_twice_natContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_asaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_cadantContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_eosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_iosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_bfd_templateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_cableContext;
@@ -4173,13 +4172,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitS_banner_cadant(S_banner_cadantContext ctx) {
-    String bannerType = ctx.type.getText();
-    String body = ctx.body != null ? ctx.body.getText() : "";
-    _configuration.getCf().getBanners().put(bannerType, body);
-  }
-
-  @Override
-  public void exitS_banner_eos(S_banner_eosContext ctx) {
     String bannerType = ctx.type.getText();
     String body = ctx.body != null ? ctx.body.getText() : "";
     _configuration.getCf().getBanners().put(bannerType, body);

@@ -95,17 +95,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
     return last == '\n' || last == '\r';
   }
 
-  // EOS banner utility function
-  protected final boolean bannerEosDelimiterFollows() {
-    if (!(getInputStream().LA(1) == 'E'
-        && getInputStream().LA(2) == 'O'
-        && getInputStream().LA(3) == 'F')) {
-      return false;
-    }
-    int last = getInputStream().LA(4);
-    return last == '\n' || last == '\r';
-  }
-
   // IOS banner utility functions
   protected final void setBannerIosDelimiter() {
     _bannerIosDelimiter = getText().codePointAt(0);
