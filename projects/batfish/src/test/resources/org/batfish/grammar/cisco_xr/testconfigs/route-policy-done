@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname route-policy-done
+
+prefix-set accept_this_ip
+  1.2.3.4/32
+end-set
+
+prefix-set accept_this_ip_2
+  1.2.3.5/32
+end-set
+
+route-policy rp_ip
+  if destination in accept_this_ip then
+    done
+  endif
+  if destination in accept_this_ip_2 then
+    pass
+  else
+    drop
+  endif
+end-policy
+
+router bgp 2
+  redistribute static
+  neighbor 10.1.1.1
+    remote-as 3
+    address-family ipv4 unicast
+      route-policy rp_ip out

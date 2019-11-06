@@ -1,14 +1,21 @@
 package org.batfish.grammar.cisco_xr;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -32,8 +39,10 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -43,6 +52,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.junit.Rule;
@@ -59,6 +69,16 @@ public final class XrGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private Batfish getBatfishForConfigurationNames(String... configurationNames) {
+    String[] names =
+        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
+    try {
+      return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
@@ -396,6 +416,47 @@ public final class XrGrammarTest {
   @Test
   public void testPrefixSet() {
     String hostname = "prefix-set";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+
+    Prefix permittedPrefix = Prefix.parse("1.2.3.4/30");
+    Prefix6 permittedPrefix6 = Prefix6.parse("2001::ffff:0/124");
+    Prefix rejectedPrefix = Prefix.parse("1.2.4.4/30");
+    Prefix6 rejectedPrefix6 = Prefix6.parse("2001::fffe:0/124");
+
+    /*
+     * Confirm the generated route filter lists permit correct prefixes and do not permit others
+     */
+    assertThat(c, hasRouteFilterList("pre_ipv4", permits(permittedPrefix)));
+    assertThat(c, hasRouteFilterList("pre_ipv4", not(permits(rejectedPrefix))));
+    assertThat(c, hasRoute6FilterList("pre_ipv6", permits(permittedPrefix6)));
+    assertThat(c, hasRoute6FilterList("pre_ipv6", not(permits(rejectedPrefix6))));
+    assertThat(c, hasRouteFilterList("pre_combo", permits(permittedPrefix)));
+    assertThat(c, hasRouteFilterList("pre_combo", not(permits(rejectedPrefix))));
+    assertThat(c, hasRoute6FilterList("pre_combo", permits(permittedPrefix6)));
+    assertThat(c, hasRoute6FilterList("pre_combo", not(permits(rejectedPrefix6))));
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String filename = "configs/" + hostname;
+    /*
+     * pre_combo should be the only prefix set without a referrer
+     */
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_ipv4", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_ipv6", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_combo", 0));
+
+    /*
+     * pre_undef should be the only undefined reference
+     */
+    assertThat(ccae, not(hasUndefinedReference(filename, PREFIX_SET, "pre_ipv4")));
+    assertThat(ccae, not(hasUndefinedReference(filename, PREFIX_SET, "pre_ipv6")));
+    assertThat(ccae, hasUndefinedReference(filename, PREFIX_SET, "pre_undef"));
+  }
+
+  @Test
+  public void testRoutePolicyDone() {
+    String hostname = "route-policy-done";
     Configuration c = parseConfig(hostname);
 
     Prefix permittedPrefix = Prefix.parse("1.2.3.4/32");

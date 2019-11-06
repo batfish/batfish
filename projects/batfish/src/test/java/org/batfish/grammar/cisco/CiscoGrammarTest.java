@@ -198,7 +198,6 @@ import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
-import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
@@ -3286,47 +3285,6 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, INSPECT_CLASS_MAP, "cmundefined"));
     assertThat(ccae, not(hasUndefinedReference(filename, INSPECT_POLICY_MAP, "pmidefined")));
     assertThat(ccae, hasUndefinedReference(filename, INSPECT_POLICY_MAP, "pmiundefined"));
-  }
-
-  @Test
-  public void testIosPrefixSet() throws IOException {
-    String hostname = "ios-prefix-set";
-    String filename = "configs/" + hostname;
-    Configuration c = parseConfig(hostname);
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
-
-    Prefix permittedPrefix = Prefix.parse("1.2.3.4/30");
-    Prefix6 permittedPrefix6 = Prefix6.parse("2001::ffff:0/124");
-    Prefix rejectedPrefix = Prefix.parse("1.2.4.4/30");
-    Prefix6 rejectedPrefix6 = Prefix6.parse("2001::fffe:0/124");
-
-    /*
-     * pre_combo should be the only prefix set without a referrer
-     */
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_ipv4", 1));
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_ipv6", 1));
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_SET, "pre_combo", 0));
-
-    /*
-     * pre_undef should be the only undefined reference
-     */
-    assertThat(ccae, not(hasUndefinedReference(filename, PREFIX_SET, "pre_ipv4")));
-    assertThat(ccae, not(hasUndefinedReference(filename, PREFIX_SET, "pre_ipv6")));
-    assertThat(ccae, hasUndefinedReference(filename, PREFIX_SET, "pre_undef"));
-
-    /*
-     * Confirm the generated route filter lists permit correct prefixes and do not permit others
-     */
-    assertThat(c, hasRouteFilterList("pre_ipv4", permits(permittedPrefix)));
-    assertThat(c, hasRouteFilterList("pre_ipv4", not(permits(rejectedPrefix))));
-    assertThat(c, hasRoute6FilterList("pre_ipv6", permits(permittedPrefix6)));
-    assertThat(c, hasRoute6FilterList("pre_ipv6", not(permits(rejectedPrefix6))));
-    assertThat(c, hasRouteFilterList("pre_combo", permits(permittedPrefix)));
-    assertThat(c, hasRouteFilterList("pre_combo", not(permits(rejectedPrefix))));
-    assertThat(c, hasRoute6FilterList("pre_combo", permits(permittedPrefix6)));
-    assertThat(c, hasRoute6FilterList("pre_combo", not(permits(rejectedPrefix6))));
   }
 
   @Test

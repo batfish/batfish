@@ -1,28 +1,28 @@
 !RANCID-CONTENT-TYPE: cisco-xr
+!
 hostname prefix-set
-
-prefix-set accept_this_ip
-  1.2.3.4/32
+!
+prefix-set pre_ipv4
+  1.2.3.4/30
 end-set
-
-prefix-set accept_this_ip_2
-  1.2.3.5/32
+prefix-set pre_ipv6
+  2001::ffff:0/124
 end-set
-
+prefix-set pre_combo
+  1.2.3.4/30,
+  2001::ffff:0/124
+end-set
 route-policy rp_ip
-  if destination in accept_this_ip then
+  if destination in pre_ipv4 then
+    pass
     done
   endif
-  if destination in accept_this_ip_2 then
+  if destination in pre_ipv6 then
     pass
-  else
-    drop
+    done
+  endif
+  if destination in pre_undef then
+    pass
+    done
   endif
 end-policy
-
-router bgp 2
-  redistribute static
-  neighbor 10.1.1.1
-    remote-as 3
-    address-family ipv4 unicast
-      route-policy rp_ip out
