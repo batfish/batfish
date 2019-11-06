@@ -10,7 +10,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
@@ -22,8 +21,6 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 
 public class Interface implements Serializable {
 
-  private static final double DEFAULT_ARISTA_ETHERNET_SPEED = 1E9D;
-
   private static final double DEFAULT_FAST_ETHERNET_SPEED = 100E6D;
 
   private static final double DEFAULT_GIGABIT_ETHERNET_SPEED = 1E9D;
@@ -34,7 +31,7 @@ public class Interface implements Serializable {
 
   private static final int DEFAULT_INTERFACE_MTU = 1500;
 
-  private static final double DEFAULT_IOS_ETHERNET_SPEED = 1E7D;
+  private static final double DEFAULT_ETHERNET_SPEED = 1E7D;
 
   private static final double DEFAULT_LONG_REACH_ETHERNET_SPEED = 10E6D;
 
@@ -62,7 +59,7 @@ public class Interface implements Serializable {
 
   public static @Nullable Double getDefaultBandwidth(
       @Nonnull String name, @Nonnull ConfigurationFormat format) {
-    Double defaultSpeed = getDefaultSpeed(name, format);
+    Double defaultSpeed = getDefaultSpeed(name);
     if (defaultSpeed != null) {
       return defaultSpeed;
     } else if (name.startsWith("Bundle-Ethernet")) {
@@ -83,43 +80,10 @@ public class Interface implements Serializable {
     }
   }
 
-  public static @Nullable Double getDefaultSpeed(
-      @Nonnull String name, @Nonnull ConfigurationFormat format) {
+  public static @Nullable Double getDefaultSpeed(@Nonnull String name) {
     if (name.startsWith("Ethernet")) {
-      switch (format) {
-        case ARISTA:
-          return DEFAULT_ARISTA_ETHERNET_SPEED;
-
-        case ALCATEL_AOS:
-        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
-        case CADANT:
-        case CISCO_ASA:
-        case CISCO_IOS:
-        case CISCO_IOS_XR:
-        case FORCE10:
-        case FOUNDRY:
-          return DEFAULT_IOS_ETHERNET_SPEED;
-
-        case AWS:
-        case BLADENETWORK:
-        case EMPTY:
-        case F5:
-        case FLAT_JUNIPER:
-        case FLAT_VYOS:
-        case HOST:
-        case IGNORED:
-        case IPTABLES:
-        case JUNIPER:
-        case JUNIPER_SWITCH:
-        case MRV:
-        case MRV_COMMANDS:
-        case MSS:
-        case UNKNOWN:
-        case VXWORKS:
-        case VYOS:
-        default:
-          throw new BatfishException("Unuspported format: " + format);
-      }
+      // TODO: verify https://github.com/batfish/batfish/issues/1548
+      return DEFAULT_ETHERNET_SPEED;
     } else if (name.startsWith("FastEthernet")) {
       return DEFAULT_FAST_ETHERNET_SPEED;
     } else if (name.startsWith("GigabitEthernet")) {

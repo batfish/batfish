@@ -1622,10 +1622,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
-    newIface.setSpeed(
-        firstNonNull(
-            iface.getSpeed(),
-            Interface.getDefaultSpeed(iface.getName(), c.getConfigurationFormat())));
+    newIface.setSpeed(firstNonNull(iface.getSpeed(), Interface.getDefaultSpeed(iface.getName())));
     newIface.setBandwidth(
         firstNonNull(
             iface.getBandwidth(),
@@ -2034,8 +2031,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // Set the metric type and value.
     ospfExportStatements.add(new SetOspfMetricType(policy.getMetricType()));
-    long metric =
-        policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(_vendor, protocol);
+    long metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(protocol);
     ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
 
     // If only classful routes should be redistributed, filter to classful routes.

@@ -4,7 +4,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
-import static org.batfish.representation.cisco_xr.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -45,6 +44,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.cisco_xr.OspfProcess;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -389,7 +389,7 @@ public final class XrGrammarTest {
     Configuration defaults = parseConfig("ospf-cost-defaults");
     assertThat(
         defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
-        equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS_XR)));
+        equalTo(OspfProcess.DEFAULT_OSPF_REFERENCE_BANDWIDTH));
   }
 
   @Test

@@ -3244,7 +3244,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             .computeIfAbsent(
                 _currentOspfProcess.getName(),
                 (procName) -> {
-                  OspfProcess p = new OspfProcess(procName, _format);
+                  OspfProcess p = new OspfProcess(procName);
                   p.setRouterId(routerId);
                   return p;
                 });
@@ -3628,7 +3628,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _currentOspfProcess =
         currentVrf()
             .getOspfProcesses()
-            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName, _format));
+            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName));
   }
 
   @Override

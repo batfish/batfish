@@ -11,9 +11,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -34,9 +32,8 @@ public class OspfProcess implements Serializable {
 
   public static final long DEFAULT_MAX_METRIC_SUMMARY_LSA = 0xFF0000L;
 
-  private static final double DEFAULT_REFERENCE_BANDWIDTH_10_MBPS = 10E6D;
-
-  private static final double DEFAULT_REFERENCE_BANDWIDTH_100_MBPS = 100E6D;
+  // https://www.cisco.com/c/en/us/td/docs/ios_xr_sw/iosxr_r3-7/routing/command/reference/rr37ospf.html
+  public static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 100E6D;
 
   public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;
 
@@ -96,59 +93,22 @@ public class OspfProcess implements Serializable {
 
   private Set<OspfWildcardNetwork> _wildcardNetworks;
 
-  public static double getReferenceOspfBandwidth(ConfigurationFormat format) {
-    switch (format) {
-      case ARISTA: // EOS manual, Chapter 27, "auto-cost reference-bandwidth (OSPFv2)"
-        return DEFAULT_REFERENCE_BANDWIDTH_10_MBPS;
-
-      case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
-      case CADANT: // Internet claims they use the CiscoXr defaults.
-      case CISCO_ASA: // ASA uses 100 Mbps, switches to 40 Gbps for OSPF v3
-      case CISCO_IOS: // https://www.cisco_xr.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/command/iro-cr-book/ospf-a1.html#wp3271966058
-      case CISCO_IOS_XR: // https://www.cisco_xr.com/c/en/us/td/docs/ios_xr_sw/iosxr_r3-7/routing/command/reference/rr37ospf.html
-      case FORCE10: // http://www.dell.com/support/manuals/us/en/19/force10-s4810/s4810_9.9.0.0_cli_pub/auto-cost
-      case FOUNDRY: // http://www.brocade.com/content/html/en/command-reference-guide/FI_08030_CMDREF/GUID-D7109E43-D368-46FE-95AF-D522B203E501.html
-        return DEFAULT_REFERENCE_BANDWIDTH_100_MBPS;
-
-      default:
-        throw new BatfishException("Unknown default OSPF reference bandwidth for format " + format);
-    }
-  }
-
-  public long getDefaultMetric(ConfigurationFormat format, RoutingProtocol protocol) {
+  public long getDefaultMetric(RoutingProtocol protocol) {
     if (this._defaultMetric != null) {
       return this._defaultMetric;
     }
 
-    switch (format) {
-      case ARISTA:
-        // Inferred from Arista manual OSPF v3 default-metric comment.
-        return 10;
-
-      case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
-      case CADANT: // Vetted IOS; assuming the rest use IOS defaults.
-      case CISCO_ASA:
-      case CISCO_IOS:
-      case CISCO_IOS_XR:
-      case FORCE10:
-      case FOUNDRY:
-        // https://www.cisco_xr.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html
-        // "the cost allocated to the external route is 20 (the default is 1 for BGP)."
-        switch (protocol) {
-          case BGP:
-            return 1;
-          default:
-            return 20;
-        }
-
-      default:
-        throw new BatfishException("Unknown default OSPF reference bandwidth for format " + format);
+    // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html
+    // "the cost allocated to the external route is 20 (the default is 1 for BGP)."
+    if (protocol == RoutingProtocol.BGP) {
+      return 1;
     }
+    return 20;
   }
 
-  public OspfProcess(String name, ConfigurationFormat format) {
+  public OspfProcess(String name) {
     _name = name;
-    _referenceBandwidth = getReferenceOspfBandwidth(format);
+    _referenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
     _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
