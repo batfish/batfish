@@ -198,7 +198,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlowPreference_preferenceHTTP() {
+  public void testGetFlowPreference_preferenceTestFilter() {
     BDDPacket pkt = new BDDPacket();
     Ip srcIp = Ip.parse("1.2.3.4");
 
