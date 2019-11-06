@@ -1284,13 +1284,6 @@ import org.batfish.representation.cisco_xr.XrRoutePolicyDeleteCommunityStatement
 import org.batfish.representation.cisco_xr.XrRoutePolicySetCommunity;
 import org.batfish.representation.cisco_xr.XrUint16RangeExpr;
 import org.batfish.representation.cisco_xr.XrUint16Reference;
-import org.batfish.representation.cisco_xr.eos.AristaBgpAggregateNetwork;
-import org.batfish.representation.cisco_xr.eos.AristaBgpNeighbor;
-import org.batfish.representation.cisco_xr.eos.AristaBgpNeighborAddressFamily;
-import org.batfish.representation.cisco_xr.eos.AristaBgpProcess;
-import org.batfish.representation.cisco_xr.eos.AristaBgpVlanBase;
-import org.batfish.representation.cisco_xr.eos.AristaBgpVrf;
-import org.batfish.representation.cisco_xr.eos.AristaBgpVrfAddressFamily;
 import org.batfish.representation.cisco_xr.eos.AristaEosVxlan;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -1442,14 +1435,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
-
-  private AristaBgpAggregateNetwork _currentAristaBgpAggregateNetwork;
-  private AristaBgpNeighbor _currentAristaBgpNeighbor;
-  private AristaBgpNeighborAddressFamily _currentAristaBgpNeighborAddressFamily;
-  private AristaBgpProcess _currentAristaBgpProcess;
-  private AristaBgpVlanBase _currentAristaBgpVlan;
-  private AristaBgpVrf _currentAristaBgpVrf;
-  private AristaBgpVrfAddressFamily _currentAristaBgpVrfAf;
 
   @Nullable private CiscoXrAsaNat _currentAsaNat;
 
@@ -3343,22 +3328,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    if (_parser.getParser().isAristaBgp()) {
-      _currentAristaBgpProcess = _configuration.getAristaBgp();
-      long asn = toAsNum(ctx.bgp_asn());
-      if (_currentAristaBgpProcess == null) {
-        _currentAristaBgpProcess = new AristaBgpProcess(asn);
-        _configuration.setAristaBgp(_currentAristaBgpProcess);
-      } else if (asn != _currentAristaBgpProcess.getAsn()) {
-        // Create a dummy node
-        _currentAristaBgpProcess = new AristaBgpProcess(asn);
-        _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
-      }
-      _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
-      return;
-    }
-
-    // CiscoXr hybrid parser
     long procNum = ctx.bgp_asn() == null ? 0 : toAsNum(ctx.bgp_asn());
     Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
     if (vrf.getBgpProcess() == null) {
@@ -3376,13 +3345,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    if (_parser.getParser().isAristaBgp()) {
-      _currentAristaBgpProcess = null;
-      _currentAristaBgpVrf = null;
-      return;
-    }
-
-    // hybrid cisco_xr parser
     popPeer();
   }
 
