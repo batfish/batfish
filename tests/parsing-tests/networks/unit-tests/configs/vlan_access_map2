@@ -1,4 +1,3 @@
-! 
 hostname vlan_access_map4
 !
 !!!!!!!!!!!!!!!!!!!!!!!
@@ -22,9 +21,3 @@ router bgp 410
 ! Ari - i couldn't make this one parse; it goes to interface stanza
 ! Command to control use of the QSFP ports
 interface breakout module 1 port 34-36 map 10g-4x
-!
-! Ari - i don't know why this one isn't parsing
-route-policy EBGP-PEER
-  set community (8075:51000)
-  pass
-end-policy

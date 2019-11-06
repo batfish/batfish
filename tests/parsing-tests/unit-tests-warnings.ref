@@ -177,9 +177,9 @@
       },
       {
         "Filename" : "configs/bgp_default_originate_policy",
-        "Line" : 11,
+        "Line" : 12,
         "Text" : "route-policy cust_v4_in(ama-coe-v4, ama-coe-as-path, ama-coe-no-auth, ama-coe-need-auth, 65517, ama-coe-isp-authorized) in",
-        "Parser_Context" : "[route_policy_bgp_tail bgp_tail address_family_rb_stanza neighbor_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Parser_Context" : "[route_policy_bgp_tail bgp_tail address_family_rb_stanza neighbor_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -1185,14 +1185,14 @@
       },
       {
         "Filename" : "configs/ios_xr_bgp_neighbor_group",
-        "Line" : 17,
+        "Line" : 18,
         "Text" : "use session-group blabber",
         "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/ios_xr_bgp_neighbor_group",
-        "Line" : 94,
+        "Line" : 95,
         "Text" : "use session-group CIAO",
         "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
         "Comment" : "This feature is not currently supported"
@@ -1206,79 +1206,79 @@
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 9,
+        "Line" : 10,
         "Text" : "maximum paths 16",
-        "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 17,
+        "Line" : 18,
         "Text" : "Bundle-Ether101",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface Bundle-Ethernet101 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 23,
+        "Line" : 24,
         "Text" : "Bundle-Ether103",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface Bundle-Ethernet103 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 27,
+        "Line" : 28,
         "Text" : "Bundle-Ether201",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface Bundle-Ethernet201 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 32,
+        "Line" : 33,
         "Text" : "Loopback0",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface Loopback0 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 35,
+        "Line" : 36,
         "Text" : "TenGigE0/0/0/4",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface TenGigabitEthernet0/0/0/4 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 38,
+        "Line" : 39,
         "Text" : "TenGigE0/0/0/5",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface TenGigabitEthernet0/0/0/5 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 41,
+        "Line" : 42,
         "Text" : "HundredGigE0/2/0/0.292",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/0.292 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 43,
+        "Line" : 44,
         "Text" : "HundredGigE0/2/0/3",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/3 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
-        "Line" : 50,
+        "Line" : 51,
         "Text" : "TenGigE0/0/0/2",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface TenGigabitEthernet0/0/0/2 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_route_policy",
-        "Line" : 163,
+        "Line" : 164,
         "Text" : "set path-selection backup 1 install multipath-protect advertise",
-        "Parser_Context" : "[set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_configuration]",
+        "Parser_Context" : "[set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
         "Comment" : "Could not convert to RoutePolicyStatement: set path-selection backup 1 install multipath-protect advertise\n"
       },
       {

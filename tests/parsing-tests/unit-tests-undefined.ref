@@ -369,7 +369,7 @@
         "Lines" : {
           "filename" : "configs/bgp_default_originate_policy",
           "lines" : [
-            13
+            14
           ]
         }
       },
@@ -381,7 +381,7 @@
         "Lines" : {
           "filename" : "configs/bgp_default_originate_policy",
           "lines" : [
-            11
+            12
           ]
         }
       },
@@ -2686,7 +2686,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp",
           "lines" : [
-            8
+            9
           ]
         }
       },
@@ -2698,7 +2698,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp",
           "lines" : [
-            10
+            11
           ]
         }
       },
@@ -2710,7 +2710,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            94
+            95
           ]
         }
       },
@@ -2722,7 +2722,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            34
+            35
           ]
         }
       },
@@ -2734,7 +2734,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            17
+            18
           ]
         }
       },
@@ -2746,7 +2746,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            88
+            89
           ]
         }
       },
@@ -2758,11 +2758,11 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            22,
-            36,
-            48,
-            58,
-            69
+            23,
+            37,
+            49,
+            59,
+            70
           ]
         }
       },
@@ -2774,8 +2774,8 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            25,
-            29
+            26,
+            30
           ]
         }
       },
@@ -2787,7 +2787,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            39
+            40
           ]
         }
       },
@@ -2799,8 +2799,8 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            24,
-            28
+            25,
+            29
           ]
         }
       },
@@ -2812,7 +2812,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
-            60
+            61
           ]
         }
       },
@@ -2824,10 +2824,10 @@
         "Lines" : {
           "filename" : "configs/ios_xr_multicast",
           "lines" : [
-            29,
             30,
-            46,
-            47
+            31,
+            47,
+            48
           ]
         }
       },
@@ -2851,7 +2851,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            17
+            18
           ]
         }
       },
@@ -2863,7 +2863,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            23
+            24
           ]
         }
       },
@@ -2875,7 +2875,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            27
+            28
           ]
         }
       },
@@ -2887,7 +2887,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            41
+            42
           ]
         }
       },
@@ -2899,7 +2899,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            43
+            44
           ]
         }
       },
@@ -2911,7 +2911,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            32
+            33
           ]
         }
       },
@@ -2923,7 +2923,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            50
+            51
           ]
         }
       },
@@ -2935,7 +2935,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            35
+            36
           ]
         }
       },
@@ -2947,7 +2947,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
-            38
+            39
           ]
         }
       },
@@ -2959,7 +2959,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            123
+            124
           ]
         }
       },
@@ -2971,7 +2971,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            129
+            130
           ]
         }
       },
@@ -2983,7 +2983,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            143
+            144
           ]
         }
       },
@@ -2995,7 +2995,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            145
+            146
           ]
         }
       },
@@ -3007,7 +3007,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            90
+            91
           ]
         }
       },
@@ -3019,7 +3019,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            145
+            146
           ]
         }
       },
@@ -3031,7 +3031,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            150
+            151
           ]
         }
       },
@@ -3043,7 +3043,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            98
+            99
           ]
         }
       },
@@ -3055,7 +3055,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            88
+            89
           ]
         }
       },
@@ -3067,7 +3067,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            52
+            53
           ]
         }
       },
@@ -3079,8 +3079,8 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            107,
-            158
+            108,
+            159
           ]
         }
       },
@@ -3092,7 +3092,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            110
+            111
           ]
         }
       },
@@ -3104,7 +3104,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            141
+            142
           ]
         }
       },
@@ -3116,7 +3116,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            33
+            34
           ]
         }
       },
@@ -3128,7 +3128,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            34
+            35
           ]
         }
       },
@@ -3140,7 +3140,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            5
+            6
           ]
         }
       },
@@ -3152,7 +3152,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            16
+            17
           ]
         }
       },
@@ -3164,7 +3164,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            120
+            121
           ]
         }
       },
@@ -3176,7 +3176,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            137
+            138
           ]
         }
       },
@@ -3188,8 +3188,8 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            129,
-            143
+            130,
+            144
           ]
         }
       },
@@ -3201,7 +3201,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            126
+            127
           ]
         }
       },
@@ -3213,7 +3213,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            78
+            79
           ]
         }
       },
@@ -3225,7 +3225,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            78
+            79
           ]
         }
       },
@@ -3237,7 +3237,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            80
+            81
           ]
         }
       },
@@ -3249,8 +3249,8 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            5,
-            51
+            6,
+            52
           ]
         }
       },
@@ -3262,7 +3262,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            51
+            52
           ]
         }
       },
@@ -3274,7 +3274,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            21
+            22
           ]
         }
       },
@@ -3286,8 +3286,8 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            44,
-            51
+            45,
+            52
           ]
         }
       },
@@ -3299,7 +3299,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            68
+            69
           ]
         }
       },
@@ -3311,7 +3311,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            114
+            115
           ]
         }
       },
@@ -3323,7 +3323,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            66
+            67
           ]
         }
       },
@@ -3335,7 +3335,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
-            28
+            29
           ]
         }
       },
@@ -3347,7 +3347,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_router_static",
           "lines" : [
-            16
+            17
           ]
         }
       },
@@ -3359,7 +3359,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_router_static",
           "lines" : [
-            7
+            8
           ]
         }
       },
@@ -3371,7 +3371,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ssh",
           "lines" : [
-            6
+            7
           ]
         }
       },
@@ -3383,7 +3383,7 @@
         "Lines" : {
           "filename" : "configs/ios_xr_ssh",
           "lines" : [
-            6
+            7
           ]
         }
       },
@@ -3934,7 +3934,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_as_path",
           "lines" : [
-            7
+            8
           ]
         }
       },
@@ -3946,7 +3946,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_as_path",
           "lines" : [
-            5
+            6
           ]
         }
       },
@@ -3958,7 +3958,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_as_path",
           "lines" : [
-            25
+            26
           ]
         }
       },
@@ -3970,7 +3970,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_as_path",
           "lines" : [
-            14
+            15
           ]
         }
       },
@@ -3982,7 +3982,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_igp_cost",
           "lines" : [
-            5
+            6
           ]
         }
       },
@@ -3994,7 +3994,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_igp_cost",
           "lines" : [
-            5
+            6
           ]
         }
       },
@@ -4006,7 +4006,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_igp_cost",
           "lines" : [
-            5
+            6
           ]
         }
       },
@@ -4018,7 +4018,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_igp_cost",
           "lines" : [
-            5
+            6
           ]
         }
       },
@@ -4030,7 +4030,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_igp_cost",
           "lines" : [
-            7
+            8
           ]
         }
       },
@@ -4042,7 +4042,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_metric_type",
           "lines" : [
-            5
+            6
           ]
         }
       },
@@ -4054,7 +4054,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_metric_type",
           "lines" : [
-            7
+            8
           ]
         }
       },
@@ -4066,7 +4066,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_param",
           "lines" : [
-            13
+            14
           ]
         }
       },
@@ -4078,7 +4078,7 @@
         "Lines" : {
           "filename" : "configs/route_policy_param",
           "lines" : [
-            5
+            6
           ]
         }
       },
@@ -4138,7 +4138,7 @@
         "Lines" : {
           "filename" : "configs/vlan_access_map2",
           "lines" : [
-            20
+            19
           ]
         }
       }
