@@ -1837,16 +1837,16 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private void generateCiscoXrAsaNatTransformations(
       String ifaceName,
       org.batfish.datamodel.Interface newIface,
-      List<CiscoXrAsaNat> cisco_xrAsaNats) {
+      List<CiscoXrAsaNat> ciscoXrAsaNats) {
 
-    if (!cisco_xrAsaNats.stream().map(CiscoXrAsaNat::getSection).allMatch(Section.OBJECT::equals)) {
+    if (!ciscoXrAsaNats.stream().map(CiscoXrAsaNat::getSection).allMatch(Section.OBJECT::equals)) {
       _w.unimplemented("No support for Twice NAT");
     }
 
     // ASA places incoming and outgoing object NATs as transformations on the outside interface.
     // Each NAT rule specifies an outside interface or ANY_INTERFACE
     SortedSet<CiscoXrAsaNat> objectNats =
-        cisco_xrAsaNats.stream()
+        ciscoXrAsaNats.stream()
             .filter(nat -> nat.getSection().equals(Section.OBJECT))
             .filter(
                 nat ->

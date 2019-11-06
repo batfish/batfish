@@ -250,13 +250,13 @@ public class CiscoXrConversions {
    */
   static void convertCryptoMapSet(
       Configuration c,
-      CryptoMapSet cisco_xrCryptoMapSet,
+      CryptoMapSet ciscoXrCryptoMapSet,
       Map<String, CryptoMapSet> cryptoMapSets,
       Warnings w) {
-    if (cisco_xrCryptoMapSet.getDynamic()) {
+    if (ciscoXrCryptoMapSet.getDynamic()) {
       return;
     }
-    for (CryptoMapEntry cryptoMapEntry : cisco_xrCryptoMapSet.getCryptoMapEntries()) {
+    for (CryptoMapEntry cryptoMapEntry : ciscoXrCryptoMapSet.getCryptoMapEntries()) {
       String nameSeqNum =
           String.format("%s:%s", cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber());
       if (cryptoMapEntry.getReferredDynamicMapSet() != null) {

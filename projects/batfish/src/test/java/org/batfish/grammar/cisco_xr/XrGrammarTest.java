@@ -113,6 +113,7 @@ public final class XrGrammarTest {
                 "login",
                 "First line.\nSecond line.")));
   }
+
   /**
    * Regression test for a parser crash related to peer stack indexing issues.
    *
