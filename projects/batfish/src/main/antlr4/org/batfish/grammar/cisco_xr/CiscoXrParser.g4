@@ -21,7 +21,7 @@ CiscoXr_ospf,
 CiscoXr_pim,
 CiscoXr_qos,
 CiscoXr_rip,
-CiscoXr_routemap,
+CiscoXr_rpl,
 CiscoXr_snmp,
 CiscoXr_static;
 
