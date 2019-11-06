@@ -19,9 +19,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_TEMPL
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_UNDECLARED_PEER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_UNDECLARED_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY_LIST_EXPANDED;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_MAP_SET;
@@ -219,15 +216,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.RIP_DIST
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_VRRP_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_MAP_SET_COMMUNITY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_APPLY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_AS_PATH_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY;
@@ -263,8 +251,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -518,7 +504,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_elemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_elem_halfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Compare_routerid_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cp_ip_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cp_service_policyContext;
@@ -650,10 +635,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ios_banner_headerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ios_delimited_bannerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_as_path_access_list_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_as_path_access_list_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_community_list_expanded_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_community_list_expanded_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_community_list_standard_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_community_list_standard_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_domain_nameContext;
@@ -691,15 +672,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_source_interfaceContex
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_trapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Management_ssh_ip_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Management_telnet_ip_access_groupContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_as_path_access_list_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_community_list_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_ip_access_list_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_ip_prefix_list_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_ipv6_access_list_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_ipv6_prefix_list_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_semanticsContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_source_protocol_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_peers_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_block_address_familyContext;
@@ -714,7 +687,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.No_ip_prefix_list_stanzaContex
 import org.batfish.grammar.cisco_xr.CiscoXrParser.No_neighbor_activate_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.No_neighbor_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.No_redistribute_connected_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.No_route_map_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.No_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ntp_serverContext;
@@ -847,7 +819,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_map_bgp_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_map_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_reflector_client_bgp_tailContext;
@@ -921,32 +892,17 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Service_specifier_icmpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Service_specifier_protocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Service_specifier_tcp_udpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Session_group_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_as_path_prepend_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_comm_list_delete_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_additive_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_list_additive_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_list_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_none_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_isis_metric_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_level_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_local_preference_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_local_preference_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_med_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_metric_eigrp_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_metric_rm_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_metric_type_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_metric_type_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_next_hop_peer_address_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_next_hop_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_next_hop_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_next_hop_self_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_origin_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_origin_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_tag_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_weight_rm_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_weight_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Shutdown_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Sntp_serverContext;
@@ -997,7 +953,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Use_af_group_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.VariableContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Variable_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Variable_group_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Variable_permissiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Viaf_vrrpContext;
@@ -1038,8 +993,6 @@ import org.batfish.representation.cisco_xr.DynamicIpBgpPeerGroup;
 import org.batfish.representation.cisco_xr.DynamicIpv6BgpPeerGroup;
 import org.batfish.representation.cisco_xr.EigrpProcess;
 import org.batfish.representation.cisco_xr.EigrpRedistributionPolicy;
-import org.batfish.representation.cisco_xr.ExpandedCommunityList;
-import org.batfish.representation.cisco_xr.ExpandedCommunityListLine;
 import org.batfish.representation.cisco_xr.ExtendedAccessList;
 import org.batfish.representation.cisco_xr.ExtendedAccessListLine;
 import org.batfish.representation.cisco_xr.ExtendedIpv6AccessList;
@@ -1098,32 +1051,6 @@ import org.batfish.representation.cisco_xr.ProtocolObjectGroupReferenceLine;
 import org.batfish.representation.cisco_xr.ProtocolOrServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.cisco_xr.RangeNetworkObject;
 import org.batfish.representation.cisco_xr.RipProcess;
-import org.batfish.representation.cisco_xr.RouteMap;
-import org.batfish.representation.cisco_xr.RouteMapClause;
-import org.batfish.representation.cisco_xr.RouteMapContinue;
-import org.batfish.representation.cisco_xr.RouteMapMatchAsPathAccessListLine;
-import org.batfish.representation.cisco_xr.RouteMapMatchCommunityListLine;
-import org.batfish.representation.cisco_xr.RouteMapMatchIpAccessListLine;
-import org.batfish.representation.cisco_xr.RouteMapMatchIpPrefixListLine;
-import org.batfish.representation.cisco_xr.RouteMapMatchIpv6AccessListLine;
-import org.batfish.representation.cisco_xr.RouteMapMatchIpv6PrefixListLine;
-import org.batfish.representation.cisco_xr.RouteMapMatchSourceProtocolLine;
-import org.batfish.representation.cisco_xr.RouteMapMatchTagLine;
-import org.batfish.representation.cisco_xr.RouteMapSetAdditiveCommunityLine;
-import org.batfish.representation.cisco_xr.RouteMapSetAdditiveCommunityListLine;
-import org.batfish.representation.cisco_xr.RouteMapSetAsPathPrependLine;
-import org.batfish.representation.cisco_xr.RouteMapSetCommunityLine;
-import org.batfish.representation.cisco_xr.RouteMapSetCommunityListLine;
-import org.batfish.representation.cisco_xr.RouteMapSetCommunityNoneLine;
-import org.batfish.representation.cisco_xr.RouteMapSetDeleteCommunityLine;
-import org.batfish.representation.cisco_xr.RouteMapSetLine;
-import org.batfish.representation.cisco_xr.RouteMapSetLocalPreferenceLine;
-import org.batfish.representation.cisco_xr.RouteMapSetMetricEigrpLine;
-import org.batfish.representation.cisco_xr.RouteMapSetMetricLine;
-import org.batfish.representation.cisco_xr.RouteMapSetNextHopLine;
-import org.batfish.representation.cisco_xr.RouteMapSetNextHopPeerAddress;
-import org.batfish.representation.cisco_xr.RouteMapSetOriginTypeLine;
-import org.batfish.representation.cisco_xr.RouteMapSetWeightLine;
 import org.batfish.representation.cisco_xr.RoutePolicy;
 import org.batfish.representation.cisco_xr.RoutePolicyApplyStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyBoolean;
@@ -1183,8 +1110,6 @@ import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecif
 import org.batfish.representation.cisco_xr.StandardAccessList;
 import org.batfish.representation.cisco_xr.StandardAccessListLine;
 import org.batfish.representation.cisco_xr.StandardAccessListServiceSpecifier;
-import org.batfish.representation.cisco_xr.StandardCommunityList;
-import org.batfish.representation.cisco_xr.StandardCommunityListLine;
 import org.batfish.representation.cisco_xr.StandardIpv6AccessList;
 import org.batfish.representation.cisco_xr.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco_xr.StaticRoute;
@@ -1387,8 +1312,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
-  private ExpandedCommunityList _currentExpandedCommunityList;
-
   private ExtendedAccessList _currentExtendedAcl;
 
   private ExtendedIpv6AccessList _currentExtendedIpv6Acl;
@@ -1438,10 +1361,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private RipProcess _currentRipProcess;
 
-  private RouteMap _currentRouteMap;
-
-  private RouteMapClause _currentRouteMapClause;
-
   private RoutePolicy _currentRoutePolicy;
 
   private ServiceClass _currentServiceClass;
@@ -1454,8 +1373,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private SnmpHost _currentSnmpHost;
 
   private StandardAccessList _currentStandardAcl;
-
-  private StandardCommunityList _currentStandardCommunityList;
 
   private StandardIpv6AccessList _currentStandardIpv6Acl;
 
@@ -2350,40 +2267,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Invalid community-list name");
-    }
-    _currentExpandedCommunityList =
-        _configuration
-            .getExpandedCommunityLists()
-            .computeIfAbsent(name, ExpandedCommunityList::new);
-    _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
-  }
-
-  @Override
-  public void enterIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Invalid standard community-list name");
-    }
-    _currentStandardCommunityList =
-        _configuration
-            .getStandardCommunityLists()
-            .computeIfAbsent(name, StandardCommunityList::new);
-    _configuration.defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
-  }
-
-  @Override
   public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
     String name = ctx.name.getText();
     _currentPrefixList = _configuration.getPrefixLists().computeIfAbsent(name, PrefixList::new);
@@ -3067,28 +2950,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     iface.setOspfArea(_currentOspfArea);
     iface.setOspfProcess(_currentOspfProcess.getName());
     _currentOspfInterface = iface.getName();
-  }
-
-  @Override
-  public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    RouteMap routeMap = _configuration.getRouteMaps().computeIfAbsent(name, RouteMap::new);
-    _currentRouteMap = routeMap;
-    int num = toInteger(ctx.num);
-    LineAction action = toLineAction(ctx.rmt);
-    RouteMapClause clause = _currentRouteMap.getClauses().get(num);
-    if (clause == null) {
-      clause = new RouteMapClause(action, name, num);
-      routeMap.getClauses().put(num, clause);
-    } else {
-      warn(
-          ctx,
-          String.format(
-              "Route map '%s' already contains clause numbered '%d'. Duplicate clause will be merged with original clause.",
-              _currentRouteMap.getName(), num));
-    }
-    _currentRouteMapClause = clause;
-    _configuration.defineStructure(ROUTE_MAP, name, ctx);
   }
 
   @Override
@@ -4212,17 +4073,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitCompare_routerid_rb_stanza(Compare_routerid_rb_stanzaContext ctx) {
     currentVrf().getBgpProcess().setTieBreaker(BgpTieBreaker.ROUTER_ID);
-  }
-
-  @Override
-  public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
-    Integer target = null;
-    if (ctx.DEC() != null) {
-      target = toInteger(ctx.DEC());
-    }
-    RouteMapContinue continueLine = new RouteMapContinue(target, statementLine);
-    _currentRouteMapClause.setContinueLine(continueLine);
   }
 
   @Override
@@ -5715,43 +5565,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
-    _currentExpandedCommunityList = null;
-  }
-
-  @Override
-  public void exitIp_community_list_expanded_tail(Ip_community_list_expanded_tailContext ctx) {
-    LineAction action = toLineAction(ctx.ala);
-    StringBuilder regex = new StringBuilder();
-    for (Token remainder : ctx.remainder) {
-      regex.append(remainder.getText());
-    }
-    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, regex.toString());
-    _currentExpandedCommunityList.addLine(line);
-  }
-
-  @Override
-  public void exitIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
-    _currentStandardCommunityList = null;
-  }
-
-  @Override
-  public void exitIp_community_list_standard_tail(Ip_community_list_standard_tailContext ctx) {
-    LineAction action = toLineAction(ctx.ala);
-    List<Long> communities = new ArrayList<>();
-    for (CommunityContext communityCtx : ctx.communities) {
-      Long community = toLong(communityCtx);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'", communityCtx.getText()));
-        return;
-      }
-      communities.add(community);
-    }
-    StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
-    _currentStandardCommunityList.getLines().add(line);
-  }
-
-  @Override
   public void exitIp_dhcp_relay_server(Ip_dhcp_relay_serverContext ctx) {
     if (!_no && ctx.ip != null) {
       Ip ip = toIp(ctx.ip);
@@ -6265,126 +6078,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitMatch_as_path_access_list_rm_stanza(
-      Match_as_path_access_list_rm_stanzaContext ctx) {
-    Set<String> names = new TreeSet<>();
-    for (VariableContext name : ctx.name_list) {
-      names.add(name.getText());
-      _configuration.referenceStructure(
-          AS_PATH_ACCESS_LIST, name.getText(),
-          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST, name.getStart().getLine());
-    }
-    RouteMapMatchAsPathAccessListLine line = new RouteMapMatchAsPathAccessListLine(names);
-    _currentRouteMapClause.addMatchLine(line);
-  }
-
-  @Override
-  public void exitMatch_community_list_rm_stanza(Match_community_list_rm_stanzaContext ctx) {
-    Set<String> names = new TreeSet<>();
-    for (VariableContext name : ctx.name_list) {
-      names.add(name.getText());
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          name.getText(),
-          ROUTE_MAP_MATCH_COMMUNITY_LIST,
-          name.getStart().getLine());
-    }
-    RouteMapMatchCommunityListLine line = new RouteMapMatchCommunityListLine(names);
-    _currentRouteMapClause.addMatchLine(line);
-  }
-
-  @Override
-  public void exitMatch_ip_access_list_rm_stanza(Match_ip_access_list_rm_stanzaContext ctx) {
-    Set<String> names = new TreeSet<>();
-    for (Variable_access_listContext v : ctx.name_list) {
-      names.add(v.getText());
-      _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, v.getText(),
-          ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, v.getStart().getLine());
-    }
-    RouteMapMatchIpAccessListLine line = new RouteMapMatchIpAccessListLine(names);
-    _currentRouteMapClause.addMatchLine(line);
-  }
-
-  @Override
-  public void exitMatch_ip_prefix_list_rm_stanza(Match_ip_prefix_list_rm_stanzaContext ctx) {
-    Set<String> names = new TreeSet<>();
-    for (VariableContext t : ctx.name_list) {
-      names.add(t.getText());
-      _configuration.referenceStructure(
-          PREFIX_LIST, t.getText(), ROUTE_MAP_MATCH_IPV4_PREFIX_LIST, t.getStart().getLine());
-    }
-    RouteMapMatchIpPrefixListLine line = new RouteMapMatchIpPrefixListLine(names);
-    _currentRouteMapClause.addMatchLine(line);
-  }
-
-  @Override
-  public void exitMatch_ipv6_access_list_rm_stanza(Match_ipv6_access_list_rm_stanzaContext ctx) {
-    Set<String> names = new TreeSet<>();
-    for (Variable_access_listContext v : ctx.name_list) {
-      names.add(v.getText());
-      _configuration.referenceStructure(
-          IPV6_ACCESS_LIST, v.getText(), ROUTE_MAP_MATCH_IPV6_ACCESS_LIST, v.getStart().getLine());
-    }
-    RouteMapMatchIpv6AccessListLine line = new RouteMapMatchIpv6AccessListLine(names);
-    _currentRouteMapClause.addMatchLine(line);
-  }
-
-  @Override
-  public void exitMatch_ipv6_prefix_list_rm_stanza(Match_ipv6_prefix_list_rm_stanzaContext ctx) {
-    Set<String> names = new TreeSet<>();
-    for (VariableContext t : ctx.name_list) {
-      names.add(t.getText());
-      _configuration.referenceStructure(
-          PREFIX6_LIST, t.getText(), ROUTE_MAP_MATCH_IPV6_PREFIX_LIST, t.getStart().getLine());
-    }
-    RouteMapMatchIpv6PrefixListLine line = new RouteMapMatchIpv6PrefixListLine(names);
-    _currentRouteMapClause.addMatchLine(line);
-  }
-
-  @Override
-  public void exitMatch_source_protocol_rm_stanza(Match_source_protocol_rm_stanzaContext ctx) {
-    List<RoutingProtocol> rps = new LinkedList<>();
-    boolean todo = false;
-    if (!ctx.BGP().isEmpty()) {
-      todo = true;
-    }
-    if (!ctx.CONNECTED().isEmpty()) {
-      rps.add(RoutingProtocol.CONNECTED);
-    }
-    if (!ctx.ISIS().isEmpty()) {
-      todo = true;
-    }
-    if (!ctx.OSPF().isEmpty()) {
-      todo = true;
-    }
-    if (!ctx.STATIC().isEmpty()) {
-      rps.add(RoutingProtocol.STATIC);
-    }
-    if (todo) {
-      todo(ctx);
-      // Do nothing, since we have some unsupported protocols.
-      return;
-    }
-    if (rps.isEmpty()) {
-      // This should not be possible.
-      warn(ctx, "Unexpected: empty routing protocol list to match against.");
-      return;
-    }
-    _currentRouteMapClause.addMatchLine(new RouteMapMatchSourceProtocolLine(rps));
-  }
-
-  @Override
-  public void exitMatch_tag_rm_stanza(Match_tag_rm_stanzaContext ctx) {
-    Set<Integer> tags = new TreeSet<>();
-    for (Token t : ctx.tag_list) {
-      tags.add(toInteger(t));
-    }
-    RouteMapMatchTagLine line = new RouteMapMatchTagLine(tags);
-    _currentRouteMapClause.addMatchLine(line);
-  }
-
-  @Override
   public void exitMaximum_paths_bgp_tail(Maximum_paths_bgp_tailContext ctx) {
     int maximumPaths = toInteger(ctx.paths);
     BgpProcess proc = currentVrf().getBgpProcess();
@@ -6855,12 +6548,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
     }
-  }
-
-  @Override
-  public void exitNo_route_map_stanza(No_route_map_stanzaContext ctx) {
-    String mapName = ctx.name.getText();
-    _configuration.getRouteMaps().remove(mapName);
   }
 
   @Override
@@ -7868,12 +7555,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRoute_map_stanza(Route_map_stanzaContext ctx) {
-    _currentRouteMap = null;
-    _currentRouteMapClause = null;
-  }
-
-  @Override
   public void exitRoute_policy_bgp_tail(Route_policy_bgp_tailContext ctx) {
     String name = ctx.name.getText();
     CiscoXrStructureUsage usage;
@@ -8259,151 +7940,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _currentNamedPeerGroup = null;
     _currentPeerSession = null;
     popPeer();
-  }
-
-  @Override
-  public void exitSet_as_path_prepend_rm_stanza(Set_as_path_prepend_rm_stanzaContext ctx) {
-    List<AsExpr> asList = new ArrayList<>();
-    for (As_exprContext asx : ctx.as_list) {
-      AsExpr as = toAsExpr(asx);
-      asList.add(as);
-    }
-    RouteMapSetAsPathPrependLine line = new RouteMapSetAsPathPrependLine(asList);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_comm_list_delete_rm_stanza(Set_comm_list_delete_rm_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    RouteMapSetDeleteCommunityLine line = new RouteMapSetDeleteCommunityLine(name);
-    _currentRouteMapClause.addSetLine(line);
-    _configuration.referenceStructure(
-        COMMUNITY_LIST, name, ROUTE_MAP_DELETE_COMMUNITY, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitSet_community_additive_rm_stanza(Set_community_additive_rm_stanzaContext ctx) {
-    ImmutableList.Builder<StandardCommunity> builder = ImmutableList.builder();
-    for (CommunityContext c : ctx.communities) {
-      Long community = toLong(c);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
-        return;
-      }
-      builder.add(StandardCommunity.of(community));
-    }
-    RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(builder.build());
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_community_list_additive_rm_stanza(
-      Set_community_list_additive_rm_stanzaContext ctx) {
-    Set<String> communityLists = new LinkedHashSet<>();
-    for (VariableContext communityListCtx : ctx.comm_lists) {
-      String communityList = communityListCtx.getText();
-      communityLists.add(communityList);
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          communityList,
-          ROUTE_MAP_ADD_COMMUNITY,
-          communityListCtx.getStart().getLine());
-    }
-    RouteMapSetAdditiveCommunityListLine line =
-        new RouteMapSetAdditiveCommunityListLine(communityLists);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_community_list_rm_stanza(Set_community_list_rm_stanzaContext ctx) {
-    Set<String> communityLists = new LinkedHashSet<>();
-    for (VariableContext communityListCtx : ctx.comm_lists) {
-      String communityList = communityListCtx.getText();
-      communityLists.add(communityList);
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          communityList,
-          ROUTE_MAP_SET_COMMUNITY,
-          communityListCtx.getStart().getLine());
-    }
-    RouteMapSetCommunityListLine line = new RouteMapSetCommunityListLine(communityLists);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_community_none_rm_stanza(Set_community_none_rm_stanzaContext ctx) {
-    RouteMapSetCommunityNoneLine line = new RouteMapSetCommunityNoneLine();
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
-    List<Long> commList = new ArrayList<>();
-    for (CommunityContext c : ctx.communities) {
-      Long community = toLong(c);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
-        return;
-      }
-      commList.add(community);
-    }
-    RouteMapSetCommunityLine line = new RouteMapSetCommunityLine(commList);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_local_preference_rm_stanza(Set_local_preference_rm_stanzaContext ctx) {
-    LongExpr localPreference = toLocalPreferenceLongExpr(ctx.pref);
-    RouteMapSetLocalPreferenceLine line = new RouteMapSetLocalPreferenceLine(localPreference);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void enterSet_metric_eigrp_rm_stanza(Set_metric_eigrp_rm_stanzaContext ctx) {
-    EigrpMetricValues metric = toEigrpMetricValues(ctx.metric);
-    _currentRouteMapClause.addSetLine(new RouteMapSetMetricEigrpLine(metric));
-  }
-
-  @Override
-  public void exitSet_metric_rm_stanza(Set_metric_rm_stanzaContext ctx) {
-    LongExpr metric = toMetricLongExpr(ctx.metric);
-    RouteMapSetMetricLine line = new RouteMapSetMetricLine(metric);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_metric_type_rm_stanza(Set_metric_type_rm_stanzaContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitSet_next_hop_peer_address_stanza(Set_next_hop_peer_address_stanzaContext ctx) {
-    RouteMapSetNextHopPeerAddress line = new RouteMapSetNextHopPeerAddress();
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_next_hop_rm_stanza(Set_next_hop_rm_stanzaContext ctx) {
-    List<Ip> nextHops = new ArrayList<>();
-    for (Token t : ctx.nexthop_list) {
-      Ip nextHop = toIp(t);
-      nextHops.add(nextHop);
-    }
-    RouteMapSetNextHopLine line = new RouteMapSetNextHopLine(nextHops);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
-    OriginExpr originExpr = toOriginExpr(ctx.origin_expr_literal());
-    RouteMapSetLine line = new RouteMapSetOriginTypeLine(originExpr);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_weight_rm_stanza(Set_weight_rm_stanzaContext ctx) {
-    RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.DEC()));
-    _currentRouteMapClause.addSetLine(line);
   }
 
   @Override

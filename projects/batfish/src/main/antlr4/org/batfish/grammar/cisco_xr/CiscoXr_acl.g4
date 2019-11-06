@@ -421,50 +421,6 @@ ip_as_path_access_list_tail
    )? action = access_list_action as_path_regex = RAW_TEXT NEWLINE
 ;
 
-ip_community_list_expanded_stanza
-:
-   IP COMMUNITY_LIST
-   (
-      (
-         (
-            EXPANDED
-            | EXTENDED
-         ) name = variable
-      )
-      | num = COMMUNITY_LIST_NUM_EXPANDED
-   ) ip_community_list_expanded_tail
-;
-
-ip_community_list_expanded_tail
-:
-   (
-      SEQ DEC
-   )? ala = access_list_action DOUBLE_QUOTE?
-   (
-      remainder += ~( NEWLINE | DOUBLE_QUOTE )
-   )+ DOUBLE_QUOTE? NEWLINE
-;
-
-ip_community_list_standard_stanza
-:
-   IP COMMUNITY_LIST
-   (
-      (
-         STANDARD name = variable
-      )
-      | num = COMMUNITY_LIST_NUM_STANDARD
-      | name_cl = variable_community_list
-   ) ip_community_list_standard_tail
-;
-
-ip_community_list_standard_tail
-:
-   ala = access_list_action
-   (
-      communities += community
-   )+ NEWLINE
-;
-
 ip_prefix_list_stanza
 :
    (

@@ -24,7 +24,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.insertDistr
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveTunnelIfaceNames;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityList;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunitySetExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Key;
@@ -78,7 +77,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -109,7 +107,6 @@ import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterLine;
@@ -149,22 +146,17 @@ import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -349,12 +341,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     throw new BatfishException("Invalid interface name prefix: '" + prefix + "'");
   }
 
-  private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
-    String mapName = map.getName();
-    String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
-    return clausePolicyName;
-  }
-
   static String toJavaRegex(String ciscoXrRegex) {
     String withoutQuotes;
     if (ciscoXrRegex.charAt(0) == '"' && ciscoXrRegex.charAt(ciscoXrRegex.length() - 1) == '"') {
@@ -384,8 +370,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private String _dnsSourceInterface;
 
   private String _domainName;
-
-  private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
   private final Map<String, ExtendedAccessList> _extendedAccessLists;
 
@@ -459,8 +443,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, ProtocolObjectGroup> _protocolObjectGroups;
 
-  private final Map<String, RouteMap> _routeMaps;
-
   private final Map<String, RoutePolicy> _routePolicies;
 
   private final Map<String, ServiceObject> _serviceObjects;
@@ -472,8 +454,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private boolean _spanningTreePortfastDefault;
 
   private final Map<String, StandardAccessList> _standardAccessLists;
-
-  private final Map<String, StandardCommunityList> _standardCommunityLists;
 
   private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
 
@@ -502,7 +482,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
-    _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
     _failoverInterfaces = new TreeMap<>();
@@ -531,13 +510,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
     _protocolObjectGroups = new TreeMap<>();
-    _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
     _serviceObjects = new TreeMap<>();
     _standardAccessLists = new TreeMap<>();
     _standardIpv6AccessLists = new TreeMap<>();
-    _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
     _vrfs = new TreeMap<>();
@@ -595,28 +572,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
             new SetOrigin(new LiteralOrigin(originType, null))));
     return we;
-  }
-
-  private boolean containsIpAccessList(String eaListName, String mapName) {
-    if (mapName == null || !_routeMaps.containsKey(mapName)) {
-      return false;
-    }
-    return _routeMaps.get(mapName).getClauses().values().stream()
-        .flatMap(clause -> clause.getMatchList().stream())
-        .filter(line -> line instanceof RouteMapMatchIpAccessListLine)
-        .anyMatch(
-            line -> ((RouteMapMatchIpAccessListLine) line).getListNames().contains(eaListName));
-  }
-
-  private boolean containsIpv6AccessList(String eaListName, String mapName) {
-    if (mapName == null || !_routeMaps.containsKey(mapName)) {
-      return false;
-    }
-    return _routeMaps.get(mapName).getClauses().values().stream()
-        .flatMap(clause -> clause.getMatchList().stream())
-        .filter(line -> line instanceof RouteMapMatchIpv6AccessListLine)
-        .anyMatch(
-            line -> ((RouteMapMatchIpv6AccessListLine) line).getListNames().contains(eaListName));
   }
 
   public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
@@ -689,10 +644,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public String getDnsSourceInterface() {
     return _dnsSourceInterface;
-  }
-
-  public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
-    return _expandedCommunityLists;
   }
 
   public Map<String, ExtendedAccessList> getExtendedAcls() {
@@ -808,10 +759,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _prefixLists;
   }
 
-  public Map<String, RouteMap> getRouteMaps() {
-    return _routeMaps;
-  }
-
   public Map<String, RoutePolicy> getRoutePolicies() {
     return _routePolicies;
   }
@@ -830,10 +777,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, StandardAccessList> getStandardAcls() {
     return _standardAccessLists;
-  }
-
-  public Map<String, StandardCommunityList> getStandardCommunityLists() {
-    return _standardCommunityLists;
   }
 
   public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
@@ -1138,12 +1081,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       BooleanExpr weInterior = BooleanExprs.TRUE;
       String attributeMapName = aggNet.getAttributeMap();
       if (attributeMapName != null) {
-        RouteMap attributeMap = _routeMaps.get(attributeMapName);
-        if (attributeMap != null) {
-          // need to apply attribute changes if this specific route is matched
-          weInterior = new CallExpr(attributeMapName);
-          gr.setAttributePolicy(attributeMapName);
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       exportAggregateConditions.add(bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
 
@@ -1168,10 +1106,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       // set attribute map for aggregate network
       String attributeMapName = aggNet.getAttributeMap();
       if (attributeMapName != null) {
-        RouteMap attributeMap = _routeMaps.get(attributeMapName);
-        if (attributeMap != null) {
-          gr.setAttributePolicy(attributeMapName);
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
     }
 
@@ -1185,10 +1120,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportRipConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.RIP));
       String mapName = redistributeRipPolicy.getRouteMap();
       if (mapName != null) {
-        RouteMap redistributeRipRouteMap = _routeMaps.get(mapName);
-        if (redistributeRipRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportRipConditions.getConjuncts().add(we);
@@ -1205,10 +1137,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
       String mapName = redistributeStaticPolicy.getRouteMap();
       if (mapName != null) {
-        RouteMap redistributeStaticRouteMap = _routeMaps.get(mapName);
-        if (redistributeStaticRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportStaticConditions.getConjuncts().add(we);
@@ -1225,10 +1154,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
       String mapName = redistributeConnectedPolicy.getRouteMap();
       if (mapName != null) {
-        RouteMap redistributeConnectedRouteMap = _routeMaps.get(mapName);
-        if (redistributeConnectedRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportConnectedConditions.getConjuncts().add(we);
@@ -1245,10 +1171,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportOspfConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.OSPF));
       String mapName = redistributeOspfPolicy.getRouteMap();
       if (mapName != null) {
-        RouteMap redistributeOspfRouteMap = _routeMaps.get(mapName);
-        if (redistributeOspfRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportOspfConditions.getConjuncts().add(we);
@@ -1273,10 +1196,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               String mapName = bgpNetwork.getRouteMapName();
               BooleanExpr weExpr = BooleanExprs.TRUE;
               if (mapName != null) {
-                RouteMap routeMap = _routeMaps.get(mapName);
-                if (routeMap != null) {
-                  weExpr = new CallExpr(mapName);
-                }
+                // TODO update to route-policy if valid, or delete grammar and VS
               }
               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
               Conjunction exportNetworkConditions = new Conjunction();
@@ -1311,29 +1231,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                 localFilter6.addLine(line);
                 String mapName = bgpNetwork6.getRouteMapName();
                 if (mapName != null) {
-                  RouteMap routeMap = _routeMaps.get(mapName);
-                  if (routeMap != null) {
-                    BooleanExpr we =
-                        bgpRedistributeWithEnvironmentExpr(new CallExpr(mapName), OriginType.IGP);
-                    Conjunction exportNetwork6Conditions = new Conjunction();
-                    Prefix6Space space6 = new Prefix6Space();
-                    space6.addPrefix6(prefix6);
-                    exportNetwork6Conditions
-                        .getConjuncts()
-                        .add(
-                            new MatchPrefix6Set(
-                                new DestinationNetwork6(), new ExplicitPrefix6Set(space6)));
-                    exportNetwork6Conditions
-                        .getConjuncts()
-                        .add(
-                            new Not(
-                                new MatchProtocol(
-                                    RoutingProtocol.BGP,
-                                    RoutingProtocol.IBGP,
-                                    RoutingProtocol.AGGREGATE)));
-                    exportNetwork6Conditions.getConjuncts().add(we);
-                    exportConditions.add(exportNetwork6Conditions);
-                  }
+                  // TODO update to route-policy if valid, or delete grammar and VS
                 }
               });
       c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
@@ -1828,10 +1726,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // If a route-map filter is present, honor it.
     String exportRouteMapName = policy.getRouteMap();
     if (exportRouteMapName != null) {
-      RouteMap exportRouteMap = _routeMaps.get(exportRouteMapName);
-      if (exportRouteMap != null) {
-        ospfExportConditions.getConjuncts().add(new CallExpr(exportRouteMapName));
-      }
+      // TODO update to route-policy if valid, or delete grammar and VS
     }
 
     ospfExportStatements.add(Statements.ExitAccept.toStaticStatement());
@@ -2182,12 +2077,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       // add default export map with metric
       String exportConnectedRouteMapName = rcp.getRouteMap();
       if (exportConnectedRouteMapName != null) {
-        RouteMap exportConnectedRouteMap = _routeMaps.get(exportConnectedRouteMapName);
-        if (exportConnectedRouteMap != null) {
-          ripExportConnectedConditions
-              .getConjuncts()
-              .add(new CallExpr(exportConnectedRouteMapName));
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       ripExportConnectedStatements.add(Statements.ExitAccept.toStaticStatement());
       ripExportConnected.setGuard(ripExportConnectedConditions);
@@ -2213,10 +2103,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       // add export map with metric
       String exportStaticRouteMapName = rsp.getRouteMap();
       if (exportStaticRouteMapName != null) {
-        RouteMap exportStaticRouteMap = _routeMaps.get(exportStaticRouteMapName);
-        if (exportStaticRouteMap != null) {
-          ripExportStaticConditions.getConjuncts().add(new CallExpr(exportStaticRouteMapName));
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       ripExportStaticStatements.add(Statements.ExitAccept.toStaticStatement());
       ripExportStatic.setGuard(ripExportStaticConditions);
@@ -2242,174 +2129,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       // add export map with metric
       String exportBgpRouteMapName = rbp.getRouteMap();
       if (exportBgpRouteMapName != null) {
-        RouteMap exportBgpRouteMap = _routeMaps.get(exportBgpRouteMapName);
-        if (exportBgpRouteMap != null) {
-          ripExportBgpConditions.getConjuncts().add(new CallExpr(exportBgpRouteMapName));
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       ripExportBgpStatements.add(Statements.ExitAccept.toStaticStatement());
       ripExportBgp.setGuard(ripExportBgpConditions);
     }
     return newProcess;
-  }
-
-  private RoutingPolicy toRoutingPolicy(final Configuration c, RouteMap map) {
-    boolean hasContinue =
-        map.getClauses().values().stream().anyMatch(clause -> clause.getContinueLine() != null);
-    if (hasContinue) {
-      return toRoutingPolicies(c, map);
-    }
-    RoutingPolicy output = new RoutingPolicy(map.getName(), c);
-    List<Statement> statements = output.getStatements();
-    Map<Integer, If> clauses = new HashMap<>();
-    // descend map so continue targets are available
-    If followingClause = null;
-    for (Entry<Integer, RouteMapClause> e : map.getClauses().descendingMap().entrySet()) {
-      int clauseNumber = e.getKey();
-      RouteMapClause rmClause = e.getValue();
-      String clausePolicyName = getRouteMapClausePolicyName(map, clauseNumber);
-      Conjunction conj = new Conjunction();
-      // match ipv4s must be disjoined with match ipv6
-      Disjunction matchIpOrPrefix = new Disjunction();
-      for (RouteMapMatchLine rmMatch : rmClause.getMatchList()) {
-        BooleanExpr matchExpr = rmMatch.toBooleanExpr(c, this, _w);
-        if (rmMatch instanceof RouteMapMatchIpAccessListLine
-            || rmMatch instanceof RouteMapMatchIpPrefixListLine
-            || rmMatch instanceof RouteMapMatchIpv6AccessListLine
-            || rmMatch instanceof RouteMapMatchIpv6PrefixListLine) {
-          matchIpOrPrefix.getDisjuncts().add(matchExpr);
-        } else {
-          conj.getConjuncts().add(matchExpr);
-        }
-      }
-      if (!matchIpOrPrefix.getDisjuncts().isEmpty()) {
-        conj.getConjuncts().add(matchIpOrPrefix);
-      }
-      If ifExpr = new If();
-      clauses.put(clauseNumber, ifExpr);
-      ifExpr.setComment(clausePolicyName);
-      ifExpr.setGuard(conj);
-      List<Statement> matchStatements = ifExpr.getTrueStatements();
-      for (RouteMapSetLine rmSet : rmClause.getSetList()) {
-        rmSet.applyTo(matchStatements, this, c, _w);
-      }
-      switch (rmClause.getAction()) {
-        case PERMIT:
-          matchStatements.add(Statements.ReturnTrue.toStaticStatement());
-          break;
-
-        case DENY:
-          matchStatements.add(Statements.ReturnFalse.toStaticStatement());
-          break;
-
-        default:
-          throw new BatfishException("Invalid action");
-      }
-      if (followingClause != null) {
-        ifExpr.getFalseStatements().add(followingClause);
-      } else {
-        ifExpr.getFalseStatements().add(Statements.ReturnLocalDefaultAction.toStaticStatement());
-      }
-      followingClause = ifExpr;
-    }
-    statements.add(followingClause);
-    return output;
-  }
-
-  private RoutingPolicy toRoutingPolicies(Configuration c, RouteMap map) {
-    RoutingPolicy output = new RoutingPolicy(map.getName(), c);
-    List<Statement> statements = output.getStatements();
-    Map<Integer, RoutingPolicy> clauses = new HashMap<>();
-    // descend map so continue targets are available
-    RoutingPolicy followingClause = null;
-    Integer followingClauseNumber = null;
-    for (Entry<Integer, RouteMapClause> e : map.getClauses().descendingMap().entrySet()) {
-      int clauseNumber = e.getKey();
-      RouteMapClause rmClause = e.getValue();
-      String clausePolicyName = getRouteMapClausePolicyName(map, clauseNumber);
-      Conjunction conj = new Conjunction();
-      // match ipv4s must be disjoined with match ipv6
-      Disjunction matchIpOrPrefix = new Disjunction();
-      for (RouteMapMatchLine rmMatch : rmClause.getMatchList()) {
-        BooleanExpr matchExpr = rmMatch.toBooleanExpr(c, this, _w);
-        if (rmMatch instanceof RouteMapMatchIpAccessListLine
-            || rmMatch instanceof RouteMapMatchIpPrefixListLine
-            || rmMatch instanceof RouteMapMatchIpv6AccessListLine
-            || rmMatch instanceof RouteMapMatchIpv6PrefixListLine) {
-          matchIpOrPrefix.getDisjuncts().add(matchExpr);
-        } else {
-          conj.getConjuncts().add(matchExpr);
-        }
-      }
-      if (!matchIpOrPrefix.getDisjuncts().isEmpty()) {
-        conj.getConjuncts().add(matchIpOrPrefix);
-      }
-      RoutingPolicy clausePolicy = new RoutingPolicy(clausePolicyName, c);
-      c.getRoutingPolicies().put(clausePolicyName, clausePolicy);
-      If ifStatement = new If();
-      clausePolicy.getStatements().add(ifStatement);
-      clauses.put(clauseNumber, clausePolicy);
-      ifStatement.setComment(clausePolicyName);
-      ifStatement.setGuard(conj);
-      List<Statement> onMatchStatements = ifStatement.getTrueStatements();
-      for (RouteMapSetLine rmSet : rmClause.getSetList()) {
-        rmSet.applyTo(onMatchStatements, this, c, _w);
-      }
-      RouteMapContinue continueStatement = rmClause.getContinueLine();
-      Integer continueTarget = null;
-      RoutingPolicy continueTargetPolicy = null;
-      if (continueStatement != null) {
-        continueTarget = continueStatement.getTarget();
-        if (continueTarget == null) {
-          continueTarget = followingClauseNumber;
-        }
-        if (continueTarget != null) {
-          if (continueTarget <= clauseNumber) {
-            throw new BatfishException("Can only continue to later clause");
-          }
-          continueTargetPolicy = clauses.get(continueTarget);
-          if (continueTargetPolicy == null) {
-            String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
-            undefined(
-                CiscoXrStructureType.ROUTE_MAP_CLAUSE,
-                name,
-                CiscoXrStructureUsage.ROUTE_MAP_CONTINUE,
-                continueStatement.getStatementLine());
-            continueStatement = null;
-          }
-        } else {
-          continueStatement = null;
-        }
-      }
-      switch (rmClause.getAction()) {
-        case PERMIT:
-          if (continueStatement == null) {
-            onMatchStatements.add(Statements.ExitAccept.toStaticStatement());
-          } else {
-            onMatchStatements.add(Statements.SetDefaultActionAccept.toStaticStatement());
-            onMatchStatements.add(new CallStatement(continueTargetPolicy.getName()));
-          }
-          break;
-
-        case DENY:
-          onMatchStatements.add(Statements.ExitReject.toStaticStatement());
-          break;
-
-        default:
-          throw new BatfishException("Invalid action");
-      }
-      if (followingClause != null) {
-        ifStatement.getFalseStatements().add(new CallStatement(followingClause.getName()));
-      } else {
-        ifStatement
-            .getFalseStatements()
-            .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
-      }
-      followingClause = clausePolicy;
-      followingClauseNumber = clauseNumber;
-    }
-    statements.add(new CallStatement(followingClause.getName()));
-    return output;
   }
 
   private RoutingPolicy toRoutingPolicy(Configuration c, RoutePolicy routePolicy) {
@@ -2514,15 +2239,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
-    // convert standard/expanded community lists and community-sets to community lists
-    for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      CommunityList cList = toCommunityList(scList);
-      c.getCommunityLists().put(cList.getName(), cList);
-    }
-    for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
-      CommunityList cList = toCommunityList(ecList);
-      c.getCommunityLists().put(cList.getName(), cList);
-    }
     convertCommunitySets(c);
 
     // convert prefix lists to route filter lists
@@ -2619,30 +2335,14 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // route6 filter
     // lists
     for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
-      if (isAclUsedForRoutingv6(saList.getName())) {
-        Route6FilterList rfList = CiscoXrConversions.toRoute6FilterList(saList);
-        c.getRoute6FilterLists().put(rfList.getName(), rfList);
-      }
       c.getIp6AccessLists()
           .put(
               saList.getName(),
               CiscoXrConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
     }
     for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
-      if (isAclUsedForRoutingv6(eaList.getName())) {
-        Route6FilterList rfList = CiscoXrConversions.toRoute6FilterList(eaList);
-        c.getRoute6FilterLists().put(rfList.getName(), rfList);
-      }
       Ip6AccessList ipaList = CiscoXrConversions.toIp6AccessList(eaList);
       c.getIp6AccessLists().put(ipaList.getName(), ipaList);
-    }
-
-    // TODO: convert route maps that are used for PBR to PacketPolicies
-
-    for (RouteMap map : _routeMaps.values()) {
-      // convert route maps to RoutingPolicy objects
-      RoutingPolicy newPolicy = toRoutingPolicy(c, map);
-      c.getRoutingPolicies().put(newPolicy.getName(), newPolicy);
     }
 
     // convert RoutePolicy to RoutingPolicy
@@ -2955,8 +2655,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
         CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoXrStructureUsage.ROUTER_STATIC_ROUTE,
@@ -2994,7 +2692,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.PIM_RP_CANDIDATE_ACL,
         CiscoXrStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
         CiscoXrStructureUsage.PIM_SPT_THRESHOLD_ACL,
-        CiscoXrStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
         CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
         CiscoXrStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
@@ -3002,7 +2699,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT,
         CiscoXrStructureUsage.LINE_ACCESS_CLASS_LIST6,
         CiscoXrStructureUsage.NTP_ACCESS_GROUP,
-        CiscoXrStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
         CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
         CiscoXrStructureUsage.SSH_IPV6_ACL,
         CiscoXrStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
@@ -3029,77 +2725,21 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.WCCP_REDIRECT_LIST,
         CiscoXrStructureUsage.WCCP_SERVICE_LIST);
 
-    markCommunityLists(
-        CiscoXrStructureUsage.ROUTE_MAP_ADD_COMMUNITY,
-        CiscoXrStructureUsage.ROUTE_MAP_DELETE_COMMUNITY,
-        CiscoXrStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
-        CiscoXrStructureUsage.ROUTE_MAP_SET_COMMUNITY);
-
     markConcreteStructure(
         CiscoXrStructureType.PREFIX_LIST,
         CiscoXrStructureUsage.BGP_INBOUND_PREFIX_LIST,
         CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoXrStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
+        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT);
     markConcreteStructure(
         CiscoXrStructureType.PREFIX6_LIST,
         CiscoXrStructureUsage.BGP_INBOUND_PREFIX6_LIST,
         CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
         CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoXrStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
+        CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT);
 
     markConcreteStructure(
         CiscoXrStructureType.PREFIX_SET, CiscoXrStructureUsage.ROUTE_POLICY_PREFIX_SET);
-
-    // mark references to route-maps
-    markConcreteStructure(
-        CiscoXrStructureType.ROUTE_MAP,
-        CiscoXrStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP,
-        CiscoXrStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
-        CiscoXrStructureUsage.BGP_AGGREGATE_MATCH_MAP,
-        CiscoXrStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoXrStructureUsage.BGP_INBOUND_ROUTE_MAP,
-        CiscoXrStructureUsage.BGP_INBOUND_ROUTE6_MAP,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
-        CiscoXrStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP,
-        CiscoXrStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
-        CiscoXrStructureUsage.BGP_OUTBOUND_ROUTE_MAP,
-        CiscoXrStructureUsage.BGP_OUTBOUND_ROUTE6_MAP,
-        CiscoXrStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP,
-        CiscoXrStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoXrStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP,
-        CiscoXrStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP,
-        CiscoXrStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP,
-        CiscoXrStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP,
-        CiscoXrStructureUsage.BGP_REDISTRIBUTE_RIP_MAP,
-        CiscoXrStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP,
-        CiscoXrStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
-        CiscoXrStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
-        CiscoXrStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
-        CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP,
-        CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP,
-        CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP,
-        CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
-        CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
-        CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
-        CiscoXrStructureUsage.INTERFACE_IP_VRF_SITEMAP,
-        CiscoXrStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
-        CiscoXrStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
-        CiscoXrStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoXrStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
-        CiscoXrStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoXrStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
-        CiscoXrStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
-        CiscoXrStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
-        CiscoXrStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoXrStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
-        CiscoXrStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoXrStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
 
     markConcreteStructure(
         CiscoXrStructureType.ROUTE_POLICY,
@@ -3230,8 +2870,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoXrStructureType.NAT_POOL, CiscoXrStructureUsage.IP_NAT_SOURCE_POOL);
     markConcreteStructure(
         CiscoXrStructureType.AS_PATH_ACCESS_LIST,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
-        CiscoXrStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
+        CiscoXrStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST);
 
     markConcreteStructure(
         CiscoXrStructureType.AS_PATH_SET, CiscoXrStructureUsage.ROUTE_POLICY_AS_PATH_IN);
@@ -3397,21 +3036,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   private boolean isAclUsedForRouting(@Nonnull String aclName) {
-    String currentMapName;
     for (Vrf vrf : _vrfs.values()) {
-      // check ospf policies
-      for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-        for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
-        currentMapName = ospfProcess.getDefaultInformationOriginateMap();
-        if (containsIpAccessList(aclName, currentMapName)) {
-          return true;
-        }
-      }
       RipProcess ripProcess = vrf.getRipProcess();
       if (ripProcess != null) {
         // check rip distribute lists
@@ -3423,36 +3048,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             && ripProcess.getDistributeListOut().equals(aclName)) {
           return true;
         }
-        // check rip redistribution policies
-        for (RipRedistributionPolicy rp : ripProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
       }
       // check bgp policies
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
-        for (BgpRedistributionPolicy rp : bgpProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
-          currentMapName = pg.getInboundRouteMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getOutboundRouteMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getDefaultOriginateMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
           if (aclName.equals(pg.getInboundIpAccessList())
               || aclName.equals(pg.getOutboundIpAccessList())) {
             return true;
@@ -3466,65 +3066,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               eigrpProcess -> eigrpProcess.getOutboundInterfaceDistributeLists().values().stream())
           .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
         return true;
-      }
-      // EIGRP redistribution policy
-      if (vrf.getEigrpProcesses().values().stream()
-          .map(EigrpProcess::getRedistributionPolicies)
-          .flatMap(redisrPolicies -> redisrPolicies.values().stream())
-          .anyMatch(rm -> containsIpAccessList(aclName, rm.getRouteMap()))) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean isAclUsedForRoutingv6(String aclName) {
-    String currentMapName;
-    for (Vrf vrf : _vrfs.values()) {
-      // check ospf policies
-      for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-        for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
-        currentMapName = ospfProcess.getDefaultInformationOriginateMap();
-        if (containsIpAccessList(aclName, currentMapName)) {
-          return true;
-        }
-      }
-      // check bgp policies
-      BgpProcess bgpProcess = vrf.getBgpProcess();
-      if (bgpProcess != null) {
-        for (BgpRedistributionPolicy rp : bgpProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
-        for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
-          currentMapName = pg.getInboundRouteMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getInboundRoute6Map();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getOutboundRouteMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getOutboundRoute6Map();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getDefaultOriginateMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
       }
     }
     return false;

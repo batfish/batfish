@@ -3505,8 +3505,6 @@ stanza
    | extended_ipv6_access_list_stanza
    | ip_as_path_access_list_stanza
    | ip_as_path_regex_mode_stanza
-   | ip_community_list_expanded_stanza
-   | ip_community_list_standard_stanza
    | ip_prefix_list_stanza
    | ip_route_stanza
    | ipv6_prefix_list_stanza
@@ -3516,10 +3514,8 @@ stanza
    | no_failover
    | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
-   | no_route_map_stanza
    | prefix_set_stanza
    | protocol_type_code_access_list_stanza
-   | route_map_stanza
    | route_policy_stanza
    | router_bgp_stanza
    | router_hsrp_stanza

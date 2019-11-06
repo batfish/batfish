@@ -45,8 +45,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -76,7 +74,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -87,7 +84,6 @@ import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.isis.IsisLevelSettings;
@@ -122,8 +118,6 @@ import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IntMatchAll;
 import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
@@ -697,22 +691,6 @@ public class CiscoXrConversions {
             .map(IpAsPathAccessListLine::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(pathList.getName(), lines);
-  }
-
-  static CommunityList toCommunityList(ExpandedCommunityList ecList) {
-    List<CommunityListLine> cllList =
-        ecList.getLines().stream()
-            .map(CiscoXrConversions::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new CommunityList(ecList.getName(), cllList, false);
-  }
-
-  public static CommunityList toCommunityList(StandardCommunityList scList) {
-    List<CommunityListLine> cllList =
-        scList.getLines().stream()
-            .map(CiscoXrConversions::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new CommunityList(scList.getName(), cllList, false);
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
@@ -1380,10 +1358,7 @@ public class CiscoXrConversions {
 
     String exportRouteMapName = policy.getRouteMap();
     if (exportRouteMapName != null) {
-      RouteMap exportRouteMap = oldConfig.getRouteMaps().get(exportRouteMapName);
-      if (exportRouteMap != null) {
-        eigrpExportConditions.getConjuncts().add(new CallExpr(exportRouteMapName));
-      }
+      // TODO update to route-policy if valid, or delete grammar and VS
     }
 
     eigrpExportStatements.add(Statements.ExitAccept.toStaticStatement());
@@ -1723,23 +1698,6 @@ public class CiscoXrConversions {
     String regex = CiscoXrConfiguration.toJavaRegex(elem.regex());
     AsPathAccessListLine line = new AsPathAccessListLine(LineAction.PERMIT, regex);
     return line;
-  }
-
-  private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
-    String javaRegex = CiscoXrConfiguration.toJavaRegex(eclLine.getRegex());
-    return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));
-  }
-
-  private static CommunityListLine toCommunityListLine(StandardCommunityListLine sclLine) {
-    Collection<Long> lineCommunities = sclLine.getCommunities();
-    org.batfish.datamodel.routing_policy.expr.CommunitySetExpr expr =
-        lineCommunities.size() == 1
-            ? new LiteralCommunity(StandardCommunity.of(lineCommunities.iterator().next()))
-            : new LiteralCommunityConjunction(
-                lineCommunities.stream()
-                    .map(StandardCommunity::of)
-                    .collect(ImmutableSet.toImmutableSet()));
-    return new CommunityListLine(sclLine.getAction(), expr);
   }
 
   private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {
