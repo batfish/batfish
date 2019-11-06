@@ -112,8 +112,6 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
-import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
-import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorConfiguration;
@@ -1725,20 +1723,157 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .build();
   }
 
+  private void convertVendorFamily() {
+    F5BigipFamily.Builder builder = F5BigipFamily.builder();
+    _devices.values().stream().map(F5BigipConfiguration::toDevice).forEach(builder::addDevice);
+    _deviceGroups.values().stream()
+        .map(F5BigipConfiguration::toDeviceGroup)
+        .forEach(builder::addDeviceGroup);
+    _haGroups.values().stream().map(F5BigipConfiguration::toHaGroup).forEach(builder::addHaGroup);
+    _pools.values().stream().map(F5BigipConfiguration::toPool).forEach(builder::addPool);
+    _trafficGroups.values().stream()
+        .map(F5BigipConfiguration::toTrafficGroup)
+        .forEach(builder::addTrafficGroup);
+    _virtuals.values().stream().map(F5BigipConfiguration::toVirtual).forEach(builder::addVirtual);
+    _virtualAddresses.values().stream()
+        .map(F5BigipConfiguration::toVirtualAddress)
+        .forEach(builder::addVirtualAddress);
+    _c.getVendorFamily().setF5Bigip(builder.build());
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.Device toDevice(
+      Device device) {
+    org.batfish.datamodel.vendor_family.f5_bigip.Device.Builder builder =
+        org.batfish.datamodel.vendor_family.f5_bigip.Device.builder()
+            .setBaseMac(device.getBaseMac())
+            .setConfigSyncIp(device.getConfigSyncIp())
+            .setHostname(device.getHostname())
+            .setManagementIp(device.getManagementIp())
+            .setName(device.getName())
+            .setSelfDevice(device.getSelfDevice());
+    device.getUnicastAddresses().stream()
+        .map(F5BigipConfiguration::toUnicastAddress)
+        .forEach(builder::addUnicastAddress);
+    return builder.build();
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.UnicastAddress
+      toUnicastAddress(UnicastAddress unicastAddress) {
+    return org.batfish.datamodel.vendor_family.f5_bigip.UnicastAddress.builder()
+        .setEffectiveIp(unicastAddress.getEffectiveIp().toUnicastAddressIp())
+        .setEffectivePort(unicastAddress.getEffectivePort())
+        .setIp(unicastAddress.getIp().toUnicastAddressIp())
+        .setPort(unicastAddress.getPort())
+        .build();
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroup toDeviceGroup(
+      DeviceGroup deviceGroup) {
+    org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroup.Builder builder =
+        org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroup.builder()
+            .setAutoSync(deviceGroup.getAutoSync());
+    deviceGroup.getDevices().values().stream()
+        .map(F5BigipConfiguration::toDeviceGroupDevice)
+        .forEach(builder::addDevice);
+    return builder
+        .setHidden(deviceGroup.getHidden())
+        .setName(deviceGroup.getName())
+        .setNetworkFailover(deviceGroup.getNetworkFailover())
+        .setType(deviceGroup.getType())
+        .build();
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupDevice
+      toDeviceGroupDevice(DeviceGroupDevice deviceGroupDevice) {
+    return org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupDevice.builder()
+        .setName(deviceGroupDevice.getName())
+        .setSetSyncLeader(deviceGroupDevice.getSetSyncLeader())
+        .build();
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.HaGroup toHaGroup(
+      HaGroup haGroup) {
+    org.batfish.datamodel.vendor_family.f5_bigip.HaGroup.Builder builder =
+        org.batfish.datamodel.vendor_family.f5_bigip.HaGroup.builder()
+            .setActiveBonus(haGroup.getActiveBonus())
+            .setName(haGroup.getName());
+    haGroup.getPools().values().stream()
+        .map(F5BigipConfiguration::toHaGroupPool)
+        .forEach(builder::addPool);
+    haGroup.getTrunks().values().stream()
+        .map(F5BigipConfiguration::toHaGroupTrunk)
+        .forEach(builder::addTrunk);
+    return builder.build();
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.HaGroupPool toHaGroupPool(
+      HaGroupPool haGroupPool) {
+    return org.batfish.datamodel.vendor_family.f5_bigip.HaGroupPool.builder()
+        .setName(haGroupPool.getName())
+        .setWeight(haGroupPool.getWeight())
+        .build();
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.HaGroupTrunk toHaGroupTrunk(
+      HaGroupTrunk haGroupTrunk) {
+    return org.batfish.datamodel.vendor_family.f5_bigip.HaGroupTrunk.builder()
+        .setName(haGroupTrunk.getName())
+        .setWeight(haGroupTrunk.getWeight())
+        .build();
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.TrafficGroup toTrafficGroup(
+      TrafficGroup trafficGroup) {
+    return org.batfish.datamodel.vendor_family.f5_bigip.TrafficGroup.builder()
+        .setHaGroup(trafficGroup.getHaGroup())
+        .setMac(trafficGroup.getMac())
+        .setName(trafficGroup.getName())
+        .setUnitId(trafficGroup.getUnitId())
+        .build();
+  }
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.Virtual toVirtual(
+      Virtual virtual) {
+    return org.batfish.datamodel.vendor_family.f5_bigip.Virtual.builder()
+        .setDescription(virtual.getDescription())
+        .setDestination(virtual.getDestination())
+        .setDestinationPort(virtual.getDestinationPort())
+        .setDisabled(virtual.getDisabled())
+        .setIpForward(virtual.getIpForward())
+        .setIpProtocol(virtual.getIpProtocol())
+        .setMask(virtual.getMask())
+        .setMask6(virtual.getMask6())
+        .setName(virtual.getName())
+        .setPool(virtual.getPool())
+        .setReject(virtual.getReject())
+        .setSource(virtual.getSource())
+        .setSource6(virtual.getSource6())
+        .setSourceAddressTranslationPool(virtual.getSourceAddressTranslationPool())
+        .setTranslateAddress(virtual.getTranslateAddress())
+        .setTranslatePort(virtual.getTranslatePort())
+        .setVlans(virtual.getVlans())
+        .setVlansEnabled(virtual.getVlansEnabled())
+        .build();
+  }
+
+  private static org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress toVirtualAddress(
+      VirtualAddress virtualAddress) {
+    return org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress.builder()
+        .setAddress(virtualAddress.getAddress())
+        .setAddress6(virtualAddress.getAddress6())
+        .setArpDisabled(virtualAddress.getArpDisabled())
+        .setIcmpEchoDisabled(virtualAddress.getIcmpEchoDisabled())
+        .setMask(virtualAddress.getMask())
+        .setMask6(virtualAddress.getMask6())
+        .setName(virtualAddress.getName())
+        .setRouteAdvertisementMode(virtualAddress.getRouteAdvertisementMode())
+        .build();
+  }
+
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, _format);
 
-    // store vendor-specific information
-    _c.getVendorFamily()
-        .setF5Bigip(
-            F5BigipFamily.builder()
-                .setPools(
-                    _pools.entrySet().stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(Entry::getKey, e -> toPool(e.getValue()))))
-                .setVirtuals(_virtuals)
-                .setVirtualAddresses(_virtualAddresses)
-                .build());
+    convertVendorFamily();
 
     // add a reference book for virtual addresses
     String virtualAddressesBookname =
@@ -1899,23 +2034,25 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.Pool toPool(Pool pool) {
-    return new org.batfish.datamodel.vendor_family.f5_bigip.Pool(
-        pool.getDescription(),
-        pool.getMembers().entrySet().stream()
-            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> toPoolMember(e.getValue()))),
-        pool.getMonitors(),
-        pool.getName());
+    org.batfish.datamodel.vendor_family.f5_bigip.Pool.Builder builder =
+        org.batfish.datamodel.vendor_family.f5_bigip.Pool.builder()
+            .setDescription(pool.getDescription());
+    pool.getMembers().values().stream()
+        .map(F5BigipConfiguration::toPoolMember)
+        .forEach(builder::addMember);
+    return builder.setMonitors(pool.getMonitors()).setName(pool.getName()).build();
   }
 
   private static @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.PoolMember toPoolMember(
       PoolMember poolMember) {
-    return new org.batfish.datamodel.vendor_family.f5_bigip.PoolMember(
-        poolMember.getAddress(),
-        poolMember.getAddress6(),
-        poolMember.getDescription(),
-        poolMember.getName(),
-        poolMember.getNode(),
-        poolMember.getPort());
+    return org.batfish.datamodel.vendor_family.f5_bigip.PoolMember.builder()
+        .setAddress(poolMember.getAddress())
+        .setAddress6(poolMember.getAddress6())
+        .setDescription(poolMember.getDescription())
+        .setName(poolMember.getName())
+        .setNode(poolMember.getNode())
+        .setPort(poolMember.getPort())
+        .build();
   }
 
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(OspfProcess proc) {

@@ -229,9 +229,8 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
+import org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
-import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
-import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -243,7 +242,6 @@ import org.batfish.representation.f5_bigip.ConcreteUnicastAddressIp;
 import org.batfish.representation.f5_bigip.Device;
 import org.batfish.representation.f5_bigip.DeviceGroup;
 import org.batfish.representation.f5_bigip.DeviceGroupDevice;
-import org.batfish.representation.f5_bigip.DeviceGroupType;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.batfish.representation.f5_bigip.HaGroup;
@@ -253,6 +251,8 @@ import org.batfish.representation.f5_bigip.ManagementIp;
 import org.batfish.representation.f5_bigip.Route;
 import org.batfish.representation.f5_bigip.TrafficGroup;
 import org.batfish.representation.f5_bigip.UnicastAddress;
+import org.batfish.representation.f5_bigip.Virtual;
+import org.batfish.representation.f5_bigip.VirtualAddress;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -688,6 +688,205 @@ public final class F5BigipStructuredGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(Prefix.strict("10.0.3.2/32"), hasLocalIp(nullValue())))));
+  }
+
+  @Test
+  public void testCmConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_cm");
+
+    F5BigipFamily f = c.getVendorFamily().getF5Bigip();
+
+    // cm device
+    assertThat(
+        f.getDevices(),
+        hasKeys("/Common/f5_bigip_structured_cm", "/Common/f5_bigip_structured_cm2"));
+    {
+      org.batfish.datamodel.vendor_family.f5_bigip.Device d =
+          f.getDevices().get("/Common/f5_bigip_structured_cm");
+      assertThat(d.getBaseMac(), equalTo(MacAddress.parse("00:00:00:00:00:01")));
+      assertThat(d.getConfigSyncIp(), equalTo(Ip.parse("192.0.2.1")));
+      assertThat(d.getHostname(), equalTo("f5_bigip_structured_cm"));
+      assertThat(d.getManagementIp(), equalTo(Ip.parse("192.0.2.2")));
+      assertThat(d.getSelfDevice(), equalTo(Boolean.TRUE));
+
+      // unicast-address
+      Iterator<org.batfish.datamodel.vendor_family.f5_bigip.UnicastAddress> unicastAddresses =
+          d.getUnicastAddresses().iterator();
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.UnicastAddress ua = unicastAddresses.next();
+        assertThat(
+            ua.getEffectiveIp(),
+            instanceOf(
+                org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp.class));
+        assertThat(ua.getEffectivePort(), equalTo(1026));
+        assertThat(
+            ((org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp)
+                    ua.getEffectiveIp())
+                .getIp(),
+            equalTo(Ip.parse("192.0.2.1")));
+        assertThat(
+            ua.getIp(),
+            instanceOf(
+                org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp.class));
+        assertThat(
+            ((org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp) ua.getIp())
+                .getIp(),
+            equalTo(Ip.parse("192.0.2.1")));
+        assertThat(ua.getPort(), nullValue());
+      }
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.UnicastAddress ua = unicastAddresses.next();
+        assertThat(
+            ua.getEffectiveIp(),
+            instanceOf(org.batfish.datamodel.vendor_family.f5_bigip.ManagementIp.class));
+        assertThat(ua.getEffectivePort(), equalTo(1026));
+        assertThat(
+            ua.getIp(),
+            instanceOf(org.batfish.datamodel.vendor_family.f5_bigip.ManagementIp.class));
+        assertThat(ua.getPort(), equalTo(1026));
+      }
+      assertFalse(unicastAddresses.hasNext());
+    }
+    {
+      org.batfish.datamodel.vendor_family.f5_bigip.Device d =
+          f.getDevices().get("/Common/f5_bigip_structured_cm2");
+      assertThat(d.getBaseMac(), equalTo(MacAddress.parse("00:00:00:00:00:02")));
+      assertThat(d.getConfigSyncIp(), equalTo(Ip.parse("192.0.2.3")));
+      assertThat(d.getHostname(), equalTo("f5_bigip_structured_cm2"));
+      assertThat(d.getManagementIp(), equalTo(Ip.parse("192.0.2.4")));
+      assertThat(d.getSelfDevice(), nullValue());
+
+      // unicast-address
+      Iterator<org.batfish.datamodel.vendor_family.f5_bigip.UnicastAddress> unicastAddresses =
+          d.getUnicastAddresses().iterator();
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.UnicastAddress ua = unicastAddresses.next();
+        assertThat(
+            ua.getEffectiveIp(),
+            instanceOf(
+                org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp.class));
+        assertThat(ua.getEffectivePort(), equalTo(1026));
+        assertThat(
+            ((org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp)
+                    ua.getEffectiveIp())
+                .getIp(),
+            equalTo(Ip.parse("192.0.2.3")));
+        assertThat(
+            ua.getIp(),
+            instanceOf(
+                org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp.class));
+        assertThat(
+            ((org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp) ua.getIp())
+                .getIp(),
+            equalTo(Ip.parse("192.0.2.3")));
+        assertThat(ua.getPort(), nullValue());
+      }
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.UnicastAddress ua = unicastAddresses.next();
+        assertThat(
+            ua.getEffectiveIp(),
+            instanceOf(org.batfish.datamodel.vendor_family.f5_bigip.ManagementIp.class));
+        assertThat(ua.getEffectivePort(), equalTo(1026));
+        assertThat(
+            ua.getIp(),
+            instanceOf(org.batfish.datamodel.vendor_family.f5_bigip.ManagementIp.class));
+        assertThat(ua.getPort(), equalTo(1026));
+      }
+      assertFalse(unicastAddresses.hasNext());
+    }
+
+    // device-group
+    assertThat(
+        f.getDeviceGroups(),
+        hasKeys("/Common/device_group_snc", "/Common/device_trust_group", "/Common/gtm"));
+    {
+      org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroup dg =
+          f.getDeviceGroups().get("/Common/device_group_snc");
+      assertThat(dg.getAutoSync(), nullValue());
+
+      // devices
+      assertThat(
+          dg.getDevices(),
+          hasKeys("/Common/f5_bigip_structured_cm", "/Common/f5_bigip_structured_cm2"));
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupDevice dgd =
+            dg.getDevices().get("/Common/f5_bigip_structured_cm");
+        assertFalse(dgd.getSetSyncLeader());
+      }
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupDevice dgd =
+            dg.getDevices().get("/Common/f5_bigip_structured_cm2");
+        assertFalse(dgd.getSetSyncLeader());
+      }
+
+      assertThat(dg.getHidden(), nullValue());
+      assertThat(dg.getNetworkFailover(), nullValue());
+      assertThat(
+          dg.getType(),
+          equalTo(org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType.SYNC_FAILOVER));
+    }
+    {
+      org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroup dg =
+          f.getDeviceGroups().get("/Common/device_trust_group");
+      assertThat(dg.getAutoSync(), equalTo(Boolean.TRUE));
+
+      // devices
+      assertThat(
+          dg.getDevices(),
+          hasKeys("/Common/f5_bigip_structured_cm", "/Common/f5_bigip_structured_cm2"));
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupDevice dgd =
+            dg.getDevices().get("/Common/f5_bigip_structured_cm");
+        assertFalse(dgd.getSetSyncLeader());
+      }
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupDevice dgd =
+            dg.getDevices().get("/Common/f5_bigip_structured_cm2");
+        assertTrue(dgd.getSetSyncLeader());
+      }
+
+      assertThat(dg.getHidden(), equalTo(Boolean.TRUE));
+      assertThat(dg.getNetworkFailover(), equalTo(Boolean.FALSE));
+      assertThat(
+          dg.getType(),
+          equalTo(org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType.SYNC_ONLY));
+    }
+    {
+      org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroup dg =
+          f.getDeviceGroups().get("/Common/gtm");
+      assertThat(dg.getAutoSync(), nullValue());
+
+      // devices
+      assertThat(dg.getDevices(), hasKeys("/Common/f5_bigip_structured_cm"));
+      {
+        org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupDevice dgd =
+            dg.getDevices().get("/Common/f5_bigip_structured_cm");
+        assertFalse(dgd.getSetSyncLeader());
+      }
+
+      assertThat(dg.getHidden(), equalTo(Boolean.TRUE));
+      assertThat(dg.getNetworkFailover(), equalTo(Boolean.FALSE));
+      assertThat(dg.getType(), nullValue());
+    }
+
+    // traffic-group
+    assertThat(
+        f.getTrafficGroups(),
+        hasKeys("/Common/traffic-group-1", "/Common/traffic-group-local-only"));
+    {
+      org.batfish.datamodel.vendor_family.f5_bigip.TrafficGroup tg =
+          f.getTrafficGroups().get("/Common/traffic-group-1");
+      assertThat(tg.getHaGroup(), equalTo("/Common/t1"));
+      assertThat(tg.getMac(), equalTo(MacAddress.parse("00:00:00:00:00:03")));
+      assertThat(tg.getUnitId(), equalTo(1));
+    }
+    {
+      org.batfish.datamodel.vendor_family.f5_bigip.TrafficGroup tg =
+          f.getTrafficGroups().get("/Common/traffic-group-local-only");
+      assertThat(tg.getHaGroup(), nullValue());
+      assertThat(tg.getMac(), nullValue());
+      assertThat(tg.getUnitId(), nullValue());
+    }
   }
 
   @Test

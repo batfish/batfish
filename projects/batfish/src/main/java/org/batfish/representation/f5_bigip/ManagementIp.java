@@ -9,6 +9,11 @@ public class ManagementIp implements UnicastAddressIp {
     return INSTANCE;
   }
 
+  @Override
+  public @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.ManagementIp toUnicastAddressIp() {
+    return org.batfish.datamodel.vendor_family.f5_bigip.ManagementIp.instance();
+  }
+
   private static final ManagementIp INSTANCE = new ManagementIp();
 
   private ManagementIp() {}
