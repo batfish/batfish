@@ -1284,7 +1284,6 @@ import org.batfish.representation.cisco_xr.XrRoutePolicyDeleteCommunityStatement
 import org.batfish.representation.cisco_xr.XrRoutePolicySetCommunity;
 import org.batfish.representation.cisco_xr.XrUint16RangeExpr;
 import org.batfish.representation.cisco_xr.XrUint16Reference;
-import org.batfish.representation.cisco_xr.eos.AristaEosVxlan;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
@@ -1585,8 +1584,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private Integer _currentHsrpGroup;
 
   private String _currentTrackingGroup;
-
-  private AristaEosVxlan _eosVxlan;
 
   /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
    * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
