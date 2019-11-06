@@ -1,6 +1,7 @@
 package org.batfish.common.bdd;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IcmpType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 
@@ -20,13 +22,15 @@ public final class BDDFlowConstraintGenerator {
    */
   public enum FlowPreference {
     DEBUGGING,
-    APPLICATION
+    APPLICATION,
+    TESTFILTER
   }
 
   private BDDPacket _bddPacket;
   private BDD _icmpFlow;
   private BDD _udpFlow;
   private BDD _tcpFlow;
+  private List<BDD> _testFilterPrefBdds;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
     try (ActiveSpan span =
@@ -36,6 +40,7 @@ public final class BDDFlowConstraintGenerator {
       _icmpFlow = computeICMPConstraint();
       _udpFlow = computeUDPConstraint();
       _tcpFlow = computeTCPConstraint();
+      _testFilterPrefBdds = computeTestFilterPreference();
     }
   }
 
@@ -95,12 +100,45 @@ public final class BDDFlowConstraintGenerator {
     return _bddPacket.getIpProtocol().value(IpProtocol.UDP).and(bdd1.or(bdd2));
   }
 
+  private List<BDD> computeTestFilterPreference() {
+    BDDInteger dstIp = _bddPacket.getDstIp();
+    BDDInteger dstPort = _bddPacket.getDstPort();
+    BDDInteger srcPort = _bddPacket.getSrcPort();
+    BDDIpProtocol ipProtocol = _bddPacket.getIpProtocol();
+
+    BDD defaultDstIpBdd = dstIp.value(Ip.parse("8.8.8.8").asLong());
+    BDD tcpBdd = ipProtocol.value(IpProtocol.TCP);
+    BDD udpBdd = ipProtocol.value(IpProtocol.UDP);
+    BDD defaultSrcPortBdd = srcPort.value(NamedPort.EPHEMERAL_LOWEST.number());
+    BDD defaultDstPortBdd = dstPort.value(NamedPort.HTTP.number());
+
+    BDDOps bddOps = new BDDOps(_bddPacket.getFactory());
+    BDD one = _bddPacket.getFactory().one();
+    // generate all combinations in order to enforce the following logic: when a field in the input
+    // bdd contains the default value for that field, then use that value; otherwise use a value
+    // in BDD of the field.
+    Builder<BDD> builder = ImmutableList.builder();
+    for (BDD dstIpBdd : ImmutableList.of(defaultDstIpBdd, one)) {
+      for (BDD ipProtocolBdd : ImmutableList.of(tcpBdd, udpBdd)) {
+        for (BDD srcPortBdd : ImmutableList.of(defaultSrcPortBdd, one)) {
+          for (BDD dstPortBdd : ImmutableList.of(defaultDstPortBdd, one)) {
+            builder.add(bddOps.and(dstIpBdd, ipProtocolBdd, srcPortBdd, dstPortBdd));
+          }
+        }
+      }
+    }
+    builder.add(defaultDstIpBdd);
+    return builder.build();
+  }
+
   public List<BDD> generateFlowPreference(FlowPreference preference) {
     switch (preference) {
       case DEBUGGING:
         return ImmutableList.of(_icmpFlow, _udpFlow, _tcpFlow);
       case APPLICATION:
         return ImmutableList.of(_tcpFlow, _udpFlow, _icmpFlow);
+      case TESTFILTER:
+        return _testFilterPrefBdds;
       default:
         throw new BatfishException("Not supported flow preference");
     }
