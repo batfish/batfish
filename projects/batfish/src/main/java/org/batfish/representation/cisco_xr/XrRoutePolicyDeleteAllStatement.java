@@ -50,7 +50,7 @@ public final class XrRoutePolicyDeleteAllStatement extends RoutePolicySetStateme
                               new LiteralCommunitySet(
                                   org.batfish.datamodel.routing_policy.communities.CommunitySet.of(
                                       ImmutableList.of(
-                                              // https://www.cisco_xr.com/c/en/us/td/docs/routers/xr12000/software/xr12k_r4-0/routing/configuration/guide/rc40xr12k_chapter7.html
+                                              // https://www.cisco.com/c/en/us/td/docs/routers/xr12000/software/xr12k_r4-0/routing/configuration/guide/rc40xr12k_chapter7.html
                                               INTERNET,
                                               NO_EXPORT,
                                               NO_ADVERTISE,

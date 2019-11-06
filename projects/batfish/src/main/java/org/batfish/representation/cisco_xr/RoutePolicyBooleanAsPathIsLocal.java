@@ -12,7 +12,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
  * Path is empty.
  *
  * <p>See
- * https://www.cisco_xr.com/c/en/us/td/docs/routers/asr9000/software/asr9k_r4-0/routing/command/reference/rr40asr9kbook_chapter8.html#wp1504108348
+ * https://www.cisco.com/c/en/us/td/docs/routers/asr9000/software/asr9k_r4-0/routing/command/reference/rr40asr9kbook_chapter8.html#wp1504108348
  */
 public class RoutePolicyBooleanAsPathIsLocal extends RoutePolicyBoolean {
 

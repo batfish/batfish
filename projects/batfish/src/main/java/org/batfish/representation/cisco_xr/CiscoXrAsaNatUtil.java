@@ -224,7 +224,7 @@ final class CiscoXrAsaNatUtil {
      * 1) Ranges do not map to prefixes but are valid. There is currently no support for
      *    matching a range or shifting into it.
      * 2) Prefixes of unequal length are valid but not always recommended.
-     *    See https://www.cisco_xr.com/c/en/us/td/docs/security/asa/asa910/configuration/firewall/asa-910-firewall-config/nat-basics.html#ID-2090-00000869
+     *    See https://www.cisco.com/c/en/us/td/docs/security/asa/asa910/configuration/firewall/asa-910-firewall-config/nat-basics.html#ID-2090-00000869
      * 3) Network object groups are not supported. A simple network object group might involve
      *    matching and shifting to and from prefixes, but if there are ranges in the object group
      *    or any of the prefixes in the matching group do not align with a prefix in the shift
@@ -236,7 +236,7 @@ final class CiscoXrAsaNatUtil {
       shiftPrefix = Prefix.ZERO;
     } else if (anyMatch ^ anyShift) {
       // these uses might result in unpredictable behavior.
-      // https://www.cisco_xr.com/c/en/us/td/docs/security/asa/asa-command-reference/I-R/cmdref2/n.html
+      // https://www.cisco.com/c/en/us/td/docs/security/asa/asa-command-reference/I-R/cmdref2/n.html
       w.redFlag(
           "Matching 'any' and shifting to an object or object group, or vice versa, is not supported.");
       return null;

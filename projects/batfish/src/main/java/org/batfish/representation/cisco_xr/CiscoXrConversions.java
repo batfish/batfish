@@ -148,7 +148,7 @@ import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterTy
 public class CiscoXrConversions {
 
   // Defaults from
-  // https://www.cisco_xr.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
+  // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
   static int DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST = 10;
 
   static int DEFAULT_OSPF_HELLO_INTERVAL = 30;
@@ -466,7 +466,7 @@ public class CiscoXrConversions {
   static String generateBgpImportPolicy(
       LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
     // TODO Support filter-list
-    // https://www.cisco_xr.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
+    // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
 
     String inboundRouteMapName = lpg.getInboundRouteMap();
     String inboundPrefixListName = lpg.getInboundPrefixList();
@@ -836,7 +836,10 @@ public class CiscoXrConversions {
   }
 
   static IkePhase1Policy toIkePhase1Policy(
-      IsakmpProfile isakmpProfile, CiscoXrConfiguration oldConfig, Configuration config, Warnings w) {
+      IsakmpProfile isakmpProfile,
+      CiscoXrConfiguration oldConfig,
+      Configuration config,
+      Warnings w) {
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(isakmpProfile.getName());
 
     ImmutableList.Builder<String> ikePhase1ProposalBuilder = ImmutableList.builder();
@@ -1828,7 +1831,7 @@ public class CiscoXrConversions {
   /**
    * Helper to infer dead interval from configured OSPF settings on an interface. Check explicitly
    * set dead interval, infer from hello interval, or infer from OSPF network type, in that order.
-   * See https://www.cisco_xr.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
+   * See https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
    * for more details.
    */
   @VisibleForTesting
@@ -1851,7 +1854,7 @@ public class CiscoXrConversions {
   /**
    * Helper to infer hello interval from configured OSPF settings on an interface. Check explicitly
    * set hello interval or infer from OSPF network type, in that order. See
-   * https://www.cisco_xr.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
    * more details.
    */
   @VisibleForTesting

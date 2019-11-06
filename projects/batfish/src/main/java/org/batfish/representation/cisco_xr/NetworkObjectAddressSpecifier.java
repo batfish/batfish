@@ -9,7 +9,7 @@ import org.batfish.datamodel.IpSpaceReference;
  * Represents a reference to a named network object.
  *
  * @see <a
- *     href="https://www.cisco_xr.com/c/en/us/td/docs/security/asa/asa90/configuration/guide/asa_90_cli_config/acl_objects.html">ASA
+ *     href="https://www.cisco.com/c/en/us/td/docs/security/asa/asa90/configuration/guide/asa_90_cli_config/acl_objects.html">ASA
  *     documentation</a>
  * @see NetworkObjectGroupAddressSpecifier
  */

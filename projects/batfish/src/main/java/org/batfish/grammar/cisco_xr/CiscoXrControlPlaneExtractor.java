@@ -4647,7 +4647,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
     // Note: Mutually exclusive with Prefix_list_bgp_tail
-    // https://www.cisco_xr.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
+    // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
     String name = ctx.list_name.getText();
     int line = ctx.list_name.getStart().getLine();
     CiscoXrStructureUsage usage;
@@ -5807,7 +5807,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.if_switchport_mode_monitor() != null) {
       // This does not actually change the switchport mode, rather it just
       // configures buffer settings. See, e.g.,
-      // https://www.cisco_xr.com/c/en/us/td/docs/switches/datacenter/nexus3000/sw/system_mgmt/503_U5_1/b_3k_System_Mgmt_Config_503_u5_1/b_3k_System_Mgmt_Config_503_u5_1_chapter_010000.html
+      // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3000/sw/system_mgmt/503_U5_1/b_3k_System_Mgmt_Config_503_u5_1/b_3k_System_Mgmt_Config_503_u5_1_chapter_010000.html
       return;
     }
 
@@ -6312,7 +6312,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     if (ctx.ADD_ROUTE() != null) {
       // Adding a route via NAT is not currently supported
-      // https://www.cisco_xr.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
+      // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
       todo(ctx);
     }
     _configuration.getCiscoXrIosNats().add(nat);

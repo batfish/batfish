@@ -11,5 +11,6 @@ public abstract class RoutePolicyPrefixSet implements Serializable {
   public abstract Prefix6SetExpr toPrefix6SetExpr(
       CiscoXrConfiguration cc, Configuration c, Warnings w);
 
-  public abstract PrefixSetExpr toPrefixSetExpr(CiscoXrConfiguration cc, Configuration c, Warnings w);
+  public abstract PrefixSetExpr toPrefixSetExpr(
+      CiscoXrConfiguration cc, Configuration c, Warnings w);
 }
