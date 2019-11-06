@@ -1,7 +1,6 @@
 package org.batfish.question.testfilters;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -15,7 +14,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
@@ -134,12 +132,6 @@ public class TestFiltersAnswerer extends Answerer {
             .map(Entry::getIpSpace)
             .orElse(UniverseIpSpace.INSTANCE);
 
-    int packetLength =
-        Optional.ofNullable(constraints.getPacketLengths())
-            .filter(l -> !l.getSubRanges().isEmpty())
-            .map(l -> l.getSubRanges().iterator().next().getStart())
-            .orElse(DEFAULT_PACKET_LENGTH);
-
     HeaderSpaceToFlow headerSpaceToFlow =
         new HeaderSpaceToFlow(c.getIpSpaces(), FlowPreference.TESTFILTER);
 
@@ -165,7 +157,6 @@ public class TestFiltersAnswerer extends Answerer {
         flowBuilder.setIngressInterface(null);
         flowBuilder.setIngressVrf(
             Configuration.DEFAULT_VRF_NAME); // dummy because Flow needs non-null interface or vrf
-        flowBuilder.setPacketLength(packetLength);
         flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
         setBuilder.add(flowBuilder.build());
       } catch (NoSuchElementException e) {
@@ -185,7 +176,6 @@ public class TestFiltersAnswerer extends Answerer {
             headerSpaceToFlow
                 .getRepresentativeFlow(hsBuilder.setSrcIps(srcIps).build())
                 .get()
-                .setPacketLength(packetLength)
                 .setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
       } catch (NoSuchElementException e) {
         allProblems.add("cannot get a flow from the specifier");

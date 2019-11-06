@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
@@ -23,6 +24,25 @@ public class HeaderSpaceToFlowTest {
 
     assertTrue(flowBuilder.isPresent());
     assertThat(flowBuilder.get().getSrcIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(512));
+  }
+
+  @Test
+  public void testGetRepresentativeFlow_withPacketLength() {
+    HeaderSpaceToFlow headerSpaceToFlow =
+        new HeaderSpaceToFlow(
+            ImmutableMap.of("ipSpace", Ip.parse("1.2.3.4").toIpSpace()),
+            FlowPreference.APPLICATION);
+    Optional<Builder> flowBuilder =
+        headerSpaceToFlow.getRepresentativeFlow(
+            HeaderSpace.builder()
+                .setPacketLengths(ImmutableList.of(SubRange.singleton(20)))
+                .setSrcIps(new IpSpaceReference("ipSpace"))
+                .build());
+
+    assertTrue(flowBuilder.isPresent());
+    assertThat(flowBuilder.get().getSrcIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(20));
   }
 
   @Test
@@ -37,6 +57,7 @@ public class HeaderSpaceToFlowTest {
 
     assertTrue(flowBuilder.isPresent());
     assertThat(flowBuilder.get().getSrcIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(512));
   }
 
   @Test
@@ -57,6 +78,7 @@ public class HeaderSpaceToFlowTest {
     assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.UDP));
     assertThat(flowBuilder.get().getDstPort(), equalTo(1));
     assertThat(flowBuilder.get().getSrcPort(), equalTo(2));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(512));
   }
 
   @Test
@@ -76,6 +98,7 @@ public class HeaderSpaceToFlowTest {
     assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.UDP));
     assertThat(flowBuilder.get().getDstPort(), equalTo(1));
     assertThat(flowBuilder.get().getSrcPort(), equalTo(2));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(512));
   }
 
   @Test
@@ -95,6 +118,7 @@ public class HeaderSpaceToFlowTest {
     assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.TCP));
     assertThat(flowBuilder.get().getDstPort(), equalTo(1));
     assertThat(flowBuilder.get().getSrcPort(), equalTo(2));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(512));
   }
 
   @Test
@@ -114,6 +138,7 @@ public class HeaderSpaceToFlowTest {
     assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.UDP));
     assertThat(flowBuilder.get().getDstPort(), equalTo(NamedPort.HTTP.number()));
     assertThat(flowBuilder.get().getSrcPort(), equalTo(2));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(512));
   }
 
   @Test
@@ -133,6 +158,7 @@ public class HeaderSpaceToFlowTest {
     assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.UDP));
     assertThat(flowBuilder.get().getDstPort(), equalTo(1));
     assertThat(flowBuilder.get().getSrcPort(), equalTo(NamedPort.EPHEMERAL_LOWEST.number()));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(512));
   }
 
   @Test
@@ -151,5 +177,6 @@ public class HeaderSpaceToFlowTest {
     assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.ICMP));
     assertThat(flowBuilder.get().getDstPort(), equalTo(0));
     assertThat(flowBuilder.get().getSrcPort(), equalTo(0));
+    assertThat(flowBuilder.get().getPacketLength(), equalTo(512));
   }
 }
