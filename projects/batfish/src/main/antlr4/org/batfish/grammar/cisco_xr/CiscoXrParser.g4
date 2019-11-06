@@ -3694,7 +3694,6 @@ stanza
    | s_failover
    | s_flow
    | s_flow_sampler_map
-   | s_foundry_mac_access_list
    | s_gatekeeper
    | s_global_port_security
    | s_guest_access_email

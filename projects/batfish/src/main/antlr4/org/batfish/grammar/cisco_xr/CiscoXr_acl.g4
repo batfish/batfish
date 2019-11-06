@@ -940,45 +940,6 @@ s_ethernet_services_tail
    xr_mac_specifier NEWLINE
 ;
 
-s_foundry_mac_access_list
-:
-   ACCESS_LIST num = ACL_NUM_FOUNDRY_L2 action = access_list_action
-   (
-      (
-         src_address = MAC_ADDRESS_LITERAL src_wildcard = MAC_ADDRESS_LITERAL
-      )
-      | src_any = ANY
-   )
-   (
-      (
-         dst_address = MAC_ADDRESS_LITERAL dst_wildcard = MAC_ADDRESS_LITERAL
-      )
-      | dst_any = ANY
-   )
-   (
-      vlan = DEC
-      | vlan_any = ANY
-   )
-   (
-      (
-         ETYPE etype
-      )
-      | LOG_ENABLE
-      |
-      (
-         PRIORITY priority = DEC
-      )
-      |
-      (
-         PRIORITY_FORCE priority_force = DEC
-      )
-      |
-      (
-         PRIORITY_MAPPING priority_mapping = DEC
-      )
-   )* NEWLINE
-;
-
 s_ip_access_list_eth
 :
    IP ACCESS_LIST ETH name = variable NEWLINE

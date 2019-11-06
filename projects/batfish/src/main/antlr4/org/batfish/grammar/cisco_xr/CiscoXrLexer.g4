@@ -9,7 +9,6 @@ tokens {
    ACL_NUM_EXTENDED,
    ACL_NUM_EXTENDED_IPX,
    ACL_NUM_EXTENDED_MAC,
-   ACL_NUM_FOUNDRY_L2,
    ACL_NUM_IPX,
    ACL_NUM_IPX_SAP,
    ACL_NUM_MAC,
@@ -14482,9 +14481,6 @@ ACL_NUM
 	else if (200 <= val && val <= 299) {
 		_type = ACL_NUM_PROTOCOL_TYPE_CODE;
 	}
-   else if (isFoundry() && 400 <= val && val <= 1399) {
-      _type = ACL_NUM_FOUNDRY_L2;
-   }
 	else if (600 <= val && val <= 699) {
 		_type = ACL_NUM_APPLETALK;
 	}
