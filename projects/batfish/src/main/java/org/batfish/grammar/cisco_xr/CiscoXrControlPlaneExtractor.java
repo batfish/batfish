@@ -7,7 +7,6 @@ import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ACCESS_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_AF_GROUP;
@@ -69,7 +68,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIG
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
@@ -508,7 +506,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_ipv6_access_list_stan
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Failover_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Failover_linkContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Filter_list_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Flan_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Flan_unitContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hash_commentContext;
@@ -588,8 +585,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ios_banner_headerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ios_delimited_bannerContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_as_path_access_list_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_as_path_access_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_domain_nameContext;
@@ -963,8 +958,6 @@ import org.batfish.representation.cisco_xr.InspectClassMapProtocol;
 import org.batfish.representation.cisco_xr.InspectPolicyMap;
 import org.batfish.representation.cisco_xr.InspectPolicyMapInspectClass;
 import org.batfish.representation.cisco_xr.Interface;
-import org.batfish.representation.cisco_xr.IpAsPathAccessList;
-import org.batfish.representation.cisco_xr.IpAsPathAccessListLine;
 import org.batfish.representation.cisco_xr.IpBgpPeerGroup;
 import org.batfish.representation.cisco_xr.IpsecProfile;
 import org.batfish.representation.cisco_xr.IpsecTransformSet;
@@ -1242,8 +1235,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
-
-  private IpAsPathAccessList _currentAsPathAcl;
 
   private final Set<String> _currentBlockNeighborAddressFamilies;
 
@@ -2207,14 +2198,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     Interface iface = getOrAddInterface(ctx.iname);
     iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
     _currentIsisInterface = iface;
-  }
-
-  @Override
-  public void enterIp_as_path_access_list_stanza(Ip_as_path_access_list_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    _currentAsPathAcl =
-        _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
-    _configuration.defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -4637,18 +4620,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitFilter_list_bgp_tail(Filter_list_bgp_tailContext ctx) {
-    String filterList = ctx.num.getText();
-    _configuration.referenceStructure(
-        AS_PATH_ACCESS_LIST,
-        filterList,
-        BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
-        ctx.getStart().getLine());
-    // TODO: Handle filter-list in batfish
-    todo(ctx);
-  }
-
-  @Override
   public void exitFlan_interface(Flan_interfaceContext ctx) {
     String alias = ctx.name.getText();
     String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
@@ -5357,19 +5328,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitInterface_is_stanza(Interface_is_stanzaContext ctx) {
     _currentIsisInterface = null;
-  }
-
-  @Override
-  public void exitIp_as_path_access_list_stanza(Ip_as_path_access_list_stanzaContext ctx) {
-    _currentAsPathAcl = null;
-  }
-
-  @Override
-  public void exitIp_as_path_access_list_tail(Ip_as_path_access_list_tailContext ctx) {
-    LineAction action = toLineAction(ctx.action);
-    String regex = ctx.as_path_regex.getText().trim();
-    IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
-    _currentAsPathAcl.addLine(line);
   }
 
   @Override

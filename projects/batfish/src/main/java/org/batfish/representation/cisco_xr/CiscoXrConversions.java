@@ -685,14 +685,6 @@ public class CiscoXrConversions {
     return new AsPathAccessList(asPathSet.getName(), lines);
   }
 
-  static AsPathAccessList toAsPathAccessList(IpAsPathAccessList pathList) {
-    List<AsPathAccessListLine> lines =
-        pathList.getLines().stream()
-            .map(IpAsPathAccessListLine::toAsPathAccessListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new AsPathAccessList(pathList.getName(), lines);
-  }
-
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())

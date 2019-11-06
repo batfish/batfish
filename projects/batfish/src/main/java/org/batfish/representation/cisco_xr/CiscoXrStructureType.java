@@ -4,7 +4,6 @@ import org.batfish.vendor.StructureType;
 
 public enum CiscoXrStructureType implements StructureType {
   ACCESS_LIST("acl"),
-  AS_PATH_ACCESS_LIST("as-path access-list"),
   AS_PATH_SET("as-path-set"),
   BFD_TEMPLATE("bfd-template"),
   BGP_AF_GROUP("bgp af-group"),

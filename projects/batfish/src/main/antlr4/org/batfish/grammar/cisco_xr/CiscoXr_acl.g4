@@ -402,25 +402,6 @@ interface_rs_stanza
    INTERFACE name = interface_name NEWLINE irs_stanza*
 ;
 
-ip_as_path_access_list_stanza
-:
-   IP AS_PATH ACCESS_LIST name = variable
-   (
-      ip_as_path_access_list_tail
-      |
-      (
-         NEWLINE ip_as_path_access_list_tail*
-      )
-   )
-;
-
-ip_as_path_access_list_tail
-:
-   (
-      SEQ DEC
-   )? action = access_list_action as_path_regex = RAW_TEXT NEWLINE
-;
-
 ip_prefix_list_stanza
 :
    (

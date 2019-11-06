@@ -353,8 +353,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return output;
   }
 
-  private final Map<String, IpAsPathAccessList> _asPathAccessLists;
-
   private final Map<String, AsPathSet> _asPathSets;
 
   private final CiscoXrFamily _cf;
@@ -474,7 +472,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private Map<String, XrCommunitySet> _communitySets;
 
   public CiscoXrConfiguration() {
-    _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
     _cf = new CiscoXrFamily();
     _communitySets = new TreeMap<>();
@@ -572,10 +569,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
             new SetOrigin(new LiteralOrigin(originType, null))));
     return we;
-  }
-
-  public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
-    return _asPathAccessLists;
   }
 
   public Map<String, AsPathSet> getAsPathSets() {
@@ -2227,12 +2220,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getVrfs().get(snmpServerVrf).setSnmpServer(_snmpServer);
     }
 
-    // convert as path access lists to vendor independent format
-    for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
-      AsPathAccessList apList = CiscoXrConversions.toAsPathAccessList(pathList);
-      c.getAsPathAccessLists().put(apList.getName(), apList);
-    }
-
     // convert as-path-sets to vendor independent format
     for (AsPathSet asPathSet : _asPathSets.values()) {
       AsPathAccessList apList = CiscoXrConversions.toAsPathAccessList(asPathSet);
@@ -2749,7 +2736,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoXrStructureType.VXLAN);
 
     markConcreteStructure(CiscoXrStructureType.NAT_POOL);
-    markConcreteStructure(CiscoXrStructureType.AS_PATH_ACCESS_LIST);
 
     markConcreteStructure(CiscoXrStructureType.AS_PATH_SET);
 

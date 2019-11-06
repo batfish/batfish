@@ -307,15 +307,6 @@ empty_neighbor_block_address_family
    address_family_header address_family_footer
 ;
 
-filter_list_bgp_tail
-:
-   FILTER_LIST num = DEC
-   (
-      IN
-      | OUT
-   ) NEWLINE
-;
-
 inherit_peer_policy_bgp_tail
 :
    INHERIT PEER_POLICY name = variable_permissive num = DEC? NEWLINE
