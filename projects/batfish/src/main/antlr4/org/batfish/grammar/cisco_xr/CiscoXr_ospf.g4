@@ -142,14 +142,7 @@ ro_default_information
          METRIC_TYPE metric_type = DEC
       )
       | ALWAYS
-      |
-      (
-         ROUTE_MAP map = VARIABLE
-      )
-      |
-      (
-         ROUTE_POLICY policy = VARIABLE
-      )
+      | ROUTE_POLICY policy = VARIABLE
       | TAG DEC
    )* NEWLINE
 ;
@@ -169,7 +162,6 @@ ro_distribute_list
   DISTRIBUTE_LIST
   (
     PREFIX
-    | ROUTE_MAP
   )? name = variable_distribute_list
   (
     IN
@@ -334,10 +326,6 @@ ro_redistribute_bgp_cisco_xr
       (
          METRIC_TYPE type = DEC
       )
-      |
-      (
-         ROUTE_MAP map = VARIABLE
-      )
       | subnets = SUBNETS
       |
       (
@@ -361,11 +349,7 @@ ro_redistribute_connected
       (
          METRIC_TYPE type = DEC
       )
-      |
-      (
-         ROUTE_MAP map = VARIABLE
-         | ROUTE_POLICY policy = VARIABLE
-      )
+      | ROUTE_POLICY policy = VARIABLE
       | subnets = SUBNETS
       |
       (
@@ -380,7 +364,6 @@ ro_redistribute_eigrp
    (
       METRIC metric = DEC
       | METRIC_TYPE type = DEC
-      | ROUTE_MAP map = variable
       | SUBNETS
    )* NEWLINE
 ;
@@ -406,11 +389,7 @@ ro_redistribute_static
       (
          METRIC_TYPE type = DEC
       )
-      |
-      (
-         ROUTE_MAP map = VARIABLE
-         | ROUTE_POLICY policy = VARIABLE
-      )
+      | ROUTE_POLICY policy = VARIABLE
       | subnets = SUBNETS
       |
       (

@@ -22,15 +22,8 @@ ip_pim_tail
 pim_accept_register
 :
    ACCEPT_REGISTER
-   (
-      (
-         LIST name = variable
-      )
-      |
-      (
-         ROUTE_MAP name = variable
-      )
-   ) NEWLINE
+   (LIST name = variable)
+   NEWLINE
 ;
 
 pim_accept_rp

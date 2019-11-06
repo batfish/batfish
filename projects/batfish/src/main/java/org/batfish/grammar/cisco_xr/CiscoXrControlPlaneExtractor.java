@@ -54,7 +54,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LI
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_OBJECT;
@@ -62,14 +61,9 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_O
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_PREFIX_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_ROUTE6_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INHERITED_PEER_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INHERITED_SESSION;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
@@ -79,30 +73,17 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIG
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_STATEMENT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_RIP_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ROUTE_MAP_ADVERTISE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_SESSION_GROUP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
@@ -128,13 +109,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DOMAIN_L
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_AF_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_PASSIVE_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
@@ -155,14 +129,11 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IP_VRF_SITEMAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_STANDBY_TRACK;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
@@ -187,19 +158,11 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF6_DI
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_AREA_FILTER_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_AREA_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_ACCEPT_REGISTER_ACL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_ACCEPT_RP_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_RP_ADDRESS_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_RP_ANNOUNCE_FILTER;
@@ -419,7 +382,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Additional_paths_rb_stanzaCont
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Additional_paths_selection_xr_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Address_family_headerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Address_family_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Advertise_map_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Af_group_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aggregate_address_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Allowas_in_bgp_tailContext;
@@ -581,14 +543,12 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_passive_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_shutdownContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_pim_neighbor_filterContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_isisContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_vrf_forwardingContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_isis_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_mtuContext;
@@ -783,7 +743,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Redistribute_aggregate_bgp_tai
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Redistribute_connected_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Redistribute_connected_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Redistribute_ospf_bgp_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Redistribute_ospfv3_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Redistribute_rip_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Redistribute_static_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Redistribute_static_is_stanzaContext;
@@ -818,7 +777,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_map_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_reflector_client_bgp_tailContext;
@@ -947,7 +905,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ts_hostContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.U_passwordContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.U_roleContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Uint32Context;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Unsuppress_map_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Update_source_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Use_af_group_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Use_neighbor_group_bgp_tailContext;
@@ -2368,12 +2325,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       long remoteAs = toAsNum(ctx.bgp_asn());
       _currentPeerGroup.setRemoteAs(remoteAs);
     }
-    if (ctx.mapname != null) {
-      String routeMap = ctx.mapname.getText();
-      int line = ctx.mapname.getStart().getLine();
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, line);
-    }
     _currentPeerGroup.setActive(true);
     _currentPeerGroup.setShutdown(false);
   }
@@ -3664,21 +3615,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitAdvertise_map_bgp_tail(Advertise_map_bgp_tailContext ctx) {
-    // TODO: https://github.com/batfish/batfish/issues/1836
-    warn(ctx, "BGP advertise-map is not currently supported");
-    String advertiseMapName = ctx.am_name.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, advertiseMapName, BGP_ROUTE_MAP_ADVERTISE, ctx.am_name.getStart().getLine());
-    if (ctx.em_name != null) {
-      warn(ctx, "BGP exist-map is not currently supported");
-      String existMapName = ctx.em_name.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, existMapName, BGP_ADVERTISE_MAP_EXIST_MAP, ctx.em_name.getStart().getLine());
-    }
-  }
-
-  @Override
   public void exitAf_group_rb_stanza(Af_group_rb_stanzaContext ctx) {
     resetPeerGroups();
     popPeer();
@@ -3706,12 +3642,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         BgpAggregateIpv4Network net = new BgpAggregateIpv4Network(prefix);
         net.setAsSet(asSet);
         net.setSummaryOnly(summaryOnly);
-        if (ctx.mapname != null) {
-          String mapName = ctx.mapname.getText();
-          net.setAttributeMap(mapName);
-          _configuration.referenceStructure(
-              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
-        } else if (ctx.rp != null) {
+        if (ctx.rp != null) {
           String policyName = ctx.rp.getText();
           net.setAttributeMap(policyName);
           _configuration.referenceStructure(
@@ -3724,12 +3655,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         BgpAggregateIpv6Network net = new BgpAggregateIpv6Network(prefix6);
         net.setAsSet(asSet);
         net.setSummaryOnly(summaryOnly);
-        if (ctx.mapname != null) {
-          String mapName = ctx.mapname.getText();
-          net.setAttributeMap(mapName);
-          _configuration.referenceStructure(
-              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
-        }
         proc.getAggregateIpv6Networks().put(prefix6, net);
       }
     } else if (_currentIpPeerGroup != null
@@ -3738,11 +3663,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         || _currentDynamicIpv6PeerGroup != null
         || _currentNamedPeerGroup != null) {
       throw new BatfishException("unexpected occurrence in peer group/neighbor context");
-
-    } else if (ctx.mapname != null) {
-      String map = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, ctx.mapname.getStart().getLine());
     }
   }
 
@@ -4183,12 +4103,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitDefault_originate_bgp_tail(Default_originate_bgp_tailContext ctx) {
     _currentPeerGroup.setDefaultOriginate(true);
-    if (ctx.map != null) {
-      String mapName = ctx.map.getText();
-      _currentPeerGroup.setDefaultOriginateMap(mapName);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.map.getStart().getLine());
-    }
   }
 
   @Override
@@ -5059,17 +4973,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_policy(If_ip_policyContext ctx) {
-    String policyName = ctx.name.getText();
-    warn(ctx, "PBR is not supported");
-    //    for (Interface currentInterface : _currentInterfaces) {
-    //      currentInterface.setRoutingPolicy(policyName);
-    //    }
-    _configuration.referenceStructure(
-        ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, ctx.name.getLine());
-  }
-
-  @Override
   public void exitIf_ip_proxy_arp(If_ip_proxy_arpContext ctx) {
     boolean enabled = ctx.NO() == null;
     for (Interface currentInterface : _currentInterfaces) {
@@ -5102,13 +5005,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitIf_ip_summary_address(If_ip_summary_addressContext ctx) {
-    if (ctx.LEAK_MAP() != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP,
-          ctx.mapname.getText(),
-          INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
-          ctx.mapname.getStart().getLine());
-    }
     todo(ctx);
   }
 
@@ -5129,13 +5025,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       currentInterface.setVrf(name);
       initVrf(name);
     }
-  }
-
-  @Override
-  public void exitIf_ip_vrf_sitemap(If_ip_vrf_sitemapContext ctx) {
-    String map = ctx.map.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, map, INTERFACE_IP_VRF_SITEMAP, ctx.map.getStart().getLine());
   }
 
   @Override
@@ -6140,11 +6029,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     String map = null;
     Integer mapLine = null;
-    if (ctx.mapname != null) {
-      map = ctx.mapname.getText();
-      mapLine = ctx.mapname.getStart().getLine();
-      _configuration.referenceStructure(ROUTE_MAP, map, BGP_NETWORK_ORIGINATION_ROUTE_MAP, mapLine);
-    }
     BgpNetwork bgpNetwork = new BgpNetwork(map, mapLine);
     BgpProcess proc = currentVrf().getBgpProcess();
     proc.getIpNetworks().put(prefix, bgpNetwork);
@@ -6155,12 +6039,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     Prefix6 prefix6 = Prefix6.parse(ctx.prefix.getText());
     String map = null;
     Integer mapLine = null;
-    if (ctx.mapname != null) {
-      map = ctx.mapname.getText();
-      mapLine = ctx.mapname.getStart().getLine();
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_NETWORK6_ORIGINATION_ROUTE_MAP, mapLine);
-    }
     BgpProcess proc = currentVrf().getBgpProcess();
     BgpNetwork6 bgpNetwork6 = new BgpNetwork6(map, mapLine);
     proc.getIpv6Networks().put(prefix6, bgpNetwork6);
@@ -6258,16 +6136,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     long as = toAsNum(ctx.asn);
     r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, as);
 
-    if (!ctx.METRIC().isEmpty()) {
+    if (ctx.metric != null) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_BGP_MAP, mapLine);
     }
   }
 
@@ -6282,17 +6152,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
-    if (!ctx.METRIC().isEmpty()) {
+    if (ctx.metric != null) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_CONNECTED_MAP, mapLine);
     }
   }
 
@@ -6309,26 +6170,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     long asn = toLong(ctx.asn);
     r.getSpecialAttributes().put(EigrpRedistributionPolicy.EIGRP_AS_NUMBER, asn);
 
-    if (!ctx.METRIC().isEmpty()) {
+    if (ctx.metric != null) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_EIGRP_MAP, mapLine);
     }
   }
 
   @Override
   public void exitRe_redistribute_isis(Re_redistribute_isisContext ctx) {
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_ISIS_MAP, ctx.map.getStart().getLine());
-    }
     _w.addWarning(
         ctx, getFullText(ctx), _parser, "ISIS redistribution in EIGRP is not implemented");
   }
@@ -6353,14 +6201,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
     }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_OSPF_MAP, mapLine);
-    }
   }
 
   @Override
@@ -6374,16 +6214,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
-    if (!ctx.METRIC().isEmpty()) {
+    if (ctx.metric != null) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_RIP_MAP, mapLine);
     }
   }
 
@@ -6398,16 +6230,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
-    if (!ctx.METRIC().isEmpty()) {
+    if (ctx.metric != null) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, mapLine);
     }
   }
 
@@ -6671,11 +6495,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitPim_accept_register(Pim_accept_registerContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    if (ctx.LIST() != null) {
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_ACCEPT_REGISTER_ACL, line);
-    } else if (ctx.ROUTE_MAP() != null) {
-      _configuration.referenceStructure(ROUTE_MAP, name, PIM_ACCEPT_REGISTER_ROUTE_MAP, line);
-    }
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_ACCEPT_REGISTER_ACL, line);
   }
 
   @Override
@@ -6940,13 +6760,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
       }
-      if (ctx.map != null) {
-        String map = ctx.map.getText();
-        int mapLine = ctx.map.getStart().getLine();
-        r.setRouteMap(map);
-        r.setRouteMapLine(mapLine);
-        _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_CONNECTED_MAP, mapLine);
-      }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
     }
@@ -6989,13 +6802,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
       }
-      if (ctx.map != null) {
-        String map = ctx.map.getText();
-        int mapLine = ctx.map.getStart().getLine();
-        r.setRouteMap(map);
-        r.setRouteMapLine(mapLine);
-        _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPF_MAP, mapLine);
-      }
       if (ctx.MATCH() != null) {
         todo(ctx);
       }
@@ -7005,15 +6811,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
-    }
-  }
-
-  @Override
-  public void exitRedistribute_ospfv3_bgp_tail(Redistribute_ospfv3_bgp_tailContext ctx) {
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPFV3_MAP, mapLine);
     }
   }
 
@@ -7028,13 +6825,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-        String map = ctx.map.getText();
-        int mapLine = ctx.map.getStart().getLine();
-        r.setRouteMap(map);
-        r.setRouteMapLine(mapLine);
-        _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_RIP_MAP, mapLine);
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
@@ -7052,13 +6842,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       if (ctx.metric != null) {
         long metric = toLong(ctx.metric);
         r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-        String map = ctx.map.getText();
-        int mapLine = ctx.map.getStart().getLine();
-        r.setRouteMap(map);
-        r.setRouteMapLine(mapLine);
-        _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_STATIC_MAP, mapLine);
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
@@ -7183,13 +6966,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       OspfMetricType metricType = OspfMetricType.fromInteger(metricTypeInt);
       proc.setDefaultInformationMetricType(metricType);
     }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      int line = ctx.map.getLine();
-      proc.setDefaultInformationOriginateMap(map);
-      proc.setDefaultInformationOriginateMapLine(line);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_DEFAULT_ORIGINATE_ROUTE_MAP, line);
-    }
   }
 
   @Override
@@ -7238,11 +7014,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       type = PREFIX_LIST;
       filterType = DistributeListFilterType.PREFIX_LIST;
       usage = in ? OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN : OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-    } else if (ctx.ROUTE_MAP() != null) {
-      filterType = DistributeListFilterType.ROUTE_MAP;
-      type = ROUTE_MAP;
-      usage = in ? OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN : OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
-      todo(ctx);
     } else {
       filterType = DistributeListFilterType.ACCESS_LIST;
       type = IP_ACCESS_LIST;
@@ -7344,13 +7115,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
     }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
-      r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, mapLine);
-    }
     if (ctx.type != null) {
       int typeInt = toInteger(ctx.type);
       OspfMetricType type = OspfMetricType.fromInteger(typeInt);
@@ -7374,13 +7138,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
-    }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
-      r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_CONNECTED_MAP, mapLine);
     }
     if (ctx.type != null) {
       int typeInt = toInteger(ctx.type);
@@ -7415,13 +7172,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
     }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_EIGRP_MAP, mapLine);
-    }
     r.setOnlyClassfulRoutes(ctx.SUBNETS().isEmpty() && !ospfRedistributeSubnetsByDefault(_format));
   }
 
@@ -7439,13 +7189,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
-    }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
-      r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_STATIC_MAP, mapLine);
     }
     if (ctx.type != null) {
       int typeInt = toInteger(ctx.type);
@@ -7522,36 +7265,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.ENABLE() != null) {
       _currentOspfProcess.getPassiveInterfaces().add(_currentOspfInterface);
     }
-  }
-
-  @Override
-  public void exitRoute_map_bgp_tail(Route_map_bgp_tailContext ctx) {
-    if (_currentPeerGroup == null) {
-      return;
-    }
-    String mapName = ctx.name.getText();
-    boolean ipv6 = _inIpv6BgpPeer || _currentIpv6PeerGroup != null;
-    CiscoXrStructureUsage usage;
-    if (ctx.IN() != null) {
-      if (ipv6) {
-        _currentPeerGroup.setInboundRoute6Map(mapName);
-        usage = BGP_INBOUND_ROUTE6_MAP;
-      } else {
-        _currentPeerGroup.setInboundRouteMap(mapName);
-        usage = BGP_INBOUND_ROUTE_MAP;
-      }
-    } else if (ctx.OUT() != null) {
-      if (ipv6) {
-        _currentPeerGroup.setOutboundRoute6Map(mapName);
-        usage = BGP_OUTBOUND_ROUTE6_MAP;
-      } else {
-        _currentPeerGroup.setOutboundRouteMap(mapName);
-        usage = BGP_OUTBOUND_ROUTE_MAP;
-      }
-    } else {
-      throw new BatfishException("bad direction");
-    }
-    _configuration.referenceStructure(ROUTE_MAP, mapName, usage, ctx.getStart().getLine());
   }
 
   @Override
@@ -8255,14 +7968,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitU_role(U_roleContext ctx) {
     String role = ctx.role.getText();
     _currentUser.setRole(role);
-  }
-
-  @Override
-  public void exitUnsuppress_map_bgp_tail(Unsuppress_map_bgp_tailContext ctx) {
-    String name = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_ROUTE_MAP_UNSUPPRESS, ctx.getStart().getLine());
-    warn(ctx, "BGP unusuppress-map is not currently supported");
   }
 
   @Override

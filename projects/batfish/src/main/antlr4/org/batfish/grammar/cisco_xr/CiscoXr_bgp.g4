@@ -88,14 +88,7 @@ aggregate_address_rb_stanza
   (
     as_set = AS_SET
     | summary_only = SUMMARY_ONLY
-    |
-    (
-      ATTRIBUTE_MAP mapname = variable
-    )
-    |
-    (
-      ROUTE_POLICY rp = variable
-    )
+    | ROUTE_POLICY rp = variable
   )* NEWLINE
 ;
 
@@ -130,10 +123,6 @@ advertise_bgp_tail
    ADVERTISE ADDITIONAL_PATHS ALL NEWLINE
 ;
 
-advertise_map_bgp_tail
-:
-  ADVERTISE_MAP am_name = variable EXIST_MAP em_name = variable NEWLINE
-;
 
 allowas_in_bgp_tail
 :
@@ -207,7 +196,6 @@ bgp_tail
 :
    activate_bgp_tail
    | advertise_bgp_tail
-   | advertise_map_bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
    | cluster_id_bgp_tail
@@ -236,14 +224,12 @@ bgp_tail
    | redistribute_rip_bgp_tail
    | redistribute_static_bgp_tail
    | remove_private_as_bgp_tail
-   | route_map_bgp_tail
    | route_policy_bgp_tail
    | route_reflector_client_bgp_tail
    | router_id_bgp_tail
    | send_community_bgp_tail
    | shutdown_bgp_tail
    | subnet_bgp_tail
-   | unsuppress_map_bgp_tail
    | update_source_bgp_tail
    | weight_bgp_tail
 ;
@@ -281,11 +267,7 @@ default_metric_bgp_tail
 
 default_originate_bgp_tail
 :
-   DEFAULT_ORIGINATE
-   (
-      ROUTE_MAP map = variable
-      | ROUTE_POLICY policy = VARIABLE
-   )? NEWLINE
+   DEFAULT_ORIGINATE (ROUTE_POLICY policy = VARIABLE)? NEWLINE
 ;
 
 default_shutdown_bgp_tail
@@ -403,9 +385,7 @@ locals
    (
       REMOTE_AS asnum = bgp_asn
    )?
-   (
-      REMOTE_AS ROUTE_MAP mapname = variable
-   )? NEWLINE
+   NEWLINE
    (
       bgp_tail
       | no_shutdown_rb_stanza
@@ -464,9 +444,6 @@ network_bgp_tail
       | prefix = IP_PREFIX
    )?
    (
-      ROUTE_MAP mapname = variable
-   )?
-   (
       ROUTE_POLICY policyname = VARIABLE
    )? NEWLINE
 ;
@@ -474,9 +451,6 @@ network_bgp_tail
 network6_bgp_tail
 :
    NETWORK prefix = IPV6_PREFIX
-   (
-      ROUTE_MAP mapname = variable
-   )?
    (
       ROUTE_POLICY policyname = VARIABLE
    )? NEWLINE
@@ -731,23 +705,6 @@ remove_private_as_bgp_tail
    REMOVE_PRIVATE_AS ALL? NEWLINE
 ;
 
-route_map_bgp_tail
-:
-   ROUTE_MAP
-   (
-      name = variable
-      (
-         IN
-         | OUT
-      )
-      |
-      (
-         IN
-         | OUT
-      ) name = variable
-   ) NEWLINE
-;
-
 route_policy_bgp_tail
 :
    ROUTE_POLICY name = variable
@@ -778,13 +735,7 @@ redistribute_connected_bgp_tail
       | DIRECT
    )
    (
-      (
-         ROUTE_MAP map = variable
-      )
-      |
-      (
-         ROUTE_POLICY policy = variable
-      )
+      ROUTE_POLICY policy = variable
       |
       (
          METRIC metric = DEC
@@ -801,10 +752,6 @@ redistribute_ospf_bgp_tail
 :
    REDISTRIBUTE OSPF (procname = variable)?
    (
-      (
-         ROUTE_MAP map = variable
-      )
-      |
       (
          METRIC metric = DEC
       )
@@ -824,10 +771,6 @@ redistribute_ospfv3_bgp_tail
    REDISTRIBUTE (OSPFV3 | OSPF3) (procname = variable)?
    (
       (
-         ROUTE_MAP map = variable
-      )
-      |
-      (
          METRIC metric = DEC
       )
       |
@@ -846,10 +789,6 @@ redistribute_rip_bgp_tail
    REDISTRIBUTE RIP
    (
       (
-         ROUTE_MAP map = variable
-      )
-      |
-      (
          METRIC metric = DEC
       )
    )* NEWLINE
@@ -859,10 +798,6 @@ redistribute_static_bgp_tail
 :
    REDISTRIBUTE STATIC
    (
-      (
-         ROUTE_MAP map = variable
-      )
-      |
       (
          ROUTE_POLICY policy = VARIABLE
       )
@@ -993,11 +928,6 @@ template_peer_session_rb_stanza
    (
       EXIT_PEER_SESSION NEWLINE
    )?
-;
-
-unsuppress_map_bgp_tail
-:
-    UNSUPPRESS_MAP mapname = variable_permissive NEWLINE
 ;
 
 update_source_bgp_tail

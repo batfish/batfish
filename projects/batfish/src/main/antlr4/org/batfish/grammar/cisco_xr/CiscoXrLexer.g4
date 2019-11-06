@@ -13362,11 +13362,6 @@ UNSET
    'unset'
 ;
 
-UNSUPPRESS_MAP
-:
-   'unsuppress-map'
-;
-
 UNSUPPRESS_ROUTE
 :
    'unsuppress-route'

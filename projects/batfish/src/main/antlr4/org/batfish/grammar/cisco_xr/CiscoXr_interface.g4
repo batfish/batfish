@@ -381,11 +381,6 @@ if_ip_pim_neighbor_filter
    IP PIM NEIGHBOR_FILTER acl = variable NEWLINE
 ;
 
-if_ip_policy
-:
-   IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
-;
-
 if_ip_proxy_arp
 :
    (NO | DEFAULT)? IP PROXY_ARP NEWLINE
@@ -420,7 +415,7 @@ if_ip_summary_address
       addr = IP_ADDRESS netmask = IP_ADDRESS
       | prefix = IP_PREFIX
    )
-   (LEAK_MAP mapname = variable)? NEWLINE
+   NEWLINE
 ;
 
 if_ip_tcp
@@ -498,11 +493,6 @@ if_ip_vrf_receive
 if_ip_vrf_select
 :
    IP VRF SELECT SOURCE NEWLINE
-;
-
-if_ip_vrf_sitemap
-:
-   IP VRF SITEMAP map = variable NEWLINE
 ;
 
 if_ipv6
@@ -1668,7 +1658,6 @@ if_inner
    | if_ip_ospf_shutdown
    | if_ip_passive_interface_eigrp
    | if_ip_pim_neighbor_filter
-   | if_ip_policy
    | if_ip_router_isis
    | if_ip_router_ospf_area
    | if_ip_rtp
@@ -1680,7 +1669,6 @@ if_inner
    | if_ip_vrf_forwarding
    | if_ip_vrf_receive
    | if_ip_vrf_select
-   | if_ip_vrf_sitemap
    | if_ipv6
    | if_isis_circuit_type
    | if_isis_enable

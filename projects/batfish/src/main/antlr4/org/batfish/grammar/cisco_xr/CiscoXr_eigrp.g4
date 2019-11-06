@@ -101,29 +101,17 @@ re_redistribute
 
 re_redistribute_bgp
 :
-   REDISTRIBUTE BGP asn = bgp_asn
-   (
-      METRIC metric = eigrp_metric
-      | ROUTE_MAP map = variable
-   )* NEWLINE
+   REDISTRIBUTE BGP asn = bgp_asn (METRIC metric = eigrp_metric)? NEWLINE
 ;
 
 re_redistribute_connected
 :
-   REDISTRIBUTE CONNECTED
-   (
-      METRIC metric = eigrp_metric
-      | ROUTE_MAP map = variable
-   )* NEWLINE
+   REDISTRIBUTE CONNECTED (METRIC metric = eigrp_metric)? NEWLINE
 ;
 
 re_redistribute_eigrp
 :
-   REDISTRIBUTE EIGRP asn = DEC
-   (
-      METRIC metric = eigrp_metric
-      | ROUTE_MAP map = variable
-   )* NEWLINE
+   REDISTRIBUTE EIGRP asn = DEC (METRIC metric = eigrp_metric)? NEWLINE
 ;
 
 re_redistribute_isis
@@ -134,7 +122,6 @@ re_redistribute_isis
       | LEVEL_1_2
       | LEVEL_2
       | METRIC metric = eigrp_metric
-      | ROUTE_MAP map = variable
    )* NEWLINE
 ;
 
@@ -144,26 +131,17 @@ re_redistribute_ospf
    (
       MATCH ospf_route_type+
       | METRIC metric = eigrp_metric
-      | ROUTE_MAP map = variable
    )* NEWLINE
 ;
 
 re_redistribute_rip
 :
-   REDISTRIBUTE RIP
-   (
-      METRIC metric = eigrp_metric
-      | ROUTE_MAP map = variable
-   )* NEWLINE
+   REDISTRIBUTE RIP (METRIC metric = eigrp_metric)? NEWLINE
 ;
 
 re_redistribute_static
 :
-   REDISTRIBUTE STATIC
-   (
-      METRIC metric = eigrp_metric
-      | ROUTE_MAP map = variable
-   )* NEWLINE
+   REDISTRIBUTE STATIC (METRIC metric = eigrp_metric)? NEWLINE
 ;
 
 re_topology_base

@@ -57,8 +57,6 @@ public enum CiscoXrStructureType implements StructureType {
   PROTOCOL_OBJECT("object protocol"),
   PROTOCOL_OBJECT_GROUP("object-group protocol"),
   PROTOCOL_OR_SERVICE_OBJECT_GROUP("object-group protocol or service"),
-  ROUTE_MAP("route-map"),
-  ROUTE_MAP_CLAUSE("route-map-clause"),
   ROUTE_POLICY("route-policy"),
   SERVICE_CLASS("cable service-class"),
   SERVICE_OBJECT("object service"),
