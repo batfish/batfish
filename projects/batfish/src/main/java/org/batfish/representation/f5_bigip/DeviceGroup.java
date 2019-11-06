@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType;
 
 /** Centralized management device-group */
 public final class DeviceGroup implements Serializable {
