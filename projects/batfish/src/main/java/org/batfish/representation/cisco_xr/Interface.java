@@ -261,18 +261,6 @@ public class Interface implements Serializable {
     _secondaryAddresses = new LinkedHashSet<>();
     ConfigurationFormat vendor = c.getVendor();
 
-    // Proxy-ARP defaults
-    switch (vendor) {
-      case CISCO_ASA:
-      case CISCO_IOS:
-        setProxyArp(true);
-        break;
-
-        // $CASES-OMITTED$
-      default:
-        break;
-    }
-
     // Switchport defaults
     _switchportMode = SwitchportMode.NONE;
     _switchport = false;

@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
-import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_ACCESS_LIST;
@@ -1973,10 +1972,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       Logging logging = new Logging();
       logging.setOn(true);
       _configuration.getCf().setLogging(logging);
-    } else if (_format == CISCO_ASA) {
-      // serial line may not be anywhere in the config so add it here to make sure the serial line
-      // is in the data model
-      _configuration.getCf().getLines().computeIfAbsent(SERIAL_LINE, Line::new);
     }
   }
 
@@ -4860,9 +4855,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       if (ctx.wildcard != null) {
         // IP and mask
         Ip wildcard = toIp(ctx.wildcard);
-        if (_format == CISCO_ASA) {
-          wildcard = wildcard.inverted();
-        }
         return new WildcardAddressSpecifier(IpWildcard.ipWithWildcardMask(toIp(ctx.ip), wildcard));
       } else {
         // Just IP. Same as if 'host' was specified
@@ -5134,7 +5126,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIf_channel_group(If_channel_groupContext ctx) {
     int num = toInteger(ctx.num);
-    String name = computeAggregatedInterfaceName(num, _format);
+    String name = String.format("Bundle-Ethernet%d", num);
     _currentInterfaces.forEach(i -> i.setChannelGroup(name));
   }
 
@@ -5152,23 +5144,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       newDelayPs = toLong(ctx.DEC()) * 10_000_000;
     }
     _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
-  }
-
-  private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
-    switch (format) {
-      case CISCO_ASA:
-      case ARISTA:
-      case FORCE10:
-      case CISCO_IOS:
-        return String.format("Port-Channel%d", num);
-
-      case CISCO_IOS_XR:
-        return String.format("Bundle-Ethernet%d", num);
-
-      default:
-        _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
-        return null;
-    }
   }
 
   @Override
@@ -6719,9 +6694,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     // In process context
     Ip address = toIp(ctx.address);
     Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
-    if (_format == CISCO_ASA) {
-      mask = mask.inverted();
-    }
     _currentEigrpProcess.getWildcardNetworks().add(IpWildcard.ipWithWildcardMask(address, mask));
   }
 
@@ -6734,9 +6706,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     boolean passive = (ctx.NO() == null);
     String interfaceName = ctx.i.getText(); // Note: Interface alias is not canonicalized for ASA
-    if (_format != CISCO_ASA) {
-      interfaceName = getCanonicalInterfaceName(interfaceName);
-    }
     _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
     _configuration.referenceStructure(
         INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());
@@ -7803,9 +7772,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       address = toIp(ctx.ip);
       wildcard = toIp(ctx.wildcard);
-    }
-    if (_format == CISCO_ASA) {
-      wildcard = wildcard.inverted();
     }
     long area;
     if (ctx.area_int != null) {

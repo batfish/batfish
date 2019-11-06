@@ -1783,12 +1783,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newIface.setRoutingPolicy(routingPolicyName);
     }
 
-    if (_vendor == ConfigurationFormat.CISCO_ASA) {
-      newIface.setPostTransformationIncomingFilter(newIface.getIncomingFilter());
-      newIface.setPreTransformationOutgoingFilter(newIface.getOutgoingFilter());
-      newIface.setIncomingFilter(null);
-      newIface.setOutgoingFilter((IpAccessList) null);
-    }
     return newIface;
   }
 
