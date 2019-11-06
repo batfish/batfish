@@ -2,8 +2,27 @@ package(default_visibility = ["//visibility:public"])
 
 java_library(
     name = "cisco_xr",
+    exports = [
+        ":lexer",
+        ":parser",
+    ],
+)
+
+java_library(
+    name = "lexer",
     srcs = [
         ":CiscoXrLexer.java",
+    ],
+    deps = [
+        "//projects/batfish-common-protocol:parser_common",
+        "//projects/batfish/src/main/java/org/batfish/grammar/cisco_xr/parsing:cisco_xr_base_parser",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+java_library(
+    name = "parser",
+    srcs = [
         ":CiscoXrParser.java",
         ":CiscoXrParserBaseListener.java",
         ":CiscoXrParserListener.java",
