@@ -619,7 +619,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_channel_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_delayContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_descriptionContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_eos_mlagContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_address_secondaryContext;
@@ -5726,12 +5725,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     for (Interface iface : _currentInterfaces) {
       iface.setIsisCost(metric);
     }
-  }
-
-  @Override
-  public void exitIf_eos_mlag(If_eos_mlagContext ctx) {
-    int mlagId = toInteger(ctx.DEC());
-    _currentInterfaces.forEach(iface -> iface.setMlagId(mlagId));
   }
 
   @Override

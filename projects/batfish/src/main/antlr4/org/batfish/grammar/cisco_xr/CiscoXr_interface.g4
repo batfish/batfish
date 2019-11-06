@@ -594,11 +594,6 @@ if_load_interval
    LOAD_INTERVAL li = DEC NEWLINE
 ;
 
-if_eos_mlag
-:
-   MLAG id = DEC NEWLINE
-;
-
 if_mtu
 :
    MTU mtu_size = DEC NEWLINE
@@ -1688,7 +1683,6 @@ if_inner
    | if_default_gw
    | if_delay
    | if_description
-   | if_eos_mlag
    | if_flow_sampler
    | if_hsrp
    | if_hsrp6

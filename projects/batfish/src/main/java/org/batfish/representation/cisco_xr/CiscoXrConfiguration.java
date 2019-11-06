@@ -112,7 +112,6 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
-import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
@@ -406,8 +405,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private String _dnsSourceInterface;
 
   private String _domainName;
-
-  @Nullable private MlagConfiguration _eosMlagConfiguration;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
@@ -738,11 +735,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _dnsSourceInterface;
   }
 
-  @Nullable
-  public MlagConfiguration getEosMlagConfiguration() {
-    return _eosMlagConfiguration;
-  }
-
   public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
     return _expandedCommunityLists;
   }
@@ -1070,10 +1062,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
-  }
-
-  public void setEosMlagConfiguration(@Nullable MlagConfiguration eosMlagConfiguration) {
-    _eosMlagConfiguration = eosMlagConfiguration;
   }
 
   public void setFailover(boolean failover) {
@@ -1675,7 +1663,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     } else {
       newIface.setDhcpRelayAddresses(ImmutableList.copyOf(iface.getDhcpRelayAddresses()));
     }
-    newIface.setMlagId(iface.getMlagId());
     newIface.setMtu(getInterfaceMtu(iface));
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
@@ -2374,19 +2361,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface, networkType));
 
     iface.setOspfSettings(ospfSettings.build());
-  }
-
-  @Nullable
-  private Mlag toMlag(@Nullable MlagConfiguration mlag) {
-    if (mlag == null || mlag.getDomainId() == null) {
-      return null;
-    }
-    return Mlag.builder()
-        .setId(mlag.getDomainId())
-        .setPeerAddress(mlag.getPeerAddress())
-        .setPeerInterface(mlag.getPeerLink())
-        .setLocalInterface(mlag.getLocalInterface())
-        .build();
   }
 
   private org.batfish.datamodel.ospf.StubSettings toStubSettings(StubSettings stubSettings) {
@@ -3112,14 +3086,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // apply vrrp settings to interfaces
     applyVrrp(c);
-
-    // convert MLAG configs
-    if (_vendor.equals(ConfigurationFormat.ARISTA)) {
-      Mlag viMlag = toMlag(_eosMlagConfiguration);
-      if (viMlag != null) {
-        c.setMlags(ImmutableMap.of(viMlag.getId(), viMlag));
-      }
-    }
 
     // ISAKMP policies to IKE Phase 1 proposals
     for (Entry<Integer, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
