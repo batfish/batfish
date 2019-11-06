@@ -69,7 +69,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_O
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRAFFIC_ZONE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -473,8 +472,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_multipath_relax_rb_sta
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_elemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_ag_globalContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_ag_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_nat_ifacesContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_nat_optional_argsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_twice_nat_destinationContext;
@@ -5324,40 +5321,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
         return null;
     }
-  }
-
-  @Override
-  public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(
-          ctx,
-          String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-    CiscoXrStructureUsage usage = null;
-    String aclName = ctx.name.getText();
-    if (ctx.IN() != null) {
-      iface.setIncomingFilter(aclName);
-      usage = INTERFACE_INCOMING_FILTER;
-    } else if (ctx.OUT() != null) {
-      iface.setOutgoingFilter(aclName);
-      usage = INTERFACE_OUTGOING_FILTER;
-    }
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, aclName, usage, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitAsa_ag_global(Asa_ag_globalContext ctx) {
-    String aclName = ctx.name.getText();
-    for (Interface iface : _configuration.getInterfaces().values()) {
-      iface.setIncomingFilter(aclName);
-    }
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, aclName, ACCESS_GROUP_GLOBAL_FILTER, ctx.name.getStart().getLine());
   }
 
   @Override
