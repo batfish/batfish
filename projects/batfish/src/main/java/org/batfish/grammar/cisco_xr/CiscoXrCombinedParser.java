@@ -1,6 +1,5 @@
 package org.batfish.grammar.cisco_xr;
 
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.BatfishANTLRErrorStrategy;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -13,7 +12,7 @@ public class CiscoXrCombinedParser extends BatfishCombinedParser<CiscoXrParser, 
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(CiscoXrLexer.NEWLINE, "\n");
 
-  public CiscoXrCombinedParser(String input, GrammarSettings settings, ConfigurationFormat format) {
+  public CiscoXrCombinedParser(String input, GrammarSettings settings) {
     super(
         CiscoXrParser.class,
         CiscoXrLexer.class,
@@ -21,7 +20,6 @@ public class CiscoXrCombinedParser extends BatfishCombinedParser<CiscoXrParser, 
         settings,
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
-    _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
   }
 
   @Override

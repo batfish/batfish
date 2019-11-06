@@ -175,8 +175,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
         case CISCO_IOS_XR:
           {
-            CiscoXrCombinedParser ciscoXrParser =
-                new CiscoXrCombinedParser(_fileText, _settings, format);
+            CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(_fileText, _settings);
             combinedParser = ciscoXrParser;
             extractor =
                 new CiscoXrControlPlaneExtractor(_fileText, ciscoXrParser, format, _warnings);
