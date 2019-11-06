@@ -2,8 +2,6 @@ package org.batfish.question.multipath;
 
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstPort;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpCode;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpType;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
@@ -70,11 +68,9 @@ public class MultipathConsistencyTest {
                 ImmutableList.of(
                     hasDstIp(Ip.parse("2.1.0.0")),
                     hasDstPort(1234),
-                    hasIcmpCode(0),
-                    hasIcmpType(8),
                     hasIngressNode("~configuration_0~"),
                     hasIngressVrf("default"),
-                    hasIpProtocol(IpProtocol.ICMP),
+                    hasIpProtocol(IpProtocol.TCP),
                     hasSrcIp(oneOf(Ip.parse("2.0.0.0"), Ip.parse("1.0.0.0"))),
                     hasTag("BASE"))),
             Schema.FLOW));

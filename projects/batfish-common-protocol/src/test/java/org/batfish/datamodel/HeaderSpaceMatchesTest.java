@@ -20,7 +20,6 @@ public class HeaderSpaceMatchesTest {
   private static final int _fragmentOffset = 5;
   private static final int _icmpCode = 5;
   private static final int _icmpType = 5;
-  private static final IpProtocol _ipProtocol = IpProtocol.TCP;
   private static final int _packetLength = 5;
   private static final Ip _srcIp = Ip.parse("1.1.1.1");
   private static final int _srcPort = 22;
@@ -28,7 +27,7 @@ public class HeaderSpaceMatchesTest {
   private static final TcpFlags _tcpFlags = TcpFlags.builder().setAck(true).build();
 
   /** SSH {@link Flow} from 1.1.1.1 to 2.2.2.2 with arbitrary values for other fields */
-  private static final Flow _flow =
+  private static final Flow _sshFlow =
       Flow.builder()
           .setIngressNode("ingressNode") // required
           .setTag("tag") // required
@@ -37,9 +36,7 @@ public class HeaderSpaceMatchesTest {
           .setDstPort(_dstPort)
           .setEcn(_ecn)
           .setFragmentOffset(_fragmentOffset)
-          .setIcmpCode(_icmpCode)
-          .setIcmpType(_icmpType)
-          .setIpProtocol(_ipProtocol)
+          .setIpProtocol(IpProtocol.TCP)
           .setPacketLength(_packetLength)
           .setSrcIp(_srcIp)
           .setSrcPort(_srcPort)
@@ -47,9 +44,26 @@ public class HeaderSpaceMatchesTest {
           .setTcpFlags(_tcpFlags)
           .build();
 
+  /** ICMP {@link Flow} from 1.1.1.1 to 2.2.2.2 with arbitrary values for other fields */
+  private static final Flow _icmpFlow =
+      Flow.builder()
+          .setIngressNode("ingressNode") // required
+          .setTag("tag") // required
+          .setDscp(_dscp)
+          .setDstIp(_dstIp)
+          .setEcn(_ecn)
+          .setFragmentOffset(_fragmentOffset)
+          .setIcmpCode(_icmpCode)
+          .setIcmpType(_icmpType)
+          .setIpProtocol(IpProtocol.ICMP)
+          .setPacketLength(_packetLength)
+          .setSrcIp(_srcIp)
+          .setState(_state)
+          .build();
+
   @Test
   public void testEmptyHeaderSpaceMatches() {
-    assertThat(HeaderSpace.builder().build().matches(_flow, _namedIpSpaces), equalTo(true));
+    assertThat(HeaderSpace.builder().build().matches(_sshFlow, _namedIpSpaces), equalTo(true));
   }
 
   @Test
@@ -113,6 +127,7 @@ public class HeaderSpaceMatchesTest {
   public void testIcmpCodesMatchers() {
     SubRange nonMatching = new SubRange(0, _icmpCode - 1);
     testMatches(
+        _icmpFlow,
         icmpCodes -> HeaderSpace.builder().setIcmpCodes(icmpCodes).build(),
         icmpCodes -> HeaderSpace.builder().setNotIcmpCodes(icmpCodes).build(),
         ImmutableSet.of(new SubRange(0, _icmpCode), nonMatching),
@@ -123,6 +138,7 @@ public class HeaderSpaceMatchesTest {
   public void testIcmpTypesMatchers() {
     SubRange nonMatching = new SubRange(0, _icmpType - 1);
     testMatches(
+        _icmpFlow,
         icmpTypes -> HeaderSpace.builder().setIcmpTypes(icmpTypes).build(),
         icmpTypes -> HeaderSpace.builder().setNotIcmpTypes(icmpTypes).build(),
         ImmutableSet.of(new SubRange(0, _icmpType), nonMatching),
@@ -135,7 +151,7 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         protocols -> HeaderSpace.builder().setIpProtocols(protocols).build(),
         protocols -> HeaderSpace.builder().setNotIpProtocols(protocols).build(),
-        ImmutableSet.of(_ipProtocol, IpProtocol.UDP),
+        ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP),
         ImmutableSet.of(IpProtocol.UDP, IpProtocol.UDP));
   }
 
@@ -187,16 +203,16 @@ public class HeaderSpaceMatchesTest {
         HeaderSpace.builder().setSrcOrDstIps(new IpIpSpace(_dstIp)).build();
     HeaderSpace withOtherIpAsSrcOrDst =
         HeaderSpace.builder().setSrcOrDstIps(new IpIpSpace(Ip.parse("3.3.3.3"))).build();
-    assertThat(withSrcIpAsSrcOrDst.matches(_flow, _namedIpSpaces), equalTo(true));
-    assertThat(withDstIpAsSrcOrDst.matches(_flow, _namedIpSpaces), equalTo(true));
-    assertThat(withOtherIpAsSrcOrDst.matches(_flow, _namedIpSpaces), equalTo(false));
+    assertThat(withSrcIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(true));
+    assertThat(withDstIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(true));
+    assertThat(withOtherIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(false));
   }
 
   @Test
   public void testSrcOrDestPortsMatchers() {
     // Need a new flow for this because _flow has the same port for src and dst (22).
     int newDstPort = _dstPort + 1;
-    Flow newDstPortFlow = _flow.toBuilder().setDstPort(newDstPort).build();
+    Flow newDstPortFlow = _sshFlow.toBuilder().setDstPort(newDstPort).build();
     SubRange nonMatching = new SubRange(0, _srcPort - 1);
     HeaderSpace withSrcPortAsSrcOrDst =
         HeaderSpace.builder()
@@ -217,7 +233,7 @@ public class HeaderSpaceMatchesTest {
   public void testSrcOrDestProtocolsMatchers() {
     // Need a new flow for this because _flow has the same protocol for src and dst (SSH).
     // Set dstPort to port number for HTTP; this should work since HTTP and SSH are both TCP.
-    Flow newDstProtocolFlow = _flow.toBuilder().setDstPort(Protocol.HTTP.getPort()).build();
+    Flow newDstProtocolFlow = _sshFlow.toBuilder().setDstPort(Protocol.HTTP.getPort()).build();
     HeaderSpace withSshAsSrcOrDst =
         HeaderSpace.builder()
             .setSrcOrDstProtocols(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
@@ -244,8 +260,8 @@ public class HeaderSpaceMatchesTest {
         HeaderSpace.builder()
             .setStates(ImmutableSet.of(FlowState.ESTABLISHED, FlowState.ESTABLISHED))
             .build();
-    assertThat(withRightState.matches(_flow, _namedIpSpaces), equalTo(true));
-    assertThat(withWrongState.matches(_flow, _namedIpSpaces), equalTo(false));
+    assertThat(withRightState.matches(_sshFlow, _namedIpSpaces), equalTo(true));
+    assertThat(withWrongState.matches(_sshFlow, _namedIpSpaces), equalTo(false));
   }
 
   @Test
@@ -263,8 +279,8 @@ public class HeaderSpaceMatchesTest {
         HeaderSpace.builder()
             .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.builder().setUseAck(true).build()))
             .build();
-    assertThat(withRightFlag.matches(_flow, _namedIpSpaces), equalTo(true));
-    assertThat(withWrongFlag.matches(_flow, _namedIpSpaces), equalTo(false));
+    assertThat(withRightFlag.matches(_sshFlow, _namedIpSpaces), equalTo(true));
+    assertThat(withWrongFlag.matches(_sshFlow, _namedIpSpaces), equalTo(false));
   }
 
   /**
@@ -288,8 +304,8 @@ public class HeaderSpaceMatchesTest {
    * @param notMatchingHeaderSpaceGenerator Function to generate a HeaderSpace that matches flows
    *     that do NOT have a given value for the property being tested (e.g., {@code x ->
    *     HeaderSpace.builder().setNotDstIps(x).build()})
-   * @param matching Value for the property under test that should match {@link #_flow}
-   * @param notMatching Value for the property under test that should NOT match {@link #_flow}
+   * @param matching Value for the property under test that should match {@link #_sshFlow}
+   * @param notMatching Value for the property under test that should NOT match {@link #_sshFlow}
    * @param <T> Type of the HeaderSpace property under test (e.g., if testing dstIps, it would be an
    *     {@link IpSpace})
    */
@@ -298,20 +314,35 @@ public class HeaderSpaceMatchesTest {
       Function<T, HeaderSpace> notMatchingHeaderSpaceGenerator,
       T matching,
       T notMatching) {
+    testMatches(
+        _sshFlow,
+        matchingHeaderSpaceGenerator,
+        notMatchingHeaderSpaceGenerator,
+        matching,
+        notMatching);
+  }
+
+  private static <T> void testMatches(
+      Flow flow,
+      Function<T, HeaderSpace> matchingHeaderSpaceGenerator,
+      Function<T, HeaderSpace> notMatchingHeaderSpaceGenerator,
+      T matching,
+      T notMatching) {
+
     // If HeaderSpace requires flow to match property that does match, matches() == true
     HeaderSpace hs = matchingHeaderSpaceGenerator.apply(matching);
-    assertThat(hs.matches(_flow, _namedIpSpaces), equalTo(true));
+    assertThat(hs.matches(flow, _namedIpSpaces), equalTo(true));
 
     // If HeaderSpace requires flow to match property that does not match, matches() == false
     hs = matchingHeaderSpaceGenerator.apply(notMatching);
-    assertThat(hs.matches(_flow, _namedIpSpaces), equalTo(false));
+    assertThat(hs.matches(flow, _namedIpSpaces), equalTo(false));
 
     // If HeaderSpace requires flow not to match property that does match, matches() == false
     hs = notMatchingHeaderSpaceGenerator.apply(matching);
-    assertThat(hs.matches(_flow, _namedIpSpaces), equalTo(false));
+    assertThat(hs.matches(flow, _namedIpSpaces), equalTo(false));
 
     // If HeaderSpace requires flow not to match property that does not match, matches() == true
     hs = notMatchingHeaderSpaceGenerator.apply(notMatching);
-    assertThat(hs.matches(_flow, _namedIpSpaces), equalTo(true));
+    assertThat(hs.matches(flow, _namedIpSpaces), equalTo(true));
   }
 }

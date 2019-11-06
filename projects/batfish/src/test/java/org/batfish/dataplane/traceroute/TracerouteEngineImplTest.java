@@ -1203,6 +1203,9 @@ public class TracerouteEngineImplTest {
         Flow.builder()
             .setDstIp(Ip.parse("3.3.3.3"))
             .setSrcIp(Ip.parse("5.5.5.5"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(0)
+            .setDstPort(0)
             .setIngressNode(c1.getHostname())
             .setTag("TAG");
 
@@ -2213,7 +2216,9 @@ public class TracerouteEngineImplTest {
         Flow.builder()
             .setSrcIp(srcIp)
             .setDstIp(Ip.parse("5.0.0.0"))
+            .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(srcPort)
+            .setDstPort(0)
             .setIngressNode(config.getHostname())
             .setIngressVrf(vrf.getName())
             .setTag("TAG")

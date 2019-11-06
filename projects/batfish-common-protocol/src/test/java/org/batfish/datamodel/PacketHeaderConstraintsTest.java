@@ -1,9 +1,9 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.IntegerSpace.PORTS;
+import static org.batfish.datamodel.IpProtocol.IP_PROTOCOLS_WITH_PORTS;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.IpProtocol.UDP;
-import static org.batfish.datamodel.PacketHeaderConstraints.IP_PROTOCOLS_WITH_PORTS;
 import static org.batfish.datamodel.PacketHeaderConstraints.areProtocolsAndPortsCompatible;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidDscp;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidEcn;

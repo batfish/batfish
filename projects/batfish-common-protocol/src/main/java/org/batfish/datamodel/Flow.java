@@ -103,20 +103,34 @@ public final class Flow implements Comparable<Flow>, Serializable {
         checkArgument(_srcPort != null, "UDP packets must have a source port");
         checkArgument(_dstPort != null, "UDP packets must have a destination port");
       }
+
+      @Nullable Integer icmpCode = _icmpCode;
+      @Nullable Integer icmpType = _icmpType;
+      if (_ipProtocol != IpProtocol.ICMP) {
+        icmpCode = null;
+        icmpType = null;
+      }
+
+      @Nullable Integer srcPort = _srcPort;
+      @Nullable Integer dstPort = _dstPort;
+      if (!IpProtocol.IP_PROTOCOLS_WITH_PORTS.contains(_ipProtocol)) {
+        srcPort = dstPort = null;
+      }
+
       return new Flow(
           _ingressNode,
           _ingressInterface,
           _ingressVrf,
           _srcIp,
           _dstIp,
-          _srcPort,
-          _dstPort,
+          srcPort,
+          dstPort,
           firstNonNull(_ipProtocol, IpProtocol.fromNumber(0)),
           _dscp,
           _ecn,
           _fragmentOffset,
-          _icmpType,
-          _icmpCode,
+          icmpType,
+          icmpCode,
           _packetLength,
           _state,
           _tcpFlagsCwr,
