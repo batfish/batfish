@@ -3574,13 +3574,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
 
     markConcreteStructure(
-        CiscoStructureType.COMMUNITY_SET,
-        CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY,
-        CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY,
-        CiscoStructureUsage.ROUTE_POLICY_DELETE_COMMUNITY_IN,
-        CiscoStructureUsage.ROUTE_POLICY_SET_COMMUNITY);
-
-    markConcreteStructure(
         CiscoStructureType.SECURITY_ZONE_PAIR, CiscoStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
 
     markConcreteStructure(
@@ -3700,9 +3693,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
 
-    markConcreteStructure(
-        CiscoStructureType.PREFIX_SET, CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET);
-
     // mark references to route-maps
     markConcreteStructure(
         CiscoStructureType.ROUTE_MAP,
@@ -3750,14 +3740,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
         CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
-
-    markConcreteStructure(
-        CiscoStructureType.ROUTE_POLICY,
-        CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
-        CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY,
-        CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN,
-        CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT,
-        CiscoStructureUsage.ROUTE_POLICY_APPLY);
 
     // Cable
     markConcreteStructure(
@@ -3896,9 +3878,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.AS_PATH_ACCESS_LIST,
         CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
         CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
-
-    markConcreteStructure(
-        CiscoStructureType.AS_PATH_SET, CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN);
 
     // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
     markConcreteStructure(CiscoStructureType.BGP_AF_GROUP, CiscoStructureUsage.BGP_USE_AF_GROUP);

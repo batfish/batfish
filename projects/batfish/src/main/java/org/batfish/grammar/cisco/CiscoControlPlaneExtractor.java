@@ -59,7 +59,6 @@ import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
-import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE_PAIR;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
@@ -70,11 +69,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.VXLAN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_MATCH_MAP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST;
@@ -445,7 +442,6 @@ import org.batfish.grammar.cisco.CiscoParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Activate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Additional_paths_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Additional_paths_selection_xr_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_headerContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Advertise_map_bgp_tailContext;
@@ -4680,19 +4676,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitAdditional_paths_selection_xr_rb_stanza(
-      Additional_paths_selection_xr_rb_stanzaContext ctx) {
-    if (ctx.name != null) {
-      String name = ctx.name.getText();
-      _configuration.referenceStructure(
-          ROUTE_POLICY,
-          name,
-          BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
-          ctx.name.getStart().getLine());
-    }
-  }
-
-  @Override
   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
     popPeer();
   }
@@ -4745,11 +4728,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           net.setAttributeMap(mapName);
           _configuration.referenceStructure(
               ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
-        } else if (ctx.rp != null) {
-          String policyName = ctx.rp.getText();
-          net.setAttributeMap(policyName);
-          _configuration.referenceStructure(
-              ROUTE_POLICY, policyName, BGP_AGGREGATE_ROUTE_POLICY, ctx.rp.getStart().getLine());
         }
         proc.getAggregateNetworks().put(prefix, net);
       } else if (ctx.ipv6_prefix != null) {

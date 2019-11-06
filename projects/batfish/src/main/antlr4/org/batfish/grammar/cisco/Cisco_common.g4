@@ -568,14 +568,6 @@ route_target
    (IP_ADDRESS | bgp_asn) COLON DEC
 ;
 
-route_policy_params_list
-:
-   params_list += variable
-   (
-      COMMA params_list += variable
-   )*
-;
-
 community_set_elem_half
 :
    value = DEC

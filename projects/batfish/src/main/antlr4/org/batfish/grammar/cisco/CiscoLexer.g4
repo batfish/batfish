@@ -10879,11 +10879,6 @@ ROUTE_ONLY
    'route-only'
 ;
 
-ROUTE_POLICY
-:
-   'route-policy'
-;
-
 ROUTE_PREFERENCE
 :
    'route-preference'

@@ -52,9 +52,6 @@ address_family_rb_stanza
    address_family_header
    (
       additional_paths_rb_stanza
-      | additional_paths_receive_xr_rb_stanza
-      | additional_paths_selection_xr_rb_stanza
-      | additional_paths_send_xr_rb_stanza
       | aggregate_address_rb_stanza
       | bgp_tail
       | neighbor_flat_rb_stanza
@@ -93,10 +90,6 @@ aggregate_address_rb_stanza
     (
       ATTRIBUTE_MAP mapname = variable
     )
-    |
-    (
-      ROUTE_POLICY rp = variable
-    )
   )* NEWLINE
 ;
 
@@ -109,21 +102,6 @@ additional_paths_rb_stanza
       | SEND RECEIVE?
       | RECEIVE SEND?
    ) NEWLINE
-;
-
-additional_paths_receive_xr_rb_stanza
-:
-  ADDITIONAL_PATHS RECEIVE NEWLINE
-;
-
-additional_paths_selection_xr_rb_stanza
-:
-  ADDITIONAL_PATHS SELECTION ROUTE_POLICY name = variable NEWLINE
-;
-
-additional_paths_send_xr_rb_stanza
-:
-  ADDITIONAL_PATHS SEND NEWLINE
 ;
 
 advertise_bgp_tail
@@ -281,11 +259,7 @@ default_metric_bgp_tail
 
 default_originate_bgp_tail
 :
-   DEFAULT_ORIGINATE
-   (
-      ROUTE_MAP map = variable
-      | ROUTE_POLICY policy = VARIABLE
-   )? NEWLINE
+   DEFAULT_ORIGINATE (ROUTE_MAP map = variable)? NEWLINE
 ;
 
 default_shutdown_bgp_tail
@@ -416,9 +390,7 @@ network_bgp_tail
    (
       ROUTE_MAP mapname = variable
    )?
-   (
-      ROUTE_POLICY policyname = VARIABLE
-   )? NEWLINE
+   NEWLINE
 ;
 
 network6_bgp_tail
@@ -427,9 +399,7 @@ network6_bgp_tail
    (
       ROUTE_MAP mapname = variable
    )?
-   (
-      ROUTE_POLICY policyname = VARIABLE
-   )? NEWLINE
+   NEWLINE
 ;
 
 next_hop_self_bgp_tail
@@ -720,10 +690,6 @@ redistribute_connected_bgp_tail
       )
       |
       (
-         ROUTE_POLICY policy = variable
-      )
-      |
-      (
          METRIC metric = DEC
       )
    )* NEWLINE
@@ -798,10 +764,6 @@ redistribute_static_bgp_tail
    (
       (
          ROUTE_MAP map = variable
-      )
-      |
-      (
-         ROUTE_POLICY policy = VARIABLE
       )
       |
       (
