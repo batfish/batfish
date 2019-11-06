@@ -15150,7 +15150,7 @@ M_Authentication_DOUBLE_QUOTE
 
 M_Authentication_BANNER
 :
-  'banner' F_Whitespace+ -> type ( BANNER )
+  'banner' F_Whitespace+ -> type ( BANNER ), mode ( M_BannerIosDelimiter )
 ;
 
 M_Authentication_ARAP
