@@ -52,9 +52,6 @@ public class PacketHeaderConstraints {
   private static final String PROP_SRC_PORTS = "srcPorts";
   private static final String PROP_TCP_FLAGS = "tcpFlags";
 
-  static final Set<IpProtocol> IP_PROTOCOLS_WITH_PORTS =
-      ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.DCCP, IpProtocol.SCTP);
-
   /*
    * All fields are nullable to allow being "not set", and therefore, unconstrained
    */
@@ -450,7 +447,7 @@ public class PacketHeaderConstraints {
     // Ports are only applicable to TCP/UDP
     if (ports != null && ipProtocols != null) {
       checkArgument(
-          Sets.difference(ipProtocols, IP_PROTOCOLS_WITH_PORTS).isEmpty(),
+          Sets.difference(ipProtocols, IpProtocol.IP_PROTOCOLS_WITH_PORTS).isEmpty(),
           "Cannot combine given ports (%s) and IP protocols (%s)",
           ports,
           ipProtocols);
@@ -514,9 +511,10 @@ public class PacketHeaderConstraints {
 
     if (srcPorts != null || dstPorts != null) {
       if (ipProtocols != null) {
-        resolvedIpProtocols = Sets.intersection(IP_PROTOCOLS_WITH_PORTS, resolvedIpProtocols);
+        resolvedIpProtocols =
+            Sets.intersection(IpProtocol.IP_PROTOCOLS_WITH_PORTS, resolvedIpProtocols);
       } else {
-        resolvedIpProtocols = IP_PROTOCOLS_WITH_PORTS;
+        resolvedIpProtocols = IpProtocol.IP_PROTOCOLS_WITH_PORTS;
       }
     }
 

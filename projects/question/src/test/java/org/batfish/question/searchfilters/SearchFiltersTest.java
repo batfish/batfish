@@ -36,7 +36,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -50,6 +49,7 @@ import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -503,8 +503,9 @@ public final class SearchFiltersTest {
   @Test
   public void testReachFilter_DENY_ALL_portConstraints() {
     HeaderSpace hs = new HeaderSpace();
-    hs.setSrcPorts(Collections.singletonList(SubRange.singleton(1111)));
-    hs.setDstPorts(Collections.singletonList(SubRange.singleton(2222)));
+    hs.setSrcPorts(ImmutableList.of(SubRange.singleton(1111)));
+    hs.setDstPorts(ImmutableList.of(SubRange.singleton(2222)));
+    hs.setIpProtocols(ImmutableList.of(IpProtocol.TCP));
     SearchFiltersParameters params =
         _allLocationsParams
             .toBuilder()

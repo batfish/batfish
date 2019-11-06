@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -35,6 +36,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -122,6 +124,7 @@ public class BDDMultipathInconsistencyTest {
                 ImmutableSet.of(DENIED_IN))
             .getIngressLocationReachableBDDs();
 
+    BDD tcpBdd = PKT.getIpProtocol().value(IpProtocol.TCP);
     BDD dstIpBDD = _graphFactory.getIpSpaceToBDD().toBDD(_dstIface2Ip);
     BDD srcIpBDD = srcIpBDD(Ip.MAX);
     BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
@@ -131,7 +134,9 @@ public class BDDMultipathInconsistencyTest {
 
     assertThat(inconsistencies, hasSize(1));
     MultipathInconsistency inconsistency = inconsistencies.get(0);
-    assertThat(inconsistency.getBDD(), equalTo(dstIpBDD.and(srcIpBDD).and(postNatAclBDD)));
+
+    BDD expected = tcpBdd.and(dstIpBDD).and(srcIpBDD).and(postNatAclBDD);
+    assertEquals(expected, inconsistency.getBDD());
 
     Flow flow = multipathInconsistencyToFlow(PKT, inconsistency, FLOW_TAG);
     assertThat(flow, hasDstIp(_dstIface2Ip));
