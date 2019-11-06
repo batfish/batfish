@@ -16,8 +16,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_PEER_
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_SESSION_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_TEMPLATE_PEER_SESSION;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_UNDECLARED_PEER;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_UNDECLARED_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET;
@@ -75,11 +73,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIG
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_STATEMENT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_NEIGHBOR_GROUP;
@@ -637,7 +632,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_peers_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_block_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_flat_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_group_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Net_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Network6_bgp_tailContext;
@@ -2327,81 +2321,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     _currentPeerGroup.setActive(true);
     _currentPeerGroup.setShutdown(false);
-  }
-
-  @Override
-  public void enterNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
-    if (ctx.ip6 != null) {
-      // Remember we are in IPv6 context so that structure references are identified accordingly
-      _inIpv6BgpPeer = true;
-    }
-    // do no further processing for unsupported address families / containers
-    if (_currentPeerGroup == _dummyPeerGroup) {
-      pushPeer(_dummyPeerGroup);
-      return;
-    }
-    BgpProcess proc = currentVrf().getBgpProcess();
-    // we must create peer group if it does not exist and this is a remote_as
-    // declaration
-    boolean create =
-        ctx.remote_as_bgp_tail() != null || ctx.inherit_peer_session_bgp_tail() != null;
-    if (ctx.ip != null) {
-      Ip ip = toIp(ctx.ip);
-      _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-      if (_currentIpPeerGroup == null) {
-        if (create) {
-          proc.addIpPeerGroup(ip);
-          _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-          pushPeer(_currentIpPeerGroup);
-        } else {
-          _configuration.referenceStructure(
-              BGP_UNDECLARED_PEER, ip.toString(), BGP_NEIGHBOR_WITHOUT_REMOTE_AS, ctx.ip.getLine());
-          pushPeer(_dummyPeerGroup);
-        }
-      } else {
-        pushPeer(_currentIpPeerGroup);
-      }
-    } else if (ctx.ip6 != null) {
-      Ip6 ip6 = toIp6(ctx.ip6);
-      Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
-      if (pg6 == null) {
-        if (create) {
-          proc.addIpv6PeerGroup(ip6);
-          pg6 = proc.getIpv6PeerGroups().get(ip6);
-          pushPeer(pg6);
-        } else {
-          _configuration.referenceStructure(
-              BGP_UNDECLARED_PEER,
-              ip6.toString(),
-              BGP_NEIGHBOR_WITHOUT_REMOTE_AS,
-              ctx.ip6.getLine());
-          pushPeer(_dummyPeerGroup);
-        }
-      } else {
-        pushPeer(pg6);
-      }
-      _currentIpv6PeerGroup = pg6;
-    } else if (ctx.peergroup != null) {
-      String name = ctx.peergroup.getText();
-      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-      if (_currentNamedPeerGroup == null) {
-        if (create) {
-          proc.addNamedPeerGroup(name);
-          _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-          _configuration.referenceStructure(
-              BGP_PEER_GROUP, name, BGP_NEIGHBOR_STATEMENT, ctx.peergroup.getLine());
-        } else {
-          _configuration.referenceStructure(
-              BGP_UNDECLARED_PEER_GROUP,
-              name,
-              BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED,
-              ctx.peergroup.getLine());
-        }
-      }
-      pushPeer(_currentNamedPeerGroup);
-    } else {
-      throw new BatfishException("unknown neighbor type");
-    }
   }
 
   @Override
@@ -6002,12 +5921,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _inBlockNeighbor = false;
       popPeer();
     }
-  }
-
-  @Override
-  public void exitNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
-    resetPeerGroups();
-    popPeer();
   }
 
   @Override

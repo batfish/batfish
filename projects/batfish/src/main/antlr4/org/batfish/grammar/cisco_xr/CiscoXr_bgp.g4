@@ -401,23 +401,6 @@ locals
    )?
 ;
 
-neighbor_flat_rb_stanza
-:
-   NEIGHBOR
-   (
-      ip = IP_ADDRESS
-      | ip6 = IPV6_ADDRESS
-      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
-   )
-   (
-      bgp_tail
-      | inherit_peer_session_bgp_tail
-      | inherit_peer_policy_bgp_tail
-      | filter_list_bgp_tail
-      | remote_as_bgp_tail
-   )
-;
-
 neighbor_group_rb_stanza
 :
    NEIGHBOR_GROUP name = variable NEWLINE
@@ -471,7 +454,6 @@ vrf_block_rb_stanza
       | as_path_multipath_relax_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
-      | neighbor_flat_rb_stanza
       | neighbor_block_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
@@ -834,9 +816,7 @@ router_bgp_stanza_tail
    | cluster_id_rb_stanza
    | compare_routerid_rb_stanza
    | default_information_originate_rb_stanza
-   // do NOT put neighbor_block_rb_stanza under neighbor_flat_rb_stanza
    | neighbor_block_rb_stanza
-   | neighbor_flat_rb_stanza
    | neighbor_group_rb_stanza
    | no_bgp_enforce_first_as_stanza
    | no_neighbor_activate_rb_stanza
