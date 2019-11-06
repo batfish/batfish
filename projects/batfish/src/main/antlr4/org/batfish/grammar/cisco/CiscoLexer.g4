@@ -4068,8 +4068,6 @@ END_POLICY_MAP
 END_SET
 :
    'end-set'
-   { _inCommunitySet = false; }
-
 ;
 
 ENET_LINK_PROFILE
@@ -14720,10 +14718,8 @@ NEWLINE
 :
   F_Newline+
   {
-    if (!_inCommunitySet) {
-   	  _enableIpv6Address = true;
-   	}
-   	_enableIpAddress = true;
+    _enableIpv6Address = true;
+    _enableIpAddress = true;
     _enableDec = true;
     _enableRegex = false;
     _enableAclNum = false;

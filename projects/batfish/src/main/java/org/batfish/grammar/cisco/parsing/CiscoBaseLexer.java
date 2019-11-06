@@ -126,7 +126,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
   protected boolean _enableRegex = false;
 
   protected boolean _inAccessList = false;
-  protected boolean _inCommunitySet = false;
 
   private boolean _asa = false;
   private boolean _cadant = false;
@@ -155,7 +154,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
     sb.append("_enableIpv6Address: " + _enableIpv6Address + "\n");
     sb.append("_enableRegex: " + _enableRegex + "\n");
     sb.append("_inAccessList: " + _inAccessList + "\n");
-    sb.append("_inCommunitySet: " + _inCommunitySet + "\n");
     return sb.toString();
   }
 }
