@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
@@ -43,7 +44,13 @@ public class TransformationEvaluatorTest {
 
   @Before
   public void setup() {
-    _flowBuilder = Flow.builder().setIngressNode("node").setTag("tag");
+    _flowBuilder =
+        Flow.builder()
+            .setIngressNode("node")
+            .setTag("tag")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(0)
+            .setDstPort(0);
   }
 
   private static Flow eval(Transformation transformation, Flow flow) {
