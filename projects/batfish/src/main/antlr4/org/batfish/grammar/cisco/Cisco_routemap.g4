@@ -6,14 +6,6 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-apply_rp_stanza
-:
-   APPLY name = variable
-   (
-      PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
-   )? NEWLINE
-;
-
 as_expr
 :
    DEC
@@ -49,164 +41,9 @@ as_range_expr
    )+ SINGLE_QUOTE EXACT?
 ;
 
-boolean_and_rp_stanza
-:
-   boolean_not_rp_stanza
-   | boolean_and_rp_stanza AND boolean_not_rp_stanza
-;
-
-boolean_apply_rp_stanza
-:
-   APPLY name = variable
-   (
-      PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
-   )?
-;
-
-boolean_as_path_in_rp_stanza
-:
-   AS_PATH IN expr = as_path_set_expr
-;
-
-boolean_as_path_is_local_rp_stanza
-:
-   AS_PATH IS_LOCAL
-;
-
-boolean_as_path_neighbor_is_rp_stanza
-:
-   AS_PATH NEIGHBOR_IS as_range_expr
-;
-
-boolean_as_path_originates_from_rp_stanza
-:
-   AS_PATH ORIGINATES_FROM as_range_expr
-;
-
-boolean_as_path_passes_through_rp_stanza
-:
-   AS_PATH PASSES_THROUGH as_range_expr
-;
-
-boolean_community_matches_any_rp_stanza
-:
-   COMMUNITY MATCHES_ANY rp_community_set
-;
-
-boolean_community_matches_every_rp_stanza
-:
-   COMMUNITY MATCHES_EVERY rp_community_set
-;
-
-boolean_destination_rp_stanza
-:
-   DESTINATION IN rp_prefix_set
-;
-
-boolean_local_preference_rp_stanza
-:
-   LOCAL_PREFERENCE int_comp rhs = int_expr
-;
-
-boolean_med_rp_stanza
-:
-   MED int_comp rhs = int_expr
-;
-
-boolean_next_hop_in_rp_stanza
-:
-   NEXT_HOP IN rp_prefix_set
-;
-
-boolean_not_rp_stanza
-:
-   boolean_simple_rp_stanza
-   | NOT boolean_simple_rp_stanza
-;
-
-boolean_rib_has_route_rp_stanza
-:
-   RIB_HAS_ROUTE IN rp_prefix_set
-;
-
-boolean_route_type_is_rp_stanza
-:
-   ROUTE_TYPE IS type = rp_route_type
-;
-
-boolean_rp_stanza
-:
-   boolean_and_rp_stanza
-   | boolean_rp_stanza OR boolean_and_rp_stanza
-;
-
-boolean_simple_rp_stanza
-:
-   PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
-   | boolean_apply_rp_stanza
-   | boolean_as_path_in_rp_stanza
-   | boolean_as_path_is_local_rp_stanza
-   | boolean_as_path_neighbor_is_rp_stanza
-   | boolean_as_path_originates_from_rp_stanza
-   | boolean_as_path_passes_through_rp_stanza
-   | boolean_community_matches_any_rp_stanza
-   | boolean_community_matches_every_rp_stanza
-   | boolean_destination_rp_stanza
-   | boolean_local_preference_rp_stanza
-   | boolean_med_rp_stanza
-   | boolean_next_hop_in_rp_stanza
-   | boolean_rib_has_route_rp_stanza
-   | boolean_route_type_is_rp_stanza
-   | boolean_tag_is_rp_stanza
-;
-
-boolean_tag_is_rp_stanza
-:
-   TAG int_comp int_expr
-;
-
 continue_rm_stanza
 :
    CONTINUE DEC? NEWLINE
-;
-
-delete_community_rp_stanza
-:
-   DELETE COMMUNITY
-   (
-      ALL
-      | NOT? IN rp_community_set
-   ) NEWLINE
-;
-
-disposition_rp_stanza
-:
-   (
-      DONE
-      | DROP
-      | PASS
-      | UNSUPPRESS_ROUTE
-   ) NEWLINE
-;
-
-elseif_rp_stanza
-:
-   ELSEIF boolean_rp_stanza THEN NEWLINE rp_stanza*
-;
-
-else_rp_stanza
-:
-   ELSE NEWLINE rp_stanza*
-;
-
-if_rp_stanza
-:
-   IF boolean_rp_stanza THEN NEWLINE rp_stanza* elseif_rp_stanza*
-   else_rp_stanza?
-   (
-      ENDIF
-      | EXIT
-   ) NEWLINE
 ;
 
 int_comp
@@ -410,14 +247,6 @@ origin_expr_literal
    | INCOMPLETE
 ;
 
-prepend_as_path_rp_stanza
-:
-   PREPEND AS_PATH as = as_expr
-   (
-      number = int_expr
-   )? NEWLINE
-;
-
 rm_stanza
 :
    continue_rm_stanza
@@ -430,35 +259,6 @@ route_map_stanza
 :
    ROUTE_MAP name = variable rmt = access_list_action num = DEC NEWLINE
    rm_stanza*
-;
-
-route_policy_stanza
-:
-   ROUTE_POLICY name = variable
-   (
-      PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
-   )? NEWLINE
-   (
-         stanzas += rp_stanza
-   )*
-   END_POLICY NEWLINE
-;
-
-route_policy_params_list
-:
-   params_list += variable
-   (
-      COMMA params_list += variable
-   )*
-;
-
-rp_community_set
-:
-   name = variable
-   | PAREN_LEFT elems += community_set_elem
-   (
-      COMMA elems += community_set_elem
-   )* PAREN_RIGHT
 ;
 
 rp_isis_metric_type
@@ -509,19 +309,6 @@ rp_route_type
    | RP_VARIABLE
    | TYPE_1
    | TYPE_2
-;
-
-rp_stanza
-:
-   apply_rp_stanza
-   | delete_community_rp_stanza
-   | disposition_rp_stanza
-   |
-   (
-      hash_comment NEWLINE
-   )
-   | if_rp_stanza
-   | set_rp_stanza
 ;
 
 set_as_path_prepend_rm_stanza
@@ -590,11 +377,6 @@ set_community_rm_stanza
    )+ NEWLINE
 ;
 
-set_community_rp_stanza
-:
-   SET COMMUNITY rp_community_set ADDITIVE? NEWLINE
-;
-
 set_extcomm_list_rm_stanza
 :
    SET EXTCOMM_LIST
@@ -648,29 +430,9 @@ set_ipv6_rm_stanza
    SET IPV6 null_rest_of_line
 ;
 
-set_isis_metric_rp_stanza
-:
-   SET ISIS_METRIC int_expr NEWLINE
-;
-
-set_level_rp_stanza
-:
-   SET LEVEL isis_level_expr NEWLINE
-;
-
 set_local_preference_rm_stanza
 :
    SET LOCAL_PREFERENCE pref = int_expr NEWLINE
-;
-
-set_local_preference_rp_stanza
-:
-   SET LOCAL_PREFERENCE pref = int_expr NEWLINE
-;
-
-set_med_rp_stanza
-:
-   SET MED med = int_expr NEWLINE
 ;
 
 set_metric_eigrp_rm_stanza
@@ -686,11 +448,6 @@ set_metric_rm_stanza
 set_metric_type_rm_stanza
 :
    SET METRIC_TYPE type = variable NEWLINE
-;
-
-set_metric_type_rp_stanza
-:
-   SET METRIC_TYPE type = rp_metric_type NEWLINE
 ;
 
 set_mpls_label_rm_stanza
@@ -711,22 +468,6 @@ set_next_hop_rm_stanza
    )+ NEWLINE
 ;
 
-set_next_hop_rp_stanza
-:
-   SET NEXT_HOP
-   (
-      DISCARD
-      | IP_ADDRESS
-      | IPV6_ADDRESS
-      | PEER_ADDRESS
-   ) DESTINATION_VRF? NEWLINE
-;
-
-set_next_hop_self_rp_stanza
-:
-   SET NEXT_HOP SELF NEWLINE
-;
-
 set_nlri_rm_stanza_null
 :
    SET NLRI
@@ -741,24 +482,9 @@ set_origin_rm_stanza
    SET ORIGIN origin_expr_literal NEWLINE
 ;
 
-set_origin_rp_stanza
-:
-   SET ORIGIN origin_expr NEWLINE
-;
-
-set_path_selection_rp_stanza
-:
-   SET PATH_SELECTION null_rest_of_line
-;
-
 set_tag_rm_stanza
 :
    SET TAG tag = DEC NEWLINE
-;
-
-set_tag_rp_stanza
-:
-   SET TAG tag = int_expr NEWLINE
 ;
 
 set_traffic_index_rm_stanza_null
@@ -769,11 +495,6 @@ set_traffic_index_rm_stanza_null
 set_weight_rm_stanza
 :
    SET WEIGHT weight = DEC NEWLINE
-;
-
-set_weight_rp_stanza
-:
-   SET WEIGHT weight = int_expr NEWLINE
 ;
 
 set_rm_stanza
@@ -805,23 +526,6 @@ set_rm_stanza
    | set_tag_rm_stanza
    | set_traffic_index_rm_stanza_null
    | set_weight_rm_stanza
-;
-
-set_rp_stanza
-:
-   prepend_as_path_rp_stanza
-   | set_community_rp_stanza
-   | set_isis_metric_rp_stanza
-   | set_level_rp_stanza
-   | set_local_preference_rp_stanza
-   | set_med_rp_stanza
-   | set_metric_type_rp_stanza
-   | set_next_hop_rp_stanza
-   | set_next_hop_self_rp_stanza
-   | set_origin_rp_stanza
-   | set_path_selection_rp_stanza
-   | set_tag_rp_stanza
-   | set_weight_rp_stanza
 ;
 
 variable_access_list

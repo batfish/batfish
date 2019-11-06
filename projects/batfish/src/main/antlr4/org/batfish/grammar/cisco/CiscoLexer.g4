@@ -2299,16 +2299,6 @@ COMMUNITY_MAP
    'community-map' -> pushMode ( M_Name )
 ;
 
-COMMUNITY_SET
-:
-   'community-set'
-   {
-      _inCommunitySet = true;
-      _enableIpv6Address = false;
-   }
-
-;
-
 COMPARE_ROUTERID
 :
    'compare-routerid'
@@ -3318,11 +3308,6 @@ DF
 DF_BIT
 :
    'df-bit'
-;
-
-DFA_REGEX
-:
-   'dfa-regex'
 ;
 
 DFS

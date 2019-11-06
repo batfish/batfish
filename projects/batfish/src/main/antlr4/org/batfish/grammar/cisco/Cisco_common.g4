@@ -604,17 +604,6 @@ route_policy_params_list
    )*
 ;
 
-community_set_elem
-:
-   community
-   |
-   (
-     prefix = community_set_elem_half COLON suffix = community_set_elem_half
-   )
-   | DFA_REGEX COMMUNITY_SET_REGEX
-   | IOS_REGEX COMMUNITY_SET_REGEX
-;
-
 community_set_elem_half
 :
    value = DEC
