@@ -1,6 +1,6 @@
-! This is an IOS XR device.
+!RANCID-CONTENT-TYPE: cisco-xr
 !
-hostname iosxrOspfCostDefaults
+hostname ospf-cost-defaults
 !
 router ospf 1
   ! Batfish drops routers with no router-id.

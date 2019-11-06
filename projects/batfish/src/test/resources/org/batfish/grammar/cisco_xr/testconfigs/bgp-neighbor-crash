@@ -1,5 +1,5 @@
 !RANCID-CONTENT-TYPE: cisco-xr
-hostname xr-bgp-neighbors
+hostname bgp-neighbor-crash
 !
 router bgp 65000
  !

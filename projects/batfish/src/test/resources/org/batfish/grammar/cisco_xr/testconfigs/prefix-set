@@ -1,6 +1,5 @@
-! This is an IOS XR device.
-!
-hostname ios-xr-prefix-set
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname prefix-set
 
 prefix-set accept_this_ip
   1.2.3.4/32

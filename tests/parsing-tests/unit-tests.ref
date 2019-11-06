@@ -8911,7 +8911,7 @@
         },
         "configs/bgp_route_policy" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -51748,7 +51748,7 @@
         },
         "configs/interface_name" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -52653,7 +52653,7 @@
         },
         "configs/ios_xr_bgp_neighbor_group" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53131,7 +53131,7 @@
         },
         "configs/ios_xr_class_map" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53773,7 +53773,7 @@
         },
         "configs/ios_xr_logging" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53793,7 +53793,7 @@
         },
         "configs/ios_xr_misc" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53822,7 +53822,7 @@
         },
         "configs/ios_xr_multicast" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -54535,7 +54535,7 @@
         },
         "configs/ios_xr_multipart" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -77427,13 +77427,13 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 17,
-              "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
               "Text" : "use session-group blabber"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 94,
-              "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
               "Text" : "use session-group CIAO"
             }
           ]
@@ -77443,7 +77443,7 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 10,
-              "Parser_Context" : "[cm_match s_class_map stanza cisco_configuration]",
+              "Parser_Context" : "[cm_match s_class_map stanza cisco_xr_configuration]",
               "Text" : "match not dscp ipv4 cs2 cs3 cs4"
             }
           ]

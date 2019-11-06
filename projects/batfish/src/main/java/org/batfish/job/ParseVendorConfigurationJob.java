@@ -30,6 +30,8 @@ import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser;
 import org.batfish.grammar.cisco_nxos.NxosControlPlaneExtractor;
+import org.batfish.grammar.cisco_xr.CiscoXrCombinedParser;
+import org.batfish.grammar.cisco_xr.CiscoXrControlPlaneExtractor;
 import org.batfish.grammar.cumulus_concatenated.CumulusConcatenatedCombinedParser;
 import org.batfish.grammar.cumulus_concatenated.CumulusConcatenatedControlPlaneExtractor;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluCombinedParser;
@@ -153,7 +155,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         case CADANT:
         case CISCO_ASA:
         case CISCO_IOS:
-        case CISCO_IOS_XR:
         case FORCE10:
         case FOUNDRY:
           {
@@ -172,6 +173,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             break;
           }
 
+        case CISCO_IOS_XR:
+          {
+            CiscoXrCombinedParser ciscoXrParser =
+                new CiscoXrCombinedParser(_fileText, _settings, format);
+            combinedParser = ciscoXrParser;
+            extractor =
+                new CiscoXrControlPlaneExtractor(_fileText, ciscoXrParser, format, _warnings);
+            break;
+          }
         case CUMULUS_CONCATENATED:
           {
             CumulusConcatenatedCombinedParser parser =

@@ -3881,7 +3881,7 @@
           }
         },
         "vendorFamily" : {
-          "cisco" : {
+          "cisco_xr" : {
             "hostname" : "bgp_route_policy"
           }
         },
@@ -19842,7 +19842,7 @@
           }
         },
         "vendorFamily" : {
-          "cisco" : {
+          "cisco_xr" : {
             "hostname" : "interface_name"
           }
         },
@@ -20938,7 +20938,7 @@
           }
         },
         "vendorFamily" : {
-          "cisco" : {
+          "cisco_xr" : {
             "hostname" : "ios_xr_bgp_neighbor_group"
           }
         },
@@ -21047,7 +21047,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "cisco" : {
+          "cisco_xr" : {
             "hostname" : "ios_xr_class_map"
           }
         },
@@ -21122,7 +21122,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "cisco" : {
+          "cisco_xr" : {
             "hostname" : "ios_xr_logging",
             "logging" : {
               "on" : true
@@ -21142,7 +21142,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "cisco" : {
+          "cisco_xr" : {
             "hostname" : "ios_xr_misc"
           }
         },
@@ -21159,7 +21159,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "cisco" : {
+          "cisco_xr" : {
             "banners" : {
               "login" : "\n\n***************************************************************************\n*                                                                         *\n*  This router is : ios_xr_multipart                                      *\n*                                                                         * \n***************************************************************************\n"
             },
@@ -21858,7 +21858,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
-          "cisco" : {
+          "cisco_xr" : {
             "hostname" : "IosXrMultiCast"
           }
         },

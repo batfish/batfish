@@ -1,6 +1,6 @@
 !RANCID-CONTENT-TYPE: cisco-xr                                                                                                                                                                                                                 
 !
-hostname ios-xr-community-set
+hostname community-set
 !
 community-set universe
   *:*

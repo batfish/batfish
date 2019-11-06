@@ -1,5 +1,5 @@
 !RANCID-CONTENT-TYPE: cisco-xr
-hostname ios-xr-ospf-interface
+hostname ospf-interface
 router ospf 2
  router-id 10.10.10.10
  area 0
