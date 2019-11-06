@@ -21,8 +21,6 @@ public class CiscoXrCombinedParser extends BatfishCombinedParser<CiscoXrParser, 
         settings,
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
-    _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
-    _lexer.setIosXr(format == ConfigurationFormat.CISCO_IOS_XR);
     _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
   }
 

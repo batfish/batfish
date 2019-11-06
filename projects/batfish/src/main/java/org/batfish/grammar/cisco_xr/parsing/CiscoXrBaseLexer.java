@@ -27,22 +27,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
     }
   }
 
-  public void setIos(boolean ios) {
-    _ios = ios;
-  }
-
-  public void setIosXr(boolean iosXr) {
-    _iosXr = iosXr;
-  }
-
-  protected final boolean isIos() {
-    return _ios;
-  }
-
-  protected final boolean isIosXr() {
-    return _iosXr;
-  }
-
   protected final int lastTokenType() {
     return _lastTokenType;
   }
@@ -74,9 +58,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
   protected boolean _inAccessList = false;
   protected boolean _inCommunitySet = false;
 
-  private boolean _ios = false;
-  private boolean _iosXr = false;
-
   private @Nullable Integer _bannerIosDelimiter;
   private int _lastTokenType = -1;
   private int _secondToLastTokenType = -1;
@@ -84,8 +65,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
   @Override
   public @Nonnull String printStateVariables() {
     StringBuilder sb = new StringBuilder();
-    sb.append("_ios: " + _ios + "\n");
-    sb.append("_iosXr: " + _iosXr + "\n");
     sb.append("_enableAclNum: " + _enableAclNum + "\n");
     sb.append("_enableCommunityListNum: " + _enableCommunityListNum + "\n");
     sb.append("_enableDec: " + _enableDec + "\n");

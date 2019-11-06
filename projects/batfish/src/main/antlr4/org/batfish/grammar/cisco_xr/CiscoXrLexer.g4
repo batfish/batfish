@@ -1362,42 +1362,42 @@ BANNER
 
 BANNER_IOS
 :
-  'banner' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_CONFIG_SAVE_IOS
 :
-  'banner' F_Whitespace+ 'config-save' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'config-save' F_Whitespace+ -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_EXEC_IOS
 :
-  'banner' F_Whitespace+ 'exec' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'exec' F_Whitespace+ -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_INCOMING_IOS
 :
-  'banner' F_Whitespace+ 'incoming' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'incoming' F_Whitespace+ -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_LOGIN_IOS
 :
-  'banner' F_Whitespace+ 'login' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'login' F_Whitespace+ -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_MOTD_IOS
 :
-  'banner' F_Whitespace+ 'motd' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'motd' F_Whitespace+ -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_PROMPT_TIMEOUT_IOS
 :
-  'banner' F_Whitespace+ 'prompt-timeout' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'prompt-timeout' F_Whitespace+ -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_SLIP_PPP_IOS
 :
-  'banner' F_Whitespace+ 'slip-ppp' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'slip-ppp' F_Whitespace+ -> pushMode(M_BannerIosDelimiter)
 ;
 
 BASE
@@ -15205,12 +15205,7 @@ M_Authentication_DOUBLE_QUOTE
 
 M_Authentication_BANNER
 :
-  'banner' F_Whitespace+
-  {
-    if (isIos()) {
-      mode(M_BannerIosDelimiter);
-    }
-  } -> type ( BANNER )
+  'banner' F_Whitespace+ -> type ( BANNER )
 ;
 
 M_Authentication_ARAP
