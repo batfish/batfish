@@ -191,6 +191,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.IP_TACACS_SOU
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_POLICY_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
@@ -8815,7 +8817,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
+      int mapLine = ctx.map.getLine();
       r.setMap(map);
+      _configuration.referenceStructure(ROUTE_MAP, map, ISIS_REDISTRIBUTE_CONNECTED_MAP, mapLine);
     }
     if (ctx.LEVEL_1() != null) {
       r.setLevel(IsisLevel.LEVEL_1);
@@ -8928,7 +8932,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
+      int mapLine = ctx.map.getLine();
       r.setMap(map);
+      _configuration.referenceStructure(ROUTE_MAP, map, ISIS_REDISTRIBUTE_STATIC_MAP, mapLine);
     }
     if (ctx.LEVEL_1() != null) {
       r.setLevel(IsisLevel.LEVEL_1);
