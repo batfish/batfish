@@ -63,6 +63,7 @@ public final class FlowDiffTest {
             .setTag("tag")
             .setDstPort(dstport1)
             .setSrcPort(srcport1)
+            .setIpProtocol(IpProtocol.TCP)
             .build();
     Flow newDst = orig.toBuilder().setDstPort(dstport2).build();
     Flow newSrc = orig.toBuilder().setSrcPort(srcport2).build();

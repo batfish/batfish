@@ -55,7 +55,43 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlow() {
+  public void testGetFlow_ICMP() {
+    BDDPacket pkt = new BDDPacket();
+    Ip dstIp = Ip.parse("123.45.78.0");
+    Ip srcIp = Ip.parse("255.255.255.255");
+
+    int icmpCode = 0x00;
+    int icmpType = 0x01;
+    IpProtocol ipProtocol = IpProtocol.ICMP;
+
+    BDD bdd =
+        pkt.getDstIp()
+            .value(dstIp.asLong())
+            .and(pkt.getIcmpCode().value(icmpCode))
+            .and(pkt.getIcmpType().value(icmpType))
+            .and(pkt.getIpProtocol().value(ipProtocol))
+            .and(pkt.getSrcIp().value(srcIp.asLong()))
+            .and(pkt.getTcpAck().not())
+            .and(pkt.getTcpCwr())
+            .and(pkt.getTcpEce().not())
+            .and(pkt.getTcpFin())
+            .and(pkt.getTcpPsh().not())
+            .and(pkt.getTcpRst())
+            .and(pkt.getTcpUrg().not());
+
+    Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
+    assertTrue("Unsat", flowBuilder.isPresent());
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+
+    assertThat(flow, hasDstIp(dstIp));
+    assertThat(flow, hasIcmpCode(icmpCode));
+    assertThat(flow, hasIcmpType(icmpType));
+    assertThat(flow, hasIpProtocol(ipProtocol));
+    assertThat(flow, hasSrcIp(srcIp));
+  }
+
+  @Test
+  public void testGetFlow_TCP() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
     int dstPort = 0xA0;
@@ -63,9 +99,7 @@ public class BDDPacketTest {
     Ip srcIp = Ip.parse("255.255.255.255");
     int srcPort = 0xFF;
 
-    int icmpCode = 0x00;
-    int icmpType = 0x01;
-    IpProtocol ipProtocol = IpProtocol.IPV6_ICMP;
+    IpProtocol ipProtocol = IpProtocol.TCP;
     int tcpAck = 0;
     int tcpCwr = 1;
     int tcpEce = 0;
@@ -78,8 +112,6 @@ public class BDDPacketTest {
         pkt.getDstIp()
             .value(dstIp.asLong())
             .and(pkt.getDstPort().value(dstPort))
-            .and(pkt.getIcmpCode().value(icmpCode))
-            .and(pkt.getIcmpType().value(icmpType))
             .and(pkt.getIpProtocol().value(ipProtocol))
             .and(pkt.getSrcIp().value(srcIp.asLong()))
             .and(pkt.getSrcPort().value(srcPort))
@@ -97,8 +129,6 @@ public class BDDPacketTest {
 
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasDstPort(dstPort));
-    assertThat(flow, hasIcmpCode(icmpCode));
-    assertThat(flow, hasIcmpType(icmpType));
     assertThat(flow, hasIpProtocol(ipProtocol));
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasSrcPort(srcPort));
