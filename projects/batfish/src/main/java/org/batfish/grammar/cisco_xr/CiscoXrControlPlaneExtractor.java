@@ -6775,10 +6775,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
     }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      r.setMap(map);
-    }
     if (ctx.LEVEL_1() != null) {
       r.setLevel(IsisLevel.LEVEL_1);
     } else if (ctx.LEVEL_2() != null) {
@@ -6857,10 +6853,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
-    }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      r.setMap(map);
     }
     if (ctx.LEVEL_1() != null) {
       r.setLevel(IsisLevel.LEVEL_1);

@@ -626,7 +626,6 @@ null_bgp_tail
          NO
          (
             REMOTE_AS
-            | ROUTE_MAP
             | UPDATE_SOURCE
             | SHUTDOWN
          )

@@ -1485,8 +1485,7 @@ public class CiscoXrConversions {
   /**
    * Populates the {@link RoutingPolicy}s for inbound {@link DistributeList}s which use {@link
    * PrefixList} as the {@link DistributeList#getFilterType()}. {@link
-   * DistributeListFilterType#ROUTE_MAP} and {@link DistributeListFilterType#ACCESS_LIST} are not
-   * supported currently.
+   * DistributeListFilterType#ACCESS_LIST} is not supported currently.
    *
    * @param ospfProcess {@link OspfProcess} for which {@link DistributeList}s are to be processed
    * @param c {@link Configuration} containing the Vendor Independent representation

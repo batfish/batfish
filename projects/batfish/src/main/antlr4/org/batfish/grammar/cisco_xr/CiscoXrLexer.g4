@@ -10840,11 +10840,6 @@ ROUTE_LOOKUP
    'route-lookup'
 ;
 
-ROUTE_MAP
-:
-   'route-map' -> pushMode ( M_RouteMap )
-;
-
 ROUTE_ONLY
 :
    'route-only'
@@ -12345,11 +12340,6 @@ SUBNET_ZERO
 SUB_OPTION
 :
    'sub-option'
-;
-
-SUB_ROUTE_MAP
-:
-   'sub-route-map'
 ;
 
 SUBMISSION
@@ -16014,44 +16004,6 @@ M_REMARK_NEWLINE
 M_REMARK_REMARK
 :
    F_NonNewline+
-;
-
-mode M_RouteMap;
-
-M_RouteMap_IN
-:
-   'in' -> type ( IN )
-;
-
-M_RouteMap_OUT
-:
-   'out' -> type ( OUT )
-;
-
-M_RouteMap_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_RouteMap_VARIABLE
-:
-   F_NonWhitespace+
-   {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-   -> type ( VARIABLE ) , popMode
-;
-
-M_RouteMap_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Seed;

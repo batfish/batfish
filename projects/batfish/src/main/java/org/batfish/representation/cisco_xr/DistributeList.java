@@ -10,7 +10,6 @@ public final class DistributeList implements Serializable {
   public enum DistributeListFilterType {
     ACCESS_LIST,
     PREFIX_LIST,
-    ROUTE_MAP
   }
 
   @Nonnull private DistributeListFilterType _filterType;
