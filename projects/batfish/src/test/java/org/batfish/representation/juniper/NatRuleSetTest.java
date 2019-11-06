@@ -26,6 +26,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -227,6 +228,7 @@ public class NatRuleSetTest {
         Flow.builder()
             .setIngressNode("ingressNode")
             .setSrcIp(Ip.ZERO)
+            .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(0)
             .setDstPort(0)
             .setTag("tag");

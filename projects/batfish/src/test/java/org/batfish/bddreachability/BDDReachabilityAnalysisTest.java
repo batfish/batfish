@@ -38,6 +38,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -121,6 +122,8 @@ public final class BDDReachabilityAnalysisTest {
   private PreOutEdgePostNat _srcPreOutEdgePostNat1;
   private PreOutEdgePostNat _srcPreOutEdgePostNat2;
   private PreOutVrf _srcPreOutVrf;
+
+  private static final BDD TCP_BDD = PKT.getIpProtocol().value(IpProtocol.TCP);
 
   @Before
   public void setup() throws IOException {
@@ -451,7 +454,7 @@ public final class BDDReachabilityAnalysisTest {
     assertThat(edge(_srcPreOutEdgePostNat1, new NodeDropAclOut(_srcName)), nullValue());
     assertThat(
         bddTransition(_srcPreOutEdgePostNat2, new NodeDropAclOut(_srcName)),
-        equalTo(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT).not()));
+        equalTo(TCP_BDD.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT)).not()));
   }
 
   @Test
@@ -461,7 +464,7 @@ public final class BDDReachabilityAnalysisTest {
     assertThat(bddTransition(_srcPreOutEdgePostNat1, _dstPreInInterface1), isOne());
     assertThat(
         bddTransition(_srcPreOutEdgePostNat2, _dstPreInInterface2),
-        equalTo(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT)));
+        equalTo(TCP_BDD.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT))));
   }
 
   @Test
