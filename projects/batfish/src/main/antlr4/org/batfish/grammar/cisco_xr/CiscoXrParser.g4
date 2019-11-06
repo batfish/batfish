@@ -1,7 +1,33 @@
 parser grammar CiscoXrParser;
 
 import
-CiscoXr_common, Arista_bgp, Arista_mlag, Arista_vlan, CiscoXr_aaa, CiscoXr_acl, CiscoXr_bgp, CiscoXr_cable, CiscoXr_crypto, CiscoXr_callhome, CiscoXr_eigrp, CiscoXr_hsrp, CiscoXr_ignored, CiscoXr_interface, CiscoXr_isis, CiscoXr_line, CiscoXr_logging, CiscoXr_mpls, CiscoXr_ntp, CiscoXr_ospf, CiscoXr_pim, CiscoXr_qos, CiscoXr_rip, CiscoXr_routemap, CiscoXr_snmp, CiscoXr_static, CiscoXr_zone;
+CiscoXr_common,
+Arista_bgp,
+Arista_mlag,
+Arista_vlan,
+CiscoXr_aaa,
+CiscoXr_acl,
+CiscoXr_bgp,
+CiscoXr_cable,
+CiscoXr_crypto,
+CiscoXr_callhome,
+CiscoXr_eigrp,
+CiscoXr_hsrp,
+CiscoXr_ignored,
+CiscoXr_interface,
+CiscoXr_isis,
+CiscoXr_line,
+CiscoXr_logging,
+CiscoXr_mpls,
+CiscoXr_ntp,
+CiscoXr_ospf,
+CiscoXr_pim,
+CiscoXr_qos,
+CiscoXr_rip,
+CiscoXr_routemap,
+CiscoXr_snmp,
+CiscoXr_static,
+CiscoXr_zone;
 
 
 options {
