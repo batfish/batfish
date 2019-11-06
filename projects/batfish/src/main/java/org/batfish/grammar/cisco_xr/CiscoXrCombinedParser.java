@@ -14,8 +14,6 @@ public class CiscoXrCombinedParser extends BatfishCombinedParser<CiscoXrParser, 
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(CiscoXrLexer.NEWLINE, "\n");
 
-  public static final String DEBUG_FLAG_USE_ARISTA_BGP = "aristabgp";
-
   public CiscoXrCombinedParser(String input, GrammarSettings settings, ConfigurationFormat format) {
     super(
         CiscoXrParser.class,
@@ -44,17 +42,13 @@ public class CiscoXrCombinedParser extends BatfishCombinedParser<CiscoXrParser, 
       default:
         throw new BatfishException("Should not be possible");
     }
-    boolean eos = format == ConfigurationFormat.ARISTA;
     boolean cadant = format == ConfigurationFormat.CADANT;
     _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _lexer.setCadant(cadant);
-    _lexer.setEos(eos);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
     _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
     _lexer.setIosXr(format == ConfigurationFormat.CISCO_IOS_XR);
-    _parser.setAristaBgp(settings.getUseAristaBgp() && format == ConfigurationFormat.ARISTA);
     _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _parser.setEos(eos);
     _parser.setCadant(cadant);
     _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
   }

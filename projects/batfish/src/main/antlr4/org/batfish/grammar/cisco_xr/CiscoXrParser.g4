@@ -33,29 +33,9 @@ options {
 }
 
 @members {
-   private boolean _aristaBgp;
-
-   private boolean _eos;
-
    private boolean _cadant;
 
    private boolean _multilineBgpNeighbors;
-
-   public boolean isAristaBgp() {
-      return _aristaBgp;
-   }
-
-   public boolean isEos() {
-      return _eos;
-   }
-
-   public void setAristaBgp(boolean b) {
-      _aristaBgp = b;
-   }
-
-   public void setEos(boolean b) {
-      _eos = b;
-   }
 
    public void setCadant(boolean b) {
       _cadant = b;
@@ -67,11 +47,9 @@ options {
 
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_eos: %s\n, _aristaBgp: %s\n",
+      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n",
          _cadant,
-         _multilineBgpNeighbors,
-         _eos,
-         _aristaBgp
+         _multilineBgpNeighbors
       );
    }
 }
@@ -3422,12 +3400,11 @@ s_vpn_dialer
    )*
 ;
 
-// a way to define a VRF on IOS or EOS
+// a way to define a VRF on IOS
 s_vrf_definition
 :
-   // DEFINITION is for IOS and older versions of EOS (pre-4.23)
-   // INSTANCE is for EOS 4.23 and later
-   VRF (DEFINITION | INSTANCE)? name = variable NEWLINE
+   // DEFINITION is for IOS
+   VRF DEFINITION? name = variable NEWLINE
    (
       vrfd_address_family
       | vrfd_description
@@ -3881,8 +3858,8 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | { !_eos && !isAsa() }? s_vlan_cisco
-   | { !_eos && !isAsa() }? s_vlan_internal_cisco
+   | s_vlan_cisco
+   | s_vlan_internal_cisco
    | s_vlan_name
    | s_voice
    | s_voice_card
