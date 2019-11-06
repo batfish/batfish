@@ -751,7 +751,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
         _ingressInterface,
         _ingressNode,
         _ingressVrf,
-        _ipProtocol,
+        _ipProtocol.ordinal(),
         _packetLength,
         _srcIp,
         _srcPort,
