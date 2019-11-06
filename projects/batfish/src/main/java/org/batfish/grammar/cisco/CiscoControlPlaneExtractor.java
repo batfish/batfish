@@ -89,7 +89,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
@@ -289,7 +288,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -556,7 +554,6 @@ import org.batfish.grammar.cisco.CiscoParser.Dt_l2tp_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Eigrp_metricContext;
-import org.batfish.grammar.cisco.CiscoParser.Empty_neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_bandwidth_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_domainContext;
@@ -795,8 +792,6 @@ import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_address_familyContext;
-import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_flat_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Net_is_stanzaContext;
@@ -1434,8 +1429,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private IpAsPathAccessList _currentAsPathAcl;
 
-  private final Set<String> _currentBlockNeighborAddressFamilies;
-
   private CryptoMapEntry _currentCryptoMapEntry;
 
   private String _currentCryptoMapName;
@@ -1538,8 +1531,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private ConfigurationFormat _format;
 
-  private boolean _inBlockNeighbor;
-
   private boolean _inIpv6BgpPeer;
 
   private boolean _no;
@@ -1590,7 +1581,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _format = format;
     _w = warnings;
     _peerGroupStack = new ArrayList<>();
-    _currentBlockNeighborAddressFamilies = new HashSet<>();
   }
 
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
@@ -1789,16 +1779,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterAddress_family_header(Address_family_headerContext ctx) {
-    String addressFamilyStr = ctx.addressFamilyStr;
-    if (_inBlockNeighbor) {
-      if (_currentBlockNeighborAddressFamilies.contains(addressFamilyStr)) {
-        popPeer();
-        _inBlockNeighbor = false;
-        _currentBlockNeighborAddressFamilies.clear();
-      } else {
-        _currentBlockNeighborAddressFamilies.add(addressFamilyStr);
-      }
-    }
     Bgp_address_familyContext af = ctx.af;
     if (af.VPNV4() != null || af.VPNV6() != null || af.MDT() != null || af.MULTICAST() != null) {
       pushPeer(_dummyPeerGroup);
@@ -3288,71 +3268,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterNeighbor_block_rb_stanza(Neighbor_block_rb_stanzaContext ctx) {
-    _currentBlockNeighborAddressFamilies.clear();
-    _inBlockNeighbor = true;
-    // do no further processing for unsupported address families / containers
-    if (_currentPeerGroup == _dummyPeerGroup) {
-      pushPeer(_dummyPeerGroup);
-      return;
-    }
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (ctx.ip_address != null) {
-      Ip ip = toIp(ctx.ip_address);
-      _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-      if (_currentIpPeerGroup == null) {
-        proc.addIpPeerGroup(ip);
-        _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-      } else {
-        warn(ctx, "Duplicate IP peer group in neighbor config.");
-      }
-      pushPeer(_currentIpPeerGroup);
-    } else if (ctx.ip_prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.ip_prefix.getText());
-      _currentDynamicIpPeerGroup = proc.getDynamicIpPeerGroups().get(prefix);
-      if (_currentDynamicIpPeerGroup == null) {
-        _currentDynamicIpPeerGroup = proc.addDynamicIpPeerGroup(prefix);
-      } else {
-        warn(ctx, "Duplicate DynamicIP peer group neighbor config.");
-      }
-      pushPeer(_currentDynamicIpPeerGroup);
-    } else if (ctx.ipv6_address != null) {
-      Ip6 ip6 = toIp6(ctx.ipv6_address);
-      Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
-      if (pg == null) {
-        proc.addIpv6PeerGroup(ip6);
-        pg = proc.getIpv6PeerGroups().get(ip6);
-      } else {
-        warn(ctx, "Duplicate IPV6 peer group in neighbor config.");
-      }
-      pushPeer(pg);
-      _currentIpv6PeerGroup = pg;
-    } else if (ctx.ipv6_prefix != null) {
-      Prefix6 prefix6 = Prefix6.parse(ctx.ipv6_prefix.getText());
-      DynamicIpv6BgpPeerGroup pg = proc.getDynamicIpv6PeerGroups().get(prefix6);
-      if (pg == null) {
-        pg = proc.addDynamicIpv6PeerGroup(prefix6);
-      } else {
-        warn(ctx, "Duplicate Dynamic Ipv6 peer group neighbor config.");
-      }
-      pushPeer(pg);
-      _currentDynamicIpv6PeerGroup = pg;
-    }
-    if (ctx.bgp_asn() != null) {
-      long remoteAs = toAsNum(ctx.bgp_asn());
-      _currentPeerGroup.setRemoteAs(remoteAs);
-    }
-    if (ctx.mapname != null) {
-      String routeMap = ctx.mapname.getText();
-      int line = ctx.mapname.getStart().getLine();
-      _configuration.referenceStructure(
-          ROUTE_MAP, routeMap, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, line);
-    }
-    _currentPeerGroup.setActive(true);
-    _currentPeerGroup.setShutdown(false);
-  }
-
-  @Override
   public void enterNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
     if (ctx.ip6 != null) {
       // Remember we are in IPv6 context so that structure references are identified accordingly
@@ -4695,8 +4610,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = new BgpProcess(_format, procNum);
     currentVrf().setBgpProcess(proc);
     pushPeer(proc.getMasterBgpPeerGroup());
-    _currentBlockNeighborAddressFamilies.clear();
-    _inBlockNeighbor = false;
   }
 
   @Override
@@ -5552,12 +5465,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _currentEigrpProcess != null
             ? _currentEigrpProcess.getVrf()
             : Configuration.DEFAULT_VRF_NAME;
-  }
-
-  @Override
-  public void exitEmpty_neighbor_block_address_family(
-      Empty_neighbor_block_address_familyContext ctx) {
-    popPeer();
   }
 
   @Override
@@ -7757,24 +7664,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration.getEosVlanTrunkGroups().computeIfAbsent(groupName, VlanTrunkGroup::new);
     assert _currentVlans != null;
     trunkGroup.addVlans(_currentVlans);
-  }
-
-  @Override
-  public void exitNeighbor_block_address_family(Neighbor_block_address_familyContext ctx) {
-    if (_inBlockNeighbor) {
-      popPeer();
-    } else {
-      _currentBlockNeighborAddressFamilies.clear();
-    }
-  }
-
-  @Override
-  public void exitNeighbor_block_rb_stanza(Neighbor_block_rb_stanzaContext ctx) {
-    resetPeerGroups();
-    if (_inBlockNeighbor) {
-      _inBlockNeighbor = false;
-      popPeer();
-    }
   }
 
   @Override
