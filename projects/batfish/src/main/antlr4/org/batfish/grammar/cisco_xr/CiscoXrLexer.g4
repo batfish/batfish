@@ -12327,11 +12327,6 @@ SUBNET_MASK
    'subnet-mask'
 ;
 
-SUBNETS
-:
-   'subnets'
-;
-
 SUBNET_ZERO
 :
    'subnet-zero'

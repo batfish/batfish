@@ -326,7 +326,6 @@ ro_redistribute_bgp_cisco_xr
       (
          METRIC_TYPE type = DEC
       )
-      | subnets = SUBNETS
       |
       (
          TAG tag = DEC
@@ -350,7 +349,6 @@ ro_redistribute_connected
          METRIC_TYPE type = DEC
       )
       | ROUTE_POLICY policy = VARIABLE
-      | subnets = SUBNETS
       |
       (
          TAG tag = DEC
@@ -364,7 +362,6 @@ ro_redistribute_eigrp
    (
       METRIC metric = DEC
       | METRIC_TYPE type = DEC
-      | SUBNETS
    )* NEWLINE
 ;
 
@@ -390,7 +387,6 @@ ro_redistribute_static
          METRIC_TYPE type = DEC
       )
       | ROUTE_POLICY policy = VARIABLE
-      | subnets = SUBNETS
       |
       (
          TAG tag = DEC

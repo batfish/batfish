@@ -15,8 +15,6 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   private OspfMetricType _metricType;
 
-  private boolean _onlyClassfulRoutes;
-
   private Long _tag;
 
   public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {
@@ -31,20 +29,12 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
     return _metricType;
   }
 
-  public boolean getOnlyClassfulRoutes() {
-    return _onlyClassfulRoutes;
-  }
-
   public Long getTag() {
     return _tag;
   }
 
   public void setMetric(long metric) {
     _metric = metric;
-  }
-
-  public void setOnlyClassfulRoutes(boolean b) {
-    _onlyClassfulRoutes = b;
   }
 
   public void setOspfMetricType(OspfMetricType type) {

@@ -6937,16 +6937,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
-    /*
-     * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
-     * ARISTA redistributes all subnets.
-     *
-     * We assume that others use this sane default too. TODO: verify more vendors.
-     */
-    return format != CISCO_IOS;
-  }
-
   @Override
   public void exitRo_redistribute_bgp_cisco_xr(Ro_redistribute_bgp_cisco_xrContext ctx) {
     OspfProcess proc = _currentOspfProcess;
@@ -6970,7 +6960,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -6994,7 +6983,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -7016,7 +7004,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
     }
-    r.setOnlyClassfulRoutes(ctx.SUBNETS().isEmpty() && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -7045,7 +7032,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override

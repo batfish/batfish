@@ -155,7 +155,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -1710,11 +1709,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     ospfExportStatements.add(new SetOspfMetricType(policy.getMetricType()));
     long metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(protocol);
     ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
-
-    // If only classful routes should be redistributed, filter to classful routes.
-    if (policy.getOnlyClassfulRoutes()) {
-      ospfExportConditions.getConjuncts().add(RouteIsClassful.instance());
-    }
 
     // If a route-map filter is present, honor it.
     String exportRouteMapName = policy.getRouteMap();
