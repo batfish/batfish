@@ -1359,8 +1359,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
 
-      // Get default-originate generation policy (if CiscoXr) or export policy
-      String defaultOriginateExportMap = null;
+      // Get default-originate generation policy (if Cisco) or export policy
       String defaultOriginateGenerationMap = null;
       if (lpg.getDefaultOriginate()) {
         defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
@@ -1368,7 +1367,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
       // Generate import and export policies
       String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
-      generateBgpExportPolicy(lpg, vrfName, ipv4, defaultOriginateExportMap, c, _w);
+      generateBgpExportPolicy(lpg, vrfName, ipv4, c, _w);
 
       // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;
