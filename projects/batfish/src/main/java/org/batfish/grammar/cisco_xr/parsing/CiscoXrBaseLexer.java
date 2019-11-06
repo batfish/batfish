@@ -31,10 +31,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
     _asa = asa;
   }
 
-  public void setCadant(boolean cadant) {
-    _cadant = cadant;
-  }
-
   public void setFoundry(boolean foundry) {
     _foundry = foundry;
   }
@@ -49,10 +45,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
 
   protected final boolean isAsa() {
     return _asa;
-  }
-
-  protected final boolean isCadant() {
-    return _cadant;
   }
 
   protected final boolean isFoundry() {
@@ -73,18 +65,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
 
   protected final int secondToLastTokenType() {
     return _secondToLastTokenType;
-  }
-
-  // Cadant banner utility function
-  protected final boolean bannerCadantDelimiterFollows() {
-    if (!(getInputStream().LA(1) == '/'
-        && getInputStream().LA(2) == 'e'
-        && getInputStream().LA(3) == 'n'
-        && getInputStream().LA(4) == 'd')) {
-      return false;
-    }
-    int last = getInputStream().LA(5);
-    return last == '\n' || last == '\r';
   }
 
   // IOS banner utility functions
@@ -111,7 +91,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
   protected boolean _inCommunitySet = false;
 
   private boolean _asa = false;
-  private boolean _cadant = false;
   private boolean _foundry = false;
   private boolean _ios = false;
   private boolean _iosXr = false;
@@ -124,7 +103,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
   public @Nonnull String printStateVariables() {
     StringBuilder sb = new StringBuilder();
     sb.append("_asa: " + _asa + "\n");
-    sb.append("_cadant: " + _cadant + "\n");
     sb.append("_foundry: " + _foundry + "\n");
     sb.append("_ios: " + _ios + "\n");
     sb.append("_iosXr: " + _iosXr + "\n");

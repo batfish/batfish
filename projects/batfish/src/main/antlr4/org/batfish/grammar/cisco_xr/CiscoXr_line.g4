@@ -152,22 +152,6 @@ l_vacant_message
   VACANT_MESSAGE message = ios_delimited_banner NEWLINE
 ;
 
-lc_null
-:
-   (
-      ACCOUNTING
-      | AUTHENTICATION
-      | AUTHORIZATION
-      | ENABLE_AUTHENTICATION
-      | IDLE_TIMEOUT
-      | LENGTH
-      | LOGIN_AUTHENTICATION
-      | PASSWORD
-      | SESSION_TIMEOUT
-      | SPEED
-   ) null_rest_of_line
-;
-
 s_line
 :
    LINE line_type
@@ -199,12 +183,4 @@ s_line
       | l_vacant_message
       | description_line
    )*
-;
-
-s_line_cadant
-:
-   LINE line_type_cadant start_line = DEC end_line = DEC?
-   (
-      lc_null
-   )
 ;

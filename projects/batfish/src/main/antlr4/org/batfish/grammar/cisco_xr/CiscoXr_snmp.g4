@@ -102,25 +102,12 @@ ss_host
             traps += variable_snmp_host
          )*
       )
-      |
-      // cadant
-
-      (
-         ss_host_name
-         | ss_host_traps
-         | ss_host_version
-      )+
    ) NEWLINE
 ;
 
 ss_host_informs
 :
    INFORMS
-;
-
-ss_host_name
-:
-   NAME name = variable
 ;
 
 ss_host_traps

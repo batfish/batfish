@@ -42,14 +42,11 @@ public class CiscoXrCombinedParser extends BatfishCombinedParser<CiscoXrParser, 
       default:
         throw new BatfishException("Should not be possible");
     }
-    boolean cadant = format == ConfigurationFormat.CADANT;
     _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _lexer.setCadant(cadant);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
     _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
     _lexer.setIosXr(format == ConfigurationFormat.CISCO_IOS_XR);
     _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _parser.setCadant(cadant);
     _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
   }
 

@@ -507,7 +507,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_route_type_is_rp_stanz
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_simple_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_tag_is_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Cadant_stdacl_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_match_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_set_isakmp_profileContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_set_peerContext;
@@ -920,7 +919,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_aaaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_access_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_asa_twice_natContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_asaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_cadantContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_iosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_bfd_templateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_cableContext;
@@ -4160,13 +4158,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitS_banner_cadant(S_banner_cadantContext ctx) {
-    String bannerType = ctx.type.getText();
-    String body = ctx.body != null ? ctx.body.getText() : "";
-    _configuration.getCf().getBanners().put(bannerType, body);
-  }
-
-  @Override
   public void exitS_banner_ios(S_banner_iosContext ctx) {
     String bannerType = toBannerType(ctx.banner_header);
     if (bannerType == null) {
@@ -4237,12 +4228,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitBgp_redistribute_internal_rb_stanza(
       Bgp_redistribute_internal_rb_stanzaContext ctx) {
     todo(ctx); // TODO(https://github.com/batfish/batfish/issues/3230)
-  }
-
-  @Override
-  public void exitCadant_stdacl_name(Cadant_stdacl_nameContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getStandardAcls().put(name, _currentStandardAcl);
   }
 
   @Override

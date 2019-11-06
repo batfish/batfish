@@ -33,13 +33,7 @@ options {
 }
 
 @members {
-   private boolean _cadant;
-
    private boolean _multilineBgpNeighbors;
-
-   public void setCadant(boolean b) {
-      _cadant = b;
-   }
 
    public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
       _multilineBgpNeighbors = multilineBgpNeighbors;
@@ -47,8 +41,7 @@ options {
 
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n",
-         _cadant,
+      return String.format("_multilineBgpNeighbors: %s\n",
          _multilineBgpNeighbors
       );
    }
@@ -1321,16 +1314,6 @@ ip_ssh_null
    ) null_rest_of_line
 ;
 
-ip_ssh_private_key
-:
-   PRIVATE_KEY ~END_CADANT+ END_CADANT
-;
-
-ip_ssh_public_key
-:
-   PUBLIC_KEY ~END_CADANT+ END_CADANT
-;
-
 ip_ssh_pubkey_chain
 :
    PUBKEY_CHAIN NEWLINE
@@ -2314,17 +2297,6 @@ asa_banner_header
   | BANNER_MOTD_ASA
 ;
 
-s_banner_cadant
-:
-  BANNER type = cadant_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
-;
-
-cadant_banner_type
-:
-  LOGIN
-  | MOTD
-;
-
 s_banner_ios
 :
   banner_header = ios_banner_header banner = ios_delimited_banner NEWLINE
@@ -2798,9 +2770,7 @@ s_ip_ssh
 :
    NO? IP SSH
    (
-      ip_ssh_private_key
-      | ip_ssh_pubkey_chain
-      | ip_ssh_public_key
+      ip_ssh_pubkey_chain
       | ip_ssh_version
       | ip_ssh_null
    )
@@ -3701,7 +3671,6 @@ stanza
    | s_asa_twice_nat
    | s_authentication
    | s_banner_asa
-   | s_banner_cadant
    | s_banner_ios
    | s_bfd
    | s_bfd_template
@@ -3777,14 +3746,7 @@ stanza
    | s_l2tp_class
    | s_l2vpn
    | s_license
-   |
-   {!_cadant}?
-
-   s_line
-   |
-   {_cadant}?
-
-   s_line_cadant
+   | s_line
    | s_logging
    | s_lpts
    | s_management

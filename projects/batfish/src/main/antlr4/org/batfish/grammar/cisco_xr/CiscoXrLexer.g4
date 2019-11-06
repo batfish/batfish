@@ -17,7 +17,6 @@ tokens {
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
-   BANNER_DELIMITER_CADANT,
    BANNER_DELIMITER_IOS,
    BANNER_BODY,
    COMMUNITY_LIST_NUM_EXPANDED,
@@ -25,7 +24,6 @@ tokens {
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
    DSA1024,
-   END_CADANT,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
@@ -7059,11 +7057,6 @@ LOGGING
 LOGIN
 :
   'login'
-  {
-    if (isCadant()) {
-      pushMode(M_BannerCadant);
-    }
-  }
 ;
 
 LOGIN_ATTEMPTS
@@ -14624,7 +14617,6 @@ COMMENT_LINE
     ((java.util.function.Supplier<Boolean>)() -> {
       switch(lastTokenType()) {
         case -1:
-        case BANNER_DELIMITER_CADANT:
         case NEWLINE:
           return true;
         default:
@@ -15509,38 +15501,6 @@ M_BannerAsa_NEWLINE
   F_Newline+ -> type(NEWLINE), popMode
 ;
 
-mode M_BannerCadant;
-
-M_BannerCadant_NEWLINE
-:
-  // Consume single newline. Subsequent newlines are part of banner.
-  F_Newline -> type(NEWLINE), mode(M_BannerCadantText)
-;
-
-M_BannerCadant_WS
-:
-  F_Whitespace+ -> channel(HIDDEN)
-;
-
-mode M_BannerCadantText;
-
-M_BannerCadant_BANNER_DELIMITER_CADANT
-:
-  '/end' F_Newline+ -> type(BANNER_DELIMITER_CADANT), popMode
-;
-
-M_BannerCadant_BODY
-:
-  F_NonNewline* F_Newline+
-  {
-    if (bannerCadantDelimiterFollows()) {
-      setType(BANNER_BODY);
-    } else {
-      more();
-    }
-  }
-;
-
 mode M_BannerIosDelimiter;
 // whitespace should have been consumed before entering this mode
 
@@ -15595,28 +15555,6 @@ M_BannerIosCleanup_IGNORED
 M_BannerIosCleanup_NEWLINE
 :
   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-mode M_CadantSshKey;
-
-M_CadantSshKey_END
-:
-   '/end' F_NonNewline* F_Newline -> type ( END_CADANT ) , popMode
-;
-
-M_CadantSshKey_LINE
-:
-   F_HexDigit+ F_Newline+
-;
-
-M_CadantSshKey_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
-M_CadantSshKey_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE )
 ;
 
 mode M_Certificate;
@@ -16253,11 +16191,6 @@ M_SnmpServerCommunity_CHAR
 ;
 
 mode M_SshKey;
-
-M_SshKey_DSA1024
-:
-   'dsa1024' -> type ( DSA1024 ), mode ( M_CadantSshKey )
-;
 
 M_SshKey_NEWLINE
 :
