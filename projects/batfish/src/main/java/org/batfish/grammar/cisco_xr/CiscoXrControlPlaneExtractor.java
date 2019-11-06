@@ -615,7 +615,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_isis_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_mtuContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_nameifContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_no_security_levelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_security_levelContext;
@@ -5388,48 +5387,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private static final String TRUST_SECURITY_LEVEL_ALIAS = "inside";
-  private static final int TRUST_SECURITY_LEVEL = 100;
-  private static final String NO_TRUST_SECURITY_LEVEL_ALIAS = "outside";
-  private static final int NO_TRUST_SECURITY_LEVEL = 0;
-
-  @Override
-  public void exitIf_nameif(If_nameifContext ctx) {
-    String alias = ctx.name.getText();
-    Map<String, Interface> ifaces = _configuration.getInterfaces();
-    if (ifaces.containsKey(alias)) {
-      warn(ctx, String.format("Interface alias '%s' is already in use.", alias));
-    } else if (_currentInterfaces.size() > 1) {
-      warn(ctx, "Parse assertion failed for _currentInterfaces");
-    } else {
-      // Define the alias as an interface to make ref tracking easier
-      _configuration.defineStructure(INTERFACE, alias, ctx);
-      _configuration.referenceStructure(
-          INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
-      Interface iface = _currentInterfaces.get(0);
-      iface.setDeclaredNames(
-          ImmutableSortedSet.<String>naturalOrder()
-              .addAll(iface.getDeclaredNames())
-              .add(alias)
-              .build());
-      iface.setAlias(alias);
-
-      // Only set level to default if it is not already set
-      if (iface.getSecurityLevel() == null) {
-        switch (alias) {
-          case TRUST_SECURITY_LEVEL_ALIAS:
-            iface.setSecurityLevel(TRUST_SECURITY_LEVEL);
-            break;
-          case NO_TRUST_SECURITY_LEVEL_ALIAS:
-            iface.setSecurityLevel(NO_TRUST_SECURITY_LEVEL);
-            break;
-          default:
-            // don't set a level
-        }
-      }
-    }
-  }
-
   @Override
   public void exitIf_no_security_level(If_no_security_levelContext ctx) {
     if (_currentInterfaces.size() != 1) {
@@ -6671,7 +6628,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return;
     }
     boolean passive = (ctx.NO() == null);
-    String interfaceName = ctx.i.getText(); // Note: Interface alias is not canonicalized for ASA
+    String interfaceName = getCanonicalInterfaceName(ctx.i.getText());
     _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
     _configuration.referenceStructure(
         INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());

@@ -835,10 +835,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _ciscoXrIosNats;
   }
 
-  private String getNewInterfaceName(Interface iface) {
-    return firstNonNull(iface.getAlias(), iface.getName());
-  }
-
   public String getNtpSourceInterface() {
     return _ntpSourceInterface;
   }
@@ -1660,7 +1656,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       boolean passive =
           eigrpProcess
               .getInterfacePassiveStatus()
-              .getOrDefault(getNewInterfaceName(iface), eigrpProcess.getPassiveInterfaceDefault());
+              .getOrDefault(iface.getName(), eigrpProcess.getPassiveInterfaceDefault());
 
       List<If> redistributePolicyStatements =
           eigrpRedistributionPoliciesToStatements(
@@ -1893,7 +1889,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           new MatchSrcInterface(
               _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
                   .filter(other -> !other.equals(iface))
-                  .map(this::getNewInterfaceName)
+                  .map(iface1 -> iface1.getName())
                   .collect(ImmutableList.toImmutableList()),
               String.format(
                   "Allow traffic received on other interfaces with security level %d",
@@ -2049,14 +2045,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
        * proceed down to inference based on network addresses.
        */
       Interface vsIface = _interfaces.get(iface.getName());
-      if (vsIface == null) {
-        // Need to look at aliases because in ASA the VI model iface will be named using the alias
-        vsIface =
-            _interfaces.values().stream()
-                .filter(i -> iface.getName().equals(i.getAlias()))
-                .findFirst()
-                .get();
-      }
       if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
         continue;
       }
@@ -2859,7 +2847,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           zone.setInterfaces(
               ImmutableSet.<String>builder()
                   .addAll(zone.getInterfaces())
-                  .add(getNewInterfaceName(iface))
+                  .add(iface.getName())
                   .build());
           _securityLevels.putIfAbsent(zoneName, level);
         });
@@ -2871,7 +2859,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _interfaces.forEach(
         (ifaceName, iface) -> {
           // Handle renaming interfaces for ASA devices
-          String newIfaceName = getNewInterfaceName(iface);
+          String newIfaceName = iface.getName();
           org.batfish.datamodel.Interface newInterface =
               toInterface(newIfaceName, iface, c.getIpAccessLists(), c);
           String vrfName = iface.getVrf();
@@ -3105,29 +3093,24 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
      * (e.g. has OSPF settings but no associated OSPF process)
      */
     _interfaces.forEach(
-        (key, vsIface) -> {
-          // Check alias first to handle ASA using alias as VI interface name
-          String ifaceName = firstNonNull(vsIface.getAlias(), key);
+        (ifaceName, vsIface) -> {
           org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
-          if (iface == null) {
-            // Should never get here
-          } else {
-            // Conversion of interface OSPF settings usually occurs per area
-            // If the iface does not have an area, then need warn and convert settings here instead
-            if (iface.getOspfAreaName() == null) {
-              // Not part of an OSPF area
-              if (vsIface.getOspfArea() != null
-                  || vsIface.getOspfCost() != null
-                  || vsIface.getOspfPassive() != null
-                  || vsIface.getOspfNetworkType() != null
-                  || vsIface.getOspfDeadInterval() != null
-                  || vsIface.getOspfHelloInterval() != null) {
-                _w.redFlag(
-                    "Interface: '"
-                        + ifaceName
-                        + "' contains OSPF settings, but there is no corresponding OSPF area (or process)");
-                finalizeInterfaceOspfSettings(iface, vsIface, null, null);
-              }
+          assert iface != null;
+          // Conversion of interface OSPF settings usually occurs per area
+          // If the iface does not have an area, then need warn and convert settings here instead
+          if (iface.getOspfAreaName() == null) {
+            // Not part of an OSPF area
+            if (vsIface.getOspfArea() != null
+                || vsIface.getOspfCost() != null
+                || vsIface.getOspfPassive() != null
+                || vsIface.getOspfNetworkType() != null
+                || vsIface.getOspfDeadInterval() != null
+                || vsIface.getOspfHelloInterval() != null) {
+              _w.redFlag(
+                  "Interface: '"
+                      + ifaceName
+                      + "' contains OSPF settings, but there is no corresponding OSPF area (or process)");
+              finalizeInterfaceOspfSettings(iface, vsIface, null, null);
             }
           }
         });
@@ -3754,7 +3737,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                         .setMatchCondition(
                             new MatchSrcInterface(
                                 _interfacesBySecurityLevel.get(l).stream()
-                                    .map(this::getNewInterfaceName)
+                                    .map(iface2 -> iface2.getName())
                                     .collect(Collectors.toList())))
                         .build())
             .collect(Collectors.toList());
@@ -3772,7 +3755,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                             new MatchSrcInterface(
                                 _interfacesBySecurityLevel.get(l).stream()
                                     .filter(iface -> iface.getIncomingFilter() != null)
-                                    .map(this::getNewInterfaceName)
+                                    .map(iface1 -> iface1.getName())
                                     .collect(Collectors.toList())))
                         .build())
             .filter(

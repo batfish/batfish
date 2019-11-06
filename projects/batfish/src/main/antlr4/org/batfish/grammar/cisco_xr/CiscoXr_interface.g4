@@ -584,11 +584,6 @@ if_mtu
    MTU mtu_size = DEC NEWLINE
 ;
 
-if_nameif
-:
-   NAMEIF name = variable NEWLINE
-;
-
 if_no_bfd
 :
    NO BFD (IPV4 | IPV6)?
@@ -606,11 +601,6 @@ if_no_bfd
 if_no_ip_address
 :
    NO IP ADDRESS NEWLINE
-;
-
-if_no_nameif
-:
-   NO NAMEIF NEWLINE
 ;
 
 if_no_routing_dynamic
@@ -1716,10 +1706,8 @@ if_inner
    | if_isis_tag
    | if_load_interval
    | if_mtu
-   | if_nameif
    | if_no_bfd
    | if_no_ip_address
-   | if_no_nameif
    | if_no_routing_dynamic
    | if_no_security_level
    | if_port_security

@@ -485,10 +485,6 @@ public class Interface implements Serializable {
     _active = active;
   }
 
-  public void setAlias(String alias) {
-    _alias = alias;
-  }
-
   public void setAutoState(boolean autoState) {
     _autoState = autoState;
   }

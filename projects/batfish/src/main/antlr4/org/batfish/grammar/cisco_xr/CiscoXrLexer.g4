@@ -8163,11 +8163,6 @@ NAMED_KEY
    'named-key'
 ;
 
-NAMEIF
-:
-   'nameif'
-;
-
 NAMESPACE
 :
    'namespace'

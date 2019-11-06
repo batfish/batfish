@@ -143,14 +143,7 @@ ntp_server
          MINPOLL DEC
       )
       | prefer = PREFER
-      |
-      (
-         SOURCE
-         (
-            src_interface = interface_name_unstructured
-            | src_interface_alias = variable
-         )
-      )
+      | SOURCE src_interface = interface_name_unstructured
       |
       (
          USE_VRF vrf = variable
