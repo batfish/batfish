@@ -88256,6 +88256,23 @@
                 6
               ]
             }
+          },
+          "route-map" : {
+            "connected-to-isis" : {
+              "isis redistribute connected route-map" : [
+                66
+              ]
+            },
+            "connected-to-isis-v6" : {
+              "isis redistribute connected route-map" : [
+                69
+              ]
+            },
+            "static-to-bgp" : {
+              "isis redistribute static route-map" : [
+                61
+              ]
+            }
           }
         },
         "configs/cisco_line" : {
@@ -93181,6 +93198,25 @@
             "Serial5/1:5" : {
               "ip route next-hop interface" : [
                 9
+              ]
+            }
+          }
+        },
+        "configs/cisco_isis" : {
+          "route-map" : {
+            "connected-to-isis" : {
+              "isis redistribute connected route-map" : [
+                66
+              ]
+            },
+            "connected-to-isis-v6" : {
+              "isis redistribute connected route-map" : [
+                69
+              ]
+            },
+            "static-to-bgp" : {
+              "isis redistribute static route-map" : [
+                61
               ]
             }
           }

@@ -129,6 +129,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   ISAKMP_POLICY_SELF_REF("isakmp policy"),
   ISAKMP_PROFILE_KEYRING("isakmp profile keyring"),
   ISAKMP_PROFILE_SELF_REF("isakmp profile"),
+  ISIS_REDISTRIBUTE_CONNECTED_MAP("isis redistribute connected route-map"),
+  ISIS_REDISTRIBUTE_STATIC_MAP("isis redistribute static route-map"),
   LINE_ACCESS_CLASS_LIST("line access-class list"),
   LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),
   MANAGEMENT_SSH_ACCESS_GROUP("management ssh ip access-group"),
