@@ -199,11 +199,6 @@ archive_null
    ) null_rest_of_line
 ;
 
-asa_comment_stanza
-:
-   COLON null_rest_of_line
-;
-
 av_null
 :
    NO?
@@ -2798,11 +2793,6 @@ s_monitor_session
    )*
 ;
 
-s_mtu
-:
-   MTU iface = variable bytes = DEC NEWLINE
-;
-
 s_name
 :
    NAME variable variable null_rest_of_line
@@ -2969,11 +2959,6 @@ s_service
 s_service_policy_global
 :
    SERVICE_POLICY name = variable GLOBAL NEWLINE
-;
-
-s_service_policy_interface
-:
-   SERVICE_POLICY name = variable INTERFACE iface = interface_name_unstructured NEWLINE
 ;
 
 s_sip_ua
@@ -3523,7 +3508,6 @@ ssh_timeout
 stanza
 :
    appletalk_access_list_stanza
-   | asa_comment_stanza
    | as_path_set_stanza
    | community_set_stanza
    | del_stanza
@@ -3650,7 +3634,6 @@ stanza
    | s_mpls_label_range
    | s_mpls_ldp
    | s_mpls_traffic_eng
-   | s_mtu
    | s_name
    | s_netdestination
    | s_netdestination6
@@ -3688,7 +3671,6 @@ stanza
    | s_sccp
    | s_service
    | s_service_policy_global
-   | s_service_policy_interface
    | s_service_template
    | s_sip_ua
    | s_snmp_server

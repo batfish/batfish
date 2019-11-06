@@ -242,8 +242,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_PO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_SET_COMMUNITY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SERVICE_POLICY_GLOBAL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SERVICE_POLICY_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
@@ -909,7 +907,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_loggingContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_mac_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_mac_access_list_extendedContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_mtuContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ntpContext;
@@ -919,7 +916,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ripContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_same_security_trafficContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_serviceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_service_policy_globalContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_service_policy_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_service_templateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_snmp_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_sntpContext;
@@ -8269,18 +8265,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitS_mtu(S_mtuContext ctx) {
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(ctx, String.format("mtu refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-    iface.setMtu(toInteger(ctx.bytes));
-  }
-
-  @Override
   public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
     String name = ctx.ACL_NUM_EXTENDED().getText();
     _configuration.getExtendedAcls().remove(name);
@@ -8336,27 +8320,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitS_service_policy_global(S_service_policy_globalContext ctx) {
     _configuration.referenceStructure(
         POLICY_MAP, ctx.name.getText(), SERVICE_POLICY_GLOBAL, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitS_service_policy_interface(S_service_policy_interfaceContext ctx) {
-    _configuration.referenceStructure(
-        POLICY_MAP,
-        ctx.name.getText(),
-        SERVICE_POLICY_INTERFACE_POLICY,
-        ctx.name.getStart().getLine());
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(
-          ctx,
-          String.format("service-policy refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-
-    _configuration.referenceStructure(
-        INTERFACE, iface.getName(), SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -9038,14 +9001,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       return null;
     }
-  }
-
-  @Nullable
-  private Interface getAsaInterfaceByAlias(String alias) {
-    return _configuration.getInterfaces().values().stream()
-        .filter(i -> alias.equals(i.getAlias()))
-        .findFirst()
-        .orElse(null);
   }
 
   private String getCanonicalInterfaceName(String ifaceName) {
