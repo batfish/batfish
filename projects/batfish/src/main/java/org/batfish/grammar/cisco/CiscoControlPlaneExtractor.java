@@ -56,7 +56,6 @@ import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
-import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
@@ -372,7 +371,6 @@ import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
-import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
@@ -393,19 +391,15 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.LiteralRouteType;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
-import org.batfish.datamodel.routing_policy.expr.RouteType;
-import org.batfish.datamodel.routing_policy.expr.RouteTypeExpr;
 import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.expr.VarIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
-import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -884,8 +878,6 @@ import org.batfish.grammar.cisco.CiscoParser.Pmc_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Prefix_set_elemContext;
-import org.batfish.grammar.cisco.CiscoParser.Prefix_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.ProtocolContext;
 import org.batfish.grammar.cisco.CiscoParser.RangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_autonomous_systemContext;
@@ -956,9 +948,6 @@ import org.batfish.grammar.cisco.CiscoParser.Route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Rp_isis_metric_typeContext;
-import org.batfish.grammar.cisco.CiscoParser.Rp_ospf_metric_typeContext;
-import org.batfish.grammar.cisco.CiscoParser.Rp_route_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_subrangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rr_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Rr_networkContext;
@@ -1509,8 +1498,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Prefix6List _currentPrefix6List;
 
   private PrefixList _currentPrefixList;
-
-  private String _currentPrefixSetName;
 
   private RipProcess _currentRipProcess;
 
@@ -3989,12 +3976,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOs_description(Os_descriptionContext ctx) {
     _currentServiceObject.setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void enterPrefix_set_stanza(Prefix_set_stanzaContext ctx) {
-    _currentPrefixSetName = ctx.name.getText();
-    _configuration.defineStructure(PREFIX_SET, _currentPrefixSetName, ctx);
   }
 
   @Override
@@ -8554,69 +8535,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitPrefix_set_elem(Prefix_set_elemContext ctx) {
-    String name = _currentPrefixSetName;
-    if (name != null) {
-      if (ctx.ipa != null || ctx.prefix != null) {
-        PrefixList pl = _configuration.getPrefixLists().computeIfAbsent(name, PrefixList::new);
-        Prefix prefix;
-        if (ctx.ipa != null) {
-          prefix = Prefix.create(toIp(ctx.ipa), Prefix.MAX_PREFIX_LENGTH);
-        } else {
-          prefix = Prefix.parse(ctx.prefix.getText());
-        }
-        int prefixLength = prefix.getPrefixLength();
-        int minLen = prefixLength;
-        int maxLen = prefixLength;
-        if (ctx.minpl != null) {
-          minLen = toInteger(ctx.minpl);
-          maxLen = Prefix.MAX_PREFIX_LENGTH;
-        }
-        if (ctx.maxpl != null) {
-          maxLen = toInteger(ctx.maxpl);
-        }
-        if (ctx.eqpl != null) {
-          minLen = toInteger(ctx.eqpl);
-          maxLen = toInteger(ctx.eqpl);
-        }
-        SubRange lengthRange = new SubRange(minLen, maxLen);
-        PrefixListLine line = new PrefixListLine(LineAction.PERMIT, prefix, lengthRange);
-        pl.addLine(line);
-      } else {
-        Prefix6List pl = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
-        Prefix6 prefix6;
-        if (ctx.ipv6a != null) {
-          prefix6 = new Prefix6(toIp6(ctx.ipv6a), Prefix6.MAX_PREFIX_LENGTH);
-        } else {
-          prefix6 = Prefix6.parse(ctx.ipv6_prefix.getText());
-        }
-        int prefixLength = prefix6.getPrefixLength();
-        int minLen = prefixLength;
-        int maxLen = prefixLength;
-        if (ctx.minpl != null) {
-          minLen = toInteger(ctx.minpl);
-          maxLen = Prefix6.MAX_PREFIX_LENGTH;
-        }
-        if (ctx.maxpl != null) {
-          maxLen = toInteger(ctx.maxpl);
-        }
-        if (ctx.eqpl != null) {
-          minLen = toInteger(ctx.eqpl);
-          maxLen = toInteger(ctx.eqpl);
-        }
-        SubRange lengthRange = new SubRange(minLen, maxLen);
-        Prefix6ListLine line = new Prefix6ListLine(LineAction.PERMIT, prefix6, lengthRange);
-        pl.addLine(line);
-      }
-    }
-  }
-
-  @Override
-  public void exitPrefix_set_stanza(Prefix_set_stanzaContext ctx) {
-    _currentPrefixSetName = null;
-  }
-
-  @Override
   public void exitRedistribute_aggregate_bgp_tail(Redistribute_aggregate_bgp_tailContext ctx) {
     todo(ctx);
   }
@@ -11041,20 +10959,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private IsisMetricType toIsisMetricType(Rp_isis_metric_typeContext ctx) {
-    if (ctx.EXTERNAL() != null) {
-      return IsisMetricType.EXTERNAL;
-    } else if (ctx.INTERNAL() != null) {
-      return IsisMetricType.INTERNAL;
-    } else if (ctx.RIB_METRIC_AS_EXTERNAL() != null) {
-      return IsisMetricType.RIB_METRIC_AS_EXTERNAL;
-    } else if (ctx.RIB_METRIC_AS_INTERNAL() != null) {
-      return IsisMetricType.RIB_METRIC_AS_INTERNAL;
-    } else {
-      throw convError(IsisMetricType.class, ctx);
-    }
-  }
-
   private String toJavaRegex(String rawRegex) {
     // TODO: fix so it actually works
     return rawRegex;
@@ -11657,16 +11561,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private OspfMetricType toOspfMetricType(Rp_ospf_metric_typeContext ctx) {
-    if (ctx.TYPE_1() != null) {
-      return OspfMetricType.E1;
-    } else if (ctx.TYPE_2() != null) {
-      return OspfMetricType.E2;
-    } else {
-      throw convError(OspfMetricType.class, ctx);
-    }
-  }
-
   private List<SubRange> toPortRanges(Port_specifierContext ps) {
     Builder builder = IntegerSpace.builder();
     if (ps.EQ() != null) {
@@ -11715,42 +11609,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
     }
     return ExtendedCommunity.target(toAsNum(ctx.bgp_asn()), la);
-  }
-
-  private RouteTypeExpr toRouteType(Rp_route_typeContext ctx) {
-    if (ctx.INTERAREA() != null) {
-      return new LiteralRouteType(RouteType.INTERAREA);
-    } else if (ctx.INTERNAL() != null) {
-      return new LiteralRouteType(RouteType.INTERNAL);
-    } else if (ctx.LEVEL_1() != null) {
-      return new LiteralRouteType(RouteType.LEVEL_1);
-    } else if (ctx.LEVEL_1_2() != null) {
-      return new LiteralRouteType(RouteType.INTERAREA); // not a typo
-    } else if (ctx.LEVEL_2() != null) {
-      return new LiteralRouteType(RouteType.LEVEL_2);
-    } else if (ctx.LOCAL() != null) {
-      return new LiteralRouteType(RouteType.LOCAL);
-    } else if (ctx.OSPF_EXTERNAL_TYPE_1() != null) {
-      return new LiteralRouteType(RouteType.OSPF_EXTERNAL_TYPE_1);
-    } else if (ctx.OSPF_EXTERNAL_TYPE_2() != null) {
-      return new LiteralRouteType(RouteType.OSPF_EXTERNAL_TYPE_2);
-    } else if (ctx.OSPF_INTER_AREA() != null) {
-      return new LiteralRouteType(RouteType.OSPF_INTER_AREA);
-    } else if (ctx.OSPF_INTRA_AREA() != null) {
-      return new LiteralRouteType(RouteType.OSPF_INTRA_AREA);
-    } else if (ctx.OSPF_NSSA_TYPE_1() != null) {
-      return new LiteralRouteType(RouteType.OSPF_NSSA_TYPE_1);
-    } else if (ctx.OSPF_NSSA_TYPE_2() != null) {
-      return new LiteralRouteType(RouteType.OSPF_NSSA_TYPE_2);
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarRouteType(ctx.RP_VARIABLE().getText());
-    } else if (ctx.TYPE_1() != null) {
-      return new LiteralRouteType(RouteType.TYPE_1);
-    } else if (ctx.TYPE_2() != null) {
-      return new LiteralRouteType(RouteType.TYPE_2);
-    } else {
-      throw convError(RouteTypeExpr.class, ctx);
-    }
   }
 
   private SubRangeExpr toSubRangeExpr(Rp_subrangeContext ctx) {

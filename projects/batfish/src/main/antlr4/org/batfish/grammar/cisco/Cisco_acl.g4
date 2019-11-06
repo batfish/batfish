@@ -835,31 +835,6 @@ null_rs_stanza
    ) null_rest_of_line
 ;
 
-prefix_set_stanza
-:
-   PREFIX_SET name = variable NEWLINE prefix_set_elem_list END_SET NEWLINE
-;
-
-prefix_set_elem_list
-:
-// no elements
-
-   |
-   (
-      (
-         hash_comment
-         |
-         (
-            prefix_set_elem COMMA
-         )
-      ) NEWLINE
-   )*
-   (
-      hash_comment
-      | prefix_set_elem
-   ) NEWLINE
-;
-
 protocol_type_code_access_list_null_tail
 :
    action = access_list_action null_rest_of_line

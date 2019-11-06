@@ -261,55 +261,6 @@ route_map_stanza
    rm_stanza*
 ;
 
-rp_isis_metric_type
-:
-   EXTERNAL
-   | INTERNAL
-   | RIB_METRIC_AS_EXTERNAL
-   | RIB_METRIC_AS_INTERNAL
-;
-
-rp_metric_type
-:
-   rp_isis_metric_type
-   | rp_ospf_metric_type
-   | RP_VARIABLE
-;
-
-rp_ospf_metric_type
-:
-   TYPE_1
-   | TYPE_2
-;
-
-rp_prefix_set
-:
-   name = variable
-   | PAREN_LEFT elems += prefix_set_elem
-   (
-      COMMA elems += prefix_set_elem
-   )* PAREN_RIGHT
-;
-
-rp_route_type
-:
-   LOCAL
-   | INTERAREA
-   | INTERNAL
-   | LEVEL_1
-   | LEVEL_1_2
-   | LEVEL_2
-   | LOCAL
-   | OSPF_EXTERNAL_TYPE_1
-   | OSPF_EXTERNAL_TYPE_2
-   | OSPF_INTER_AREA
-   | OSPF_INTRA_AREA
-   | OSPF_NSSA_TYPE_1
-   | OSPF_NSSA_TYPE_2
-   | RP_VARIABLE
-   | TYPE_1
-   | TYPE_2
-;
 
 set_as_path_prepend_rm_stanza
 :

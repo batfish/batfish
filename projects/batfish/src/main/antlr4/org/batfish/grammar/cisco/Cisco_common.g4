@@ -110,11 +110,6 @@ extended_community
    ec_literal
 ;
 
-hash_comment
-:
-   POUND RAW_TEXT
-;
-
 icmp_object_type
 :
    DEC
@@ -519,29 +514,6 @@ port
    | XNS_MAIL
    | XNS_TIME
    | Z39_50
-;
-
-prefix_set_elem
-:
-   (
-      ipa = IP_ADDRESS
-      | prefix = IP_PREFIX
-      | ipv6a = IPV6_ADDRESS
-      | ipv6_prefix = IPV6_PREFIX
-   )
-   (
-      (
-         GE minpl = DEC
-      )
-      |
-      (
-         LE maxpl = DEC
-      )
-      |
-      (
-         EQ eqpl = DEC
-      )
-   )*
 ;
 
 protocol

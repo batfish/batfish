@@ -3707,7 +3707,6 @@ stanza
    | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
-   | prefix_set_stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
    | router_bgp_stanza
