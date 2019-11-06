@@ -57,10 +57,6 @@ address_family_rb_stanza
       | additional_paths_send_xr_rb_stanza
       | aggregate_address_rb_stanza
       | bgp_tail
-      |
-      {!_multilineBgpNeighbors}?
-
-      neighbor_flat_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
@@ -904,11 +900,8 @@ router_bgp_stanza_tail
    | cluster_id_rb_stanza
    | compare_routerid_rb_stanza
    | default_information_originate_rb_stanza
-   |
    // do NOT put neighbor_block_rb_stanza under neighbor_flat_rb_stanza
-   {_multilineBgpNeighbors}?
-
-   neighbor_block_rb_stanza
+   | neighbor_block_rb_stanza
    | neighbor_flat_rb_stanza
    | neighbor_group_rb_stanza
    | no_bgp_enforce_first_as_stanza

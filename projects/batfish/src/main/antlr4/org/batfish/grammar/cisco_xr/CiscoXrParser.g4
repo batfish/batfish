@@ -32,21 +32,6 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
-@members {
-   private boolean _multilineBgpNeighbors;
-
-   public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
-      _multilineBgpNeighbors = multilineBgpNeighbors;
-   }
-
-   @Override
-   public String getStateInfo() {
-      return String.format("_multilineBgpNeighbors: %s\n",
-         _multilineBgpNeighbors
-      );
-   }
-}
-
 address_aiimgp_stanza
 :
    ADDRESS null_rest_of_line
