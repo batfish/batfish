@@ -7,10 +7,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
 import org.batfish.grammar.BatfishLexer;
 
-/**
- * CiscoXr hybrid lexer base class providing additional functionality on top of {@link
- * BatfishLexer}.
- */
+/** CiscoXr lexer base class providing additional functionality on top of {@link BatfishLexer}. */
 @ParametersAreNonnullByDefault
 public abstract class CiscoXrBaseLexer extends BatfishLexer {
 
