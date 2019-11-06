@@ -134,4 +134,22 @@ public class HeaderSpaceToFlowTest {
     assertThat(flowBuilder.get().getDstPort(), equalTo(1));
     assertThat(flowBuilder.get().getSrcPort(), equalTo(NamedPort.EPHEMERAL_LOWEST.number()));
   }
+
+  @Test
+  public void testGetRepresentativeFlow_testFilterPrefICMP() {
+    HeaderSpaceToFlow headerSpaceToFlow =
+        new HeaderSpaceToFlow(ImmutableMap.of(), FlowPreference.TESTFILTER);
+    Optional<Builder> flowBuilder =
+        headerSpaceToFlow.getRepresentativeFlow(
+            HeaderSpace.builder()
+                .setDstIps(Ip.parse("1.1.1.1").toIpSpace())
+                .setIpProtocols(IpProtocol.ICMP)
+                .build());
+
+    assertTrue(flowBuilder.isPresent());
+    assertThat(flowBuilder.get().getDstIp(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.ICMP));
+    assertThat(flowBuilder.get().getDstPort(), equalTo(0));
+    assertThat(flowBuilder.get().getSrcPort(), equalTo(0));
+  }
 }

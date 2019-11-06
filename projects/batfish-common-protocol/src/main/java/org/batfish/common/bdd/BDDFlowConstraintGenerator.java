@@ -109,7 +109,8 @@ public final class BDDFlowConstraintGenerator {
     BDDIpProtocol ipProtocol = _bddPacket.getIpProtocol();
 
     BDD defaultDstIpBdd = dstIp.value(Ip.parse("8.8.8.8").asLong());
-    BDD defaultIpProtocolBdd = ipProtocol.value(IpProtocol.TCP);
+    BDD tcpBdd = ipProtocol.value(IpProtocol.TCP);
+    BDD udpBdd = ipProtocol.value(IpProtocol.UDP);
     BDD defaultSrcPortBdd = srcPort.value(NamedPort.EPHEMERAL_LOWEST.number());
     BDD defaultDstPortBdd = dstPort.value(NamedPort.HTTP.number());
 
@@ -120,7 +121,7 @@ public final class BDDFlowConstraintGenerator {
     // in BDD of the field.
     Builder<BDD> builder = ImmutableList.builder();
     for (BDD dstIpBdd : ImmutableList.of(defaultDstIpBdd, one)) {
-      for (BDD ipProtocolBdd : ImmutableList.of(defaultIpProtocolBdd, one)) {
+      for (BDD ipProtocolBdd : ImmutableList.of(tcpBdd, udpBdd)) {
         for (BDD srcPortBdd : ImmutableList.of(defaultSrcPortBdd, one)) {
           for (BDD dstPortBdd : ImmutableList.of(defaultDstPortBdd, one)) {
             builder.add(bddOps.and(dstIpBdd, ipProtocolBdd, srcPortBdd, dstPortBdd));
@@ -128,6 +129,7 @@ public final class BDDFlowConstraintGenerator {
         }
       }
     }
+    builder.add(defaultDstIpBdd);
     return builder.build();
   }
 
