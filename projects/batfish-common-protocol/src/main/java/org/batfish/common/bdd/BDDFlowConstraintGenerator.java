@@ -1,13 +1,11 @@
 package org.batfish.common.bdd;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
@@ -32,7 +30,7 @@ public final class BDDFlowConstraintGenerator {
   private BDD _icmpFlow;
   private BDD _udpFlow;
   private BDD _tcpFlow;
-  private Supplier<List<BDD>> _testFilterPrefBdds;
+  private List<BDD> _testFilterPrefBdds;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
     try (ActiveSpan span =
@@ -42,7 +40,7 @@ public final class BDDFlowConstraintGenerator {
       _icmpFlow = computeICMPConstraint();
       _udpFlow = computeUDPConstraint();
       _tcpFlow = computeTCPConstraint();
-      _testFilterPrefBdds = Suppliers.memoize(this::computeTestFilterPreference);
+      _testFilterPrefBdds = computeTestFilterPreference();
     }
   }
 
@@ -140,7 +138,7 @@ public final class BDDFlowConstraintGenerator {
       case APPLICATION:
         return ImmutableList.of(_tcpFlow, _udpFlow, _icmpFlow);
       case TESTFILTER:
-        return _testFilterPrefBdds.get();
+        return _testFilterPrefBdds;
       default:
         throw new BatfishException("Not supported flow preference");
     }
