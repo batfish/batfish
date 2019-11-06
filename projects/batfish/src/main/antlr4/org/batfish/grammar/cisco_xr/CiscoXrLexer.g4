@@ -925,11 +925,6 @@ AS_SET
    'as-set'
 ;
 
-ASA
-:
-   'ASA'
-;
-
 ASCENDING
 :
    'ascending'
@@ -6928,11 +6923,6 @@ LOCAL_AS
    [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
 ;
 
-LOCAL_ASA
-:
-   'LOCAL'
-;
-
 LOCAL_CASE
 :
    'local-case'
@@ -12645,11 +12635,6 @@ TACACS_DS
 TACACS_PLUS
 :
    'tacacs+'
-;
-
-TACACS_PLUS_ASA
-:
-   'TACACS+'
 ;
 
 TACACS_SERVER

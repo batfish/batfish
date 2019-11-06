@@ -285,8 +285,7 @@ aaa_authentication
 :
    AUTHENTICATION
    (
-      aaa_authentication_asa
-      | aaa_authentication_banner
+      aaa_authentication_banner
       | aaa_authentication_captive_portal
       | aaa_authentication_dot1x
       | aaa_authentication_enable
@@ -304,28 +303,6 @@ aaa_authentication
       | aaa_authentication_wired
       | aaa_authentication_wispr
    )
-;
-
-aaa_authentication_asa
-:
-   (
-      linetype=HTTP
-      | linetype=SERIAL
-      | linetype=SSH
-      | linetype=TELNET
-   ) aaa_authentication_asa_console
-;
-
-aaa_authentication_asa_console
-:
-   CONSOLE
-   (
-      LOCAL_ASA
-      |
-      (
-         group = variable LOCAL_ASA?
-      )
-   ) NEWLINE
 ;
 
 aaa_authentication_banner
@@ -400,7 +377,6 @@ aaa_authentication_enable
          DEFAULT aaa_authentication_list_method+
          | IMPLICIT_USER
       ) NEWLINE
-      | aaa_authentication_asa_console
    )
 ;
 

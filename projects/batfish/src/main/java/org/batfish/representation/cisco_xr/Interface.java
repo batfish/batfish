@@ -259,7 +259,6 @@ public class Interface implements Serializable {
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _name = name;
     _secondaryAddresses = new LinkedHashSet<>();
-    ConfigurationFormat vendor = c.getVendor();
 
     // Switchport defaults
     _switchportMode = SwitchportMode.NONE;

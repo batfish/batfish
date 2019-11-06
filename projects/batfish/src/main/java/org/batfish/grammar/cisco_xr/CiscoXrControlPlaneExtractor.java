@@ -430,7 +430,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_accounting_default_localContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_authenticationContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_authentication_asaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_authentication_list_methodContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_authentication_login_listContext;
@@ -1640,35 +1639,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void enterAaa_authentication_login(Aaa_authentication_loginContext ctx) {
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
-    }
-  }
-
-  @Override
-  public void enterAaa_authentication_asa(Aaa_authentication_asaContext ctx) {
-    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
-      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
-    }
-    ArrayList<AuthenticationMethod> methods = new ArrayList<>();
-    if (ctx.aaa_authentication_asa_console().group != null) {
-      methods.add(AuthenticationMethod.GROUP_USER_DEFINED);
-    }
-    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
-      methods.add(AuthenticationMethod.LOCAL_CASE);
-    }
-    if (!methods.isEmpty()) {
-      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
-      String name = ctx.linetype.getText();
-      AaaAuthenticationLoginList authList = new AaaAuthenticationLoginList(methods);
-
-      _configuration
-          .getCf()
-          .getLines()
-          .computeIfAbsent(name, Line::new)
-          .setAaaAuthenticationLoginList(authList);
-
-      // not allowed to specify multiple login lists for a given linetype so use computeIfAbsent
-      // rather than put so we only accept the first login list
-      _currentAaaAuthenticationLoginList = login.getLists().computeIfAbsent(name, k -> authList);
     }
   }
 

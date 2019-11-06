@@ -572,7 +572,6 @@ null_single
       | AQM_REGISTER_FNF
       | APP
       | ARP
-      | ASA
       | ASDM
       | ASYNC_BOOTP
       | AUTHENTICATION_PORT
