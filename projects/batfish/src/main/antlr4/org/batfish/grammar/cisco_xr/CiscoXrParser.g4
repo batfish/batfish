@@ -3582,7 +3582,6 @@ stanza
    s_interface_line
    | s_interface
    | s_ip_access_list_eth
-   | s_ip_access_list_session
    | s_ip_default_gateway
    | s_ip_dhcp
    | s_ip_domain

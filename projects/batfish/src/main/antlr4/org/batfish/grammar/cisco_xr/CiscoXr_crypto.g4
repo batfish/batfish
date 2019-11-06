@@ -294,15 +294,8 @@ cip_profile
 
 cip_transform_set
 :
-   TRANSFORM_SET name = variable
-   (
-      ipsec_encryption
-      | ipsec_encryption_aruba
-   )
-      ipsec_authentication? NEWLINE
-   (
-      cipt_mode
-   )*
+   TRANSFORM_SET name = variable ipsec_encryption ipsec_authentication? NEWLINE
+   cipt_mode*
 ;
 
 cipi2_ipsec_proposal
@@ -390,8 +383,7 @@ cis_policy
    POLICY priority = DEC NEWLINE
    (
       cispol_authentication
-      | cispol_encryption        //cisco
-      | cispol_encryption_aruba  //aruba
+      | cispol_encryption
       | cispol_group
       | cispol_hash
       | cispol_lifetime
@@ -427,11 +419,6 @@ cispol_encryption
       ENCR
       | ENCRYPTION
     ) ike_encryption NEWLINE
-;
-
-cispol_encryption_aruba
-:
-   ENCRYPTION ike_encryption_aruba NEWLINE
 ;
 
 cispol_group
@@ -906,15 +893,6 @@ ike_encryption
    | THREE_DES
 ;
 
-ike_encryption_aruba
-:
-   AES128
-   | AES192
-   | AES256
-   | DES
-   | THREE_DES
-;
-
 ipsec_authentication
 :
    AH_MD5_HMAC
@@ -942,17 +920,6 @@ ipsec_encryption
    )
    | ESP_NULL
    | ESP_SEAL
-;
-
-ipsec_encryption_aruba
-:
-   ESP_AES128
-   | ESP_AES192
-   | ESP_AES256
-   | ESP_AES128_GCM
-   | ESP_AES256_GCM
-   | ESP_DES
-   | ESP_3DES
 ;
 
 s_crypto

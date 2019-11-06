@@ -1537,7 +1537,6 @@ iftunnel_mode
 :
    MODE
    (
-     | gre_id = GRE id = DEC // aruba, tunnel ID
      | gre_ipv4 = GRE IPV4 // ios-xr
      | gre_multipoint = GRE MULTIPOINT
      | ipsec_ipv4 = IPSEC IPV4

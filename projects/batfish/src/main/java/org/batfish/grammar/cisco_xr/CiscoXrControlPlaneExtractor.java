@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
-import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
@@ -428,7 +427,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Cis_profileContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cisco_xr_configurationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cispol_authenticationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cispol_encryptionContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Cispol_encryption_arubaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cispol_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cispol_hashContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cispol_lifetimeContext;
@@ -575,7 +573,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifvrrp_ipContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifvrrp_preemptContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifvrrp_priorityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ike_encryptionContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ike_encryption_arubaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inherit_peer_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inherit_peer_session_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inspect_protocolContext;
@@ -600,7 +597,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_route_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_ssh_versionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_authenticationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_encryptionContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_encryption_arubaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Is_type_is_stanzaContext;
@@ -1609,9 +1605,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.ipsec_encryption() != null) {
       _currentIpsecTransformSet.setEncryptionAlgorithm(
           toEncryptionAlgorithm(ctx.ipsec_encryption()));
-    } else if (ctx.ipsec_encryption_aruba() != null) {
-      _currentIpsecTransformSet.setEncryptionAlgorithm(
-          toEncryptionAlgorithm(ctx.ipsec_encryption_aruba()));
     }
     // If any encryption algorithm was set then ESP protocol is used
     if (_currentIpsecTransformSet.getEncryptionAlgorithm() != null) {
@@ -1744,11 +1737,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA1);
     _currentIsakmpPolicy.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
-    if (_format == ARUBAOS) {
-      _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
-    } else {
-      _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
-    }
+    _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
 
     _currentIsakmpPolicy.setLifetimeSeconds(86400);
     _configuration.defineStructure(ISAKMP_POLICY, priority.toString(), ctx);
@@ -1796,11 +1785,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitCispol_encryption(Cispol_encryptionContext ctx) {
     _currentIsakmpPolicy.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption()));
-  }
-
-  @Override
-  public void exitCispol_encryption_aruba(Cispol_encryption_arubaContext ctx) {
-    _currentIsakmpPolicy.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption_aruba()));
   }
 
   @Override
@@ -5168,10 +5152,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitIftunnel_mode(Iftunnel_modeContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Tunnel tunnel = iface.getTunnelInitIfNull();
-      if (ctx.gre_id != null) {
-        tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
-        todo(ctx);
-      } else if (ctx.gre_ipv4 != null) {
+      if (ctx.gre_ipv4 != null) {
         tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
         todo(ctx);
       } else if (ctx.gre_multipoint != null) {
@@ -8313,22 +8294,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private EncryptionAlgorithm toEncryptionAlgorithm(Ike_encryption_arubaContext ctx) {
-    if (ctx.AES128() != null) {
-      return EncryptionAlgorithm.AES_128_CBC;
-    } else if (ctx.AES192() != null) {
-      return EncryptionAlgorithm.AES_192_CBC;
-    } else if (ctx.AES256() != null) {
-      return EncryptionAlgorithm.AES_256_CBC;
-    } else if (ctx.DES() != null) {
-      return EncryptionAlgorithm.DES_CBC;
-    } else if (ctx.THREE_DES() != null) {
-      return EncryptionAlgorithm.THREEDES_CBC;
-    } else {
-      throw convError(EncryptionAlgorithm.class, ctx);
-    }
-  }
-
   private EncryptionAlgorithm toEncryptionAlgorithm(Ipsec_encryptionContext ctx) {
     if (ctx.ESP_AES() != null) {
       int strength = ctx.strength == null ? 128 : toInteger(ctx.strength);
@@ -8374,26 +8339,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return EncryptionAlgorithm.NULL;
     } else if (ctx.ESP_SEAL() != null) {
       return EncryptionAlgorithm.SEAL_160;
-    } else {
-      throw convError(EncryptionAlgorithm.class, ctx);
-    }
-  }
-
-  private EncryptionAlgorithm toEncryptionAlgorithm(Ipsec_encryption_arubaContext ctx) {
-    if (ctx.ESP_AES128() != null) {
-      return EncryptionAlgorithm.AES_128_CBC;
-    } else if (ctx.ESP_AES128_GCM() != null) {
-      return EncryptionAlgorithm.AES_128_GCM;
-    } else if (ctx.ESP_AES192() != null) {
-      return EncryptionAlgorithm.AES_192_CBC;
-    } else if (ctx.ESP_AES256() != null) {
-      return EncryptionAlgorithm.AES_256_CBC;
-    } else if (ctx.ESP_AES256_GCM() != null) {
-      return EncryptionAlgorithm.AES_256_GCM;
-    } else if (ctx.ESP_DES() != null) {
-      return EncryptionAlgorithm.DES_CBC;
-    } else if (ctx.ESP_3DES() != null) {
-      return EncryptionAlgorithm.THREEDES_CBC;
     } else {
       throw convError(EncryptionAlgorithm.class, ctx);
     }
