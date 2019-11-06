@@ -47,7 +47,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
@@ -1441,15 +1440,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
 
-      // Get default-originate generation policy (if CiscoXr) or export policy (if Arista)
+      // Get default-originate generation policy (if CiscoXr) or export policy
       String defaultOriginateExportMap = null;
       String defaultOriginateGenerationMap = null;
       if (lpg.getDefaultOriginate()) {
-        if (c.getConfigurationFormat() == ConfigurationFormat.ARISTA) {
-          defaultOriginateExportMap = lpg.getDefaultOriginateMap();
-        } else {
-          defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
-        }
+        defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
       }
 
       // Generate import and export policies
@@ -1514,17 +1509,14 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               .setAllowLocalAsIn(lpg.getAllowAsIn())
               .setAllowRemoteAsOut(firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE))
               /*
-               * On Arista EOS, advertise-inactive is a command that we parse and extract;
-               *
-               * On CiscoXr IOS, advertise-inactive is true by default. This can be modified by
+               * On Cisco IOS, advertise-inactive is true by default. This can be modified by
                * "bgp suppress-inactive" command,
                * which we currently do not parse/extract. So we choose the default value here.
                *
-               * For other CiscoXr OS variations (e.g., IOS-XR) we did not find a similar command and for now,
+               * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
                * we assume behavior to be identical to IOS family.
                */
-              .setAdvertiseInactive(
-                  _vendor.equals(ConfigurationFormat.ARISTA) ? lpg.getAdvertiseInactive() : true)
+              .setAdvertiseInactive(true)
               .setSendCommunity(lpg.getSendCommunity())
               .setSendExtendedCommunity(lpg.getSendExtendedCommunity())
               .build();
@@ -1551,25 +1543,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
-
-  /**
-   * Returns the MTU that should be assigned to the given interface, taking into account
-   * vendor-specific conventions such as Arista subinterfaces.
-   */
-  private int getInterfaceMtu(Interface iface) {
-    if (_vendor == ConfigurationFormat.ARISTA) {
-      Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
-      if (m.matches()) {
-        String parentInterfaceName = m.group(1);
-        Interface parentInterface = _interfaces.get(parentInterfaceName);
-        if (parentInterface != null) {
-          return parentInterface.getMtu();
-        }
-      }
-    }
-
-    return iface.getMtu();
-  }
 
   /**
    * Get the {@link OspfNetwork} in the specified {@link OspfProcess} containing the specified
@@ -1663,7 +1636,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     } else {
       newIface.setDhcpRelayAddresses(ImmutableList.copyOf(iface.getDhcpRelayAddresses()));
     }
-    newIface.setMtu(getInterfaceMtu(iface));
+    newIface.setMtu(iface.getMtu());
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
@@ -1813,16 +1786,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     List<CiscoXrAsaNat> ciscoXrAsaNats = firstNonNull(_ciscoXrAsaNats, ImmutableList.of());
     List<CiscoXrIosNat> ciscoXrIosNats = firstNonNull(_ciscoXrIosNats, ImmutableList.of());
-    List<AristaDynamicSourceNat> aristaDynamicSourceNats =
-        firstNonNull(iface.getAristaNats(), ImmutableList.of());
-    int natTypes =
-        (aristaDynamicSourceNats.isEmpty() ? 0 : 1)
-            + (ciscoXrAsaNats.isEmpty() ? 0 : 1)
-            + (ciscoXrIosNats.isEmpty() ? 0 : 1);
+    int natTypes = (ciscoXrAsaNats.isEmpty() ? 0 : 1) + (ciscoXrIosNats.isEmpty() ? 0 : 1);
     if (natTypes > 1) {
       _w.redFlag("Multiple NAT types should not be present in same configuration.");
-    } else if (!aristaDynamicSourceNats.isEmpty()) {
-      generateAristaDynamicSourceNats(newIface, aristaDynamicSourceNats);
     } else if (!ciscoXrAsaNats.isEmpty()) {
       generateCiscoXrAsaNatTransformations(ifaceName, newIface, ciscoXrAsaNats);
     } else if (!ciscoXrIosNats.isEmpty()) {
@@ -1869,17 +1835,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     } else {
       throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
     }
-  }
-
-  private void generateAristaDynamicSourceNats(
-      org.batfish.datamodel.Interface newIface,
-      List<AristaDynamicSourceNat> aristaDynamicSourceNats) {
-    Ip interfaceIp = newIface.getConcreteAddress().getIp();
-    Transformation next = null;
-    for (AristaDynamicSourceNat nat : Lists.reverse(aristaDynamicSourceNats)) {
-      next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
-    }
-    newIface.setOutgoingTransformation(next);
   }
 
   private void generateCiscoXrAsaNatTransformations(
@@ -2072,10 +2027,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
     }
 
-    // Do not redistribute the default route on CiscoXr. For Arista, no such restriction exists
-    if (_vendor != ConfigurationFormat.ARISTA) {
-      ospfExportConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
-    }
+    // Do not redistribute the default route on Cisco.
+    ospfExportConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
 
     ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();
 
@@ -2083,17 +2036,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     ospfExportStatements.add(new SetOspfMetricType(policy.getMetricType()));
     long metric =
         policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(_vendor, protocol);
-    // On Arista, the default route gets a special metric of 1.
-    // https://www.arista.com/en/um-eos/eos-section-30-5-ospfv2-commands#ww1153059
-    if (_vendor == ConfigurationFormat.ARISTA) {
-      ospfExportStatements.add(
-          new If(
-              Common.matchDefaultRoute(),
-              ImmutableList.of(new SetMetric(new LiteralLong(1L))),
-              ImmutableList.of(new SetMetric(new LiteralLong(metric)))));
-    } else {
-      ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
-    }
+    ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
 
     // If only classful routes should be redistributed, filter to classful routes.
     if (policy.getOnlyClassfulRoutes()) {

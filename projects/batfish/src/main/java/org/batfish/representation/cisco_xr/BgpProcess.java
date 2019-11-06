@@ -88,9 +88,6 @@ public class BgpProcess implements Serializable {
     _procnum = procnum;
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _masterBgpPeerGroup = new MasterBgpPeerGroup();
-    if (format == ConfigurationFormat.ARISTA) {
-      _asPathMultipathRelax = true;
-    }
     switch (format) {
       case CISCO_IOS:
       case CISCO_IOS_XR:

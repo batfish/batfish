@@ -4150,21 +4150,8 @@ u_passphrase
 
 u_password
 :
-   (
-      (
-         PASSWORD
-         | SECRET
-      )
-      (
-         up_arista_md5
-         | up_arista_sha512
-         | up_cisco_xr
-      )
-   )
-   |
-   (
-      NOPASSWORD
-   )
+   (PASSWORD | SECRET) up_cisco_xr
+   | NOPASSWORD
 ;
 
 u_privilege
@@ -4186,19 +4173,6 @@ ua_null
       GROUP_LOCK
       | VPN_GROUP_POLICY
    ) null_rest_of_line
-;
-
-up_arista_md5
-:
-   DEC
-   (
-      pass = MD5_ARISTA
-   )
-;
-
-up_arista_sha512
-:
-   SHA512 pass = SHA512_ARISTA
 ;
 
 up_cisco_xr

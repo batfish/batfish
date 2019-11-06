@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
-import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
@@ -178,7 +177,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_NAT_SOURCE_POOL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_ROUTE_NHINT;
@@ -626,10 +624,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_igmpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_inband_access_groupContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_nat_destinationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_nat_insideContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_nat_outsideContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_dead_intervalContext;
@@ -1074,7 +1070,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Wccp_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.cisco_xr.AccessListAddressSpecifier;
 import org.batfish.representation.cisco_xr.AccessListServiceSpecifier;
-import org.batfish.representation.cisco_xr.AristaDynamicSourceNat;
 import org.batfish.representation.cisco_xr.AsPathSet;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv6Network;
@@ -1525,10 +1520,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private StandardIpv6AccessList _currentStandardIpv6Acl;
 
   private User _currentUser;
-
-  @Nullable private IntegerSpace _currentVlans;
-
-  private Integer _currentVxlanVlanNum;
 
   private String _currentVrf;
 
@@ -2619,7 +2610,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       Ip ip = toIp(ctx.ip);
       _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
       if (_currentIpPeerGroup == null) {
-        if (create || _format == ARISTA) {
+        if (create) {
           proc.addIpPeerGroup(ip);
           _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
           pushPeer(_currentIpPeerGroup);
@@ -2635,7 +2626,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
       if (pg6 == null) {
-        if (create || _format == ARISTA) {
+        if (create) {
           proc.addIpv6PeerGroup(ip6);
           pg6 = proc.getIpv6PeerGroups().get(ip6);
           pushPeer(pg6);
@@ -2655,7 +2646,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       String name = ctx.peergroup.getText();
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       if (_currentNamedPeerGroup == null) {
-        if (create || _format == ARISTA) {
+        if (create) {
           proc.addNamedPeerGroup(name);
           _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
           _configuration.referenceStructure(
@@ -5500,14 +5491,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_nat_destination(If_ip_nat_destinationContext ctx) {
-    // Arista syntax
-    String acl = ctx.acl.getText();
-    int line = ctx.acl.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
-  }
-
-  @Override
   public void exitIf_ip_nat_inside(If_ip_nat_insideContext ctx) {
     _configuration
         .getNatInside()
@@ -5519,43 +5502,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _configuration
         .getNatOutside()
         .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
-  }
-
-  @Override
-  public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
-    String acl = null;
-    String pool = null;
-    if (ctx.acl != null) {
-      acl = ctx.acl.getText();
-      int aclLine = ctx.acl.getStart().getLine();
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
-    }
-    if (ctx.pool != null) {
-      pool = ctx.pool.getText();
-      int poolLine = ctx.pool.getStart().getLine();
-      _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
-    }
-    boolean overload = ctx.OVERLOAD() != null;
-
-    if (acl == null) {
-      // incomplete definition. ignore
-      warn(ctx, "Arista dynamic source nat missing required ACL.");
-      return;
-    }
-    if (pool == null && !overload) {
-      // incomplete definition. ignore
-      warn(ctx, "Arista dynamic source nat must have a pool or be overload.");
-      return;
-    }
-
-    AristaDynamicSourceNat nat = new AristaDynamicSourceNat(acl, pool, overload);
-
-    for (Interface iface : _currentInterfaces) {
-      if (iface.getAristaNats() == null) {
-        iface.setAristaNats(new ArrayList<>(1));
-      }
-      iface.getAristaNats().add(nat);
-    }
   }
 
   @Override
@@ -9369,11 +9315,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitU_password(U_passwordContext ctx) {
     String passwordString;
-    if (ctx.up_arista_md5() != null) {
-      passwordString = ctx.up_arista_md5().pass.getText();
-    } else if (ctx.up_arista_sha512() != null) {
-      passwordString = ctx.up_arista_sha512().pass.getText();
-    } else if (ctx.up_cisco_xr() != null) {
+    if (ctx.up_cisco_xr() != null) {
       passwordString = ctx.up_cisco_xr().up_cisco_xr_tail().pass.getText();
     } else if (ctx.NOPASSWORD() != null) {
       passwordString = "";
@@ -10507,11 +10449,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else if (ctx.ISO_TSAP() != null) {
       return NamedPort.ISO_TSAP;
     } else if (ctx.KERBEROS() != null) {
-      if (_format == ARISTA) {
-        return NamedPort.KERBEROS_SEC;
-      } else {
-        return NamedPort.KERBEROS;
-      }
+      return NamedPort.KERBEROS;
     } else if (ctx.KERBEROS_ADM() != null) {
       return NamedPort.KERBEROS_ADM;
     } else if (ctx.KLOGIN() != null) {
@@ -10647,17 +10585,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else if (ctx.QOTD() != null) {
       return NamedPort.QOTD;
     } else if (ctx.RADIUS() != null) {
-      if (_format == ARISTA) {
-        return NamedPort.RADIUS_2_AUTH;
-      } else {
-        return NamedPort.RADIUS_1_AUTH;
-      }
+      return NamedPort.RADIUS_1_AUTH;
     } else if (ctx.RADIUS_ACCT() != null) {
-      if (_format == ARISTA) {
-        return NamedPort.RADIUS_2_ACCT;
-      } else {
-        return NamedPort.RADIUS_1_ACCT;
-      }
+      return NamedPort.RADIUS_1_ACCT;
     } else if (ctx.RE_MAIL_CK() != null) {
       return NamedPort.RE_MAIL_CK;
     } else if (ctx.REMOTEFS() != null) {

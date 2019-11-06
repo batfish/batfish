@@ -3,7 +3,6 @@ package org.batfish.representation.cisco_xr;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -153,8 +152,6 @@ public class Interface implements Serializable {
   private String _alias;
 
   @Nullable private IntegerSpace _allowedVlans;
-
-  private List<AristaDynamicSourceNat> _aristaNats;
 
   private boolean _autoState;
 
@@ -313,26 +310,8 @@ public class Interface implements Serializable {
     }
 
     // Switchport defaults
-    if (vendor == ConfigurationFormat.ARISTA
-        && (name.startsWith("Ethernet") || name.startsWith("Port-Channel"))) {
-      SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
-      if (defaultSwitchportMode == null) {
-        // Arista Ethernet and Port-channel default switchport mode is ACCESS
-        _switchportMode = SwitchportMode.ACCESS;
-      } else {
-        // Arista use alternate default switchport mode if declared
-        _switchportMode = defaultSwitchportMode;
-      }
-    } else {
-      // Default switchport mode for non-Arista and Arista non-Ethernet/Port-Channel is NONE
-      _switchportMode = SwitchportMode.NONE;
-    }
-    _switchport = _switchportMode != SwitchportMode.NONE;
-    if (_switchportMode == SwitchportMode.TRUNK) {
-      _allowedVlans = ALL_VLANS;
-    } else if (_switchportMode == SwitchportMode.ACCESS) {
-      _allowedVlans = null;
-    }
+    _switchportMode = SwitchportMode.NONE;
+    _switchport = false;
     _spanningTreePortfast = c.getSpanningTreePortfastDefault();
   }
 
@@ -365,10 +344,6 @@ public class Interface implements Serializable {
     }
     allAddresses.addAll(_secondaryAddresses);
     return allAddresses;
-  }
-
-  public List<AristaDynamicSourceNat> getAristaNats() {
-    return _aristaNats;
   }
 
   public boolean getAutoState() {
@@ -561,10 +536,6 @@ public class Interface implements Serializable {
 
   public void setAlias(String alias) {
     _alias = alias;
-  }
-
-  public void setAristaNats(List<AristaDynamicSourceNat> aristaNats) {
-    _aristaNats = aristaNats;
   }
 
   public void setAutoState(boolean autoState) {

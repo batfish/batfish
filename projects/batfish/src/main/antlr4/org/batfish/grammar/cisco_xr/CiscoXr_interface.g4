@@ -307,12 +307,6 @@ if_ip_igmp
    )
 ;
 
-if_ip_nat_destination
-:
-   IP NAT DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
-   NEWLINE
-;
-
 if_ip_nat_inside
 :
    IP NAT INSIDE NEWLINE
@@ -321,15 +315,6 @@ if_ip_nat_inside
 if_ip_nat_outside
 :
    IP NAT OUTSIDE NEWLINE
-;
-
-if_ip_nat_source
-:
-   IP NAT SOURCE DYNAMIC ACCESS_LIST acl = variable
-   (
-     OVERLOAD
-     | POOL pool = variable
-   ) NEWLINE
 ;
 
 if_ip_nbar
@@ -1701,10 +1686,8 @@ if_inner
    | if_ip_hold_time
    | if_ip_inband_access_group
    | if_ip_igmp
-   | if_ip_nat_destination
    | if_ip_nat_inside
    | if_ip_nat_outside
-   | if_ip_nat_source
    | if_ip_nbar
    | if_ip_ospf_area
    | if_ip_ospf_cost
