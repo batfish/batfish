@@ -204,67 +204,6 @@ asa_comment_stanza
    COLON null_rest_of_line
 ;
 
-asa_nat_ifaces
-:
-   PAREN_LEFT real_if = variable COMMA mapped_if = variable PAREN_RIGHT
-;
-
-asa_nat_optional_args
-:
-   DNS
-   | INACTIVE
-   | NO_PROXY_ARP
-   | ROUTE_LOOKUP
-   | UNIDIRECTIONAL
-;
-
-asa_nat_pat_pool
-:
-   PAT_POOL pat_obj = variable?
-   (
-       BLOCK_ALLOCATION
-       | EXTENDED
-       | (FLAT INCLUDE_RESERVE?)
-       | INTERFACE
-       | ROUND_ROBIN
-   )*
-;
-
-asa_twice_nat_destination
-:
-   DESTINATION STATIC
-   (
-      mapped_dst = variable
-      | mapped_dst_iface = INTERFACE
-   )
-   real_dst = variable
-;
-
-asa_twice_nat_dynamic
-:
-   DYNAMIC real_src = variable
-   (
-      (mapped_src = variable mapped_src_iface = INTERFACE?)
-      | mapped_src_iface = INTERFACE
-      | asa_nat_pat_pool
-   )
-;
-
-asa_twice_nat_service
-:
-   SERVICE svc_obj1 = variable svc_obj2 = variable
-;
-
-asa_twice_nat_static
-:
-   STATIC
-   real_src = variable
-   (
-      mapped_src = variable
-      | mapped_src_iface = INTERFACE
-   )
-;
-
 av_null
 :
    NO?
@@ -2253,22 +2192,6 @@ s_authentication
    AUTHENTICATION null_rest_of_line
 ;
 
-s_asa_twice_nat
-:
-   NAT asa_nat_ifaces? AFTER_AUTO? SOURCE
-   (
-      asa_twice_nat_dynamic
-      | asa_twice_nat_static
-   )
-   asa_twice_nat_destination?
-   asa_twice_nat_service?
-   asa_nat_optional_args*
-   (
-      description_line
-      | NEWLINE
-   )
-;
-
 s_banner_ios
 :
   banner_header = ios_banner_header banner = ios_delimited_banner NEWLINE
@@ -3639,7 +3562,6 @@ stanza
    | s_application_var
    | s_archive
    | s_arp_access_list_extended
-   | s_asa_twice_nat
    | s_authentication
    | s_banner_ios
    | s_bfd

@@ -189,7 +189,6 @@ import org.batfish.datamodel.vendor_family.cisco_xr.Aaa;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco_xr.CiscoXrFamily;
-import org.batfish.representation.cisco_xr.CiscoXrAsaNat.Section;
 import org.batfish.representation.cisco_xr.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -461,8 +460,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Set<String> _natOutside;
 
-  private final List<CiscoXrAsaNat> _ciscoXrAsaNats;
-
   private final List<CiscoXrIosNat> _ciscoXrIosNats;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
@@ -562,7 +559,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _namedVlans = new HashMap<>();
     _natInside = new TreeSet<>();
     _natOutside = new TreeSet<>();
-    _ciscoXrAsaNats = new ArrayList<>();
     _ciscoXrIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
@@ -833,10 +829,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Set<String> getNatOutside() {
     return _natOutside;
-  }
-
-  public List<CiscoXrAsaNat> getCiscoXrAsaNats() {
-    return _ciscoXrAsaNats;
   }
 
   public List<CiscoXrIosNat> getCiscoXrIosNats() {
@@ -1781,14 +1773,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
      * Currently, only static NATs have both incoming and outgoing transformations
      */
 
-    List<CiscoXrAsaNat> ciscoXrAsaNats = firstNonNull(_ciscoXrAsaNats, ImmutableList.of());
     List<CiscoXrIosNat> ciscoXrIosNats = firstNonNull(_ciscoXrIosNats, ImmutableList.of());
-    int natTypes = (ciscoXrAsaNats.isEmpty() ? 0 : 1) + (ciscoXrIosNats.isEmpty() ? 0 : 1);
-    if (natTypes > 1) {
-      _w.redFlag("Multiple NAT types should not be present in same configuration.");
-    } else if (!ciscoXrAsaNats.isEmpty()) {
-      generateCiscoXrAsaNatTransformations(ifaceName, newIface, ciscoXrAsaNats);
-    } else if (!ciscoXrIosNats.isEmpty()) {
+    if (!ciscoXrIosNats.isEmpty()) {
       generateCiscoXrIosNatTransformations(ifaceName, newIface, ipAccessLists, c);
     }
 
@@ -1832,41 +1818,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     } else {
       throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
     }
-  }
-
-  private void generateCiscoXrAsaNatTransformations(
-      String ifaceName,
-      org.batfish.datamodel.Interface newIface,
-      List<CiscoXrAsaNat> ciscoXrAsaNats) {
-
-    if (!ciscoXrAsaNats.stream().map(CiscoXrAsaNat::getSection).allMatch(Section.OBJECT::equals)) {
-      _w.unimplemented("No support for Twice NAT");
-    }
-
-    // ASA places incoming and outgoing object NATs as transformations on the outside interface.
-    // Each NAT rule specifies an outside interface or ANY_INTERFACE
-    SortedSet<CiscoXrAsaNat> objectNats =
-        ciscoXrAsaNats.stream()
-            .filter(nat -> nat.getSection().equals(Section.OBJECT))
-            .filter(
-                nat ->
-                    nat.getOutsideInterface().equals(CiscoXrAsaNat.ANY_INTERFACE)
-                        || nat.getOutsideInterface().equals(ifaceName))
-            .collect(Collectors.toCollection(TreeSet::new));
-
-    newIface.setIncomingTransformation(
-        objectNats.stream()
-            .map(nat -> nat.toIncomingTransformation(_networkObjects, _w))
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toList(), CiscoXrAsaNatUtil::toTransformationChain)));
-
-    newIface.setOutgoingTransformation(
-        objectNats.stream()
-            .map(nat -> nat.toOutgoingTransformation(_networkObjects, _w))
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toList(), CiscoXrAsaNatUtil::toTransformationChain)));
   }
 
   private void generateCiscoXrIosNatTransformations(
@@ -2790,25 +2741,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             _networkObjects.get(name).setInfo(info);
           }
         });
-    _ciscoXrAsaNats.removeIf(
-        nat -> {
-          if (nat.getSection() != Section.OBJECT) {
-            return false;
-          }
-          String objectName = ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
-          NetworkObject object = _networkObjects.get(objectName);
-          if (object == null) {
-            // Network object has a NAT but no addresses
-            _w.redFlag("Invalid reference for object NAT " + objectName + ".");
-            return true;
-          }
-          if (object.getStart() == null) {
-            // Unsupported network object type, already warned
-            return true;
-          }
-          nat.setRealSourceObject(object);
-          return false;
-        });
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
@@ -3261,8 +3193,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.SNMP_SERVER_TRAP_SOURCE,
         CiscoXrStructureUsage.TACACS_SOURCE_INTERFACE,
         CiscoXrStructureUsage.TRACK_INTERFACE,
-        CiscoXrStructureUsage.TWICE_NAT_MAPPED_INTERFACE,
-        CiscoXrStructureUsage.TWICE_NAT_REAL_INTERFACE,
         CiscoXrStructureUsage.VXLAN_SOURCE_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
@@ -3479,11 +3409,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureType.NETWORK_OBJECT_GROUP,
         CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
         CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
-        CiscoXrStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-        CiscoXrStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
-        CiscoXrStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-        CiscoXrStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
-        CiscoXrStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP);
+        CiscoXrStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP);
     markConcreteStructure(
         CiscoXrStructureType.PROTOCOL_OBJECT_GROUP,
         CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
@@ -3507,11 +3433,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
         CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
         CiscoXrStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-        CiscoXrStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
-        CiscoXrStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
-        CiscoXrStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-        CiscoXrStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
-        CiscoXrStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT);
+        CiscoXrStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT);
     markConcreteStructure(
         CiscoXrStructureType.SERVICE_OBJECT,
         CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,
