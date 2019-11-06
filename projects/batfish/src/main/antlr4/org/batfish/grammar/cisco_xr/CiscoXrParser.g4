@@ -2996,11 +2996,6 @@ s_no_enable
    NO ENABLE PASSWORD (LEVEL level = DEC)? NEWLINE
 ;
 
-s_no_vlan_eos
-:
-  (NO | DEFAULT) VLAN eos_vlan_id NEWLINE
-;
-
 s_nv
 :
    NO? NV NEWLINE

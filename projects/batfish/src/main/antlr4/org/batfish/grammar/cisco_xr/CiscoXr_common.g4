@@ -87,14 +87,6 @@ eigrp_metric
    bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
 ;
 
-eos_vlan_id
-:
-   vlan_ids += subrange
-   (
-      COMMA vlan_ids += subrange
-   )*
-;
-
 exit_line
 :
    EXIT NEWLINE

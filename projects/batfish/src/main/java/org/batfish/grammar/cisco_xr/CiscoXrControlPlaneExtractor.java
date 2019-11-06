@@ -599,7 +599,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Else_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Elseif_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Empty_neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Enable_secretContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_tailContext;
@@ -1372,14 +1371,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     String[] parts = ctx.asn4b.getText().split("\\.");
     return (Long.parseLong(parts[0]) << 16) + Long.parseLong(parts[1]);
-  }
-
-  @Nonnull
-  private static IntegerSpace toIntegerSpace(Eos_vlan_idContext ctx) {
-    return ctx.vlan_ids.stream()
-        .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
-        .reduce(IntegerSpace::union)
-        .get();
   }
 
   private static Ip toIp(TerminalNode t) {
@@ -2296,11 +2287,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     String name = ctx.name.getText();
     _configuration.referenceStructure(
         L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void enterEos_vlan_id(Eos_vlan_idContext ctx) {
-    _currentVlans = toIntegerSpace(ctx);
   }
 
   @Override
