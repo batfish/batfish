@@ -201,7 +201,6 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   ROUTER_ISIS_DISTRIBUTE_LIST_ACL("router isis distribute-list acl"),
   ROUTER_STATIC_ROUTE("router static route"),
   ROUTER_VRRP_INTERFACE("router vrrp interface"),
-  SECURITY_ZONE_PAIR_SELF_REF("zone-pair security self-reference"),
   SERVICE_OBJECT_GROUP_GROUP_OBJECT("object-group service group-object"),
   SERVICE_OBJECT_GROUP_SERVICE_OBJECT("object-group service service-object object"),
   SERVICE_POLICY_GLOBAL("service-policy global"),
@@ -226,10 +225,7 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   WCCP_REDIRECT_LIST("ip wccp redirect-list"),
   WCCP_SERVICE_LIST("ip wccp service-list"),
   VXLAN_SOURCE_INTERFACE("vxlan source-interface"),
-  VXLAN_SELF_REF("vxlan"),
-  ZONE_PAIR_DESTINATION_ZONE("zone-pair security destination"),
-  ZONE_PAIR_INSPECT_SERVICE_POLICY("zone-pair service-policy type inspect"),
-  ZONE_PAIR_SOURCE_ZONE("zone-pair security source");
+  VXLAN_SELF_REF("vxlan");
 
   private final String _description;
 

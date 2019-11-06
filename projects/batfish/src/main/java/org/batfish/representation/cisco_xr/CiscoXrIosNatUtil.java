@@ -77,8 +77,7 @@ final class CiscoXrIosNatUtil {
 
     * There are currently only two possible field transformations (source and destination).
     * Doesn't matter if SOURCE or DESTINATION is transformed first, pick a non-empty list
-    * This is true so far for IOS NATs. ASA NATs can condition on both fields and modify both
-    * fields, but that would be in a separate list.
+    * This is true so far for IOS NATs.
     */
     List<Transformation.Builder> source = transformationsByField.get(IpField.SOURCE);
     List<Transformation.Builder> destination = transformationsByField.get(IpField.DESTINATION);

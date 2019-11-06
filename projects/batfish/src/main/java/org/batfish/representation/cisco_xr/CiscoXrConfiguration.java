@@ -2,7 +2,6 @@ package org.batfish.representation.cisco_xr;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.computeInterfaceType;
@@ -41,15 +40,11 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.toOspfHello
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toOspfNetworkType;
 import static org.batfish.representation.cisco_xr.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 
-import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.collect.Multimaps;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,10 +82,8 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -129,14 +122,9 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
-import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
@@ -196,13 +184,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
-
-  private static final IpAccessListLine ACL_LINE_EXISTING_CONNECTION =
-      new IpAccessListLine(
-          LineAction.PERMIT,
-          new MatchHeaderSpace(
-              HeaderSpace.builder().setStates(ImmutableList.of(FlowState.ESTABLISHED)).build()),
-          "~EXISTING_CONNECTION~");
 
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
@@ -482,16 +463,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, RoutePolicy> _routePolicies;
 
-  /**
-   * Maps zone names to integers. Only includes zones that were created for security levels. In
-   * effect, the reverse of computeSecurityLevelZoneName.
-   */
-  private final Map<String, Integer> _securityLevels;
-
-  private boolean _sameSecurityTrafficInter;
-
-  private boolean _sameSecurityTrafficIntra;
-
   private final Map<String, ServiceObject> _serviceObjects;
 
   private SnmpServer _snmpServer;
@@ -518,16 +489,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
 
-  private final Map<String, Map<String, SecurityZonePair>> _securityZonePairs;
-
-  private final Map<String, SecurityZone> _securityZones;
-
   private final Map<String, TrackMethod> _trackingGroups;
 
   private Map<String, XrCommunitySet> _communitySets;
-
-  // initialized when needed
-  private Multimap<Integer, Interface> _interfacesBySecurityLevel;
 
   public CiscoXrConfiguration() {
     _asPathAccessLists = new TreeMap<>();
@@ -569,9 +533,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _protocolObjectGroups = new TreeMap<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
-    _securityLevels = new TreeMap<>();
-    _securityZonePairs = new TreeMap<>();
-    _securityZones = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
     _serviceObjects = new TreeMap<>();
     _standardAccessLists = new TreeMap<>();
@@ -855,28 +816,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _routePolicies;
   }
 
-  @Nullable
-  private String getSecurityZoneName(Interface iface) {
-    String zoneName = iface.getSecurityZone();
-    if (zoneName == null) {
-      return null;
-    }
-    SecurityZone securityZone = _securityZones.get(zoneName);
-    if (securityZone == null) {
-      return null;
-    }
-    return zoneName;
-  }
-
-  @Nullable
-  private String getSecurityLevelZoneName(Interface iface) {
-    Integer level = iface.getSecurityLevel();
-    if (level == null) {
-      return null;
-    }
-    return computeSecurityLevelZoneName(level);
-  }
-
   public SnmpServer getSnmpServer() {
     return _snmpServer;
   }
@@ -1084,14 +1023,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public void setNtpSourceInterface(String ntpSourceInterface) {
     _ntpSourceInterface = ntpSourceInterface;
-  }
-
-  public void setSameSecurityTrafficInter(boolean permit) {
-    _sameSecurityTrafficInter = permit;
-  }
-
-  public void setSameSecurityTrafficIntra(boolean permit) {
-    _sameSecurityTrafficIntra = permit;
   }
 
   public void setSnmpServer(SnmpServer snmpServer) {
@@ -1758,8 +1689,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     if (outgoingFilterName != null) {
       newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
     }
-    // Apply zone outgoing filter if necessary
-    applyZoneFilter(iface, newIface, c);
 
     /*
      * NAT rules are specified at the top level, but are applied as incoming transformations on the
@@ -1854,89 +1783,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newIface.setOutgoingTransformation(
           CiscoXrIosNatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
     }
-  }
-
-  private void applyZoneFilter(
-      Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
-    String zoneName = firstNonNull(getSecurityZoneName(iface), getSecurityLevelZoneName(iface));
-    if (zoneName == null) {
-      return;
-    }
-    String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
-    IpAccessList zoneOutgoingAcl = c.getIpAccessLists().get(zoneOutgoingAclName);
-    if (zoneOutgoingAcl == null) {
-      return;
-    }
-    String oldOutgoingFilterName = newIface.getOutgoingFilterName();
-    if (oldOutgoingFilterName == null && allowsIntraZoneTraffic(zoneName)) {
-      // No interface outbound filter and no interface-specific handling
-      newIface.setOutgoingFilter(zoneOutgoingAcl);
-      return;
-    }
-
-    // Construct a new ACL that combines filters, i.e. 1 AND (2 OR 3)
-    // 1) the interface outbound filter, if it exists
-    // 2) the zone filter
-    // 3) interface-specific zone filtering, if necessary
-
-    AclLineMatchExpr ifaceFilter = FalseExpr.INSTANCE;
-    if (_sameSecurityTrafficIntra && !_sameSecurityTrafficInter) {
-      ifaceFilter =
-          new MatchSrcInterface(
-              ImmutableList.of(newIface.getName()), "Allow traffic received on this interface");
-    } else if (!_sameSecurityTrafficIntra && _sameSecurityTrafficInter) {
-      ifaceFilter =
-          new MatchSrcInterface(
-              _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
-                  .filter(other -> !other.equals(iface))
-                  .map(iface1 -> iface1.getName())
-                  .collect(ImmutableList.toImmutableList()),
-              String.format(
-                  "Allow traffic received on other interfaces with security level %d",
-                  iface.getSecurityLevel()));
-    }
-
-    String combinedOutgoingAclName = computeCombinedOutgoingAclName(newIface.getName());
-    IpAccessList combinedOutgoingAcl;
-    ImmutableList<AclLineMatchExpr> securityFilters =
-        ImmutableList.of(new PermittedByAcl(zoneOutgoingAclName), ifaceFilter);
-
-    if (oldOutgoingFilterName != null) {
-      combinedOutgoingAcl =
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(combinedOutgoingAclName)
-              .setLines(
-                  ImmutableList.of(
-                      IpAccessListLine.accepting()
-                          .setMatchCondition(
-                              new AndMatchExpr(
-                                  ImmutableList.of(
-                                      new OrMatchExpr(securityFilters),
-                                      new PermittedByAcl(oldOutgoingFilterName)),
-                                  String.format(
-                                      "Permit if permitted by policy for zone '%s' and permitted by"
-                                          + " outgoing filter '%s'",
-                                      zoneName, oldOutgoingFilterName)))
-                          .build()))
-              .build();
-    } else {
-      combinedOutgoingAcl =
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(combinedOutgoingAclName)
-              .setLines(
-                  ImmutableList.of(
-                      IpAccessListLine.accepting()
-                          .setMatchCondition(
-                              new OrMatchExpr(
-                                  securityFilters,
-                                  String.format(
-                                      "Permit if permitted by policy for zone '%s'", zoneName)))
-                          .build()))
-              .build();
-    }
-    newIface.setOutgoingFilter(combinedOutgoingAcl);
   }
 
   public static String computeCombinedOutgoingAclName(String interfaceName) {
@@ -2811,63 +2657,17 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // create inspect policy-map ACLs
     createInspectPolicyMapAcls(c);
 
-    // create zones based on IOS security zones
-    _securityZones.forEach((name, securityZone) -> c.getZones().put(name, new Zone(name)));
-
-    // populate zone interfaces based on IOS security zones
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          String zoneName = iface.getSecurityZone();
-          if (zoneName == null) {
-            return;
-          }
-          Zone zone = c.getZones().get(zoneName);
-          if (zone == null) {
-            return;
-          }
-          zone.setInterfaces(
-              ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(ifaceName).build());
-        });
-
-    _interfacesBySecurityLevel =
-        _interfaces.values().stream()
-            .filter(iface -> iface.getSecurityLevel() != null)
-            .filter(iface -> iface.getAddress() != null)
-            .collect(
-                Multimaps.toMultimap(
-                    Interface::getSecurityLevel,
-                    Functions.identity(),
-                    MultimapBuilder.hashKeys().arrayListValues()::build));
-
-    // create and populate zones based on ASA security levels
-    _interfacesBySecurityLevel.forEach(
-        (level, iface) -> {
-          String zoneName = computeSecurityLevelZoneName(level);
-          Zone zone = c.getZones().computeIfAbsent(zoneName, Zone::new);
-          zone.setInterfaces(
-              ImmutableSet.<String>builder()
-                  .addAll(zone.getInterfaces())
-                  .add(iface.getName())
-                  .build());
-          _securityLevels.putIfAbsent(zoneName, level);
-        });
-
-    // create zone policies
-    createZoneAcls(c);
-
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
-          // Handle renaming interfaces for ASA devices
-          String newIfaceName = iface.getName();
           org.batfish.datamodel.Interface newInterface =
-              toInterface(newIfaceName, iface, c.getIpAccessLists(), c);
+              toInterface(ifaceName, iface, c.getIpAccessLists(), c);
           String vrfName = iface.getVrf();
           if (vrfName == null) {
-            throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
+            throw new BatfishException("Missing vrf name for iface: '" + ifaceName + "'");
           }
-          c.getAllInterfaces().put(newIfaceName, newInterface);
-          c.getVrfs().get(vrfName).getInterfaces().put(newIfaceName, newInterface);
+          c.getAllInterfaces().put(ifaceName, newInterface);
+          c.getVrfs().get(vrfName).getInterfaces().put(ifaceName, newInterface);
         });
     /*
      * Second pass over the interfaces to set dependency pointers correctly for portchannels
@@ -3137,9 +2937,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.ROUTE_POLICY_SET_COMMUNITY);
 
     markConcreteStructure(
-        CiscoXrStructureType.SECURITY_ZONE_PAIR, CiscoXrStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
-
-    markConcreteStructure(
         CiscoXrStructureType.INTERFACE,
         CiscoXrStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoXrStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
@@ -3364,9 +3161,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS);
 
     // policy-map
-    markConcreteStructure(
-        CiscoXrStructureType.INSPECT_POLICY_MAP,
-        CiscoXrStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
+    markConcreteStructure(CiscoXrStructureType.INSPECT_POLICY_MAP);
     markConcreteStructure(
         CiscoXrStructureType.POLICY_MAP,
         CiscoXrStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT,
@@ -3433,13 +3228,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // VXLAN
     markConcreteStructure(CiscoXrStructureType.VXLAN, CiscoXrStructureUsage.VXLAN_SELF_REF);
 
-    // zone
-    markConcreteStructure(
-        CiscoXrStructureType.SECURITY_ZONE,
-        CiscoXrStructureUsage.INTERFACE_ZONE_MEMBER,
-        CiscoXrStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
-        CiscoXrStructureUsage.ZONE_PAIR_SOURCE_ZONE);
-
     markConcreteStructure(CiscoXrStructureType.NAT_POOL, CiscoXrStructureUsage.IP_NAT_SOURCE_POOL);
     markConcreteStructure(
         CiscoXrStructureType.AS_PATH_ACCESS_LIST,
@@ -3491,13 +3279,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(communitySet, c));
           c.getCommunitySetExprs().put(name, toCommunitySetExpr(communitySet, c));
         });
-  }
-
-  private boolean allowsIntraZoneTraffic(String zoneName) {
-    if (!_securityLevels.containsKey(zoneName)) {
-      return true;
-    }
-    return _sameSecurityTrafficInter && _sameSecurityTrafficIntra;
   }
 
   private void createInspectClassMapAcls(Configuration c) {
@@ -3608,185 +3389,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         });
   }
 
-  private void createZoneAcls(Configuration c) {
-    // Mapping: zoneName -> (MatchSrcInterface for interfaces in zone)
-    Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone =
-        toImmutableMap(
-            c.getZones(),
-            Entry::getKey,
-            zoneByNameEntry -> new MatchSrcInterface(zoneByNameEntry.getValue().getInterfaces()));
-
-    c.getZones()
-        .forEach(
-            (zoneName, zone) -> {
-              // Don't bother if zone is empty
-              SortedSet<String> interfaces = zone.getInterfaces();
-              if (interfaces.isEmpty()) {
-                return;
-              }
-
-              ImmutableList.Builder<IpAccessListLine> zonePolicies = ImmutableList.builder();
-
-              // Allow traffic originating from device (no source interface)
-              zonePolicies.add(
-                  IpAccessListLine.accepting()
-                      .setMatchCondition(OriginatingFromDevice.INSTANCE)
-                      .setName("Allow traffic originating from this device")
-                      .build());
-
-              // Allow traffic staying within this zone (always true for IOS)
-              if (allowsIntraZoneTraffic(zoneName)) {
-                zonePolicies.add(
-                    IpAccessListLine.accepting()
-                        .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
-                        .setName(
-                            String.format(
-                                "Allow traffic received on interface in same zone: '%s'", zoneName))
-                        .build());
-              }
-
-              /*
-               * Add zone-pair policies
-               */
-              // zoneName refers to dstZone
-              Map<String, SecurityZonePair> zonePairsBySrcZoneName =
-                  _securityZonePairs.get(zoneName);
-              if (zonePairsBySrcZoneName != null) {
-                zonePairsBySrcZoneName.forEach(
-                    (srcZoneName, zonePair) ->
-                        createZonePairAcl(
-                                c,
-                                matchSrcInterfaceBySrcZone.get(srcZoneName),
-                                zoneName,
-                                srcZoneName,
-                                zonePair)
-                            .ifPresent(zonePolicies::add));
-              }
-
-              // Security level policies
-              zonePolicies.addAll(createSecurityLevelAcl(zoneName));
-
-              IpAccessList.builder()
-                  .setName(computeZoneOutgoingAclName(zoneName))
-                  .setOwner(c)
-                  .setLines(zonePolicies.build())
-                  .build();
-            });
-  }
-
-  public Optional<IpAccessListLine> createZonePairAcl(
-      Configuration c,
-      MatchSrcInterface matchSrcZoneInterface,
-      String dstZoneName,
-      String srcZoneName,
-      SecurityZonePair zonePair) {
-    String inspectPolicyMapName = zonePair.getInspectPolicyMap();
-    if (!_securityZones.containsKey(srcZoneName)) {
-      return Optional.empty();
-    }
-    if (inspectPolicyMapName == null) {
-      return Optional.empty();
-    }
-    String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-    if (!c.getIpAccessLists().containsKey(inspectPolicyMapAclName)) {
-      return Optional.empty();
-    }
-    PermittedByAcl permittedByPolicyMap = new PermittedByAcl(inspectPolicyMapAclName);
-    String zonePairAclName = computeZonePairAclName(srcZoneName, dstZoneName);
-    IpAccessList.builder()
-        .setName(zonePairAclName)
-        .setOwner(c)
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(
-                        new AndMatchExpr(
-                            ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
-                    .setName(
-                        String.format(
-                            "Allow traffic received on interface in zone '%s' permitted by policy-map: '%s'",
-                            srcZoneName, inspectPolicyMapName))
-                    .build()))
-        .setSourceName(zonePair.getName())
-        .setSourceType(CiscoXrStructureType.SECURITY_ZONE_PAIR.getDescription())
-        .build();
-    return Optional.of(
-        IpAccessListLine.accepting()
-            .setMatchCondition(new PermittedByAcl(zonePairAclName))
-            .setName(
-                String.format(
-                    "Allow traffic from zone '%s' to '%s' permitted by service-policy: %s",
-                    srcZoneName, dstZoneName, inspectPolicyMapName))
-            .build());
-  }
-
-  private List<IpAccessListLine> createSecurityLevelAcl(String zoneName) {
-    Integer level = _securityLevels.get(zoneName);
-    if (level == null) {
-      return ImmutableList.of();
-    }
-
-    // Allow outbound traffic from interfaces with higher security levels unconditionally
-    List<IpAccessListLine> lines =
-        _interfacesBySecurityLevel.keySet().stream()
-            .filter(l -> l > level)
-            .map(
-                l ->
-                    IpAccessListLine.accepting()
-                        .setName("Traffic from security level " + l)
-                        .setMatchCondition(
-                            new MatchSrcInterface(
-                                _interfacesBySecurityLevel.get(l).stream()
-                                    .map(iface2 -> iface2.getName())
-                                    .collect(Collectors.toList())))
-                        .build())
-            .collect(Collectors.toList());
-
-    // Allow outbound traffic from interfaces with lower security levels if that interface has an
-    // inbound ACL
-    lines.addAll(
-        _interfacesBySecurityLevel.keySet().stream()
-            .filter(l -> l < level)
-            .map(
-                l ->
-                    IpAccessListLine.accepting()
-                        .setName("Traffic from security level " + l + " with inbound filter")
-                        .setMatchCondition(
-                            new MatchSrcInterface(
-                                _interfacesBySecurityLevel.get(l).stream()
-                                    .filter(iface -> iface.getIncomingFilter() != null)
-                                    .map(iface1 -> iface1.getName())
-                                    .collect(Collectors.toList())))
-                        .build())
-            .filter(
-                line ->
-                    !((MatchSrcInterface) line.getMatchCondition()).getSrcInterfaces().isEmpty())
-            .collect(Collectors.toList()));
-
-    // Allow traffic for existing connections
-    lines.add(ACL_LINE_EXISTING_CONNECTION);
-    return lines;
-  }
-
-  public static String computeZoneOutgoingAclName(@Nonnull String zoneName) {
-    return String.format("~ZONE_OUTGOING_ACL~%s~", zoneName);
-  }
-
-  public static String computeZonePairAclName(
-      @Nonnull String srcZoneName, @Nonnull String dstZoneName) {
-    return String.format("~ZONE_PAIR_ACL~SRC~%s~DST~%s", srcZoneName, dstZoneName);
-  }
-
   public static String computeInspectPolicyMapAclName(@Nonnull String inspectPolicyMapName) {
     return String.format("~INSPECT_POLICY_MAP_ACL~%s~", inspectPolicyMapName);
   }
 
   public static String computeInspectClassMapAclName(@Nonnull String inspectClassMapName) {
     return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
-  }
-
-  public static String computeSecurityLevelZoneName(int securityLevel) {
-    return String.format("SECURITY_LEVEL_%s", securityLevel);
   }
 
   private boolean isAclUsedForRouting(@Nonnull String aclName) {
@@ -4009,14 +3617,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, InspectPolicyMap> getInspectPolicyMaps() {
     return _inspectPolicyMaps;
-  }
-
-  public Map<String, Map<String, SecurityZonePair>> getSecurityZonePairs() {
-    return _securityZonePairs;
-  }
-
-  public Map<String, SecurityZone> getSecurityZones() {
-    return _securityZones;
   }
 
   public Map<String, TrackMethod> getTrackingGroups() {

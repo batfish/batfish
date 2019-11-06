@@ -59,14 +59,11 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PROTOCOL_
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SECURITY_ZONE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SECURITY_ZONE_PAIR;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRAFFIC_ZONE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -169,8 +166,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_STANDBY_TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
@@ -258,9 +253,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TUNNEL_S
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.WCCP_SERVICE_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ZONE_PAIR_SOURCE_ZONE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -615,9 +607,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_isis_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_mtuContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_no_security_levelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_security_levelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_service_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_shutdownContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_spanning_treeContext;
@@ -634,7 +624,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vlanContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vrrpContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_zone_memberContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifdhcpr_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifigmp_access_groupContext;
@@ -912,7 +901,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ntpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_policy_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ospfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ripContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_same_security_trafficContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_serviceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_service_policy_globalContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_service_templateContext;
@@ -925,8 +913,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_trackContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_usernameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_vrf_definitionContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_zoneContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_zone_pairContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Sd_switchport_blankContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Sd_switchport_shutdownContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Send_community_bgp_tailContext;
@@ -1027,7 +1013,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrfc_vniContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Wccp_idContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.cisco_xr.AccessListAddressSpecifier;
 import org.batfish.representation.cisco_xr.AccessListServiceSpecifier;
 import org.batfish.representation.cisco_xr.AsPathSet;
@@ -1187,8 +1172,6 @@ import org.batfish.representation.cisco_xr.RoutePolicySetTag;
 import org.batfish.representation.cisco_xr.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco_xr.RoutePolicySetWeight;
 import org.batfish.representation.cisco_xr.RoutePolicyStatement;
-import org.batfish.representation.cisco_xr.SecurityZone;
-import org.batfish.representation.cisco_xr.SecurityZonePair;
 import org.batfish.representation.cisco_xr.ServiceObject;
 import org.batfish.representation.cisco_xr.ServiceObjectGroup;
 import org.batfish.representation.cisco_xr.ServiceObjectGroup.ServiceProtocol;
@@ -1521,8 +1504,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private InspectPolicyMap _currentInspectPolicyMap;
 
   private InspectPolicyMapInspectClass _currentInspectPolicyMapInspectClass;
-
-  private SecurityZonePair _currentSecurityZonePair;
 
   private Integer _currentHsrpGroup;
 
@@ -4086,62 +4067,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitS_zone(S_zoneContext ctx) {
-    String name = ctx.name.getText();
-    if (ctx.SECURITY() != null) {
-      _configuration.getSecurityZones().computeIfAbsent(name, SecurityZone::new);
-      _configuration.defineStructure(SECURITY_ZONE, name, ctx);
-    } else {
-      todo(ctx);
-      _configuration.defineStructure(TRAFFIC_ZONE, name, ctx);
-    }
-  }
-
-  @Override
-  public void enterS_zone_pair(S_zone_pairContext ctx) {
-    String name = ctx.name.getText();
-    String srcName = ctx.source.getText();
-    int srcLine = ctx.source.getStart().getLine();
-    _configuration.referenceStructure(SECURITY_ZONE, srcName, ZONE_PAIR_SOURCE_ZONE, srcLine);
-    String dstName = ctx.destination.getText();
-    int dstLine = ctx.destination.getStart().getLine();
-    _configuration.referenceStructure(SECURITY_ZONE, dstName, ZONE_PAIR_DESTINATION_ZONE, dstLine);
-    _configuration.defineStructure(SECURITY_ZONE_PAIR, name, ctx);
-    _currentSecurityZonePair =
-        _configuration
-            .getSecurityZonePairs()
-            .computeIfAbsent(dstName, n -> new TreeMap<>())
-            .computeIfAbsent(srcName, n -> new SecurityZonePair(name, srcName, dstName));
-  }
-
-  @Override
-  public void exitS_zone_pair(S_zone_pairContext ctx) {
-    _currentSecurityZonePair = null;
-  }
-
-  @Override
-  public void exitZp_service_policy_inspect(Zp_service_policy_inspectContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(
-        INSPECT_POLICY_MAP, name, ZONE_PAIR_INSPECT_SERVICE_POLICY, line);
-    _currentSecurityZonePair.setInspectPolicyMap(name);
-  }
-
-  @Override
-  public void exitIf_zone_member(If_zone_memberContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    if (ctx.SECURITY() != null) {
-      _configuration.referenceStructure(SECURITY_ZONE, name, INTERFACE_ZONE_MEMBER, line);
-      _currentInterfaces.forEach(iface -> iface.setSecurityZone(name));
-    } else {
-      _configuration.referenceStructure(TRAFFIC_ZONE, name, INTERFACE_TRAFFIC_ZONE_MEMBER, line);
-      todo(ctx);
-    }
-  }
-
-  @Override
   public void exitCd_match_address(Cd_match_addressContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -5385,24 +5310,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setMtu(mtu);
     }
-  }
-
-  @Override
-  public void exitIf_no_security_level(If_no_security_levelContext ctx) {
-    if (_currentInterfaces.size() != 1) {
-      warn(ctx, "Security level can only be configured in single-interface context");
-      return;
-    }
-    _currentInterfaces.get(0).setSecurityLevel(0);
-  }
-
-  @Override
-  public void exitIf_security_level(If_security_levelContext ctx) {
-    if (_currentInterfaces.size() != 1) {
-      warn(ctx, "Security level can only be configured in single-interface context");
-      return;
-    }
-    _currentInterfaces.get(0).setSecurityLevel(toInteger(ctx.level));
   }
 
   @Override
@@ -8243,16 +8150,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitS_router_rip(S_router_ripContext ctx) {
     _currentRipProcess = null;
-  }
-
-  @Override
-  public void exitS_same_security_traffic(S_same_security_trafficContext ctx) {
-    if (ctx.INTER_INTERFACE() != null) {
-      _configuration.setSameSecurityTrafficInter(true);
-    }
-    if (ctx.INTRA_INTERFACE() != null) {
-      _configuration.setSameSecurityTrafficIntra(true);
-    }
   }
 
   @Override

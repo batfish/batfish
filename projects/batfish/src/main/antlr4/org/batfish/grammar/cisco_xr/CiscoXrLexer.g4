@@ -11260,11 +11260,6 @@ SECURITY_ASSOCIATION
    'security-association'
 ;
 
-SECURITY_LEVEL
-:
-   'security-level'
-;
-
 SELECT
 :
    'select'
@@ -14333,16 +14328,6 @@ Z39_50
 ZONE
 :
    'zone'
-;
-
-ZONE_MEMBER
-:
-   'zone-member'
-;
-
-ZONE_PAIR
-:
-  'zone-pair'
 ;
 
 /* Other Tokens */

@@ -198,10 +198,6 @@ public class Interface implements Serializable {
 
   private SortedSet<String> _declaredNames;
 
-  private String _securityZone;
-
-  @Nullable private Integer _securityLevel;
-
   private @Nullable Double _speed;
 
   /** Returns the default interface delay in picoseconds for the given {@code format}. */
@@ -230,10 +226,6 @@ public class Interface implements Serializable {
   }
 
   public static final IntegerSpace ALL_VLANS = IntegerSpace.of(new SubRange(1, 4094));
-
-  public String getSecurityZone() {
-    return _securityZone;
-  }
 
   /**
    * Returns the default {@link SwitchportMode} for the given {@code vendor} to be used when a
@@ -468,11 +460,6 @@ public class Interface implements Serializable {
     return _tunnel;
   }
 
-  @Nullable
-  public Integer getSecurityLevel() {
-    return _securityLevel;
-  }
-
   public String getVrf() {
     return _vrf;
   }
@@ -638,15 +625,7 @@ public class Interface implements Serializable {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
   }
 
-  public void setSecurityZone(String securityZone) {
-    _securityZone = securityZone;
-  }
-
   public void setHsrpVersion(String hsrpVersion) {
     _hsrpVersion = hsrpVersion;
-  }
-
-  public void setSecurityLevel(@Nullable Integer level) {
-    _securityLevel = level;
   }
 }
