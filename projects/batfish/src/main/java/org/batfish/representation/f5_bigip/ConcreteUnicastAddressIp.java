@@ -14,5 +14,11 @@ public final class ConcreteUnicastAddressIp implements UnicastAddressIp {
     return _ip;
   }
 
+  @Override
+  public @Nonnull org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp
+      toUnicastAddressIp() {
+    return new org.batfish.datamodel.vendor_family.f5_bigip.ConcreteUnicastAddressIp(_ip);
+  }
+
   private final @Nonnull Ip _ip;
 }
