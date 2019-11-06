@@ -51,7 +51,6 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
     _lexer.setEos(eos);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
     _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
-    _lexer.setIosXr(format == ConfigurationFormat.CISCO_IOS_XR);
     _parser.setAristaBgp(settings.getUseAristaBgp() && format == ConfigurationFormat.ARISTA);
     _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _parser.setEos(eos);

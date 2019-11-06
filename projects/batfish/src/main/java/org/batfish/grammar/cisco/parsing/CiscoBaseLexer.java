@@ -46,10 +46,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
     _ios = ios;
   }
 
-  public void setIosXr(boolean iosXr) {
-    _iosXr = iosXr;
-  }
-
   protected final boolean isAsa() {
     return _asa;
   }
@@ -68,10 +64,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
 
   protected final boolean isIos() {
     return _ios;
-  }
-
-  protected final boolean isIosXr() {
-    return _iosXr;
   }
 
   protected final int lastTokenType() {
@@ -132,7 +124,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
   private boolean _eos = false;
   private boolean _foundry = false;
   private boolean _ios = false;
-  private boolean _iosXr = false;
 
   private @Nullable Integer _bannerIosDelimiter;
   private int _lastTokenType = -1;
@@ -146,7 +137,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
     sb.append("_eos: " + _eos + "\n");
     sb.append("_foundry: " + _foundry + "\n");
     sb.append("_ios: " + _ios + "\n");
-    sb.append("_iosXr: " + _iosXr + "\n");
     sb.append("_enableAclNum: " + _enableAclNum + "\n");
     sb.append("_enableCommunityListNum: " + _enableCommunityListNum + "\n");
     sb.append("_enableDec: " + _enableDec + "\n");
