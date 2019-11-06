@@ -1249,7 +1249,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
 
-      // Get default-originate generation policy (if Cisco) or export policy
+      // Get default-originate generation or export policy
       String defaultOriginateGenerationMap = null;
       if (lpg.getDefaultOriginate()) {
         defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
