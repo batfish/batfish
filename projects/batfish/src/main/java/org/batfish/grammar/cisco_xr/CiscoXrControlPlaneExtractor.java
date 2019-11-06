@@ -18,10 +18,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_MAP_SET;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DEPI_CLASS;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DEPI_TUNNEL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DOCSIS_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DOCSIS_POLICY_RULE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INSPECT_POLICY_MAP;
@@ -51,7 +47,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_TEMPLATE;
@@ -80,7 +75,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MA
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CONTROLLER_DEPI_TUNNEL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
@@ -92,11 +86,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CRYPTO_M
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DEPI_TUNNEL_DEPI_CLASS;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DEPI_TUNNEL_L2TP_CLASS;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_AF_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
@@ -166,7 +155,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_M
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_STATIC_ROUTE;
@@ -335,11 +323,6 @@ import org.batfish.datamodel.vendor_family.cisco_xr.AaaAccountingDefault;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco_xr.Buffered;
-import org.batfish.datamodel.vendor_family.cisco_xr.Cable;
-import org.batfish.datamodel.vendor_family.cisco_xr.DepiClass;
-import org.batfish.datamodel.vendor_family.cisco_xr.DepiTunnel;
-import org.batfish.datamodel.vendor_family.cisco_xr.DocsisPolicy;
-import org.batfish.datamodel.vendor_family.cisco_xr.DocsisPolicyRule;
 import org.batfish.datamodel.vendor_family.cisco_xr.L2tpClass;
 import org.batfish.datamodel.vendor_family.cisco_xr.Logging;
 import org.batfish.datamodel.vendor_family.cisco_xr.LoggingHost;
@@ -347,7 +330,6 @@ import org.batfish.datamodel.vendor_family.cisco_xr.LoggingType;
 import org.batfish.datamodel.vendor_family.cisco_xr.Ntp;
 import org.batfish.datamodel.vendor_family.cisco_xr.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco_xr.Service;
-import org.batfish.datamodel.vendor_family.cisco_xr.ServiceClass;
 import org.batfish.datamodel.vendor_family.cisco_xr.Sntp;
 import org.batfish.datamodel.vendor_family.cisco_xr.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco_xr.SshSettings;
@@ -439,9 +421,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ckpn_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ckpn_key_stringContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ckr_local_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ckr_pskContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Clb_docsis_policyContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Clb_ruleContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Clbdg_docsis_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cluster_id_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cm_ios_inspectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cm_iosi_matchContext;
@@ -450,8 +429,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Cmm_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cmm_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cmm_activated_service_templateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cmm_service_templateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Cntlr_rf_channelContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.CommunityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_elemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_elem_halfContext;
@@ -460,7 +437,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Compare_routerid_rb_stanzaCont
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cp_ip_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cp_service_policyContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_keyringContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_mapContext;
@@ -470,8 +446,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_map_t_ii_set_peerContex
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_map_t_ii_set_pfsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_map_t_ii_set_transform_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_map_t_ipsec_isakmpContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Cs_classContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Csc_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Default_information_originate_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Default_metric_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Default_originate_bgp_tailContext;
@@ -488,9 +462,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_lookupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_name_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Dscp_typeContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Dt_depi_classContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Dt_l2tp_classContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Eigrp_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Else_rp_stanzaContext;
@@ -788,10 +759,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_aaaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_access_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_iosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_bfd_templateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_cableContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_class_mapContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_depi_classContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_domain_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_hostnameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_interfaceContext;
@@ -1300,8 +1268,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private RipProcess _currentRipProcess;
 
   private RoutePolicy _currentRoutePolicy;
-
-  private ServiceClass _currentServiceClass;
 
   private ServiceObject _currentServiceObject;
 
@@ -1859,38 +1825,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterClb_docsis_policy(Clb_docsis_policyContext ctx) {
-    String name = ctx.policy.getText();
-    String rule = ctx.rulenum.getText();
-    DocsisPolicy policy =
-        _configuration
-            .getCf()
-            .getCable()
-            .getDocsisPolicies()
-            .computeIfAbsent(name, DocsisPolicy::new);
-    _configuration.defineStructure(DOCSIS_POLICY, name, ctx);
-    policy.getRules().add(rule);
-    _configuration.referenceStructure(
-        DOCSIS_POLICY_RULE, rule, DOCSIS_POLICY_DOCSIS_POLICY_RULE, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void enterClb_rule(Clb_ruleContext ctx) {
-    String name = ctx.rulenum.getText();
-    _configuration
-        .getCf()
-        .getCable()
-        .getDocsisPolicyRules()
-        .computeIfAbsent(name, DocsisPolicyRule::new);
-    _configuration.defineStructure(DOCSIS_POLICY_RULE, name, ctx);
-  }
-
-  @Override
-  public void enterCntlr_rf_channel(Cntlr_rf_channelContext ctx) {
-    _no = (ctx.NO() != null);
-  }
-
-  @Override
   public void enterCommunity_set_stanza(Community_set_stanzaContext ctx) {
     String name = ctx.name.getText();
     _configuration.defineStructure(COMMUNITY_SET, name, ctx);
@@ -1977,32 +1911,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
 
     cryptoMapSet.getCryptoMapEntries().add(_currentCryptoMapEntry);
-  }
-
-  @Override
-  public void enterCs_class(Cs_classContext ctx) {
-    String number = ctx.num.getText();
-    _currentServiceClass =
-        _configuration
-            .getCf()
-            .getCable()
-            .getServiceClasses()
-            .computeIfAbsent(number, ServiceClass::new);
-    _configuration.defineStructure(SERVICE_CLASS, number, ctx);
-  }
-
-  @Override
-  public void enterDt_depi_class(Dt_depi_classContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.referenceStructure(
-        DEPI_CLASS, name, DEPI_TUNNEL_DEPI_CLASS, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void enterDt_l2tp_class(Dt_l2tp_classContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.referenceStructure(
-        L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, ctx.getStart().getLine());
   }
 
   @Override
@@ -2876,31 +2784,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterS_cable(S_cableContext ctx) {
-    if (_configuration.getCf().getCable() == null) {
-      _configuration.getCf().setCable(new Cable());
-    }
-  }
-
-  @Override
   public void enterS_class_map(S_class_mapContext ctx) {
     // TODO: do something with this.
     String name = ctx.name.getText();
     _configuration.defineStructure(CLASS_MAP, name, ctx);
-  }
-
-  @Override
-  public void enterS_depi_class(S_depi_classContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getCf().getDepiClasses().computeIfAbsent(name, DepiClass::new);
-    _configuration.defineStructure(DEPI_CLASS, name, ctx);
-  }
-
-  @Override
-  public void enterS_depi_tunnel(S_depi_tunnelContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getCf().getDepiTunnels().computeIfAbsent(name, DepiTunnel::new);
-    _configuration.defineStructure(DEPI_TUNNEL, name, ctx);
   }
 
   @Override
@@ -3692,13 +3579,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitClbdg_docsis_policy(Clbdg_docsis_policyContext ctx) {
-    String name = ctx.policy.getText();
-    _configuration.referenceStructure(
-        DOCSIS_POLICY, name, DOCSIS_GROUP_DOCSIS_POLICY, ctx.getStart().getLine());
-  }
-
-  @Override
   public void exitCluster_id_bgp_tail(Cluster_id_bgp_tailContext ctx) {
     Ip clusterId = null;
     if (ctx.DEC() != null) {
@@ -3863,20 +3743,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitCntlr_rf_channel(Cntlr_rf_channelContext ctx) {
-    _no = false;
-  }
-
-  @Override
-  public void exitCntlrrfc_depi_tunnel(Cntlrrfc_depi_tunnelContext ctx) {
-    if (!_no) {
-      String name = ctx.name.getText();
-      int line = ctx.getStart().getLine();
-      _configuration.referenceStructure(DEPI_TUNNEL, name, CONTROLLER_DEPI_TUNNEL, line);
-    }
-  }
-
-  @Override
   public void exitCompare_routerid_rb_stanza(Compare_routerid_rb_stanzaContext ctx) {
     currentVrf().getBgpProcess().setTieBreaker(BgpTieBreaker.ROUTER_ID);
   }
@@ -3903,13 +3769,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
     _configuration.referenceStructure(
         POLICY_MAP, ctx.name.getText(), usage, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitCqer_service_class(Cqer_service_classContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(SERVICE_CLASS, name, QOS_ENFORCE_RULE_SERVICE_CLASS, line);
   }
 
   @Override
@@ -3961,17 +3820,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitCrypto_map_t_ipsec_isakmp(Crypto_map_t_ipsec_isakmpContext ctx) {
     _currentCryptoMapName = null;
     _currentCryptoMapSequenceNum = null;
-  }
-
-  @Override
-  public void exitCs_class(Cs_classContext ctx) {
-    _currentServiceClass = null;
-  }
-
-  @Override
-  public void exitCsc_name(Csc_nameContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getCf().getCable().getServiceClassesByName().put(name, _currentServiceClass);
   }
 
   @Override
@@ -4065,13 +3913,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     Set<String> dnsServers = _configuration.getDnsServers();
     String hostname = ctx.hostname.getText();
     dnsServers.add(hostname);
-  }
-
-  @Override
-  public void exitDt_protect_tunnel(Dt_protect_tunnelContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(DEPI_TUNNEL, name, DEPI_TUNNEL_PROTECT_TUNNEL, line);
   }
 
   @Override

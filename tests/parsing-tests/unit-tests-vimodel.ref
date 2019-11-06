@@ -3561,11 +3561,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "bgp_default_originate_policy"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -3877,11 +3873,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "bgp_route_policy"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -13909,11 +13901,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "commSet"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -14497,11 +14485,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "community_set"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -19342,11 +19326,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "if_tag_is"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -19752,11 +19732,7 @@
             "vrf" : "default"
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "interface_name"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -20495,11 +20471,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_acl"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -20701,11 +20673,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_bgp"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -20842,11 +20810,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_bgp_neighbor_group"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -20951,11 +20915,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_class_map"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21003,11 +20963,7 @@
             "vrf" : "default"
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_isis"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -21023,14 +20979,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_logging",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21043,11 +20992,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_misc"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21060,14 +21005,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "banners" : {
-              "login" : "\n\n***************************************************************************\n*                                                                         *\n*  This router is : ios_xr_multipart                                      *\n*                                                                         * \n***************************************************************************\n"
-            },
-            "hostname" : "ios_xr_multipart"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21083,18 +21021,7 @@
         "ntpServers" : [
           "1.2.3.4"
         ],
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_ntp",
-            "ntp" : {
-              "servers" : {
-                "1.2.3.4" : {
-                  "name" : "1.2.3.4"
-                }
-              }
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21512,11 +21439,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_ospf"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -21601,11 +21524,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_router_static"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -21710,11 +21629,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_ssh"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21727,11 +21642,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "ios_xr_taskgroup"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21744,11 +21655,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "IosXrMultiCast"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -27845,11 +27752,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "L2VPN"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -27938,11 +27841,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "MCastRouting"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -32477,11 +32376,7 @@
             "name" : "ucla_networks"
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "preSet"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -33345,11 +33240,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "route_policy_as_path_set"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -33422,11 +33313,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "route_policy_igp_cost"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -33566,11 +33453,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "route_policy_metric_type"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -33789,11 +33672,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "route_policy_param"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -36023,11 +35902,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "rP"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -36127,11 +36002,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "set_inline_community"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -36234,11 +36105,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco_xr" : {
-            "hostname" : "taskgroup"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"

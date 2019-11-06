@@ -5,7 +5,6 @@ CiscoXr_common,
 CiscoXr_aaa,
 CiscoXr_acl,
 CiscoXr_bgp,
-CiscoXr_cable,
 CiscoXr_crypto,
 CiscoXr_callhome,
 CiscoXr_eigrp,
@@ -3535,7 +3534,6 @@ stanza
    | s_banner_ios
    | s_bfd
    | s_bfd_template
-   | s_cable
    | s_call_home
    | s_callhome
    | s_call_manager_fallback
@@ -3545,15 +3543,12 @@ stanza
    | s_configure
    | s_control_plane
    | s_control_plane_security
-   | s_controller
    | s_cops
    | s_cos_queue_group
    | s_crypto
    | s_ctl_file
    | s_cvx
    | s_daemon
-   | s_depi_class
-   | s_depi_tunnel
    | s_dhcp
    | s_dialer
    | s_dial_peer

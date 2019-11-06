@@ -30,7 +30,6 @@ public class VendorFamily implements Serializable {
   private static final String PROP_AWS = "aws";
   private static final String PROP_CISCO = "cisco";
   private static final String PROP_CISCO_NXOS = "cisco_nxos";
-  private static final String PROP_CISCO_XR = "cisco_xr";
   private static final String PROP_CUMULUS = "cumulus";
   @Deprecated private static final String PROP_F5_BIGIP = "f5Bigip";
   private static final String PROP_JUNIPER = "juniper";
@@ -77,7 +76,7 @@ public class VendorFamily implements Serializable {
     return _ciscoNxos;
   }
 
-  @JsonProperty(PROP_CISCO_XR)
+  @JsonIgnore
   public CiscoXrFamily getCiscoXr() {
     return _ciscoXr;
   }
@@ -87,6 +86,7 @@ public class VendorFamily implements Serializable {
     return _cumulus;
   }
 
+  @JsonIgnore
   public F5BigipFamily getF5Bigip() {
     return _f5Bigip;
   }
@@ -111,7 +111,7 @@ public class VendorFamily implements Serializable {
     _ciscoNxos = ciscoNxos;
   }
 
-  @JsonProperty(PROP_CISCO_XR)
+  @JsonIgnore
   public void setCiscoXr(CiscoXrFamily ciscoXr) {
     _ciscoXr = ciscoXr;
   }
