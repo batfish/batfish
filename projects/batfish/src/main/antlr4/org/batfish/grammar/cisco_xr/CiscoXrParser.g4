@@ -2269,19 +2269,6 @@ s_asa_twice_nat
    )
 ;
 
-s_banner_asa
-:
-  banner_header = asa_banner_header body = BANNER_BODY? NEWLINE
-;
-
-asa_banner_header
-:
-  BANNER_ASDM_ASA
-  | BANNER_EXEC_ASA
-  | BANNER_LOGIN_ASA
-  | BANNER_MOTD_ASA
-;
-
 s_banner_ios
 :
   banner_header = ios_banner_header banner = ios_delimited_banner NEWLINE
@@ -3655,7 +3642,6 @@ stanza
    | s_arp_access_list_extended
    | s_asa_twice_nat
    | s_authentication
-   | s_banner_asa
    | s_banner_ios
    | s_bfd
    | s_bfd_template

@@ -475,7 +475,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_ag_globalContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_ag_interfaceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_banner_headerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_nat_ifacesContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_nat_optional_argsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Asa_twice_nat_destinationContext;
@@ -918,7 +917,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rs_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_aaaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_access_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_asa_twice_natContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_asaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_iosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_bfd_templateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_cableContext;
@@ -4128,33 +4126,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
     todo(ctx);
-  }
-
-  @Override
-  public void exitS_banner_asa(S_banner_asaContext ctx) {
-    String bannerType = toBannerType(ctx.banner_header);
-    if (bannerType == null) {
-      warn(ctx, String.format("Unsupported ASA banner header: %s", ctx.banner_header.getText()));
-      return;
-    }
-    String body = ctx.body != null ? ctx.body.getText() : "";
-    _configuration
-        .getCf()
-        .getBanners()
-        .compute(bannerType, (k, v) -> v == null ? body : v + "\n" + body);
-  }
-
-  private static @Nullable String toBannerType(Asa_banner_headerContext ctx) {
-    if (ctx.BANNER_ASDM_ASA() != null) {
-      return "asdm";
-    } else if (ctx.BANNER_EXEC_ASA() != null) {
-      return "exec";
-    } else if (ctx.BANNER_LOGIN_ASA() != null) {
-      return "login";
-    } else if (ctx.BANNER_MOTD_ASA() != null) {
-      return "motd";
-    }
-    return null;
   }
 
   @Override

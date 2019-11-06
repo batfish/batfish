@@ -27,20 +27,12 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
     }
   }
 
-  public void setAsa(boolean asa) {
-    _asa = asa;
-  }
-
   public void setIos(boolean ios) {
     _ios = ios;
   }
 
   public void setIosXr(boolean iosXr) {
     _iosXr = iosXr;
-  }
-
-  protected final boolean isAsa() {
-    return _asa;
   }
 
   protected final boolean isIos() {
@@ -82,7 +74,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
   protected boolean _inAccessList = false;
   protected boolean _inCommunitySet = false;
 
-  private boolean _asa = false;
   private boolean _ios = false;
   private boolean _iosXr = false;
 
@@ -93,7 +84,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
   @Override
   public @Nonnull String printStateVariables() {
     StringBuilder sb = new StringBuilder();
-    sb.append("_asa: " + _asa + "\n");
     sb.append("_ios: " + _ios + "\n");
     sb.append("_iosXr: " + _iosXr + "\n");
     sb.append("_enableAclNum: " + _enableAclNum + "\n");

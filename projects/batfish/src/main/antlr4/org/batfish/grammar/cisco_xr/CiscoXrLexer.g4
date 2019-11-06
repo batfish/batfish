@@ -1365,19 +1365,9 @@ BANNER_IOS
   'banner' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
-BANNER_ASDM_ASA
-:
-  'banner' F_Whitespace+ 'asdm' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
-;
-
 BANNER_CONFIG_SAVE_IOS
 :
   'banner' F_Whitespace+ 'config-save' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_EXEC_ASA
-:
-  'banner' F_Whitespace+ 'exec' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
 ;
 
 BANNER_EXEC_IOS
@@ -1390,19 +1380,9 @@ BANNER_INCOMING_IOS
   'banner' F_Whitespace+ 'incoming' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
-BANNER_LOGIN_ASA
-:
-  'banner' F_Whitespace+ 'login' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
-;
-
 BANNER_LOGIN_IOS
 :
   'banner' F_Whitespace+ 'login' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_MOTD_ASA
-:
-  'banner' F_Whitespace+ 'motd' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
 ;
 
 BANNER_MOTD_IOS
@@ -6159,7 +6139,7 @@ INTERCEPT
 INTERFACE
 :
    'int' 'erface'?
-   { _enableIpv6Address = false; if (!isAsa() || lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
+   { _enableIpv6Address = false; if (lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
 
 ;
 
