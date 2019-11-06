@@ -666,7 +666,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_accessContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_modeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_trunk_encapsulationContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_trunk_group_eosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vlanContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vrfContext;
@@ -1263,7 +1262,6 @@ import org.batfish.representation.cisco_xr.Tunnel;
 import org.batfish.representation.cisco_xr.Tunnel.TunnelMode;
 import org.batfish.representation.cisco_xr.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco_xr.UnimplementedAccessListServiceSpecifier;
-import org.batfish.representation.cisco_xr.VlanTrunkGroup;
 import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.VrrpGroup;
 import org.batfish.representation.cisco_xr.VrrpInterface;
@@ -5948,15 +5946,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
       currentInterface.setSwitchportTrunkEncapsulation(type);
-    }
-  }
-
-  @Override
-  public void exitIf_switchport_trunk_group_eos(If_switchport_trunk_group_eosContext ctx) {
-    String groupName = ctx.name.getText();
-    _configuration.getEosVlanTrunkGroups().putIfAbsent(groupName, new VlanTrunkGroup(groupName));
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.addVlanTrunkGroup(groupName);
     }
   }
 

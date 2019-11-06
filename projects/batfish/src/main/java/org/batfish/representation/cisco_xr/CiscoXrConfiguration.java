@@ -407,8 +407,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private String _domainName;
 
-  private Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
-
   @Nullable private MlagConfiguration _eosMlagConfiguration;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
@@ -547,7 +545,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
-    _eosVlanTrunkGroups = new HashMap<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
@@ -739,11 +736,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public String getDnsSourceInterface() {
     return _dnsSourceInterface;
-  }
-
-  @Nonnull
-  public Map<String, VlanTrunkGroup> getEosVlanTrunkGroups() {
-    return _eosVlanTrunkGroups;
   }
 
   @Nullable
@@ -1805,22 +1797,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(encapsulation);
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      /*
-       * Compute allowed VLANs:
-       * - If allowed VLANs are set, honor them;
-       * - Otherwise prune allowed VLANs based on configured trunk groups (if any).
-       *
-       * https://www.arista.com/en/um-eos/eos-section-19-3-vlan-configuration-procedures#ww1152330
-       */
+      // If allowed VLANs are set, honor them;
       if (iface.getAllowedVlans() != null) {
         newIface.setAllowedVlans(iface.getAllowedVlans());
-      } else if (!iface.getVlanTrunkGroups().isEmpty()) {
-        newIface.setAllowedVlans(
-            iface.getVlanTrunkGroups().stream()
-                .map(_eosVlanTrunkGroups::get)
-                .map(VlanTrunkGroup::getVlans)
-                .reduce(IntegerSpace::union)
-                .get());
       } else {
         newIface.setAllowedVlans(Interface.ALL_VLANS);
       }

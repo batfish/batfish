@@ -1,6 +1,5 @@
 package org.batfish.representation.cisco_xr;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
@@ -236,8 +235,6 @@ public class Interface implements Serializable {
 
   private Tunnel _tunnel;
 
-  @Nonnull private Set<String> _vlanTrunkGroups;
-
   private String _vrf;
 
   private SortedSet<String> _declaredNames;
@@ -338,13 +335,7 @@ public class Interface implements Serializable {
     } else if (_switchportMode == SwitchportMode.ACCESS) {
       _allowedVlans = null;
     }
-    _vlanTrunkGroups = ImmutableSet.of();
     _spanningTreePortfast = c.getSpanningTreePortfastDefault();
-  }
-
-  public void addVlanTrunkGroup(@Nonnull String groupName) {
-    _vlanTrunkGroups =
-        ImmutableSet.<String>builder().addAll(_vlanTrunkGroups).add(groupName).build();
   }
 
   public void setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
@@ -561,15 +552,6 @@ public class Interface implements Serializable {
   @Nullable
   public Integer getSecurityLevel() {
     return _securityLevel;
-  }
-
-  /**
-   * Retun the (immutable) set of VLAN trunk groups that this interface belongs to. To add trunk
-   * groups, see {@link #addVlanTrunkGroup(String)}
-   */
-  @Nonnull
-  public Set<String> getVlanTrunkGroups() {
-    return _vlanTrunkGroups;
   }
 
   public String getVrf() {

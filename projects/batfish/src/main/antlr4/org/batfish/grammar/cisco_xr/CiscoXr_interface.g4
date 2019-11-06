@@ -1388,11 +1388,6 @@ if_switchport_trunk_encapsulation
    SWITCHPORT TRUNK ENCAPSULATION e = switchport_trunk_encapsulation NEWLINE
 ;
 
-if_switchport_trunk_group_eos
-:
-   SWITCHPORT TRUNK GROUP name = variable NEWLINE
-;
-
 if_switchport_trunk_native
 :
    SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
@@ -1775,7 +1770,6 @@ if_inner
    | if_switchport_private_vlan_mapping
    | if_switchport_trunk_allowed
    | if_switchport_trunk_encapsulation
-   | if_switchport_trunk_group_eos
    | if_switchport_trunk_native
    | if_tunnel
    | if_vlan
