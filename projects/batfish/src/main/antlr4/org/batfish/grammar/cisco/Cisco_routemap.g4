@@ -13,56 +13,14 @@ as_expr
    | RP_VARIABLE
 ;
 
-as_path_set_elem
-:
-   IOS_REGEX AS_PATH_SET_REGEX
-;
-
-as_path_set_expr
-:
-   inline = as_path_set_inline
-   | rpvar = RP_VARIABLE
-   | named = variable
-;
-
-as_path_set_inline
-:
-   PAREN_LEFT elems += as_path_set_elem
-   (
-      COMMA elems += as_path_set_elem
-   )* PAREN_RIGHT
-;
-
-as_range_expr
-:
-   SINGLE_QUOTE
-   (
-      subranges += rp_subrange
-   )+ SINGLE_QUOTE EXACT?
-;
-
 continue_rm_stanza
 :
    CONTINUE DEC? NEWLINE
 ;
 
-int_comp
-:
-   EQ
-   | IS
-   | GE
-   | LE
-;
-
 ip_policy_list_stanza
 :
    IP POLICY_LIST name = variable access_list_action NEWLINE match_rm_stanza*
-;
-
-isis_level_expr
-:
-   isis_level
-   | RP_VARIABLE
 ;
 
 match_as_number_rm_stanza
@@ -230,12 +188,6 @@ null_rm_stanza
       DESCRIPTION
       | SUB_ROUTE_MAP
    ) null_rest_of_line
-;
-
-origin_expr
-:
-   origin_expr_literal
-   | RP_VARIABLE
 ;
 
 origin_expr_literal
