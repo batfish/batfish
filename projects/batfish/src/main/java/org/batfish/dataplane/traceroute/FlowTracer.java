@@ -56,6 +56,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
@@ -961,8 +962,13 @@ class FlowTracer {
     FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
         outgoingInterface.getFirewallSessionInterfaceInfo();
     if (firewallSessionInterfaceInfo != null) {
-      _newSessions.add(buildFirewallSessionTraceInfo(firewallSessionInterfaceInfo));
-      _steps.add(new SetupSessionStep());
+      @Nullable
+      FirewallSessionTraceInfo session =
+          buildFirewallSessionTraceInfo(firewallSessionInterfaceInfo);
+      if (session != null) {
+        _newSessions.add(session);
+        _steps.add(new SetupSessionStep());
+      }
     }
 
     String currentNodeName = _currentNode.getName();
@@ -992,7 +998,7 @@ class FlowTracer {
     }
   }
 
-  @Nonnull
+  @Nullable
   private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
     SessionAction action =
@@ -1001,6 +1007,12 @@ class FlowTracer {
             : _ingressInterface != null
                 ? new ForwardOutInterface(_ingressInterface, _lastHopNodeAndOutgoingInterface)
                 : Accept.INSTANCE;
+
+    IpProtocol ipProtocol = _currentFlow.getIpProtocol();
+    if (!IpProtocol.IP_PROTOCOLS_WITH_PORTS.contains(ipProtocol)) {
+      // TODO verify only protocols with ports can have sessions
+      return null;
+    }
 
     return new FirewallSessionTraceInfo(
         _currentNode.getName(),
@@ -1011,7 +1023,7 @@ class FlowTracer {
             _currentFlow.getDstPort(),
             _currentFlow.getSrcIp(),
             _currentFlow.getSrcPort(),
-            _currentFlow.getIpProtocol()),
+            ipProtocol),
         sessionTransformation(_originalFlow, _currentFlow));
   }
 

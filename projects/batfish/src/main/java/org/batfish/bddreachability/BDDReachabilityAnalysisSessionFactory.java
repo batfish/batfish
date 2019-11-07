@@ -3,7 +3,10 @@ package org.batfish.bddreachability;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.immutableEntry;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 import static org.batfish.bddreachability.LastHopOutgoingInterfaceManager.NO_LAST_HOP;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
@@ -24,10 +27,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDFiniteDomain;
+import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.FibLookup;
@@ -72,7 +77,12 @@ final class BDDReachabilityAnalysisSessionFactory {
     _configs = configs;
     _srcManagers = srcManagers;
     _lastHopManager = lastHopManager;
-    _sessionBdds = reachableSessionCreationBdds(configs, forwardReachableBdds);
+    BDD ipProtocolsWithSessionsBdd =
+        IpProtocol.IP_PROTOCOLS_WITH_PORTS.stream()
+            .map(bddPacket.getIpProtocol()::value)
+            .reduce(bddPacket.getFactory().one(), BDD::or);
+    _sessionBdds =
+        reachableSessionCreationBdds(configs, forwardReachableBdds, ipProtocolsWithSessionsBdd);
     _reverseFlowTransformationFactory = transformationFactory;
     _reverseTransformationRanges = reverseTransformationRanges;
   }
@@ -307,7 +317,10 @@ final class BDDReachabilityAnalysisSessionFactory {
    * session exiting that interface.
    */
   private static Map<NodeInterfacePair, BDD> reachableSessionCreationBdds(
-      Map<String, Configuration> configs, Map<StateExpr, BDD> reachable) {
+      Map<String, Configuration> configs,
+      Map<StateExpr, BDD> reachable,
+      BDD ipProtocolsWithSessionsBdd) {
+    BDDOps ops = new BDDOps(ipProtocolsWithSessionsBdd.getFactory());
     return reachable.entrySet().stream()
         .map(
             entry ->
@@ -324,6 +337,12 @@ final class BDDReachabilityAnalysisSessionFactory {
                       .getFirewallSessionInterfaceInfo()
                   != null;
             })
-        .collect(toMap(Entry::getKey, Entry::getValue, BDD::or));
+        .collect(
+            groupingBy(
+                Entry::getKey,
+                mapping(
+                    Entry::getValue,
+                    collectingAndThen(
+                        toList(), bdds -> ipProtocolsWithSessionsBdd.and(ops.orAll(bdds))))));
   }
 }
