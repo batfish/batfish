@@ -1002,14 +1002,23 @@ class FlowTracer {
   private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
     return buildFirewallSessionTraceInfo(
-        _ingressInterface, _lastHopNodeAndOutgoingInterface, _currentNode.getName(), _currentFlow, _originalFlow, firewallSessionInterfaceInfo);
+        _ingressInterface,
+        _lastHopNodeAndOutgoingInterface,
+        _currentNode.getName(),
+        _currentFlow,
+        _originalFlow,
+        firewallSessionInterfaceInfo);
   }
 
   @VisibleForTesting
   @Nullable
-  static FirewallSessionTraceInfo buildFirewallSessionTraceInfo(@Nullable String ingressInterface,
-      NodeInterfacePair lastHopNodeAndOutgoingInterface, String currentNode, Flow currentFlow,
-      Flow originalFlow, @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+  static FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
+      @Nullable String ingressInterface,
+      NodeInterfacePair lastHopNodeAndOutgoingInterface,
+      String currentNode,
+      Flow currentFlow,
+      Flow originalFlow,
+      @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
     IpProtocol ipProtocol = currentFlow.getIpProtocol();
     if (!IpProtocol.IP_PROTOCOLS_WITH_PORTS.contains(ipProtocol)) {
       // TODO verify only protocols with ports can have sessions

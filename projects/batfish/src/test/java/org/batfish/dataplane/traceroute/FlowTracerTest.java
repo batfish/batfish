@@ -10,6 +10,7 @@ import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrac
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.dataplane.traceroute.FlowTracer.buildFirewallSessionTraceInfo;
 import static org.batfish.dataplane.traceroute.FlowTracer.initialFlowTracer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -19,6 +20,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,9 +36,11 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.MockDataPlane;
@@ -424,5 +429,41 @@ public final class FlowTracerTest {
           flowTracer.forkTracer(c2, null, new ArrayList<>(), null, Configuration.DEFAULT_VRF_NAME);
       assertThat(flowTracer.eval(transformation).getOutputFlow().getDstIp(), equalTo(ip3));
     }
+  }
+
+  @Test
+  public void testBuildFirewallSessionTraceInfo_protocolWithoutPorts() {
+    Flow flow =
+        Flow.builder()
+            .setIngressNode("node")
+            .setIngressVrf("vrf")
+            .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpCode(0)
+            .setIcmpType(0)
+            .setTag("")
+            .build();
+
+    NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
+    FirewallSessionInterfaceInfo ifaceSessionInfo =
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, null);
+    assertNull(buildFirewallSessionTraceInfo(null, lastHop, "", flow, flow, ifaceSessionInfo));
+  }
+
+  @Test
+  public void testBuildFirewallSessionTraceInfo_protocolWithPorts() {
+    Flow flow =
+        Flow.builder()
+            .setIngressNode("node")
+            .setIngressVrf("vrf")
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(100)
+            .setSrcPort(20)
+            .setTag("")
+            .build();
+
+    NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
+    FirewallSessionInterfaceInfo ifaceSessionInfo =
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, null);
+    assertNotNull(buildFirewallSessionTraceInfo(null, lastHop, "", flow, flow, ifaceSessionInfo));
   }
 }
