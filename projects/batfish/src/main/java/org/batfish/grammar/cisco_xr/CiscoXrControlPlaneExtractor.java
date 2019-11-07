@@ -182,7 +182,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.WCCP_GRO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.WCCP_SERVICE_LIST;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -1044,8 +1043,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
-  @VisibleForTesting static final String SERIAL_LINE = "serial";
-
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
@@ -1138,10 +1135,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private static long toLong(Token t) {
     return Long.parseLong(t.getText());
-  }
-
-  private static Prefix toPrefix(Token t) {
-    return Prefix.parse(t.getText());
   }
 
   private static List<SubRange> toRange(RangeContext ctx) {
@@ -2699,7 +2692,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     long procNum = ctx.bgp_asn() == null ? 0 : toAsNum(ctx.bgp_asn());
     Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
     if (vrf.getBgpProcess() == null) {
-      BgpProcess proc = new BgpProcess(_format, procNum);
+      BgpProcess proc = new BgpProcess(procNum);
       vrf.setBgpProcess(proc);
       _dummyPeerGroup = new MasterBgpPeerGroup();
     }
@@ -3281,7 +3274,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _currentVrf = ctx.name.getText();
     long procNum =
         _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getProcnum();
-    BgpProcess proc = new BgpProcess(_format, procNum);
+    BgpProcess proc = new BgpProcess(procNum);
     currentVrf().setBgpProcess(proc);
     pushPeer(proc.getMasterBgpPeerGroup());
     _currentBlockNeighborAddressFamilies.clear();
@@ -7601,15 +7594,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Nullable
-  private String getAddressGroup(Access_list_ip_rangeContext ctx) {
-    if (ctx.address_group != null) {
-      return ctx.address_group.getText();
-    } else {
-      return null;
-    }
-  }
-
-  @Nullable
   private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();
@@ -7620,10 +7604,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private String getCanonicalInterfaceName(String ifaceName) {
     return _configuration.canonicalizeInterfaceName(ifaceName);
-  }
-
-  public CiscoXrConfiguration getConfiguration() {
-    return _configuration;
   }
 
   private String getFullText(ParserRuleContext ctx) {
@@ -7643,10 +7623,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       NamedPort namedPort = toNamedPort(ctx);
       return namedPort.number();
     }
-  }
-
-  public String getText() {
-    return _text;
   }
 
   @Override

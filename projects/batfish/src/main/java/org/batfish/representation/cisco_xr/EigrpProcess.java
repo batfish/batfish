@@ -77,10 +77,6 @@ public class EigrpProcess implements Serializable {
     return _addressFamily;
   }
 
-  public void setAddressFamily(String af) {
-    _addressFamily = af;
-  }
-
   @Nullable
   public Long getAsn() {
     return _asn;
@@ -92,10 +88,6 @@ public class EigrpProcess implements Serializable {
 
   public boolean getAutoSummary() {
     return _autoSummary;
-  }
-
-  public void setAutoSummary(boolean enable) {
-    _autoSummary = enable;
   }
 
   @Nullable

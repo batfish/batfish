@@ -85,19 +85,11 @@ public class CryptoMapEntry implements Serializable {
     _peer = peer;
   }
 
-  public void setTransforms(List<String> proposals) {
-    _transforms = proposals;
-  }
-
   public void setPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
     _pfsKeyGroup = pfsKeyGroup;
   }
 
   public void setReferredDynamicMapSet(@Nullable String referredDynamicMapSet) {
     _referredDynamicMapSet = referredDynamicMapSet;
-  }
-
-  public void setSequenceNumber(int sequenceNumber) {
-    _sequenceNumber = sequenceNumber;
   }
 }

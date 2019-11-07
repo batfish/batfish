@@ -27,8 +27,4 @@ public class CryptoMapSet implements Serializable {
   public List<CryptoMapEntry> getCryptoMapEntries() {
     return _cryptoMapEntries;
   }
-
-  public void setCryptoMapEntries(@Nonnull List<CryptoMapEntry> cryptoMapEntries) {
-    _cryptoMapEntries = cryptoMapEntries;
-  }
 }

@@ -259,8 +259,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
-  public static final String VENDOR_NAME = "cisco_xr";
-
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
@@ -409,8 +407,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, MacAccessList> _macAccessLists;
 
-  private final @Nonnull Map<String, NatPool> _natPools;
-
   private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
 
   private final Map<String, IntegerSpace> _namedVlans;
@@ -484,7 +480,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _ipsecProfiles = new TreeMap<>();
     _keyrings = new TreeMap<>();
     _macAccessLists = new TreeMap<>();
-    _natPools = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
     _networkObjectGroups = new TreeMap<>();
@@ -705,10 +700,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, MacAccessList> getMacAccessLists() {
     return _macAccessLists;
-  }
-
-  public @Nonnull Map<String, NatPool> getNatPools() {
-    return _natPools;
   }
 
   public Map<String, IntegerSpace> getNamedVlans() {
@@ -2439,7 +2430,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
           // convert static routes
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(CiscoXrConversions.toStaticRoute(c, staticRoute));
+            newVrf.getStaticRoutes().add(CiscoXrConversions.toStaticRoute(staticRoute));
           }
 
           // convert rip process
@@ -2465,7 +2456,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           IsisProcess isisProcess = vrf.getIsisProcess();
           if (isisProcess != null) {
             org.batfish.datamodel.isis.IsisProcess newIsisProcess =
-                CiscoXrConversions.toIsisProcess(isisProcess, c, this);
+                CiscoXrConversions.toIsisProcess(isisProcess, this);
             newVrf.setIsisProcess(newIsisProcess);
           }
 

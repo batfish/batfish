@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,7 +56,6 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.Ip6AccessListLine;
 import org.batfish.datamodel.Ip6Wildcard;
@@ -73,7 +71,6 @@ import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -1364,7 +1361,7 @@ public class CiscoXrConversions {
   }
 
   static org.batfish.datamodel.isis.IsisProcess toIsisProcess(
-      IsisProcess proc, Configuration c, CiscoXrConfiguration oldConfig) {
+      IsisProcess proc, CiscoXrConfiguration oldConfig) {
     org.batfish.datamodel.isis.IsisProcess.Builder newProcess =
         org.batfish.datamodel.isis.IsisProcess.builder();
     if (proc.getNetAddress() == null) {
@@ -1388,24 +1385,6 @@ public class CiscoXrConversions {
         throw new BatfishException("Unhandled IS-IS level.");
     }
     return newProcess.build();
-  }
-
-  static Route6FilterList toRoute6FilterList(ExtendedIpv6AccessList eaList) {
-    String name = eaList.getName();
-    List<Route6FilterLine> lines =
-        eaList.getLines().stream()
-            .map(CiscoXrConversions::toRoute6FilterLine)
-            .collect(ImmutableList.toImmutableList());
-    return new Route6FilterList(name, lines);
-  }
-
-  static Route6FilterList toRoute6FilterList(StandardIpv6AccessList eaList) {
-    String name = eaList.getName();
-    List<Route6FilterLine> lines =
-        eaList.getLines().stream()
-            .map(CiscoXrConversions::toRoute6FilterLine)
-            .collect(ImmutableList.toImmutableList());
-    return new Route6FilterList(name, lines);
   }
 
   static Route6FilterList toRoute6FilterList(Prefix6List list) {
@@ -1640,7 +1619,7 @@ public class CiscoXrConversions {
     return true;
   }
 
-  static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {
+  static org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute staticRoute) {
     String nextHopInterface = staticRoute.getNextHopInterface();
     if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
       nextHopInterface = org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -1689,32 +1668,6 @@ public class CiscoXrConversions {
     String regex = CiscoXrConfiguration.toJavaRegex(elem.regex());
     AsPathAccessListLine line = new AsPathAccessListLine(LineAction.PERMIT, regex);
     return line;
-  }
-
-  private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    Ip6 ip = fromLine.getSourceIpWildcard().getIp();
-    BigInteger minSubnet = fromLine.getDestinationIpWildcard().getIp().asBigInteger();
-    BigInteger maxSubnet =
-        minSubnet.or(fromLine.getDestinationIpWildcard().getWildcard().asBigInteger());
-    int minPrefixLength = fromLine.getDestinationIpWildcard().getIp().numSubnetBits();
-    int maxPrefixLength = new Ip6(maxSubnet).numSubnetBits();
-    int statedPrefixLength =
-        fromLine.getSourceIpWildcard().getWildcard().inverted().numSubnetBits();
-    int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
-    Prefix6 prefix = new Prefix6(ip, prefixLength);
-    return new Route6FilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
-  }
-
-  /** Convert a standard IPv6 access list line to a route filter list line */
-  private static Route6FilterLine toRoute6FilterLine(StandardIpv6AccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    Prefix6 prefix = fromLine.getIpWildcard().toPrefix();
-
-    return new Route6FilterLine(
-        action,
-        new Ip6Wildcard(prefix),
-        new SubRange(prefix.getPrefixLength(), Prefix6.MAX_PREFIX_LENGTH));
   }
 
   private static RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
