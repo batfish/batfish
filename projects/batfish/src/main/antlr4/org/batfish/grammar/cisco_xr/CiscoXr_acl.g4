@@ -6,6 +6,15 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
+ipv4_access_list
+:
+   ACCESS_LIST name = variable_aclname NEWLINE
+   (
+      extended_access_list_tail
+      | extended_access_list_null_tail
+   )*
+;
+
 access_list_ip_range
 :
    (
@@ -254,48 +263,6 @@ extended_access_list_null_tail
       | REMARK
       | STATISTICS
    ) null_rest_of_line
-;
-
-extended_access_list_stanza
-:
-   (
-      (
-         IP ACCESS_LIST EXTENDED name = variable_aclname
-      )
-      |
-      (
-         ACCESS_LIST num = ACL_NUM_EXTENDED
-      )
-      |
-      (
-         (
-            IP
-            | IPV4
-         ) ACCESS_LIST
-         (
-            shortname = variable
-            | name = variable_aclname
-         )
-      )
-      |
-      (
-         ACCESS_LIST name = variable_aclname EXTENDED
-      )
-   )
-   (
-      (
-         NEWLINE
-         (
-            extended_access_list_tail
-            | extended_access_list_null_tail
-         )*
-      )
-      |
-      (
-         extended_access_list_tail
-         | extended_access_list_null_tail
-      )
-   ) exit_line?
 ;
 
 extended_access_list_tail
@@ -839,39 +806,6 @@ standard_access_list_null_tail
    ) null_rest_of_line
 ;
 
-standard_access_list_stanza
-:
-   (
-      (
-         IP ACCESS_LIST STANDARD name = variable_aclname
-      )
-      |
-      (
-         ACCESS_LIST num = ACL_NUM_STANDARD
-      )
-      |
-      (
-         ACCESS_LIST name = variable_aclname STANDARD
-      )
-   )
-   (
-      (
-         NEWLINE
-         (
-            standard_access_list_tail
-            | standard_access_list_null_tail
-         )*
-      )
-      |
-      (
-         (
-            standard_access_list_tail
-            | standard_access_list_null_tail
-         )
-      )
-   )
-;
-
 standard_ipv6_access_list_stanza
 :
    IPV6 ACCESS_LIST STANDARD name = variable
@@ -891,19 +825,6 @@ standard_ipv6_access_list_stanza
          )
       )
    )
-;
-
-standard_access_list_tail
-:
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = DEC
-   )? ala = access_list_action ipr = access_list_ip_range
-   (
-      features += standard_access_list_additional_feature
-   )* NEWLINE
 ;
 
 standard_ipv6_access_list_tail

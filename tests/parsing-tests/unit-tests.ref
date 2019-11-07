@@ -90224,7 +90224,7 @@
           }
         },
         "configs/ios_xr_multicast" : {
-          "ipv4 acl" : {
+          "ipv4 access-list" : {
             "MSDP_filter" : {
               "msdp peer sa-list" : [
                 30,
@@ -90236,7 +90236,7 @@
           }
         },
         "configs/ios_xr_multipart" : {
-          "ipv4 acl" : {
+          "ipv4 access-list" : {
             "GNS-VTY-ACCESS" : {
               "ssh ipv4 access-list" : [
                 31
@@ -90491,14 +90491,14 @@
           }
         },
         "configs/ios_xr_ssh" : {
-          "ipv4 acl" : {
+          "ipv4 access-list" : {
             "ACL99" : {
               "ssh ipv4 access-list" : [
                 7
               ]
             }
           },
-          "ipv6 acl" : {
+          "ipv6 access-list" : {
             "ipv6-vty-acl" : {
               "ssh ipv6 access-list" : [
                 7
@@ -93962,7 +93962,7 @@
           }
         },
         "configs/ios_xr_multicast" : {
-          "ipv4 acl" : {
+          "ipv4 access-list" : {
             "MSDP_filter" : {
               "msdp peer sa-list" : [
                 30,
@@ -93974,7 +93974,7 @@
           }
         },
         "configs/ios_xr_multipart" : {
-          "ipv4 acl" : {
+          "ipv4 access-list" : {
             "GNS-VTY-ACCESS" : {
               "ssh ipv4 access-list" : [
                 31
@@ -94218,14 +94218,14 @@
           }
         },
         "configs/ios_xr_ssh" : {
-          "ipv4 acl" : {
+          "ipv4 access-list" : {
             "ACL99" : {
               "ssh ipv4 access-list" : [
                 7
               ]
             }
           },
-          "ipv6 acl" : {
+          "ipv6 access-list" : {
             "ipv6-vty-acl" : {
               "ssh ipv6 access-list" : [
                 7
