@@ -1001,30 +1001,39 @@ class FlowTracer {
   @Nullable
   private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
-    SessionAction action =
-        firewallSessionInterfaceInfo.getFibLookup()
-            ? org.batfish.datamodel.flow.FibLookup.INSTANCE
-            : _ingressInterface != null
-                ? new ForwardOutInterface(_ingressInterface, _lastHopNodeAndOutgoingInterface)
-                : Accept.INSTANCE;
+    return buildFirewallSessionTraceInfo(
+        _ingressInterface, _lastHopNodeAndOutgoingInterface, _currentNode.getName(), _currentFlow, _originalFlow, firewallSessionInterfaceInfo);
+  }
 
-    IpProtocol ipProtocol = _currentFlow.getIpProtocol();
+  @VisibleForTesting
+  @Nullable
+  static FirewallSessionTraceInfo buildFirewallSessionTraceInfo(@Nullable String ingressInterface,
+      NodeInterfacePair lastHopNodeAndOutgoingInterface, String currentNode, Flow currentFlow,
+      Flow originalFlow, @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    IpProtocol ipProtocol = currentFlow.getIpProtocol();
     if (!IpProtocol.IP_PROTOCOLS_WITH_PORTS.contains(ipProtocol)) {
       // TODO verify only protocols with ports can have sessions
       return null;
     }
 
+    SessionAction action =
+        firewallSessionInterfaceInfo.getFibLookup()
+            ? org.batfish.datamodel.flow.FibLookup.INSTANCE
+            : ingressInterface != null
+                ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
+                : Accept.INSTANCE;
+
     return new FirewallSessionTraceInfo(
-        _currentNode.getName(),
+        currentNode,
         action,
         firewallSessionInterfaceInfo.getSessionInterfaces(),
         match5Tuple(
-            _currentFlow.getDstIp(),
-            _currentFlow.getDstPort(),
-            _currentFlow.getSrcIp(),
-            _currentFlow.getSrcPort(),
+            currentFlow.getDstIp(),
+            currentFlow.getDstPort(),
+            currentFlow.getSrcIp(),
+            currentFlow.getSrcPort(),
             ipProtocol),
-        sessionTransformation(_originalFlow, _currentFlow));
+        sessionTransformation(originalFlow, currentFlow));
   }
 
   private void buildAcceptTrace() {
