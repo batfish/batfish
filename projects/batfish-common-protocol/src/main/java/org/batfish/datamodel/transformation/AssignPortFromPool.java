@@ -9,8 +9,8 @@ import java.util.Objects;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /**
- * A {@link TransformationStep} that transforms a port. For flows that don't have ports,
- * (e.g. ICMP flows), does nothing.
+ * A {@link TransformationStep} that transforms a port. For flows that don't have ports, (e.g. ICMP
+ * flows), does nothing.
  */
 public class AssignPortFromPool implements TransformationStep, Serializable {
 
