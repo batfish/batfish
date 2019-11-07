@@ -227,21 +227,6 @@ public class Interface implements Serializable {
 
   public static final IntegerSpace ALL_VLANS = IntegerSpace.of(new SubRange(1, 4094));
 
-  /**
-   * Returns the default {@link SwitchportMode} for the given {@code vendor} to be used when a
-   * switchport is explicitly enabled, ignoring any override of the default mode.
-   */
-  public static SwitchportMode getUndeclaredDefaultSwitchportMode(ConfigurationFormat vendor) {
-    switch (vendor) {
-      case ARISTA:
-        return SwitchportMode.ACCESS;
-      case CISCO_IOS:
-        return SwitchportMode.DYNAMIC_AUTO;
-      default:
-        return SwitchportMode.ACCESS;
-    }
-  }
-
   public Interface(String name, CiscoXrConfiguration c) {
     _active = true;
     _autoState = true;

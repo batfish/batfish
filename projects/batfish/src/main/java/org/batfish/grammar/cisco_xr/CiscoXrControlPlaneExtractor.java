@@ -37,7 +37,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.KEYRING;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.L2TP_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.NAMED_RSA_PUB_KEY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.NAT_POOL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
@@ -118,8 +117,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_NAT_SOURCE_POOL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_ROUTE_NHINT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IP_TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ISAKMP_POLICY_SELF_REF;
@@ -493,8 +490,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_igmpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_inband_access_groupContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_nat_insideContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_nat_outsideContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_dead_intervalContext;
@@ -557,10 +552,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_domain_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_hostnameContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_nat_destinationContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_nat_poolContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_nat_pool_rangeContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_nat_sourceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_route_stanzaContext;
@@ -889,10 +880,6 @@ import org.batfish.representation.cisco_xr.BgpPeerGroup;
 import org.batfish.representation.cisco_xr.BgpProcess;
 import org.batfish.representation.cisco_xr.BgpRedistributionPolicy;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
-import org.batfish.representation.cisco_xr.CiscoXrIosDynamicNat;
-import org.batfish.representation.cisco_xr.CiscoXrIosNat;
-import org.batfish.representation.cisco_xr.CiscoXrIosNat.RuleAction;
-import org.batfish.representation.cisco_xr.CiscoXrIosStaticNat;
 import org.batfish.representation.cisco_xr.CiscoXrStructureType;
 import org.batfish.representation.cisco_xr.CiscoXrStructureUsage;
 import org.batfish.representation.cisco_xr.CryptoMapEntry;
@@ -937,7 +924,6 @@ import org.batfish.representation.cisco_xr.MasterBgpPeerGroup;
 import org.batfish.representation.cisco_xr.MatchSemantics;
 import org.batfish.representation.cisco_xr.NamedBgpPeerGroup;
 import org.batfish.representation.cisco_xr.NamedRsaPubKey;
-import org.batfish.representation.cisco_xr.NatPool;
 import org.batfish.representation.cisco_xr.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco_xr.NetworkObjectGroup;
 import org.batfish.representation.cisco_xr.NetworkObjectGroupAddressSpecifier;
@@ -4602,20 +4588,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_nat_inside(If_ip_nat_insideContext ctx) {
-    _configuration
-        .getNatInside()
-        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
-  }
-
-  @Override
-  public void exitIf_ip_nat_outside(If_ip_nat_outsideContext ctx) {
-    _configuration
-        .getNatOutside()
-        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
-  }
-
-  @Override
   public void exitIf_ip_ospf_area(If_ip_ospf_areaContext ctx) {
     long area;
     if (ctx.area_dec != null) {
@@ -4818,7 +4790,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
           iface.setSwitchportMode(
               (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
-                  ? Interface.getUndeclaredDefaultSwitchportMode(_configuration.getVendor())
+                  ? SwitchportMode.ACCESS
                   : defaultSwitchportMode);
         }
       }
@@ -5181,129 +5153,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       _configuration.setDomainName(null);
     }
-  }
-
-  @Override
-  public void exitIp_nat_pool(Ip_nat_poolContext ctx) {
-    String name = ctx.name.getText();
-    Ip first = toIp(ctx.first);
-    Ip last = toIp(ctx.last);
-    if (ctx.mask != null) {
-      Prefix subnet = IpWildcard.ipWithWildcardMask(first, toIp(ctx.mask).inverted()).toPrefix();
-      createNatPool(name, first, last, subnet, ctx);
-    } else if (ctx.prefix_length != null) {
-      Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
-      createNatPool(name, first, last, subnet, ctx);
-    } else {
-      _configuration.getNatPools().put(name, new NatPool(first, last));
-    }
-    _configuration.defineStructure(NAT_POOL, name, ctx);
-  }
-
-  @Override
-  public void exitIp_nat_pool_range(Ip_nat_pool_rangeContext ctx) {
-    String name = ctx.name.getText();
-    Ip first = toIp(ctx.first);
-    Ip last = toIp(ctx.last);
-    if (ctx.prefix_length != null) {
-      Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
-      createNatPool(name, first, last, subnet, ctx);
-    } else {
-      _configuration.getNatPools().put(name, new NatPool(first, last));
-    }
-    _configuration.defineStructure(NAT_POOL, name, ctx);
-  }
-
-  /**
-   * Check that the pool IPs are contained in the subnet, and warn if not. Then create the pool,
-   * while excluding the network/broadcast IPs. This means that if specified first pool IP is
-   * numerically less than the first host IP in the subnet, use the first host IP instead.
-   * Similarly, if the specified last pool IP is greater than the last host IP in the subnet, use
-   * the last host IP instead.
-   */
-  private void createNatPool(String name, Ip first, Ip last, Prefix subnet, ParserRuleContext ctx) {
-    if (!subnet.containsIp(first)) {
-      warn(ctx, String.format("Subnet of NAT pool %s does not contain first pool IP", name));
-    }
-    if (!subnet.containsIp(last)) {
-      warn(ctx, String.format("Subnet of NAT pool %s does not contain last pool IP", name));
-    }
-
-    Ip firstHostIp = subnet.getFirstHostIp();
-    Ip lastHostIp = subnet.getLastHostIp();
-
-    _configuration
-        .getNatPools()
-        .put(
-            name,
-            new NatPool(
-                first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
-                last.asLong() > lastHostIp.asLong() ? lastHostIp : last));
-  }
-
-  @Override
-  public void exitIp_nat_destination(Ip_nat_destinationContext ctx) {
-    CiscoXrIosDynamicNat nat = new CiscoXrIosDynamicNat();
-    String acl = ctx.acl.getText();
-    int aclLine = ctx.acl.getStart().getLine();
-    nat.setAclName(acl);
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
-    String pool = ctx.pool.getText();
-    int poolLine = ctx.pool.getStart().getLine();
-    nat.setNatPool(pool);
-    _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
-    nat.setAction(RuleAction.DESTINATION_INSIDE);
-    _configuration.getCiscoXrIosNats().add(nat);
-  }
-
-  @Override
-  public void exitIp_nat_source(Ip_nat_sourceContext ctx) {
-    CiscoXrIosNat nat;
-    if (ctx.STATIC() != null) {
-      CiscoXrIosStaticNat staticNat = new CiscoXrIosStaticNat();
-      Ip local = toIp(ctx.local);
-      Ip global = toIp(ctx.global);
-      if (ctx.OUTSIDE() != null) {
-        // local and global reversed for outside
-        Ip tmp = local;
-        local = global;
-        global = tmp;
-      }
-      int prefixLength = 32;
-      if (ctx.NETWORK() != null) {
-        if (ctx.mask != null) {
-          Ip mask = toIp(ctx.mask);
-          prefixLength = mask.numSubnetBits();
-        } else {
-          prefixLength = toInteger(ctx.prefix);
-        }
-      }
-      staticNat.setLocalNetwork(Prefix.create(local, prefixLength));
-      staticNat.setGlobalNetwork(Prefix.create(global, prefixLength));
-      nat = staticNat;
-    } else {
-      CiscoXrIosDynamicNat dynamicNat = new CiscoXrIosDynamicNat();
-      String acl = ctx.acl.getText();
-      int aclLine = ctx.acl.getStart().getLine();
-      dynamicNat.setAclName(acl);
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
-      String pool = ctx.pool.getText();
-      int poolLine = ctx.pool.getStart().getLine();
-      dynamicNat.setNatPool(pool);
-      _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
-      nat = dynamicNat;
-    }
-    if (ctx.INSIDE() != null) {
-      nat.setAction(RuleAction.SOURCE_INSIDE);
-    } else {
-      nat.setAction(RuleAction.SOURCE_OUTSIDE);
-    }
-    if (ctx.ADD_ROUTE() != null) {
-      // Adding a route via NAT is not currently supported
-      // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
-      todo(ctx);
-    }
-    _configuration.getCiscoXrIosNats().add(nat);
   }
 
   @Override

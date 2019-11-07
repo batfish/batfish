@@ -44,7 +44,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -163,7 +162,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
-import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco_xr.Aaa;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthenticationLogin;
@@ -417,12 +415,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, IntegerSpace> _namedVlans;
 
-  private final @Nonnull Set<String> _natInside;
-
-  private final Set<String> _natOutside;
-
-  private final List<CiscoXrIosNat> _ciscoXrIosNats;
-
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
   private final Map<String, NetworkObjectInfo> _networkObjectInfos;
@@ -495,9 +487,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _natPools = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
-    _natInside = new TreeSet<>();
-    _natOutside = new TreeSet<>();
-    _ciscoXrIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
     _networkObjects = new TreeMap<>();
@@ -724,18 +713,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, IntegerSpace> getNamedVlans() {
     return _namedVlans;
-  }
-
-  public @Nonnull Set<String> getNatInside() {
-    return _natInside;
-  }
-
-  public Set<String> getNatOutside() {
-    return _natOutside;
-  }
-
-  public List<CiscoXrIosNat> getCiscoXrIosNats() {
-    return _ciscoXrIosNats;
   }
 
   public String getNtpSourceInterface() {
@@ -1578,19 +1555,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
     }
 
-    /*
-     * NAT rules are specified at the top level, but are applied as incoming transformations on the
-     * outside interface (outside-to-inside) and outgoing transformations on the outside interface
-     * (inside-to-outside)
-     *
-     * Currently, only static NATs have both incoming and outgoing transformations
-     */
-
-    List<CiscoXrIosNat> ciscoXrIosNats = firstNonNull(_ciscoXrIosNats, ImmutableList.of());
-    if (!ciscoXrIosNats.isEmpty()) {
-      generateCiscoXrIosNatTransformations(ifaceName, newIface, ipAccessLists, c);
-    }
-
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
       newIface.setRoutingPolicy(routingPolicyName);
@@ -1625,56 +1589,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     } else {
       throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
     }
-  }
-
-  private void generateCiscoXrIosNatTransformations(
-      String ifaceName,
-      org.batfish.datamodel.Interface newIface,
-      Map<String, IpAccessList> ipAccessLists,
-      Configuration c) {
-    List<CiscoXrIosNat> incomingNats = new ArrayList<>();
-    List<CiscoXrIosNat> outgoingNats = new ArrayList<>();
-
-    // Check if this is an outside interface
-    if (getNatOutside().contains(ifaceName)) {
-      incomingNats.addAll(getCiscoXrIosNats());
-      outgoingNats.addAll(getCiscoXrIosNats());
-    }
-
-    // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
-    // can be modified independently but not jointly. A single CiscoXrIosNat can represent an
-    // incoming
-    // NAT, an outgoing NAT, or both.
-
-    Map<CiscoXrIosNat, Transformation.Builder> convertedIncomingNats =
-        incomingNats.stream()
-            .map(
-                nat ->
-                    new SimpleEntry<>(nat, nat.toIncomingTransformation(ipAccessLists, _natPools)))
-            .filter(entry -> entry.getValue().isPresent())
-            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
-    if (!convertedIncomingNats.isEmpty()) {
-      newIface.setIncomingTransformation(
-          CiscoXrIosNatUtil.toIncomingTransformationChain(convertedIncomingNats));
-    }
-
-    Map<CiscoXrIosNat, Transformation.Builder> convertedOutgoingNats =
-        outgoingNats.stream()
-            .map(
-                nat ->
-                    new SimpleEntry<>(
-                        nat,
-                        nat.toOutgoingTransformation(ipAccessLists, _natPools, getNatInside(), c)))
-            .filter(entry -> entry.getValue().isPresent())
-            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
-    if (!convertedOutgoingNats.isEmpty()) {
-      newIface.setOutgoingTransformation(
-          CiscoXrIosNatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
-    }
-  }
-
-  public static String computeCombinedOutgoingAclName(String interfaceName) {
-    return String.format("~COMBINED_OUTGOING_ACL~%s~", interfaceName);
   }
 
   // For testing.
@@ -2621,8 +2535,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
         CiscoXrStructureUsage.INTERFACE_OUTGOING_FILTER,
         CiscoXrStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
-        CiscoXrStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
-        CiscoXrStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
         CiscoXrStructureUsage.LINE_ACCESS_CLASS_LIST,
         CiscoXrStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
         CiscoXrStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
@@ -2717,8 +2629,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // track
     markConcreteStructure(CiscoXrStructureType.TRACK);
-
-    markConcreteStructure(CiscoXrStructureType.NAT_POOL);
 
     markConcreteStructure(CiscoXrStructureType.AS_PATH_SET);
 
