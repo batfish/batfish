@@ -1366,7 +1366,7 @@ BANNER
 
 BANNER_IOS
 :
-  'banner' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_ASDM_ASA
@@ -1376,7 +1376,7 @@ BANNER_ASDM_ASA
 
 BANNER_CONFIG_SAVE_IOS
 :
-  'banner' F_Whitespace+ 'config-save' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'config-save' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_EXEC_ASA
@@ -1386,12 +1386,12 @@ BANNER_EXEC_ASA
 
 BANNER_EXEC_IOS
 :
-  'banner' F_Whitespace+ 'exec' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'exec' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_INCOMING_IOS
 :
-  'banner' F_Whitespace+ 'incoming' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'incoming' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_LOGIN_ASA
@@ -1401,7 +1401,7 @@ BANNER_LOGIN_ASA
 
 BANNER_LOGIN_IOS
 :
-  'banner' F_Whitespace+ 'login' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'login' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_MOTD_ASA
@@ -1411,17 +1411,17 @@ BANNER_MOTD_ASA
 
 BANNER_MOTD_IOS
 :
-  'banner' F_Whitespace+ 'motd' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'motd' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_PROMPT_TIMEOUT_IOS
 :
-  'banner' F_Whitespace+ 'prompt-timeout' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'prompt-timeout' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BANNER_SLIP_PPP_IOS
 :
-  'banner' F_Whitespace+ 'slip-ppp' F_Whitespace+ {isIos() || isIosXr()}? -> pushMode(M_BannerIosDelimiter)
+  'banner' F_Whitespace+ 'slip-ppp' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
 BASE
@@ -2297,16 +2297,6 @@ COMMUNITY_LIST
 COMMUNITY_MAP
 :
    'community-map' -> pushMode ( M_Name )
-;
-
-COMMUNITY_SET
-:
-   'community-set'
-   {
-      _inCommunitySet = true;
-      _enableIpv6Address = false;
-   }
-
 ;
 
 COMPARE_ROUTERID
@@ -3320,11 +3310,6 @@ DF_BIT
    'df-bit'
 ;
 
-DFA_REGEX
-:
-   'dfa-regex'
-;
-
 DFS
 :
    'dfs'
@@ -4083,8 +4068,6 @@ END_POLICY_MAP
 END_SET
 :
    'end-set'
-   { _inCommunitySet = false; }
-
 ;
 
 ENET_LINK_PROFILE
@@ -10896,11 +10879,6 @@ ROUTE_ONLY
    'route-only'
 ;
 
-ROUTE_POLICY
-:
-   'route-policy'
-;
-
 ROUTE_PREFERENCE
 :
    'route-preference'
@@ -14735,10 +14713,8 @@ NEWLINE
 :
   F_Newline+
   {
-    if (!_inCommunitySet) {
-   	  _enableIpv6Address = true;
-   	}
-   	_enableIpAddress = true;
+    _enableIpv6Address = true;
+    _enableIpAddress = true;
     _enableDec = true;
     _enableRegex = false;
     _enableAclNum = false;

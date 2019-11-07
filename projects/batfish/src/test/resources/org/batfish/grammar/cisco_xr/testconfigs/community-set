@@ -1,0 +1,63 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname community-set
+!
+community-set universe
+  *:*
+end-set
+
+community-set mixed
+  ios-regex '_1234:.*',
+  1:2,
+  *:3,
+  4:*,
+  6:[100..103]
+end-set
+
+route-policy any
+  if community matches-any mixed then
+    pass
+  else
+    drop
+  endif
+end-policy
+
+route-policy every
+  if community matches-every mixed then
+    pass
+  else
+    drop
+  endif
+end-policy
+
+route-policy setmixed
+  set community mixed
+  pass
+end-policy
+
+route-policy setmixedadditive
+  set community mixed additive
+  pass
+end-policy
+
+route-policy deleteall
+  delete community all
+  pass
+end-policy
+
+route-policy deletein
+  delete community in universe
+  pass
+end-policy
+
+route-policy deleteininline
+  delete community in ( *:* )
+  pass
+end-policy
+
+route-policy deletenotin
+  delete community not in universe
+  pass
+end-policy
+
+end

@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname ospf-cost-defaults
+!
+router ospf 1
+  ! Batfish drops routers with no router-id.
+  router-id 1.1.1.1
+
+  ! Use default reference bandwidth
+!

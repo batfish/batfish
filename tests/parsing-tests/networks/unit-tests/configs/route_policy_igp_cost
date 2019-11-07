@@ -1,3 +1,4 @@
+!RANCID-CONTENT-TYPE: cisco-xr
 !
 hostname route_policy_igp_cost
 !

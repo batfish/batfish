@@ -52,15 +52,9 @@ address_family_rb_stanza
    address_family_header
    (
       additional_paths_rb_stanza
-      | additional_paths_receive_xr_rb_stanza
-      | additional_paths_selection_xr_rb_stanza
-      | additional_paths_send_xr_rb_stanza
       | aggregate_address_rb_stanza
       | bgp_tail
-      |
-      {!_multilineBgpNeighbors}?
-
-      neighbor_flat_rb_stanza
+      | neighbor_flat_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
@@ -96,10 +90,6 @@ aggregate_address_rb_stanza
     (
       ATTRIBUTE_MAP mapname = variable
     )
-    |
-    (
-      ROUTE_POLICY rp = variable
-    )
   )* NEWLINE
 ;
 
@@ -112,21 +102,6 @@ additional_paths_rb_stanza
       | SEND RECEIVE?
       | RECEIVE SEND?
    ) NEWLINE
-;
-
-additional_paths_receive_xr_rb_stanza
-:
-  ADDITIONAL_PATHS RECEIVE NEWLINE
-;
-
-additional_paths_selection_xr_rb_stanza
-:
-  ADDITIONAL_PATHS SELECTION ROUTE_POLICY name = variable NEWLINE
-;
-
-additional_paths_send_xr_rb_stanza
-:
-  ADDITIONAL_PATHS SEND NEWLINE
 ;
 
 advertise_bgp_tail
@@ -241,7 +216,6 @@ bgp_tail
    | redistribute_static_bgp_tail
    | remove_private_as_bgp_tail
    | route_map_bgp_tail
-   | route_policy_bgp_tail
    | route_reflector_client_bgp_tail
    | router_id_bgp_tail
    | send_community_bgp_tail
@@ -285,11 +259,7 @@ default_metric_bgp_tail
 
 default_originate_bgp_tail
 :
-   DEFAULT_ORIGINATE
-   (
-      ROUTE_MAP map = variable
-      | ROUTE_POLICY policy = VARIABLE
-   )? NEWLINE
+   DEFAULT_ORIGINATE (ROUTE_MAP map = variable)? NEWLINE
 ;
 
 default_shutdown_bgp_tail
@@ -322,11 +292,6 @@ ebgp_multihop_bgp_tail
    (
       hop = DEC
    )? NEWLINE
-;
-
-empty_neighbor_block_address_family
-:
-   address_family_header address_family_footer
 ;
 
 filter_list_bgp_tail
@@ -380,51 +345,6 @@ maximum_prefix_bgp_tail
    MAXIMUM_PREFIX DEC NEWLINE
 ;
 
-neighbor_block_address_family
-:
-   address_family_header
-   (
-      bgp_tail
-      | use_af_group_bgp_tail
-   )+ address_family_footer
-;
-
-neighbor_block_rb_stanza
-locals
-[java.util.Set<String> addressFamilies, java.util.Set<String> consumedAddressFamilies]
-@init {
-   $addressFamilies = new java.util.HashSet<String>();
-   $consumedAddressFamilies = new java.util.HashSet<String>();
-}
-:
-   NEIGHBOR
-   (
-      ip_address = IP_ADDRESS
-      | ipv6_address = IPV6_ADDRESS
-      | ip_prefix = IP_PREFIX
-      | ipv6_prefix = IPV6_PREFIX
-   )
-   (
-      REMOTE_AS asnum = bgp_asn
-   )?
-   (
-      REMOTE_AS ROUTE_MAP mapname = variable
-   )? NEWLINE
-   (
-      bgp_tail
-      | no_shutdown_rb_stanza
-      | remote_as_bgp_tail
-      | use_neighbor_group_bgp_tail
-      | use_session_group_bgp_tail
-   )*
-   (
-      (
-         empty_neighbor_block_address_family
-         | neighbor_block_address_family
-      )* neighbor_block_address_family
-   )?
-;
-
 neighbor_flat_rb_stanza
 :
    NEIGHBOR
@@ -470,9 +390,7 @@ network_bgp_tail
    (
       ROUTE_MAP mapname = variable
    )?
-   (
-      ROUTE_POLICY policyname = VARIABLE
-   )? NEWLINE
+   NEWLINE
 ;
 
 network6_bgp_tail
@@ -481,9 +399,7 @@ network6_bgp_tail
    (
       ROUTE_MAP mapname = variable
    )?
-   (
-      ROUTE_POLICY policyname = VARIABLE
-   )? NEWLINE
+   NEWLINE
 ;
 
 next_hop_self_bgp_tail
@@ -502,7 +418,6 @@ vrf_block_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
       | neighbor_flat_rb_stanza
-      | neighbor_block_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | no_redistribute_connected_rb_stanza
@@ -752,18 +667,6 @@ route_map_bgp_tail
    ) NEWLINE
 ;
 
-route_policy_bgp_tail
-:
-   ROUTE_POLICY name = variable
-   (
-      PAREN_LEFT route_policy_params_list PAREN_RIGHT
-   )?
-   (
-      IN
-      | OUT
-   ) NEWLINE
-;
-
 route_reflector_client_bgp_tail
 :
    ROUTE_REFLECTOR_CLIENT NEWLINE
@@ -784,10 +687,6 @@ redistribute_connected_bgp_tail
    (
       (
          ROUTE_MAP map = variable
-      )
-      |
-      (
-         ROUTE_POLICY policy = variable
       )
       |
       (
@@ -868,10 +767,6 @@ redistribute_static_bgp_tail
       )
       |
       (
-         ROUTE_POLICY policy = VARIABLE
-      )
-      |
-      (
          METRIC metric = DEC
       )
    )* NEWLINE
@@ -906,11 +801,6 @@ router_bgp_stanza_tail
    | cluster_id_rb_stanza
    | compare_routerid_rb_stanza
    | default_information_originate_rb_stanza
-   |
-   // do NOT put neighbor_block_rb_stanza under neighbor_flat_rb_stanza
-   {_multilineBgpNeighbors}?
-
-   neighbor_block_rb_stanza
    | neighbor_flat_rb_stanza
    | neighbor_group_rb_stanza
    | no_bgp_enforce_first_as_stanza

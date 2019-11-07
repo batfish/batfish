@@ -16,7 +16,6 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObj
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
-import static org.batfish.representation.cisco.CiscoConfiguration.toJavaRegex;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -94,45 +93,20 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
-import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetExprs;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
-import org.batfish.datamodel.routing_policy.communities.HasCommunity;
-import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
-import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
-import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
-import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.IntComparison;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
-import org.batfish.datamodel.routing_policy.expr.IntMatchAll;
-import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
-import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
@@ -278,181 +252,6 @@ public class CiscoConversions {
       } else {
         convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum, cryptoMapEntry.getName(), w);
       }
-    }
-  }
-
-  /**
-   * Convert {@code communitySet} to a {@link CommunityMatchExpr} to be applied as a deletion
-   * criterion against each individual community in a route's standard community attribute.
-   */
-  public static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
-      XrCommunitySet communitySet, Configuration c) {
-    return new CommunityMatchAny(
-        communitySet.getElements().stream()
-            .map(elem -> elem.accept(CommunitySetElemToCommunityMatchExpr.INSTANCE, c))
-            .collect(ImmutableSet.toImmutableSet()));
-  }
-
-  private static final class CommunitySetElemToCommunityMatchExpr
-      implements XrCommunitySetElemVisitor<CommunityMatchExpr, Configuration> {
-    @Override
-    public CommunityMatchExpr visitCommunitySetHighLowRangeExprs(
-        XrCommunitySetHighLowRangeExprs highLowRangeExprs, Configuration arg) {
-      return new CommunityMatchAll(
-          ImmutableList.of(
-              new StandardCommunityHighMatch(
-                  highLowRangeExprs
-                      .getHighRangeExpr()
-                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg)),
-              new StandardCommunityLowMatch(
-                  highLowRangeExprs
-                      .getLowRangeExpr()
-                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg))));
-    }
-
-    @Override
-    public CommunityMatchExpr visitCommunitySetIosRegex(
-        XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
-      return new CommunityMatchRegex(
-          ColonSeparatedRendering.instance(), toJavaRegex(communitySetIosRegex.getRegex()));
-    }
-
-    private static final CommunitySetElemToCommunityMatchExpr INSTANCE =
-        new CommunitySetElemToCommunityMatchExpr();
-  }
-
-  private static final class XrUint16RangeExprToIntMatchExpr
-      implements XrUint16RangeExprVisitor<IntMatchExpr, Configuration> {
-    private static final XrUint16RangeExprToIntMatchExpr INSTANCE =
-        new XrUint16RangeExprToIntMatchExpr();
-
-    @Override
-    public IntMatchExpr visitLiteralUint16(XrLiteralUint16 literalUint16, Configuration arg) {
-      return new IntComparison(IntComparator.EQ, new LiteralInt(literalUint16.getValue()));
-    }
-
-    @Override
-    public IntMatchExpr visitLiteralUint16Range(
-        XrLiteralUint16Range literalUint16Range, Configuration arg) {
-      SubRange range = literalUint16Range.getRange();
-      return IntMatchAll.of(
-          new IntComparison(IntComparator.GE, new LiteralInt(range.getStart())),
-          new IntComparison(IntComparator.LE, new LiteralInt(range.getEnd())));
-    }
-
-    @Override
-    public IntMatchExpr visitUint16Reference(XrUint16Reference uint16Reference, Configuration arg) {
-      return new IntComparison(IntComparator.EQ, new VarInt(uint16Reference.getVar()));
-    }
-  }
-
-  /**
-   * Convert {@code communitySet} to a {@link CommunitySetExpr} representing a set of concrete
-   * communities for setting or appending to the standard community attribute within a route-policy.
-   *
-   * <p>Only concrete elements of {@code communitySet} representing a single community are
-   * considered.
-   */
-  public static @Nonnull CommunitySetExpr toCommunitySetExpr(
-      XrCommunitySet communitySet, Configuration c) {
-    return CommunitySetUnion.of(
-        communitySet.getElements().stream()
-            .map(elem -> elem.accept(CommunitySetElemToCommunitySetExpr.INSTANCE, c))
-            .collect(ImmutableSet.toImmutableSet()));
-  }
-
-  private static final class CommunitySetElemToCommunitySetExpr
-      implements XrCommunitySetElemVisitor<CommunitySetExpr, Configuration> {
-    @Override
-    public CommunitySetExpr visitCommunitySetHighLowRangeExprs(
-        XrCommunitySetHighLowRangeExprs highLowRangeExprs, Configuration arg) {
-      Optional<IntExpr> highExpr =
-          highLowRangeExprs.getHighRangeExpr().accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
-      if (!highExpr.isPresent()) {
-        return CommunitySetExprs.empty();
-      }
-      Optional<IntExpr> lowExpr =
-          highLowRangeExprs.getLowRangeExpr().accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
-      if (!lowExpr.isPresent()) {
-        return CommunitySetExprs.empty();
-      }
-      return CommunityExprsSet.of(new StandardCommunityHighLowExprs(highExpr.get(), lowExpr.get()));
-    }
-
-    @Override
-    public CommunitySetExpr visitCommunitySetIosRegex(
-        XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
-      return CommunitySetExprs.empty();
-    }
-
-    private static final CommunitySetElemToCommunitySetExpr INSTANCE =
-        new CommunitySetElemToCommunitySetExpr();
-  }
-
-  private static class XrUint16RangeExprToIntExpr
-      implements XrUint16RangeExprVisitor<Optional<IntExpr>, Void> {
-
-    private static final XrUint16RangeExprToIntExpr INSTANCE = new XrUint16RangeExprToIntExpr();
-
-    @Override
-    public Optional<IntExpr> visitLiteralUint16(XrLiteralUint16 literalUint16, Void arg) {
-      return Optional.of(new LiteralInt(literalUint16.getValue()));
-    }
-
-    @Override
-    public Optional<IntExpr> visitLiteralUint16Range(
-        XrLiteralUint16Range literalUint16Range, Void arg) {
-      return Optional.empty();
-    }
-
-    @Override
-    public Optional<IntExpr> visitUint16Reference(XrUint16Reference uint16Reference, Void arg) {
-      return Optional.of(new VarInt(uint16Reference.getVar()));
-    }
-  }
-
-  /**
-   * Convert {@code communitySet} to a {@link CommunitySetMatchExpr} that matches a route whose
-   * standard community attribute is matched by any element of {@code communitySet}.
-   */
-  public static @Nonnull CommunitySetMatchExpr convertMatchesAnyToCommunitySetMatchExpr(
-      XrCommunitySet communitySet, Configuration c) {
-    return new CommunitySetMatchAny(
-        communitySet.getElements().stream()
-            .map(elem -> elem.accept(CommunitySetElemToCommunitySetMatchExpr.INSTANCE, c))
-            .collect(ImmutableSet.toImmutableSet()));
-  }
-
-  /**
-   * Convert {@code communitySet} to a {@link CommunitySetMatchExpr} that matches a route whose
-   * standard community attribute is matched by every element of {@code communitySet}.
-   */
-  public static @Nonnull CommunitySetMatchExpr convertMatchesEveryToCommunitySetMatchExpr(
-      XrCommunitySet communitySet, Configuration c) {
-    return new CommunitySetMatchAll(
-        communitySet.getElements().stream()
-            .map(elem -> elem.accept(CommunitySetElemToCommunitySetMatchExpr.INSTANCE, c))
-            .collect(ImmutableSet.toImmutableSet()));
-  }
-
-  private static final class CommunitySetElemToCommunitySetMatchExpr
-      implements XrCommunitySetElemVisitor<CommunitySetMatchExpr, Configuration> {
-    private static final CommunitySetElemToCommunitySetMatchExpr INSTANCE =
-        new CommunitySetElemToCommunitySetMatchExpr();
-
-    @Override
-    public CommunitySetMatchExpr visitCommunitySetHighLowRangeExprs(
-        XrCommunitySetHighLowRangeExprs highLowRangeExprs, Configuration arg) {
-      return new HasCommunity(
-          highLowRangeExprs.accept(CommunitySetElemToCommunityMatchExpr.INSTANCE, arg));
-    }
-
-    @Override
-    public CommunitySetMatchExpr visitCommunitySetIosRegex(
-        XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
-      return new CommunitySetMatchRegex(
-          new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-          toJavaRegex(communitySetIosRegex.getRegex()));
     }
   }
 

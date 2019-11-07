@@ -105,22 +105,6 @@ aruba_appcategory
    PEER_TO_PEER
 ;
 
-as_path_set_elem
-:
-   IOS_REGEX AS_PATH_SET_REGEX
-;
-
-as_path_set_stanza
-:
-   AS_PATH_SET name = variable NEWLINE
-   (
-      elems += as_path_set_elem NEWLINE?
-      (
-         COMMA NEWLINE? elems += as_path_set_elem NEWLINE?
-      )*
-   )? END_SET NEWLINE
-;
-
 asa_access_group
 :
    ACCESS_GROUP
@@ -154,31 +138,6 @@ bandwidth_irs_stanza
 cadant_stdacl_name
 :
    NAME name = variable_permissive NEWLINE
-;
-
-community_set_stanza
-:
-   COMMUNITY_SET name = variable NEWLINE
-   community_set_elem_list END_SET NEWLINE
-;
-
-community_set_elem_list
-:
-// no elements
-
-   |
-   (
-      (
-         (
-            elems += community_set_elem COMMA
-         )
-         | hash_comment
-      ) NEWLINE
-   )*
-   (
-      elems += community_set_elem
-      | hash_comment
-   ) NEWLINE
 ;
 
 etype
@@ -858,31 +817,6 @@ null_rs_stanza
       | LOGGING
       | WINDOW_SIZE
    ) null_rest_of_line
-;
-
-prefix_set_stanza
-:
-   PREFIX_SET name = variable NEWLINE prefix_set_elem_list END_SET NEWLINE
-;
-
-prefix_set_elem_list
-:
-// no elements
-
-   |
-   (
-      (
-         hash_comment
-         |
-         (
-            prefix_set_elem COMMA
-         )
-      ) NEWLINE
-   )*
-   (
-      hash_comment
-      | prefix_set_elem
-   ) NEWLINE
 ;
 
 protocol_type_code_access_list_null_tail

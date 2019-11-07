@@ -1,4 +1,4 @@
-!! IOS XR Configuration 5.3.4
+!RANCID-CONTENT-TYPE: cisco-xr
 !
 hostname ios_xr_logging
 !

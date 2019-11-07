@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname ospf-interface
+router ospf 2
+ router-id 10.10.10.10
+ area 0
+  interface Bundle-Ether201
+   cost 1

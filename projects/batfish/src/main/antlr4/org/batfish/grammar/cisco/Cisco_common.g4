@@ -110,11 +110,6 @@ extended_community
    ec_literal
 ;
 
-hash_comment
-:
-   POUND RAW_TEXT
-;
-
 icmp_object_type
 :
    DEC
@@ -521,29 +516,6 @@ port
    | Z39_50
 ;
 
-prefix_set_elem
-:
-   (
-      ipa = IP_ADDRESS
-      | prefix = IP_PREFIX
-      | ipv6a = IPV6_ADDRESS
-      | ipv6_prefix = IPV6_PREFIX
-   )
-   (
-      (
-         GE minpl = DEC
-      )
-      |
-      (
-         LE maxpl = DEC
-      )
-      |
-      (
-         EQ eqpl = DEC
-      )
-   )*
-;
-
 protocol
 :
    AH
@@ -594,25 +566,6 @@ route_distinguisher
 route_target
 :
    (IP_ADDRESS | bgp_asn) COLON DEC
-;
-
-route_policy_params_list
-:
-   params_list += variable
-   (
-      COMMA params_list += variable
-   )*
-;
-
-community_set_elem
-:
-   community
-   |
-   (
-     prefix = community_set_elem_half COLON suffix = community_set_elem_half
-   )
-   | DFA_REGEX COMMUNITY_SET_REGEX
-   | IOS_REGEX COMMUNITY_SET_REGEX
 ;
 
 community_set_elem_half

@@ -3689,8 +3689,6 @@ stanza
    appletalk_access_list_stanza
    | asa_comment_stanza
    | asa_access_group
-   | as_path_set_stanza
-   | community_set_stanza
    | del_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
@@ -3708,10 +3706,8 @@ stanza
    | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
-   | prefix_set_stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
-   | route_policy_stanza
    | router_bgp_stanza
    | router_hsrp_stanza
    | router_isis_stanza

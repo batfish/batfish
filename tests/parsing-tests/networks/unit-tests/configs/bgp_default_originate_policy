@@ -1,3 +1,4 @@
+!RANCID-CONTENT-TYPE: cisco-xr
 !
 hostname bgp_default_originate_policy
 !

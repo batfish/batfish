@@ -146,10 +146,6 @@ ro_default_information
       (
          ROUTE_MAP map = VARIABLE
       )
-      |
-      (
-         ROUTE_POLICY policy = VARIABLE
-      )
       | TAG DEC
    )* NEWLINE
 ;
@@ -369,11 +365,7 @@ ro_redistribute_connected
       (
          METRIC_TYPE type = DEC
       )
-      |
-      (
-         ROUTE_MAP map = VARIABLE
-         | ROUTE_POLICY policy = VARIABLE
-      )
+      | ROUTE_MAP map = VARIABLE
       | subnets = SUBNETS
       |
       (
@@ -414,11 +406,7 @@ ro_redistribute_static
       (
          METRIC_TYPE type = DEC
       )
-      |
-      (
-         ROUTE_MAP map = VARIABLE
-         | ROUTE_POLICY policy = VARIABLE
-      )
+      | ROUTE_MAP map = VARIABLE
       | subnets = SUBNETS
       |
       (
