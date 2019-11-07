@@ -4196,11 +4196,6 @@ EXPANDED
    'expanded'
 ;
 
-EXTCOMMUNITY_LIST
-:
-   'extcommunity-list'
-;
-
 EXTEND
 :
    'extend'
