@@ -8,7 +8,10 @@ import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
-/** A {@link TransformationStep} that transforms the source port */
+/**
+ * A {@link TransformationStep} that transforms a port. For flows that don't have ports,
+ * (e.g. ICMP flows), does nothing.
+ */
 public class AssignPortFromPool implements TransformationStep, Serializable {
 
   private static final String PROP_TRANSFORMATION_TYPE = "transformationType";
