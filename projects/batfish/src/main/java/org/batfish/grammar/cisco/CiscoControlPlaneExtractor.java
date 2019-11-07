@@ -370,32 +370,20 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.IgpCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
-import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
-import org.batfish.datamodel.routing_policy.expr.IsisLevelExpr;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.batfish.datamodel.routing_policy.expr.LiteralIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
-import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
-import org.batfish.datamodel.routing_policy.expr.VarInt;
-import org.batfish.datamodel.routing_policy.expr.VarIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
-import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -452,8 +440,6 @@ import org.batfish.grammar.cisco.CiscoParser.Allowas_in_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Always_compare_med_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
-import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco.CiscoParser.Asa_ag_globalContext;
 import org.batfish.grammar.cisco.CiscoParser.Asa_ag_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Asa_banner_headerContext;
@@ -728,7 +714,6 @@ import org.batfish.grammar.cisco.CiscoParser.Ike_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_session_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Inspect_protocolContext;
-import org.batfish.grammar.cisco.CiscoParser.Int_compContext;
 import org.batfish.grammar.cisco.CiscoParser.Int_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.Interface_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Interface_nameContext;
@@ -759,8 +744,6 @@ import org.batfish.grammar.cisco.CiscoParser.Ipsec_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipv6_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipv6_prefix_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Is_type_is_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Isis_levelContext;
-import org.batfish.grammar.cisco.CiscoParser.Isis_level_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.L_access_classContext;
 import org.batfish.grammar.cisco.CiscoParser.L_exec_timeoutContext;
 import org.batfish.grammar.cisco.CiscoParser.L_login_authenticationContext;
@@ -840,7 +823,6 @@ import org.batfish.grammar.cisco.CiscoParser.On_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.On_subnetContext;
 import org.batfish.grammar.cisco.CiscoParser.Onn_dynamicContext;
 import org.batfish.grammar.cisco.CiscoParser.Onn_staticContext;
-import org.batfish.grammar.cisco.CiscoParser.Origin_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_expr_literalContext;
 import org.batfish.grammar.cisco.CiscoParser.Os_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_iis_stanzaContext;
@@ -939,7 +921,6 @@ import org.batfish.grammar.cisco.CiscoParser.Route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Rp_subrangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rr_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Rr_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Rr_passive_interfaceContext;
@@ -1350,10 +1331,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return Ip.parse(t.getText());
   }
 
-  private static Ip6 toIp6(TerminalNode t) {
-    return Ip6.parse(t.getText());
-  }
-
   private static Ip6 toIp6(Token t) {
     return Ip6.parse(t.getText());
   }
@@ -1524,7 +1501,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private BgpPeerGroup _dummyPeerGroup;
 
-  private ConfigurationFormat _format;
+  private final ConfigurationFormat _format;
 
   private boolean _inIpv6BgpPeer;
 
@@ -1534,7 +1511,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private final CiscoCombinedParser _parser;
 
-  private List<BgpPeerGroup> _peerGroupStack;
+  private final List<BgpPeerGroup> _peerGroupStack;
 
   private final String _text;
 
@@ -10172,15 +10149,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Nullable
-  private String getAddressGroup(Access_list_ip_rangeContext ctx) {
-    if (ctx.address_group != null) {
-      return ctx.address_group.getText();
-    } else {
-      return null;
-    }
-  }
-
-  @Nullable
   private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();
@@ -10215,7 +10183,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return ctx.getStart().getLine() + ":" + ctx.getStart().getCharPositionInLine() + ": ";
   }
 
-  public int getPortNumber(PortContext ctx) {
+  private int getPortNumber(PortContext ctx) {
     if (ctx.DEC() != null) {
       return toInteger(ctx.DEC());
     } else {
@@ -10336,23 +10304,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private AsPathSetElem toAsPathSetElem(As_path_set_elemContext ctx) {
-    if (ctx.IOS_REGEX() != null) {
-      String withQuotes = ctx.AS_PATH_SET_REGEX().getText();
-      String iosRegex = withQuotes.substring(1, withQuotes.length() - 1);
-      String regex = toJavaRegex(iosRegex);
-      return new RegexAsPathSetElem(regex);
-    } else {
-      throw convError(AsPathSetElem.class, ctx);
-    }
-  }
-
-  private AsPathSetExpr toAsPathSetExpr(As_path_set_inlineContext ctx) {
-    List<AsPathSetElem> elems =
-        ctx.elems.stream().map(this::toAsPathSetElem).collect(Collectors.toList());
-    return new ExplicitAsPathSet(elems);
-  }
-
   private EigrpMetricValues toEigrpMetricValues(Eigrp_metricContext ctx) {
     return EigrpMetricValues.builder()
         .setBandwidth(toLong(ctx.bw_kbps))
@@ -10389,36 +10340,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IpsecAuthenticationAlgorithm.HMAC_SHA_512;
     } else {
       throw convError(IpsecAuthenticationAlgorithm.class, ctx);
-    }
-  }
-
-  private IntExpr toCommonIntExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
-      int val = toInteger(ctx.DEC());
-      return new LiteralInt(val);
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarInt(ctx.RP_VARIABLE().getText());
-    } else {
-      /*
-       * Unsupported static integer expression - do not add cases unless you
-       * know what you are doing
-       */
-      throw convError(IntExpr.class, ctx);
-    }
-  }
-
-  private LongExpr toCommonLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
-      long val = toLong(ctx.DEC());
-      return new LiteralLong(val);
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarLong(ctx.RP_VARIABLE().getText());
-    } else {
-      /*
-       * Unsupported static long expression - do not add cases unless you
-       * know what you are doing
-       */
-      throw convError(LongExpr.class, ctx);
     }
   }
 
@@ -10717,29 +10638,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private IntComparator toIntComparator(Int_compContext ctx) {
-    if (ctx.EQ() != null || ctx.IS() != null) {
-      return IntComparator.EQ;
-    } else if (ctx.GE() != null) {
-      return IntComparator.GE;
-    } else if (ctx.LE() != null) {
-      return IntComparator.LE;
-    } else {
-      throw convError(IntComparator.class, ctx);
-    }
-  }
-
-  private IntExpr toIntExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
-      int val = toInteger(ctx.DEC());
-      return new LiteralInt(val);
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarInt(ctx.RP_VARIABLE().getText());
-    } else {
-      throw convError(IntExpr.class, ctx);
-    }
-  }
-
   /** Returns the given IPv4 protocol, or {@code null} if none is specified. */
   private @Nullable IpProtocol toIpProtocol(ProtocolContext ctx) {
     if (ctx.DEC() != null) {
@@ -10787,29 +10685,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IpProtocol.VRRP;
     } else {
       throw convError(IpProtocol.class, ctx);
-    }
-  }
-
-  private IsisLevel toIsisLevel(Isis_levelContext ctx) {
-    if (ctx.LEVEL_1() != null) {
-      return IsisLevel.LEVEL_1;
-    } else if (ctx.LEVEL_1_2() != null) {
-      return IsisLevel.LEVEL_1_2;
-    } else if (ctx.LEVEL_2() != null) {
-      return IsisLevel.LEVEL_2;
-    } else {
-      throw convError(IsisLevel.class, ctx);
-    }
-  }
-
-  private IsisLevelExpr toIsisLevelExpr(Isis_level_exprContext ctx) {
-    if (ctx.isis_level() != null) {
-      IsisLevel level = toIsisLevel(ctx.isis_level());
-      return new LiteralIsisLevel(level);
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarIsisLevel(ctx.RP_VARIABLE().getText());
-    } else {
-      throw convError(IsisLevelExpr.class, ctx);
     }
   }
 
@@ -10905,7 +10780,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  public @Nullable Long toLong(CommunityContext ctx) {
+  private @Nullable Long toLong(CommunityContext ctx) {
     if (ctx.ACCEPT_OWN() != null) {
       return WellKnownCommunity.ACCEPT_OWN;
     } else if (ctx.STANDARD_COMMUNITY() != null) {
@@ -11405,16 +11280,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return originExpr;
   }
 
-  private OriginExpr toOriginExpr(Origin_exprContext ctx) {
-    if (ctx.origin_expr_literal() != null) {
-      return toOriginExpr(ctx.origin_expr_literal());
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarOrigin(ctx.RP_VARIABLE().getText());
-    } else {
-      throw convError(OriginExpr.class, ctx);
-    }
-  }
-
   private List<SubRange> toPortRanges(Port_specifierContext ps) {
     Builder builder = IntegerSpace.builder();
     if (ps.EQ() != null) {
@@ -11463,27 +11328,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
     }
     return ExtendedCommunity.target(toAsNum(ctx.bgp_asn()), la);
-  }
-
-  private SubRangeExpr toSubRangeExpr(Rp_subrangeContext ctx) {
-    IntExpr first = toCommonIntExpr(ctx.first);
-    IntExpr last = first;
-    if (ctx.last != null) {
-      last = toCommonIntExpr(ctx.first);
-    }
-    return new SubRangeExpr(first, last);
-  }
-
-  private LongExpr toTagLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null && ctx.DASH() == null && ctx.PLUS() == null) {
-      long val = toLong(ctx.DEC());
-      return new LiteralLong(val);
-    } else if (ctx.RP_VARIABLE() != null) {
-      String var = ctx.RP_VARIABLE().getText();
-      return new VarLong(var);
-    } else {
-      throw convError(LongExpr.class, ctx);
-    }
   }
 
   private void warnObjectGroupRedefinition(ParserRuleContext name) {

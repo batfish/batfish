@@ -1271,7 +1271,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private BgpPeerGroup _dummyPeerGroup;
 
-  private ConfigurationFormat _format;
+  private final ConfigurationFormat _format;
 
   private boolean _inBlockNeighbor;
 
@@ -1283,7 +1283,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private final CiscoXrCombinedParser _parser;
 
-  private List<BgpPeerGroup> _peerGroupStack;
+  private final List<BgpPeerGroup> _peerGroupStack;
 
   private final String _text;
 
@@ -7616,7 +7616,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return ctx.getStart().getLine() + ":" + ctx.getStart().getCharPositionInLine() + ": ";
   }
 
-  public int getPortNumber(PortContext ctx) {
+  private int getPortNumber(PortContext ctx) {
     if (ctx.DEC() != null) {
       return toInteger(ctx.DEC());
     } else {
@@ -8245,7 +8245,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  public @Nullable Long toLong(CommunityContext ctx) {
+  private @Nullable Long toLong(CommunityContext ctx) {
     if (ctx.ACCEPT_OWN() != null) {
       return WellKnownCommunity.ACCEPT_OWN;
     } else if (ctx.STANDARD_COMMUNITY() != null) {

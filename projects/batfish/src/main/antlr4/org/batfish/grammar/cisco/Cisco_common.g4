@@ -580,15 +580,6 @@ community_set_elem_half
    | PRIVATE_AS
 ;
 
-rp_subrange
-:
-   first = int_expr
-   |
-   (
-      BRACKET_LEFT first = int_expr PERIOD PERIOD last = int_expr BRACKET_RIGHT
-   )
-;
-
 service_group_protocol
 :
      TCP | TCP_UDP | UDP
