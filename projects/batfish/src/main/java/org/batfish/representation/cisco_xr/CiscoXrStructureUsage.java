@@ -187,9 +187,7 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   TUNNEL_SOURCE("tunnel source"),
   WCCP_GROUP_LIST("ip wccp group-list"),
   WCCP_REDIRECT_LIST("ip wccp redirect-list"),
-  WCCP_SERVICE_LIST("ip wccp service-list"),
-  VXLAN_SOURCE_INTERFACE("vxlan source-interface"),
-  VXLAN_SELF_REF("vxlan");
+  WCCP_SERVICE_LIST("ip wccp service-list");
 
   private final String _description;
 

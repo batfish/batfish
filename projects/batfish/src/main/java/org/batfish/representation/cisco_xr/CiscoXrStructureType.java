@@ -62,8 +62,7 @@ public enum CiscoXrStructureType implements StructureType {
   SERVICE_OBJECT_GROUP("object-group service"),
   SERVICE_TEMPLATE("service-template"),
   TRACK("track"),
-  TRAFFIC_ZONE("zone"),
-  VXLAN("vxlan");
+  TRAFFIC_ZONE("zone");
 
   private final String _description;
 

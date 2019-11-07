@@ -246,7 +246,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           .put("ve", "VirtualEthernet")
           .put("Virtual-Template", "Virtual-Template")
           .put("Vlan", "Vlan")
-          .put("Vxlan", "Vxlan")
           .put("Wideband-Cable", "Wideband-Cable")
           .put("Wlan-ap", "Wlan-ap")
           .put("Wlan-GigabitEthernet", "Wlan-GigabitEthernet")
@@ -2725,9 +2724,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // track
     markConcreteStructure(CiscoXrStructureType.TRACK);
-
-    // VXLAN
-    markConcreteStructure(CiscoXrStructureType.VXLAN);
 
     markConcreteStructure(CiscoXrStructureType.NAT_POOL);
 
