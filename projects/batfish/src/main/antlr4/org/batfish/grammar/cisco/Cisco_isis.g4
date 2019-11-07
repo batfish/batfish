@@ -251,10 +251,6 @@ redistribute_connected_is_stanza
       (
          ROUTE_MAP map = VARIABLE
       )
-      |
-      (
-         ROUTE_POLICY policy = VARIABLE
-      )
    )* NEWLINE
 ;
 
@@ -275,10 +271,6 @@ redistribute_eigrp_is_stanza_null
       (
          ROUTE_MAP map = VARIABLE
       )
-      |
-      (
-         ROUTE_POLICY policy = VARIABLE
-      )
    )* NEWLINE
 ;
 
@@ -298,10 +290,6 @@ redistribute_static_is_stanza
       |
       (
          ROUTE_MAP map = VARIABLE
-      )
-      |
-      (
-         ROUTE_POLICY policy = VARIABLE
       )
    )* NEWLINE
 ;

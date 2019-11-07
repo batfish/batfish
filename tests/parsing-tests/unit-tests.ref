@@ -8674,7 +8674,7 @@
         },
         "configs/bgp_default_originate_policy" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -8747,7 +8747,7 @@
             "                (null_rest_of_line",
             "                  DEC:'500'",
             "                  DEC:'80'",
-            "                  RESTART:'restart'",
+            "                  VARIABLE:'restart'",
             "                  DEC:'60'",
             "                  NEWLINE:'\\n')))",
             "            (bgp_tail",
@@ -8771,7 +8771,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))))))",
@@ -8911,7 +8911,7 @@
         },
         "configs/bgp_route_policy" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -9060,7 +9060,7 @@
             "                (null_rest_of_line",
             "                  DEC:'500000'",
             "                  DEC:'80'",
-            "                  RESTART:'restart'",
+            "                  VARIABLE:'restart'",
             "                  DEC:'60'",
             "                  NEWLINE:'\\n')))",
             "            (bgp_tail",
@@ -39327,7 +39327,7 @@
         },
         "configs/community_set" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -51474,7 +51474,7 @@
         },
         "configs/if_tag_is" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -51748,7 +51748,7 @@
         },
         "configs/interface_name" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -52552,7 +52552,7 @@
         },
         "configs/ios_xr_acl" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -52589,7 +52589,7 @@
         },
         "configs/ios_xr_bgp" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -52653,7 +52653,7 @@
         },
         "configs/ios_xr_bgp_neighbor_group" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -52688,7 +52688,7 @@
             "            (null_bgp_tail",
             "              SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "              (null_rest_of_line",
-            "                INBOUND:'inbound'",
+            "                VARIABLE:'inbound'",
             "                ALWAYS:'always'",
             "                NEWLINE:'\\n')))))",
             "      (router_bgp_stanza_tail",
@@ -52713,7 +52713,7 @@
             "            (null_bgp_tail",
             "              SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "              (null_rest_of_line",
-            "                INBOUND:'inbound'",
+            "                VARIABLE:'inbound'",
             "                ALWAYS:'always'",
             "                NEWLINE:'\\n')))))",
             "      (router_bgp_stanza_tail",
@@ -52856,7 +52856,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))",
@@ -52871,7 +52871,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))))",
@@ -52905,7 +52905,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))",
@@ -52920,7 +52920,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))))",
@@ -52961,7 +52961,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))",
@@ -52976,7 +52976,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))))",
@@ -53010,7 +53010,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))",
@@ -53025,7 +53025,7 @@
             "              (null_bgp_tail",
             "                SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                (null_rest_of_line",
-            "                  INBOUND:'inbound'",
+            "                  VARIABLE:'inbound'",
             "                  ALWAYS:'always'",
             "                  NEWLINE:'\\n')))",
             "            (address_family_footer))))",
@@ -53131,7 +53131,7 @@
         },
         "configs/ios_xr_class_map" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53183,7 +53183,7 @@
         },
         "configs/ios_xr_community_set" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53371,7 +53371,7 @@
         },
         "configs/ios_xr_isis" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53469,7 +53469,7 @@
         },
         "configs/ios_xr_l2vpn" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53507,7 +53507,7 @@
             "              (lbgbdml_null",
             "                ACTION:'action'",
             "                (null_rest_of_line",
-            "                  FLOOD:'flood'",
+            "                  VARIABLE:'flood'",
             "                  NEWLINE:'\\n'))))",
             "          (lbgbd_null",
             "            MTU:'mtu'",
@@ -53552,9 +53552,8 @@
             "            ROUTED:'routed'",
             "            (null_rest_of_line",
             "              INTERFACE:'interface'",
-            "              M_Interface_PREFIX:'BVI'  <== mode:M_Interface",
-            "              DEC:'1'  <== mode:M_Interface",
-            "              NEWLINE:'\\n'  <== mode:M_Interface))))",
+            "              VARIABLE:'BVI1'",
+            "              NEWLINE:'\\n'))))",
             "      (l2vpn_logging",
             "        LOGGING:'logging'",
             "        NEWLINE:'\\n'",
@@ -53657,7 +53656,7 @@
             "                LOCAL:'local'",
             "                (null_rest_of_line",
             "                  COOKIE:'cookie'",
-            "                  SIZE:'size'",
+            "                  VARIABLE:'size'",
             "                  DEC:'8'",
             "                  VARIABLE:'value'",
             "                  HEX:'0x0'",
@@ -53673,7 +53672,7 @@
             "                REMOTE:'remote'",
             "                (null_rest_of_line",
             "                  COOKIE:'cookie'",
-            "                  SIZE:'size'",
+            "                  VARIABLE:'size'",
             "                  DEC:'8'",
             "                  VARIABLE:'value'",
             "                  HEX:'0x0'",
@@ -53773,7 +53772,7 @@
         },
         "configs/ios_xr_logging" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53793,7 +53792,7 @@
         },
         "configs/ios_xr_misc" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -53822,7 +53821,7 @@
         },
         "configs/ios_xr_multicast" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -54186,7 +54185,7 @@
         },
         "configs/ios_xr_multicast_routing" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -54246,7 +54245,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54267,7 +54266,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54288,7 +54287,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54309,7 +54308,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54330,7 +54329,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54351,7 +54350,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54372,7 +54371,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54393,7 +54392,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54414,7 +54413,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54435,7 +54434,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54456,7 +54455,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54477,7 +54476,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          (interface_multicast_stanza",
             "            INTERFACE:'interface'",
@@ -54519,7 +54518,7 @@
             "            (interface_multicast_tail",
             "              BOUNDARY:'boundary'",
             "              (null_rest_of_line",
-            "                MCAST_BOUNDARY:'mcast-boundary'",
+            "                VARIABLE:'mcast-boundary'",
             "                NEWLINE:'\\n')))",
             "          INTERFACE:'interface'",
             "          ALL:'all'  <== mode:M_Interface",
@@ -54535,7 +54534,7 @@
         },
         "configs/ios_xr_multipart" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -54692,7 +54691,7 @@
         },
         "configs/ios_xr_ntp" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -54746,7 +54745,7 @@
         },
         "configs/ios_xr_ospf" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -55263,7 +55262,7 @@
         },
         "configs/ios_xr_prefix_set" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -55347,7 +55346,7 @@
         },
         "configs/ios_xr_route_policy" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -56862,7 +56861,7 @@
         },
         "configs/ios_xr_router_static" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -57000,7 +56999,7 @@
         },
         "configs/ios_xr_ssh" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -57074,7 +57073,7 @@
         },
         "configs/ios_xr_taskgroup" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -57242,7 +57241,7 @@
             "          (null_rest_of_line",
             "            VARIABLE:'read'",
             "            INTERFACE:'interface'",
-            "            NEWLINE:'\\n'  <== mode:M_Interface))",
+            "            NEWLINE:'\\n'))",
             "        (null_inner",
             "          TASK:'task'",
             "          (null_rest_of_line",
@@ -57259,8 +57258,8 @@
             "          TASK:'task'",
             "          (null_rest_of_line",
             "            VARIABLE:'read'",
-            "            ROUTE_MAP:'route-map'",
-            "            NEWLINE:'\\n'  <== mode:M_RouteMap))",
+            "            VARIABLE:'route-map'",
+            "            NEWLINE:'\\n'))",
             "        (null_inner",
             "          TASK:'task'",
             "          (null_rest_of_line",
@@ -74385,7 +74384,7 @@
         },
         "configs/route_policy_as_path" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -74732,7 +74731,7 @@
         },
         "configs/route_policy_igp_cost" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -74870,7 +74869,7 @@
         },
         "configs/route_policy_metric_type" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -74952,7 +74951,7 @@
         },
         "configs/route_policy_param" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -75200,7 +75199,7 @@
         },
         "configs/set_inline_community" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -75332,7 +75331,7 @@
         },
         "configs/taskgroup" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(cisco_xr_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -75361,8 +75360,8 @@
             "          TASK:'task'",
             "          (null_rest_of_line",
             "            VARIABLE:'read'",
-            "            ROUTE_MAP:'route-map'",
-            "            NEWLINE:'\\n'  <== mode:M_RouteMap))",
+            "            VARIABLE:'route-map'",
+            "            NEWLINE:'\\n'))",
             "        (null_inner",
             "          TASK:'task'",
             "          (null_rest_of_line",
@@ -75631,31 +75630,7 @@
             "        DEC:'36'",
             "        MAP:'map'",
             "        VARIABLE:'10g-4x'",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (route_policy_stanza",
-            "      ROUTE_POLICY:'route-policy'",
-            "      name = (variable",
-            "        VARIABLE:'EBGP-PEER')",
-            "      NEWLINE:'\\n'",
-            "      (rp_stanza",
-            "        (set_rp_stanza",
-            "          (set_community_rp_stanza",
-            "            SET:'set'",
-            "            COMMUNITY:'community'",
-            "            (rp_community_set",
-            "              PAREN_LEFT:'('",
-            "              (community_set_elem",
-            "                (community",
-            "                  STANDARD_COMMUNITY:'8075:51000'))",
-            "              PAREN_RIGHT:')')",
-            "            NEWLINE:'\\n')))",
-            "      (rp_stanza",
-            "        (disposition_rp_stanza",
-            "          PASS:'pass'",
-            "          NEWLINE:'\\n'))",
-            "      END_POLICY:'end-policy'",
-            "      NEWLINE:'\\n\\n'))",
+            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -76214,8 +76189,8 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 11,
-              "Parser_Context" : "[route_policy_bgp_tail bgp_tail address_family_rb_stanza neighbor_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Line" : 12,
+              "Parser_Context" : "[route_policy_bgp_tail bgp_tail address_family_rb_stanza neighbor_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
               "Text" : "route-policy cust_v4_in(ama-coe-v4, ama-coe-as-path, ama-coe-no-auth, ama-coe-need-auth, 65517, ama-coe-isp-authorized) in"
             }
           ]
@@ -77426,14 +77401,14 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 17,
-              "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Line" : 18,
+              "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
               "Text" : "use session-group blabber"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 94,
-              "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Line" : 95,
+              "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
               "Text" : "use session-group CIAO"
             }
           ]
@@ -77443,7 +77418,7 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 10,
-              "Parser_Context" : "[cm_match s_class_map stanza cisco_configuration]",
+              "Parser_Context" : "[cm_match s_class_map stanza cisco_xr_configuration]",
               "Text" : "match not dscp ipv4 cs2 cs3 cs4"
             }
           ]
@@ -77452,62 +77427,62 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 9,
-              "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
+              "Line" : 10,
+              "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "maximum paths 16"
             },
             {
               "Comment" : "OSPF interface Bundle-Ethernet101 not declared before OSPF process",
-              "Line" : 17,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 18,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether101"
             },
             {
               "Comment" : "OSPF interface Bundle-Ethernet103 not declared before OSPF process",
-              "Line" : 23,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 24,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether103"
             },
             {
               "Comment" : "OSPF interface Bundle-Ethernet201 not declared before OSPF process",
-              "Line" : 27,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 28,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether201"
             },
             {
               "Comment" : "OSPF interface Loopback0 not declared before OSPF process",
-              "Line" : 32,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 33,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Loopback0"
             },
             {
               "Comment" : "OSPF interface TenGigabitEthernet0/0/0/4 not declared before OSPF process",
-              "Line" : 35,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 36,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/4"
             },
             {
               "Comment" : "OSPF interface TenGigabitEthernet0/0/0/5 not declared before OSPF process",
-              "Line" : 38,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 39,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/5"
             },
             {
               "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/0.292 not declared before OSPF process",
-              "Line" : 41,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 42,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "HundredGigE0/2/0/0.292"
             },
             {
               "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/3 not declared before OSPF process",
-              "Line" : 43,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 44,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "HundredGigE0/2/0/3"
             },
             {
               "Comment" : "OSPF interface TenGigabitEthernet0/0/0/2 not declared before OSPF process",
-              "Line" : 50,
-              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_configuration]",
+              "Line" : 51,
+              "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/2"
             }
           ]
@@ -77516,8 +77491,8 @@
           "Parse warnings" : [
             {
               "Comment" : "Could not convert to RoutePolicyStatement: set path-selection backup 1 install multipath-protect advertise\n",
-              "Line" : 163,
-              "Parser_Context" : "[set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_configuration]",
+              "Line" : 164,
+              "Parser_Context" : "[set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
               "Text" : "set path-selection backup 1 install multipath-protect advertise"
             }
           ]
@@ -78484,7 +78459,6 @@
           "bgp neighbor-group" : {
             "ama-coe" : {
               "definitionLines" : [
-                5,
                 6,
                 7,
                 8,
@@ -78495,7 +78469,8 @@
                 13,
                 14,
                 15,
-                16
+                16,
+                17
               ],
               "numReferrers" : 0
             }
@@ -80600,17 +80575,17 @@
           "community-set" : {
             "190" : {
               "definitionLines" : [
-                9,
                 10,
                 11,
-                12
+                12,
+                13
               ],
               "numReferrers" : 0
             },
             "foo" : {
               "definitionLines" : [
-                5,
-                6
+                6,
+                7
               ],
               "numReferrers" : 0
             }
@@ -82514,7 +82489,6 @@
           "route-policy" : {
             "FOO" : {
               "definitionLines" : [
-                4,
                 5,
                 6,
                 7,
@@ -82531,7 +82505,8 @@
                 18,
                 19,
                 20,
-                21
+                21,
+                22
               ],
               "numReferrers" : 0
             }
@@ -82748,19 +82723,19 @@
           "bgp af-group" : {
             "blabbety" : {
               "definitionLines" : [
-                10,
                 11,
                 12,
-                13
+                13,
+                14
               ],
               "numReferrers" : 0
             },
             "blappety" : {
               "definitionLines" : [
-                5,
                 6,
                 7,
-                8
+                8,
+                9
               ],
               "numReferrers" : 0
             }
@@ -82768,7 +82743,6 @@
           "bgp neighbor-group" : {
             "BGPMonitor" : {
               "definitionLines" : [
-                20,
                 21,
                 22,
                 23,
@@ -82777,13 +82751,13 @@
                 26,
                 27,
                 28,
-                29
+                29,
+                30
               ],
               "numReferrers" : 1
             },
             "foobar-iBGP_border_ipv4" : {
               "definitionLines" : [
-                56,
                 57,
                 58,
                 59,
@@ -82791,26 +82765,26 @@
                 61,
                 62,
                 63,
-                64
+                64,
+                65
               ],
               "numReferrers" : 1
             },
             "foobar-iBGP_border_ipv6" : {
               "definitionLines" : [
-                67,
                 68,
                 69,
                 70,
                 71,
                 72,
                 73,
-                74
+                74,
+                75
               ],
               "numReferrers" : 0
             },
             "foobar-iBGP_ipv4" : {
               "definitionLines" : [
-                32,
                 33,
                 34,
                 35,
@@ -82821,20 +82795,21 @@
                 40,
                 41,
                 42,
-                43
+                43,
+                44
               ],
               "numReferrers" : 2
             },
             "foobar-iBGP_ipv6" : {
               "definitionLines" : [
-                46,
                 47,
                 48,
                 49,
                 50,
                 51,
                 52,
-                53
+                53,
+                54
               ],
               "numReferrers" : 0
             }
@@ -82842,19 +82817,19 @@
           "bgp session-group" : {
             "OLA" : {
               "definitionLines" : [
-                92,
                 93,
                 94,
-                95
+                95,
+                96
               ],
               "numReferrers" : 0
             },
             "blibber" : {
               "definitionLines" : [
-                15,
                 16,
                 17,
-                18
+                18,
+                19
               ],
               "numReferrers" : 0
             }
@@ -82884,106 +82859,106 @@
           "community-set" : {
             "EBGP-PEER" : {
               "definitionLines" : [
-                40,
                 41,
                 42,
-                43
+                43,
+                44
               ],
               "numReferrers" : 0
             },
             "all_community" : {
               "definitionLines" : [
-                7,
                 8,
-                9
+                9,
+                10
               ],
               "numReferrers" : 0
             },
             "cenic_default_network_community" : {
               "definitionLines" : [
-                31,
                 32,
-                33
+                33,
+                34
               ],
               "numReferrers" : 0
             },
             "community_52" : {
               "definitionLines" : [
-                4,
                 5,
-                6
+                6,
+                7
               ],
               "numReferrers" : 0
             },
             "dc_and_isp_blackhole_community" : {
               "definitionLines" : [
-                28,
                 29,
-                30
+                30,
+                31
               ],
               "numReferrers" : 0
             },
             "dc_and_isp_routes_community" : {
               "definitionLines" : [
-                25,
                 26,
-                27
+                27,
+                28
               ],
               "numReferrers" : 0
             },
             "hpr_blackhole_community" : {
               "definitionLines" : [
-                13,
                 14,
-                15
+                15,
+                16
               ],
               "numReferrers" : 0
             },
             "hpr_routes_community" : {
               "definitionLines" : [
-                10,
                 11,
-                12
+                12,
+                13
               ],
               "numReferrers" : 0
             },
             "ucla_blackhole_community" : {
               "definitionLines" : [
-                16,
                 17,
-                18
+                18,
+                19
               ],
               "numReferrers" : 0
             },
             "ucla_to_dc_and_isp_community_ipv4" : {
               "definitionLines" : [
-                34,
                 35,
-                36
+                36,
+                37
               ],
               "numReferrers" : 0
             },
             "ucla_to_dc_and_isp_community_ipv6" : {
               "definitionLines" : [
-                37,
                 38,
-                39
+                39,
+                40
               ],
               "numReferrers" : 0
             },
             "ucla_to_hpr_community_ipv4" : {
               "definitionLines" : [
-                19,
                 20,
-                21
+                21,
+                22
               ],
               "numReferrers" : 0
             },
             "ucla_to_hpr_community_ipv6" : {
               "definitionLines" : [
-                22,
                 23,
-                24
+                24,
+                25
               ],
               "numReferrers" : 0
             }
@@ -83002,15 +82977,14 @@
           "prefix-set" : {
             "default_route" : {
               "definitionLines" : [
-                4,
                 5,
-                6
+                6,
+                7
               ],
               "numReferrers" : 0
             },
             "ucla_networks" : {
               "definitionLines" : [
-                7,
                 8,
                 9,
                 10,
@@ -83021,7 +82995,8 @@
                 15,
                 16,
                 17,
-                18
+                18,
+                19
               ],
               "numReferrers" : 0
             }
@@ -83031,7 +83006,6 @@
           "route-policy" : {
             "EBGP-PEER-AS2828-LAX-PNI-OUT" : {
               "definitionLines" : [
-                86,
                 87,
                 88,
                 89,
@@ -83049,13 +83023,13 @@
                 101,
                 102,
                 103,
-                104
+                104,
+                105
               ],
               "numReferrers" : 0
             },
             "EBGP-PEER-AS6461-LAX-PNI-IN" : {
               "definitionLines" : [
-                56,
                 57,
                 58,
                 59,
@@ -83063,13 +83037,13 @@
                 61,
                 62,
                 63,
-                64
+                64,
+                65
               ],
               "numReferrers" : 0
             },
             "EBGP-PEER-SANITY-IN" : {
               "definitionLines" : [
-                75,
                 76,
                 77,
                 78,
@@ -83079,34 +83053,34 @@
                 82,
                 83,
                 84,
-                85
+                85,
+                86
               ],
               "numReferrers" : 0
             },
             "aaaa" : {
               "definitionLines" : [
-                27,
                 28,
                 29,
                 30,
-                31
+                31,
+                32
               ],
               "numReferrers" : 0
             },
             "barbar_to_fooey_community_ipv4" : {
               "definitionLines" : [
-                50,
                 51,
                 52,
                 53,
                 54,
-                55
+                55,
+                56
               ],
               "numReferrers" : 0
             },
             "doodlepop" : {
               "definitionLines" : [
-                157,
                 158,
                 159,
                 160,
@@ -83115,84 +83089,84 @@
                 163,
                 164,
                 165,
-                166
+                166,
+                167
               ],
               "numReferrers" : 0
             },
             "drop_community_5555" : {
               "definitionLines" : [
-                32,
                 33,
                 34,
                 35,
                 36,
-                37
+                37,
+                38
               ],
               "numReferrers" : 0
             },
             "fooey_blackhole" : {
               "definitionLines" : [
-                4,
                 5,
                 6,
                 7,
                 8,
                 9,
                 10,
-                11
+                11,
+                12
               ],
               "numReferrers" : 0
             },
             "fooey_to_barbar_ipv4" : {
               "definitionLines" : [
-                12,
                 13,
                 14,
                 15,
                 16,
                 17,
                 18,
-                19
+                19,
+                20
               ],
               "numReferrers" : 0
             },
             "fooey_to_barbar_ipv6" : {
               "definitionLines" : [
-                20,
                 21,
                 22,
                 23,
                 24,
                 25,
-                26
+                26,
+                27
               ],
               "numReferrers" : 0
             },
             "ospf_default_ipv4" : {
               "definitionLines" : [
-                38,
                 39,
                 40,
                 41,
-                42
+                42,
+                43
               ],
               "numReferrers" : 0
             },
             "perfsonar_andsn_ipv4" : {
               "definitionLines" : [
-                43,
                 44,
                 45,
                 46,
                 47,
                 48,
-                49
+                49,
+                50
               ],
               "numReferrers" : 0
             },
             "redistribute-static-isis" : {
               "definitionLines" : [
-                65,
                 66,
                 67,
                 68,
@@ -83201,25 +83175,25 @@
                 71,
                 72,
                 73,
-                74
+                74,
+                75
               ],
               "numReferrers" : 0
             },
             "routetype" : {
               "definitionLines" : [
-                168,
                 169,
                 170,
                 171,
                 172,
                 173,
-                174
+                174,
+                175
               ],
               "numReferrers" : 0
             },
             "to_chillmap" : {
               "definitionLines" : [
-                106,
                 107,
                 108,
                 109,
@@ -83268,7 +83242,8 @@
                 152,
                 153,
                 154,
-                155
+                155,
+                156
               ],
               "numReferrers" : 0
             }
@@ -83278,7 +83253,7 @@
           "interface" : {
             "Null0" : {
               "definitionLines" : [
-                6
+                7
               ],
               "numReferrers" : 7
             }
@@ -85786,26 +85761,26 @@
           "as-path-set" : {
             "ama-coe-as-path" : {
               "definitionLines" : [
-                34,
                 35,
-                36
+                36,
+                37
               ],
               "numReferrers" : 0
             },
             "ama-coe-as-path2" : {
               "definitionLines" : [
-                37,
-                38
+                38,
+                39
               ],
               "numReferrers" : 0
             },
             "ama-coe-as-path3" : {
               "definitionLines" : [
-                39,
                 40,
                 41,
                 42,
-                43
+                43,
+                44
               ],
               "numReferrers" : 0
             }
@@ -85813,20 +85788,19 @@
           "route-policy" : {
             "erick-test" : {
               "definitionLines" : [
-                4,
                 5,
                 6,
                 7,
                 8,
                 9,
                 10,
-                11
+                11,
+                12
               ],
               "numReferrers" : 0
             },
             "to_fooey" : {
               "definitionLines" : [
-                13,
                 14,
                 15,
                 16,
@@ -85845,7 +85819,8 @@
                 29,
                 30,
                 31,
-                32
+                32,
+                33
               ],
               "numReferrers" : 0
             }
@@ -85855,25 +85830,6 @@
           "route-policy" : {
             "EBGP_CUST_FULL_v4" : {
               "definitionLines" : [
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12
-              ],
-              "numReferrers" : 0
-            }
-          }
-        },
-        "configs/route_policy_metric_type" : {
-          "route-policy" : {
-            "to_csuchico" : {
-              "definitionLines" : [
-                4,
                 5,
                 6,
                 7,
@@ -85888,23 +85844,41 @@
             }
           }
         },
-        "configs/route_policy_param" : {
+        "configs/route_policy_metric_type" : {
           "route-policy" : {
-            "cust_v4_in" : {
+            "to_csuchico" : {
               "definitionLines" : [
-                4,
                 5,
                 6,
                 7,
                 8,
                 9,
-                10
+                10,
+                11,
+                12,
+                13,
+                14
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "configs/route_policy_param" : {
+          "route-policy" : {
+            "cust_v4_in" : {
+              "definitionLines" : [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
               ],
               "numReferrers" : 0
             },
             "global_cust_v4" : {
               "definitionLines" : [
-                12,
                 13,
                 14,
                 15,
@@ -85913,7 +85887,8 @@
                 18,
                 19,
                 20,
-                21
+                21,
+                22
               ],
               "numReferrers" : 0
             }
@@ -85924,9 +85899,9 @@
           "route-policy" : {
             "FOOBAR" : {
               "definitionLines" : [
-                4,
                 5,
-                6
+                6,
+                7
               ],
               "numReferrers" : 0
             }
@@ -85995,19 +85970,7 @@
             }
           }
         },
-        "configs/vlan_access_map2" : {
-          "route-policy" : {
-            "EBGP-PEER" : {
-              "definitionLines" : [
-                27,
-                28,
-                29,
-                30
-              ],
-              "numReferrers" : 0
-            }
-          }
-        },
+        "configs/vlan_access_map2" : { },
         "configs/vxlan" : { },
         "hosts/host1.json" : { }
       },
@@ -87259,12 +87222,12 @@
           "route-policy" : {
             "EBGP_CUST_FULL_v4" : {
               "bgp neighbor route-policy out" : [
-                13
+                14
               ]
             },
             "cust_v4_in" : {
               "bgp neighbor route-policy in" : [
-                11
+                12
               ]
             }
           }
@@ -90173,12 +90136,12 @@
           "route-policy" : {
             "ADDITIONAL_PATHS_POLICY" : {
               "bgp additional-paths selection route-policy" : [
-                8
+                9
               ]
             },
             "AGGREGATE_POLICY" : {
               "aggregate-address route-policy" : [
-                10
+                11
               ]
             }
           }
@@ -90187,75 +90150,75 @@
           "bgp neighbor-group" : {
             "BGPMonitor" : {
               "bgp use neighbor-group" : [
-                33
+                34
               ]
             },
             "foobar-iBGP_border_ipv4" : {
               "bgp use neighbor-group" : [
-                87
+                88
               ]
             },
             "foobar-iBGP_ipv4" : {
               "bgp use neighbor-group" : [
-                78,
-                83
+                79,
+                84
               ]
             }
           },
           "bgp session-group" : {
             "CIAO" : {
               "bgp use session-group" : [
-                94
+                95
               ]
             },
             "bippety" : {
               "bgp use session-group" : [
-                34
+                35
               ]
             },
             "blabber" : {
               "bgp use session-group" : [
-                17
+                18
               ]
             },
             "excellect-group" : {
               "bgp use session-group" : [
-                88
+                89
               ]
             }
           },
           "interface" : {
             "Loopback0" : {
               "update-source interface" : [
-                22,
-                36,
-                48,
-                58,
-                69
+                23,
+                37,
+                49,
+                59,
+                70
               ]
             }
           },
           "route-policy" : {
             "advertise_fooey_dc_and_isp_routes_ipv4" : {
               "bgp neighbor route-policy out" : [
-                25,
-                29
+                26,
+                30
               ]
             },
             "advertise_fooey_routes_only" : {
               "bgp neighbor route-policy out" : [
-                39
+                40
               ]
             },
             "deny_bgp_routes" : {
               "bgp neighbor route-policy in" : [
-                24,
-                28
+                25,
+                29
               ]
             },
             "deny_default_network_ipv4" : {
               "bgp neighbor route-policy out" : [
-                60
+                61
               ]
             }
           }
@@ -90264,10 +90227,10 @@
           "ipv4 acl" : {
             "MSDP_filter" : {
               "msdp peer sa-list" : [
-                29,
                 30,
-                46,
-                47
+                31,
+                47,
+                48
               ]
             }
           }
@@ -90285,47 +90248,47 @@
           "interface" : {
             "Bundle-Ethernet101" : {
               "router ospf area interface" : [
-                17
+                18
               ]
             },
             "Bundle-Ethernet103" : {
               "router ospf area interface" : [
-                23
+                24
               ]
             },
             "Bundle-Ethernet201" : {
               "router ospf area interface" : [
-                27
+                28
               ]
             },
             "HundredGigabitEthernet0/2/0/0.292" : {
               "router ospf area interface" : [
-                41
+                42
               ]
             },
             "HundredGigabitEthernet0/2/0/3" : {
               "router ospf area interface" : [
-                43
+                44
               ]
             },
             "Loopback0" : {
               "router ospf area interface" : [
-                32
+                33
               ]
             },
             "TenGigabitEthernet0/0/0/2" : {
               "router ospf area interface" : [
-                50
+                51
               ]
             },
             "TenGigabitEthernet0/0/0/4" : {
               "router ospf area interface" : [
-                35
+                36
               ]
             },
             "TenGigabitEthernet0/0/0/5" : {
               "router ospf area interface" : [
-                38
+                39
               ]
             }
           }
@@ -90334,170 +90297,170 @@
           "as-path-set" : {
             "chill-as-path" : {
               "route-policy as-path in" : [
-                123
+                124
               ]
             },
             "chill_aspath_141_deny" : {
               "route-policy as-path in" : [
-                129
+                130
               ]
             },
             "chill_aspath_141_permit" : {
               "route-policy as-path in" : [
-                143
+                144
               ]
             },
             "chill_aspath_142_permit" : {
               "route-policy as-path in" : [
-                145
+                146
               ]
             },
             "xo-deny-as" : {
               "route-policy as-path in" : [
-                90
+                91
               ]
             }
           },
           "community-set" : {
             "CF_fooey_Associates-chillmap" : {
               "route-policy community matches-any" : [
-                145
+                146
               ]
             },
             "DC_AT_CHILL" : {
               "route-policy community matches-any" : [
-                150
+                151
               ]
             },
             "EBGP-CUST-EXT" : {
               "route-policy community matches-any" : [
-                98
+                99
               ]
             },
             "EBGP-CUST-NOEXP-PEER-NA" : {
               "route-policy community matches-any" : [
-                88
+                89
               ]
             },
             "barbar_to_fooey_community_ipv4" : {
               "route-policy set community" : [
-                52
+                53
               ]
             },
             "blackhole-all" : {
               "route-policy community matches-any" : [
-                107,
-                158
+                108,
+                159
               ]
             },
             "blackhole-isp" : {
               "route-policy community matches-any" : [
-                110
+                111
               ]
             },
             "chillmap" : {
               "route-policy community matches-any" : [
-                141
+                142
               ]
             },
             "community_5555" : {
               "route-policy community matches-any" : [
-                33
+                34
               ],
               "route-policy delete community [not] in" : [
-                34
+                35
               ]
             },
             "fooey_blackhole_community" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "fooey_routes_community" : {
               "route-policy community matches-any" : [
-                16
+                17
               ]
             },
             "scenes_No_Export" : {
               "route-policy community matches-any" : [
-                120
+                121
               ]
             },
             "to-peers-backbone" : {
               "route-policy community matches-any" : [
-                137
+                138
               ]
             },
             "wrn-expanded" : {
               "route-policy community matches-any" : [
-                129,
-                143
+                130,
+                144
               ]
             },
             "wrn-squelch-40027" : {
               "route-policy community matches-any" : [
-                126
+                127
               ]
             }
           },
           "prefix-set" : {
             "EBGP-PEER-BOGONS" : {
               "route-policy prefix-set" : [
-                78
+                79
               ]
             },
             "EBGP-PEER-OTHER-UNDESIRABLES" : {
               "route-policy prefix-set" : [
-                78
+                79
               ]
             },
             "EBGP-PEER-TOO-SPECIFIC" : {
               "route-policy prefix-set" : [
-                80
+                81
               ]
             },
             "barbar_blackhole_routes" : {
               "route-policy prefix-set" : [
-                5,
-                51
+                6,
+                52
               ]
             },
             "barbar_networks_ipv4" : {
               "route-policy prefix-set" : [
-                51
+                52
               ]
             },
             "barbar_networks_ipv6" : {
               "route-policy prefix-set" : [
-                21
+                22
               ]
             },
             "bippetyboppety_ipv4" : {
               "route-policy prefix-set" : [
-                44,
-                51
+                45,
+                52
               ]
             },
             "local-peer-aggregates" : {
               "route-policy prefix-set" : [
-                68
+                69
               ]
             },
             "null" : {
               "route-policy prefix-set" : [
-                114
+                115
               ]
             },
             "remote-router-loopbacks" : {
               "route-policy prefix-set" : [
-                66
+                67
               ]
             }
           },
           "route-policy" : {
             "bbbb" : {
               "route-policy apply" : [
-                28
+                29
               ]
             }
           }
@@ -90506,23 +90469,23 @@
           "interface" : {
             "GigabitEthernet0/2/1/5.290" : {
               "router static route" : [
-                16
+                17
               ]
             },
             "Null0" : {
               "router static route" : [
-                6,
-                9,
+                7,
                 10,
                 11,
                 12,
-                14,
-                15
+                13,
+                15,
+                16
               ]
             },
             "TenGigabitEthernet0/0/2/3" : {
               "router static route" : [
-                7
+                8
               ]
             }
           }
@@ -90531,14 +90494,14 @@
           "ipv4 acl" : {
             "ACL99" : {
               "ssh ipv4 access-list" : [
-                6
+                7
               ]
             }
           },
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "ssh ipv6 access-list" : [
-                6
+                7
               ]
             }
           }
@@ -92338,24 +92301,24 @@
           "community-set" : {
             "13979:90" : {
               "route-policy set community" : [
-                7
+                8
               ]
             },
             "SOCAL-USERS" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             }
           },
           "prefix-set" : {
             "CENIC_DC_Internal" : {
               "route-policy prefix-set" : [
-                25
+                26
               ]
             },
             "classful_default" : {
               "route-policy prefix-set" : [
-                14
+                15
               ]
             }
           }
@@ -92364,27 +92327,27 @@
           "community-set" : {
             "DC_AT_MEMBERS" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "DC_CF_COMMODITY_PEER" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "DC_CF_ISP" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "HPR_CF_RE_PEER" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "No_Export" : {
               "route-policy community matches-any" : [
-                7
+                8
               ]
             }
           }
@@ -92393,14 +92356,14 @@
           "community-set" : {
             "No_Export" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             }
           },
           "prefix-set" : {
             "DC_Internal" : {
               "route-policy prefix-set" : [
-                7
+                8
               ]
             }
           }
@@ -92409,14 +92372,14 @@
           "community-set" : {
             "blackhole-all" : {
               "route-policy community matches-any" : [
-                13
+                14
               ]
             }
           },
           "prefix-set" : {
             "$cust_v4_pfx" : {
               "route-policy prefix-set" : [
-                5
+                6
               ]
             }
           }
@@ -92480,7 +92443,7 @@
           "undeclared bgp peer" : {
             "10.10.212.233" : {
               "bgp neighbor without remote-as" : [
-                20
+                19
               ]
             }
           }
@@ -92663,12 +92626,12 @@
           "route-policy" : {
             "EBGP_CUST_FULL_v4" : {
               "bgp neighbor route-policy out" : [
-                13
+                14
               ]
             },
             "cust_v4_in" : {
               "bgp neighbor route-policy in" : [
-                11
+                12
               ]
             }
           }
@@ -93929,12 +93892,12 @@
           "route-policy" : {
             "ADDITIONAL_PATHS_POLICY" : {
               "bgp additional-paths selection route-policy" : [
-                8
+                9
               ]
             },
             "AGGREGATE_POLICY" : {
               "aggregate-address route-policy" : [
-                10
+                11
               ]
             }
           }
@@ -93943,57 +93906,57 @@
           "bgp session-group" : {
             "CIAO" : {
               "bgp use session-group" : [
-                94
+                95
               ]
             },
             "bippety" : {
               "bgp use session-group" : [
-                34
+                35
               ]
             },
             "blabber" : {
               "bgp use session-group" : [
-                17
+                18
               ]
             },
             "excellect-group" : {
               "bgp use session-group" : [
-                88
+                89
               ]
             }
           },
           "interface" : {
             "Loopback0" : {
               "update-source interface" : [
-                22,
-                36,
-                48,
-                58,
-                69
+                23,
+                37,
+                49,
+                59,
+                70
               ]
             }
           },
           "route-policy" : {
             "advertise_fooey_dc_and_isp_routes_ipv4" : {
               "bgp neighbor route-policy out" : [
-                25,
-                29
+                26,
+                30
               ]
             },
             "advertise_fooey_routes_only" : {
               "bgp neighbor route-policy out" : [
-                39
+                40
               ]
             },
             "deny_bgp_routes" : {
               "bgp neighbor route-policy in" : [
-                24,
-                28
+                25,
+                29
               ]
             },
             "deny_default_network_ipv4" : {
               "bgp neighbor route-policy out" : [
-                60
+                61
               ]
             }
           }
@@ -94002,10 +93965,10 @@
           "ipv4 acl" : {
             "MSDP_filter" : {
               "msdp peer sa-list" : [
-                29,
                 30,
-                46,
-                47
+                31,
+                47,
+                48
               ]
             }
           }
@@ -94023,47 +93986,47 @@
           "interface" : {
             "Bundle-Ethernet101" : {
               "router ospf area interface" : [
-                17
+                18
               ]
             },
             "Bundle-Ethernet103" : {
               "router ospf area interface" : [
-                23
+                24
               ]
             },
             "Bundle-Ethernet201" : {
               "router ospf area interface" : [
-                27
+                28
               ]
             },
             "HundredGigabitEthernet0/2/0/0.292" : {
               "router ospf area interface" : [
-                41
+                42
               ]
             },
             "HundredGigabitEthernet0/2/0/3" : {
               "router ospf area interface" : [
-                43
+                44
               ]
             },
             "Loopback0" : {
               "router ospf area interface" : [
-                32
+                33
               ]
             },
             "TenGigabitEthernet0/0/0/2" : {
               "router ospf area interface" : [
-                50
+                51
               ]
             },
             "TenGigabitEthernet0/0/0/4" : {
               "router ospf area interface" : [
-                35
+                36
               ]
             },
             "TenGigabitEthernet0/0/0/5" : {
               "router ospf area interface" : [
-                38
+                39
               ]
             }
           }
@@ -94072,170 +94035,170 @@
           "as-path-set" : {
             "chill-as-path" : {
               "route-policy as-path in" : [
-                123
+                124
               ]
             },
             "chill_aspath_141_deny" : {
               "route-policy as-path in" : [
-                129
+                130
               ]
             },
             "chill_aspath_141_permit" : {
               "route-policy as-path in" : [
-                143
+                144
               ]
             },
             "chill_aspath_142_permit" : {
               "route-policy as-path in" : [
-                145
+                146
               ]
             },
             "xo-deny-as" : {
               "route-policy as-path in" : [
-                90
+                91
               ]
             }
           },
           "community-set" : {
             "CF_fooey_Associates-chillmap" : {
               "route-policy community matches-any" : [
-                145
+                146
               ]
             },
             "DC_AT_CHILL" : {
               "route-policy community matches-any" : [
-                150
+                151
               ]
             },
             "EBGP-CUST-EXT" : {
               "route-policy community matches-any" : [
-                98
+                99
               ]
             },
             "EBGP-CUST-NOEXP-PEER-NA" : {
               "route-policy community matches-any" : [
-                88
+                89
               ]
             },
             "barbar_to_fooey_community_ipv4" : {
               "route-policy set community" : [
-                52
+                53
               ]
             },
             "blackhole-all" : {
               "route-policy community matches-any" : [
-                107,
-                158
+                108,
+                159
               ]
             },
             "blackhole-isp" : {
               "route-policy community matches-any" : [
-                110
+                111
               ]
             },
             "chillmap" : {
               "route-policy community matches-any" : [
-                141
+                142
               ]
             },
             "community_5555" : {
               "route-policy community matches-any" : [
-                33
+                34
               ],
               "route-policy delete community [not] in" : [
-                34
+                35
               ]
             },
             "fooey_blackhole_community" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "fooey_routes_community" : {
               "route-policy community matches-any" : [
-                16
+                17
               ]
             },
             "scenes_No_Export" : {
               "route-policy community matches-any" : [
-                120
+                121
               ]
             },
             "to-peers-backbone" : {
               "route-policy community matches-any" : [
-                137
+                138
               ]
             },
             "wrn-expanded" : {
               "route-policy community matches-any" : [
-                129,
-                143
+                130,
+                144
               ]
             },
             "wrn-squelch-40027" : {
               "route-policy community matches-any" : [
-                126
+                127
               ]
             }
           },
           "prefix-set" : {
             "EBGP-PEER-BOGONS" : {
               "route-policy prefix-set" : [
-                78
+                79
               ]
             },
             "EBGP-PEER-OTHER-UNDESIRABLES" : {
               "route-policy prefix-set" : [
-                78
+                79
               ]
             },
             "EBGP-PEER-TOO-SPECIFIC" : {
               "route-policy prefix-set" : [
-                80
+                81
               ]
             },
             "barbar_blackhole_routes" : {
               "route-policy prefix-set" : [
-                5,
-                51
+                6,
+                52
               ]
             },
             "barbar_networks_ipv4" : {
               "route-policy prefix-set" : [
-                51
+                52
               ]
             },
             "barbar_networks_ipv6" : {
               "route-policy prefix-set" : [
-                21
+                22
               ]
             },
             "bippetyboppety_ipv4" : {
               "route-policy prefix-set" : [
-                44,
-                51
+                45,
+                52
               ]
             },
             "local-peer-aggregates" : {
               "route-policy prefix-set" : [
-                68
+                69
               ]
             },
             "null" : {
               "route-policy prefix-set" : [
-                114
+                115
               ]
             },
             "remote-router-loopbacks" : {
               "route-policy prefix-set" : [
-                66
+                67
               ]
             }
           },
           "route-policy" : {
             "bbbb" : {
               "route-policy apply" : [
-                28
+                29
               ]
             }
           }
@@ -94244,12 +94207,12 @@
           "interface" : {
             "GigabitEthernet0/2/1/5.290" : {
               "router static route" : [
-                16
+                17
               ]
             },
             "TenGigabitEthernet0/0/2/3" : {
               "router static route" : [
-                7
+                8
               ]
             }
           }
@@ -94258,14 +94221,14 @@
           "ipv4 acl" : {
             "ACL99" : {
               "ssh ipv4 access-list" : [
-                6
+                7
               ]
             }
           },
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "ssh ipv6 access-list" : [
-                6
+                7
               ]
             }
           }
@@ -94588,24 +94551,24 @@
           "community-set" : {
             "13979:90" : {
               "route-policy set community" : [
-                7
+                8
               ]
             },
             "SOCAL-USERS" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             }
           },
           "prefix-set" : {
             "CENIC_DC_Internal" : {
               "route-policy prefix-set" : [
-                25
+                26
               ]
             },
             "classful_default" : {
               "route-policy prefix-set" : [
-                14
+                15
               ]
             }
           }
@@ -94614,27 +94577,27 @@
           "community-set" : {
             "DC_AT_MEMBERS" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "DC_CF_COMMODITY_PEER" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "DC_CF_ISP" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "HPR_CF_RE_PEER" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             },
             "No_Export" : {
               "route-policy community matches-any" : [
-                7
+                8
               ]
             }
           }
@@ -94643,14 +94606,14 @@
           "community-set" : {
             "No_Export" : {
               "route-policy community matches-any" : [
-                5
+                6
               ]
             }
           },
           "prefix-set" : {
             "DC_Internal" : {
               "route-policy prefix-set" : [
-                7
+                8
               ]
             }
           }
@@ -94659,14 +94622,14 @@
           "community-set" : {
             "blackhole-all" : {
               "route-policy community matches-any" : [
-                13
+                14
               ]
             }
           },
           "prefix-set" : {
             "$cust_v4_pfx" : {
               "route-policy prefix-set" : [
-                5
+                6
               ]
             }
           }
@@ -94707,7 +94670,7 @@
           "undeclared bgp peer" : {
             "10.10.212.233" : {
               "bgp neighbor without remote-as" : [
-                20
+                19
               ]
             }
           }

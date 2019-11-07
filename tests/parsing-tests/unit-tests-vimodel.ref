@@ -3529,7 +3529,7 @@
         }
       },
       "bgp_default_originate_policy" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "bgp_default_originate_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -3561,14 +3561,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "bgp_default_originate_policy",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -3880,11 +3873,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "bgp_route_policy"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -12452,7 +12441,7 @@
         }
       },
       "commset" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "commset",
         "communityMatchExprs" : {
           "EBGP-PEER" : {
@@ -13912,14 +13901,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "commSet",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -14165,7 +14147,7 @@
         }
       },
       "community_set" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "community_set",
         "communityMatchExprs" : {
           "190" : {
@@ -14503,14 +14485,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "community_set",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -19061,7 +19036,7 @@
         }
       },
       "if_tag_is" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "if_tag_is",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19351,14 +19326,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "if_tag_is",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -19764,11 +19732,7 @@
             "vrf" : "default"
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "interface_name"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -20502,19 +20466,12 @@
         }
       },
       "ios_xr_acl" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_acl",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -20522,7 +20479,7 @@
         }
       },
       "ios_xr_bgp" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -20716,14 +20673,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_bgp",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -20860,11 +20810,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_bgp_neighbor_group"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -20969,11 +20915,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_class_map"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -20981,7 +20923,7 @@
         }
       },
       "ios_xr_isis" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21009,7 +20951,7 @@
               "pointToPoint" : false
             },
             "mtu" : 1500,
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21021,14 +20963,7 @@
             "vrf" : "default"
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_isis",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -21044,14 +20979,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_logging",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21064,11 +20992,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_misc"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21081,14 +21005,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "banners" : {
-              "login" : "\n\n***************************************************************************\n*                                                                         *\n*  This router is : ios_xr_multipart                                      *\n*                                                                         * \n***************************************************************************\n"
-            },
-            "hostname" : "ios_xr_multipart"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21096,7 +21013,7 @@
         }
       },
       "ios_xr_ntp" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21104,21 +21021,7 @@
         "ntpServers" : [
           "1.2.3.4"
         ],
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_ntp",
-            "logging" : {
-              "on" : true
-            },
-            "ntp" : {
-              "servers" : {
-                "1.2.3.4" : {
-                  "name" : "1.2.3.4"
-                }
-              }
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21126,7 +21029,7 @@
         }
       },
       "ios_xr_ospf" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21155,7 +21058,7 @@
               "passive" : false,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21188,7 +21091,7 @@
               "passive" : false,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21222,7 +21125,7 @@
               "passive" : true,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21256,7 +21159,7 @@
               "passive" : false,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21290,7 +21193,7 @@
               "passive" : false,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21324,7 +21227,7 @@
               "passive" : true,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21358,7 +21261,7 @@
               "passive" : false,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21393,7 +21296,7 @@
               "passive" : true,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21428,7 +21331,7 @@
               "passive" : true,
               "process" : "2"
             },
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -21536,14 +21439,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_ospf",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -21623,19 +21519,12 @@
         }
       },
       "ios_xr_router_static" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_router_static",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_router_static",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -21735,19 +21624,12 @@
         }
       },
       "ios_xr_ssh" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_ssh",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21755,19 +21637,12 @@
         }
       },
       "ios_xr_taskgroup" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "ios_xr_taskgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "ios_xr_taskgroup",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -21780,11 +21655,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "IosXrMultiCast"
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -27876,19 +27747,12 @@
         }
       },
       "l2vpn" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "l2vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "L2VPN",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -27972,19 +27836,12 @@
         }
       },
       "mcastrouting" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "mcastrouting",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "MCastRouting",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -32457,7 +32314,7 @@
         }
       },
       "preset" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "preset",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32519,14 +32376,7 @@
             "name" : "ucla_networks"
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "preSet",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -32534,7 +32384,7 @@
         }
       },
       "route_policy_as_path_set" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "route_policy_as_path_set",
         "asPathAccessLists" : {
           "ama-coe-as-path" : {
@@ -33390,14 +33240,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "route_policy_as_path_set",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -33405,7 +33248,7 @@
         }
       },
       "route_policy_igp_cost" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "route_policy_igp_cost",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33470,14 +33313,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "route_policy_igp_cost",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -33485,7 +33321,7 @@
         }
       },
       "route_policy_metric_type" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "route_policy_metric_type",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33617,14 +33453,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "route_policy_metric_type",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -33632,7 +33461,7 @@
         }
       },
       "route_policy_param" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "route_policy_param",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33843,14 +33672,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "route_policy_param",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -33878,7 +33700,7 @@
         }
       },
       "rp" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "rp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -36080,14 +35902,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "rP",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -36095,7 +35910,7 @@
         }
       },
       "set_inline_community" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "set_inline_community",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -36187,14 +36002,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "set_inline_community",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -36292,19 +36100,12 @@
         }
       },
       "taskgroup" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "taskgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "taskgroup",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -36871,110 +36672,6 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
-          "EBGP-PEER" : {
-            "name" : "EBGP-PEER",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
-                "statement" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
-                  "communitySetExpr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
-                    "exprs" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.communities.CommunityExprsSet",
-                        "exprs" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs",
-                            "highExpr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 8075
-                            },
-                            "lowExpr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 51000
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetDefaultActionAccept"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetDefaultActionAccept"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "DefaultAction"
-                      }
-                    ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallStatementContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "Return"
-                      }
-                    ]
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ]
-              }
-            ]
-          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
