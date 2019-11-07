@@ -2675,13 +2675,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     markConcreteStructure(CiscoXrStructureType.ROUTE_POLICY);
 
-    // Cable
-    markConcreteStructure(CiscoXrStructureType.DEPI_CLASS);
-    markConcreteStructure(CiscoXrStructureType.DEPI_TUNNEL);
-    markConcreteStructure(CiscoXrStructureType.DOCSIS_POLICY);
-    markConcreteStructure(CiscoXrStructureType.DOCSIS_POLICY_RULE);
-    markConcreteStructure(CiscoXrStructureType.SERVICE_CLASS);
-
     // L2tp
     markConcreteStructure(CiscoXrStructureType.L2TP_CLASS);
 
@@ -2736,8 +2729,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoXrStructureType.BGP_SESSION_GROUP);
     markConcreteStructure(CiscoXrStructureType.BGP_TEMPLATE_PEER_POLICY);
     markConcreteStructure(CiscoXrStructureType.BGP_TEMPLATE_PEER_SESSION);
-    markConcreteStructure(CiscoXrStructureType.BGP_UNDECLARED_PEER);
-    markConcreteStructure(CiscoXrStructureType.BGP_UNDECLARED_PEER_GROUP);
 
     return ImmutableList.of(c);
   }
@@ -2908,17 +2899,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
     }
     return false;
-  }
-
-  private void markCommunityLists(CiscoXrStructureUsage... usages) {
-    for (CiscoXrStructureUsage usage : usages) {
-      markAbstractStructure(
-          CiscoXrStructureType.COMMUNITY_LIST,
-          usage,
-          ImmutableList.of(
-              CiscoXrStructureType.COMMUNITY_LIST_EXPANDED,
-              CiscoXrStructureType.COMMUNITY_LIST_STANDARD));
-    }
   }
 
   /**

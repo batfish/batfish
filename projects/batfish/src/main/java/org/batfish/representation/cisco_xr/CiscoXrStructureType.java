@@ -12,20 +12,10 @@ public enum CiscoXrStructureType implements StructureType {
   BGP_SESSION_GROUP("bgp session-group"),
   BGP_TEMPLATE_PEER_POLICY("bgp template peer-policy"),
   BGP_TEMPLATE_PEER_SESSION("bgp template peer-session"),
-  BGP_UNDECLARED_PEER("undeclared bgp peer"),
-  BGP_UNDECLARED_PEER_GROUP("undeclared bgp peer-group"),
   CLASS_MAP("class-map"),
-  COMMUNITY_LIST("community-list"),
-  COMMUNITY_LIST_EXPANDED("expanded community-list"),
-  COMMUNITY_LIST_STANDARD("standard community-list"),
   COMMUNITY_SET("community-set"),
   CRYPTO_DYNAMIC_MAP_SET("crypto-dynamic-map-set"),
   CRYPTO_MAP_SET("crypto-map-set"),
-  CSR_PARAMS("csr-params"),
-  DEPI_CLASS("depi-class"),
-  DEPI_TUNNEL("depi-tunnel"),
-  DOCSIS_POLICY("docsis-policy"),
-  DOCSIS_POLICY_RULE("docsis-policy-rule"),
   ICMP_TYPE_OBJECT("object icmp-type"),
   ICMP_TYPE_OBJECT_GROUP("object-group icmp-type"),
   INSPECT_CLASS_MAP("class-map type inspect"),
@@ -57,12 +47,10 @@ public enum CiscoXrStructureType implements StructureType {
   PROTOCOL_OBJECT_GROUP("object-group protocol"),
   PROTOCOL_OR_SERVICE_OBJECT_GROUP("object-group protocol or service"),
   ROUTE_POLICY("route-policy"),
-  SERVICE_CLASS("cable service-class"),
   SERVICE_OBJECT("object service"),
   SERVICE_OBJECT_GROUP("object-group service"),
   SERVICE_TEMPLATE("service-template"),
-  TRACK("track"),
-  TRAFFIC_ZONE("zone");
+  TRACK("track");
 
   private final String _description;
 
