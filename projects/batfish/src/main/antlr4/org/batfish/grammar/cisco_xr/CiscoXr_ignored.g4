@@ -601,7 +601,6 @@ null_single
       | CURRENT_CONFIGURATION
       | DATABASE
       | DEFAULT
-      | DEPI
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
