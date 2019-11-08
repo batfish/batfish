@@ -341,4 +341,22 @@ public class TransformationEvaluatorTest {
             new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()), PERMITTED);
     assertThat(traceSteps, contains(step));
   }
+
+  @Test
+  public void testAssignPortFromPoolSrc_nonPortProtocol() {
+    Transformation transformation = always().apply(assignSourcePort(2000, 2000)).build();
+
+    Flow origFlow =
+        _flowBuilder.setIpProtocol(IpProtocol.ICMP).setIcmpCode(0).setIcmpType(1).build();
+
+    // the flow is not transformed
+    TransformationResult result = evalResult(transformation, origFlow);
+    assertThat(result.getOutputFlow(), equalTo(origFlow));
+
+    List<Step<?>> traceSteps = result.getTraceSteps();
+    TransformationStep step =
+        new TransformationStep(
+            new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()), PERMITTED);
+    assertThat(traceSteps, contains(step));
+  }
 }

@@ -16,6 +16,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.BDDReachabilityUtils;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -36,12 +37,15 @@ public class TransformationToTransitionTest {
   private TransformationToTransition _toTransition;
   private BDD _one;
   private BDD _zero;
+  BDD _portTransformationProtocols;
 
   @Before
   public void setup() {
     _pkt = new BDDPacket();
     _one = _pkt.getFactory().one();
     _zero = _pkt.getFactory().zero();
+    _portTransformationProtocols =
+        BDDReachabilityUtils.computePortTransformationProtocolsBdd(_pkt.getIpProtocol());
     _dstIpSpaceToBdd = new IpSpaceToBDD(_pkt.getDstIp());
     _srcIpSpaceToBdd = new IpSpaceToBDD(_pkt.getSrcIp());
     _toTransition =
@@ -342,27 +346,36 @@ public class TransformationToTransitionTest {
     // the entire pool as a BDD
     BDD poolBdd = _pkt.getSrcPort().geq(poolStart).and(_pkt.getSrcPort().leq(poolEnd));
     // one port in the pool as a BDD
-    BDD poolPortBdd = _pkt.getSrcPort().value(poolStart + 2);
     BDD nonPoolPortBdd = _pkt.getSrcPort().value(poolEnd + 2);
 
     // forward -- unconstrainted
-    BDD expectedOut = poolBdd;
+    BDD expectedOut = _portTransformationProtocols.imp(poolBdd);
     BDD actualOut = transition.transitForward(_one);
     assertThat(actualOut, equalTo(expectedOut));
 
     // forward -- already in pool
-    expectedOut = poolBdd;
-    actualOut = transition.transitForward(poolPortBdd);
+    expectedOut = _portTransformationProtocols.imp(poolBdd);
+    actualOut = transition.transitForward(expectedOut);
     assertThat(actualOut, equalTo(expectedOut));
 
-    // backward -- inside of pool
+    // forward -- protocol with no ports
+    expectedOut = _portTransformationProtocols.not();
+    actualOut = transition.transitForward(expectedOut);
+    assertThat(actualOut, equalTo(expectedOut));
+
+    // backward -- inside of pool if protocol has ports
     BDD expectedIn = _one;
-    BDD actualIn = transition.transitBackward(poolPortBdd);
+    BDD actualIn = transition.transitBackward(_portTransformationProtocols.imp(poolBdd));
     assertThat(actualIn, equalTo(expectedIn));
 
     // backward -- outside of pool
     expectedIn = _zero;
-    actualIn = transition.transitBackward(nonPoolPortBdd);
+    actualIn = transition.transitBackward(_portTransformationProtocols.and(nonPoolPortBdd));
+    assertThat(actualIn, equalTo(expectedIn));
+
+    // backward -- protocol with no ports
+    expectedIn = _portTransformationProtocols.not();
+    actualIn = transition.transitBackward(expectedIn);
     assertThat(actualIn, equalTo(expectedIn));
   }
 
@@ -382,14 +395,16 @@ public class TransformationToTransitionTest {
     BDD nonIpPoolBdd = _pkt.getSrcIp().value(poolIp.asLong() + 1);
     BDD nonPortPoolBdd = _pkt.getSrcPort().value(poolPort + 1);
     BDD actualOut = transition.transitForward(_one);
-    assertThat(actualOut, equalTo(ipPoolBdd.and(portPoolBdd)));
+    assertThat(actualOut, equalTo(ipPoolBdd.and(_portTransformationProtocols.imp(portPoolBdd))));
 
     BDD expectedIn = _one;
-    BDD actualIn = transition.transitBackward(ipPoolBdd.and(portPoolBdd));
+    BDD actualIn =
+        transition.transitBackward(ipPoolBdd.and(_portTransformationProtocols.imp(portPoolBdd)));
     assertThat(actualIn, equalTo(expectedIn));
 
     expectedIn = _zero;
-    actualIn = transition.transitBackward(ipPoolBdd.and(nonPortPoolBdd));
+    actualIn =
+        transition.transitBackward(ipPoolBdd.and(_portTransformationProtocols).and(nonPortPoolBdd));
     assertThat(actualIn, equalTo(expectedIn));
 
     expectedIn = _zero;

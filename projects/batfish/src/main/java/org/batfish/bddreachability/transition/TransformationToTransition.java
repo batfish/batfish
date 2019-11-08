@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+import static org.batfish.bddreachability.BDDReachabilityUtils.computePortTransformationProtocolsBdd;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
@@ -40,11 +41,13 @@ public class TransformationToTransition {
   private final IdentityHashMap<Transformation, Transition> _cache;
   private final IpAccessListToBdd _ipAccessListToBdd;
   private final TransformationStepToTransition _stepToTransition;
+  private final BDD _ipProtocolsWithPortsBdd;
 
   public TransformationToTransition(BDDPacket bddPacket, IpAccessListToBdd ipAccessListToBdd) {
     _bddPacket = bddPacket;
     _cache = new IdentityHashMap<>();
     _ipAccessListToBdd = ipAccessListToBdd;
+    _ipProtocolsWithPortsBdd = computePortTransformationProtocolsBdd(_bddPacket.getIpProtocol());
     _stepToTransition = new TransformationStepToTransition();
   }
 
@@ -57,10 +60,12 @@ public class TransformationToTransition {
     return new EraseAndSet(erase, setValue);
   }
 
-  private static EraseAndSet assignPortFromPool(BDDInteger var, int poolStart, int poolEnd) {
+  private Transition assignPortFromPool(BDDInteger var, int poolStart, int poolEnd) {
     BDD erase = Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and);
     BDD setValue = var.range(poolStart, poolEnd);
-    return new EraseAndSet(erase, setValue);
+    EraseAndSet eraseAndSet = new EraseAndSet(erase, setValue);
+    // AssignPortFromPool is a noop on protocols that don't have ports
+    return branch(_ipProtocolsWithPortsBdd, eraseAndSet, IDENTITY);
   }
 
   private class TransformationStepToTransition implements TransformationStepVisitor<Transition> {
