@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
+import org.batfish.common.bdd.BDDIpProtocol;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.symbolic.IngressLocation;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
@@ -118,5 +120,12 @@ public final class BDDReachabilityUtils {
         ingressLocationStates,
         BDDReachabilityUtils::toIngressLocation,
         stateExpr -> stateReachableBdds.getOrDefault(stateExpr, zero));
+  }
+
+  public static BDD computePortTransformationProtocolsBdd(BDDIpProtocol ipProtocol) {
+    return AssignPortFromPool.PORT_TRANSFORMATION_PROTOCOLS.stream()
+        .map(ipProtocol::value)
+        .reduce(BDD::or)
+        .get();
   }
 }

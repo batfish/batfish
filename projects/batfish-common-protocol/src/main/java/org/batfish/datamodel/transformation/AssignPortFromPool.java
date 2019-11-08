@@ -4,12 +4,23 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Objects;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
-/** A {@link TransformationStep} that transforms the source port */
+/**
+ * A {@link TransformationStep} that transforms a port. For flows that don't have ports, (e.g. ICMP
+ * flows), does nothing.
+ */
 public class AssignPortFromPool implements TransformationStep, Serializable {
+  /**
+   * The set of {@link IpProtocol IpProtocols} that can be transformed by {@link
+   * AssignPortFromPool}.
+   */
+  public static final ImmutableSet<IpProtocol> PORT_TRANSFORMATION_PROTOCOLS =
+      ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP);
 
   private static final String PROP_TRANSFORMATION_TYPE = "transformationType";
   private static final String PROP_PORT_FIELD = "portField";

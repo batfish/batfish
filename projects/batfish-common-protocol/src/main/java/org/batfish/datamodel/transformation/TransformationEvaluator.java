@@ -165,6 +165,12 @@ public class TransformationEvaluator {
 
     @Override
     public Boolean visitAssignPortFromPool(AssignPortFromPool step) {
+      if (!AssignPortFromPool.PORT_TRANSFORMATION_PROTOCOLS.contains(
+          _currentFlow.getIpProtocol())) {
+        // noop on protocols without ports
+        noop(step.getType());
+        return false;
+      }
       return set(
           step.getType(), step.getPortField(), get(step.getPortField()), step.getPoolStart());
     }
