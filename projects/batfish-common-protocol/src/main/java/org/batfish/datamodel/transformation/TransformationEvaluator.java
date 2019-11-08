@@ -14,7 +14,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.Evaluator;
@@ -166,7 +165,8 @@ public class TransformationEvaluator {
 
     @Override
     public Boolean visitAssignPortFromPool(AssignPortFromPool step) {
-      if (!IpProtocol.IP_PROTOCOLS_WITH_PORTS.contains(_currentFlow.getIpProtocol())) {
+      if (!AssignPortFromPool.PORT_TRANSFORMATION_PROTOCOLS.contains(
+          _currentFlow.getIpProtocol())) {
         // noop on protocols without ports
         noop(step.getType());
         return false;
