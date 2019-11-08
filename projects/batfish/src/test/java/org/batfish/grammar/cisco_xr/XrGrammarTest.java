@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
@@ -45,6 +46,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -67,6 +69,7 @@ import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
+import org.batfish.representation.cisco_xr.Ipv4AccessList;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.OspfProcess;
@@ -153,6 +156,24 @@ public final class XrGrammarTest {
     Bgpv4Route.Builder builder = route.toBuilder();
     assertTrue(routingPolicy.process(route, builder, Direction.IN));
     return builder.build();
+  }
+
+  @Test
+  public void testAclExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("acl");
+    assertThat(c.getIpv4Acls(), hasKeys("acl"));
+    Ipv4AccessList acl = c.getIpv4Acls().get("acl");
+    // TODO: get the remark line in there too.
+    assertThat(acl.getLines(), hasSize(7));
+  }
+
+  @Test
+  public void testAclConversion() {
+    Configuration c = parseConfig("acl");
+    assertThat(c.getIpAccessLists(), hasKeys("acl"));
+    IpAccessList acl = c.getIpAccessLists().get("acl");
+    // TODO: get the remark line in there too.
+    assertThat(acl.getLines(), hasSize(7));
   }
 
   @Test
