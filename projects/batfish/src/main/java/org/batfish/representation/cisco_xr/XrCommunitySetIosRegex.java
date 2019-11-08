@@ -5,7 +5,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * An element of a {@link CommunitySet} specifying a space of standard communities or standard
- * community attributes via a CiscoXr IOS-style regex.
+ * community attributes via a Cisco IOS-style regex.
  */
 @ParametersAreNonnullByDefault
 public class XrCommunitySetIosRegex implements XrCommunitySetElem {

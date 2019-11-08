@@ -13,15 +13,16 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /** A route-policy statement that sets or appends to the standard community attribute of a route. */
 @ParametersAreNonnullByDefault
-public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
+public final class RoutePolicySetExtcommunityRt extends RoutePolicySetStatement {
 
-  public XrRoutePolicySetCommunity(XrCommunitySetExpr expr, boolean additive) {
+  public RoutePolicySetExtcommunityRt(ExtcommunitySetRtExpr expr, boolean additive) {
     _expr = expr;
     _additive = additive;
   }
@@ -30,7 +31,7 @@ public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
     return _additive;
   }
 
-  public @Nonnull XrCommunitySetExpr getExpr() {
+  public @Nonnull ExtcommunitySetRtExpr getExpr() {
     return _expr;
   }
 
@@ -44,7 +45,7 @@ public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
                     ? CommunitySetUnion.of(InputCommunities.instance(), communitySetExpr)
                     : CommunitySetUnion.of(
                         new CommunitySetDifference(
-                            InputCommunities.instance(), AllStandardCommunities.instance()),
+                            InputCommunities.instance(), RouteTargetExtendedCommunities.instance()),
                         communitySetExpr))
         .<Statement>map(SetCommunities::new)
         .orElse(INVALID);
@@ -53,25 +54,26 @@ public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
   private static final Comment INVALID = new Comment("(invalid community-set expression)");
 
   private static final class XrToViCommunitySetExpr
-      implements XrCommunitySetExprVisitor<Optional<CommunitySetExpr>, Configuration> {
+      implements ExtcommunitySetRtExprVisitor<Optional<CommunitySetExpr>, Configuration> {
     private static final XrToViCommunitySetExpr INSTANCE = new XrToViCommunitySetExpr();
 
     @Override
-    public Optional<CommunitySetExpr> visitCommunitySetReference(
-        XrCommunitySetReference communitySetReference, Configuration arg) {
+    public Optional<CommunitySetExpr> visitExtcommunitySetRtReference(
+        ExtcommunitySetRtReference extcommunitySetRtReference, Configuration arg) {
       // return reference to computed CommunitySetExpr if it exists, else empty Optional.
-      return Optional.of(communitySetReference.getName())
+      return Optional.of(extcommunitySetRtReference.getName())
+          .map(CiscoXrConfiguration::computeExtcommunitySetRtName)
           .filter(arg.getCommunitySetExprs()::containsKey)
           .map(CommunitySetExprReference::new);
     }
 
     @Override
-    public Optional<CommunitySetExpr> visitInlineCommunitySet(
-        XrInlineCommunitySet inlineCommunitySet, Configuration arg) {
-      return Optional.of(toCommunitySetExpr(inlineCommunitySet.getCommunitySet(), arg));
+    public Optional<CommunitySetExpr> visitInlineExtcommunitySetRt(
+        InlineExtcommunitySetRt inlineExtcommunitySetRt, Configuration arg) {
+      return Optional.of(toCommunitySetExpr(inlineExtcommunitySetRt.getExtcommunitySetRt(), arg));
     }
   }
 
   private final boolean _additive;
-  private final XrCommunitySetExpr _expr;
+  private final ExtcommunitySetRtExpr _expr;
 }

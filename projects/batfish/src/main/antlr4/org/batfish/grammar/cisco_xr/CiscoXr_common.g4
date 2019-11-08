@@ -641,6 +641,11 @@ switchport_trunk_encapsulation
    | NEGOTIATE
 ;
 
+uint16
+:
+  d = DEC {isUint16($d)}?
+;
+
 uint32
 :
   DEC

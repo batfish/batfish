@@ -4196,6 +4196,21 @@ EXPANDED
    'expanded'
 ;
 
+EXTCOMMUNITY
+:
+   'extcommunity'
+   {
+     if (lastTokenType() == SET) {
+       pushMode(M_Extcommunity);
+     }
+   }
+;
+
+EXTCOMMUNITY_SET
+:
+  'extcommunity-set'
+;
+
 EXTEND
 :
    'extend'
@@ -14517,7 +14532,7 @@ M_ExtCommunity_NEWLINE
 
 M_Extcommunity_RT
 :
-   'rt' -> type ( RT )
+   'rt' -> type ( RT ), pushMode(M_Name)
 ;
 
 M_Extcommunity_WS

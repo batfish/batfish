@@ -7,8 +7,10 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLis
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -28,7 +30,13 @@ import java.util.Arrays;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -43,6 +51,7 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -54,7 +63,12 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetExprEvaluato
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.OspfProcess;
+import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
+import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
+import org.batfish.representation.cisco_xr.LiteralUint16;
+import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -99,6 +113,25 @@ public final class XrGrammarTest {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private @Nonnull CiscoXrConfiguration parseVendorConfig(String hostname) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
+    CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(src, settings);
+    CiscoXrControlPlaneExtractor extractor =
+        new CiscoXrControlPlaneExtractor(
+            src, ciscoXrParser, ConfigurationFormat.CISCO_IOS_XR, new Warnings());
+    ParserRuleContext tree =
+        Batfish.parse(
+            ciscoXrParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    CiscoXrConfiguration vendorConfiguration =
+        (CiscoXrConfiguration) extractor.getVendorConfiguration();
+    vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
+    // crash if not serializable
+    return SerializationUtils.clone(vendorConfiguration);
   }
 
   private static void assertRoutingPolicyDeniesRoute(
@@ -321,9 +354,14 @@ public final class XrGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("setmixed");
       Bgpv4Route inRoute =
-          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(9, 9))).build();
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(9, 9), ExtendedCommunity.target(1L, 1L)))
+              .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(route.getCommunities(), containsInAnyOrder(StandardCommunity.of(1, 2)));
+      assertThat(
+          route.getCommunities(),
+          containsInAnyOrder(StandardCommunity.of(1, 2), ExtendedCommunity.target(1L, 1L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("setmixedadditive");
@@ -386,6 +424,150 @@ public final class XrGrammarTest {
           route.getCommunities(),
           containsInAnyOrder(
               StandardCommunity.of(1, 1), StandardCommunity.of(WellKnownCommunity.INTERNET)));
+    }
+  }
+
+  @Test
+  public void testExtcommunitySetRtConversion() throws IOException {
+    Configuration c = parseConfig("ios-xr-extcommunity-set-rt");
+    CommunityContext ctx = CommunityContext.builder().build();
+
+    // Test CommunityMatchExprs
+    assertThat(c.getCommunityMatchExprs(), hasKeys(computeExtcommunitySetRtName("rt1")));
+    {
+      CommunityMatchExpr expr = c.getCommunityMatchExprs().get(computeExtcommunitySetRtName("rt1"));
+      assertTrue(
+          expr.accept(ctx.getCommunityMatchExprEvaluator(), ExtendedCommunity.target(1234L, 56L)));
+      assertTrue(
+          expr.accept(ctx.getCommunityMatchExprEvaluator(), ExtendedCommunity.target(1234L, 57L)));
+      assertFalse(
+          expr.accept(ctx.getCommunityMatchExprEvaluator(), ExtendedCommunity.target(1234L, 0L)));
+      assertFalse(
+          expr.accept(ctx.getCommunityMatchExprEvaluator(), StandardCommunity.of(1234, 56)));
+    }
+
+    // Test CommunitySetExprs
+    assertThat(c.getCommunitySetExprs(), hasKeys(computeExtcommunitySetRtName("rt1")));
+    {
+      CommunitySetExpr expr = c.getCommunitySetExprs().get(computeExtcommunitySetRtName("rt1"));
+      assertThat(
+          expr.accept(CommunitySetExprEvaluator.instance(), ctx),
+          equalTo(
+              CommunitySet.of(
+                  ExtendedCommunity.target(1234L, 56L), ExtendedCommunity.target(1234L, 57L))));
+    }
+
+    // Test CommunitySetMatchExprs
+    assertThat(
+        c.getCommunitySetMatchExprs(),
+        hasKeys(
+            computeCommunitySetMatchAnyName(computeExtcommunitySetRtName("rt1")),
+            computeCommunitySetMatchEveryName(computeExtcommunitySetRtName("rt1"))));
+    {
+      CommunitySetMatchExpr expr =
+          c.getCommunitySetMatchExprs()
+              .get(computeCommunitySetMatchAnyName(computeExtcommunitySetRtName("rt1")));
+      assertTrue(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(ExtendedCommunity.target(1234L, 56L))));
+      assertTrue(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(ExtendedCommunity.target(1234L, 57L))));
+      assertTrue(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(
+                  ExtendedCommunity.target(1234L, 56L), ExtendedCommunity.target(1234L, 57L))));
+      assertTrue(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(
+                  ExtendedCommunity.target(1234L, 56L),
+                  ExtendedCommunity.target(1234L, 57L),
+                  ExtendedCommunity.target(1234L, 58L))));
+      assertFalse(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(ExtendedCommunity.target(1L, 1L))));
+      assertFalse(expr.accept(ctx.getCommunitySetMatchExprEvaluator(), CommunitySet.of()));
+    }
+    {
+      CommunitySetMatchExpr expr =
+          c.getCommunitySetMatchExprs()
+              .get(computeCommunitySetMatchEveryName(computeExtcommunitySetRtName("rt1")));
+      assertFalse(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(ExtendedCommunity.target(1234L, 56L))));
+      assertFalse(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(ExtendedCommunity.target(1234L, 57L))));
+      assertTrue(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(
+                  ExtendedCommunity.target(1234L, 56L), ExtendedCommunity.target(1234L, 57L))));
+      assertTrue(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(
+                  ExtendedCommunity.target(1234L, 56L),
+                  ExtendedCommunity.target(1234L, 57L),
+                  ExtendedCommunity.target(1234L, 58L))));
+      assertFalse(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(ExtendedCommunity.target(1L, 1L))));
+      assertFalse(expr.accept(ctx.getCommunitySetMatchExprEvaluator(), CommunitySet.of()));
+    }
+
+    // Test route-policy match and set
+    assertThat(c.getRoutingPolicies(), hasKeys("set-rt1"));
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.ZERO)
+            .setTag(0L)
+            .build();
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set-rt1");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(9, 9), ExtendedCommunity.target(1L, 2L)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities(),
+          containsInAnyOrder(
+              StandardCommunity.of(9, 9),
+              ExtendedCommunity.target(1234L, 56L),
+              ExtendedCommunity.target(1234L, 57L)));
+    }
+  }
+
+  @Test
+  public void testExtcommunitySetRtExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("ios-xr-extcommunity-set-rt");
+
+    assertThat(c.getExtcommunitySetRts(), hasKeys("rt1"));
+    {
+      ExtcommunitySetRt set = c.getExtcommunitySetRts().get("rt1");
+      assertThat(
+          set.getElements(),
+          contains(
+              new ExtcommunitySetRtElemAsColon(
+                  new LiteralUint32(1234L), new LiteralUint16(56)),
+              new ExtcommunitySetRtElemAsColon(
+                  new LiteralUint32(1234L), new LiteralUint16(57))));
     }
   }
 

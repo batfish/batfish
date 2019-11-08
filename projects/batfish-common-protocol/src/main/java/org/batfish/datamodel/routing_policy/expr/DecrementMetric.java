@@ -15,6 +15,11 @@ public class DecrementMetric extends LongExpr {
   }
 
   @Override
+  public <T, U> T accept(LongExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitDecrementMetric(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

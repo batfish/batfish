@@ -5,14 +5,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.SubRange;
 
 @ParametersAreNonnullByDefault
-public class XrLiteralUint16Range implements XrUint16RangeExpr {
+public class LiteralUint16Range implements Uint16RangeExpr {
 
-  public XrLiteralUint16Range(SubRange range) {
+  public LiteralUint16Range(SubRange range) {
     _range = range;
   }
 
   @Override
-  public <T, U> T accept(XrUint16RangeExprVisitor<T, U> visitor, U arg) {
+  public <T, U> T accept(Uint16RangeExprVisitor<T, U> visitor, U arg) {
     return visitor.visitLiteralUint16Range(this, arg);
   }
 
