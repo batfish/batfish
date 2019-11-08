@@ -17,16 +17,10 @@ public final class CommunityExprEvaluator
 
   @Override
   public Community visitRouteTargetExtendedCommunityExpr(
-      RouteTargetExtendedCommunityExpr routeTargetExtendedCommunityExpr,
-      CommunityContext arg) {
+      RouteTargetExtendedCommunityExpr routeTargetExtendedCommunityExpr, CommunityContext arg) {
     long ga =
-        routeTargetExtendedCommunityExpr
-            .getGaExpr()
-            .accept(LongExprEvaluator.instance(), null);
-    int la =
-        routeTargetExtendedCommunityExpr
-            .getLaExpr()
-            .accept(IntExprEvaluator.instance(), null);
+        routeTargetExtendedCommunityExpr.getGaExpr().accept(LongExprEvaluator.instance(), null);
+    int la = routeTargetExtendedCommunityExpr.getLaExpr().accept(IntExprEvaluator.instance(), null);
     return ExtendedCommunity.target(ga, la);
   }
 

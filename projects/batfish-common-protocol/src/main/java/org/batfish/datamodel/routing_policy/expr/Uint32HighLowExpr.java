@@ -74,5 +74,4 @@ public final class Uint32HighLowExpr extends LongExpr {
 
   private final @Nonnull IntExpr _highExpr;
   private final @Nonnull IntExpr _lowExpr;
-
 }

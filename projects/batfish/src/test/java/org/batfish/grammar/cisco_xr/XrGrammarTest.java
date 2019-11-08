@@ -64,11 +64,11 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
-import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint32;
+import org.batfish.representation.cisco_xr.OspfProcess;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -564,10 +564,8 @@ public final class XrGrammarTest {
       assertThat(
           set.getElements(),
           contains(
-              new ExtcommunitySetRtElemAsColon(
-                  new LiteralUint32(1234L), new LiteralUint16(56)),
-              new ExtcommunitySetRtElemAsColon(
-                  new LiteralUint32(1234L), new LiteralUint16(57))));
+              new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint16(56)),
+              new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint16(57))));
     }
   }
 
