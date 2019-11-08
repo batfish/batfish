@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IpProtocol;
@@ -33,5 +34,14 @@ public final class BDDIpProtocol {
   /** @return the {@link BDDInteger} backing this. */
   public BDDInteger getBDDInteger() {
     return _var;
+  }
+
+  /** @return the {@link BDD} representation of {@link IpProtocol#IP_PROTOCOLS_WITH_PORTS}. */
+  public BDD getIpProtocolsWithPortsBdd() {
+    return new BDDOps(_var.getFactory())
+        .orAll(
+            IpProtocol.IP_PROTOCOLS_WITH_PORTS.stream()
+                .map(this::value)
+                .collect(Collectors.toList()));
   }
 }
