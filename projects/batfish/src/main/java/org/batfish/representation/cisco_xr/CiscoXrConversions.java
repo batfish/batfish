@@ -17,6 +17,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computePr
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -1052,10 +1053,10 @@ public class CiscoXrConversions {
     return ikePhase1Proposal;
   }
 
-  static Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
+  static Ip6AccessList toIp6AccessList(Ipv6AccessList eaList) {
     String name = eaList.getName();
     List<Ip6AccessListLine> lines = new ArrayList<>();
-    for (ExtendedIpv6AccessListLine fromLine : eaList.getLines()) {
+    for (Ipv6AccessListLine fromLine : eaList.getLines()) {
       Ip6AccessListLine newLine = new Ip6AccessListLine();
       newLine.setName(fromLine.getName());
       newLine.setAction(fromLine.getAction());
@@ -1092,22 +1093,17 @@ public class CiscoXrConversions {
     return new Ip6AccessList(name, lines);
   }
 
-  static IpAccessList toIpAccessList(
-      ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
+  static IpAccessList toIpAccessList(Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups) {
     List<IpAccessListLine> lines =
         eaList.getLines().stream()
             .map(l -> toIpAccessListLine(l, objectGroups))
             .collect(ImmutableList.toImmutableList());
-    String sourceType =
-        eaList.getParent() != null
-            ? CiscoXrStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
-            : CiscoXrStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
     String name = eaList.getName();
     return IpAccessList.builder()
         .setName(name)
         .setLines(lines)
         .setSourceName(name)
-        .setSourceType(sourceType)
+        .setSourceType(IPV4_ACCESS_LIST.getDescription())
         .build();
   }
 
@@ -1601,20 +1597,12 @@ public class CiscoXrConversions {
     return new Route6FilterList(list.getName(), lines);
   }
 
-  static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
+  static RouteFilterList toRouteFilterList(Ipv4AccessList eaList) {
     List<RouteFilterLine> lines =
         eaList.getLines().stream()
             .map(CiscoXrConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(eaList.getName(), lines);
-  }
-
-  static RouteFilterList toRouteFilterList(StandardAccessList saList) {
-    List<RouteFilterLine> lines =
-        saList.getLines().stream()
-            .map(CiscoXrConversions::toRouteFilterLine)
-            .collect(ImmutableList.toImmutableList());
-    return new RouteFilterList(saList.getName(), lines);
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list) {
@@ -1804,7 +1792,7 @@ public class CiscoXrConversions {
       @Nonnull DistributeList distributeList,
       @Nonnull CiscoXrConfiguration vsConfig) {
     if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
-        && vsConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
+        && vsConfig.getIpv4Acls().containsKey(distributeList.getFilterName())) {
       vsConfig
           .getWarnings()
           .redFlag(
@@ -1840,7 +1828,7 @@ public class CiscoXrConversions {
   }
 
   private static IpAccessListLine toIpAccessListLine(
-      ExtendedAccessListLine line, Map<String, ObjectGroup> objectGroups) {
+      Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
     AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr(objectGroups);
@@ -1876,7 +1864,7 @@ public class CiscoXrConversions {
     return line;
   }
 
-  private static RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
+  private static RouteFilterLine toRouteFilterLine(Ipv4AccessListLine fromLine) {
     LineAction action = fromLine.getAction();
     IpWildcard srcIpWildcard =
         ((WildcardAddressSpecifier) fromLine.getSourceAddressSpecifier()).getIpWildcard();
@@ -1892,23 +1880,6 @@ public class CiscoXrConversions {
     Prefix prefix = Prefix.create(ip, prefixLength);
     return new RouteFilterLine(
         action, IpWildcard.create(prefix), new SubRange(minPrefixLength, maxPrefixLength));
-  }
-
-  /** Convert a standard access list line to a route filter list line */
-  private static RouteFilterLine toRouteFilterLine(StandardAccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    /*
-     * This cast is safe since the other address specifier (network object group specifier)
-     * can be used only from extended ACLs.
-     */
-    IpWildcard srcIpWildcard =
-        ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
-    Prefix prefix = srcIpWildcard.toPrefix();
-
-    return new RouteFilterLine(
-        action,
-        IpWildcard.create(prefix),
-        new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
   }
 
   /**

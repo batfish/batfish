@@ -31,6 +31,57 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+
+cisco_xr_configuration
+:
+  (
+    statement
+    | stanza
+    | NEWLINE
+  )+
+  EOF
+;
+
+// statement is for rewritten top-level rules. stanza is for old ones.
+statement
+:
+  s_ipv4
+  | s_ipv6
+  | s_no
+;
+
+s_ipv4
+:
+  IPV4 ipv4_access_list
+;
+
+s_ipv6
+:
+  IPV6 ipv6_access_list
+;
+
+s_no
+:
+  NO
+  (
+    no_ipv4
+    | no_ipv6
+  )
+;
+
+no_ipv4
+:
+  IPV4 no_ipv4_access_list
+;
+
+no_ipv6
+:
+  IPV6 no_ipv6_access_list
+;
+
+////////////////////////////////////////////////////////////////////////////////////
+
 address_aiimgp_stanza
 :
    ADDRESS null_rest_of_line
@@ -225,14 +276,6 @@ bfd_template_null
     ECHO
     | INTERVAL
   ) null_rest_of_line
-;
-
-cisco_xr_configuration
-:
-   NEWLINE?
-   (
-      sl += stanza
-   )+ COLON? NEWLINE? EOF
 ;
 
 configure_maintenance
@@ -1754,11 +1797,6 @@ no_failover
    NO FAILOVER NEWLINE
 ;
 
-no_ip_access_list_stanza
-:
-   NO IP ACCESS_LIST null_rest_of_line
-;
-
 null_af_multicast_tail
 :
    NSF NEWLINE
@@ -2732,16 +2770,6 @@ s_name
    NAME variable variable null_rest_of_line
 ;
 
-s_no_access_list_extended
-:
-   NO ACCESS_LIST ACL_NUM_EXTENDED NEWLINE
-;
-
-s_no_access_list_standard
-:
-   NO ACCESS_LIST ACL_NUM_STANDARD NEWLINE
-;
-
 s_no_bfd
 :
    NO BFD null_rest_of_line
@@ -3430,14 +3458,13 @@ ssh_timeout
    TIMEOUT DEC NEWLINE
 ;
 
+// old top-level rules (from hybrid cisco parser)
 stanza
 :
    appletalk_access_list_stanza
    | as_path_set_stanza
    | community_set_stanza
    | del_stanza
-   | extended_access_list_stanza
-   | extended_ipv6_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_prefix_list_stanza
    | ip_route_stanza
@@ -3446,7 +3473,6 @@ stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
    | no_failover
-   | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | prefix_set_stanza
    | protocol_type_code_access_list_stanza
@@ -3553,8 +3579,6 @@ stanza
    | s_netdestination
    | s_netdestination6
    | s_netservice
-   | s_no_access_list_extended
-   | s_no_access_list_standard
    | s_no_bfd
    | s_no_enable
    | s_ntp
@@ -3624,8 +3648,6 @@ stanza
    | s_wsma
    | s_xconnect_logging
    | srlg_stanza
-   | standard_access_list_stanza
-   | standard_ipv6_access_list_stanza
    | switching_mode_stanza
 ;
 

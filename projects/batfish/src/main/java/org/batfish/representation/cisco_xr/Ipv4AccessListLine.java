@@ -7,7 +7,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.LineAction;
 
-public class ExtendedAccessListLine implements Serializable {
+public class Ipv4AccessListLine implements Serializable {
 
   public static class Builder {
 
@@ -23,8 +23,8 @@ public class ExtendedAccessListLine implements Serializable {
 
     private Builder() {}
 
-    public ExtendedAccessListLine build() {
-      return new ExtendedAccessListLine(this);
+    public Ipv4AccessListLine build() {
+      return new Ipv4AccessListLine(this);
     }
 
     public Builder setAction(@Nonnull LineAction action) {
@@ -67,7 +67,7 @@ public class ExtendedAccessListLine implements Serializable {
 
   private final AccessListAddressSpecifier _srcAddressSpecifier;
 
-  private ExtendedAccessListLine(Builder builder) {
+  private Ipv4AccessListLine(Builder builder) {
     _action = requireNonNull(builder._action);
     _dstAddressSpecifier = requireNonNull(builder._dstAddressSpecifier);
     _name = requireNonNull(builder._name);

@@ -6,6 +6,34 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
+ipv4_access_list
+:
+  ACCESS_LIST name = variable_aclname NEWLINE
+  (
+    extended_access_list_tail
+    | extended_access_list_null_tail
+  )*
+;
+
+ipv6_access_list
+:
+  ACCESS_LIST name = variable_aclname NEWLINE
+  (
+    extended_ipv6_access_list_tail
+    | extended_access_list_null_tail
+  )*
+;
+
+no_ipv4_access_list
+:
+  ACCESS_LIST name = variable_aclname NEWLINE
+;
+
+no_ipv6_access_list
+:
+  ACCESS_LIST name = variable_aclname NEWLINE
+;
+
 access_list_ip_range
 :
    (
@@ -256,48 +284,6 @@ extended_access_list_null_tail
    ) null_rest_of_line
 ;
 
-extended_access_list_stanza
-:
-   (
-      (
-         IP ACCESS_LIST EXTENDED name = variable_aclname
-      )
-      |
-      (
-         ACCESS_LIST num = ACL_NUM_EXTENDED
-      )
-      |
-      (
-         (
-            IP
-            | IPV4
-         ) ACCESS_LIST
-         (
-            shortname = variable
-            | name = variable_aclname
-         )
-      )
-      |
-      (
-         ACCESS_LIST name = variable_aclname EXTENDED
-      )
-   )
-   (
-      (
-         NEWLINE
-         (
-            extended_access_list_tail
-            | extended_access_list_null_tail
-         )*
-      )
-      |
-      (
-         extended_access_list_tail
-         | extended_access_list_null_tail
-      )
-   ) exit_line?
-;
-
 extended_access_list_tail
 :
    (
@@ -329,25 +315,6 @@ extended_access_list_tail
    (
       SEQUENCE num = DEC
    )? NEWLINE
-;
-
-extended_ipv6_access_list_stanza
-:
-   IPV6 ACCESS_LIST EXTENDED? name = variable_permissive
-   (
-      (
-         NEWLINE
-         (
-            extended_ipv6_access_list_tail
-            | extended_access_list_null_tail
-         )*
-      )
-      |
-      (
-         extended_ipv6_access_list_tail
-         | extended_access_list_null_tail
-      )
-   ) exit_line?
 ;
 
 extended_ipv6_access_list_tail
@@ -811,112 +778,6 @@ s_netservice
    (
       ALG alg = netservice_alg
    )? NEWLINE
-;
-
-standard_access_list_additional_feature
-:
-   (
-      DSCP dscp_type
-   )
-   |
-   (
-      ECN ecn = DEC
-   )
-   | LOG
-;
-
-standard_access_list_null_tail
-:
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = DEC
-   )?
-   (
-      REMARK
-      | STATISTICS
-   ) null_rest_of_line
-;
-
-standard_access_list_stanza
-:
-   (
-      (
-         IP ACCESS_LIST STANDARD name = variable_aclname
-      )
-      |
-      (
-         ACCESS_LIST num = ACL_NUM_STANDARD
-      )
-      |
-      (
-         ACCESS_LIST name = variable_aclname STANDARD
-      )
-   )
-   (
-      (
-         NEWLINE
-         (
-            standard_access_list_tail
-            | standard_access_list_null_tail
-         )*
-      )
-      |
-      (
-         (
-            standard_access_list_tail
-            | standard_access_list_null_tail
-         )
-      )
-   )
-;
-
-standard_ipv6_access_list_stanza
-:
-   IPV6 ACCESS_LIST STANDARD name = variable
-   (
-      (
-         NEWLINE
-         (
-            standard_ipv6_access_list_tail
-            | standard_access_list_null_tail
-         )*
-      )
-      |
-      (
-         (
-            standard_ipv6_access_list_tail
-            | standard_access_list_null_tail
-         )
-      )
-   )
-;
-
-standard_access_list_tail
-:
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = DEC
-   )? ala = access_list_action ipr = access_list_ip_range
-   (
-      features += standard_access_list_additional_feature
-   )* NEWLINE
-;
-
-standard_ipv6_access_list_tail
-:
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = DEC
-   )? ala = access_list_action ipr = access_list_ip6_range
-   (
-      features += standard_access_list_additional_feature
-   )* NEWLINE
 ;
 
 variable_community_list
