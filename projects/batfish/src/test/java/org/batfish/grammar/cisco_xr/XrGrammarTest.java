@@ -46,6 +46,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -70,6 +71,7 @@ import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
 import org.batfish.representation.cisco_xr.Ipv4AccessList;
+import org.batfish.representation.cisco_xr.Ipv6AccessList;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.OspfProcess;
@@ -165,6 +167,11 @@ public final class XrGrammarTest {
     Ipv4AccessList acl = c.getIpv4Acls().get("acl");
     // TODO: get the remark line in there too.
     assertThat(acl.getLines(), hasSize(7));
+
+    assertThat(c.getIpv6Acls(), hasKeys("aclv6"));
+    Ipv6AccessList aclv6 = c.getIpv6Acls().get("aclv6");
+    // TODO: get the remark line in there too.
+    assertThat(aclv6.getLines(), hasSize(4));
   }
 
   @Test
@@ -174,6 +181,11 @@ public final class XrGrammarTest {
     IpAccessList acl = c.getIpAccessLists().get("acl");
     // TODO: get the remark line in there too.
     assertThat(acl.getLines(), hasSize(7));
+
+    assertThat(c.getIp6AccessLists(), hasKeys("aclv6"));
+    Ip6AccessList aclv6 = c.getIp6AccessLists().get("aclv6");
+    // TODO: get the remark line in there too.
+    assertThat(aclv6.getLines(), hasSize(4));
   }
 
   @Test

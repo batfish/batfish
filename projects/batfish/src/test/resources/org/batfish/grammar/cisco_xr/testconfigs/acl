@@ -12,3 +12,10 @@ ipv4 access-list acl
  70 deny udp 5.5.5.5/32 any eq domain
  80 permit udp 6.6.6.0/23 any eq 9999
 !
+ipv6 access-list aclv6
+ 10 remark Some remark
+ 20 permit tcp any 1111:1111:1111:1111::/64 eq 8080
+ 30 permit tcp any 1111:1111:1111:1111::/64 eq www
+ 40 permit udp 1111:1111::/32 2222:2222:2222:2222::/64 eq 8080
+ 50 permit icmpv6 any fe80::/10
+!
