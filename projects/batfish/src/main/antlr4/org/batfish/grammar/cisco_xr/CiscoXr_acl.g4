@@ -8,20 +8,30 @@ options {
 
 ipv4_access_list
 :
-   ACCESS_LIST name = variable_aclname NEWLINE
-   (
-      extended_access_list_tail
-      | extended_access_list_null_tail
-   )*
+  ACCESS_LIST name = variable_aclname NEWLINE
+  (
+    extended_access_list_tail
+    | extended_access_list_null_tail
+  )*
 ;
 
 ipv6_access_list
 :
-   ACCESS_LIST name = variable_aclname NEWLINE
-   (
-      extended_ipv6_access_list_tail
-      | extended_access_list_null_tail
-   )*
+  ACCESS_LIST name = variable_aclname NEWLINE
+  (
+    extended_ipv6_access_list_tail
+    | extended_access_list_null_tail
+  )*
+;
+
+no_ipv4_access_list
+:
+  ACCESS_LIST name = variable_aclname NEWLINE
+;
+
+no_ipv6_access_list
+:
+  ACCESS_LIST name = variable_aclname NEWLINE
 ;
 
 access_list_ip_range

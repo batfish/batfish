@@ -19,3 +19,9 @@ ipv6 access-list aclv6
  40 permit udp 1111:1111::/32 2222:2222:2222:2222::/64 eq 8080
  50 permit icmpv6 any fe80::/10
 !
+!
+! test no:
+ipv4 access-list acl2
+no ipv4 access-list acl2
+ipv6 access-list acl62
+no ipv6 access-list acl62

@@ -35,35 +35,49 @@ options {
 
 cisco_xr_configuration
 :
-   (
-      statement
-      | stanza
-      | NEWLINE
-   )+
-   EOF
+  (
+    statement
+    | stanza
+    | NEWLINE
+  )+
+  EOF
 ;
 
 // statement is for rewritten top-level rules. stanza is for old ones.
 statement
 :
-   s_ipv4
-   | s_ipv6
-   | s_no
+  s_ipv4
+  | s_ipv6
+  | s_no
 ;
 
 s_ipv4
 :
-    IPV4 ipv4_access_list
+  IPV4 ipv4_access_list
 ;
 
 s_ipv6
 :
-    IPV6 ipv6_access_list
+  IPV6 ipv6_access_list
 ;
 
 s_no
 :
-    NO NEWLINE
+  NO
+  (
+    no_ipv4
+    | no_ipv6
+  )
+;
+
+no_ipv4
+:
+  IPV4 no_ipv4_access_list
+;
+
+no_ipv6
+:
+  IPV6 no_ipv6_access_list
 ;
 
 ////////////////////////////////////////////////////////////////////////////////////

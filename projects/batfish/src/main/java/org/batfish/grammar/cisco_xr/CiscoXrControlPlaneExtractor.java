@@ -594,6 +594,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Network6_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Network_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Next_hop_self_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.No_ip_prefix_list_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.No_ipv4_access_listContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.No_ipv6_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.No_neighbor_activate_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.No_neighbor_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.No_redistribute_connected_rb_stanzaContext;
@@ -2207,6 +2209,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     IsisProcess proc = currentVrf().getIsisProcess();
     IsoAddress isoAddress = new IsoAddress(ctx.ISO_ADDRESS().getText());
     proc.setNetAddress(isoAddress);
+  }
+
+  @Override
+  public void exitNo_ipv4_access_list(No_ipv4_access_listContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.getIpv4Acls().remove(name);
+  }
+
+  @Override
+  public void exitNo_ipv6_access_list(No_ipv6_access_listContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.getIpv6Acls().remove(name);
   }
 
   @Override
