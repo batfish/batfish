@@ -16,6 +16,11 @@ public class IncrementLocalPreference extends LongExpr {
   }
 
   @Override
+  public <T, U> T accept(LongExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitIncrementLocalPreference(this, arg);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
