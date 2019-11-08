@@ -2,7 +2,6 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IpProtocol;

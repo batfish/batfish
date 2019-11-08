@@ -16,7 +16,8 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
  */
 public class AssignPortFromPool implements TransformationStep, Serializable {
   /**
-   * The set of {@link IpProtocol IpProtocols} that can be transformed by {@link AssignPortFromPool}.
+   * The set of {@link IpProtocol IpProtocols} that can be transformed by {@link
+   * AssignPortFromPool}.
    */
   public static final ImmutableSet<IpProtocol> PORT_TRANSFORMATION_PROTOCOLS =
       ImmutableSet.of(IpProtocol.TCP, IpProtocol.UDP);
