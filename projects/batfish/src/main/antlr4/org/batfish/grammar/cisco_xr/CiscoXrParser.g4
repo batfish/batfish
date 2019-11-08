@@ -46,12 +46,18 @@ cisco_xr_configuration
 statement
 :
    s_ipv4
+   | s_ipv6
    | s_no
 ;
 
 s_ipv4
 :
     IPV4 ipv4_access_list
+;
+
+s_ipv6
+:
+    IPV6 ipv6_access_list
 ;
 
 s_no
@@ -1776,11 +1782,6 @@ no_failover
    NO FAILOVER NEWLINE
 ;
 
-no_ip_access_list_stanza
-:
-   NO IP ACCESS_LIST null_rest_of_line
-;
-
 null_af_multicast_tail
 :
    NSF NEWLINE
@@ -3449,7 +3450,6 @@ stanza
    | as_path_set_stanza
    | community_set_stanza
    | del_stanza
-   | extended_ipv6_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_prefix_list_stanza
    | ip_route_stanza
@@ -3458,7 +3458,6 @@ stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
    | no_failover
-   | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | prefix_set_stanza
    | protocol_type_code_access_list_stanza
@@ -3633,7 +3632,6 @@ stanza
    | s_wsma
    | s_xconnect_logging
    | srlg_stanza
-   | standard_ipv6_access_list_stanza
    | switching_mode_stanza
 ;
 

@@ -847,10 +847,10 @@ public class CiscoXrConversions {
     return ikePhase1Proposal;
   }
 
-  static Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
+  static Ip6AccessList toIp6AccessList(Ipv6AccessList eaList) {
     String name = eaList.getName();
     List<Ip6AccessListLine> lines = new ArrayList<>();
-    for (ExtendedIpv6AccessListLine fromLine : eaList.getLines()) {
+    for (Ipv6AccessListLine fromLine : eaList.getLines()) {
       Ip6AccessListLine newLine = new Ip6AccessListLine();
       newLine.setName(fromLine.getName());
       newLine.setAction(fromLine.getAction());

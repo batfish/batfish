@@ -363,10 +363,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private String _domainName;
 
-  private final Map<String, Ipv4AccessList> _ipv4Acls;
-
-  private final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
-
   private boolean _failover;
 
   private String _failoverCommunicationInterface;
@@ -396,6 +392,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private final Map<String, IpsecProfile> _ipsecProfiles;
 
   private final Map<String, IpsecTransformSet> _ipsecTransformSets;
+
+  private final Map<String, Ipv4AccessList> _ipv4Acls;
+
+  private final Map<String, Ipv6AccessList> _ipv6Acls;
 
   private final List<IsakmpKey> _isakmpKeys;
 
@@ -437,8 +437,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private boolean _spanningTreePortfastDefault;
 
-  private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
-
   private NavigableSet<String> _tacacsServers;
 
   private String _tacacsSourceInterface;
@@ -464,7 +462,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
     _ipv4Acls = new TreeMap<>();
-    _extendedIpv6AccessLists = new TreeMap<>();
+    _ipv6Acls = new TreeMap<>();
     _failoverInterfaces = new TreeMap<>();
     _failoverPrimaryAddresses = new TreeMap<>();
     _failoverStandbyAddresses = new TreeMap<>();
@@ -490,7 +488,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _routePolicies = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
     _serviceObjects = new TreeMap<>();
-    _standardIpv6AccessLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
     _vrfs = new TreeMap<>();
@@ -622,8 +619,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _ipv4Acls;
   }
 
-  public Map<String, ExtendedIpv6AccessList> getExtendedIpv6Acls() {
-    return _extendedIpv6AccessLists;
+  public Map<String, Ipv6AccessList> getIpv6Acls() {
+    return _ipv6Acls;
   }
 
   public boolean getFailover() {
@@ -729,10 +726,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public boolean getSpanningTreePortfastDefault() {
     return _spanningTreePortfastDefault;
-  }
-
-  public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
-    return _standardIpv6AccessLists;
   }
 
   public NavigableSet<String> getTacacsServers() {
@@ -2173,16 +2166,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             c.getIpAccessLists()
                 .put(computeServiceObjectAclName(name), toIpAccessList(serviceObject)));
 
-    // convert standard/extended ipv6 access lists to ipv6 access lists or
-    // route6 filter
-    // lists
-    for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
-      c.getIp6AccessLists()
-          .put(
-              saList.getName(),
-              CiscoXrConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
-    }
-    for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
+    // convert IPv6 access lists to ipv6 access lists route6 filter lists
+    for (Ipv6AccessList eaList : _ipv6Acls.values()) {
       Ip6AccessList ipaList = CiscoXrConversions.toIp6AccessList(eaList);
       c.getIp6AccessLists().put(ipaList.getName(), ipaList);
     }

@@ -462,7 +462,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Empty_neighbor_block_address_f
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Enable_secretContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Failover_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Failover_linkContext;
@@ -554,6 +553,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_ssh_versionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_authenticationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_encryptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_access_listContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Is_type_is_stanzaContext;
@@ -813,9 +813,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssc_access_controlContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssc_use_ipv4_aclContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssh_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssh_serverContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standard_access_list_additional_featureContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standard_ipv6_access_list_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standard_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_authenticationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_ipContext;
@@ -881,8 +878,6 @@ import org.batfish.representation.cisco_xr.DynamicIpBgpPeerGroup;
 import org.batfish.representation.cisco_xr.DynamicIpv6BgpPeerGroup;
 import org.batfish.representation.cisco_xr.EigrpProcess;
 import org.batfish.representation.cisco_xr.EigrpRedistributionPolicy;
-import org.batfish.representation.cisco_xr.ExtendedIpv6AccessList;
-import org.batfish.representation.cisco_xr.ExtendedIpv6AccessListLine;
 import org.batfish.representation.cisco_xr.FqdnNetworkObject;
 import org.batfish.representation.cisco_xr.HostNetworkObject;
 import org.batfish.representation.cisco_xr.HsrpGroup;
@@ -903,6 +898,8 @@ import org.batfish.representation.cisco_xr.IpsecProfile;
 import org.batfish.representation.cisco_xr.IpsecTransformSet;
 import org.batfish.representation.cisco_xr.Ipv4AccessList;
 import org.batfish.representation.cisco_xr.Ipv4AccessListLine;
+import org.batfish.representation.cisco_xr.Ipv6AccessList;
+import org.batfish.representation.cisco_xr.Ipv6AccessListLine;
 import org.batfish.representation.cisco_xr.Ipv6BgpPeerGroup;
 import org.batfish.representation.cisco_xr.IsakmpKey;
 import org.batfish.representation.cisco_xr.IsakmpPolicy;
@@ -992,8 +989,6 @@ import org.batfish.representation.cisco_xr.ServiceObjectGroupReferenceServiceObj
 import org.batfish.representation.cisco_xr.ServiceObjectReferenceServiceObjectGroupLine;
 import org.batfish.representation.cisco_xr.ServiceObjectServiceSpecifier;
 import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
-import org.batfish.representation.cisco_xr.StandardIpv6AccessList;
-import org.batfish.representation.cisco_xr.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco_xr.StaticRoute;
 import org.batfish.representation.cisco_xr.StubSettings;
 import org.batfish.representation.cisco_xr.SubnetNetworkObject;
@@ -1186,11 +1181,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
-  private ExtendedIpv6AccessList _currentExtendedIpv6Acl;
-
   private List<Interface> _currentInterfaces;
 
   private Ipv4AccessList _currentIpv4Acl;
+
+  private Ipv6AccessList _currentIpv6Acl;
 
   private IsakmpPolicy _currentIsakmpPolicy;
 
@@ -1243,8 +1238,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @SuppressWarnings("unused")
   private SnmpHost _currentSnmpHost;
-
-  private StandardIpv6AccessList _currentStandardIpv6Acl;
 
   private User _currentUser;
 
@@ -1454,6 +1447,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIpv4_access_list(Ipv4_access_listContext ctx) {
     _currentIpv4Acl = null;
+  }
+
+  @Override
+  public void enterIpv6_access_list(Ipv6_access_listContext ctx) {
+    String name = ctx.name.getText();
+    _currentIpv6Acl = _configuration.getIpv6Acls().computeIfAbsent(name, Ipv6AccessList::new);
+    _configuration.defineStructure(IPV6_ACCESS_LIST, name, ctx);
+  }
+
+  @Override
+  public void exitIpv6_access_list(Ipv6_access_listContext ctx) {
+    _currentIpv6Acl = null;
   }
 
   @Override
@@ -1889,19 +1894,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
 
     cryptoMapSet.getCryptoMapEntries().add(_currentCryptoMapEntry);
-  }
-
-  @Override
-  public void enterExtended_ipv6_access_list_stanza(Extended_ipv6_access_list_stanzaContext ctx) {
-    String name;
-    if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Could not determine acl name");
-    }
-    _currentExtendedIpv6Acl =
-        _configuration.getExtendedIpv6Acls().computeIfAbsent(name, ExtendedIpv6AccessList::new);
-    _configuration.defineStructure(IPV6_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -3179,19 +3171,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterStandard_ipv6_access_list_stanza(Standard_ipv6_access_list_stanzaContext ctx) {
-    String name;
-    if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Invalid standard access-list name");
-    }
-    _currentStandardIpv6Acl =
-        _configuration.getStandardIpv6Acls().computeIfAbsent(name, StandardIpv6AccessList::new);
-    _configuration.defineStructure(IPV6_ACCESS_LIST, name, ctx);
-  }
-
-  @Override
   public void enterTemplate_peer_policy_rb_stanza(Template_peer_policy_rb_stanzaContext ctx) {
     String name = ctx.name.getText();
     BgpProcess proc = currentVrf().getBgpProcess();
@@ -4210,11 +4189,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitExtended_ipv6_access_list_stanza(Extended_ipv6_access_list_stanzaContext ctx) {
-    _currentExtendedIpv6Acl = null;
-  }
-
-  @Override
   public void exitExtended_ipv6_access_list_tail(Extended_ipv6_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
     IpProtocol protocol = toIpProtocol(ctx.prot);
@@ -4340,8 +4314,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       }
     }
     String name = getFullText(ctx).trim();
-    ExtendedIpv6AccessListLine line =
-        new ExtendedIpv6AccessListLine(
+    Ipv6AccessListLine line =
+        new Ipv6AccessListLine(
             name,
             action,
             protocol,
@@ -4357,7 +4331,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             icmpCode,
             states,
             tcpFlags);
-    _currentExtendedIpv6Acl.addLine(line);
+    _currentIpv6Acl.addLine(line);
   }
 
   @Override
@@ -7256,58 +7230,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Override
-  public void exitStandard_ipv6_access_list_stanza(Standard_ipv6_access_list_stanzaContext ctx) {
-    _currentStandardIpv6Acl = null;
-  }
-
-  @Override
-  public void exitStandard_ipv6_access_list_tail(Standard_ipv6_access_list_tailContext ctx) {
-    LineAction action = toLineAction(ctx.ala);
-    Ip6 srcIp = getIp(ctx.ipr);
-    Ip6 srcWildcard = getWildcard(ctx.ipr);
-    Set<Integer> dscps = new TreeSet<>();
-    Set<Integer> ecns = new TreeSet<>();
-    for (Standard_access_list_additional_featureContext feature : ctx.features) {
-      if (feature.DSCP() != null) {
-        int dscpType = toDscpType(feature.dscp_type());
-        dscps.add(dscpType);
-      } else if (feature.ECN() != null) {
-        int ecn = toInteger(feature.ecn);
-        ecns.add(ecn);
-      }
-    }
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else {
-      name = getFullText(ctx).trim();
-    }
-    StandardIpv6AccessListLine line =
-        new StandardIpv6AccessListLine(
-            name, action, new Ip6Wildcard(srcIp, srcWildcard), dscps, ecns);
-    _currentStandardIpv6Acl.addLine(line);
-  }
-
-  // @Override
-  // public void exitSubnet_bgp_tail(Subnet_bgp_tailContext ctx) {
-  // BgpProcess proc = currentVrf().getBgpProcess();
-  // if (ctx.IP_PREFIX() != null) {
-  // Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
-  // NamedBgpPeerGroup namedGroup = _currentNamedPeerGroup;
-  // namedGroup.addNeighborIpPrefix(prefix);
-  // DynamicIpBgpPeerGroup pg = proc.addDynamicIpPeerGroup(prefix);
-  // pg.setGroupName(namedGroup.getName());
-  // }
-  // else if (ctx.IPV6_PREFIX() != null) {
-  // Prefix6 prefix6 = Prefix6.parse(ctx.IPV6_PREFIX().getText());
-  // NamedBgpPeerGroup namedGroup = _currentNamedPeerGroup;
-  // namedGroup.addNeighborIpv6Prefix(prefix6);
-  // DynamicIpv6BgpPeerGroup pg = proc.addDynamicIpv6PeerGroup(prefix6);
-  // pg.setGroupName(namedGroup.getName());
-  // }
-  // }
-  //
   @Override
   public void exitSummary_address_is_stanza(Summary_address_is_stanzaContext ctx) {
     Ip ip = toIp(ctx.ip);
