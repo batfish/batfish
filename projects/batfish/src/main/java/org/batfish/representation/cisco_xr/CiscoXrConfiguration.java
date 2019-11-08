@@ -281,6 +281,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return String.format("~MATCH_EVERY~%s~", name);
   }
 
+  public static @Nonnull String computeExtcommunitySetRtName(String name) {
+    return String.format("RT-%s", name);
+  }
+
   public static String computeIcmpObjectGroupAclName(String name) {
     return String.format("~ICMP_OBJECT_GROUP~%s~", name);
   }
@@ -362,6 +366,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private String _dnsSourceInterface;
 
   private String _domainName;
+
+  private final @Nonnull Map<String, ExtcommunitySetRt> _extcommunitySetRts;
 
   private final Map<String, ExtendedAccessList> _extendedAccessLists;
 
@@ -465,6 +471,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
+    _extcommunitySetRts = new HashMap<>();
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
     _failoverInterfaces = new TreeMap<>();
@@ -619,6 +626,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public String getDnsSourceInterface() {
     return _dnsSourceInterface;
+  }
+
+  public @Nonnull Map<String, ExtcommunitySetRt> getExtcommunitySetRts() {
+    return _extcommunitySetRts;
   }
 
   public Map<String, ExtendedAccessList> getExtendedAcls() {
@@ -2125,6 +2136,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
 
     convertCommunitySets(c);
+    convertExtcommunitySetRts(c);
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -2512,6 +2524,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     markConcreteStructure(CiscoXrStructureType.BFD_TEMPLATE);
     markConcreteStructure(CiscoXrStructureType.COMMUNITY_SET);
+    markConcreteStructure(CiscoXrStructureType.EXTCOMMUNITY_SET_RT);
     markConcreteStructure(CiscoXrStructureType.INTERFACE);
 
     // mark references to ACLs that may not appear in data model
@@ -2647,6 +2660,23 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                   convertMatchesEveryToCommunitySetMatchExpr(communitySet, c));
           c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(communitySet, c));
           c.getCommunitySetExprs().put(name, toCommunitySetExpr(communitySet, c));
+        });
+  }
+
+  private void convertExtcommunitySetRts(Configuration c) {
+    _extcommunitySetRts.forEach(
+        (name, extcommunitySetRt) -> {
+          String qualifiedName = computeExtcommunitySetRtName(name);
+          c.getCommunitySetMatchExprs()
+              .put(
+                  computeCommunitySetMatchAnyName(qualifiedName),
+                  convertMatchesAnyToCommunitySetMatchExpr(extcommunitySetRt, c));
+          c.getCommunitySetMatchExprs()
+              .put(
+                  computeCommunitySetMatchEveryName(qualifiedName),
+                  convertMatchesEveryToCommunitySetMatchExpr(extcommunitySetRt, c));
+          c.getCommunityMatchExprs().put(qualifiedName, toCommunityMatchExpr(extcommunitySetRt, c));
+          c.getCommunitySetExprs().put(qualifiedName, toCommunitySetExpr(extcommunitySetRt, c));
         });
   }
 

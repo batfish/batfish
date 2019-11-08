@@ -270,6 +270,16 @@ rp_community_set
    )* PAREN_RIGHT
 ;
 
+rp_extcommunity_set_rt
+:
+   name = variable
+   | PAREN_LEFT elems += extcommunity_set_rt_elem
+   (
+      COMMA elems += extcommunity_set_rt_elem
+   )* PAREN_RIGHT
+;
+
+
 rp_isis_metric_type
 :
    EXTERNAL
@@ -338,6 +348,20 @@ set_community_rp_stanza
    SET COMMUNITY rp_community_set ADDITIVE? NEWLINE
 ;
 
+set_extcommunity_rp_stanza
+:
+  SET EXTCOMMUNITY
+  (
+    set_extcommunity_rt
+    // TODO all the other extended community types
+  )
+;
+
+set_extcommunity_rt
+:
+  RT rp_extcommunity_set_rt ADDITIVE? NEWLINE
+;
+
 set_isis_metric_rp_stanza
 :
    SET ISIS_METRIC int_expr NEWLINE
@@ -403,6 +427,7 @@ set_rp_stanza
 :
    prepend_as_path_rp_stanza
    | set_community_rp_stanza
+   | set_extcommunity_rp_stanza
    | set_isis_metric_rp_stanza
    | set_level_rp_stanza
    | set_local_preference_rp_stanza

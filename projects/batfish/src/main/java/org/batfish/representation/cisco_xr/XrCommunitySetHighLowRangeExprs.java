@@ -14,11 +14,11 @@ public final class XrCommunitySetHighLowRangeExprs implements XrCommunitySetElem
     int highInt = (int) ((value & 0xFFFF0000L) >> 16);
     int lowInt = (int) (value & 0xFFFFL);
     return new XrCommunitySetHighLowRangeExprs(
-        new XrLiteralUint16(highInt), new XrLiteralUint16(lowInt));
+        new LiteralUint16(highInt), new LiteralUint16(lowInt));
   }
 
   public XrCommunitySetHighLowRangeExprs(
-      XrUint16RangeExpr highRangeExpr, XrUint16RangeExpr lowRangeExpr) {
+      Uint16RangeExpr highRangeExpr, Uint16RangeExpr lowRangeExpr) {
     _highRangeExpr = highRangeExpr;
     _lowRangeExpr = lowRangeExpr;
   }
@@ -28,14 +28,14 @@ public final class XrCommunitySetHighLowRangeExprs implements XrCommunitySetElem
     return visitor.visitCommunitySetHighLowRangeExprs(this, arg);
   }
 
-  public @Nonnull XrUint16RangeExpr getHighRangeExpr() {
+  public @Nonnull Uint16RangeExpr getHighRangeExpr() {
     return _highRangeExpr;
   }
 
-  public @Nonnull XrUint16RangeExpr getLowRangeExpr() {
+  public @Nonnull Uint16RangeExpr getLowRangeExpr() {
     return _lowRangeExpr;
   }
 
-  private final XrUint16RangeExpr _highRangeExpr;
-  private final XrUint16RangeExpr _lowRangeExpr;
+  private final Uint16RangeExpr _highRangeExpr;
+  private final Uint16RangeExpr _lowRangeExpr;
 }
