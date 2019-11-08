@@ -282,7 +282,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   public static @Nonnull String computeExtcommunitySetRtName(String name) {
-    return String.format("~RT~%s~", name);
+    return String.format("RT-%s", name);
   }
 
   public static String computeIcmpObjectGroupAclName(String name) {

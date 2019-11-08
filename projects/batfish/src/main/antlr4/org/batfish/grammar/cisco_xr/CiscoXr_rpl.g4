@@ -350,7 +350,11 @@ set_community_rp_stanza
 
 set_extcommunity_rp_stanza
 :
-   SET EXTCOMMUNITY set_extcommunity_rt
+  SET EXTCOMMUNITY
+  (
+    set_extcommunity_rt
+    // TODO all the other extended community types
+  )
 ;
 
 set_extcommunity_rt

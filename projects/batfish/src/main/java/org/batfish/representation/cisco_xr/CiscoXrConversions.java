@@ -326,7 +326,7 @@ public class CiscoXrConversions {
    * Convert {@code extcommunitySetRt} to a {@link CommunityMatchExpr} to be applied as a deletion
    * criterion against each route-target community in a route's extended community attribute.
    */
-  public static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
       ExtcommunitySetRt extcommunitySetRt, Configuration c) {
     return new CommunityMatchAny(
         extcommunitySetRt.getElements().stream()
