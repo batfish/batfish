@@ -66,6 +66,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
+import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.OspfProcess;
@@ -454,7 +455,9 @@ public final class XrGrammarTest {
           expr.accept(CommunitySetExprEvaluator.instance(), ctx),
           equalTo(
               CommunitySet.of(
-                  ExtendedCommunity.target(1234L, 56L), ExtendedCommunity.target(1234L, 57L))));
+                  ExtendedCommunity.target(1234L, 56L),
+                  ExtendedCommunity.target(1234L, 57L),
+                  ExtendedCommunity.target((12L << 16) | 34L, 56L))));
     }
 
     // Test CommunitySetMatchExprs
@@ -509,13 +512,16 @@ public final class XrGrammarTest {
           expr.accept(
               ctx.getCommunitySetMatchExprEvaluator(),
               CommunitySet.of(
-                  ExtendedCommunity.target(1234L, 56L), ExtendedCommunity.target(1234L, 57L))));
+                  ExtendedCommunity.target(1234L, 56L),
+                  ExtendedCommunity.target(1234L, 57L),
+                  ExtendedCommunity.target((12L << 16) | 34L, 56L))));
       assertTrue(
           expr.accept(
               ctx.getCommunitySetMatchExprEvaluator(),
               CommunitySet.of(
                   ExtendedCommunity.target(1234L, 56L),
                   ExtendedCommunity.target(1234L, 57L),
+                  ExtendedCommunity.target((12L << 16) | 34L, 56L),
                   ExtendedCommunity.target(1234L, 58L))));
       assertFalse(
           expr.accept(
@@ -525,7 +531,7 @@ public final class XrGrammarTest {
     }
 
     // Test route-policy match and set
-    assertThat(c.getRoutingPolicies(), hasKeys("set-rt1"));
+    assertThat(c.getRoutingPolicies(), hasKeys("set-rt1", "set-inline", "set-inline-additive"));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.builder()
@@ -550,7 +556,28 @@ public final class XrGrammarTest {
           containsInAnyOrder(
               StandardCommunity.of(9, 9),
               ExtendedCommunity.target(1234L, 56L),
-              ExtendedCommunity.target(1234L, 57L)));
+              ExtendedCommunity.target(1234L, 57L),
+              ExtendedCommunity.target((12L << 16) | 34L, 56L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set-inline");
+      Bgpv4Route inRoute = base.toBuilder().build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(1L, 1L), ExtendedCommunity.target((1L << 16) | 2, 3L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set-inline-additive");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(ImmutableSet.of(ExtendedCommunity.target(2L, 2L)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L), ExtendedCommunity.target(2L, 2L)));
     }
   }
 
@@ -565,7 +592,9 @@ public final class XrGrammarTest {
           set.getElements(),
           contains(
               new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint16(56)),
-              new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint16(57))));
+              new ExtcommunitySetRtElemAsColon(new LiteralUint32(1234L), new LiteralUint16(57)),
+              new ExtcommunitySetRtElemAsDotColon(
+                  new LiteralUint16(12), new LiteralUint16(34), new LiteralUint16(56))));
     }
   }
 
