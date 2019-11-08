@@ -1,6 +1,10 @@
 package org.batfish.datamodel.routing_policy.communities;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
@@ -32,5 +36,13 @@ public final class CommunitySetTest {
         .addEqualityGroup(CommunitySet.of(StandardCommunity.of(1L)))
         .addEqualityGroup(new Object())
         .testEquals();
+  }
+
+  @Test
+  public void testToString() {
+    assertNotNull(CommunitySet.empty().toString());
+    assertThat(
+        CommunitySet.of(StandardCommunity.of(1L)).toString(),
+        allOf(notNullValue(), not(equalTo(CommunitySet.empty().toString()))));
   }
 }

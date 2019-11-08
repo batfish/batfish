@@ -4196,6 +4196,21 @@ EXPANDED
    'expanded'
 ;
 
+EXTCOMMUNITY
+:
+   'extcommunity'
+   {
+     if (lastTokenType() == SET) {
+       pushMode(M_Extcommunity);
+     }
+   }
+;
+
+EXTCOMMUNITY_SET
+:
+  'extcommunity-set'
+;
+
 EXTEND
 :
    'extend'
@@ -13508,7 +13523,7 @@ FLOAT
 :
    (
       F_PositiveDigit* F_Digit '.' F_Digit+
-   )
+   ) {lastTokenType() == SPEED}?
 ;
 
 FORWARD_SLASH
@@ -13848,6 +13863,12 @@ fragment
 F_LowerCaseLetter
 :
    'a' .. 'z'
+;
+
+fragment
+F_NameChar
+:
+  ~[ \t\r\n\u000C\u00A0(){}"]
 ;
 
 fragment
@@ -14500,24 +14521,9 @@ M_Execute_BRACE_RIGHT
 
 mode M_Extcommunity;
 
-M_Extcommunity_COLON
-:
-   ':' -> type ( COLON )
-;
-
-M_Extcommunity_DEC
-:
-   F_Digit+ -> type ( DEC )
-;
-
-M_ExtCommunity_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
 M_Extcommunity_RT
 :
-   'rt' -> type ( RT )
+   'rt' -> type ( RT ), mode(M_Name)
 ;
 
 M_Extcommunity_WS
@@ -14760,7 +14766,7 @@ mode M_Name;
 M_Name_NAME
 :
    (
-      F_NonWhitespace+
+      F_NameChar+
       | '"' ~'"'* '"'
    )  -> type ( VARIABLE ) , popMode
 ;
@@ -14768,6 +14774,11 @@ M_Name_NAME
 M_Name_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Name_PAREN_LEFT
+:
+  '(' -> type(PAREN_LEFT), popMode
 ;
 
 M_Name_WS

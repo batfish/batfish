@@ -8,6 +8,7 @@ CiscoXr_bgp,
 CiscoXr_crypto,
 CiscoXr_callhome,
 CiscoXr_eigrp,
+CiscoXr_extcommunity_set,
 CiscoXr_hsrp,
 CiscoXr_ignored,
 CiscoXr_interface,
@@ -3509,6 +3510,7 @@ stanza
    | s_ethernet_services
    | s_event
    | s_event_handler
+   | s_extcommunity_set
    | s_failover
    | s_flow
    | s_flow_sampler_map

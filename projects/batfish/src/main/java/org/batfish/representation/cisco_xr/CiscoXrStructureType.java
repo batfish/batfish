@@ -16,6 +16,7 @@ public enum CiscoXrStructureType implements StructureType {
   COMMUNITY_SET("community-set"),
   CRYPTO_DYNAMIC_MAP_SET("crypto-dynamic-map-set"),
   CRYPTO_MAP_SET("crypto-map-set"),
+  EXTCOMMUNITY_SET_RT("extcommunity-set rt"),
   ICMP_TYPE_OBJECT("object icmp-type"),
   ICMP_TYPE_OBJECT_GROUP("object-group icmp-type"),
   INSPECT_CLASS_MAP("class-map type inspect"),

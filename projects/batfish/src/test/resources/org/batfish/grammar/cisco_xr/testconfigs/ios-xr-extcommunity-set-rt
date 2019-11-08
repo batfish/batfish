@@ -1,0 +1,25 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname ios-xr-extcommunity-set-rt
+!
+
+extcommunity-set rt rt1
+  1234:56,
+  1234:57,
+  12.34:56
+end-set
+
+route-policy set-rt1
+  set extcommunity rt rt1
+  pass
+end-policy
+
+route-policy set-inline
+  set extcommunity rt ( 1:1, 1.2:3 )
+  pass
+end-policy
+
+route-policy set-inline-additive
+  set extcommunity rt ( 1:1 ) additive
+  pass
+end-policy

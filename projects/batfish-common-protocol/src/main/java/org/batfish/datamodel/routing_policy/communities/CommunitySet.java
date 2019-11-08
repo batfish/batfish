@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy.communities;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.cache.CacheBuilder;
@@ -61,6 +63,11 @@ public final class CommunitySet implements Serializable {
       _hashCode = h;
     }
     return h;
+  }
+
+  @Override
+  public @Nonnull String toString() {
+    return toStringHelper(getClass()).add("communities", _communities).toString();
   }
 
   private static final CommunitySet EMPTY = new CommunitySet(ImmutableSet.of());

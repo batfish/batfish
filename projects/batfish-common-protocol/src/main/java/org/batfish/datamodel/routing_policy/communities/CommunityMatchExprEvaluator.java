@@ -9,6 +9,8 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.IntMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongMatchExprEvaluator;
 
 /** A visitor for evaluating a {@link CommunityMatchExpr} under a {@link CommunityContext}. */
 public final class CommunityMatchExprEvaluator
@@ -96,6 +98,62 @@ public final class CommunityMatchExprEvaluator
   @Override
   public @Nonnull Boolean visitCommunityNot(CommunityNot communityNot, Community arg) {
     return !communityNot.getExpr().accept(this, arg);
+  }
+
+  @Override
+  public Boolean visitExtendedCommunityGlobalAdministratorHighMatch(
+      ExtendedCommunityGlobalAdministratorHighMatch extendedCommunityGlobalAdministratorHighMatch,
+      Community arg) {
+    if (!(arg instanceof ExtendedCommunity)) {
+      return false;
+    }
+    return extendedCommunityGlobalAdministratorHighMatch
+        .getExpr()
+        .accept(
+            IntMatchExprEvaluator.instance(),
+            new LiteralInt((int) ((((ExtendedCommunity) arg).getGlobalAdministrator()) >> 16)));
+  }
+
+  @Override
+  public Boolean visitExtendedCommunityGlobalAdministratorLowMatch(
+      ExtendedCommunityGlobalAdministratorLowMatch extendedCommunityGlobalAdministratorLowMatch,
+      Community arg) {
+    if (!(arg instanceof ExtendedCommunity)) {
+      return false;
+    }
+    return extendedCommunityGlobalAdministratorLowMatch
+        .getExpr()
+        .accept(
+            IntMatchExprEvaluator.instance(),
+            new LiteralInt((int) ((((ExtendedCommunity) arg).getGlobalAdministrator()) & 0xFFFF)));
+  }
+
+  @Override
+  public Boolean visitExtendedCommunityGlobalAdministratorMatch(
+      ExtendedCommunityGlobalAdministratorMatch extendedCommunityGlobalAdministratorMatch,
+      Community arg) {
+    if (!(arg instanceof ExtendedCommunity)) {
+      return false;
+    }
+    return extendedCommunityGlobalAdministratorMatch
+        .getExpr()
+        .accept(
+            LongMatchExprEvaluator.instance(),
+            new LiteralLong(((ExtendedCommunity) arg).getGlobalAdministrator()));
+  }
+
+  @Override
+  public Boolean visitExtendedCommunityLocalAdministratorMatch(
+      ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch,
+      Community arg) {
+    if (!(arg instanceof ExtendedCommunity)) {
+      return false;
+    }
+    return extendedCommunityLocalAdministratorMatch
+        .getExpr()
+        .accept(
+            IntMatchExprEvaluator.instance(),
+            new LiteralInt((int) ((ExtendedCommunity) arg).getLocalAdministrator()));
   }
 
   @Override

@@ -29,6 +29,20 @@ public interface CommunityMatchExprVisitor<T, U> {
 
   T visitCommunityNot(CommunityNot communityNot, U arg);
 
+  T visitExtendedCommunityGlobalAdministratorHighMatch(
+      ExtendedCommunityGlobalAdministratorHighMatch extendedCommunityGlobalAdministratorHighMatch,
+      U arg);
+
+  T visitExtendedCommunityGlobalAdministratorLowMatch(
+      ExtendedCommunityGlobalAdministratorLowMatch extendedCommunityGlobalAdministratorLowMatch,
+      U arg);
+
+  T visitExtendedCommunityGlobalAdministratorMatch(
+      ExtendedCommunityGlobalAdministratorMatch extendedCommunityGlobalAdministratorMatch, U arg);
+
+  T visitExtendedCommunityLocalAdministratorMatch(
+      ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch, U arg);
+
   T visitRouteTargetExtendedCommunities(
       RouteTargetExtendedCommunities routeTargetExtendedCommunities, U arg);
 

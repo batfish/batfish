@@ -12,6 +12,8 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.junit.Test;
 
 /** Test of {@link CommunityMatchExprEvaluator}. */
@@ -140,6 +142,58 @@ public final class CommunityMatchExprEvaluatorTest {
 
     assertFalse(not.accept(EVAL, StandardCommunity.of(1L)));
     assertTrue(not.accept(EVAL, ExtendedCommunity.of(1, 1L, 1L)));
+  }
+
+  @Test
+  public void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
+    assertFalse(
+        new ExtendedCommunityGlobalAdministratorHighMatch(
+                new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+            .accept(EVAL, ExtendedCommunity.of(2 << 8, 1L, 0L)));
+    assertTrue(
+        new ExtendedCommunityGlobalAdministratorHighMatch(
+                new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+            .accept(EVAL, ExtendedCommunity.of(2 << 8, 1L << 16, 1L)));
+  }
+
+  @Test
+  public void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
+    assertTrue(
+        new ExtendedCommunityGlobalAdministratorLowMatch(
+                new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+            .accept(EVAL, ExtendedCommunity.of(2 << 8, 1L, 0L)));
+    assertFalse(
+        new ExtendedCommunityGlobalAdministratorLowMatch(
+                new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+            .accept(EVAL, ExtendedCommunity.of(2 << 8, 1L << 16, 1L)));
+  }
+
+  @Test
+  public void testVisitExtendedCommunityGlobalAdministratorMatch() {
+    assertTrue(
+        new ExtendedCommunityGlobalAdministratorMatch(
+                new LongComparison(IntComparator.EQ, new LiteralLong(0x10001L)))
+            .accept(EVAL, ExtendedCommunity.of(2 << 8, 0x10001L, 0)));
+    assertFalse(
+        new ExtendedCommunityGlobalAdministratorMatch(
+                new LongComparison(IntComparator.EQ, new LiteralLong(0x10001L)))
+            .accept(EVAL, ExtendedCommunity.of(2 << 8, 0x10000L, 0)));
+    assertFalse(
+        new ExtendedCommunityGlobalAdministratorMatch(
+                new LongComparison(IntComparator.EQ, new LiteralLong(0x10001L)))
+            .accept(EVAL, ExtendedCommunity.of(2 << 8, 1L, 0)));
+  }
+
+  @Test
+  public void testVisitExtendedCommunityLocalAdministratorMatch() {
+    assertFalse(
+        new ExtendedCommunityLocalAdministratorMatch(
+                new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+            .accept(EVAL, ExtendedCommunity.of(0, 0L, 0L)));
+    assertTrue(
+        new ExtendedCommunityLocalAdministratorMatch(
+                new IntComparison(IntComparator.EQ, new LiteralInt(1)))
+            .accept(EVAL, ExtendedCommunity.of(0, 0L, 1L)));
   }
 
   @Test
