@@ -2854,7 +2854,7 @@
       },
       {
         "File_Name" : "configs/ios_xr_multicast",
-        "Struct_Type" : "ipv4 acl",
+        "Struct_Type" : "ipv4 access-list",
         "Ref_Name" : "MSDP_filter",
         "Context" : "msdp peer sa-list",
         "Lines" : {
@@ -2869,7 +2869,7 @@
       },
       {
         "File_Name" : "configs/ios_xr_multipart",
-        "Struct_Type" : "ipv4 acl",
+        "Struct_Type" : "ipv4 access-list",
         "Ref_Name" : "GNS-VTY-ACCESS",
         "Context" : "ssh ipv4 access-list",
         "Lines" : {
@@ -3401,7 +3401,7 @@
       },
       {
         "File_Name" : "configs/ios_xr_ssh",
-        "Struct_Type" : "ipv4 acl",
+        "Struct_Type" : "ipv4 access-list",
         "Ref_Name" : "ACL99",
         "Context" : "ssh ipv4 access-list",
         "Lines" : {
@@ -3413,7 +3413,7 @@
       },
       {
         "File_Name" : "configs/ios_xr_ssh",
-        "Struct_Type" : "ipv6 acl",
+        "Struct_Type" : "ipv6 access-list",
         "Ref_Name" : "ipv6-vty-acl",
         "Context" : "ssh ipv6 access-list",
         "Lines" : {

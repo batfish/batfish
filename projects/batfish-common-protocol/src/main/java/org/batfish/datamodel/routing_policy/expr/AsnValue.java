@@ -17,6 +17,11 @@ public final class AsnValue extends LongExpr {
   }
 
   @Override
+  public <T, U> T accept(LongExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitAsnValue(this, arg);
+  }
+
+  @Override
   public long evaluate(Environment environment) {
     return _asExpr.evaluate(environment);
   }

@@ -40,6 +40,10 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorHighMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
@@ -421,6 +425,38 @@ public final class CommunityStructuresVerifier {
     public Void visitCommunityNot(
         CommunityNot communityNot, CommunityStructuresVerifierContext arg) {
       communityNot.getExpr().accept(COMMUNITY_MATCH_EXPR_VERIFIER, arg);
+      return null;
+    }
+
+    @Override
+    public Void visitExtendedCommunityGlobalAdministratorHighMatch(
+        ExtendedCommunityGlobalAdministratorHighMatch extendedCommunityGlobalAdministratorHighMatch,
+        CommunityStructuresVerifierContext arg) {
+      // nothing that can be checked statically
+      return null;
+    }
+
+    @Override
+    public Void visitExtendedCommunityGlobalAdministratorLowMatch(
+        ExtendedCommunityGlobalAdministratorLowMatch extendedCommunityGlobalAdministratorLowMatch,
+        CommunityStructuresVerifierContext arg) {
+      // nothing that can be checked statically
+      return null;
+    }
+
+    @Override
+    public Void visitExtendedCommunityGlobalAdministratorMatch(
+        ExtendedCommunityGlobalAdministratorMatch extendedCommunityGlobalAdministratorMatch,
+        CommunityStructuresVerifierContext arg) {
+      // nothing that can be checked statically
+      return null;
+    }
+
+    @Override
+    public Void visitExtendedCommunityLocalAdministratorMatch(
+        ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch,
+        CommunityStructuresVerifierContext arg) {
+      // nothing that can be checked statically
       return null;
     }
 

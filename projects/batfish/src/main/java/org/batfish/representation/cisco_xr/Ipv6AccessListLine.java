@@ -12,7 +12,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 
-public class ExtendedIpv6AccessListLine implements Serializable {
+public class Ipv6AccessListLine implements Serializable {
 
   private final LineAction _action;
 
@@ -44,7 +44,7 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
   private final List<TcpFlagsMatchConditions> _tcpFlags;
 
-  public ExtendedIpv6AccessListLine(
+  public Ipv6AccessListLine(
       String name,
       LineAction action,
       @Nullable IpProtocol protocol,

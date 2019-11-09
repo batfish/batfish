@@ -32910,18 +32910,32 @@
                                         "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
                                         "exprs" : [
                                           {
-                                            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityExprsSet",
+                                            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
+                                            "initial" : {
+                                              "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                                            },
+                                            "removalCriterion" : {
+                                              "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
+                                            }
+                                          },
+                                          {
+                                            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
                                             "exprs" : [
                                               {
-                                                "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs",
-                                                "highExpr" : {
-                                                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                                  "value" : 14041
-                                                },
-                                                "lowExpr" : {
-                                                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                                  "value" : 65011
-                                                }
+                                                "class" : "org.batfish.datamodel.routing_policy.communities.CommunityExprsSet",
+                                                "exprs" : [
+                                                  {
+                                                    "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs",
+                                                    "highExpr" : {
+                                                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                                      "value" : 14041
+                                                    },
+                                                    "lowExpr" : {
+                                                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                                      "value" : 65011
+                                                    }
+                                                  }
+                                                ]
                                               }
                                             ]
                                           }
@@ -33376,18 +33390,32 @@
                         "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
                         "exprs" : [
                           {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityExprsSet",
+                            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
+                            "initial" : {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                            },
+                            "removalCriterion" : {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
                             "exprs" : [
                               {
-                                "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs",
-                                "highExpr" : {
-                                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                  "value" : 2152
-                                },
-                                "lowExpr" : {
-                                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                  "value" : 2152
-                                }
+                                "class" : "org.batfish.datamodel.routing_policy.communities.CommunityExprsSet",
+                                "exprs" : [
+                                  {
+                                    "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs",
+                                    "highExpr" : {
+                                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                      "value" : 2152
+                                    },
+                                    "lowExpr" : {
+                                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                      "value" : 2152
+                                    }
+                                  }
+                                ]
                               }
                             ]
                           }
@@ -35927,18 +35955,32 @@
                     "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
                     "exprs" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.communities.CommunityExprsSet",
+                        "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
+                        "initial" : {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                        },
+                        "removalCriterion" : {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
                         "exprs" : [
                           {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs",
-                            "highExpr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 1
-                            },
-                            "lowExpr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 2
-                            }
+                            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityExprsSet",
+                            "exprs" : [
+                              {
+                                "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs",
+                                "highExpr" : {
+                                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                  "value" : 1
+                                },
+                                "lowExpr" : {
+                                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                  "value" : 2
+                                }
+                              }
+                            ]
                           }
                         ]
                       }

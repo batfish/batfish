@@ -17,6 +17,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computePr
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -100,7 +101,13 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorHighMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
+import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
+import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunityExpr;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
@@ -117,12 +124,17 @@ import org.batfish.datamodel.routing_policy.expr.IntMatchAll;
 import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.LongComparison;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.LongMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.Uint32HighLowExpr;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
@@ -311,19 +323,74 @@ public class CiscoXrConversions {
         new CommunitySetElemToCommunityMatchExpr();
   }
 
+  /**
+   * Convert {@code extcommunitySetRt} to a {@link CommunityMatchExpr} to be applied as a deletion
+   * criterion against each route-target community in a route's extended community attribute.
+   */
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      ExtcommunitySetRt extcommunitySetRt, Configuration c) {
+    return new CommunityMatchAny(
+        extcommunitySetRt.getElements().stream()
+            .map(elem -> elem.accept(ExtcommunitySetRtElemToCommunityMatchExpr.INSTANCE, c))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  private static final class ExtcommunitySetRtElemToCommunityMatchExpr
+      implements ExtcommunitySetRtElemVisitor<CommunityMatchExpr, Configuration> {
+
+    private static final ExtcommunitySetRtElemToCommunityMatchExpr INSTANCE =
+        new ExtcommunitySetRtElemToCommunityMatchExpr();
+
+    @Override
+    public CommunityMatchExpr visitExtcommunitySetRtElemAsDotColon(
+        ExtcommunitySetRtElemAsDotColon extcommunitySetRtElemAsDotColon, Configuration arg) {
+      return new CommunityMatchAll(
+          ImmutableList.of(
+              RouteTargetExtendedCommunities.instance(),
+              new ExtendedCommunityGlobalAdministratorHighMatch(
+                  extcommunitySetRtElemAsDotColon
+                      .getGaHighRangeExpr()
+                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg)),
+              new ExtendedCommunityGlobalAdministratorLowMatch(
+                  extcommunitySetRtElemAsDotColon
+                      .getGaLowRangeExpr()
+                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg)),
+              new ExtendedCommunityLocalAdministratorMatch(
+                  extcommunitySetRtElemAsDotColon
+                      .getLaRangeExpr()
+                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg))));
+    }
+
+    @Override
+    public CommunityMatchExpr visitExtcommunitySetRtElemAsColon(
+        ExtcommunitySetRtElemAsColon extcommunitySetRtElemAsColon, Configuration arg) {
+      return new CommunityMatchAll(
+          ImmutableList.of(
+              RouteTargetExtendedCommunities.instance(),
+              new ExtendedCommunityGlobalAdministratorMatch(
+                  extcommunitySetRtElemAsColon
+                      .getGaRangeExpr()
+                      .accept(XrUint32RangeExprToLongMatchExpr.INSTANCE, arg)),
+              new ExtendedCommunityLocalAdministratorMatch(
+                  extcommunitySetRtElemAsColon
+                      .getLaRangeExpr()
+                      .accept(XrUint16RangeExprToIntMatchExpr.INSTANCE, arg))));
+    }
+  }
+
   private static final class XrUint16RangeExprToIntMatchExpr
-      implements XrUint16RangeExprVisitor<IntMatchExpr, Configuration> {
+      implements Uint16RangeExprVisitor<IntMatchExpr, Configuration> {
     private static final XrUint16RangeExprToIntMatchExpr INSTANCE =
         new XrUint16RangeExprToIntMatchExpr();
 
     @Override
-    public IntMatchExpr visitLiteralUint16(XrLiteralUint16 literalUint16, Configuration arg) {
+    public IntMatchExpr visitLiteralUint16(LiteralUint16 literalUint16, Configuration arg) {
       return new IntComparison(IntComparator.EQ, new LiteralInt(literalUint16.getValue()));
     }
 
     @Override
     public IntMatchExpr visitLiteralUint16Range(
-        XrLiteralUint16Range literalUint16Range, Configuration arg) {
+        LiteralUint16Range literalUint16Range, Configuration arg) {
       SubRange range = literalUint16Range.getRange();
       return IntMatchAll.of(
           new IntComparison(IntComparator.GE, new LiteralInt(range.getStart())),
@@ -331,9 +398,20 @@ public class CiscoXrConversions {
     }
 
     @Override
-    public IntMatchExpr visitUint16Reference(XrUint16Reference uint16Reference, Configuration arg) {
+    public IntMatchExpr visitUint16Reference(Uint16Reference uint16Reference, Configuration arg) {
       return new IntComparison(IntComparator.EQ, new VarInt(uint16Reference.getVar()));
     }
+  }
+
+  private static final class XrUint32RangeExprToLongMatchExpr
+      implements Uint32RangeExprVisitor<LongMatchExpr, Configuration> {
+    @Override
+    public LongMatchExpr visitLiteralUint32(LiteralUint32 literalUint32, Configuration arg) {
+      return new LongComparison(IntComparator.EQ, new LiteralLong(literalUint32.getValue()));
+    }
+
+    private static final XrUint32RangeExprToLongMatchExpr INSTANCE =
+        new XrUint32RangeExprToLongMatchExpr();
   }
 
   /**
@@ -379,26 +457,107 @@ public class CiscoXrConversions {
         new CommunitySetElemToCommunitySetExpr();
   }
 
+  /**
+   * Convert {@code extcommunitySetRt} to a {@link CommunitySetExpr} representing a set of concrete
+   * communities for setting or appending to the extended community attribute within a route-policy.
+   *
+   * <p>Only concrete elements of {@code extcommunitySetRt} representing a single community are
+   * considered.
+   */
+  public static @Nonnull CommunitySetExpr toCommunitySetExpr(
+      ExtcommunitySetRt extcommunitySetRt, Configuration c) {
+    return CommunitySetUnion.of(
+        extcommunitySetRt.getElements().stream()
+            .map(elem -> elem.accept(ExtcommunitySetRtElemToCommunitySetExpr.INSTANCE, c))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  private static final class ExtcommunitySetRtElemToCommunitySetExpr
+      implements ExtcommunitySetRtElemVisitor<CommunitySetExpr, Configuration> {
+    @Override
+    public CommunitySetExpr visitExtcommunitySetRtElemAsDotColon(
+        ExtcommunitySetRtElemAsDotColon extcommunitySetRtElemAsDotColon, Configuration arg) {
+      Optional<IntExpr> gaHighExpr =
+          extcommunitySetRtElemAsDotColon
+              .getGaHighRangeExpr()
+              .accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
+      if (!gaHighExpr.isPresent()) {
+        return CommunitySetExprs.empty();
+      }
+      Optional<IntExpr> gaLowExpr =
+          extcommunitySetRtElemAsDotColon
+              .getGaLowRangeExpr()
+              .accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
+      if (!gaLowExpr.isPresent()) {
+        return CommunitySetExprs.empty();
+      }
+      Optional<IntExpr> laExpr =
+          extcommunitySetRtElemAsDotColon
+              .getLaRangeExpr()
+              .accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
+      if (!laExpr.isPresent()) {
+        return CommunitySetExprs.empty();
+      }
+      return CommunityExprsSet.of(
+          new RouteTargetExtendedCommunityExpr(
+              new Uint32HighLowExpr(gaHighExpr.get(), gaLowExpr.get()), laExpr.get()));
+    }
+
+    @Override
+    public CommunitySetExpr visitExtcommunitySetRtElemAsColon(
+        ExtcommunitySetRtElemAsColon extcommunitySetRtElemAsColon, Configuration arg) {
+      Optional<LongExpr> gaExpr =
+          extcommunitySetRtElemAsColon
+              .getGaRangeExpr()
+              .accept(XrUint32RangeExprToLongExpr.INSTANCE, null);
+      if (!gaExpr.isPresent()) {
+        return CommunitySetExprs.empty();
+      }
+      Optional<IntExpr> laExpr =
+          extcommunitySetRtElemAsColon
+              .getLaRangeExpr()
+              .accept(XrUint16RangeExprToIntExpr.INSTANCE, null);
+      if (!laExpr.isPresent()) {
+        return CommunitySetExprs.empty();
+      }
+      return CommunityExprsSet.of(new RouteTargetExtendedCommunityExpr(gaExpr.get(), laExpr.get()));
+    }
+
+    private static final ExtcommunitySetRtElemToCommunitySetExpr INSTANCE =
+        new ExtcommunitySetRtElemToCommunitySetExpr();
+  }
+
   private static class XrUint16RangeExprToIntExpr
-      implements XrUint16RangeExprVisitor<Optional<IntExpr>, Void> {
+      implements Uint16RangeExprVisitor<Optional<IntExpr>, Void> {
 
     private static final XrUint16RangeExprToIntExpr INSTANCE = new XrUint16RangeExprToIntExpr();
 
     @Override
-    public Optional<IntExpr> visitLiteralUint16(XrLiteralUint16 literalUint16, Void arg) {
+    public Optional<IntExpr> visitLiteralUint16(LiteralUint16 literalUint16, Void arg) {
       return Optional.of(new LiteralInt(literalUint16.getValue()));
     }
 
     @Override
     public Optional<IntExpr> visitLiteralUint16Range(
-        XrLiteralUint16Range literalUint16Range, Void arg) {
+        LiteralUint16Range literalUint16Range, Void arg) {
       return Optional.empty();
     }
 
     @Override
-    public Optional<IntExpr> visitUint16Reference(XrUint16Reference uint16Reference, Void arg) {
+    public Optional<IntExpr> visitUint16Reference(Uint16Reference uint16Reference, Void arg) {
       return Optional.of(new VarInt(uint16Reference.getVar()));
     }
+  }
+
+  private static class XrUint32RangeExprToLongExpr
+      implements Uint32RangeExprVisitor<Optional<LongExpr>, Void> {
+
+    @Override
+    public Optional<LongExpr> visitLiteralUint32(LiteralUint32 literalUint32, Void arg) {
+      return Optional.of(new LiteralLong(literalUint32.getValue()));
+    }
+
+    private static final XrUint32RangeExprToLongExpr INSTANCE = new XrUint32RangeExprToLongExpr();
   }
 
   /**
@@ -444,6 +603,54 @@ public class CiscoXrConversions {
           new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
           toJavaRegex(communitySetIosRegex.getRegex()));
     }
+  }
+
+  /**
+   * Convert {@code extcommunitySetRt} to a {@link CommunitySetMatchExpr} that matches a route whose
+   * extended community attribute's route-targets are matched by any element of {@code
+   * extcommunitySetRt}.
+   */
+  public static @Nonnull CommunitySetMatchExpr convertMatchesAnyToCommunitySetMatchExpr(
+      ExtcommunitySetRt extcommunitySetRt, Configuration c) {
+    return new CommunitySetMatchAny(
+        extcommunitySetRt.getElements().stream()
+            .map(elem -> elem.accept(ExtcommunitySetRtElemToCommunitySetMatchExpr.INSTANCE, c))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  /**
+   * Convert {@code extcommunitySetRt} to a {@link CommunitySetMatchExpr} that matches a route whose
+   * extended community attribute's route-targets are matched by every element of {@code
+   * extcommunitySetRt}.
+   */
+  public static @Nonnull CommunitySetMatchExpr convertMatchesEveryToCommunitySetMatchExpr(
+      ExtcommunitySetRt extcommunitySetRt, Configuration c) {
+    return new CommunitySetMatchAll(
+        extcommunitySetRt.getElements().stream()
+            .map(elem -> elem.accept(ExtcommunitySetRtElemToCommunitySetMatchExpr.INSTANCE, c))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  private static final class ExtcommunitySetRtElemToCommunitySetMatchExpr
+      implements ExtcommunitySetRtElemVisitor<CommunitySetMatchExpr, Configuration> {
+    @Override
+    public CommunitySetMatchExpr visitExtcommunitySetRtElemAsDotColon(
+        ExtcommunitySetRtElemAsDotColon extcommunitySetRtElemAsDotColon, Configuration arg) {
+      return new HasCommunity(
+          extcommunitySetRtElemAsDotColon.accept(
+              ExtcommunitySetRtElemToCommunityMatchExpr.INSTANCE, arg));
+    }
+
+    @Override
+    public CommunitySetMatchExpr visitExtcommunitySetRtElemAsColon(
+        ExtcommunitySetRtElemAsColon extcommunitySetRtElemAsColon, Configuration arg) {
+      return new HasCommunity(
+          extcommunitySetRtElemAsColon.accept(
+              ExtcommunitySetRtElemToCommunityMatchExpr.INSTANCE, arg));
+    }
+
+    private static final ExtcommunitySetRtElemToCommunitySetMatchExpr INSTANCE =
+        new ExtcommunitySetRtElemToCommunitySetMatchExpr();
   }
 
   /**
@@ -846,10 +1053,10 @@ public class CiscoXrConversions {
     return ikePhase1Proposal;
   }
 
-  static Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
+  static Ip6AccessList toIp6AccessList(Ipv6AccessList eaList) {
     String name = eaList.getName();
     List<Ip6AccessListLine> lines = new ArrayList<>();
-    for (ExtendedIpv6AccessListLine fromLine : eaList.getLines()) {
+    for (Ipv6AccessListLine fromLine : eaList.getLines()) {
       Ip6AccessListLine newLine = new Ip6AccessListLine();
       newLine.setName(fromLine.getName());
       newLine.setAction(fromLine.getAction());
@@ -886,22 +1093,17 @@ public class CiscoXrConversions {
     return new Ip6AccessList(name, lines);
   }
 
-  static IpAccessList toIpAccessList(
-      ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
+  static IpAccessList toIpAccessList(Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups) {
     List<IpAccessListLine> lines =
         eaList.getLines().stream()
             .map(l -> toIpAccessListLine(l, objectGroups))
             .collect(ImmutableList.toImmutableList());
-    String sourceType =
-        eaList.getParent() != null
-            ? CiscoXrStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
-            : CiscoXrStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
     String name = eaList.getName();
     return IpAccessList.builder()
         .setName(name)
         .setLines(lines)
         .setSourceName(name)
-        .setSourceType(sourceType)
+        .setSourceType(IPV4_ACCESS_LIST.getDescription())
         .build();
   }
 
@@ -1395,20 +1597,12 @@ public class CiscoXrConversions {
     return new Route6FilterList(list.getName(), lines);
   }
 
-  static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
+  static RouteFilterList toRouteFilterList(Ipv4AccessList eaList) {
     List<RouteFilterLine> lines =
         eaList.getLines().stream()
             .map(CiscoXrConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(eaList.getName(), lines);
-  }
-
-  static RouteFilterList toRouteFilterList(StandardAccessList saList) {
-    List<RouteFilterLine> lines =
-        saList.getLines().stream()
-            .map(CiscoXrConversions::toRouteFilterLine)
-            .collect(ImmutableList.toImmutableList());
-    return new RouteFilterList(saList.getName(), lines);
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list) {
@@ -1598,7 +1792,7 @@ public class CiscoXrConversions {
       @Nonnull DistributeList distributeList,
       @Nonnull CiscoXrConfiguration vsConfig) {
     if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
-        && vsConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
+        && vsConfig.getIpv4Acls().containsKey(distributeList.getFilterName())) {
       vsConfig
           .getWarnings()
           .redFlag(
@@ -1634,7 +1828,7 @@ public class CiscoXrConversions {
   }
 
   private static IpAccessListLine toIpAccessListLine(
-      ExtendedAccessListLine line, Map<String, ObjectGroup> objectGroups) {
+      Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
     AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr(objectGroups);
@@ -1670,7 +1864,7 @@ public class CiscoXrConversions {
     return line;
   }
 
-  private static RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
+  private static RouteFilterLine toRouteFilterLine(Ipv4AccessListLine fromLine) {
     LineAction action = fromLine.getAction();
     IpWildcard srcIpWildcard =
         ((WildcardAddressSpecifier) fromLine.getSourceAddressSpecifier()).getIpWildcard();
@@ -1686,23 +1880,6 @@ public class CiscoXrConversions {
     Prefix prefix = Prefix.create(ip, prefixLength);
     return new RouteFilterLine(
         action, IpWildcard.create(prefix), new SubRange(minPrefixLength, maxPrefixLength));
-  }
-
-  /** Convert a standard access list line to a route filter list line */
-  private static RouteFilterLine toRouteFilterLine(StandardAccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    /*
-     * This cast is safe since the other address specifier (network object group specifier)
-     * can be used only from extended ACLs.
-     */
-    IpWildcard srcIpWildcard =
-        ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
-    Prefix prefix = srcIpWildcard.toPrefix();
-
-    return new RouteFilterLine(
-        action,
-        IpWildcard.create(prefix),
-        new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
   }
 
   /**

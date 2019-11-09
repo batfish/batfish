@@ -20,10 +20,15 @@ address_family_footer
    )?
 ;
 
+asn_dotted
+:
+  DEC PERIOD DEC
+;
+
 bgp_asn
 :
     asn = DEC
-    | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
+    | asn4b = asn_dotted
 ;
 
 community
@@ -639,6 +644,11 @@ switchport_trunk_encapsulation
    DOT1Q
    | ISL
    | NEGOTIATE
+;
+
+uint16
+:
+  d = DEC {isUint16($d)}?
 ;
 
 uint32

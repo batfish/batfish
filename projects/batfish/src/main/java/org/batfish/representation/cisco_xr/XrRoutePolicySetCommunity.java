@@ -7,6 +7,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
@@ -40,7 +42,10 @@ public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
             communitySetExpr ->
                 _additive
                     ? CommunitySetUnion.of(InputCommunities.instance(), communitySetExpr)
-                    : communitySetExpr)
+                    : CommunitySetUnion.of(
+                        new CommunitySetDifference(
+                            InputCommunities.instance(), AllStandardCommunities.instance()),
+                        communitySetExpr))
         .<Statement>map(SetCommunities::new)
         .orElse(INVALID);
   }

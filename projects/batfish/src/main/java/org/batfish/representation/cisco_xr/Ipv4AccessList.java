@@ -5,23 +5,22 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-public class ExtendedAccessList implements Serializable {
+public class Ipv4AccessList implements Serializable {
 
-  @Nonnull private List<ExtendedAccessListLine> _lines;
+  @Nonnull private List<Ipv4AccessListLine> _lines;
   @Nonnull private final String _name;
-  private StandardAccessList _parent;
 
-  public ExtendedAccessList(@Nonnull String id) {
+  public Ipv4AccessList(@Nonnull String id) {
     _name = id;
     _lines = new ArrayList<>();
   }
 
-  public void addLine(@Nonnull ExtendedAccessListLine line) {
+  public void addLine(@Nonnull Ipv4AccessListLine line) {
     _lines.add(line);
   }
 
   @Nonnull
-  public List<ExtendedAccessListLine> getLines() {
+  public List<Ipv4AccessListLine> getLines() {
     return _lines;
   }
 
@@ -30,18 +29,10 @@ public class ExtendedAccessList implements Serializable {
     return _name;
   }
 
-  public StandardAccessList getParent() {
-    return _parent;
-  }
-
-  public void setParent(StandardAccessList parent) {
-    _parent = parent;
-  }
-
   @Override
   public String toString() {
     StringBuilder output = new StringBuilder(super.toString() + "\n" + "Identifier: " + _name);
-    for (ExtendedAccessListLine line : _lines) {
+    for (Ipv4AccessListLine line : _lines) {
       output.append("\n").append(line);
     }
     return output.toString();

@@ -281,6 +281,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return String.format("~MATCH_EVERY~%s~", name);
   }
 
+  public static @Nonnull String computeExtcommunitySetRtName(String name) {
+    return String.format("RT-%s", name);
+  }
+
   public static String computeIcmpObjectGroupAclName(String name) {
     return String.format("~ICMP_OBJECT_GROUP~%s~", name);
   }
@@ -363,9 +367,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private String _domainName;
 
-  private final Map<String, ExtendedAccessList> _extendedAccessLists;
-
-  private final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
+  private final @Nonnull Map<String, ExtcommunitySetRt> _extcommunitySetRts;
 
   private boolean _failover;
 
@@ -396,6 +398,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private final Map<String, IpsecProfile> _ipsecProfiles;
 
   private final Map<String, IpsecTransformSet> _ipsecTransformSets;
+
+  private final Map<String, Ipv4AccessList> _ipv4Acls;
+
+  private final Map<String, Ipv6AccessList> _ipv6Acls;
 
   private final List<IsakmpKey> _isakmpKeys;
 
@@ -437,10 +443,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private boolean _spanningTreePortfastDefault;
 
-  private final Map<String, StandardAccessList> _standardAccessLists;
-
-  private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
-
   private NavigableSet<String> _tacacsServers;
 
   private String _tacacsSourceInterface;
@@ -465,8 +467,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
-    _extendedAccessLists = new TreeMap<>();
-    _extendedIpv6AccessLists = new TreeMap<>();
+    _ipv4Acls = new TreeMap<>();
+    _ipv6Acls = new TreeMap<>();
+    _extcommunitySetRts = new HashMap<>();
     _failoverInterfaces = new TreeMap<>();
     _failoverPrimaryAddresses = new TreeMap<>();
     _failoverStandbyAddresses = new TreeMap<>();
@@ -492,8 +495,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _routePolicies = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
     _serviceObjects = new TreeMap<>();
-    _standardAccessLists = new TreeMap<>();
-    _standardIpv6AccessLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
     _vrfs = new TreeMap<>();
@@ -621,12 +622,16 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _dnsSourceInterface;
   }
 
-  public Map<String, ExtendedAccessList> getExtendedAcls() {
-    return _extendedAccessLists;
+  public @Nonnull Map<String, ExtcommunitySetRt> getExtcommunitySetRts() {
+    return _extcommunitySetRts;
   }
 
-  public Map<String, ExtendedIpv6AccessList> getExtendedIpv6Acls() {
-    return _extendedIpv6AccessLists;
+  public Map<String, Ipv4AccessList> getIpv4Acls() {
+    return _ipv4Acls;
+  }
+
+  public Map<String, Ipv6AccessList> getIpv6Acls() {
+    return _ipv6Acls;
   }
 
   public boolean getFailover() {
@@ -734,14 +739,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _spanningTreePortfastDefault;
   }
 
-  public Map<String, StandardAccessList> getStandardAcls() {
-    return _standardAccessLists;
-  }
-
-  public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
-    return _standardIpv6AccessLists;
-  }
-
   public NavigableSet<String> getTacacsServers() {
     return _tacacsServers;
   }
@@ -814,10 +811,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           CiscoXrStructureType.IP_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              CiscoXrStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoXrStructureType.IPV4_ACCESS_LIST_EXTENDED,
-              CiscoXrStructureType.IPV6_ACCESS_LIST_STANDARD,
-              CiscoXrStructureType.IPV6_ACCESS_LIST_EXTENDED));
+              CiscoXrStructureType.IPV4_ACCESS_LIST, CiscoXrStructureType.IPV6_ACCESS_LIST));
     }
   }
 
@@ -827,33 +821,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           CiscoXrStructureType.ACCESS_LIST,
           usage,
           Arrays.asList(
-              CiscoXrStructureType.IPV4_ACCESS_LIST_EXTENDED,
-              CiscoXrStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoXrStructureType.IPV6_ACCESS_LIST_EXTENDED,
-              CiscoXrStructureType.IPV6_ACCESS_LIST_STANDARD,
+              CiscoXrStructureType.IPV4_ACCESS_LIST,
+              CiscoXrStructureType.IPV6_ACCESS_LIST,
               CiscoXrStructureType.MAC_ACCESS_LIST));
-    }
-  }
-
-  private void markIpv4Acls(CiscoXrStructureUsage... usages) {
-    for (CiscoXrStructureUsage usage : usages) {
-      markAbstractStructure(
-          CiscoXrStructureType.IPV4_ACCESS_LIST,
-          usage,
-          ImmutableList.of(
-              CiscoXrStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoXrStructureType.IPV4_ACCESS_LIST_EXTENDED));
-    }
-  }
-
-  private void markIpv6Acls(CiscoXrStructureUsage... usages) {
-    for (CiscoXrStructureUsage usage : usages) {
-      markAbstractStructure(
-          CiscoXrStructureType.IPV6_ACCESS_LIST,
-          usage,
-          ImmutableList.of(
-              CiscoXrStructureType.IPV6_ACCESS_LIST_STANDARD,
-              CiscoXrStructureType.IPV6_ACCESS_LIST_EXTENDED));
     }
   }
 
@@ -2125,6 +2095,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
 
     convertCommunitySets(c);
+    convertExtcommunitySetRts(c);
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -2138,17 +2109,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
-    // convert standard/extended access lists to access lists or route filter
-    // lists
-    for (StandardAccessList saList : _standardAccessLists.values()) {
-      if (isAclUsedForRouting(saList.getName())) {
-        RouteFilterList rfList = CiscoXrConversions.toRouteFilterList(saList);
-        c.getRouteFilterLists().put(rfList.getName(), rfList);
-      }
-      c.getIpAccessLists()
-          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), this._objectGroups));
-    }
-    for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
+    // convert access lists to access lists or route filter
+    for (Ipv4AccessList eaList : _ipv4Acls.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoXrConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
@@ -2216,16 +2178,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             c.getIpAccessLists()
                 .put(computeServiceObjectAclName(name), toIpAccessList(serviceObject)));
 
-    // convert standard/extended ipv6 access lists to ipv6 access lists or
-    // route6 filter
-    // lists
-    for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
-      c.getIp6AccessLists()
-          .put(
-              saList.getName(),
-              CiscoXrConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
-    }
-    for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
+    // convert IPv6 access lists to ipv6 access lists route6 filter lists
+    for (Ipv6AccessList eaList : _ipv6Acls.values()) {
       Ip6AccessList ipaList = CiscoXrConversions.toIp6AccessList(eaList);
       c.getIp6AccessLists().put(ipaList.getName(), ipaList);
     }
@@ -2512,43 +2466,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     markConcreteStructure(CiscoXrStructureType.BFD_TEMPLATE);
     markConcreteStructure(CiscoXrStructureType.COMMUNITY_SET);
+    markConcreteStructure(CiscoXrStructureType.EXTCOMMUNITY_SET_RT);
     markConcreteStructure(CiscoXrStructureType.INTERFACE);
+
+    markConcreteStructure(CiscoXrStructureType.IPV4_ACCESS_LIST);
+    markConcreteStructure(CiscoXrStructureType.IPV6_ACCESS_LIST);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
         CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST);
-    markIpv4Acls(
-        CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoXrStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
-        CiscoXrStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
-        CiscoXrStructureUsage.INTERFACE_INCOMING_FILTER,
-        CiscoXrStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
-        CiscoXrStructureUsage.INTERFACE_OUTGOING_FILTER,
-        CiscoXrStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
-        CiscoXrStructureUsage.LINE_ACCESS_CLASS_LIST,
-        CiscoXrStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
-        CiscoXrStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
-        CiscoXrStructureUsage.MSDP_PEER_SA_LIST,
-        CiscoXrStructureUsage.NTP_ACCESS_GROUP,
-        CiscoXrStructureUsage.PIM_ACCEPT_REGISTER_ACL,
-        CiscoXrStructureUsage.PIM_ACCEPT_RP_ACL,
-        CiscoXrStructureUsage.PIM_RP_ADDRESS_ACL,
-        CiscoXrStructureUsage.PIM_RP_ANNOUNCE_FILTER,
-        CiscoXrStructureUsage.PIM_RP_CANDIDATE_ACL,
-        CiscoXrStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
-        CiscoXrStructureUsage.PIM_SPT_THRESHOLD_ACL,
-        CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
-        CiscoXrStructureUsage.SSH_IPV4_ACL);
-    markIpv6Acls(
-        CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
-        CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT,
-        CiscoXrStructureUsage.LINE_ACCESS_CLASS_LIST6,
-        CiscoXrStructureUsage.NTP_ACCESS_GROUP,
-        CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
-        CiscoXrStructureUsage.SSH_IPV6_ACL,
-        CiscoXrStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
-        CiscoXrStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT);
     markAcls(
         CiscoXrStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
         CiscoXrStructureUsage.COPS_LISTENER_ACCESS_LIST,
@@ -2647,6 +2573,23 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                   convertMatchesEveryToCommunitySetMatchExpr(communitySet, c));
           c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(communitySet, c));
           c.getCommunitySetExprs().put(name, toCommunitySetExpr(communitySet, c));
+        });
+  }
+
+  private void convertExtcommunitySetRts(Configuration c) {
+    _extcommunitySetRts.forEach(
+        (name, extcommunitySetRt) -> {
+          String qualifiedName = computeExtcommunitySetRtName(name);
+          c.getCommunitySetMatchExprs()
+              .put(
+                  computeCommunitySetMatchAnyName(qualifiedName),
+                  convertMatchesAnyToCommunitySetMatchExpr(extcommunitySetRt, c));
+          c.getCommunitySetMatchExprs()
+              .put(
+                  computeCommunitySetMatchEveryName(qualifiedName),
+                  convertMatchesEveryToCommunitySetMatchExpr(extcommunitySetRt, c));
+          c.getCommunityMatchExprs().put(qualifiedName, toCommunityMatchExpr(extcommunitySetRt, c));
+          c.getCommunitySetExprs().put(qualifiedName, toCommunitySetExpr(extcommunitySetRt, c));
         });
   }
 

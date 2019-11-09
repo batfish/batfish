@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+import static org.batfish.bddreachability.BDDReachabilityUtils.computePortTransformationProtocolsBdd;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
@@ -46,7 +47,7 @@ public class TransformationToTransition {
     _bddPacket = bddPacket;
     _cache = new IdentityHashMap<>();
     _ipAccessListToBdd = ipAccessListToBdd;
-    _ipProtocolsWithPortsBdd = _bddPacket.getIpProtocol().getIpProtocolsWithPortsBdd();
+    _ipProtocolsWithPortsBdd = computePortTransformationProtocolsBdd(_bddPacket.getIpProtocol());
     _stepToTransition = new TransformationStepToTransition();
   }
 
