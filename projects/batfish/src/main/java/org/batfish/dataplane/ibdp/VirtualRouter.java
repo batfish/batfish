@@ -1195,7 +1195,7 @@ public class VirtualRouter implements Serializable {
           // Route could not be imported due to routing policy
           _prefixTracer.filtered(
               remoteRoute.getNetwork(),
-              ourConfigId.getHostname(),
+              remoteConfigId.getHostname(),
               remoteIp,
               remoteConfigId.getVrfName(),
               importPolicyName,
