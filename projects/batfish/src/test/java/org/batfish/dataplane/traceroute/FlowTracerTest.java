@@ -12,6 +12,7 @@ import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.dataplane.traceroute.FlowTracer.buildFirewallSessionTraceInfo;
 import static org.batfish.dataplane.traceroute.FlowTracer.initialFlowTracer;
+import static org.batfish.dataplane.traceroute.FlowTracer.matchSessionReturnFlow;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -20,6 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -30,6 +32,11 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDOps;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Fib;
@@ -432,7 +439,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildFirewallSessionTraceInfo_protocolWithoutPorts() {
+  public void testBuildFirewallSessionTraceInfo_protocolWithoutSessions() {
     Flow flow =
         Flow.builder()
             .setIngressNode("node")
@@ -450,7 +457,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildFirewallSessionTraceInfo_protocolWithPorts() {
+  public void testBuildFirewallSessionTraceInfo_protocolWithSessions() {
     Flow flow =
         Flow.builder()
             .setIngressNode("node")
@@ -465,5 +472,67 @@ public final class FlowTracerTest {
     FirewallSessionInterfaceInfo ifaceSessionInfo =
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, null);
     assertNotNull(buildFirewallSessionTraceInfo(null, lastHop, "", flow, flow, ifaceSessionInfo));
+  }
+
+  @Test
+  public void testMatchSessionReturnFlow() {
+    BDDPacket pkt = new BDDPacket();
+    MemoizedIpAccessListToBdd toBdd =
+        new MemoizedIpAccessListToBdd(
+            pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), ImmutableMap.of());
+
+    Ip dstIp = Ip.parse("1.1.1.1");
+    Ip srcIp = Ip.parse("2.2.2.2");
+
+    Flow.Builder fb =
+        Flow.builder()
+            .setIngressNode("node")
+            .setIngressVrf("vrf")
+            .setDstIp(dstIp)
+            .setSrcIp(srcIp)
+            .setTag("");
+
+    BDD returnFlowDstIpBdd = pkt.getDstIp().value(srcIp.asLong());
+    BDD returnFlowSrcIpBdd = pkt.getSrcIp().value(dstIp.asLong());
+
+    // TCP
+    {
+      Flow flow = fb.setIpProtocol(IpProtocol.TCP).setDstPort(100).setSrcPort(20).build();
+      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow));
+      assertEquals(
+          returnFlowBdd,
+          BDDOps.andNull(
+              returnFlowDstIpBdd,
+              returnFlowSrcIpBdd,
+              pkt.getDstPort().value(flow.getSrcPort()),
+              pkt.getSrcPort().value(flow.getDstPort()),
+              pkt.getIpProtocol().value(flow.getIpProtocol())));
+    }
+
+    // UDP
+    {
+      Flow flow = fb.setIpProtocol(IpProtocol.UDP).setDstPort(100).setSrcPort(20).build();
+      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow));
+      assertEquals(
+          returnFlowBdd,
+          BDDOps.andNull(
+              returnFlowDstIpBdd,
+              returnFlowSrcIpBdd,
+              pkt.getDstPort().value(flow.getSrcPort()),
+              pkt.getSrcPort().value(flow.getDstPort()),
+              pkt.getIpProtocol().value(flow.getIpProtocol())));
+    }
+
+    // ICMP
+    {
+      Flow flow = fb.setIpProtocol(IpProtocol.ICMP).setIcmpType(100).setIcmpCode(20).build();
+      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow));
+      assertEquals(
+          returnFlowBdd,
+          BDDOps.andNull(
+              returnFlowDstIpBdd,
+              returnFlowSrcIpBdd,
+              pkt.getIpProtocol().value(flow.getIpProtocol())));
+    }
   }
 }

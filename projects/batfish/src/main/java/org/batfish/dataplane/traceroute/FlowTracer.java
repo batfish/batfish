@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsFirst;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
@@ -53,6 +52,7 @@ import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -61,7 +61,10 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.Evaluator;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
@@ -1020,7 +1023,7 @@ class FlowTracer {
       Flow originalFlow,
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
     IpProtocol ipProtocol = currentFlow.getIpProtocol();
-    if (!IpProtocol.IP_PROTOCOLS_WITH_PORTS.contains(ipProtocol)) {
+    if (!IpProtocol.IP_PROTOCOLS_WITH_SESSIONS.contains(ipProtocol)) {
       // TODO verify only protocols with ports can have sessions
       return null;
     }
@@ -1036,13 +1039,29 @@ class FlowTracer {
         currentNode,
         action,
         firewallSessionInterfaceInfo.getSessionInterfaces(),
-        match5Tuple(
-            currentFlow.getDstIp(),
-            currentFlow.getDstPort(),
-            currentFlow.getSrcIp(),
-            currentFlow.getSrcPort(),
-            ipProtocol),
+        matchSessionReturnFlow(currentFlow),
         sessionTransformation(originalFlow, currentFlow));
+  }
+
+  @VisibleForTesting
+  static AclLineMatchExpr matchSessionReturnFlow(Flow forwardFlow) {
+    IpProtocol ipProtocol = forwardFlow.getIpProtocol();
+    checkArgument(
+        IpProtocol.IP_PROTOCOLS_WITH_SESSIONS.contains(ipProtocol),
+        "cannot match session return flow with IP protocol %s",
+        ipProtocol);
+    HeaderSpace.Builder hb =
+        HeaderSpace.builder()
+            .setSrcIps(forwardFlow.getDstIp().toIpSpace())
+            .setDstIps(forwardFlow.getSrcIp().toIpSpace())
+            .setIpProtocols(ImmutableList.of(ipProtocol));
+
+    if (forwardFlow.getSrcPort() != null) {
+      hb.setSrcPorts(ImmutableList.of(SubRange.singleton(forwardFlow.getDstPort())))
+          .setDstPorts(ImmutableList.of(SubRange.singleton(forwardFlow.getSrcPort())));
+    }
+
+    return new MatchHeaderSpace(hb.build());
   }
 
   private void buildAcceptTrace() {

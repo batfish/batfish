@@ -78,7 +78,7 @@ final class BDDReachabilityAnalysisSessionFactory {
     _srcManagers = srcManagers;
     _lastHopManager = lastHopManager;
     BDD ipProtocolsWithSessionsBdd =
-        IpProtocol.IP_PROTOCOLS_WITH_PORTS.stream()
+        IpProtocol.IP_PROTOCOLS_WITH_SESSIONS.stream()
             .map(bddPacket.getIpProtocol()::value)
             .reduce(bddPacket.getFactory().one(), BDD::or);
     _sessionBdds =
