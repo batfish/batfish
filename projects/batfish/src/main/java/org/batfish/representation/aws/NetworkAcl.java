@@ -158,13 +158,16 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
     }
     String portStr;
     if (protocol == IpProtocol.ICMP) {
-      if (entry.getIcmpTypeCode().getType() == -1 && entry.getIcmpTypeCode().getCode() == -1) {
+      if (entry.getIcmpTypeCode().getType() == -1) {
         portStr = "ALL";
       } else {
         portStr =
             String.format(
                 "[type=%s, code=%s]",
-                entry.getIcmpTypeCode().getType(), entry.getIcmpTypeCode().getCode());
+                entry.getIcmpTypeCode().getType(),
+                entry.getIcmpTypeCode().getCode() == -1
+                    ? "ALL"
+                    : entry.getIcmpTypeCode().getCode());
       }
     } else if ((fromPort == 0 && toPort == 65535)) {
       portStr = "ALL";
@@ -182,6 +185,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
       int lineNumber, String protocolStr, String portStr, Prefix prefix, LineAction action) {
     String actionStr = action == LineAction.PERMIT ? "ALLOW" : "DENY";
     String lineNumberStr = lineNumber == 32767 ? "*" : Integer.toString(lineNumber);
+    // order mimics how things are ordered on the AWS console
     return String.format("%s %s %s %s %s", lineNumberStr, protocolStr, portStr, prefix, actionStr);
   }
 
