@@ -39,6 +39,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_GROUP_ID = "GroupId";
   String JSON_KEY_GROUP_NAME = "GroupName";
   String JSON_KEY_GROUPS = "Groups";
+  String JSON_KEY_ICMP_TYPE_CODE = "IcmpTypeCode";
   String JSON_KEY_INSTANCE_ID = "InstanceId";
   String JSON_KEY_INSTANCE_STATUSES = "InstanceStatuses";
   String JSON_KEY_INSTANCES = "Instances";
