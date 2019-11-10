@@ -163,7 +163,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
     // add network acls on the subnet node
     List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
-    if (myNetworkAcls.size() > 0) {
+    if (!myNetworkAcls.isEmpty()) {
       if (myNetworkAcls.size() > 1) {
         List<String> aclIds =
             myNetworkAcls.stream().map(NetworkAcl::getId).collect(ImmutableList.toImmutableList());
