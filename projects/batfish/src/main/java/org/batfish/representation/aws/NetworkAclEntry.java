@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_BLOCK;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_EGRESS;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_ICMP_TYPE_CODE;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_PORT_RANGE;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_PROTOCOL;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_RULE_ACTION;
@@ -32,6 +33,8 @@ final class NetworkAclEntry implements Serializable {
 
   private final int _ruleNumber;
 
+  @Nullable private final IcmpTypeCode _icmpTypeCode;
+
   @Nullable private final PortRange _portRange;
 
   @JsonCreator
@@ -41,15 +44,19 @@ final class NetworkAclEntry implements Serializable {
       @Nullable @JsonProperty(JSON_KEY_EGRESS) Boolean egress,
       @Nullable @JsonProperty(JSON_KEY_PROTOCOL) String protocol,
       @Nullable @JsonProperty(JSON_KEY_RULE_NUMBER) Integer ruleNumber,
+      @Nullable @JsonProperty(JSON_KEY_ICMP_TYPE_CODE) IcmpTypeCode icmpTypeCode,
       @Nullable @JsonProperty(JSON_KEY_PORT_RANGE) PortRange portRange) {
     checkArgument(prefix != null, "Prefix cannot be null for network acl entry");
     checkArgument(ruleAction != null, "Rule action cannot be null for network acl entry");
     checkArgument(egress != null, "Egress cannot be null for network acl entry");
     checkArgument(protocol != null, "Protocol cannot be null for network acl entry");
     checkArgument(ruleNumber != null, "Rule number cannot be null for network acl entry");
+    checkArgument(
+        !protocol.equals("1") || icmpTypeCode != null,
+        "IcmpTypeCode must not be null when protocol is ICMP (1)");
 
     return new NetworkAclEntry(
-        prefix, ruleAction.equals("allow"), egress, protocol, ruleNumber, portRange);
+        prefix, ruleAction.equals("allow"), egress, protocol, ruleNumber, icmpTypeCode, portRange);
   }
 
   NetworkAclEntry(
@@ -58,12 +65,14 @@ final class NetworkAclEntry implements Serializable {
       boolean isEgress,
       String protocol,
       int ruleNumber,
+      @Nullable IcmpTypeCode icmpTypeCode,
       @Nullable PortRange portRange) {
     _cidrBlock = prefix;
     _isAllow = isAllow;
     _isEgress = isEgress;
     _protocol = protocol;
     _ruleNumber = ruleNumber;
+    _icmpTypeCode = icmpTypeCode;
     _portRange = portRange;
   }
 
@@ -78,6 +87,11 @@ final class NetworkAclEntry implements Serializable {
 
   boolean getIsEgress() {
     return _isEgress;
+  }
+
+  @Nullable
+  public IcmpTypeCode getIcmpTypeCode() {
+    return _icmpTypeCode;
   }
 
   @Nullable

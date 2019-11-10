@@ -1,0 +1,41 @@
+{
+  "NetworkAcls": [
+    {
+      "Associations": [
+        {
+          "NetworkAclAssociationId": "aclassoc-1f248c78",
+          "NetworkAclId": "acl-4db39c28",
+          "SubnetId": "subnet-1f315846"
+        }
+      ],
+      "Entries": [
+        {
+          "CidrBlock": "0.0.0.0/0",
+          "Egress": true,
+          "IcmpTypeCode": {
+            "Type": -1,
+            "Code": -1
+          },
+          "Protocol": "1",
+          "RuleAction": "allow",
+          "RuleNumber": 100
+        },
+        {
+          "CidrBlock": "0.0.0.0/0",
+          "Egress": true,
+          "IcmpTypeCode": {
+            "Type": 0,
+            "Code": 1
+          },
+          "Protocol": "1",
+          "RuleAction": "allow",
+          "RuleNumber": 200
+        }
+      ],
+      "IsDefault": true,
+      "NetworkAclId": "acl-4db39c28",
+      "Tags": [],
+      "VpcId": "vpc-f8fad69d"
+    }
+  ]
+}
