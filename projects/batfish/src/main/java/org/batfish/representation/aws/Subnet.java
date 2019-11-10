@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -28,6 +27,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
 
 /**
@@ -94,24 +94,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return Ip.create(generatedIp);
   }
 
-  private NetworkAcl findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {
-    List<NetworkAcl> matchingAcls =
-        networkAcls.values().stream()
-            .filter((NetworkAcl acl) -> acl.getVpcId().equals(_vpcId))
-            .collect(Collectors.toList());
-
-    if (matchingAcls.isEmpty()) {
-      throw new BatfishException("Could not find a network ACL for subnet " + _subnetId);
-    }
-
-    if (matchingAcls.size() > 1) {
-      List<String> aclIds =
-          matchingAcls.stream().map(NetworkAcl::getId).collect(Collectors.toList());
-      throw new BatfishException(
-          String.format("Found multiple network ACLs %s for subnet %s", aclIds, _subnetId));
-    }
-
-    return matchingAcls.get(0);
+  private List<NetworkAcl> findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {
+    return networkAcls.values().stream()
+        .filter((NetworkAcl acl) -> acl.getVpcId().equals(_vpcId))
+        .filter(
+            acl ->
+                acl.getAssociations().stream()
+                    .map(NetworkAclAssociation::getSubnetId)
+                    .anyMatch(_subnetId::equals))
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nonnull
@@ -155,17 +146,28 @@ public class Subnet implements AwsVpcEntity, Serializable {
     addStaticRoute(vpcConfigNode, toStaticRoute(_cidrBlock, Utils.getInterfaceIp(cfgNode, _vpcId)));
 
     // add network acls on the subnet node
-    NetworkAcl myNetworkAcl = findMyNetworkAcl(region.getNetworkAcls());
+    List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls());
+    if (myNetworkAcls.size() > 0) {
+      if (myNetworkAcls.size() > 1) {
+        List<String> aclIds =
+            myNetworkAcls.stream().map(NetworkAcl::getId).collect(ImmutableList.toImmutableList());
+        warnings.redFlag(
+            String.format(
+                "Found multiple network ACLs %s for subnet %s. Using %s.",
+                aclIds, _subnetId, myNetworkAcls.get(0).getId()));
+      }
+      IpAccessList inAcl = myNetworkAcls.get(0).getIngressAcl();
+      IpAccessList outAcl = myNetworkAcls.get(0).getEgressAcl();
+      cfgNode.getIpAccessLists().put(inAcl.getName(), inAcl);
+      cfgNode.getIpAccessLists().put(outAcl.getName(), outAcl);
 
-    IpAccessList inAcl = myNetworkAcl.getIngressAcl();
-    IpAccessList outAcl = myNetworkAcl.getEgressAcl();
-    cfgNode.getIpAccessLists().put(inAcl.getName(), inAcl);
-    cfgNode.getIpAccessLists().put(outAcl.getName(), outAcl);
-
-    // add ACLs to interface facing the vpc
-    Interface vpcIfaceOnSubnet = cfgNode.getAllInterfaces().get(vpcConfigNode.getHostname());
-    vpcIfaceOnSubnet.setIncomingFilter(inAcl);
-    vpcIfaceOnSubnet.setOutgoingFilter(outAcl);
+      // add ACLs to interface facing the vpc
+      Interface vpcIfaceOnSubnet = cfgNode.getAllInterfaces().get(vpcConfigNode.getHostname());
+      vpcIfaceOnSubnet.setIncomingFilter(inAcl);
+      vpcIfaceOnSubnet.setOutgoingFilter(outAcl);
+    } else {
+      warnings.redFlag("Could not find a network ACL for subnet " + _subnetId);
+    }
 
     // 1. connect the vpn gateway to the subnet if one exists
     // 2. create appropriate static routes
