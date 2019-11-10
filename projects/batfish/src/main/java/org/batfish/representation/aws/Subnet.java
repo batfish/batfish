@@ -7,6 +7,7 @@ import static org.batfish.representation.aws.Utils.toStaticRoute;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -94,14 +95,29 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return Ip.create(generatedIp);
   }
 
-  private List<NetworkAcl> findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {
+  @VisibleForTesting
+  static List<NetworkAcl> findMyNetworkAcl(
+      Map<String, NetworkAcl> networkAcls, String vpcId, String subnetId) {
+    List<NetworkAcl> subnetAcls =
+        networkAcls.values().stream()
+            .filter(acl -> acl.getVpcId().equals(vpcId))
+            .filter(
+                acl ->
+                    acl.getAssociations().stream()
+                        .map(NetworkAclAssociation::getSubnetId)
+                        .anyMatch(subnetId::equals))
+            .collect(ImmutableList.toImmutableList());
+
+    if (!subnetAcls.isEmpty()) {
+      return subnetAcls;
+    }
+
+    /*
+     use the default for the VPC if we don't find an explicit association. this is mostly a
+     defensive move, as AWS appears to provide explicit associations at the moment
+    */
     return networkAcls.values().stream()
-        .filter((NetworkAcl acl) -> acl.getVpcId().equals(_vpcId))
-        .filter(
-            acl ->
-                acl.getAssociations().stream()
-                    .map(NetworkAclAssociation::getSubnetId)
-                    .anyMatch(_subnetId::equals))
+        .filter(acl -> acl.getVpcId().equals(vpcId) && acl.isDefault())
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -146,7 +162,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     addStaticRoute(vpcConfigNode, toStaticRoute(_cidrBlock, Utils.getInterfaceIp(cfgNode, _vpcId)));
 
     // add network acls on the subnet node
-    List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls());
+    List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
     if (myNetworkAcls.size() > 0) {
       if (myNetworkAcls.size() > 1) {
         List<String> aclIds =
