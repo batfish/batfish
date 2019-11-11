@@ -331,6 +331,17 @@ public final class BgpProtocolHelper {
             originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP) ? localIp : originalRouteNhip);
       }
     }
+
+    /*
+    Routes can be aggregate only when generated locally. When transiting across nodes they must be BGP or
+    IBGP.
+
+    This is a bit of a hack since we currently overload AGGREGATE to mean aggregate protocol (i.e., just
+    like on Juniper) AND to mean "locally generated". :(
+    */
+    if (routeBuilder.getProtocol() == RoutingProtocol.AGGREGATE) {
+      routeBuilder.setProtocol(isEbgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
+    }
   }
 
   private BgpProtocolHelper() {}

@@ -3,6 +3,7 @@ package org.batfish.dataplane.protocols;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertNonBgpRouteToBgpRoute;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
@@ -165,7 +167,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * and the class variables representing the BGP session.
    */
   private void runTransformBgpRoutePostExport(Bgpv4Route.Builder routeBuilder) {
-    BgpProtocolHelper.transformBgpRoutePostExport(
+    transformBgpRoutePostExport(
         routeBuilder,
         _sessionProperties.isEbgp(),
         ConfedSessionType.NO_CONFED,
@@ -371,5 +373,14 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                 RoutingProtocol.BGP)
             .getTag(),
         equalTo(tag));
+  }
+
+  @Test
+  public void testAggregateProtocolIsCleared() {
+    Builder routeBuilder = Bgpv4Route.builder().setProtocol(RoutingProtocol.AGGREGATE);
+    transformBgpRoutePostExport(
+        routeBuilder, true, ConfedSessionType.NO_CONFED, 1, Ip.MAX, Ip.ZERO);
+    assertThat(
+        "Protocol overriden to BGP", routeBuilder.getProtocol(), equalTo(RoutingProtocol.BGP));
   }
 }
