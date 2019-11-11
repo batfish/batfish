@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
+import static org.batfish.representation.aws.Subnet.findMyNetworkAcl;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -12,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -88,7 +90,8 @@ public class SubnetTest {
                         "acl",
                         vpc.getId(),
                         ImmutableList.of(new NetworkAclAssociation(subnet.getId())),
-                        ImmutableList.of())))
+                        ImmutableList.of(),
+                        true)))
             .setRouteTables(
                 ImmutableMap.of(
                     "rt1",
@@ -179,7 +182,8 @@ public class SubnetTest {
                         "acl",
                         vpc.getId(),
                         ImmutableList.of(new NetworkAclAssociation(subnet.getId())),
-                        ImmutableList.of())))
+                        ImmutableList.of(),
+                        true)))
             .setRouteTables(
                 ImmutableMap.of(
                     "rt1",
@@ -263,7 +267,8 @@ public class SubnetTest {
                         "acl",
                         vpc.getId(),
                         ImmutableList.of(new NetworkAclAssociation(subnet.getId())),
-                        ImmutableList.of())))
+                        ImmutableList.of(),
+                        true)))
             .setRouteTables(
                 ImmutableMap.of(
                     "rt1",
@@ -317,5 +322,86 @@ public class SubnetTest {
                 toStaticRoute(Prefix.ZERO, Utils.getInterfaceIp(igwConfig, subnet.getId())),
                 toStaticRoute(privatePrefix, Utils.getInterfaceIp(vpcConfig, subnet.getId())),
                 toStaticRoute(publicIp, subnetCfg.getAllInterfaces().get(subnet.getId())))));
+  }
+
+  @Test
+  public void testFindMyNetworkAclNoMatchingVpc() {
+    Map<String, NetworkAcl> networkAcls =
+        ImmutableMap.of(
+            "aclId",
+            new NetworkAcl("aclId", "novpc", ImmutableList.of(), ImmutableList.of(), true));
+
+    assertThat(findMyNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of()));
+  }
+
+  @Test
+  public void testFindMyNetworkAclPickRightSubnet() {
+    NetworkAcl networkAcl =
+        new NetworkAcl(
+            "acl",
+            "vpc",
+            ImmutableList.of(new NetworkAclAssociation("subnet")),
+            ImmutableList.of(),
+            true);
+    Map<String, NetworkAcl> networkAcls =
+        ImmutableMap.of(
+            networkAcl.getId(),
+            networkAcl,
+            "otherAcl",
+            new NetworkAcl(
+                "otherAcl",
+                "vpc",
+                ImmutableList.of(new NetworkAclAssociation("otherSubnet")),
+                ImmutableList.of(),
+                true));
+
+    assertThat(
+        findMyNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
+  }
+
+  @Test
+  public void testFindMyNetworkAclPickRightVpc() {
+    NetworkAcl networkAcl =
+        new NetworkAcl(
+            "acl",
+            "vpc",
+            ImmutableList.of(
+                new NetworkAclAssociation("subnet"), new NetworkAclAssociation("otherSubnet")),
+            ImmutableList.of(),
+            true);
+    Map<String, NetworkAcl> networkAcls =
+        ImmutableMap.of(
+            networkAcl.getId(),
+            networkAcl,
+            "otherAcl",
+            new NetworkAcl(
+                "otherAcl",
+                "otherVpc",
+                ImmutableList.of(new NetworkAclAssociation("subnet")),
+                ImmutableList.of(),
+                true));
+
+    assertThat(
+        findMyNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
+  }
+
+  @Test
+  public void testFindMyNetworkAclPickDefaultInVpc() {
+    NetworkAcl networkAcl =
+        new NetworkAcl("acl", "vpc", ImmutableList.of(), ImmutableList.of(), true);
+    Map<String, NetworkAcl> networkAcls =
+        ImmutableMap.of(
+            networkAcl.getId(),
+            networkAcl,
+            "otherAcl",
+            new NetworkAcl(
+                "otherAcl",
+                "otherVpc",
+                ImmutableList.of(new NetworkAclAssociation("subnet")),
+                ImmutableList.of(),
+                true));
+
+    assertThat(
+        findMyNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
   }
 }

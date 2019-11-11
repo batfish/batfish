@@ -60,7 +60,8 @@ public class NetworkAclTest {
                             "6",
                             100,
                             null,
-                            new PortRange(3306, 3306)))))));
+                            new PortRange(3306, 3306))),
+                    true))));
   }
 
   @Test
@@ -100,7 +101,8 @@ public class NetworkAclTest {
                             "1",
                             200,
                             new IcmpTypeCode(0, 1),
-                            null))))));
+                            null)),
+                    true))));
   }
 
   @Test
