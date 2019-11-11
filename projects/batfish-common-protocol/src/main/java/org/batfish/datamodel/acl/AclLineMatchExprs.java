@@ -274,16 +274,4 @@ public final class AclLineMatchExprs {
   public static PermittedByAcl permittedByAcl(String aclName) {
     return new PermittedByAcl(aclName);
   }
-
-  public static MatchHeaderSpace match5Tuple(
-      Ip srcIp, int srcPort, Ip dstIp, int dstPort, IpProtocol ipProtocol) {
-    return new MatchHeaderSpace(
-        HeaderSpace.builder()
-            .setSrcIps(srcIp.toIpSpace())
-            .setSrcPorts(ImmutableList.of(SubRange.singleton(srcPort)))
-            .setDstIps(dstIp.toIpSpace())
-            .setDstPorts(ImmutableList.of(SubRange.singleton(dstPort)))
-            .setIpProtocols(ImmutableList.of(ipProtocol))
-            .build());
-  }
 }
