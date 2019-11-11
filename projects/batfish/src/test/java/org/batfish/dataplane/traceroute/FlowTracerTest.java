@@ -444,6 +444,22 @@ public final class FlowTracerTest {
         Flow.builder()
             .setIngressNode("node")
             .setIngressVrf("vrf")
+            .setIpProtocol(IpProtocol.HOPOPT)
+            .setTag("")
+            .build();
+
+    NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
+    FirewallSessionInterfaceInfo ifaceSessionInfo =
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, null);
+    assertNull(buildFirewallSessionTraceInfo(null, lastHop, "", flow, flow, ifaceSessionInfo));
+  }
+
+  @Test
+  public void testBuildFirewallSessionTraceInfo_icmp() {
+    Flow flow =
+        Flow.builder()
+            .setIngressNode("node")
+            .setIngressVrf("vrf")
             .setIpProtocol(IpProtocol.ICMP)
             .setIcmpCode(0)
             .setIcmpType(0)
@@ -453,7 +469,7 @@ public final class FlowTracerTest {
     NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
     FirewallSessionInterfaceInfo ifaceSessionInfo =
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, null);
-    assertNull(buildFirewallSessionTraceInfo(null, lastHop, "", flow, flow, ifaceSessionInfo));
+    assertNotNull(buildFirewallSessionTraceInfo(null, lastHop, "", flow, flow, ifaceSessionInfo));
   }
 
   @Test
