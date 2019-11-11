@@ -16,7 +16,6 @@ import static org.batfish.datamodel.IpAccessListLine.REJECT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
@@ -42,6 +41,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.dataplane.traceroute.FlowTracer.matchSessionReturnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -1655,7 +1655,7 @@ public class TracerouteEngineImplTest {
                               c1.getHostname(),
                               new ForwardOutInterface(i1Name, null),
                               ImmutableSet.of(i2Name),
-                              match5Tuple(dstIp, dstPort, srcIp, srcPort, ipProtocol),
+                              matchSessionReturnFlow(flow),
                               null))))));
     }
 
@@ -1704,6 +1704,7 @@ public class TracerouteEngineImplTest {
       Ip dstIp = Ip.parse("1.1.4.2");
       int dstPort = 100;
       int srcPort = 200;
+      int poolPort = 2000;
       IpProtocol ipProtocol = IpProtocol.TCP;
       Flow flow =
           Flow.builder()
@@ -1716,6 +1717,7 @@ public class TracerouteEngineImplTest {
               .setDstPort(dstPort)
               .setTag("TAG")
               .build();
+      Flow transformedFlow = flow.toBuilder().setSrcIp(poolIp).setSrcPort(poolPort).build();
       List<TraceAndReverseFlow> traces =
           tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
       assertThat(
@@ -1740,7 +1742,7 @@ public class TracerouteEngineImplTest {
                               c1.getHostname(),
                               new ForwardOutInterface(i1Name, null),
                               ImmutableSet.of(i4Name),
-                              match5Tuple(dstIp, dstPort, poolIp, 2000, ipProtocol),
+                              matchSessionReturnFlow(transformedFlow),
                               always()
                                   .apply(
                                       assignDestinationIp(srcIp, srcIp),
@@ -1840,7 +1842,7 @@ public class TracerouteEngineImplTest {
                               new ForwardOutInterface(
                                   c2i1Name, NodeInterfacePair.of(c1.getHostname(), c1i1Name)),
                               ImmutableSet.of(c2i2Name),
-                              match5Tuple(dstIp, dstPort, srcIp, srcPort, ipProtocol),
+                              matchSessionReturnFlow(flow),
                               null))))));
     }
   }

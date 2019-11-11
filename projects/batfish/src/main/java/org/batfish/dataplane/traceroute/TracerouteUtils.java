@@ -230,8 +230,8 @@ public final class TracerouteUtils {
       transformationStepsBuilder.add(assignSourceIp(origDstIp, origDstIp));
     }
 
-    Integer origDstPort = inputFlow.getDstPort();
-    if (!origDstPort.equals(currentFlow.getDstPort())) {
+    @Nullable Integer origDstPort = inputFlow.getDstPort();
+    if (origDstPort != null && !origDstPort.equals(currentFlow.getDstPort())) {
       transformationStepsBuilder.add(assignSourcePort(origDstPort, origDstPort));
     }
 
@@ -242,8 +242,8 @@ public final class TracerouteUtils {
               origSrcIp, origSrcIp));
     }
 
-    Integer origSrcPort = inputFlow.getSrcPort();
-    if (!origSrcPort.equals(currentFlow.getSrcPort())) {
+    @Nullable Integer origSrcPort = inputFlow.getSrcPort();
+    if (origSrcPort != null && !origSrcPort.equals(currentFlow.getSrcPort())) {
       transformationStepsBuilder.add(
           org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort(
               origSrcPort, origSrcPort));

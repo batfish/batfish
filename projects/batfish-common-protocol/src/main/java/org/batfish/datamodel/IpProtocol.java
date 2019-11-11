@@ -274,6 +274,9 @@ public enum IpProtocol {
   public static final Set<IpProtocol> IP_PROTOCOLS_WITH_PORTS =
       ImmutableSet.of(TCP, UDP, DCCP, SCTP);
 
+  /** Set of IP protocols for which we will establish sessions. TODO may be vendor-specific. */
+  public static final Set<IpProtocol> IP_PROTOCOLS_WITH_SESSIONS = ImmutableSet.of(TCP, UDP, ICMP);
+
   private static final Map<Integer, IpProtocol> NUMBER_TO_PROTOCOL_MAP = buildNumberToProtocolMap();
 
   private static Map<Integer, IpProtocol> buildNumberToProtocolMap() {
