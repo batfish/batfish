@@ -50,6 +50,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_IP_PERMISSIONS_EGRESS = "IpPermissionsEgress";
   String JSON_KEY_IP_PROTOCOL = "IpProtocol";
   String JSON_KEY_IP_RANGES = "IpRanges";
+  String JSON_KEY_IS_DEFAULT = "IsDefault";
   String JSON_KEY_KEY = "Key";
   String JSON_KEY_MAIN = "Main";
   String JSON_KEY_MULTI_AZ = "MultiAZ";

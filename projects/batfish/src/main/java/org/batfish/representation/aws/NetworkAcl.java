@@ -80,29 +80,35 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _vpcId;
 
+  private final boolean _isDefault;
+
   @JsonCreator
   private static NetworkAcl create(
       @Nullable @JsonProperty(JSON_KEY_NETWORK_ACL_ID) String networkAclId,
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
       @Nullable @JsonProperty(JSON_KEY_ASSOCIATIONS) List<NetworkAclAssociation> associations,
-      @Nullable @JsonProperty(JSON_KEY_ENTRIES) List<NetworkAclEntry> entries) {
+      @Nullable @JsonProperty(JSON_KEY_ENTRIES) List<NetworkAclEntry> entries,
+      @Nullable @JsonProperty(JSON_KEY_IS_DEFAULT) Boolean isDefault) {
     checkArgument(networkAclId != null, "Network ACL id cannot be null");
     checkArgument(vpcId != null, "VPC id cannot be null for network ACL");
     checkArgument(associations != null, "Associations list cannot be null for network ACL");
     checkArgument(entries != null, "Entries list cannot be null for network ACL");
+    checkArgument(isDefault != null, "IsDefault cannot be null for network ACL");
 
-    return new NetworkAcl(networkAclId, vpcId, associations, entries);
+    return new NetworkAcl(networkAclId, vpcId, associations, entries, isDefault);
   }
 
   NetworkAcl(
       String networkAclId,
       String vpcId,
       List<NetworkAclAssociation> associations,
-      List<NetworkAclEntry> entries) {
+      List<NetworkAclEntry> entries,
+      boolean isDefault) {
     _networkAclId = networkAclId;
     _vpcId = vpcId;
     _networkAclAssociations = associations;
     _entries = entries;
+    _isDefault = isDefault;
   }
 
   private IpAccessList getAcl(boolean isEgress) {
@@ -204,6 +210,10 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
 
   IpAccessList getIngressAcl() {
     return getAcl(false);
+  }
+
+  public boolean isDefault() {
+    return _isDefault;
   }
 
   @Nonnull
