@@ -757,6 +757,7 @@ public class VirtualRouter implements Serializable {
     }
     // first import aggregates
     switch (_c.getConfigurationFormat()) {
+      case FLAT_JUNIPER:
       case JUNIPER:
       case JUNIPER_SWITCH:
         return;
