@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.DscpType;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
@@ -275,5 +274,4 @@ public final class AclLineMatchExprs {
   public static PermittedByAcl permittedByAcl(String aclName) {
     return new PermittedByAcl(aclName);
   }
-
 }
