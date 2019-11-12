@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.junit.Test;
 
 /** Tests for {@link PrefixTracerQuestion} */
@@ -12,7 +11,7 @@ public class PrefixTracerQuestionTest {
   @Test
   public void testConstructorHasDefaultNodeSpecifier() {
     PrefixTracerQuestion ptq = new PrefixTracerQuestion();
-    assertThat(ptq.getNodes(), equalTo(NodesSpecifier.ALL));
+    assertThat(ptq.getNodes(), nullValue());
   }
 
   @Test
