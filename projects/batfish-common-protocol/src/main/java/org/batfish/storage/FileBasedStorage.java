@@ -58,6 +58,7 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -87,6 +88,7 @@ import org.batfish.role.NodeRolesData;
 public final class FileBasedStorage implements StorageProvider {
 
   private static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
+  private static final String RELPATH_ADDRESS_SPACE_PARTITIONS = "address_space_partitions.json";
   private static final String RELPATH_BGP_TOPOLOGY = "bgp_topology.json";
   private static final String RELPATH_EIGRP_TOPOLOGY = "eigrp_topology.json";
   private static final String RELPATH_LAYER2_TOPOLOGY = "layer2_topology.json";
@@ -936,6 +938,11 @@ public final class FileBasedStorage implements StorageProvider {
     return FileUtils.readFileToString(getPojoTopologyPath(networkId, snapshotId).toFile(), UTF_8);
   }
 
+  private @Nonnull Path getAddressSpacePartitionPath(NetworkSnapshot snapshot) {
+    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_ADDRESS_SPACE_PARTITIONS);
+  }
+
   private @Nonnull Path getBgpTopologyPath(NetworkSnapshot snapshot) {
     return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_BGP_TOPOLOGY);
@@ -1057,6 +1064,16 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
+  @Nonnull
+  @Override
+  public AddressSpacePartitions loadAddressSpacePartitions(NetworkSnapshot networkSnapshot)
+      throws IOException {
+    return BatfishObjectMapper.mapper()
+        .readValue(
+            CommonUtil.readFile(getAddressSpacePartitionPath(networkSnapshot)),
+            AddressSpacePartitions.class);
+  }
+
   @Override
   public @Nonnull BgpTopology loadBgpTopology(NetworkSnapshot networkSnapshot) throws IOException {
     return BatfishObjectMapper.mapper()
@@ -1097,6 +1114,15 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     return BatfishObjectMapper.mapper()
         .readValue(CommonUtil.readFile(getVxlanTopologyPath(networkSnapshot)), VxlanTopology.class);
+  }
+
+  @Override
+  public void storeAddressSpacePartitions(
+      AddressSpacePartitions addressSpacePartitions, NetworkSnapshot networkSnapshot)
+      throws IOException {
+    Path path = getAddressSpacePartitionPath(networkSnapshot);
+    mkdirs(path.getParent());
+    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(addressSpacePartitions), UTF_8);
   }
 
   @Override

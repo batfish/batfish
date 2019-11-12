@@ -51,6 +51,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
             .setOspfTopology(topologyProvider.getInitialOspfTopology(networkSnapshot))
             .setRawLayer1PhysicalTopology(
                 topologyProvider.getRawLayer1PhysicalTopology(networkSnapshot))
+            .setAddressSpacePartitions(topologyProvider.getAddressSpacePartitions(networkSnapshot))
             .build();
 
     ComputeDataPlaneResult answer =

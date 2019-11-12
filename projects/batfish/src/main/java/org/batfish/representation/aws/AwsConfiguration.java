@@ -4,6 +4,7 @@ import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -100,5 +101,26 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
         .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_INTERFACE_NAME))
         .map(BorderInterfaceInfo::new)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
+  @Nonnull
+  public Map<String, String> getAddressSpacePartitions() {
+    ImmutableMap.Builder<String, String> partitions = ImmutableMap.builder();
+    _regions.values().stream()
+        .flatMap(r -> r.getSubnets().values().stream())
+        .forEach(
+            subnet -> {
+              partitions.put(subnet.getId(), subnet.getVpcId());
+            });
+    _regions.values().stream()
+        .flatMap(r -> r.getInstances().values().stream())
+        .forEach(
+            instance -> {
+              if (instance.getVpcId() != null) {
+                partitions.put(instance.getId(), instance.getVpcId());
+              }
+            });
+    return partitions.build();
   }
 }

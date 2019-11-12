@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 
@@ -16,6 +17,12 @@ public interface GenericConfigObject extends Serializable {
    */
   @Nullable
   default List<BorderInterfaceInfo> getBorderInterfaces() {
+    return null;
+  }
+
+  /** TODO */
+  @Nullable
+  default Map<String, String> getAddressSpacePartitions() {
     return null;
   }
 }

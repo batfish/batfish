@@ -21,6 +21,7 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -130,6 +131,12 @@ public class IBatfishTestAdapter implements IBatfish {
 
     @Override
     public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public AddressSpacePartitions getAddressSpacePartitions(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 

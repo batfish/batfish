@@ -34,6 +34,7 @@ import org.batfish.common.topology.Layer2Node;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyUtil;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -177,7 +178,11 @@ public final class FixedPointTopologyTest {
         .setLayer3Topology(
             computeLayer3Topology(
                 computeRawLayer3Topology(
-                    Optional.of(l1), Optional.of(l1), Optional.of(l2), configs),
+                    Optional.of(l1),
+                    Optional.of(l1),
+                    Optional.of(l2),
+                    configs,
+                    AddressSpacePartitions.EMPTY),
                 ImmutableSet.of()))
         .setOspfTopology(OspfTopology.EMPTY)
         .setRawLayer1PhysicalTopology(Optional.of(l1))

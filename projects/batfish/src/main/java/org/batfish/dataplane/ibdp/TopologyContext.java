@@ -9,6 +9,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TunnelTopology;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -23,6 +24,7 @@ public final class TopologyContext implements TopologyContainer {
 
   public static final class Builder {
 
+    private @Nonnull AddressSpacePartitions _addressSpacePartitions;
     private @Nonnull BgpTopology _bgpTopology;
     private @Nonnull EigrpTopology _eigrpTopology;
     private @Nonnull IpsecTopology _ipsecTopology;
@@ -37,6 +39,7 @@ public final class TopologyContext implements TopologyContainer {
 
     public @Nonnull TopologyContext build() {
       return new TopologyContext(
+          _addressSpacePartitions,
           _bgpTopology,
           _eigrpTopology,
           _ipsecTopology,
@@ -51,6 +54,7 @@ public final class TopologyContext implements TopologyContainer {
     }
 
     private Builder() {
+      _addressSpacePartitions = AddressSpacePartitions.EMPTY;
       _bgpTopology = BgpTopology.EMPTY;
       _eigrpTopology = EigrpTopology.EMPTY;
       _ipsecTopology = IpsecTopology.EMPTY;
@@ -62,6 +66,12 @@ public final class TopologyContext implements TopologyContainer {
       _rawLayer1PhysicalTopology = Optional.empty();
       _tunnelTopology = TunnelTopology.EMPTY;
       _vxlanTopology = VxlanTopology.EMPTY;
+    }
+
+    public @Nonnull Builder setAddressSpacePartitions(
+        AddressSpacePartitions addressSpacePartitions) {
+      _addressSpacePartitions = addressSpacePartitions;
+      return this;
     }
 
     public @Nonnull Builder setBgpTopology(BgpTopology bgpTopology) {
@@ -126,6 +136,7 @@ public final class TopologyContext implements TopologyContainer {
     return new Builder();
   }
 
+  private final @Nonnull AddressSpacePartitions _addressSpacePartitions;
   private final @Nonnull BgpTopology _bgpTopology;
   private final @Nonnull EigrpTopology _eigrpTopology;
   private final @Nonnull IpsecTopology _ipsecTopology;
@@ -139,6 +150,7 @@ public final class TopologyContext implements TopologyContainer {
   private final @Nonnull VxlanTopology _vxlanTopology;
 
   private TopologyContext(
+      AddressSpacePartitions addressSpacePartitions,
       BgpTopology bgpTopology,
       EigrpTopology eigrpTopology,
       IpsecTopology ipsecTopology,
@@ -150,6 +162,7 @@ public final class TopologyContext implements TopologyContainer {
       Optional<Layer1Topology> rawLayer1PhysicalTopology,
       TunnelTopology tunnelTopology,
       VxlanTopology vxlanTopology) {
+    _addressSpacePartitions = addressSpacePartitions;
     _bgpTopology = bgpTopology;
     _eigrpTopology = eigrpTopology;
     _ipsecTopology = ipsecTopology;
@@ -161,6 +174,11 @@ public final class TopologyContext implements TopologyContainer {
     _rawLayer1PhysicalTopology = rawLayer1PhysicalTopology;
     _vxlanTopology = vxlanTopology;
     _tunnelTopology = tunnelTopology;
+  }
+
+  @Override
+  public @Nonnull AddressSpacePartitions getAddressSpacePartitions() {
+    return _addressSpacePartitions;
   }
 
   @Override
@@ -225,7 +243,8 @@ public final class TopologyContext implements TopologyContainer {
       return false;
     }
     TopologyContext rhs = (TopologyContext) obj;
-    return _bgpTopology.equals(rhs._bgpTopology)
+    return _addressSpacePartitions.equals(rhs._addressSpacePartitions)
+        && _bgpTopology.equals(rhs._bgpTopology)
         && _eigrpTopology.equals(rhs._eigrpTopology)
         && _ipsecTopology.equals(rhs._ipsecTopology)
         && _isisTopology.equals(rhs._isisTopology)
@@ -241,6 +260,7 @@ public final class TopologyContext implements TopologyContainer {
   @Override
   public int hashCode() {
     return Objects.hash(
+        _addressSpacePartitions,
         _bgpTopology,
         _eigrpTopology,
         _ipsecTopology,
@@ -256,6 +276,7 @@ public final class TopologyContext implements TopologyContainer {
 
   public @Nonnull Builder toBuilder() {
     return builder()
+        .setAddressSpacePartitions(_addressSpacePartitions)
         .setBgpTopology(_bgpTopology)
         .setEigrpTopology(_eigrpTopology)
         .setIpsecTopology(_ipsecTopology)

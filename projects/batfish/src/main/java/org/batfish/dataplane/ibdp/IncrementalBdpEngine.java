@@ -171,7 +171,8 @@ class IncrementalBdpEngine {
                       initialTopologyContext.getRawLayer1PhysicalTopology(),
                       initialTopologyContext.getLayer1LogicalTopology(),
                       newLayer2Topology,
-                      configurations),
+                      configurations,
+                      initialTopologyContext.getAddressSpacePartitions()),
                   // Overlay edges consist of "plain" tunnels and IPSec tunnels
                   Sets.union(
                       toEdgeSet(newIpsecTopology, configurations), newTunnelTopology.asEdgeSet()));

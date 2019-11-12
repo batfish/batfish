@@ -34,6 +34,7 @@ import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.TunnelTopology.Builder;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -465,13 +466,14 @@ public final class TopologyUtil {
       @Nonnull Optional<Layer1Topology> rawLayer1PhysicalTopology,
       @Nonnull Optional<Layer1Topology> layer1LogicalTopology,
       @Nonnull Optional<Layer2Topology> layer2Topology,
-      @Nonnull Map<String, Configuration> configurations) {
+      @Nonnull Map<String, Configuration> configurations,
+      AddressSpacePartitions addressSpacePartitions) {
     return rawLayer1PhysicalTopology
         .map(
             l1 ->
                 computeRawLayer3Topology(
                     l1, layer1LogicalTopology.get(), layer2Topology.get(), configurations))
-        .orElse(synthesizeL3Topology(configurations));
+        .orElse(synthesizeL3Topology(configurations, addressSpacePartitions));
   }
 
   /**
@@ -557,12 +559,17 @@ public final class TopologyUtil {
     return false;
   }
 
+  public static Topology synthesizeL3Topology(Map<String, Configuration> configurations) {
+    return synthesizeL3Topology(configurations, new AddressSpacePartitions(ImmutableMap.of()));
+  }
+
   /**
    * Returns a {@link Topology} inferred from the L3 configuration of interfaces on the devices.
    *
    * <p>Ignores {@code Loopback} interfaces and inactive interfaces.
    */
-  public static Topology synthesizeL3Topology(Map<String, Configuration> configurations) {
+  public static Topology synthesizeL3Topology(
+      Map<String, Configuration> configurations, AddressSpacePartitions addressSpacePartitions) {
     Map<Prefix, List<Interface>> prefixInterfaces = computeInterfacesBucketByPrefix(configurations);
 
     ImmutableSortedSet.Builder<Edge> edges = ImmutableSortedSet.naturalOrder();
@@ -580,6 +587,15 @@ public final class TopologyUtil {
           // interfaceTypes
           if (TUNNEL_INTERFACE_TYPES.contains(iface1.getInterfaceType())
               || TUNNEL_INTERFACE_TYPES.contains(iface2.getInterfaceType())) {
+            continue;
+          }
+          // do not connect if the two ndoes are in separate partitions
+          String node1 = iface1.getOwner().getHostname();
+          String node2 = iface2.getOwner().getHostname();
+          Map<String, String> partitionMap = addressSpacePartitions.getPartitionMapping();
+          if (partitionMap.containsKey(node1)
+              && partitionMap.containsKey(node2)
+              && !partitionMap.get(node1).equals(partitionMap.get(node2))) {
             continue;
           }
           edges.add(new Edge(iface1, iface2));

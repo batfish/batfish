@@ -17,6 +17,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -508,6 +509,15 @@ public interface StorageProvider {
       throws IOException;
 
   /**
+   * Loads the {@link AddressSpacePartitions} of devices in the network.
+   *
+   * @throws IOException if there is an error reading the {@link AddressSpacePartitions}
+   */
+  @Nonnull
+  AddressSpacePartitions loadAddressSpacePartitions(NetworkSnapshot networkSnapshot)
+      throws IOException;
+
+  /**
    * Loads the {@link BgpTopology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
    *
@@ -560,6 +570,15 @@ public interface StorageProvider {
    */
   @Nonnull
   VxlanTopology loadVxlanTopology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Stores the provided {@link AddressSpacePartitions} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error writing the {@code addressSpacePartitions}
+   */
+  void storeAddressSpacePartitions(
+      AddressSpacePartitions addressSpacePartitions, NetworkSnapshot networkSnapshot)
+      throws IOException;
 
   /**
    * Stores the provided {@code bgpTopology} corresponding to the converged {@link

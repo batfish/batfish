@@ -119,6 +119,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -2391,6 +2392,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
         assert storeSpan != null; // avoid unused warning
         _storage.storeConfigurations(
             configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
+      }
+
+      try (ActiveSpan storeSpan =
+          GlobalTracer.get().buildSpan("Storing address space partitions").startActive()) {
+        assert storeSpan != null; // avoid unused warning
+        ImmutableMap.Builder<String, String> addressSpacePartitions = ImmutableMap.builder();
+        vendorConfigs
+            .values()
+            .forEach(
+                c -> {
+                  Map<String, String> partitions = c.getAddressSpacePartitions();
+                  if (partitions != null) {
+                    addressSpacePartitions.putAll(partitions);
+                  }
+                });
+        try {
+          _storage.storeAddressSpacePartitions(
+              new AddressSpacePartitions(addressSpacePartitions.build()),
+              new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName()));
+        } catch (IOException e) {
+          throw new BatfishException("Could not save address space partitions: ", e);
+        }
       }
 
       try (ActiveSpan ppSpan =

@@ -14,6 +14,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -319,6 +320,13 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
+  @Nonnull
+  @Override
+  public AddressSpacePartitions loadAddressSpacePartitions(NetworkSnapshot networkSnapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override
   public BgpTopology loadBgpTopology(NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
@@ -346,6 +354,13 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public VxlanTopology loadVxlanTopology(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeAddressSpacePartitions(
+      AddressSpacePartitions addressSpacePartitions, NetworkSnapshot networkSnapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 

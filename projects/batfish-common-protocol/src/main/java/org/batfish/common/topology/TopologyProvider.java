@@ -4,6 +4,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.ipsec.IpsecTopology;
@@ -16,6 +17,9 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
  */
 @ParametersAreNonnullByDefault
 public interface TopologyProvider {
+
+  @Nonnull
+  AddressSpacePartitions getAddressSpacePartitions(NetworkSnapshot snapshot);
 
   /**
    * Returns the {@link BgpTopology} corresponding to the converged {@link

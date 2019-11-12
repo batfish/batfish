@@ -20,6 +20,7 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
+import org.batfish.datamodel.AddressSpacePartitions;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
@@ -93,6 +94,15 @@ public final class TopologyProviderImpl implements TopologyProvider {
   @Override
   public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
     return _initialVxlanTopologies.getUnchecked(snapshot);
+  }
+
+  @Override
+  public @Nonnull AddressSpacePartitions getAddressSpacePartitions(NetworkSnapshot snapshot) {
+    try {
+      return _storage.loadAddressSpacePartitions(snapshot);
+    } catch (IOException e) {
+      throw new BatfishException("Could not load address space partitions", e);
+    }
   }
 
   @Override
@@ -306,7 +316,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
           getRawLayer1PhysicalTopology(networkSnapshot),
           getLayer1LogicalTopology(networkSnapshot),
           getInitialLayer2Topology(networkSnapshot),
-          configurations);
+          configurations,
+          getAddressSpacePartitions(networkSnapshot));
     }
   }
 
