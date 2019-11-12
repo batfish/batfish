@@ -595,6 +595,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remove_private_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_route_reflector_clientContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
@@ -2600,6 +2601,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.BASIC);
     }
+  }
+
+  @Override
+  public void exitEos_rbinc_route_reflector_client(Eos_rbinc_route_reflector_clientContext ctx) {
+    _currentAristaBgpNeighbor.setRouteReflectorClient(true);
   }
 
   @Override
