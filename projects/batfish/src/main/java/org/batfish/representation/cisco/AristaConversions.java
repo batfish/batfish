@@ -155,6 +155,7 @@ final class AristaConversions {
     // No remote AS set.
     if (neighbor.getRemoteAs() == null) {
       w.redFlag("No remote-as configured for " + name);
+      return false;
     }
 
     return true;
@@ -185,6 +186,7 @@ final class AristaConversions {
     // No remote AS set.
     if (neighbor.getRemoteAs() == null) {
       w.redFlag("No remote-as configured for " + name);
+      return false;
     }
 
     return true;
