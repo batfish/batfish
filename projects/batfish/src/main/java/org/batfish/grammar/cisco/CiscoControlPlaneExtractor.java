@@ -568,6 +568,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_distanceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_maximum_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_neighbor4Context;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_neighbor6Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_network4Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_network6Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_peer_groupContext;
@@ -2494,6 +2495,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbi_neighbor4(Eos_rbi_neighbor4Context ctx) {
+    _currentAristaBgpNeighbor = null;
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rbi_neighbor6(Eos_rbi_neighbor6Context ctx) {
+    // Create a dummy v4 neighbor instead
+    _currentAristaBgpNeighbor = new AristaBgpV4Neighbor(Ip.ZERO);
+    _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
+  }
+
+  @Override
+  public void exitEos_rbi_neighbor6(Eos_rbi_neighbor6Context ctx) {
     _currentAristaBgpNeighbor = null;
     _currentAristaBgpNeighborAddressFamily = null;
   }

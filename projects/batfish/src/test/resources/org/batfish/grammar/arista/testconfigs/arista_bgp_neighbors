@@ -55,6 +55,8 @@ router bgp 1
   neighbor PARSE_ONLY password YzQ2ZTRlYTNhYzVhZTc0MDE2MTc2ZGEzODhkZmMyMmM=
   neighbor PARSE_ONLY timers 3 9
   neighbor PARSE_ONLY local-v6-addr 2001:db8:0:0:0:ff00:42:8329
+  !
+  neighbor 2001:db8:0:0:0:ff00:42:1111 peer-group PEER_G
 !
   neighbor DYNAMIC peer-group
   neighbor DYNAMIC send-community
