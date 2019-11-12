@@ -3,7 +3,9 @@
 hostname arista_bgp_vrf
 !
 router bgp 1
+  bgp cluster-id 1.2.3.4
   vrf FOO
+    bgp cluster-id 0.0.0.0
     bgp bestpath as-path multipath-relax
     bgp bestpath tie-break router-id
     rd 123:123
