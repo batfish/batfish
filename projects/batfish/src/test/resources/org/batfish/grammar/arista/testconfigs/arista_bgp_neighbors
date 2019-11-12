@@ -3,6 +3,7 @@
 hostname arista_bgp_neighbors
 !
 router bgp 1
+  bgp cluster-id 99.99.99.99
   neighbor PEER_G peer-group
   neighbor PEER_G allowas-in 3
   ! "peer group" is new syntax for EOS 4.23 and on
@@ -45,6 +46,7 @@ router bgp 1
 !
   network 1.2.3.4/32
 !
+  neighbor PARSE_ONLY peer-group
   neighbor PARSE_ONLY bfd
   neighbor PARSE_ONLY maximum-routes 2222
   neighbor PARSE_ONLY maximum-routes 3333 warning-limit 3000
@@ -64,6 +66,7 @@ router bgp 1
   bgp listen limit 10
   bgp listen range 4.4.4.0/24 peer-group DYNAMIC remote-as 4000
 !
+  neighbor 5.5.5.5 enforce-first-as
 !
   vrf tenant
     neighbor 2.2.2.2 remote-as 88

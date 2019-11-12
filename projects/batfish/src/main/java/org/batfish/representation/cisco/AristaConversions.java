@@ -328,9 +328,8 @@ final class AristaConversions {
               .setPeerAddress(prefix.getStartIp());
     }
 
-    // TODO:
-    newNeighborBuilder.setClusterId(proc.getRouterId().asLong());
-    //        firstNonNull(vrfConfig.getClusterId(), proc.getRouterId()).asLong());
+    newNeighborBuilder.setClusterId(
+        firstNonNull(vrfConfig.getClusterId(), proc.getRouterId()).asLong());
 
     newNeighborBuilder.setDescription(neighbor.getDescription());
 
