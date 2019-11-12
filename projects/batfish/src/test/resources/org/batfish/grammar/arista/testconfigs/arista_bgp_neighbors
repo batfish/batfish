@@ -7,6 +7,7 @@ router bgp 1
   neighbor PEER_G allowas-in 3
   ! "peer group" is new syntax for EOS 4.23 and on
   neighbor PEER_G2 peer group
+  neighbor PEER_G2 route-reflector-client
   neighbor 1.1.1.1 additional-paths send any
   neighbor 1.1.1.1 additional-paths receive
   neighbor 1.1.1.1 auto-local-addr
