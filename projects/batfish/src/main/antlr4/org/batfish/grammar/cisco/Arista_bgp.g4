@@ -252,7 +252,7 @@ eos_rbi_bgp
 //    | eos_rbib_auto_local_addr
     | eos_rbib_bestpath
 //    | eos_rbib_client_to_client
-//    | eos_rbib_cluster_id
+    | eos_rbib_cluster_id
 //    | eos_rbib_confederation
 //    | eos_rbib_control_plane_filter
 //    | eos_rbib_convergence
@@ -312,6 +312,11 @@ eos_rbibbp_tie_break
 eos_rbibbpa_multipath_relax
 :
   MULTIPATH_RELAX NEWLINE
+;
+
+eos_rbib_cluster_id
+:
+  CLUSTER_ID ip = IP_ADDRESS NEWLINE
 ;
 
 eos_rbib_listen

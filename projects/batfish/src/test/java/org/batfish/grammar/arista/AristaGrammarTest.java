@@ -295,6 +295,13 @@ public class AristaGrammarTest {
       assertThat(neighbor.getRange(), equalTo(neighborAddr));
       assertThat(neighbor.getRouteReflectorClient(), nullValue());
     }
+    {
+      Ip neighborAddr = Ip.parse("5.5.5.5");
+      AristaBgpV4Neighbor neighbor =
+          config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(neighbor.getEnforceFirstAs(), equalTo(true));
+      assertThat(neighbor.getRemoteAs(), nullValue());
+    }
   }
 
   @Test
@@ -307,6 +314,7 @@ public class AristaGrammarTest {
       Prefix neighborPrefix = Prefix.parse("1.1.1.1/32");
       assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
       BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(neighbor.getClusterId(), equalTo(Ip.parse("99.99.99.99").asLong()));
       assertThat(neighbor.getEnforceFirstAs(), equalTo(true));
       assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
       Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
@@ -338,6 +346,11 @@ public class AristaGrammarTest {
       assertTrue(af.getAddressFamilyCapabilities().getSendCommunity());
       assertThat(af.getRouteReflectorClient(), equalTo(false));
     }
+    {
+      Prefix neighborPrefix = Prefix.parse("5.5.5.5/32");
+      // neighbor with missing remote-as is not converted
+      assertThat(proc.getActiveNeighbors(), not(hasKey(neighborPrefix)));
+    }
   }
 
   @Test
@@ -351,6 +364,7 @@ public class AristaGrammarTest {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
       assertThat(vrf.getBestpathAsPathMultipathRelax(), nullValue());
       assertThat(vrf.getBestpathTieBreaker(), nullValue());
+      assertThat(vrf.getClusterId(), equalTo(Ip.parse("1.2.3.4")));
     }
     {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
@@ -360,12 +374,14 @@ public class AristaGrammarTest {
       assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
       assertThat(vrf.getLocalAs(), equalTo(65000L));
       assertThat(vrf.getBestpathTieBreaker(), equalTo(AristaBgpBestpathTieBreaker.ROUTER_ID));
+      assertThat(vrf.getClusterId(), nullValue());
     }
     {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("BAR");
       assertThat(vrf.getBestpathAsPathMultipathRelax(), equalTo(Boolean.FALSE));
       assertThat(
           vrf.getBestpathTieBreaker(), equalTo(AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH));
+      assertThat(vrf.getClusterId(), nullValue());
     }
   }
 

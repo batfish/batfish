@@ -155,6 +155,7 @@ final class AristaConversions {
     // No remote AS set.
     if (neighbor.getRemoteAs() == null) {
       w.redFlag("No remote-as configured for " + name);
+      return false;
     }
 
     return true;
@@ -185,6 +186,7 @@ final class AristaConversions {
     // No remote AS set.
     if (neighbor.getRemoteAs() == null) {
       w.redFlag("No remote-as configured for " + name);
+      return false;
     }
 
     return true;
@@ -326,9 +328,8 @@ final class AristaConversions {
               .setPeerAddress(prefix.getStartIp());
     }
 
-    // TODO:
-    newNeighborBuilder.setClusterId(proc.getRouterId().asLong());
-    //        firstNonNull(vrfConfig.getClusterId(), proc.getRouterId()).asLong());
+    newNeighborBuilder.setClusterId(
+        firstNonNull(vrfConfig.getClusterId(), proc.getRouterId()).asLong());
 
     newNeighborBuilder.setDescription(neighbor.getDescription());
 

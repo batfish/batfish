@@ -16,6 +16,7 @@ public final class AristaBgpVrf implements Serializable {
   private boolean _defaultIpv4Unicast;
   @Nullable private Boolean _bestpathAsPathMultipathRelax;
   @Nullable private AristaBgpBestpathTieBreaker _bestpathTieBreaker;
+  @Nullable private Ip _clusterId;
   @Nullable private Long _defaultMetric;
   @Nullable private Integer _ebgpAdminDistance;
   @Nullable private ExtendedCommunity _exportRouteTarget;
@@ -76,6 +77,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setBestpathTieBreaker(@Nullable AristaBgpBestpathTieBreaker bestpathTieBreaker) {
     _bestpathTieBreaker = bestpathTieBreaker;
+  }
+
+  @Nullable
+  public Ip getClusterId() {
+    return _clusterId;
+  }
+
+  public void setClusterId(@Nullable Ip clusterId) {
+    _clusterId = clusterId;
   }
 
   @Nullable
