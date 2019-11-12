@@ -230,10 +230,12 @@ public class AristaGrammarTest {
       AristaBgpPeerGroupNeighbor neighbor = config.getAristaBgp().getPeerGroups().get(peergName);
       assertThat(config.getAristaBgp().getPeerGroups().get(peergName).getAllowAsIn(), equalTo(3));
       assertThat(neighbor.getRemovePrivateAsMode(), nullValue());
+      assertThat(neighbor.getRouteReflectorClient(), nullValue());
     }
     {
       AristaBgpPeerGroupNeighbor pg = config.getAristaBgp().getPeerGroups().get("PEER_G2");
       assertThat(pg, notNullValue());
+      assertThat(pg.getRouteReflectorClient(), equalTo(Boolean.TRUE));
     }
     {
       Ip neighborAddr = Ip.parse("1.1.1.1");
@@ -252,6 +254,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getGenericAddressFamily().getRouteMapIn(), equalTo("RM_IN"));
       assertThat(neighbor.getGenericAddressFamily().getRouteMapOut(), equalTo("RM_OUT"));
       assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.BASIC));
+      assertThat(neighbor.getRouteReflectorClient(), nullValue());
       assertTrue(neighbor.getSendCommunity());
       assertThat(neighbor.getShutdown(), nullValue());
       assertThat(neighbor.getUpdateSource(), equalTo("Loopback0"));
@@ -263,6 +266,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getEbgpMultihop(), equalTo(10));
       assertThat(neighbor.getRemoteAs(), equalTo(36L));
       assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.ALL));
+      assertThat(neighbor.getRouteReflectorClient(), nullValue());
       assertThat(neighbor.getShutdown(), equalTo(Boolean.TRUE));
       // TODO: default-originate
     }
@@ -272,12 +276,14 @@ public class AristaGrammarTest {
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getPeerGroup(), equalTo("PEER_G2"));
       assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.REPLACE_AS));
+      assertThat(neighbor.getRouteReflectorClient(), nullValue());
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getVrfs().get("tenant").getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getRemoteAs(), equalTo(88L));
+      assertThat(neighbor.getRouteReflectorClient(), nullValue());
     }
     {
       assertThat(config.getAristaBgp().getDefaultVrf().getListenLimit(), equalTo(10));
@@ -287,6 +293,7 @@ public class AristaGrammarTest {
       assertThat(config.getAristaBgp().getPeerGroups(), hasKey("DYNAMIC"));
       assertThat(neighbor.getPeerGroup(), equalTo("DYNAMIC"));
       assertThat(neighbor.getRange(), equalTo(neighborAddr));
+      assertThat(neighbor.getRouteReflectorClient(), nullValue());
     }
   }
 
@@ -305,6 +312,7 @@ public class AristaGrammarTest {
       Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
       assertThat(af.getAddressFamilyCapabilities().getAllowLocalAsIn(), equalTo(true));
       assertThat(af.getAddressFamilyCapabilities().getAllowRemoteAsOut(), equalTo(true));
+      assertThat(af.getRouteReflectorClient(), equalTo(false));
     }
     {
       Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
@@ -316,14 +324,19 @@ public class AristaGrammarTest {
       assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
       BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
       assertThat(neighbor.getEnforceFirstAs(), equalTo(false));
+      Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
+      assertThat(af, notNullValue());
+      assertThat(af.getRouteReflectorClient(), equalTo(true));
     }
     {
       Prefix neighborPrefix = Prefix.parse("4.4.4.0/24");
       assertThat(proc.getPassiveNeighbors(), hasKey(neighborPrefix));
       BgpPassivePeerConfig neighbor = proc.getPassiveNeighbors().get(neighborPrefix);
-      assertTrue(
-          neighbor.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getSendCommunity());
       assertThat(neighbor.getRemoteAsns(), equalTo(LongSpace.of(4000L)));
+      Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
+      assertThat(af, notNullValue());
+      assertTrue(af.getAddressFamilyCapabilities().getSendCommunity());
+      assertThat(af.getRouteReflectorClient(), equalTo(false));
     }
   }
 

@@ -379,7 +379,7 @@ final class AristaConversions {
               inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)
                   ? inboundMap
                   : null)
-          .setRouteReflectorClient(firstNonNull(/* todo */ null, Boolean.FALSE));
+          .setRouteReflectorClient(firstNonNull(neighbor.getRouteReflectorClient(), Boolean.FALSE));
     }
 
     // Export policy
