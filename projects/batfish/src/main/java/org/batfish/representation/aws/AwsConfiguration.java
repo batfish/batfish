@@ -121,6 +121,9 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
                 partitions.put(instance.getId(), instance.getVpcId());
               }
             });
+    _regions.values().stream()
+        .flatMap(r -> r.getRdsInstances().values().stream())
+        .forEach(instance -> partitions.put(instance.getId(), instance.getVpcId()));
     return partitions.build();
   }
 }
