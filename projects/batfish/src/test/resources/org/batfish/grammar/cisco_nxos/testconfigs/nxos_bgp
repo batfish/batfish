@@ -21,5 +21,6 @@ router bgp 1
     redistribute ospfv3 OSPFv3_PROC route-map OSPFv3_MAP
 
   address-family l2vpn evpn
+    maximum-paths ibgp 64
     retain route-target route-map RETAIN_MAP
 !

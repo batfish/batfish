@@ -479,6 +479,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_maximum_pathsConte
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_nexthop_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_suppress_inactiveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_table_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afl2v_maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afl2v_retainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_bestpathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_cluster_idContext;
@@ -3447,6 +3448,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRb_af_l2vpn(Rb_af_l2vpnContext ctx) {
     _currentBgpVrfL2VpnEvpnAddressFamily = null;
+  }
+
+  @Override
+  public void exitRb_afl2v_maximum_paths(Rb_afl2v_maximum_pathsContext ctx) {
+    Optional<Integer> limitOrError = toInteger(ctx, ctx.numpaths);
+    if (!limitOrError.isPresent()) {
+      return;
+    }
+    int limit = limitOrError.get();
+    if (ctx.IBGP() != null) {
+      _currentBgpVrfL2VpnEvpnAddressFamily.setMaximumPathsIbgp(limit);
+    } else if (ctx.EIBGP() != null) {
+      _currentBgpVrfL2VpnEvpnAddressFamily.setMaximumPathsEbgp(limit);
+      _currentBgpVrfL2VpnEvpnAddressFamily.setMaximumPathsIbgp(limit);
+    } else {
+      _currentBgpVrfL2VpnEvpnAddressFamily.setMaximumPathsEbgp(limit);
+    }
   }
 
   @Override

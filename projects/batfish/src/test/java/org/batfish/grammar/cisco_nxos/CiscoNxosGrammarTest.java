@@ -593,6 +593,8 @@ public final class CiscoNxosGrammarTest {
 
       BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
       assertThat(l2vpn, notNullValue());
+      assertThat(l2vpn.getMaximumPathsIbgp(), equalTo(64));
+      assertThat(l2vpn.getMaximumPathsEbgp(), equalTo(1));
       assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ROUTE_MAP));
       assertThat(l2vpn.getRetainRouteMap(), equalTo("RETAIN_MAP"));
     }
