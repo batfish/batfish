@@ -17,7 +17,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -45,7 +44,13 @@ class PrefixTracerAnswerer extends Answerer {
     SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>> prefixTracingInfo =
         dp.getPrefixTracingInfoSummary();
     answer.postProcessAnswer(
-        question, getRows(prefixTracingInfo, question.getPrefix(), question.getNodes()));
+        question,
+        getRows(
+            prefixTracingInfo,
+            question.getPrefix(),
+            question
+                .getNodeSpecifier()
+                .resolve(_batfish.specifierContext(_batfish.getNetworkSnapshot()))));
 
     return answer;
   }
@@ -54,12 +59,12 @@ class PrefixTracerAnswerer extends Answerer {
   static Multiset<Row> getRows(
       SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>> prefixTracingInfo,
       @Nullable Prefix desiredPrefix,
-      @Nonnull NodesSpecifier nodesSpecifier) {
+      @Nonnull Set<String> nodes) {
 
     HashMultiset<Row> rows = HashMultiset.create();
 
     prefixTracingInfo.keySet().stream()
-        .filter(nodesSpecifier.getRegex().asPredicate())
+        .filter(nodes::contains)
         .forEach(
             node -> {
               SortedMap<String, Map<Prefix, Map<String, Set<String>>>> vrfs =

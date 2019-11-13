@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
@@ -54,14 +53,14 @@ public class PrefixTracerAnswererTest {
 
   @Test
   public void testMatchesAllPrefixesWithoutSpecifying() {
-    Multiset<Row> answer = getRows(_prefixTracingInfo, null, NodesSpecifier.ALL);
+    Multiset<Row> answer = getRows(_prefixTracingInfo, null, _prefixTracingInfo.keySet());
     assertThat(answer, hasSize(3));
   }
 
   @Test
   public void testPrefixAndNodeSpecifierIsConjunction() {
     Multiset<Row> answer =
-        getRows(_prefixTracingInfo, Prefix.parse("1.1.1.1/32"), new NodesSpecifier("n2"));
+        getRows(_prefixTracingInfo, Prefix.parse("1.1.1.1/32"), ImmutableSet.of("n2"));
     assertThat(answer, hasSize(1));
   }
 

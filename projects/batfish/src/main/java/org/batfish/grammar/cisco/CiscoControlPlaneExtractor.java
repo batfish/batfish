@@ -568,12 +568,14 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_distanceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_maximum_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_neighbor4Context;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_neighbor6Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_network4Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_network6Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_timersContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_cluster_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibl_limitContext;
@@ -594,6 +596,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remove_private_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_route_reflector_clientContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_update_sourceContext;
@@ -2417,6 +2420,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rbib_cluster_id(Eos_rbib_cluster_idContext ctx) {
+    Ip clusterId = toIp(ctx.ip);
+    if (Ip.ZERO.equals(clusterId)) {
+      // 0.0.0.0 is the same as no bgp cluster-id
+      _currentAristaBgpVrf.setClusterId(null);
+    } else {
+      _currentAristaBgpVrf.setClusterId(clusterId);
+    }
+  }
+
+  @Override
   public void exitEos_rbibbpa_multipath_relax(Eos_rbibbpa_multipath_relaxContext ctx) {
     _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(true);
   }
@@ -2494,6 +2508,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbi_neighbor4(Eos_rbi_neighbor4Context ctx) {
+    _currentAristaBgpNeighbor = null;
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rbi_neighbor6(Eos_rbi_neighbor6Context ctx) {
+    // Create a dummy v4 neighbor instead
+    _currentAristaBgpNeighbor = new AristaBgpV4Neighbor(Ip.ZERO);
+    _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
+  }
+
+  @Override
+  public void exitEos_rbi_neighbor6(Eos_rbi_neighbor6Context ctx) {
     _currentAristaBgpNeighbor = null;
     _currentAristaBgpNeighborAddressFamily = null;
   }
@@ -2586,6 +2613,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.BASIC);
     }
+  }
+
+  @Override
+  public void exitEos_rbinc_route_reflector_client(Eos_rbinc_route_reflector_clientContext ctx) {
+    _currentAristaBgpNeighbor.setRouteReflectorClient(true);
   }
 
   @Override
