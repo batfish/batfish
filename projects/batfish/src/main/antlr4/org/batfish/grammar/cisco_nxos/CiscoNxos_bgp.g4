@@ -148,8 +148,14 @@ rb_af_l2vpn
 :
   L2VPN EVPN NEWLINE
   (
-    rb_afl2v_retain
+    rb_afl2v_maximum_paths
+    | rb_afl2v_retain
   )*
+;
+
+rb_afl2v_maximum_paths
+:
+  MAXIMUM_PATHS (EIBGP | IBGP)? numpaths = maximum_paths NEWLINE
 ;
 
 rb_afl2v_retain
