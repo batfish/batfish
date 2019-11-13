@@ -15,7 +15,25 @@ public final class BgpVrfL2VpnEvpnAddressFamilyConfiguration
   }
 
   public BgpVrfL2VpnEvpnAddressFamilyConfiguration() {
+    _maximumPathsEbgp = 1; // multipath disabled by default
+    _maximumPathsIbgp = 1; // multipath disabled by default
     _retainMode = RetainRouteType.UNSET;
+  }
+
+  public final int getMaximumPathsEbgp() {
+    return _maximumPathsEbgp;
+  }
+
+  public final void setMaximumPathsEbgp(int maximumPathsEbgp) {
+    this._maximumPathsEbgp = maximumPathsEbgp;
+  }
+
+  public final int getMaximumPathsIbgp() {
+    return _maximumPathsIbgp;
+  }
+
+  public final void setMaximumPathsIbgp(int maximumPathsIbgp) {
+    this._maximumPathsIbgp = maximumPathsIbgp;
   }
 
   public @Nonnull RetainRouteType getRetainMode() {
@@ -35,6 +53,8 @@ public final class BgpVrfL2VpnEvpnAddressFamilyConfiguration
     _retainRouteMap = retainRouteMap;
   }
 
+  private int _maximumPathsEbgp;
+  private int _maximumPathsIbgp;
   private @Nonnull RetainRouteType _retainMode;
   private @Nullable String _retainRouteMap;
 }
