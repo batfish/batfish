@@ -727,7 +727,7 @@ failover_interface
 
 flan_interface
 :
-   INTERFACE name = variable iface = interface_name NEWLINE
+   INTERFACE name = variable iface = interface_name_unstructured NEWLINE
 ;
 
 flan_unit

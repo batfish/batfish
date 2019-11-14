@@ -975,6 +975,32 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaFailoverExtraction() {
+    CiscoConfiguration config = parseCiscoConfig("asa-failover", ConfigurationFormat.CISCO_ASA);
+    assertThat(config.getFailover(), equalTo(true));
+    assertThat(config.getFailoverSecondary(), equalTo(false));
+    assertThat(config.getFailoverCommunicationInterface(), equalTo("GigabitEthernet0/2"));
+    assertThat(config.getFailoverCommunicationInterfaceAlias(), equalTo("FAILOVER"));
+    assertThat(config.getFailoverStatefulSignalingInterface(), equalTo("GigabitEthernet0/3"));
+    assertThat(config.getFailoverStatefulSignalingInterfaceAlias(), equalTo("REPLICATION"));
+    assertThat(
+        config.getFailoverPrimaryAddresses(),
+        hasEntry("FAILOVER", ConcreteInterfaceAddress.parse("172.16.1.1/30")));
+    assertThat(
+        config.getFailoverStandbyAddresses(),
+        hasEntry("FAILOVER", ConcreteInterfaceAddress.parse("172.16.1.2/30")));
+  }
+
+  @Test
+  public void testAsaFailoverConversion() throws IOException {
+    Configuration config = parseConfig("asa-failover");
+    assertThat(
+        config,
+        hasInterface(
+            "GigabitEthernet0/2", hasAddress(ConcreteInterfaceAddress.parse("172.16.1.1/30"))));
+  }
+
+  @Test
   public void testAsaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("asaOspfCost");
     assertThat(
