@@ -1,0 +1,13 @@
+ASA Version 9.9
+hostname asa-failover
+interface GigabitEthernet0/2
+ description LAN Failover Interface
+!
+interface GigabitEthernet0/3
+ description STATE Failover Interface
+!
+failover
+failover lan unit primary
+failover lan interface FAILOVER GigabitEthernet0/2
+failover link REPLICATION GigabitEthernet0/3
+failover interface ip FAILOVER 172.16.1.1 255.255.255.252 standby 172.16.1.2

@@ -1060,30 +1060,53 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void processFailoverSettings() {
-    if (_failover) {
-      Interface commIface;
-      ConcreteInterfaceAddress commAddress;
-      Interface sigIface;
-      ConcreteInterfaceAddress sigAddress;
-      if (_failoverSecondary) {
-        commIface = _interfaces.get(_failoverCommunicationInterface);
-        commAddress = _failoverStandbyAddresses.get(_failoverCommunicationInterfaceAlias);
-        sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
-        sigAddress = _failoverStandbyAddresses.get(_failoverStatefulSignalingInterfaceAlias);
-        for (Interface iface : _interfaces.values()) {
-          iface.setAddress(iface.getStandbyAddress());
-        }
-      } else {
-        commIface = _interfaces.get(_failoverCommunicationInterface);
-        commAddress = _failoverPrimaryAddresses.get(_failoverCommunicationInterfaceAlias);
-        sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
-        sigAddress = _failoverPrimaryAddresses.get(_failoverStatefulSignalingInterfaceAlias);
-      }
-      commIface.setAddress(commAddress);
-      commIface.setActive(true);
-      sigIface.setAddress(sigAddress);
-      sigIface.setActive(true);
+    if (!_failover) {
+      return;
     }
+
+    if (_failoverCommunicationInterface == null
+        || _failoverCommunicationInterfaceAlias == null
+        || _failoverStatefulSignalingInterface == null
+        || _failoverStatefulSignalingInterfaceAlias == null) {
+      _w.redFlag(
+          "Unable to process failover configuration: one of failover communication or stateful signaling interfaces is unset");
+      return;
+    }
+
+    Interface commIface = _interfaces.get(_failoverCommunicationInterface);
+    Interface sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
+    if (commIface == null) {
+      _w.redFlag(
+          String.format(
+              "Unable to process failover configuration: communication interface %s is not present",
+              _failoverCommunicationInterface));
+      return;
+    }
+    if (sigIface == null) {
+      _w.redFlag(
+          String.format(
+              "Unable to process failover configuration: stateful signaling interface %s is not present",
+              _failoverStatefulSignalingInterface));
+      return;
+    }
+
+    ConcreteInterfaceAddress commAddress;
+    ConcreteInterfaceAddress sigAddress;
+
+    if (_failoverSecondary) {
+      commAddress = _failoverStandbyAddresses.get(_failoverCommunicationInterfaceAlias);
+      sigAddress = _failoverStandbyAddresses.get(_failoverStatefulSignalingInterfaceAlias);
+      for (Interface iface : _interfaces.values()) {
+        iface.setAddress(iface.getStandbyAddress());
+      }
+    } else {
+      commAddress = _failoverPrimaryAddresses.get(_failoverCommunicationInterfaceAlias);
+      sigAddress = _failoverPrimaryAddresses.get(_failoverStatefulSignalingInterfaceAlias);
+    }
+    commIface.setAddress(commAddress);
+    commIface.setActive(true);
+    sigIface.setAddress(sigAddress);
+    sigIface.setActive(true);
   }
 
   public void setDnsSourceInterface(String dnsSourceInterface) {
