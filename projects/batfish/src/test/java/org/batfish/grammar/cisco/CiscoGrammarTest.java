@@ -3617,6 +3617,18 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testBgpMultipleRouters() throws IOException {
+    parseConfig("ios-bgp-multiple-routers");
+    // Don't crash.
+  }
+
+  @Test
+  public void testBgpUndeclaredPeer() throws IOException {
+    parseConfig("ios-bgp-undeclared-peer");
+    // Don't crash.
+  }
+
+  @Test
   public void testBgpOriginationSpace() throws IOException {
     Configuration c = parseConfig("ios-bgp-origination-space");
 
