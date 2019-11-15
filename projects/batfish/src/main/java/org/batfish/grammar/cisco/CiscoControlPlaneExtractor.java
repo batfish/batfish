@@ -1502,7 +1502,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private String _currentVrrpInterface;
 
-  private BgpPeerGroup _dummyPeerGroup;
+  private final @Nonnull BgpPeerGroup _dummyPeerGroup = new MasterBgpPeerGroup();
 
   private final ConfigurationFormat _format;
 
@@ -1771,8 +1771,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     NamedBgpPeerGroup afGroup = proc.getAfGroups().get(name);
     if (afGroup == null) {
-      proc.addNamedPeerGroup(name);
-      afGroup = proc.getNamedPeerGroups().get(name);
+      afGroup = proc.addNamedPeerGroup(name);
     }
     pushPeer(afGroup);
     _currentNamedPeerGroup = afGroup;
@@ -3292,8 +3291,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
       if (_currentIpPeerGroup == null) {
         if (create || _format == ARISTA) {
-          proc.addIpPeerGroup(ip);
-          _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
+          _currentIpPeerGroup = proc.addIpPeerGroup(ip);
           pushPeer(_currentIpPeerGroup);
         } else {
           _configuration.referenceStructure(
@@ -3308,8 +3306,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
       if (pg6 == null) {
         if (create || _format == ARISTA) {
-          proc.addIpv6PeerGroup(ip6);
-          pg6 = proc.getIpv6PeerGroups().get(ip6);
+          pg6 = proc.addIpv6PeerGroup(ip6);
           pushPeer(pg6);
         } else {
           _configuration.referenceStructure(
@@ -3328,8 +3325,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       if (_currentNamedPeerGroup == null) {
         if (create || _format == ARISTA) {
-          proc.addNamedPeerGroup(name);
-          _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+          _currentNamedPeerGroup = proc.addNamedPeerGroup(name);
           _configuration.referenceStructure(
               BGP_PEER_GROUP, name, BGP_NEIGHBOR_STATEMENT, ctx.peergroup.getLine());
         } else {
@@ -3338,6 +3334,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               name,
               BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED,
               ctx.peergroup.getLine());
+          _currentNamedPeerGroup = new NamedBgpPeerGroup("dummy");
         }
       }
       pushPeer(_currentNamedPeerGroup);
@@ -3352,8 +3349,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
     if (_currentNamedPeerGroup == null) {
-      proc.addNamedPeerGroup(name);
-      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      _currentNamedPeerGroup = proc.addNamedPeerGroup(name);
     }
     pushPeer(_currentNamedPeerGroup);
     _configuration.defineStructure(BGP_NEIGHBOR_GROUP, name, ctx);
@@ -3996,11 +3992,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (vrf.getBgpProcess() == null) {
       BgpProcess proc = new BgpProcess(_format, procNum);
       vrf.setBgpProcess(proc);
-      _dummyPeerGroup = new MasterBgpPeerGroup();
     }
     BgpProcess proc = vrf.getBgpProcess();
     if (proc.getProcnum() != procNum && procNum != 0) {
       warn(ctx, "Cannot have multiple BGP processes with different ASNs");
+      pushPeer(_dummyPeerGroup);
       return;
     }
     pushPeer(proc.getMasterBgpPeerGroup());
@@ -4567,8 +4563,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
     if (_currentNamedPeerGroup == null) {
-      proc.addNamedPeerGroup(name);
-      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      _currentNamedPeerGroup = proc.addNamedPeerGroup(name);
     }
     pushPeer(_currentNamedPeerGroup);
     _configuration.defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
@@ -8151,16 +8146,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip address = toIp(ctx.address);
       IpBgpPeerGroup ipPeerGroup = proc.getIpPeerGroups().get(address);
       if (ipPeerGroup == null) {
-        proc.addIpPeerGroup(address);
-        ipPeerGroup = proc.getIpPeerGroups().get(address);
+        ipPeerGroup = proc.addIpPeerGroup(address);
       }
       ipPeerGroup.setGroupName(peerGroupName);
     } else if (ctx.address6 != null) {
       Ip6 address6 = toIp6(ctx.address6);
       Ipv6BgpPeerGroup ipv6PeerGroup = proc.getIpv6PeerGroups().get(address6);
       if (ipv6PeerGroup == null) {
-        proc.addIpv6PeerGroup(address6);
-        ipv6PeerGroup = proc.getIpv6PeerGroups().get(address6);
+        ipv6PeerGroup = proc.addIpv6PeerGroup(address6);
       }
       ipv6PeerGroup.setGroupName(peerGroupName);
     }
@@ -8173,10 +8166,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     BgpProcess proc = currentVrf().getBgpProcess();
     if (proc.getNamedPeerGroups().get(name) == null) {
-      proc.addNamedPeerGroup(name);
+      NamedBgpPeerGroup npg = proc.addNamedPeerGroup(name);
       if (ctx.PASSIVE() != null) {
         // dell: won't otherwise specify activation so just activate here
-        NamedBgpPeerGroup npg = proc.getNamedPeerGroups().get(name);
         npg.setActive(true);
       }
     }
@@ -10260,7 +10252,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     walker.walk(this, tree);
   }
 
-  private void pushPeer(BgpPeerGroup pg) {
+  private void pushPeer(@Nonnull BgpPeerGroup pg) {
     _peerGroupStack.add(_currentPeerGroup);
     _currentPeerGroup = pg;
   }

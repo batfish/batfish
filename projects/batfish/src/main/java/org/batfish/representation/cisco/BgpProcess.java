@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -124,28 +125,31 @@ public class BgpProcess implements Serializable {
     return pg;
   }
 
-  public void addIpPeerGroup(Ip ip) {
+  public IpBgpPeerGroup addIpPeerGroup(Ip ip) {
     IpBgpPeerGroup pg = new IpBgpPeerGroup(ip);
     if (_defaultIpv4Activate) {
       pg.setActive(true);
     }
     _ipPeerGroups.put(ip, pg);
     _allPeerGroups.add(pg);
+    return pg;
   }
 
-  public void addIpv6PeerGroup(Ip6 ip6) {
+  public @Nonnull Ipv6BgpPeerGroup addIpv6PeerGroup(Ip6 ip6) {
     Ipv6BgpPeerGroup pg = new Ipv6BgpPeerGroup(ip6);
     if (_defaultIpv6Activate) {
       pg.setActive(true);
     }
     _ipv6PeerGroups.put(ip6, pg);
     _allPeerGroups.add(pg);
+    return pg;
   }
 
-  public void addNamedPeerGroup(String name) {
+  public @Nonnull NamedBgpPeerGroup addNamedPeerGroup(String name) {
     NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
     _namedPeerGroups.put(name, pg);
     _allPeerGroups.add(pg);
+    return pg;
   }
 
   public void addPeerSession(String name) {
