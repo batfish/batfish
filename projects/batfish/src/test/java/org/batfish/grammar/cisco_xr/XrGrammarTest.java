@@ -213,6 +213,16 @@ public final class XrGrammarTest {
     parseConfig("bgp-neighbor-crash");
   }
 
+  /**
+   * Regression test for a parser crash related to multiple routers with different ASNs
+   * (fat-fingered).
+   */
+  @Test
+  public void testMultipleRouterCrash() {
+    // Don't crash.
+    parseConfig("bgp-multiple-routers");
+  }
+
   @Test
   public void testCommunitySet() {
     Configuration c = parseConfig("community-set");

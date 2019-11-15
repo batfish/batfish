@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -91,7 +92,7 @@ public class BgpProcess implements Serializable {
     _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
   }
 
-  public DynamicIpBgpPeerGroup addDynamicIpPeerGroup(Prefix prefix) {
+  public @Nonnull DynamicIpBgpPeerGroup addDynamicIpPeerGroup(Prefix prefix) {
     DynamicIpBgpPeerGroup pg = new DynamicIpBgpPeerGroup(prefix);
     if (_defaultIpv4Activate) {
       pg.setActive(true);
@@ -101,7 +102,7 @@ public class BgpProcess implements Serializable {
     return pg;
   }
 
-  public DynamicIpv6BgpPeerGroup addDynamicIpv6PeerGroup(Prefix6 prefix6) {
+  public @Nonnull DynamicIpv6BgpPeerGroup addDynamicIpv6PeerGroup(Prefix6 prefix6) {
     DynamicIpv6BgpPeerGroup pg = new DynamicIpv6BgpPeerGroup(prefix6);
     if (_defaultIpv6Activate) {
       pg.setActive(true);
@@ -111,34 +112,38 @@ public class BgpProcess implements Serializable {
     return pg;
   }
 
-  public void addIpPeerGroup(Ip ip) {
+  public @Nonnull IpBgpPeerGroup addIpPeerGroup(Ip ip) {
     IpBgpPeerGroup pg = new IpBgpPeerGroup(ip);
     if (_defaultIpv4Activate) {
       pg.setActive(true);
     }
     _ipPeerGroups.put(ip, pg);
     _allPeerGroups.add(pg);
+    return pg;
   }
 
-  public void addIpv6PeerGroup(Ip6 ip6) {
+  public @Nonnull Ipv6BgpPeerGroup addIpv6PeerGroup(Ip6 ip6) {
     Ipv6BgpPeerGroup pg = new Ipv6BgpPeerGroup(ip6);
     if (_defaultIpv6Activate) {
       pg.setActive(true);
     }
     _ipv6PeerGroups.put(ip6, pg);
     _allPeerGroups.add(pg);
+    return pg;
   }
 
-  public void addNamedPeerGroup(String name) {
+  public @Nonnull NamedBgpPeerGroup addNamedPeerGroup(String name) {
     NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
     _namedPeerGroups.put(name, pg);
     _allPeerGroups.add(pg);
+    return pg;
   }
 
-  public void addPeerSession(String name) {
+  public @Nonnull NamedBgpPeerGroup addPeerSession(String name) {
     NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
     _peerSessions.put(name, pg);
     _allPeerGroups.add(pg);
+    return pg;
   }
 
   public Map<String, NamedBgpPeerGroup> getAfGroups() {
