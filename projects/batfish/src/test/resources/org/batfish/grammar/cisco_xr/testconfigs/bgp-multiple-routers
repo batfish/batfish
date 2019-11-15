@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname bgp-multiple-routers
+!
+router bgp 1
+!
+router bgp 2
+! XR does not let you have multiple routers, but do not crash if this happens
