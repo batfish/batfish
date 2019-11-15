@@ -105,7 +105,7 @@ public class BgpProcess implements Serializable {
     _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
   }
 
-  public DynamicIpBgpPeerGroup addDynamicIpPeerGroup(Prefix prefix) {
+  public @Nonnull DynamicIpBgpPeerGroup addDynamicIpPeerGroup(Prefix prefix) {
     DynamicIpBgpPeerGroup pg = new DynamicIpBgpPeerGroup(prefix);
     if (_defaultIpv4Activate) {
       pg.setActive(true);
@@ -115,7 +115,7 @@ public class BgpProcess implements Serializable {
     return pg;
   }
 
-  public DynamicIpv6BgpPeerGroup addDynamicIpv6PeerGroup(Prefix6 prefix6) {
+  public @Nonnull DynamicIpv6BgpPeerGroup addDynamicIpv6PeerGroup(Prefix6 prefix6) {
     DynamicIpv6BgpPeerGroup pg = new DynamicIpv6BgpPeerGroup(prefix6);
     if (_defaultIpv6Activate) {
       pg.setActive(true);
@@ -125,7 +125,7 @@ public class BgpProcess implements Serializable {
     return pg;
   }
 
-  public IpBgpPeerGroup addIpPeerGroup(Ip ip) {
+  public @Nonnull IpBgpPeerGroup addIpPeerGroup(Ip ip) {
     IpBgpPeerGroup pg = new IpBgpPeerGroup(ip);
     if (_defaultIpv4Activate) {
       pg.setActive(true);
