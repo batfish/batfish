@@ -5551,8 +5551,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       prefix = Prefix.create(address, prefixLength);
     }
     String map = null;
-    Integer mapLine = null;
-    BgpNetwork bgpNetwork = new BgpNetwork(map, mapLine);
+    BgpNetwork bgpNetwork = new BgpNetwork(map);
     BgpProcess proc = currentVrf().getBgpProcess();
     proc.getIpNetworks().put(prefix, bgpNetwork);
   }
@@ -5561,9 +5560,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitNetwork6_bgp_tail(Network6_bgp_tailContext ctx) {
     Prefix6 prefix6 = Prefix6.parse(ctx.prefix.getText());
     String map = null;
-    Integer mapLine = null;
     BgpProcess proc = currentVrf().getBgpProcess();
-    BgpNetwork6 bgpNetwork6 = new BgpNetwork6(map, mapLine);
+    BgpNetwork6 bgpNetwork6 = new BgpNetwork6(map);
     proc.getIpv6Networks().put(prefix6, bgpNetwork6);
   }
 

@@ -4,17 +4,10 @@ import java.io.Serializable;
 
 public class BgpNetwork implements Serializable {
 
-  private final Integer _routeMapLine;
-
   private final String _routeMapName;
 
-  public BgpNetwork(String routeMapName, Integer routeMapLine) {
+  public BgpNetwork(String routeMapName) {
     _routeMapName = routeMapName;
-    _routeMapLine = routeMapLine;
-  }
-
-  public Integer getRouteMapLine() {
-    return _routeMapLine;
   }
 
   public String getRouteMapName() {
