@@ -47,8 +47,6 @@ public class OspfProcess implements Serializable {
 
   private String _defaultInformationOriginateMap;
 
-  private Integer _defaultInformationOriginateMapLine;
-
   private Long _defaultMetric;
 
   @Nullable private DistributeList _inboundGlobalDistributeList;
@@ -168,10 +166,6 @@ public class OspfProcess implements Serializable {
     return _defaultInformationOriginateMap;
   }
 
-  public Integer getDefaultInformationOriginateMapLine() {
-    return _defaultInformationOriginateMapLine;
-  }
-
   public Long getDefaultMetric() {
     return _defaultMetric;
   }
@@ -282,10 +276,6 @@ public class OspfProcess implements Serializable {
 
   public void setDefaultInformationOriginateMap(String name) {
     _defaultInformationOriginateMap = name;
-  }
-
-  public void setDefaultInformationOriginateMapLine(Integer defaultInformationOriginateMapLine) {
-    _defaultInformationOriginateMapLine = defaultInformationOriginateMapLine;
   }
 
   public void setDefaultMetric(Long metric) {

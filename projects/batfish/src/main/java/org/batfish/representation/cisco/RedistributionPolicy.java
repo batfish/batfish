@@ -11,8 +11,6 @@ public abstract class RedistributionPolicy implements Serializable {
 
   protected String _routeMap;
 
-  protected Integer _routeMapLine;
-
   protected final RoutingProtocol _sourceProtocol;
 
   protected final Map<String, Object> _specialAttributes;
@@ -31,10 +29,6 @@ public abstract class RedistributionPolicy implements Serializable {
     return _routeMap;
   }
 
-  public Integer getRouteMapLine() {
-    return _routeMapLine;
-  }
-
   public RoutingProtocol getSourceProtocol() {
     return _sourceProtocol;
   }
@@ -45,9 +39,5 @@ public abstract class RedistributionPolicy implements Serializable {
 
   public void setRouteMap(String routeMap) {
     _routeMap = routeMap;
-  }
-
-  public void setRouteMapLine(Integer routeMapLine) {
-    _routeMapLine = routeMapLine;
   }
 }

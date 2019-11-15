@@ -7660,13 +7660,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefix = Prefix.create(address, prefixLength);
     }
     String map = null;
-    Integer mapLine = null;
     if (ctx.mapname != null) {
       map = ctx.mapname.getText();
-      mapLine = ctx.mapname.getStart().getLine();
-      _configuration.referenceStructure(ROUTE_MAP, map, BGP_NETWORK_ORIGINATION_ROUTE_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.mapname.getStart().getLine());
     }
-    BgpNetwork bgpNetwork = new BgpNetwork(map, mapLine);
+    BgpNetwork bgpNetwork = new BgpNetwork(map);
     BgpProcess proc = currentVrf().getBgpProcess();
     proc.getIpNetworks().put(prefix, bgpNetwork);
   }
@@ -7675,15 +7674,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitNetwork6_bgp_tail(Network6_bgp_tailContext ctx) {
     Prefix6 prefix6 = Prefix6.parse(ctx.prefix.getText());
     String map = null;
-    Integer mapLine = null;
     if (ctx.mapname != null) {
       map = ctx.mapname.getText();
-      mapLine = ctx.mapname.getStart().getLine();
       _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_NETWORK6_ORIGINATION_ROUTE_MAP, mapLine);
+          ROUTE_MAP, map, BGP_NETWORK6_ORIGINATION_ROUTE_MAP, ctx.mapname.getStart().getLine());
     }
     BgpProcess proc = currentVrf().getBgpProcess();
-    BgpNetwork6 bgpNetwork6 = new BgpNetwork6(map, mapLine);
+    BgpNetwork6 bgpNetwork6 = new BgpNetwork6(map);
     proc.getIpv6Networks().put(prefix6, bgpNetwork6);
   }
 
@@ -7791,10 +7788,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
       r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_BGP_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_BGP_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -7815,11 +7811,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
       r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
       _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_CONNECTED_MAP, mapLine);
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_CONNECTED_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -7842,10 +7836,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
       r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_EIGRP_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -7883,10 +7876,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
       r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_OSPF_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_OSPF_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -7907,10 +7899,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
       r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_RIP_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_RIP_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -7931,10 +7922,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (ctx.map != null) {
       String mapname = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
       r.setRouteMap(mapname);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -8412,10 +8402,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.map != null) {
         String map = ctx.map.getText();
-        int mapLine = ctx.map.getStart().getLine();
         r.setRouteMap(map);
-        r.setRouteMapLine(mapLine);
-        _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_CONNECTED_MAP, mapLine);
+        _configuration.referenceStructure(
+            ROUTE_MAP, map, BGP_REDISTRIBUTE_CONNECTED_MAP, ctx.map.getStart().getLine());
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
@@ -8434,9 +8423,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
       r.setMap(map);
-      _configuration.referenceStructure(ROUTE_MAP, map, ISIS_REDISTRIBUTE_CONNECTED_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, ISIS_REDISTRIBUTE_CONNECTED_MAP, ctx.map.getLine());
     }
     if (ctx.LEVEL_1() != null) {
       r.setLevel(IsisLevel.LEVEL_1);
@@ -8463,10 +8452,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.map != null) {
         String map = ctx.map.getText();
-        int mapLine = ctx.map.getStart().getLine();
         r.setRouteMap(map);
-        r.setRouteMapLine(mapLine);
-        _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPF_MAP, mapLine);
+        _configuration.referenceStructure(
+            ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPF_MAP, ctx.map.getStart().getLine());
       }
       if (ctx.MATCH() != null) {
         todo(ctx);
@@ -8484,8 +8472,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRedistribute_ospfv3_bgp_tail(Redistribute_ospfv3_bgp_tailContext ctx) {
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
-      _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPFV3_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPFV3_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -8503,10 +8491,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.map != null) {
         String map = ctx.map.getText();
-        int mapLine = ctx.map.getStart().getLine();
         r.setRouteMap(map);
-        r.setRouteMapLine(mapLine);
-        _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_RIP_MAP, mapLine);
+        _configuration.referenceStructure(
+            ROUTE_MAP, map, BGP_REDISTRIBUTE_RIP_MAP, ctx.map.getStart().getLine());
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
@@ -8527,10 +8514,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.map != null) {
         String map = ctx.map.getText();
-        int mapLine = ctx.map.getStart().getLine();
         r.setRouteMap(map);
-        r.setRouteMapLine(mapLine);
-        _configuration.referenceStructure(ROUTE_MAP, map, BGP_REDISTRIBUTE_STATIC_MAP, mapLine);
+        _configuration.referenceStructure(
+            ROUTE_MAP, map, BGP_REDISTRIBUTE_STATIC_MAP, ctx.map.getStart().getLine());
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
@@ -8549,9 +8535,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
       r.setMap(map);
-      _configuration.referenceStructure(ROUTE_MAP, map, ISIS_REDISTRIBUTE_STATIC_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, ISIS_REDISTRIBUTE_STATIC_MAP, ctx.map.getLine());
     }
     if (ctx.LEVEL_1() != null) {
       r.setLevel(IsisLevel.LEVEL_1);
@@ -8659,10 +8645,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int line = ctx.map.getLine();
       proc.setDefaultInformationOriginateMap(map);
-      proc.setDefaultInformationOriginateMapLine(line);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_DEFAULT_ORIGINATE_ROUTE_MAP, line);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, OSPF_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.map.getLine());
     }
   }
 
@@ -8817,10 +8802,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     proc.getRedistributionPolicies().put(sourceProtocol, r);
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
       r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, ctx.map.getLine());
     }
     r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
     r.setOnlyClassfulRoutes(false);
@@ -8840,10 +8824,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
       r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, ctx.map.getLine());
     }
     if (ctx.type != null) {
       int typeInt = toInteger(ctx.type);
@@ -8871,10 +8854,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
       r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_CONNECTED_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, OSPF_REDISTRIBUTE_CONNECTED_MAP, ctx.map.getLine());
     }
     if (ctx.type != null) {
       int typeInt = toInteger(ctx.type);
@@ -8911,10 +8893,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int mapLine = ctx.map.getStart().getLine();
       r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_EIGRP_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, OSPF_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
     }
     r.setOnlyClassfulRoutes(ctx.SUBNETS().isEmpty() && !ospfRedistributeSubnetsByDefault(_format));
   }
@@ -8936,10 +8917,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.map != null) {
       String map = ctx.map.getText();
-      int mapLine = ctx.map.getLine();
       r.setRouteMap(map);
-      r.setRouteMapLine(mapLine);
-      _configuration.referenceStructure(ROUTE_MAP, map, OSPF_REDISTRIBUTE_STATIC_MAP, mapLine);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, OSPF_REDISTRIBUTE_STATIC_MAP, ctx.map.getLine());
     }
     if (ctx.type != null) {
       int typeInt = toInteger(ctx.type);

@@ -122,10 +122,6 @@ public class RipProcess implements Serializable {
     _defaultInformationOriginateMap = defaultInformationOriginateMap;
   }
 
-  public void setDefaultInformationOriginateMapLine(Integer defaultInformationOriginateMapLine) {
-    _defaultInformationOriginateMapLine = defaultInformationOriginateMapLine;
-  }
-
   public void setDistributeListIn(String distributeListIn) {
     _distributeListIn = distributeListIn;
   }
