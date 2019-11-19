@@ -12342,8 +12342,8 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
-          "~BGP_COMMON_EXPORT_POLICY:default~" : {
-            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+          "~BGP_COMMON_EXPORT_POLICY:VRF:MMS:RMT:PBI:145~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:VRF:MMS:RMT:PBI:145~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -12415,6 +12415,31 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -12426,6 +12451,18 @@
           }
         },
         "vrfs" : {
+          "VRF:MMS:RMT:PBI:145" : {
+            "name" : "VRF:MMS:RMT:PBI:145",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "0.0.0.0",
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          },
           "default" : {
             "name" : "default",
             "bgpProcess" : {
