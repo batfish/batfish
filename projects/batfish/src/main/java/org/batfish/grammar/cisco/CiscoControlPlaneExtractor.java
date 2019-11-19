@@ -4691,7 +4691,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    if (ctx.address_family_header() != null
+        && ctx.address_family_header().af != null
+        && ctx.address_family_header().af.vrf_name != null) {
+      _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    }
     popPeer();
   }
 
