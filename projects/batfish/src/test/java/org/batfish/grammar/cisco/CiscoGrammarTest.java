@@ -3630,9 +3630,9 @@ public final class CiscoGrammarTest {
     // Simple test that default VRF was parsed
     org.batfish.representation.cisco.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
     assertThat(defBgp.getProcnum(), equalTo(1L));
-    assertThat(c.getVrfs(), hasKey("a"));
 
     // VRF keeps local-as from first declaration and overriden router-id from second.
+    assertThat(c.getVrfs(), hasKey("a"));
     org.batfish.representation.cisco.BgpProcess vrfBgp = c.getVrfs().get("a").getBgpProcess();
     assertThat(vrfBgp.getMasterBgpPeerGroup().getLocalAs(), equalTo(5L));
     assertThat(vrfBgp.getRouterId(), equalTo(Ip.parse("1.2.3.5")));
