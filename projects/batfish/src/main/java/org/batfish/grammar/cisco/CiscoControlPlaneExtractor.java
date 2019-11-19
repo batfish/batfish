@@ -1599,6 +1599,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return initVrf(_currentVrf);
   }
 
+  private void enterBgpVrfAndPushNewPeer(String vrfName) {
+    _currentVrf = vrfName;
+    Vrf v = currentVrf();
+    BgpProcess p = v.getBgpProcess();
+    if (p == null) {
+      long procNum = _configuration.getDefaultVrf().getBgpProcess().getProcnum();
+      p = new BgpProcess(_format, procNum);
+      v.setBgpProcess(p);
+    }
+    pushPeer(p.getMasterBgpPeerGroup());
+  }
+
   @Override
   public void enterAaa_accounting(Aaa_accountingContext ctx) {
     if (_configuration.getCf().getAaa().getAccounting() == null) {
@@ -1758,7 +1770,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (af.VPNV4() != null || af.VPNV6() != null || af.MDT() != null || af.MULTICAST() != null) {
       pushPeer(_dummyPeerGroup);
     } else {
-      pushPeer(_currentPeerGroup);
+      if (ctx.af.vrf_name != null) {
+        enterBgpVrfAndPushNewPeer(ctx.af.vrf_name.getText());
+      } else {
+        pushPeer(_currentPeerGroup);
+      }
     }
     if (af.IPV6() != null || af.VPNV6() != null) {
       _inIpv6BgpPeer = true;
@@ -4603,12 +4619,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
-    _currentVrf = ctx.name.getText();
-    long procNum =
-        _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getProcnum();
-    BgpProcess proc = new BgpProcess(_format, procNum);
-    currentVrf().setBgpProcess(proc);
-    pushPeer(proc.getMasterBgpPeerGroup());
+    enterBgpVrfAndPushNewPeer(ctx.name.getText());
   }
 
   @Override
@@ -4680,6 +4691,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
+    if (ctx.address_family_header() != null
+        && ctx.address_family_header().af != null
+        && ctx.address_family_header().af.vrf_name != null) {
+      _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    }
     popPeer();
   }
 

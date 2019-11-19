@@ -52,6 +52,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
@@ -1634,7 +1635,7 @@ public final class CiscoGrammarTest {
 
     /* Confirm both processes are present */
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
-    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+    assertThat(c, hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
 
     /* Confirm interfaces were matched */
     assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
@@ -1651,7 +1652,7 @@ public final class CiscoGrammarTest {
 
     /* Confirm both processes are present */
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
-    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+    assertThat(c, hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
 
     /* Confirm interfaces were matched */
     assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
@@ -1690,7 +1691,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(1L))));
 
     /* Confirm named mode networks are configured correctly */
-    assertThat(c, ConfigurationMatchers.hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
+    assertThat(c, hasVrf("vrf-name", hasEigrpProcesses(hasKey(2L))));
     assertThat(c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasAsn(2L))));
   }
 
@@ -3622,6 +3623,21 @@ public final class CiscoGrammarTest {
     // Don't crash.
   }
 
+  /** Tests that we can append more BGP config at the bottom of a file. */
+  @Test
+  public void testBgpReentrantVrf() throws IOException {
+    CiscoConfiguration c = parseCiscoConfig("ios-bgp-reentrant-vrf", ConfigurationFormat.CISCO_IOS);
+    // Simple test that default VRF was parsed
+    org.batfish.representation.cisco.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
+    assertThat(defBgp.getProcnum(), equalTo(1L));
+
+    // VRF keeps local-as from first declaration and overriden router-id from second.
+    assertThat(c.getVrfs(), hasKey("a"));
+    org.batfish.representation.cisco.BgpProcess vrfBgp = c.getVrfs().get("a").getBgpProcess();
+    assertThat(vrfBgp.getMasterBgpPeerGroup().getLocalAs(), equalTo(5L));
+    assertThat(vrfBgp.getRouterId(), equalTo(Ip.parse("1.2.3.5")));
+  }
+
   @Test
   public void testBgpUndeclaredPeer() throws IOException {
     parseConfig("ios-bgp-undeclared-peer");
@@ -5468,7 +5484,7 @@ public final class CiscoGrammarTest {
     // Confirm static route is extracted properly
     assertThat(
         c,
-        ConfigurationMatchers.hasVrf(
+        hasVrf(
             "default",
             hasStaticRoutes(
                 equalTo(

@@ -1,0 +1,13 @@
+!
+hostname ios-bgp-reentrant-vrf
+!
+router bgp 1
+!
+  vrf a
+    local-as 5
+    router-id 1.2.3.4
+!
+router bgp 1
+  vrf a
+    router-id 1.2.3.5
+!
