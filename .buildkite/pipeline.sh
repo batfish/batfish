@@ -18,12 +18,14 @@ EOF
 ###### Initial checks plus building the jar
 cat <<EOF
   - label: ":java: Formatting"
+    key: format
     command: "tools/fix_java_format.sh --check"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: ":json: Templates"
+    key: template
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
@@ -34,6 +36,7 @@ cat <<EOF
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: ":mvn: Build"
+    key: jar
     command:
       - "mkdir workspace"
       - "mvn -f projects package"
@@ -46,14 +49,12 @@ cat <<EOF
           always-pull: true
 EOF
 
-###### WAIT for jar to be built and format checks to pass before heavier tests
-cat <<EOF
-  - wait
-EOF
-
-###### Maven tests
+###### Build tests and code static analysis
 cat <<EOF
   - label: ":mvn: :junit: :coverage: Tests + Coverage"
+    depends_on:
+      - format
+      - template
     command:
       - mvn -f projects/pom.xml test -DskipTests=false -Djacoco.skip=false
       - mkdir -p workspace
@@ -65,12 +66,18 @@ cat <<EOF
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: ":mvn: Checkstyle, findbugs, dependency"
+    depends_on:
+      - format
+      - template
     command: "mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: ":mvn: Javadoc"
+    depends_on:
+      - format
+      - template
     command: "mvn -f projects/pom.xml verify -Dmaven.javadoc.skip=false"
     skip: True
     plugins:
@@ -78,6 +85,9 @@ cat <<EOF
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: ":mvn: PMD"
+    depends_on:
+      - format
+      - template
     command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
@@ -88,6 +98,9 @@ EOF
 ###### Ensure the code still compiles with Bazel
 cat <<EOF
   - label: ":bazel: Bazel"
+    depends_on:
+      - format
+      - template
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
@@ -104,6 +117,7 @@ EOF
 for cmd in $(find tests -name commands); do
   cat <<EOF
   - label: ":batfish: ${cmd} ref tests"
+    depends_on: jar
     command: ".buildkite/ref_test.sh ${cmd}"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
