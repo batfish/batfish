@@ -69,6 +69,7 @@
       "lhr-border-02" : "PASSED"
     },
     "definedStructures" : {
+      "aws_configs" : { },
       "configs/lhr-border-02.cfg" : {
         "bgp peer-group" : {
           "FW" : {
@@ -370,6 +371,28 @@
       }
     },
     "fileMap" : {
+      "aws_configs" : [
+        "es-domain",
+        "igw-068fee63",
+        "igw-9b93ddfc",
+        "igw-fac5839d",
+        "subnet-073b8061",
+        "subnet-1641fa70",
+        "subnet-1f315846",
+        "subnet-30398256",
+        "subnet-62f14104",
+        "subnet-7044ff16",
+        "subnet-8d0cbdeb",
+        "subnet-9c8adceb",
+        "subnet-d9cafabc",
+        "subnet-f73a8191",
+        "test-rds",
+        "vgw-81fd279f",
+        "vpc-815775e7",
+        "vpc-925131f4",
+        "vpc-b390fad5",
+        "vpc-f8fad69d"
+      ],
       "configs/lhr-border-02.cfg" : [
         "lhr-border-02"
       ]
