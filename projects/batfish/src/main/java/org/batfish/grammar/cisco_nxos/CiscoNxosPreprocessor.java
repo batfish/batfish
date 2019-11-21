@@ -328,11 +328,14 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   @SuppressWarnings("unused")
   private final @Nonnull Warnings _w;
 
-  /** {@code true} if current interfaces appears to have L3 configuration. */
+  /**
+   * {@code true} if current interface appears to have L3 configuration. {@code false} if current
+   * interface appears to have L2 configuration. {@code null} if unknown.
+   */
   private Boolean _currentInterfaceLayer3;
 
   /**
-   * {@code true} if current interfaces has explicit 'shutdown'; {@code false} if current interface
+   * {@code true} if current interface has explicit 'shutdown'; {@code false} if current interface
    * has explicit 'no shutdown'; or else {@code null}.
    */
   private Boolean _currentInterfaceShutdown;
