@@ -31,7 +31,6 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
-import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
@@ -210,45 +209,38 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     Multimap<String, String> fileMap = answerElement.getFileMap();
     try {
-      // We have only two options: AWS VPCs or router configs
-      if (_configObject instanceof VendorConfiguration) {
-        Warnings warnings = Batfish.buildWarnings(_settings);
-        VendorConfiguration vendorConfiguration = ((VendorConfiguration) _configObject);
-        String filename = vendorConfiguration.getFilename();
-        vendorConfiguration.setWarnings(warnings);
-        vendorConfiguration.setAnswerElement(answerElement);
-        vendorConfiguration.setRuntimeData(_runtimeData);
-        for (Configuration configuration :
-            vendorConfiguration.toVendorIndependentConfigurations()) {
+      VendorConfiguration vendorConfiguration = (VendorConfiguration) _configObject;
+      Warnings warnings = Batfish.buildWarnings(_settings);
+      String filename = vendorConfiguration.getFilename();
+      vendorConfiguration.setWarnings(warnings);
+      vendorConfiguration.setAnswerElement(answerElement);
+      vendorConfiguration.setRuntimeData(_runtimeData);
+      for (Configuration configuration : vendorConfiguration.toVendorIndependentConfigurations()) {
 
-          // get iptables if applicable
-          IptablesVendorConfiguration iptablesConfig = null;
-          VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
-          if (ov != null) {
-            // apply overlay
-            HostConfiguration oh = (HostConfiguration) ov;
-            iptablesConfig = oh.getIptablesVendorConfig();
-          } else if (vendorConfiguration instanceof HostConfiguration) {
-            // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
-            // semantics.
-            // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
-            // iptablesConfig = oh.getIptablesVendorConfig();
-          }
-          if (iptablesConfig != null) {
-            iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, warnings);
-            iptablesConfig.applyAsOverlay(configuration, warnings);
-          }
-
-          finalizeConfiguration(configuration, warnings);
-
-          String hostname = configuration.getHostname();
-          configurations.put(hostname, configuration);
-          warningsByHost.put(hostname, warnings);
-          fileMap.put(filename, hostname);
+        // get iptables if applicable
+        IptablesVendorConfiguration iptablesConfig = null;
+        VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
+        if (ov != null) {
+          // apply overlay
+          HostConfiguration oh = (HostConfiguration) ov;
+          iptablesConfig = oh.getIptablesVendorConfig();
+        } else if (vendorConfiguration instanceof HostConfiguration) {
+          // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
+          // semantics.
+          // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
+          // iptablesConfig = oh.getIptablesVendorConfig();
         }
-      } else {
-        configurations =
-            ((AwsConfiguration) _configObject).toConfigurations(_settings, warningsByHost);
+        if (iptablesConfig != null) {
+          iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, warnings);
+          iptablesConfig.applyAsOverlay(configuration, warnings);
+        }
+
+        finalizeConfiguration(configuration, warnings);
+
+        String hostname = configuration.getHostname();
+        configurations.put(hostname, configuration);
+        warningsByHost.put(hostname, warnings);
+        fileMap.put(filename, hostname);
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {

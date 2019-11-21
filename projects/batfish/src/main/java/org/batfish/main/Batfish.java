@@ -127,7 +127,6 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -789,15 +788,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Map<String, Configuration> convertConfigurations(
-      Map<String, GenericConfigObject> vendorConfigurations,
+      Map<String, VendorConfiguration> vendorConfigurations,
       SnapshotRuntimeData runtimeData,
       ConvertConfigurationAnswerElement answerElement) {
     _logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
     _logger.resetTimer();
     Map<String, Configuration> configurations = new TreeMap<>();
     List<ConvertConfigurationJob> jobs = new ArrayList<>();
-    for (Entry<String, GenericConfigObject> config : vendorConfigurations.entrySet()) {
-      GenericConfigObject vc = config.getValue();
+    for (Entry<String, VendorConfiguration> config : vendorConfigurations.entrySet()) {
+      VendorConfiguration vc = config.getValue();
       ConvertConfigurationJob job =
           new ConvertConfigurationJob(
               _settings, runtimeData.getRuntimeData(config.getKey()), vc, config.getKey());
@@ -881,7 +880,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 String::compareTo, Entry::getKey, Entry::getValue));
   }
 
-  public Map<String, GenericConfigObject> deserializeVendorConfigurations(
+  public Map<String, VendorConfiguration> deserializeVendorConfigurations(
       Path serializedVendorConfigPath) {
     _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
@@ -895,8 +894,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Error reading vendor configs directory", e);
     }
-    Map<String, GenericConfigObject> vendorConfigurations =
-        deserializeObjects(namesByPath, GenericConfigObject.class);
+    Map<String, VendorConfiguration> vendorConfigurations =
+        deserializeObjects(namesByPath, VendorConfiguration.class);
     _logger.printElapsedTime();
     return vendorConfigurations;
   }
@@ -1025,7 +1024,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** Returns a map of hostname to VI {@link Configuration} */
   public Map<String, Configuration> getConfigurations(
-      Map<String, GenericConfigObject> vendorConfigurations,
+      Map<String, VendorConfiguration> vendorConfigurations,
       SnapshotRuntimeData runtimeData,
       ConvertConfigurationAnswerElement answerElement) {
     Map<String, Configuration> configurations =
@@ -2373,7 +2372,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           firstNonNull(
               _storage.loadRuntimeData(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()),
               EMPTY_SNAPSHOT_RUNTIME_DATA);
-      Map<String, GenericConfigObject> vendorConfigs;
+      Map<String, VendorConfiguration> vendorConfigs;
       Map<String, Configuration> configurations;
       try (ActiveSpan convertSpan =
           GlobalTracer.get()
@@ -2404,7 +2403,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void addInternetAndIspNodes(
       Map<String, Configuration> configurations,
-      Map<String, GenericConfigObject> vendorConfigs,
+      Map<String, VendorConfiguration> vendorConfigs,
       SortedMap<String, Warnings> warnings) {
     if (configurations.containsKey(INTERNET_HOST_NAME)) {
       warnings
@@ -2424,7 +2423,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     vendorConfigs.values().stream()
-        .map(GenericConfigObject::getBorderInterfaces)
+        .map(VendorConfiguration::getBorderInterfaces)
         .filter(Objects::nonNull)
         .filter(l -> !l.isEmpty())
         .forEach(
