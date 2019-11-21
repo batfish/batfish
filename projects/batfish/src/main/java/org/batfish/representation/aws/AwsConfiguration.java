@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BfConsts;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -37,20 +38,6 @@ public class AwsConfiguration extends VendorConfiguration {
     this(new HashMap<>());
   }
 
-  @Override
-  public String getHostname() {
-    // This hostname does not appear in the vendor independent configs that are returned
-    return "aws_configs";
-  }
-
-  @Override
-  public void setHostname(String hostname) {
-    throw new IllegalStateException("Setting the hostname is not allowed for AWS configs");
-  }
-
-  @Override
-  public void setVendor(ConfigurationFormat format) {}
-
   public AwsConfiguration(Map<String, Region> regions) {
     this(regions, new HashMap<>(), new AtomicLong(INITIAL_GENERATED_IP));
   }
@@ -64,6 +51,7 @@ public class AwsConfiguration extends VendorConfiguration {
       Map<String, Region> regions,
       Map<String, Configuration> configurationNodes,
       AtomicLong currentGeneratedIpAsLong) {
+    super();
     _regions = regions;
     _configurationNodes = configurationNodes;
     _currentGeneratedIpAsLong = currentGeneratedIpAsLong;
@@ -93,7 +81,11 @@ public class AwsConfiguration extends VendorConfiguration {
     return Prefix.create(Ip.create(base), Prefix.MAX_PREFIX_LENGTH - 1);
   }
 
-  /** Convert this AWS config to a set of VI configurations */
+  /**
+   * Convert this AWS config to a set of VI configurations
+   *
+   * <p>TODO: Populate all the structure names that appear in these configs
+   */
   @Nonnull
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
@@ -114,5 +106,27 @@ public class AwsConfiguration extends VendorConfiguration {
         .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_INTERFACE_NAME))
         .map(BorderInterfaceInfo::new)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
+  public String getFilename() {
+    // not a real file name but a folder
+    return BfConsts.RELPATH_AWS_CONFIGS_FILE;
+  }
+
+  @Override
+  public String getHostname() {
+    // This hostname does not appear in the vendor independent configs that are returned
+    return BfConsts.RELPATH_AWS_CONFIGS_FILE;
+  }
+
+  @Override
+  public void setHostname(String hostname) {
+    throw new IllegalStateException("Setting the hostname is not allowed for AWS configs");
+  }
+
+  @Override
+  public void setVendor(ConfigurationFormat format) {
+    throw new IllegalStateException("Setting the format is not allowed for AWS configs");
   }
 }
