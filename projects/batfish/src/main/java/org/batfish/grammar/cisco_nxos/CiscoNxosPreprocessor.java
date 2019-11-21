@@ -19,6 +19,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_nxosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Boot_systemContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
@@ -326,6 +328,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   @SuppressWarnings("unused")
   private final @Nonnull Warnings _w;
 
+  /** {@code true} if current interfaces appears to have L3 configuration. */
   private Boolean _currentInterfaceLayer3;
 
   /**
@@ -378,12 +381,10 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
             _defaultLayer2EvidenceCount,
             _defaultLayer3EvidenceCount));
     if (_defaultLayer2EvidenceCount > 0 && _defaultLayer3EvidenceCount > 0) {
-      _configuration
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "Guessing Ethernet interfaces default to layer-%d mode based on statistical analysis of configuration.",
-                  _configuration.getSystemDefaultSwitchport() ? 2 : 3));
+      _w.redFlag(
+          String.format(
+              "Guessing Ethernet interfaces default to layer-%d mode based on statistical analysis of configuration.",
+              _configuration.getSystemDefaultSwitchport() ? 2 : 3));
     }
   }
 
@@ -458,13 +459,31 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   }
 
   @Override
+  public void exitI_shutdown(I_shutdownContext ctx) {
+    _currentInterfaceShutdown = true;
+  }
+
+  @Override
+  public void exitI_no_shutdown(I_no_shutdownContext ctx) {
+    _currentInterfaceShutdown = false;
+  }
+
+  @Override
   public void exitInos_switchport(Inos_switchportContext ctx) {
+    if (providesSwitchportEvidence()) {
+      // explicit setting of layer-3 is evidence of default layer-2
+      _defaultLayer2EvidenceCount++;
+    }
     _currentInterfaceSwitchport = false;
     _currentInterfaceLayer3 = true;
   }
 
   @Override
   public void exitI_switchport_switchport(I_switchport_switchportContext ctx) {
+    if (providesSwitchportEvidence()) {
+      // explicit setting of layer-2 is evidence of default layer-3
+      _defaultLayer3EvidenceCount++;
+    }
     _currentInterfaceSwitchport = true;
     _currentInterfaceLayer3 = false;
   }
@@ -507,9 +526,9 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
 
   @Override
   public void exitI_switchport(I_switchportContext ctx) {
-    // any line but "switchport\n" (i_switchoprt_switchport) is configuring an L2 property.
-    boolean configuringL2Property = (ctx.i_switchport_switchport() == null);
-    if (configuringL2Property && providesSwitchportEvidence()) {
+    // Note that if this contains I_switchport_switchport, by now providesSwitchportEvidence will
+    // return false. This avoids double-counting.
+    if (providesSwitchportEvidence()) {
       _defaultLayer2EvidenceCount++;
     }
   }

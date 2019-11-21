@@ -483,6 +483,38 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testImplicitShutdownSwitchportInference() throws IOException {
+    for (String hostname :
+        ImmutableList.of(
+            "shutdown-switchport-inference-defaultl2", "shutdown-switchport-inference-defaultl3")) {
+      Configuration c = parseConfig(hostname);
+      assertThat(
+          c,
+          hasInterface(
+              "Ethernet1/1",
+              allOf(isActive(), hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE))));
+      assertThat(
+          c,
+          hasInterface(
+              "Ethernet1/2",
+              allOf(
+                  isActive(false), hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE))));
+      assertThat(
+          c,
+          hasInterface(
+              "Ethernet1/3",
+              allOf(isActive(), hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.ACCESS))));
+      assertThat(
+          c,
+          hasInterface(
+              "Ethernet1/4",
+              allOf(
+                  isActive(false),
+                  hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.ACCESS))));
+    }
+  }
+
+  @Test
   public void testAaaParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_aaa"), notNullValue());

@@ -1,0 +1,24 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+
+hostname shutdown-switchport-inference-defaultl2
+
+version 9.2(3) Bios:version
+
+! l3, on
+interface Ethernet1/1
+  no switchport
+  no shutdown
+
+! l3, off
+interface Ethernet1/2
+  no switchport
+
+! l2, on
+interface Ethernet1/3
+
+! l2, off
+interface Ethernet1/4
+  shutdown
+
+boot nxos bootflash:/nxos.9.2.3.bin
