@@ -134,7 +134,7 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(
-      AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
+      ConvertedConfiguration awsVpcConfig, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_domainName, "aws");
 
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);

@@ -160,10 +160,8 @@ public class VpnConnectionTest {
             .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
             .build();
 
-    AwsConfiguration awsConfiguration =
-        new AwsConfiguration(
-            ImmutableMap.of(region.getName(), region),
-            ImmutableMap.of(vgwConfig.getHostname(), vgwConfig));
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(vgwConfig.getHostname(), vgwConfig));
 
     Warnings warnings = new Warnings(true, true, true);
     vpnConnection.applyToVpnGateway(awsConfiguration, region, warnings);

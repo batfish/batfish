@@ -270,7 +270,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
   }
 
   Configuration toConfigurationNode(
-      AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
+      ConvertedConfiguration awsVpcConfig, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_dbInstanceIdentifier, "aws");
 
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);

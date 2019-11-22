@@ -142,7 +142,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
    * router and create the necessary static routes.
    */
   Configuration toConfigurationNode(
-      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_subnetId, "aws");
 
     // add one interface that faces all instances (assumes a LAN)
@@ -268,7 +268,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Route route,
       @Nullable InternetGateway igw,
       @Nullable VpnGateway vgw,
-      AwsConfiguration awsConfiguration,
+      ConvertedConfiguration awsConfiguration,
       Warnings warnings) {
 
     StaticRoute.Builder sr =
