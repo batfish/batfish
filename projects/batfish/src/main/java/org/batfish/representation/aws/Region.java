@@ -458,7 +458,7 @@ final class Region implements Serializable {
     }
 
     for (Instance instance : getInstances().values()) {
-      Configuration cfgNode = instance.toConfigurationNode(this, warnings);
+      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       awsConfiguration.addNode(cfgNode);
     }

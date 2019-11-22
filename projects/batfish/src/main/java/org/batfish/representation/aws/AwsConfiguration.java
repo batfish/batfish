@@ -35,7 +35,6 @@ public class AwsConfiguration extends VendorConfiguration {
   }
 
   public AwsConfiguration(Map<String, Region> regions) {
-    super();
     _regions = regions;
   }
 

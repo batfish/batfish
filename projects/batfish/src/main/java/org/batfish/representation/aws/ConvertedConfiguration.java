@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,7 +16,7 @@ import org.batfish.datamodel.Prefix;
 
 /** Represents vendor independent configuration data after conversion of native AWS data. */
 @ParametersAreNonnullByDefault
-public class ConvertedConfiguration {
+public class ConvertedConfiguration implements Serializable {
 
   private static final long INITIAL_GENERATED_IP = Ip.FIRST_CLASS_E_EXPERIMENTAL_IP.asLong();
 

@@ -102,6 +102,7 @@ public class TestStorageProvider implements StorageProvider {
   public void storeConfigurations(
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
+      Layer1Topology synthesizedLayer1Topology,
       NetworkId network,
       SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");

@@ -143,8 +143,10 @@ public interface StorageProvider {
   void storeConfigurations(
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
+      Layer1Topology layer1Topology,
       NetworkId network,
-      SnapshotId snapshot);
+      SnapshotId snapshot)
+      throws IOException;
 
   /**
    * Store the answer to an ad-hoc or analysis question.

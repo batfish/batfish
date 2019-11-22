@@ -270,7 +270,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
   }
 
   Configuration toConfigurationNode(
-      ConvertedConfiguration awsVpcConfig, Region region, Warnings warnings) {
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_dbInstanceIdentifier, "aws");
 
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
@@ -297,6 +297,13 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
               instancesIfaceIp, subnet.getCidrBlock().getPrefixLength());
       Utils.newInterface(
           instancesIfaceName, cfgNode, instancesIfaceAddress, "To subnet " + subnetId);
+
+      Utils.connect(
+          awsConfiguration,
+          cfgNode.getHostname(),
+          instancesIfaceName,
+          Subnet.nodeName(subnet.getId()),
+          Subnet.instancesInterfaceName(subnet.getId()));
 
       Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
       StaticRoute defaultRoute =

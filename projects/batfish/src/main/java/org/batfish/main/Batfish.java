@@ -113,6 +113,8 @@ import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -2383,13 +2385,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
         configurations = getConfigurations(vendorConfigs, runtimeData, answerElement);
       }
 
+      Set<Layer1Edge> layer1Edges =
+          vendorConfigs.values().stream()
+              .flatMap(vc -> vc.getLayer1Edges().stream())
+              .collect(ImmutableSet.toImmutableSet());
+
+      Layer1Topology topology = new Layer1Topology(layer1Edges);
+
       addInternetAndIspNodes(configurations, vendorConfigs, answerElement.getWarnings());
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
         assert storeSpan != null; // avoid unused warning
-        _storage.storeConfigurations(
-            configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
+        try {
+          _storage.storeConfigurations(
+              configurations,
+              answerElement,
+              topology,
+              _settings.getContainer(),
+              _testrigSettings.getName());
+        } catch (IOException e) {
+          throw new IllegalArgumentException(
+              String.format("Could not store vendor independent configs to disk: %s", e));
+        }
       }
 
       try (ActiveSpan ppSpan =

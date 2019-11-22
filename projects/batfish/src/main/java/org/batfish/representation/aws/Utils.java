@@ -176,8 +176,19 @@ final class Utils {
     String ifaceName2 = cfgNode1.getHostname();
     Utils.newInterface(ifaceName2, cfgNode2, ifaceAddress2, "To " + ifaceName2);
 
-    awsConfiguration.addEdge(
-        cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
+    connect(
+        awsConfiguration, cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
+  }
+
+  /** Adds a bidirectional layer1 edge between the interfaces and nodes */
+  static void connect(
+      ConvertedConfiguration awsConfiguration,
+      String node1,
+      String iface1,
+      String node2,
+      String iface2) {
+    awsConfiguration.addEdge(node1, iface1, node2, iface2);
+    awsConfiguration.addEdge(node2, iface2, node1, iface1);
   }
 
   /**

@@ -105,7 +105,8 @@ public class InstanceTest {
             .build();
 
     Warnings warnings = new Warnings();
-    Configuration configuration = instance.toConfigurationNode(region, warnings);
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+    Configuration configuration = instance.toConfigurationNode(awsConfiguration, region, warnings);
 
     Interface configInterface = getOnlyElement(configuration.getAllInterfaces().values());
 
