@@ -51,7 +51,6 @@ public class AwsConfiguration extends VendorConfiguration {
       Map<String, Region> regions,
       Map<String, Configuration> configurationNodes,
       AtomicLong currentGeneratedIpAsLong) {
-    super();
     _regions = regions;
     _configurationNodes = configurationNodes;
     _currentGeneratedIpAsLong = currentGeneratedIpAsLong;
@@ -89,8 +88,6 @@ public class AwsConfiguration extends VendorConfiguration {
   @Nonnull
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
-    // Settings settings, Map<String, Warnings> warningsByHost) {
-
     for (Region region : _regions.values()) {
       region.toConfigurationNodes(this, _configurationNodes, getWarnings());
     }
