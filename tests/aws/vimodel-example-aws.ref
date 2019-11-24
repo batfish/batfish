@@ -403,6 +403,9 @@
                       "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "AwsInternetGatewayExportPolicy",
+                    "exportPolicySources" : [
+                      "AwsInternetGatewayExportPolicy"
+                    ],
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
@@ -658,6 +661,9 @@
                       "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "AwsInternetGatewayExportPolicy",
+                    "exportPolicySources" : [
+                      "AwsInternetGatewayExportPolicy"
+                    ],
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
@@ -840,6 +846,9 @@
                       "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "AwsInternetGatewayExportPolicy",
+                    "exportPolicySources" : [
+                      "AwsInternetGatewayExportPolicy"
+                    ],
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
