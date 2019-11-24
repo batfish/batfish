@@ -32,6 +32,7 @@ public final class TopologyContext implements TopologyContainer {
     private @Nonnull Topology _layer3Topology;
     private @Nonnull OspfTopology _ospfTopology;
     private @Nonnull Optional<Layer1Topology> _rawLayer1PhysicalTopology;
+    private @Nonnull Optional<Layer1Topology> _synthesizedLayer1Topology;
     @Nonnull private TunnelTopology _tunnelTopology;
     private @Nonnull VxlanTopology _vxlanTopology;
 
@@ -46,6 +47,7 @@ public final class TopologyContext implements TopologyContainer {
           _layer3Topology,
           _ospfTopology,
           _rawLayer1PhysicalTopology,
+          _synthesizedLayer1Topology,
           _tunnelTopology,
           _vxlanTopology);
     }
@@ -60,6 +62,7 @@ public final class TopologyContext implements TopologyContainer {
       _layer3Topology = Topology.EMPTY;
       _ospfTopology = OspfTopology.EMPTY;
       _rawLayer1PhysicalTopology = Optional.empty();
+      _synthesizedLayer1Topology = Optional.empty();
       _tunnelTopology = TunnelTopology.EMPTY;
       _vxlanTopology = VxlanTopology.EMPTY;
     }
@@ -111,6 +114,12 @@ public final class TopologyContext implements TopologyContainer {
       return this;
     }
 
+    public @Nonnull Builder setSynthesizedLayer1Topology(
+        Optional<Layer1Topology> synthesizedLayer1Topology) {
+      _synthesizedLayer1Topology = synthesizedLayer1Topology;
+      return this;
+    }
+
     public Builder setTunnelTopology(TunnelTopology tunnelTopology) {
       _tunnelTopology = tunnelTopology;
       return this;
@@ -135,6 +144,7 @@ public final class TopologyContext implements TopologyContainer {
   private final @Nonnull Topology _layer3Topology;
   private final @Nonnull OspfTopology _ospfTopology;
   private final @Nonnull Optional<Layer1Topology> _rawLayer1PhysicalTopology;
+  private final @Nonnull Optional<Layer1Topology> _synthesizedLayer1Topology;
   @Nonnull private final TunnelTopology _tunnelTopology;
   private final @Nonnull VxlanTopology _vxlanTopology;
 
@@ -148,6 +158,7 @@ public final class TopologyContext implements TopologyContainer {
       Topology layer3Topology,
       OspfTopology ospfTopology,
       Optional<Layer1Topology> rawLayer1PhysicalTopology,
+      Optional<Layer1Topology> synthesizedLayer1Topology,
       TunnelTopology tunnelTopology,
       VxlanTopology vxlanTopology) {
     _bgpTopology = bgpTopology;
@@ -159,6 +170,7 @@ public final class TopologyContext implements TopologyContainer {
     _layer3Topology = layer3Topology;
     _ospfTopology = ospfTopology;
     _rawLayer1PhysicalTopology = rawLayer1PhysicalTopology;
+    _synthesizedLayer1Topology = synthesizedLayer1Topology;
     _vxlanTopology = vxlanTopology;
     _tunnelTopology = tunnelTopology;
   }
@@ -205,6 +217,10 @@ public final class TopologyContext implements TopologyContainer {
     return _rawLayer1PhysicalTopology;
   }
 
+  public @Nonnull Optional<Layer1Topology> getSynthesizedLayer1Topology() {
+    return _synthesizedLayer1Topology;
+  }
+
   @Override
   public @Nonnull VxlanTopology getVxlanTopology() {
     return _vxlanTopology;
@@ -234,6 +250,7 @@ public final class TopologyContext implements TopologyContainer {
         && _layer3Topology.equals(rhs._layer3Topology)
         && _ospfTopology.equals(rhs._ospfTopology)
         && _rawLayer1PhysicalTopology.equals(rhs._rawLayer1PhysicalTopology)
+        && _synthesizedLayer1Topology.equals(rhs._synthesizedLayer1Topology)
         && _tunnelTopology.equals(rhs._tunnelTopology)
         && _vxlanTopology.equals(rhs._vxlanTopology);
   }
@@ -250,6 +267,7 @@ public final class TopologyContext implements TopologyContainer {
         _layer3Topology,
         _ospfTopology,
         _rawLayer1PhysicalTopology,
+        _synthesizedLayer1Topology,
         _tunnelTopology,
         _vxlanTopology);
   }
@@ -265,6 +283,7 @@ public final class TopologyContext implements TopologyContainer {
         .setLayer3Topology(_layer3Topology)
         .setOspfTopology(_ospfTopology)
         .setRawLayer1PhysicalTopology(_rawLayer1PhysicalTopology)
+        .setSynthesizedLayer1Topology(_synthesizedLayer1Topology)
         .setTunnelTopology(_tunnelTopology)
         .setVxlanTopology(_vxlanTopology);
   }

@@ -11,10 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
@@ -115,5 +117,19 @@ public class InstanceTest {
     assertThat(configInterface.getDescription(), equalTo("desc"));
     assertThat(
         configInterface.getPrimaryNetwork(), equalTo(Prefix.create(Ip.parse("10.10.10.10"), 24)));
+    assertThat(
+        awsConfiguration.getLayer1Edges(),
+        equalTo(
+            ImmutableSet.of(
+                new Layer1Edge(
+                    instance.getId(),
+                    configInterface.getName(),
+                    Subnet.nodeName(subnet.getId()),
+                    Subnet.instancesInterfaceName(subnet.getId())),
+                new Layer1Edge(
+                    Subnet.nodeName(subnet.getId()),
+                    Subnet.instancesInterfaceName(subnet.getId()),
+                    instance.getId(),
+                    configInterface.getName()))));
   }
 }

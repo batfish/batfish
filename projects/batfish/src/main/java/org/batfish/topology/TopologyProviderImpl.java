@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
@@ -241,8 +240,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  private @Nonnull Optional<Layer1Topology> computeLayer1PhysicalTopology(
-      NetworkSnapshot networkSnapshot) {
+  @Nonnull
+  private Optional<Layer1Topology> computeLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("TopologyProviderImpl::computeLayer1PhysicalTopology")
@@ -255,15 +254,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
                       TopologyUtil.cleanRawLayer1PhysicalTopology(
                           rawLayer1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
       Optional<Layer1Topology> synthesizedTopology = getSynthesizedLayer1Topology(networkSnapshot);
-      if (synthesizedTopology.isPresent() || rawTopology.isPresent()) {
-        return Optional.of(
-            new Layer1Topology(
-                Sets.union(
-                    rawTopology.orElse(Layer1Topology.EMPTY).getGraph().edges(),
-                    synthesizedTopology.orElse(Layer1Topology.EMPTY).getGraph().edges())));
-      } else {
-        return Optional.empty();
-      }
+      return TopologyUtil.unionLayer1PhysicalTopologies(rawTopology, synthesizedTopology);
     }
   }
 
@@ -325,6 +316,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeRawLayer3Topology(
           getRawLayer1PhysicalTopology(networkSnapshot),
+          getSynthesizedLayer1Topology(networkSnapshot),
           getLayer1LogicalTopology(networkSnapshot),
           getInitialLayer2Topology(networkSnapshot),
           configurations);

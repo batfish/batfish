@@ -76,6 +76,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -2389,6 +2390,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
           vendorConfigs.values().stream()
               .flatMap(vc -> vc.getLayer1Edges().stream())
               .collect(ImmutableSet.toImmutableSet());
+
+      Set<Layer1Edge> layer1EdgesDev =
+          layer1Edges.stream()
+              .filter(e -> e.getNode1().getHostname().equals("intentionet-dev-migrated"))
+              .collect(Collectors.toSet());
 
       Layer1Topology topology = new Layer1Topology(layer1Edges);
 

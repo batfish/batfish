@@ -495,4 +495,23 @@ public final class FileBasedStorageTest {
 
     assertEquals(_storage.loadLayer2Topology(networkSnapshot), Optional.of(Layer2Topology.EMPTY));
   }
+
+  @Test
+  public void testStoreSynthesizedLayer1TopologyFileMissing() throws IOException {
+    NetworkSnapshot networkSnapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+
+    assertEquals(_storage.loadSynthesizedLayer1Topology(networkSnapshot), Optional.empty());
+  }
+
+  @Test
+  public void testStoreSynthesizedLayer1TopologyPresent() throws IOException {
+    NetworkSnapshot networkSnapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+    _storage.storeSynthesizedLayer1Topology(
+        Layer1Topology.EMPTY, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+
+    assertEquals(
+        _storage.loadSynthesizedLayer1Topology(networkSnapshot), Optional.of(Layer1Topology.EMPTY));
+  }
 }

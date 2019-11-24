@@ -422,10 +422,7 @@ public final class FileBasedStorage implements StorageProvider {
     serializeObject(convertAnswerElement, ccaePath);
 
     // Save the synthesized layer1 topology
-    Path sl1tPath = getSynthesizedLayer1TopologyPath(network, snapshot);
-    mkdirs(sl1tPath.getParent());
-    FileUtils.write(
-        sl1tPath.toFile(), BatfishObjectMapper.writeString(synthesizedLayer1Topology), UTF_8);
+    storeSynthesizedLayer1Topology(synthesizedLayer1Topology, network, snapshot);
 
     Path outputDir = _d.getVendorIndependentConfigDir(network, snapshot);
 
@@ -1176,5 +1173,15 @@ public final class FileBasedStorage implements StorageProvider {
     Path path = getVxlanTopologyPath(networkSnapshot);
     mkdirs(path.getParent());
     FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(vxlanTopology), UTF_8);
+  }
+
+  @VisibleForTesting
+  void storeSynthesizedLayer1Topology(
+      Layer1Topology synthesizedLayer1Topology, NetworkId network, SnapshotId snapshot)
+      throws IOException {
+    Path sl1tPath = getSynthesizedLayer1TopologyPath(network, snapshot);
+    mkdirs(sl1tPath.getParent());
+    FileUtils.write(
+        sl1tPath.toFile(), BatfishObjectMapper.writeString(synthesizedLayer1Topology), UTF_8);
   }
 }
