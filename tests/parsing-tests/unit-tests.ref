@@ -78074,6 +78074,7 @@
         "vxlan" : "PASSED"
       },
       "definedStructures" : {
+        "aws_configs" : { },
         "configs/aaa_accounting" : { },
         "configs/aaa_authentication_login_default_tacacs_local" : { },
         "configs/aaa_group_server_source_interface" : { },
@@ -85975,6 +85976,10 @@
         "hosts/host1.json" : { }
       },
       "fileMap" : {
+        "aws_configs" : [
+          "nat-08c21704416f06046",
+          "nat-09fd8f73171d2d9a3"
+        ],
         "configs/aaa_accounting" : [
           "aaa_accounting"
         ],
@@ -95035,11 +95040,19 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "NAT functionality not yet implemented for nat-08c21704416f06046"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
             }
           ]
         },
         "nat-09fd8f73171d2d9a3" : {
           "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "NAT functionality not yet implemented for nat-08c21704416f06046"
+            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"

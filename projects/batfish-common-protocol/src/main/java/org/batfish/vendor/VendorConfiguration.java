@@ -18,6 +18,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -28,11 +29,11 @@ import org.batfish.common.runtime.RuntimeData;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
-import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.grammar.BatfishCombinedParser;
 
-public abstract class VendorConfiguration implements Serializable, GenericConfigObject {
+public abstract class VendorConfiguration implements Serializable {
 
   private transient ConvertConfigurationAnswerElement _answerElement;
 
@@ -285,5 +286,17 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
       defineSingleLineStructure(type, name, i);
     }
+  }
+
+  /**
+   * Returns the list of border interfaces for this config object. A return value of null implies
+   * that the subclass does not provide meaningful information.
+   *
+   * <p>Subclasses whose border interfaces are not expected to be covered by the user-supplied ISP
+   * config file (e.g., AWS) should override this method.
+   */
+  @Nullable
+  public List<BorderInterfaceInfo> getBorderInterfaces() {
+    return null;
   }
 }
