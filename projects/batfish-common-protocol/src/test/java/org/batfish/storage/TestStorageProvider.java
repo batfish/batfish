@@ -331,6 +331,11 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
+  public Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }

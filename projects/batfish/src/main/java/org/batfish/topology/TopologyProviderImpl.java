@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
@@ -83,6 +84,15 @@ public final class TopologyProviderImpl implements TopologyProvider {
   @Override
   public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
     return _rawLayer1PhysicalTopologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  public Optional<Layer1Topology> getSynthesizedLayer1Topology(NetworkSnapshot networkSnapshot) {
+    try {
+      return _storage.loadSynthesizedLayer1Topology(networkSnapshot);
+    } catch (IOException e) {
+      throw new BatfishException("Could not load BGP topology", e);
+    }
   }
 
   @Override
@@ -238,11 +248,22 @@ public final class TopologyProviderImpl implements TopologyProvider {
             .buildSpan("TopologyProviderImpl::computeLayer1PhysicalTopology")
             .startActive()) {
       assert span != null; // avoid unused warning
-      return getRawLayer1PhysicalTopology(networkSnapshot)
-          .map(
-              rawLayer1PhysicalTopology ->
-                  TopologyUtil.computeLayer1PhysicalTopology(
-                      rawLayer1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
+      Optional<Layer1Topology> rawTopology =
+          getRawLayer1PhysicalTopology(networkSnapshot)
+              .map(
+                  rawLayer1PhysicalTopology ->
+                      TopologyUtil.cleanRawLayer1PhysicalTopology(
+                          rawLayer1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
+      Optional<Layer1Topology> synthesizedTopology = getSynthesizedLayer1Topology(networkSnapshot);
+      if (synthesizedTopology.isPresent() || rawTopology.isPresent()) {
+        return Optional.of(
+            new Layer1Topology(
+                Sets.union(
+                    rawTopology.orElse(Layer1Topology.EMPTY).getGraph().edges(),
+                    synthesizedTopology.orElse(Layer1Topology.EMPTY).getGraph().edges())));
+      } else {
+        return Optional.empty();
+      }
     }
   }
 

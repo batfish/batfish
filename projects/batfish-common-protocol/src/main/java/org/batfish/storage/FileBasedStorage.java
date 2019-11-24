@@ -1086,6 +1086,20 @@ public final class FileBasedStorage implements StorageProvider {
         .readValue(CommonUtil.readFile(getEigrpTopologyPath(networkSnapshot)), EigrpTopology.class);
   }
 
+  @Nullable
+  @Override
+  public Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
+      throws IOException {
+    Path sl1tPath = getSynthesizedLayer1TopologyPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    // this is here for backward compatibility when we load up an existing container
+    if (!Files.exists(sl1tPath)) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(
+        BatfishObjectMapper.mapper()
+            .readValue(CommonUtil.readFile(sl1tPath), Layer1Topology.class));
+  }
+
   @Override
   public @Nonnull Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot)
       throws IOException {

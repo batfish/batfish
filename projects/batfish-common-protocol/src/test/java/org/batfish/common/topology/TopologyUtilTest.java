@@ -2,9 +2,9 @@ package org.batfish.common.topology;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
+import static org.batfish.common.topology.TopologyUtil.cleanRawLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeInitialTunnelTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopology;
-import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2SelfEdges;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
@@ -175,7 +175,7 @@ public final class TopologyUtilTest {
 
     // inactive c2i2 should break c1i2<=>c2i2 link
     assertThat(
-        TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations)
+        TopologyUtil.cleanRawLayer1PhysicalTopology(rawLayer1Topology, configurations)
             .getGraph()
             .edges(),
         containsInAnyOrder(
@@ -1025,7 +1025,7 @@ public final class TopologyUtilTest {
             .build();
 
     Layer1Topology layer1PhysicalTopology =
-        computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
+        cleanRawLayer1PhysicalTopology(rawLayer1Topology, configurations);
 
     // Layer-1 physical topology should include edges in each direction between each border router
     // and corresponding host
@@ -1105,7 +1105,7 @@ public final class TopologyUtilTest {
     Layer1Topology rawLayer1Topology = new Layer1Topology(ImmutableList.of(new Layer1Edge(n1, n2)));
     Map<String, Configuration> configurations = ImmutableMap.of(n1Name, c1, n2Name, c2);
     Layer1Topology layer1PhysicalTopology =
-        TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
+        TopologyUtil.cleanRawLayer1PhysicalTopology(rawLayer1Topology, configurations);
 
     // Layer-1 physical topology should include edges in each direction
     assertThat(
@@ -1168,7 +1168,7 @@ public final class TopologyUtilTest {
     Map<String, Configuration> configurations =
         ImmutableMap.of(n1Name, c1, n2Name, c2, n3Name, c3, n4Name, c4);
     Layer1Topology layer1PhysicalTopology =
-        computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
+        cleanRawLayer1PhysicalTopology(rawLayer1Topology, configurations);
 
     // Layer-1 physical topology should include edges in each direction
     assertThat(
@@ -1226,7 +1226,7 @@ public final class TopologyUtilTest {
         new Layer1Topology(ImmutableList.of(new Layer1Edge(n1, n2), new Layer1Edge(n2, nCorrupt)));
     Map<String, Configuration> configurations = ImmutableMap.of(n1Name, c1, n2Name, c2);
     Layer1Topology layer1PhysicalTopology =
-        TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
+        TopologyUtil.cleanRawLayer1PhysicalTopology(rawLayer1Topology, configurations);
 
     // Layer-1 physical topology should include edges in each direction between n1 and n2, and throw
     // out corrupt edge.

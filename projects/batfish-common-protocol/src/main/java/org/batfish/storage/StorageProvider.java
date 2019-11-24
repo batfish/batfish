@@ -528,6 +528,15 @@ public interface StorageProvider {
   EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot) throws IOException;
 
   /**
+   * Loads the {@link Layer1Topology} synthesized internally (e.g., for AWS).
+   *
+   * @throws IOException if there is an error reading the {@link Layer1Topology}
+   */
+  @Nullable
+  Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
    * Loads the optional {@link Layer2Topology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
    *

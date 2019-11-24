@@ -110,7 +110,7 @@ public final class TopologyUtil {
     }
   }
 
-  public static @Nonnull Layer1Topology computeLayer1PhysicalTopology(
+  public static @Nonnull Layer1Topology cleanRawLayer1PhysicalTopology(
       @Nonnull Layer1Topology rawLayer1Topology,
       @Nonnull Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();
