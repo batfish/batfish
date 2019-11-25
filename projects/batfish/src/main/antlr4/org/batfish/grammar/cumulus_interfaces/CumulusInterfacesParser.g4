@@ -26,7 +26,12 @@ s_auto
 
 s_iface
 :
-  IFACE interface_name (INET LOOPBACK NEWLINE l_property* | NEWLINE i_property*)
+  IFACE interface_name
+  (
+    INET LOOPBACK NEWLINE l_property*
+    | INET STATIC NEWLINE i_property*
+    | NEWLINE i_property*
+  )
 ;
 
 // loopback interface properties
@@ -69,6 +74,7 @@ i_property
   | i_gateway
   | i_hwaddress
   | i_link_speed
+  | i_link_autoneg
   | i_mstpctl_bpduguard
   | i_mstpctl_portadminedge
   | i_mstpctl_portbpdufilter
@@ -178,6 +184,11 @@ i_hwaddress
 i_link_speed
 :
   LINK_SPEED number NEWLINE
+;
+
+i_link_autoneg
+:
+  LINK_AUTONEG (ON | OFF) NEWLINE
 ;
 
 i_mstpctl_bpduguard

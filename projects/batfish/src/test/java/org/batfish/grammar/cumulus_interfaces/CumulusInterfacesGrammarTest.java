@@ -434,4 +434,19 @@ public class CumulusInterfacesGrammarTest {
     Interface iface = interfaces.getInterfaces().get("swp1");
     assertEquals(iface.getVxlanLocalTunnelIp(), Ip.parse("1.2.3.4"));
   }
+
+  @Test
+  public void testStaticInterface() {
+    String input = "iface swp1 inet static\n link-speed 10000\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("swp1");
+    assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
+  }
+
+  @Test
+  public void testLinkAutoNeg() {
+    String input = "iface swp1 inet static\n link-autoneg on\n";
+    // assert we can parse the input text
+    parse(input);
+  }
 }
