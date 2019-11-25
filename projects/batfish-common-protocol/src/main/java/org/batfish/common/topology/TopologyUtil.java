@@ -407,20 +407,20 @@ public final class TopologyUtil {
       @Nonnull Layer1Topology layer1LogicalTopology,
       @Nonnull Layer2Topology layer2Topology,
       @Nonnull Map<String, Configuration> configurations) {
-    Set<String> physcialLayer1TailNodes =
-        Streams.concat(
+    Set<String> physicalLayer1TailNodes =
+        Stream.concat(
                 rawLayer1Topology.getGraph().edges().stream(),
                 synthesizedLayer1Topology.getGraph().edges().stream())
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
     Stream<Edge> filteredEdgeStream =
         synthesizeL3Topology(configurations).getEdges().stream()
-            // keep if either node is in tail of edge in physical layer-1, or if vertices are in
+            // keep if either node is not in tail of edge in physical layer-1, or if vertices are in
             // same broadcast domain
             .filter(
                 edge ->
-                    !physcialLayer1TailNodes.contains(edge.getNode1())
-                        || !physcialLayer1TailNodes.contains(edge.getNode2())
+                    !physicalLayer1TailNodes.contains(edge.getNode1())
+                        || !physicalLayer1TailNodes.contains(edge.getNode2())
                         || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()));
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     // Look over all L1 logical edges and see if they both have link-local addresses

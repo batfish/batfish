@@ -945,6 +945,160 @@ public final class TopologyUtilTest {
   }
 
   @Test
+  public void testComputeLayer3Topology_synthesizedLayer1() {
+    String c1Name = "c1";
+    String c2Name = "c2";
+    String c3Name = "c3";
+    String c4Name = "c4";
+
+    String c1i1Name = "c1i1";
+    String c2i1Name = "c2i1";
+    String c3i1Name = "c3i1";
+    String c4i1Name = "c4i1";
+
+    Layer1Node l1c1i1 = new Layer1Node(c1Name, c1i1Name);
+    Layer1Node l1c2i1 = new Layer1Node(c2Name, c2i1Name);
+    Layer1Node l1c3i1 = new Layer1Node(c3Name, c3i1Name);
+    Layer1Node l1c4i1 = new Layer1Node(c4Name, c4i1Name);
+
+    Configuration c1 = _cb.setHostname(c1Name).build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    _ib.setOwner(c1).setVrf(v1).setActive(true);
+
+    Configuration c2 = _cb.setHostname(c2Name).build();
+    Vrf v2 = _vb.setOwner(c2).build();
+    _ib.setOwner(c2).setVrf(v2);
+
+    Configuration c3 = _cb.setHostname(c3Name).build();
+    Vrf v3 = _vb.setOwner(c3).build();
+    _ib.setOwner(c3).setVrf(v3);
+
+    Configuration c4 = _cb.setHostname(c4Name).build();
+    Vrf v4 = _vb.setOwner(c4).build();
+    _ib.setOwner(c4).setVrf(v4);
+
+    _ib.setOwner(c1)
+        .setVrf(v1)
+        .setName(c1i1Name)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
+        .build();
+    _ib.setOwner(c2)
+        .setVrf(v2)
+        .setName(c2i1Name)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
+        .build();
+    _ib.setOwner(c3)
+        .setVrf(v3)
+        .setName(c3i1Name)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/24"))
+        .build();
+    _ib.setOwner(c4)
+        .setVrf(v4)
+        .setName(c4i1Name)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.4/24"))
+        .build();
+
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3, c4Name, c4);
+
+    // c1-c2 and c3-c4 are connected
+    Layer1Topology synL1 =
+        new Layer1Topology(
+            ImmutableSet.of(
+                new Layer1Edge(l1c1i1, l1c2i1),
+                new Layer1Edge(l1c2i1, l1c1i1),
+                new Layer1Edge(l1c3i1, l1c4i1),
+                new Layer1Edge(l1c4i1, l1c3i1)));
+
+    Topology layer3Topology =
+        computeRawLayer3Topology(
+            Layer1Topology.EMPTY,
+            synL1,
+            Layer1Topology.EMPTY,
+            TopologyUtil.computeLayer2Topology(synL1, VxlanTopology.EMPTY, configs),
+            configs);
+    assertThat(
+        layer3Topology.getEdges(),
+        containsInAnyOrder(
+            Edge.of(c1Name, c1i1Name, c2Name, c2i1Name),
+            Edge.of(c2Name, c2i1Name, c1Name, c1i1Name),
+            Edge.of(c3Name, c3i1Name, c4Name, c4i1Name),
+            Edge.of(c4Name, c4i1Name, c3Name, c3i1Name)));
+  }
+
+  /**
+   * Documents a case that is not correctly handled. We have three nodes with interfaces in the same
+   * broadcast domain, two of which are L1-connected. But we end up connected all interfaces. Since
+   * there are no L1 edges reported for the third node, the code assumes that LLDP is switched off
+   * for that node and connects it to the other interfaces.
+   */
+  @Test
+  public void testComputeLayer3Topology_synthesizedLayer1UnhandledCase() {
+    String c1Name = "c1";
+    String c2Name = "c2";
+    String c3Name = "c3";
+
+    String c1i1Name = "c1i1";
+    String c2i1Name = "c2i1";
+    String c3i1Name = "c3i1";
+
+    Layer1Node l1c1i1 = new Layer1Node(c1Name, c1i1Name);
+    Layer1Node l1c2i1 = new Layer1Node(c2Name, c2i1Name);
+
+    Configuration c1 = _cb.setHostname(c1Name).build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    _ib.setOwner(c1).setVrf(v1).setActive(true);
+
+    Configuration c2 = _cb.setHostname(c2Name).build();
+    Vrf v2 = _vb.setOwner(c2).build();
+    _ib.setOwner(c2).setVrf(v2);
+
+    Configuration c3 = _cb.setHostname(c3Name).build();
+    Vrf v3 = _vb.setOwner(c3).build();
+    _ib.setOwner(c3).setVrf(v3);
+
+    _ib.setOwner(c1)
+        .setVrf(v1)
+        .setName(c1i1Name)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
+        .build();
+    _ib.setOwner(c2)
+        .setVrf(v2)
+        .setName(c2i1Name)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
+        .build();
+    _ib.setOwner(c3)
+        .setVrf(v3)
+        .setName(c3i1Name)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/24"))
+        .build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3);
+
+    // c1-c2 are connected
+    Layer1Topology synL1 =
+        new Layer1Topology(
+            ImmutableSet.of(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1)));
+
+    Topology layer3Topology =
+        computeRawLayer3Topology(
+            Layer1Topology.EMPTY,
+            synL1,
+            Layer1Topology.EMPTY,
+            TopologyUtil.computeLayer2Topology(synL1, VxlanTopology.EMPTY, configs),
+            configs);
+    assertThat(
+        layer3Topology.getEdges(),
+        containsInAnyOrder(
+            Edge.of(c1Name, c1i1Name, c2Name, c2i1Name),
+            Edge.of(c2Name, c2i1Name, c1Name, c1i1Name),
+            Edge.of(c1Name, c1i1Name, c3Name, c3i1Name),
+            Edge.of(c3Name, c3i1Name, c1Name, c1i1Name),
+            Edge.of(c3Name, c3i1Name, c2Name, c2i1Name),
+            Edge.of(c2Name, c2i1Name, c3Name, c3i1Name)));
+  }
+
+  @Test
   public void testIncompleteLayer1TopologyHandlingIsp() {
     /*
      * Connectivity between border routers and generated ISP nodes
