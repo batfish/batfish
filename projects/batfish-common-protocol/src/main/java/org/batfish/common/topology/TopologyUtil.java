@@ -110,6 +110,10 @@ public final class TopologyUtil {
     }
   }
 
+  /**
+   * Cleans raw (user-provided) {@link Layer1Topology}, by removing non-existent interfaces and
+   * making connectivity symmetric.
+   */
   public static @Nonnull Layer1Topology cleanRawLayer1PhysicalTopology(
       @Nonnull Layer1Topology rawLayer1Topology,
       @Nonnull Map<String, Configuration> configurations) {
@@ -130,6 +134,11 @@ public final class TopologyUtil {
     return new Layer1Topology(edges.build());
   }
 
+  /**
+   * Takes the union of two {@link Optional}s containing {@link Layer1Topology}. If either topology
+   * is not present, the other is returned. If both are present, the returned topology is the union
+   * of the edges in the two.
+   */
   public static @Nonnull Optional<Layer1Topology> unionLayer1PhysicalTopologies(
       Optional<Layer1Topology> topology1, Optional<Layer1Topology> topology2) {
     if (!topology1.isPresent()) {

@@ -2405,8 +2405,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _settings.getContainer(),
               _testrigSettings.getName());
         } catch (IOException e) {
-          throw new IllegalArgumentException(
-              String.format("Could not store vendor independent configs to disk: %s", e));
+          throw new BatfishException("Could not store vendor independent configs to disk: %s", e);
         }
       }
 

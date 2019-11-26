@@ -306,15 +306,15 @@ public abstract class VendorConfiguration implements Serializable {
   /**
    * Returns the layer 1 topology based on the config files.
    *
-   * <p>The returned topology has the following invariants: 1) all interfaces in the topology must
-   * be present in configurations returned by {@link #toVendorIndependentConfigurations()}; and 2)
-   * not all interfaces that are present in configurations need to be present in the topology, but
-   * if an interface is present in the topology, all of its neighbors must be present. The second
-   * condition helps ensure that the interface does not mistakenly get connected to
+   * <p>The returned topology has the following invariant: all interfaces in the topology must be
+   * present in configurations returned by {@link #toVendorIndependentConfigurations()}. Not all
+   * interfaces that are present in configurations need to be present in the topology.
    *
    * <p>This function should be overridden by classes like AwsConfiguration that synthesize their
    * connectivity. For classes that represent router configs, the default implementation should be
    * used.
+   *
+   * <p>It is the responsibility of the implementation to enforce the invariant above.
    */
   @Nonnull
   public Set<Layer1Edge> getLayer1Edges() {
