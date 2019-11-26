@@ -79,8 +79,10 @@ public class VpnGatewayTest {
             .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
             .build();
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+    AwsConfiguration awsConfiguration =
+        new AwsConfiguration(
+            ImmutableMap.of(region.getName(), region),
+            ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
 
@@ -113,8 +115,10 @@ public class VpnGatewayTest {
             .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
             .build();
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+    AwsConfiguration awsConfiguration =
+        new AwsConfiguration(
+            ImmutableMap.of(region.getName(), region),
+            ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
 

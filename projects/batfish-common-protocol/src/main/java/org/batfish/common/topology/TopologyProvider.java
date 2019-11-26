@@ -81,13 +81,12 @@ public interface TopologyProvider {
 
   /**
    * Computes the {@link Layer1Topology} with respect to layer-1 physical edges for a given {@link
-   * NetworkSnapshot}. The layer-1 physical topology is constructed from 1) the raw layer-1 physical
+   * NetworkSnapshot}. The layer-1 physical topology is constructed from the raw layer-1 physical
    * edges input by the user by trimming the edges whose nodes do not correspond to active physical
-   * interfaces, and adding the reverse edge for asymmetric edges; and 2) the synthesized layer-1
-   * physical topology.
+   * interfaces, and adding the reverse edge for asymmetric edges.
    *
-   * @return computed topology, or {@link Optional#empty()} if both raw and synthesized layer-1
-   *     physical topology is absent
+   * @return computed topology, or {@link Optional#empty()} if raw layer-1 physical topology is
+   *     absent.
    */
   @Nonnull
   Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
@@ -116,13 +115,6 @@ public interface TopologyProvider {
    */
   @Nonnull
   Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
-
-  /**
-   * Return the {@link Layer1Topology} synthesized internally (e.g., during AWS modeling), or {@link
-   * Optional#empty()} if no such data exists.
-   */
-  @Nonnull
-  Optional<Layer1Topology> getSynthesizedLayer1Topology(NetworkSnapshot networkSnapshot);
 
   /**
    * Return the raw layer-3 {@link Topology} for a given {@link NetworkSnapshot}. The layer-3

@@ -2,15 +2,14 @@ package org.batfish.common.topology;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
-import static org.batfish.common.topology.TopologyUtil.cleanLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeInitialTunnelTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopology;
+import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2SelfEdges;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeVniInterNodeEdges;
 import static org.batfish.common.topology.TopologyUtil.computeVniName;
-import static org.batfish.common.topology.TopologyUtil.unionLayer1PhysicalTopologies;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasHead;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode1;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode2;
@@ -34,7 +33,6 @@ import com.google.common.graph.MutableGraph;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
@@ -177,7 +175,7 @@ public final class TopologyUtilTest {
 
     // inactive c2i2 should break c1i2<=>c2i2 link
     assertThat(
-        TopologyUtil.cleanLayer1PhysicalTopology(rawLayer1Topology, configurations)
+        TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations)
             .getGraph()
             .edges(),
         containsInAnyOrder(
@@ -930,165 +928,6 @@ public final class TopologyUtilTest {
     }
   }
 
-  /**
-   * Test that nodes present in logical layer1, but not in raw layer1, are considered as those with
-   * LLDP on while computing layer3.
-   */
-  @Test
-  public void testComputeLayer3Topology_considerLogicalLayer1Nodes() {
-    String c1Name = "c1";
-    String c2Name = "c2";
-    String c3Name = "c3";
-    String c4Name = "c4";
-
-    String c1i1Name = "c1i1";
-    String c2i1Name = "c2i1";
-    String c3i1Name = "c3i1";
-    String c4i1Name = "c4i1";
-
-    Layer1Node l1c1i1 = new Layer1Node(c1Name, c1i1Name);
-    Layer1Node l1c2i1 = new Layer1Node(c2Name, c2i1Name);
-    Layer1Node l1c3i1 = new Layer1Node(c3Name, c3i1Name);
-    Layer1Node l1c4i1 = new Layer1Node(c4Name, c4i1Name);
-
-    Configuration c1 = _cb.setHostname(c1Name).build();
-    Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1).setActive(true);
-
-    Configuration c2 = _cb.setHostname(c2Name).build();
-    Vrf v2 = _vb.setOwner(c2).build();
-    _ib.setOwner(c2).setVrf(v2);
-
-    Configuration c3 = _cb.setHostname(c3Name).build();
-    Vrf v3 = _vb.setOwner(c3).build();
-    _ib.setOwner(c3).setVrf(v3);
-
-    Configuration c4 = _cb.setHostname(c4Name).build();
-    Vrf v4 = _vb.setOwner(c4).build();
-    _ib.setOwner(c4).setVrf(v4);
-
-    _ib.setOwner(c1)
-        .setVrf(v1)
-        .setName(c1i1Name)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
-        .build();
-    _ib.setOwner(c2)
-        .setVrf(v2)
-        .setName(c2i1Name)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
-        .build();
-    _ib.setOwner(c3)
-        .setVrf(v3)
-        .setName(c3i1Name)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/24"))
-        .build();
-    _ib.setOwner(c4)
-        .setVrf(v4)
-        .setName(c4i1Name)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.4/24"))
-        .build();
-
-    Map<String, Configuration> configs =
-        ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3, c4Name, c4);
-
-    // c1-c2 and c3-c4 are connected
-    Layer1Topology logicalL1 =
-        new Layer1Topology(
-            ImmutableSet.of(
-                new Layer1Edge(l1c1i1, l1c2i1),
-                new Layer1Edge(l1c2i1, l1c1i1),
-                new Layer1Edge(l1c3i1, l1c4i1),
-                new Layer1Edge(l1c4i1, l1c3i1)));
-
-    Topology layer3Topology =
-        computeRawLayer3Topology(
-            Layer1Topology.EMPTY,
-            logicalL1,
-            TopologyUtil.computeLayer2Topology(logicalL1, VxlanTopology.EMPTY, configs),
-            configs);
-    assertThat(
-        layer3Topology.getEdges(),
-        containsInAnyOrder(
-            Edge.of(c1Name, c1i1Name, c2Name, c2i1Name),
-            Edge.of(c2Name, c2i1Name, c1Name, c1i1Name),
-            Edge.of(c3Name, c3i1Name, c4Name, c4i1Name),
-            Edge.of(c4Name, c4i1Name, c3Name, c3i1Name)));
-  }
-
-  /**
-   * Documents a case that is not correctly handled in L3 computation. We have three nodes with
-   * interfaces in the same broadcast domain, two of which are L1-connected. But we end up connected
-   * all interfaces. Since there are no L1 edges reported for the third node, the code assumes that
-   * LLDP is switched off for that node and connects it to the other interfaces.
-   *
-   * <p>TODO: Extend {@link Layer1Topology} to explicitly contain the list nodes that have LLDP
-   * turned on. This can be correctly populated at least for synthesized L1.
-   */
-  @Test
-  public void testComputeLayer3Topology_unhandledCase() {
-    String c1Name = "c1";
-    String c2Name = "c2";
-    String c3Name = "c3";
-
-    String c1i1Name = "c1i1";
-    String c2i1Name = "c2i1";
-    String c3i1Name = "c3i1";
-
-    Layer1Node l1c1i1 = new Layer1Node(c1Name, c1i1Name);
-    Layer1Node l1c2i1 = new Layer1Node(c2Name, c2i1Name);
-
-    Configuration c1 = _cb.setHostname(c1Name).build();
-    Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1).setActive(true);
-
-    Configuration c2 = _cb.setHostname(c2Name).build();
-    Vrf v2 = _vb.setOwner(c2).build();
-    _ib.setOwner(c2).setVrf(v2);
-
-    Configuration c3 = _cb.setHostname(c3Name).build();
-    Vrf v3 = _vb.setOwner(c3).build();
-    _ib.setOwner(c3).setVrf(v3);
-
-    _ib.setOwner(c1)
-        .setVrf(v1)
-        .setName(c1i1Name)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
-        .build();
-    _ib.setOwner(c2)
-        .setVrf(v2)
-        .setName(c2i1Name)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
-        .build();
-    _ib.setOwner(c3)
-        .setVrf(v3)
-        .setName(c3i1Name)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/24"))
-        .build();
-
-    Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3);
-
-    // c1-c2 are connected
-    Layer1Topology logicalL1 =
-        new Layer1Topology(
-            ImmutableSet.of(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1)));
-
-    Topology layer3Topology =
-        computeRawLayer3Topology(
-            Layer1Topology.EMPTY,
-            logicalL1,
-            TopologyUtil.computeLayer2Topology(logicalL1, VxlanTopology.EMPTY, configs),
-            configs);
-    assertThat(
-        layer3Topology.getEdges(),
-        containsInAnyOrder(
-            Edge.of(c1Name, c1i1Name, c2Name, c2i1Name),
-            Edge.of(c2Name, c2i1Name, c1Name, c1i1Name),
-            Edge.of(c1Name, c1i1Name, c3Name, c3i1Name),
-            Edge.of(c3Name, c3i1Name, c1Name, c1i1Name),
-            Edge.of(c3Name, c3i1Name, c2Name, c2i1Name),
-            Edge.of(c2Name, c2i1Name, c3Name, c3i1Name)));
-  }
-
   @Test
   public void testIncompleteLayer1TopologyHandlingIsp() {
     /*
@@ -1186,7 +1025,7 @@ public final class TopologyUtilTest {
             .build();
 
     Layer1Topology layer1PhysicalTopology =
-        cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
+        computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
 
     // Layer-1 physical topology should include edges in each direction between each border router
     // and corresponding host
@@ -1266,7 +1105,7 @@ public final class TopologyUtilTest {
     Layer1Topology rawLayer1Topology = new Layer1Topology(ImmutableList.of(new Layer1Edge(n1, n2)));
     Map<String, Configuration> configurations = ImmutableMap.of(n1Name, c1, n2Name, c2);
     Layer1Topology layer1PhysicalTopology =
-        TopologyUtil.cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
+        TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
 
     // Layer-1 physical topology should include edges in each direction
     assertThat(
@@ -1329,7 +1168,7 @@ public final class TopologyUtilTest {
     Map<String, Configuration> configurations =
         ImmutableMap.of(n1Name, c1, n2Name, c2, n3Name, c3, n4Name, c4);
     Layer1Topology layer1PhysicalTopology =
-        cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
+        computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
 
     // Layer-1 physical topology should include edges in each direction
     assertThat(
@@ -1387,7 +1226,7 @@ public final class TopologyUtilTest {
         new Layer1Topology(ImmutableList.of(new Layer1Edge(n1, n2), new Layer1Edge(n2, nCorrupt)));
     Map<String, Configuration> configurations = ImmutableMap.of(n1Name, c1, n2Name, c2);
     Layer1Topology layer1PhysicalTopology =
-        TopologyUtil.cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
+        TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
 
     // Layer-1 physical topology should include edges in each direction between n1 and n2, and throw
     // out corrupt edge.
@@ -1593,35 +1432,5 @@ public final class TopologyUtilTest {
         computeInitialTunnelTopology(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2))
             .asEdgeSet(),
         containsInAnyOrder(new Edge(i1, i2), new Edge(i2, i1)));
-  }
-
-  @Test
-  public void testUnionLayer1PhysicalTopologiesBothMissing() {
-    assertThat(
-        unionLayer1PhysicalTopologies(Optional.empty(), Optional.empty()),
-        equalTo(Optional.empty()));
-  }
-
-  @Test
-  public void testUnionLayer1PhysicalTopologiesOneMissing() {
-    Layer1Edge edge1 = new Layer1Edge("n1", "i1", "n2", "i2");
-    assertThat(
-        unionLayer1PhysicalTopologies(
-            Optional.empty(), Optional.of(new Layer1Topology(ImmutableSet.of(edge1)))),
-        equalTo(Optional.of(new Layer1Topology(ImmutableSet.of(edge1)))));
-  }
-
-  @Test
-  public void testUnionLayer1PhysicalTopologiesBothPresent() {
-    Layer1Edge edge1 = new Layer1Edge("n1", "i1", "n2", "i2");
-    Layer1Edge edge2 = new Layer1Edge("n1", "i1", "n3", "i3");
-    Layer1Edge edge3 = new Layer1Edge("n3", "i3", "n1", "i1");
-
-    Layer1Topology topology1 = new Layer1Topology(ImmutableSet.of(edge1, edge2));
-    Layer1Topology topology2 = new Layer1Topology(ImmutableSet.of(edge1, edge3));
-
-    assertThat(
-        unionLayer1PhysicalTopologies(Optional.of(topology1), Optional.of(topology2)),
-        equalTo(Optional.of(new Layer1Topology(ImmutableSet.of(edge1, edge2, edge3)))));
   }
 }

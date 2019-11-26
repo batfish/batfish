@@ -102,7 +102,6 @@ public class TestStorageProvider implements StorageProvider {
   public void storeConfigurations(
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
-      Layer1Topology synthesizedLayer1Topology,
       NetworkId network,
       SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
@@ -327,11 +326,6 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
