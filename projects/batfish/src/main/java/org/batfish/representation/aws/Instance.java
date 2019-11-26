@@ -362,7 +362,7 @@ final class Instance implements AwsVpcEntity, Serializable {
           Utils.newInterface(interfaceId, cfgNode, primaryAddress, netInterface.getDescription());
       iface.setAllAddresses(ifaceAddresses);
 
-      Utils.connect(
+      Utils.addLayer1Edge(
           awsConfiguration,
           cfgNode.getHostname(),
           iface.getName(),

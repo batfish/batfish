@@ -1083,7 +1083,7 @@ public final class FileBasedStorage implements StorageProvider {
         .readValue(CommonUtil.readFile(getEigrpTopologyPath(networkSnapshot)), EigrpTopology.class);
   }
 
-  @Nullable
+  @Nonnull
   @Override
   public Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
       throws IOException {

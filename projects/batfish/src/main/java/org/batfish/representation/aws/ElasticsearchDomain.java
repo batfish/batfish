@@ -157,7 +157,7 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
       Utils.newInterface(
           instancesIfaceName, cfgNode, instancesIfaceAddress, "To subnet " + subnetId);
 
-      Utils.connect(
+      Utils.addLayer1Edge(
           awsConfiguration,
           cfgNode.getHostname(),
           instancesIfaceName,

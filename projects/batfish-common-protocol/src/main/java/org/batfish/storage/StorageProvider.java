@@ -532,7 +532,7 @@ public interface StorageProvider {
    *
    * @throws IOException if there is an error reading the {@link Layer1Topology}
    */
-  @Nullable
+  @Nonnull
   Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
       throws IOException;
 

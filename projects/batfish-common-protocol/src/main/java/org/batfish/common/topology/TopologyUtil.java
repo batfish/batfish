@@ -111,10 +111,10 @@ public final class TopologyUtil {
   }
 
   /**
-   * Cleans raw (user-provided) {@link Layer1Topology}, by removing non-existent interfaces and
-   * making connectivity symmetric.
+   * Cleans {@link Layer1Topology}, by removing non-existent interfaces and making connectivity
+   * symmetric.
    */
-  public static @Nonnull Layer1Topology cleanRawLayer1PhysicalTopology(
+  public static @Nonnull Layer1Topology cleanLayer1PhysicalTopology(
       @Nonnull Layer1Topology rawLayer1Topology,
       @Nonnull Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();

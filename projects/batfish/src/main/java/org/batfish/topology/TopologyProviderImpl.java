@@ -88,7 +88,12 @@ public final class TopologyProviderImpl implements TopologyProvider {
   @Override
   public Optional<Layer1Topology> getSynthesizedLayer1Topology(NetworkSnapshot networkSnapshot) {
     try {
-      return _storage.loadSynthesizedLayer1Topology(networkSnapshot);
+      return _storage
+          .loadSynthesizedLayer1Topology(networkSnapshot)
+          .map(
+              l1 ->
+                  TopologyUtil.cleanLayer1PhysicalTopology(
+                      l1, _batfish.loadConfigurations(networkSnapshot)));
     } catch (IOException e) {
       throw new BatfishException("Could not load BGP topology", e);
     }
@@ -251,7 +256,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
           getRawLayer1PhysicalTopology(networkSnapshot)
               .map(
                   rawLayer1PhysicalTopology ->
-                      TopologyUtil.cleanRawLayer1PhysicalTopology(
+                      TopologyUtil.cleanLayer1PhysicalTopology(
                           rawLayer1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
       Optional<Layer1Topology> synthesizedTopology = getSynthesizedLayer1Topology(networkSnapshot);
       return TopologyUtil.unionLayer1PhysicalTopologies(rawTopology, synthesizedTopology);
