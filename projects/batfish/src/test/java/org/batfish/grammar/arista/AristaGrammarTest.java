@@ -201,6 +201,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testAggregateAddressConversion() throws IOException {
+    // Don't crash.
+    parseConfig("arista_bgp_aggregate_address");
+  }
+
+  @Test
   public void testBgpVlansExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_vlans");
     {
