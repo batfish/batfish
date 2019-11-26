@@ -1659,7 +1659,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (ipv4af != null) {
       Stream<Prefix> summaryOnlyNetworks =
           bgpVrf.getV4aggregates().entrySet().stream()
-              .filter(e -> e.getValue().getSummaryOnly())
+              .filter(e -> firstNonNull(e.getValue().getSummaryOnly(), Boolean.FALSE))
               .map(Entry::getKey);
       If suppressLonger = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
       if (suppressLonger != null) {
