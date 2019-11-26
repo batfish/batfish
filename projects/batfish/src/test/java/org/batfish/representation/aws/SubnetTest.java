@@ -103,10 +103,8 @@ public class SubnetTest {
                             new Route(privatePrefix, State.ACTIVE, "local", TargetType.Gateway)))))
             .build();
 
-    AwsConfiguration awsConfiguration =
-        new AwsConfiguration(
-            ImmutableMap.of(region.getName(), region),
-            ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
 
@@ -200,9 +198,8 @@ public class SubnetTest {
                                 TargetType.Gateway)))))
             .build();
 
-    AwsConfiguration awsConfiguration =
-        new AwsConfiguration(
-            ImmutableMap.of(region.getName(), region),
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(
             ImmutableMap.of(
                 vpcConfig.getHostname(), vpcConfig, vgwConfig.getHostname(), vgwConfig));
 
@@ -285,9 +282,8 @@ public class SubnetTest {
                                 TargetType.Gateway)))))
             .build();
 
-    AwsConfiguration awsConfiguration =
-        new AwsConfiguration(
-            ImmutableMap.of(region.getName(), region),
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(
             ImmutableMap.of(
                 vpcConfig.getHostname(), vpcConfig, igwConfig.getHostname(), igwConfig));
 

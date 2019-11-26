@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
@@ -13,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -26,6 +28,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.runtime.RuntimeData;
+import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -298,5 +301,23 @@ public abstract class VendorConfiguration implements Serializable {
   @Nullable
   public List<BorderInterfaceInfo> getBorderInterfaces() {
     return null;
+  }
+
+  /**
+   * Returns the layer 1 topology based on the config files.
+   *
+   * <p>The returned topology has the following invariant: all interfaces in the topology must be
+   * present in configurations returned by {@link #toVendorIndependentConfigurations()}. Not all
+   * interfaces that are present in configurations need to be present in the topology.
+   *
+   * <p>This function should be overridden by classes like AwsConfiguration that synthesize their
+   * connectivity. For classes that represent router configs, the default implementation should be
+   * used.
+   *
+   * <p>It is the responsibility of the implementation to enforce the invariant above.
+   */
+  @Nonnull
+  public Set<Layer1Edge> getLayer1Edges() {
+    return ImmutableSet.of();
   }
 }

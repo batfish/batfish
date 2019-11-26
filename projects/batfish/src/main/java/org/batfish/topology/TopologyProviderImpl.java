@@ -86,6 +86,20 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
+  public Optional<Layer1Topology> getSynthesizedLayer1Topology(NetworkSnapshot networkSnapshot) {
+    try {
+      return _storage
+          .loadSynthesizedLayer1Topology(networkSnapshot)
+          .map(
+              l1 ->
+                  TopologyUtil.cleanLayer1PhysicalTopology(
+                      l1, _batfish.loadConfigurations(networkSnapshot)));
+    } catch (IOException e) {
+      throw new BatfishException("Could not load BGP topology", e);
+    }
+  }
+
+  @Override
   public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
     return _rawLayer3Topologies.getUnchecked(networkSnapshot);
   }
@@ -231,18 +245,21 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  private @Nonnull Optional<Layer1Topology> computeLayer1PhysicalTopology(
-      NetworkSnapshot networkSnapshot) {
+  @Nonnull
+  private Optional<Layer1Topology> computeLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("TopologyProviderImpl::computeLayer1PhysicalTopology")
             .startActive()) {
       assert span != null; // avoid unused warning
-      return getRawLayer1PhysicalTopology(networkSnapshot)
-          .map(
-              rawLayer1PhysicalTopology ->
-                  TopologyUtil.computeLayer1PhysicalTopology(
-                      rawLayer1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
+      Optional<Layer1Topology> rawTopology =
+          getRawLayer1PhysicalTopology(networkSnapshot)
+              .map(
+                  rawLayer1PhysicalTopology ->
+                      TopologyUtil.cleanLayer1PhysicalTopology(
+                          rawLayer1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
+      Optional<Layer1Topology> synthesizedTopology = getSynthesizedLayer1Topology(networkSnapshot);
+      return TopologyUtil.unionLayer1PhysicalTopologies(rawTopology, synthesizedTopology);
     }
   }
 

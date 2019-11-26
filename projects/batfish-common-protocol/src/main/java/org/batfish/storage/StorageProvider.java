@@ -143,8 +143,10 @@ public interface StorageProvider {
   void storeConfigurations(
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
+      Layer1Topology layer1Topology,
       NetworkId network,
-      SnapshotId snapshot);
+      SnapshotId snapshot)
+      throws IOException;
 
   /**
    * Store the answer to an ad-hoc or analysis question.
@@ -524,6 +526,15 @@ public interface StorageProvider {
    */
   @Nonnull
   EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Loads the {@link Layer1Topology} synthesized internally (e.g., for AWS).
+   *
+   * @throws IOException if there is an error reading the {@link Layer1Topology}
+   */
+  @Nonnull
+  Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
+      throws IOException;
 
   /**
    * Loads the optional {@link Layer2Topology} corresponding to the converged {@link
