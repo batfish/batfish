@@ -44,6 +44,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -192,11 +193,38 @@ public class AristaGrammarTest {
       AristaBgpAggregateNetwork agg =
           config
               .getAristaBgp()
+              .getDefaultVrf()
+              .getV6aggregates()
+              .get(Prefix6.parse("2001:0db8:85a3:0000:0000:8a2e:0370::/112"));
+      assertThat(agg.getAdvertiseOnly(), nullValue());
+      assertThat(agg.getAsSet(), nullValue());
+      assertThat(agg.getSummaryOnly(), equalTo(true));
+      assertThat(agg.getAttributeMap(), nullValue());
+      assertThat(agg.getMatchMap(), nullValue());
+    }
+    {
+      AristaBgpAggregateNetwork agg =
+          config
+              .getAristaBgp()
               .getVrfs()
               .get("FOO")
               .getV4aggregates()
               .get(Prefix.parse("5.6.7.0/24"));
       assertTrue(agg.getAsSet());
+    }
+    {
+      AristaBgpAggregateNetwork agg =
+          config
+              .getAristaBgp()
+              .getVrfs()
+              .get("FOO")
+              .getV6aggregates()
+              .get(Prefix6.parse("2001:0db8:85a3:0000:0000:8a2e:0370::/112"));
+      assertThat(agg.getAdvertiseOnly(), nullValue());
+      assertThat(agg.getAsSet(), nullValue());
+      assertThat(agg.getSummaryOnly(), nullValue());
+      assertThat(agg.getAttributeMap(), equalTo("ATTR_MAP6"));
+      assertThat(agg.getMatchMap(), nullValue());
     }
   }
 
