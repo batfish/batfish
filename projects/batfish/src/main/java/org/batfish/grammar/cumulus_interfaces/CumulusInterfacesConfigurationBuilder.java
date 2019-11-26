@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -45,6 +46,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberCont
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
 import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -67,6 +69,7 @@ public final class CumulusInterfacesConfigurationBuilder
   private final String _text;
   private final Warnings _w;
   private Interface _currentIface;
+  private @Nullable String _currentIfaceName;
 
   public CumulusInterfacesConfigurationBuilder(
       CumulusNcluConfiguration config,
@@ -112,9 +115,18 @@ public final class CumulusInterfacesConfigurationBuilder
   // Listener methods
   @Override
   public void enterS_iface(S_ifaceContext ctx) {
-    String name = ctx.interface_name().getText();
+    _currentIfaceName = ctx.interface_name().getText();
+  }
+
+  @Override
+  public void enterSi_inet(Si_inetContext ctx) {
+    if (_currentIfaceName == null) {
+      _w.addWarning(ctx, ctx.getStart().getText(), _parser, "not find interface name");
+      return;
+    }
+
     if (ctx.LOOPBACK() != null) {
-      if (!name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
+      if (!_currentIfaceName.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
         _w.addWarning(
             ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
       }
@@ -127,7 +139,7 @@ public final class CumulusInterfacesConfigurationBuilder
           CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
           ctx.getStart().getLine());
     } else {
-      _currentIface = _interfaces.createOrGetInterface(name);
+      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
     }
   }
 
@@ -325,6 +337,7 @@ public final class CumulusInterfacesConfigurationBuilder
           _currentIface.getType().selfReference(),
           ctx.getStart().getLine());
       _currentIface = null;
+      _currentIfaceName = null;
     }
   }
 

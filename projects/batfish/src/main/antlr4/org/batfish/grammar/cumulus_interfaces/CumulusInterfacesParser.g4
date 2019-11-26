@@ -28,9 +28,17 @@ s_iface
 :
   IFACE interface_name
   (
-    INET LOOPBACK NEWLINE l_property*
-    | INET STATIC NEWLINE i_property*
+    si_inet
     | NEWLINE i_property*
+  )
+;
+
+si_inet
+:
+  INET
+  (
+    LOOPBACK NEWLINE l_property*
+    | STATIC NEWLINE i_property*
   )
 ;
 
