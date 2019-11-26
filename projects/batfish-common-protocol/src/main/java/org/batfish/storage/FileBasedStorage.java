@@ -89,6 +89,8 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
   private static final String RELPATH_BGP_TOPOLOGY = "bgp_topology.json";
   private static final String RELPATH_EIGRP_TOPOLOGY = "eigrp_topology.json";
+  private static final String RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY =
+      "synthesized_layer1_topology.json";
   private static final String RELPATH_LAYER2_TOPOLOGY = "layer2_topology.json";
   private static final String RELPATH_LAYER3_TOPOLOGY = "layer3_topology.json";
   private static final String RELPATH_OSPF_TOPOLOGY = "ospf_topology.json";
@@ -406,8 +408,11 @@ public final class FileBasedStorage implements StorageProvider {
   public void storeConfigurations(
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
+      Layer1Topology synthesizedLayer1Topology,
       NetworkId network,
-      SnapshotId snapshot) {
+      SnapshotId snapshot)
+      throws IOException {
+
     mkdirs(_d.getSnapshotDir(network, snapshot));
 
     // Save the convert configuration answer element.
@@ -415,6 +420,9 @@ public final class FileBasedStorage implements StorageProvider {
     mkdirs(ccaePath);
     CommonUtil.deleteIfExists(ccaePath);
     serializeObject(convertAnswerElement, ccaePath);
+
+    // Save the synthesized layer1 topology
+    storeSynthesizedLayer1Topology(synthesizedLayer1Topology, network, snapshot);
 
     Path outputDir = _d.getVendorIndependentConfigDir(network, snapshot);
 
@@ -429,6 +437,11 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
     return _d.getSnapshotDir(network, snapshot)
         .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
+  }
+
+  private @Nonnull Path getSynthesizedLayer1TopologyPath(NetworkId network, SnapshotId snapshot) {
+    return _d.getSnapshotDir(network, snapshot)
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY));
   }
 
   private void storeConfigurations(
@@ -1070,6 +1083,20 @@ public final class FileBasedStorage implements StorageProvider {
         .readValue(CommonUtil.readFile(getEigrpTopologyPath(networkSnapshot)), EigrpTopology.class);
   }
 
+  @Nonnull
+  @Override
+  public Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
+      throws IOException {
+    Path sl1tPath = getSynthesizedLayer1TopologyPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    // this is here for backward compatibility when we load up an existing container
+    if (!Files.exists(sl1tPath)) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(
+        BatfishObjectMapper.mapper()
+            .readValue(CommonUtil.readFile(sl1tPath), Layer1Topology.class));
+  }
+
   @Override
   public @Nonnull Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot)
       throws IOException {
@@ -1146,5 +1173,15 @@ public final class FileBasedStorage implements StorageProvider {
     Path path = getVxlanTopologyPath(networkSnapshot);
     mkdirs(path.getParent());
     FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(vxlanTopology), UTF_8);
+  }
+
+  @VisibleForTesting
+  void storeSynthesizedLayer1Topology(
+      Layer1Topology synthesizedLayer1Topology, NetworkId network, SnapshotId snapshot)
+      throws IOException {
+    Path sl1tPath = getSynthesizedLayer1TopologyPath(network, snapshot);
+    mkdirs(sl1tPath.getParent());
+    FileUtils.write(
+        sl1tPath.toFile(), BatfishObjectMapper.writeString(synthesizedLayer1Topology), UTF_8);
   }
 }

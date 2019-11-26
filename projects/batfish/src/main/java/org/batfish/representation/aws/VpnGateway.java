@@ -109,7 +109,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
    * right policy.
    */
   Configuration toConfigurationNode(
-      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_vpnGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 

@@ -39,6 +39,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -85,7 +86,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void roundTripConfigurationsSucceeds() {
+  public void roundTripConfigurationsSucceeds() throws IOException {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
 
@@ -93,7 +94,7 @@ public final class FileBasedStorageTest {
     configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
 
     _storage.storeConfigurations(
-        configs, new ConvertConfigurationAnswerElement(), network, snapshot);
+        configs, new ConvertConfigurationAnswerElement(), Layer1Topology.EMPTY, network, snapshot);
     Map<String, Configuration> deserialized = _storage.loadConfigurations(network, snapshot);
     assertThat(deserialized, not(nullValue()));
     assertThat(deserialized.keySet(), equalTo(Sets.newHashSet("node1")));
@@ -493,5 +494,24 @@ public final class FileBasedStorageTest {
     _storage.storeLayer2Topology(Optional.of(Layer2Topology.EMPTY), networkSnapshot);
 
     assertEquals(_storage.loadLayer2Topology(networkSnapshot), Optional.of(Layer2Topology.EMPTY));
+  }
+
+  @Test
+  public void testStoreSynthesizedLayer1TopologyFileMissing() throws IOException {
+    NetworkSnapshot networkSnapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+
+    assertEquals(_storage.loadSynthesizedLayer1Topology(networkSnapshot), Optional.empty());
+  }
+
+  @Test
+  public void testStoreSynthesizedLayer1TopologyPresent() throws IOException {
+    NetworkSnapshot networkSnapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+    _storage.storeSynthesizedLayer1Topology(
+        Layer1Topology.EMPTY, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+
+    assertEquals(
+        _storage.loadSynthesizedLayer1Topology(networkSnapshot), Optional.of(Layer1Topology.EMPTY));
   }
 }
