@@ -128,12 +128,6 @@ public class IBatfishTestAdapter implements IBatfish {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
-    @Override
-    public Optional<Layer1Topology> getSynthesizedLayer1Topology(NetworkSnapshot networkSnapshot) {
-      throw new UnsupportedOperationException();
-    }
-
     @Override
     public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();

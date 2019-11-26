@@ -83,8 +83,10 @@ public class InternetGatewayTest {
             .setNetworkInterfaces(ImmutableMap.of(ni.getId(), ni))
             .build();
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+    AwsConfiguration awsConfiguration =
+        new AwsConfiguration(
+            ImmutableMap.of(region.getName(), region),
+            ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration igwConfig = internetGateway.toConfigurationNode(awsConfiguration, region);
 

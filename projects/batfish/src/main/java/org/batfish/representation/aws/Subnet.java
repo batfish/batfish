@@ -143,11 +143,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
    * router and create the necessary static routes.
    */
   Configuration toConfigurationNode(
-      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_subnetId), "aws");
+      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
+    Configuration cfgNode = Utils.newAwsConfiguration(_subnetId, "aws");
 
     // add one interface that faces all instances (assumes a LAN)
-    String instancesIfaceName = instancesInterfaceName(_subnetId);
+    String instancesIfaceName = _subnetId;
     Ip instancesIfaceIp = computeInstancesIfaceIp();
     ConcreteInterfaceAddress instancesIfaceAddress =
         ConcreteInterfaceAddress.create(instancesIfaceIp, _cidrBlock.getPrefixLength());
@@ -269,7 +269,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Route route,
       @Nullable InternetGateway igw,
       @Nullable VpnGateway vgw,
-      ConvertedConfiguration awsConfiguration,
+      AwsConfiguration awsConfiguration,
       Warnings warnings) {
 
     StaticRoute.Builder sr =
@@ -338,13 +338,5 @@ public class Subnet implements AwsVpcEntity, Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_cidrBlock, _subnetId, _vpcId, _allocatedIps, _lastGeneratedIp);
-  }
-
-  public static String nodeName(String subnetId) {
-    return subnetId;
-  }
-
-  public static String instancesInterfaceName(String subnetId) {
-    return subnetId;
   }
 }

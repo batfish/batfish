@@ -285,8 +285,7 @@ final class Instance implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  Configuration toConfigurationNode(
-      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
+  Configuration toConfigurationNode(Region region, Warnings warnings) {
     String name = _tags.getOrDefault("Name", _instanceId);
     Configuration cfgNode = Utils.newAwsConfiguration(name, "aws");
 
@@ -361,13 +360,6 @@ final class Instance implements AwsVpcEntity, Serializable {
       Interface iface =
           Utils.newInterface(interfaceId, cfgNode, primaryAddress, netInterface.getDescription());
       iface.setAllAddresses(ifaceAddresses);
-
-      Utils.addLayer1Edge(
-          awsConfiguration,
-          cfgNode.getHostname(),
-          iface.getName(),
-          Subnet.nodeName(subnet.getId()),
-          Subnet.instancesInterfaceName(subnet.getId()));
 
       cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
       cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);

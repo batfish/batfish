@@ -96,7 +96,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     return _attachmentVpcIds;
   }
 
-  Configuration toConfigurationNode(ConvertedConfiguration awsConfiguration, Region region) {
+  Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
     Configuration cfgNode = Utils.newAwsConfiguration(_internetGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
