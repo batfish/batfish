@@ -169,7 +169,6 @@ class IncrementalBdpEngine {
               computeLayer3Topology(
                   computeRawLayer3Topology(
                       initialTopologyContext.getRawLayer1PhysicalTopology(),
-                      initialTopologyContext.getSynthesizedLayer1Topology(),
                       initialTopologyContext.getLayer1LogicalTopology(),
                       newLayer2Topology,
                       configurations),

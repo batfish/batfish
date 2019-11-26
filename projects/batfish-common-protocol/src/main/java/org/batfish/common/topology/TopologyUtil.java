@@ -412,24 +412,21 @@ public final class TopologyUtil {
   @VisibleForTesting
   static @Nonnull Topology computeRawLayer3Topology(
       @Nonnull Layer1Topology rawLayer1Topology,
-      @Nonnull Layer1Topology synthesizedLayer1Topology,
       @Nonnull Layer1Topology layer1LogicalTopology,
       @Nonnull Layer2Topology layer2Topology,
       @Nonnull Map<String, Configuration> configurations) {
-    Set<String> physicalLayer1TailNodes =
-        Stream.concat(
-                rawLayer1Topology.getGraph().edges().stream(),
-                synthesizedLayer1Topology.getGraph().edges().stream())
+    Set<String> rawLayer1TailNodes =
+        rawLayer1Topology.getGraph().edges().stream()
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
     Stream<Edge> filteredEdgeStream =
         synthesizeL3Topology(configurations).getEdges().stream()
-            // keep if either node is not in tail of edge in physical layer-1, or if vertices are in
+            // keep if either node is not in tail of edge in raw layer-1, or if vertices are in
             // same broadcast domain
             .filter(
                 edge ->
-                    !physicalLayer1TailNodes.contains(edge.getNode1())
-                        || !physicalLayer1TailNodes.contains(edge.getNode2())
+                    !rawLayer1TailNodes.contains(edge.getNode1())
+                        || !rawLayer1TailNodes.contains(edge.getNode2())
                         || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()));
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     // Look over all L1 logical edges and see if they both have link-local addresses
@@ -488,13 +485,11 @@ public final class TopologyUtil {
    */
   public static @Nonnull Topology computeRawLayer3Topology(
       @Nonnull Optional<Layer1Topology> rawLayer1PhysicalTopology,
-      @Nonnull Optional<Layer1Topology> synthesizedLayer1Topology,
       @Nonnull Optional<Layer1Topology> layer1LogicalTopology,
       @Nonnull Optional<Layer2Topology> layer2Topology,
       @Nonnull Map<String, Configuration> configurations) {
     return computeRawLayer3Topology(
         rawLayer1PhysicalTopology.orElse(Layer1Topology.EMPTY),
-        synthesizedLayer1Topology.orElse(Layer1Topology.EMPTY),
         layer1LogicalTopology.orElse(Layer1Topology.EMPTY),
         layer2Topology.orElse(Layer2Topology.EMPTY),
         configurations);
