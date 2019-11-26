@@ -29,7 +29,7 @@ s_iface
   IFACE interface_name
   (
     si_inet
-    | NEWLINE i_property*
+    | si_no_inet
   )
 ;
 
@@ -40,6 +40,11 @@ si_inet
     LOOPBACK NEWLINE l_property*
     | STATIC NEWLINE i_property*
   )
+;
+
+si_no_inet
+:
+    NEWLINE i_property*
 ;
 
 // loopback interface properties

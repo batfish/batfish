@@ -47,6 +47,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
 import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -138,9 +139,20 @@ public final class CumulusInterfacesConfigurationBuilder
           CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
           CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
           ctx.getStart().getLine());
-    } else {
+    } else if (ctx.STATIC() != null) {
       _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+    } else {
+      _w.addWarning(ctx, ctx.getStart().getText(), _parser, "syntax is not supported now");
     }
+  }
+
+  @Override
+  public void enterSi_no_inet(Si_no_inetContext ctx) {
+    if (_currentIfaceName == null) {
+      _w.addWarning(ctx, ctx.getStart().getText(), _parser, "not find interface name");
+      return;
+    }
+    _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
   }
 
   @Override
