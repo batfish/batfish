@@ -163,7 +163,7 @@ final class Utils {
    * corresponds to the name of the other node
    */
   static void connect(
-      AwsConfiguration awsConfiguration, Configuration cfgNode1, Configuration cfgNode2) {
+      ConvertedConfiguration awsConfiguration, Configuration cfgNode1, Configuration cfgNode2) {
     Prefix linkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
     ConcreteInterfaceAddress ifaceAddress1 =
         ConcreteInterfaceAddress.create(linkPrefix.getStartIp(), linkPrefix.getPrefixLength());
@@ -175,6 +175,20 @@ final class Utils {
 
     String ifaceName2 = cfgNode1.getHostname();
     Utils.newInterface(ifaceName2, cfgNode2, ifaceAddress2, "To " + ifaceName2);
+
+    addLayer1Edge(
+        awsConfiguration, cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
+  }
+
+  /** Adds a bidirectional layer1 edge between the interfaces and nodes */
+  static void addLayer1Edge(
+      ConvertedConfiguration awsConfiguration,
+      String node1,
+      String iface1,
+      String node2,
+      String iface2) {
+    awsConfiguration.addEdge(node1, iface1, node2, iface2);
+    awsConfiguration.addEdge(node2, iface2, node1, iface1);
   }
 
   /**

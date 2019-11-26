@@ -110,7 +110,11 @@ public final class TopologyUtil {
     }
   }
 
-  public static @Nonnull Layer1Topology computeLayer1PhysicalTopology(
+  /**
+   * Cleans {@link Layer1Topology}, by removing non-existent interfaces and making connectivity
+   * symmetric.
+   */
+  public static @Nonnull Layer1Topology cleanLayer1PhysicalTopology(
       @Nonnull Layer1Topology rawLayer1Topology,
       @Nonnull Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();
@@ -128,6 +132,24 @@ public final class TopologyUtil {
             });
     /* Filter out inactive interfaces */
     return new Layer1Topology(edges.build());
+  }
+
+  /**
+   * Takes the union of two {@link Optional}s containing {@link Layer1Topology}. If either topology
+   * is not present, the other is returned. If both are present, the returned topology is the union
+   * of the edges in the two.
+   */
+  public static @Nonnull Optional<Layer1Topology> unionLayer1PhysicalTopologies(
+      Optional<Layer1Topology> topology1, Optional<Layer1Topology> topology2) {
+    if (!topology1.isPresent()) {
+      return topology2;
+    }
+    if (!topology2.isPresent()) {
+      return topology1;
+    }
+    return Optional.of(
+        new Layer1Topology(
+            Sets.union(topology1.get().getGraph().edges(), topology2.get().getGraph().edges())));
   }
 
   private static void computeLayer2EdgesForLayer1Edge(
@@ -393,18 +415,20 @@ public final class TopologyUtil {
       @Nonnull Layer1Topology layer1LogicalTopology,
       @Nonnull Layer2Topology layer2Topology,
       @Nonnull Map<String, Configuration> configurations) {
-    Set<String> rawLayer1TailNodes =
-        rawLayer1Topology.getGraph().edges().stream()
+    Set<String> layer1TailNodes =
+        Stream.concat(
+                rawLayer1Topology.getGraph().edges().stream(),
+                layer1LogicalTopology.getGraph().edges().stream())
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
     Stream<Edge> filteredEdgeStream =
         synthesizeL3Topology(configurations).getEdges().stream()
-            // keep if either node is in tail of edge in raw layer-1, or if vertices are in same
-            // broadcast domain
+            // keep if either node is not in tail of edge in layer-1, or if vertices are in
+            // same broadcast domain
             .filter(
                 edge ->
-                    !rawLayer1TailNodes.contains(edge.getNode1())
-                        || !rawLayer1TailNodes.contains(edge.getNode2())
+                    !layer1TailNodes.contains(edge.getNode1())
+                        || !layer1TailNodes.contains(edge.getNode2())
                         || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()));
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     // Look over all L1 logical edges and see if they both have link-local addresses
@@ -466,12 +490,11 @@ public final class TopologyUtil {
       @Nonnull Optional<Layer1Topology> layer1LogicalTopology,
       @Nonnull Optional<Layer2Topology> layer2Topology,
       @Nonnull Map<String, Configuration> configurations) {
-    return rawLayer1PhysicalTopology
-        .map(
-            l1 ->
-                computeRawLayer3Topology(
-                    l1, layer1LogicalTopology.get(), layer2Topology.get(), configurations))
-        .orElse(synthesizeL3Topology(configurations));
+    return computeRawLayer3Topology(
+        rawLayer1PhysicalTopology.orElse(Layer1Topology.EMPTY),
+        layer1LogicalTopology.orElse(Layer1Topology.EMPTY),
+        layer2Topology.orElse(Layer2Topology.EMPTY),
+        configurations);
   }
 
   /**
