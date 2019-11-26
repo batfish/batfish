@@ -184,7 +184,17 @@ final class Region implements Serializable {
 
       ArrayNode array = (ArrayNode) json.get(key);
       for (int index = 0; index < array.size(); index++) {
-        integratorFunction.accept(array.get(index));
+        try {
+          integratorFunction.accept(array.get(index));
+        } catch (IOException | IllegalArgumentException e) {
+          pvcae.addRedFlagWarning(
+              BfConsts.RELPATH_AWS_CONFIGS_FILE,
+              new Warning(
+                  String.format(
+                      "Exception while parsing '%s' in AWS file %s: %s",
+                      key, sourceFileName, e.getMessage()),
+                  "AWS"));
+        }
       }
     }
   }
