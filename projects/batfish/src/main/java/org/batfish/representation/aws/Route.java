@@ -36,7 +36,8 @@ final class Route implements Serializable {
     NatGateway,
     NetworkInterface,
     Unavailable,
-    VpcPeeringConnection
+    VpcPeeringConnection,
+    Unknown
   }
 
   static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
@@ -88,8 +89,8 @@ final class Route implements Serializable {
       targetType = TargetType.Unavailable;
       target = null;
     } else {
-      throw new IllegalArgumentException(
-          "Unable to determine target type in route for " + destinationCidrBlock);
+      targetType = TargetType.Unknown;
+      target = null;
     }
 
     return new Route(destinationCidrBlock, state, target, targetType);
