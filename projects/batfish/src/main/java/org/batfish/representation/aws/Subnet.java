@@ -30,6 +30,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
+import org.batfish.representation.aws.Route.TargetType;
 
 /**
  * Representation of an AWS subnet
@@ -280,43 +281,41 @@ public class Subnet implements AwsVpcEntity, Serializable {
     if (route.getState() == State.BLACKHOLE) {
       return sr.setNextHopInterface(Interface.NULL_INTERFACE_NAME).build();
     } else {
-      switch (route.getTargetType()) {
-        case Gateway:
-          if (route.getTarget() == null) {
-            warnings.redFlag("Route target is null for target type Gateway");
-            return null;
-          }
-          if (route.getTarget().equals("local")) {
-            // Tp VPC
+      if (route.getTargetType() == TargetType.Gateway) {
+        if (route.getTarget() == null) {
+          warnings.redFlag("Route target is null for target type Gateway");
+          return null;
+        }
+        if (route.getTarget().equals("local")) {
+          // To VPC
+          return sr.setNextHopIp(
+                  Utils.getInterfaceIp(
+                      awsConfiguration.getConfigurationNodes().get(_vpcId), _subnetId))
+              .build();
+        } else {
+          if (igw != null && route.getTarget().equals(igw.getId())) {
+            // To IGW
             return sr.setNextHopIp(
                     Utils.getInterfaceIp(
-                        awsConfiguration.getConfigurationNodes().get(_vpcId), _subnetId))
+                        awsConfiguration.getConfigurationNodes().get(igw.getId()), _subnetId))
+                .build();
+          } else if (vgw != null && route.getTarget().equals(vgw.getId())) {
+            // To VGW
+            return sr.setNextHopIp(
+                    Utils.getInterfaceIp(
+                        awsConfiguration.getConfigurationNodes().get(vgw.getId()), _subnetId))
                 .build();
           } else {
-            if (igw != null && route.getTarget().equals(igw.getId())) {
-              // To IGW
-              return sr.setNextHopIp(
-                      Utils.getInterfaceIp(
-                          awsConfiguration.getConfigurationNodes().get(igw.getId()), _subnetId))
-                  .build();
-            } else if (vgw != null && route.getTarget().equals(vgw.getId())) {
-              // To VGW
-              return sr.setNextHopIp(
-                      Utils.getInterfaceIp(
-                          awsConfiguration.getConfigurationNodes().get(vgw.getId()), _subnetId))
-                  .build();
-            } else {
-              warnings.redFlag(
-                  String.format(
-                      "Unknown target %s specified in this route not accessible from this subnet",
-                      route.getTarget()));
-              return null;
-            }
+            warnings.redFlag(
+                String.format(
+                    "Unknown target %s specified in this route not accessible from this subnet",
+                    route.getTarget()));
+            return null;
           }
-        default:
-          warnings.redFlag("Unsupported target type: " + route.getTargetType());
-          return null;
+        }
       }
+      warnings.redFlag("Unsupported target type: " + route.getTargetType());
+      return null;
     }
   }
 
