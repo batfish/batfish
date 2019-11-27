@@ -1222,6 +1222,7 @@ import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
+import org.batfish.representation.cisco.eos.AristaBgpDefaultOriginate;
 import org.batfish.representation.cisco.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.cisco.eos.AristaBgpNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
@@ -2566,12 +2567,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbinc_default_originate(Eos_rbinc_default_originateContext ctx) {
-    todo(ctx);
+    boolean always = ctx.ALWAYS() != null;
+    @Nullable String routeMap = null;
     if (ctx.rm != null) {
-      String routeMapName = ctx.rm.getText();
+      routeMap = ctx.rm.getText();
       _configuration.referenceStructure(
-          ROUTE_MAP, routeMapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
+          ROUTE_MAP, routeMap, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
     }
+    AristaBgpDefaultOriginate defaultOriginate = new AristaBgpDefaultOriginate(always, routeMap);
+    _currentAristaBgpNeighbor.setDefaultOriginate(defaultOriginate);
   }
 
   @Override
