@@ -1,5 +1,7 @@
 package org.batfish.grammar.cumulus_interfaces;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
@@ -121,11 +123,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void enterSi_inet(Si_inetContext ctx) {
-    if (_currentIfaceName == null) {
-      _w.addWarning(ctx, ctx.getStart().getText(), _parser, "not find interface name");
-      return;
-    }
-
+    checkArgument(_currentIfaceName != null, "not find interface name");
     if (ctx.LOOPBACK() != null) {
       if (!_currentIfaceName.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
         _w.addWarning(
@@ -148,10 +146,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void enterSi_no_inet(Si_no_inetContext ctx) {
-    if (_currentIfaceName == null) {
-      _w.addWarning(ctx, ctx.getStart().getText(), _parser, "not find interface name");
-      return;
-    }
+    checkArgument(_currentIfaceName != null, "not find interface name");
     _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
   }
 
