@@ -5,11 +5,13 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -26,8 +28,10 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -205,5 +209,22 @@ public class CumulusConcatenatedGrammarTest {
     BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
     assertThat(neighbor.getConfederationAsn(), equalTo(12L));
     assertThat(neighbor.getLocalAs(), equalTo(65000L));
+  }
+
+  @Test
+  public void testInterfaces() throws IOException {
+    Configuration c = parseConfig("interface_test");
+
+    assertThat(c.getAllInterfaces().keySet(), contains("lo", "swp1", "swp2"));
+
+    Interface lo = c.getAllInterfaces().get("lo");
+    assertEquals(lo.getAddress(), ConcreteInterfaceAddress.parse("1.1.1.1/32"));
+
+    Interface swp1 = c.getAllInterfaces().get("swp1");
+    assertEquals(swp1.getAddress(), ConcreteInterfaceAddress.parse("2.2.2.2/24"));
+
+    Interface swp2 = c.getAllInterfaces().get("swp2");
+    assertEquals(swp2.getAddress(), ConcreteInterfaceAddress.parse("3.3.3.3/24"));
+    assertEquals(swp2.getSpeed(), Double.valueOf(10000 * 10e6));
   }
 }

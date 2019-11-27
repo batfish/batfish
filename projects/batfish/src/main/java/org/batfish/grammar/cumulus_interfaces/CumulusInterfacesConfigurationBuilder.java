@@ -1,10 +1,13 @@
 package org.batfish.grammar.cumulus_interfaces;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -45,6 +48,8 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberCont
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
 import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -67,6 +72,7 @@ public final class CumulusInterfacesConfigurationBuilder
   private final String _text;
   private final Warnings _w;
   private Interface _currentIface;
+  private @Nullable String _currentIfaceName;
 
   public CumulusInterfacesConfigurationBuilder(
       CumulusNcluConfiguration config,
@@ -112,9 +118,14 @@ public final class CumulusInterfacesConfigurationBuilder
   // Listener methods
   @Override
   public void enterS_iface(S_ifaceContext ctx) {
-    String name = ctx.interface_name().getText();
+    _currentIfaceName = ctx.interface_name().getText();
+  }
+
+  @Override
+  public void enterSi_inet(Si_inetContext ctx) {
+    checkArgument(_currentIfaceName != null, "not find interface name");
     if (ctx.LOOPBACK() != null) {
-      if (!name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
+      if (!_currentIfaceName.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
         _w.addWarning(
             ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
       }
@@ -126,9 +137,17 @@ public final class CumulusInterfacesConfigurationBuilder
           CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
           CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
           ctx.getStart().getLine());
+    } else if (ctx.STATIC() != null) {
+      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
     } else {
-      _currentIface = _interfaces.createOrGetInterface(name);
+      _w.addWarning(ctx, ctx.getStart().getText(), _parser, "syntax is not supported now");
     }
+  }
+
+  @Override
+  public void enterSi_no_inet(Si_no_inetContext ctx) {
+    checkArgument(_currentIfaceName != null, "not find interface name");
+    _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
   }
 
   @Override
@@ -325,6 +344,7 @@ public final class CumulusInterfacesConfigurationBuilder
           _currentIface.getType().selfReference(),
           ctx.getStart().getLine());
       _currentIface = null;
+      _currentIfaceName = null;
     }
   }
 

@@ -1,0 +1,33 @@
+interface_test
+# This file describes the network interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+# The loopback network interface
+auto lo
+iface lo inet loopback
+    address 1.1.1.1/32
+auto swp1
+iface swp1 inet static
+  link-speed 10000
+  address 2.2.2.2/24
+auto swp2
+iface swp2 inet static
+  link-autoneg on
+  link-speed 10000
+  address 3.3.3.3/24
+# ports.conf --
+# ports.conf --
+#
+#   configure port speed, aggregation, and subdivision.
+#
+#   The ports in Cumulus VX are not configurable from here.
+#frr version
+frr version 4.0+cl3u11
+frr defaults datacenter
+hostname interface_test
+username cumulus nopassword
+!
+service integrated-vtysh-config
+!
+log syslog informational
+!
