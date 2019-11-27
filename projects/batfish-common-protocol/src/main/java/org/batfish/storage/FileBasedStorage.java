@@ -408,7 +408,7 @@ public final class FileBasedStorage implements StorageProvider {
   public void storeConfigurations(
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
-      Layer1Topology synthesizedLayer1Topology,
+      @Nullable Layer1Topology synthesizedLayer1Topology,
       NetworkId network,
       SnapshotId snapshot)
       throws IOException {
@@ -422,7 +422,9 @@ public final class FileBasedStorage implements StorageProvider {
     serializeObject(convertAnswerElement, ccaePath);
 
     // Save the synthesized layer1 topology
-    storeSynthesizedLayer1Topology(synthesizedLayer1Topology, network, snapshot);
+    if (synthesizedLayer1Topology != null) {
+      storeSynthesizedLayer1Topology(synthesizedLayer1Topology, network, snapshot);
+    }
 
     Path outputDir = _d.getVendorIndependentConfigDir(network, snapshot);
 

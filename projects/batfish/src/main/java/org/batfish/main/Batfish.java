@@ -2390,8 +2390,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .flatMap(vc -> vc.getLayer1Edges().stream())
               .collect(ImmutableSet.toImmutableSet());
 
-      Layer1Topology topology = new Layer1Topology(layer1Edges);
-
       addInternetAndIspNodes(configurations, vendorConfigs, answerElement.getWarnings());
 
       try (ActiveSpan storeSpan =
@@ -2401,7 +2399,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           _storage.storeConfigurations(
               configurations,
               answerElement,
-              topology,
+              // we don't write anything if no Layer1 edges were produced
+              // empty topologies are currently dangerous for L1 computation
+              layer1Edges.isEmpty() ? null : new Layer1Topology(layer1Edges),
               _settings.getContainer(),
               _testrigSettings.getName());
         } catch (IOException e) {
