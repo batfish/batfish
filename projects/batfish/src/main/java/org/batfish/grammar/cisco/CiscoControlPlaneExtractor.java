@@ -546,6 +546,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_aa_modifiersContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_aa_v4Context;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rb_aa_v6Context;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_af_evpnContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_af_evpn_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_af_evpn_no_neighborContext;
@@ -2230,6 +2231,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rb_aa_v4(Eos_rb_aa_v4Context ctx) {
+    _currentAristaBgpAggregateNetwork = null;
+  }
+
+  @Override
+  public void enterEos_rb_aa_v6(Eos_rb_aa_v6Context ctx) {
+    Prefix6 prefix = Prefix6.parse(ctx.prefix.getText());
+    _currentAristaBgpAggregateNetwork = new AristaBgpAggregateNetwork();
+    _currentAristaBgpVrf.getV6aggregates().put(prefix, _currentAristaBgpAggregateNetwork);
+  }
+
+  @Override
+  public void exitEos_rb_aa_v6(Eos_rb_aa_v6Context ctx) {
     _currentAristaBgpAggregateNetwork = null;
   }
 
