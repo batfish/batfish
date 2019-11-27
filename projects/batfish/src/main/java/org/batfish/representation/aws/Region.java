@@ -294,7 +294,7 @@ final class Region implements Serializable {
         return json -> {
           String code =
               json.get(AwsVpcEntity.JSON_KEY_STATUS).get(AwsVpcEntity.JSON_KEY_CODE).textValue();
-          if (!code.equals(AwsVpcEntity.STATUS_DELETED)) {
+          if (code.equals(AwsVpcEntity.STATUS_ACTIVE)) {
             VpcPeeringConnection vpcPeerConn =
                 BatfishObjectMapper.mapper().convertValue(json, VpcPeeringConnection.class);
             _vpcPeerings.put(vpcPeerConn.getId(), vpcPeerConn);
@@ -477,6 +477,8 @@ final class Region implements Serializable {
     for (VpnConnection vpnConnection : getVpnConnections().values()) {
       vpnConnection.applyToVpnGateway(awsConfiguration, this, warnings);
     }
+
+    // VpcPeeringConnections are processed in AwsConfiguration since they can be cross region
 
     applySecurityGroupsAcls(awsConfiguration.getConfigurationNodes());
 
