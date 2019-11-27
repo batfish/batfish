@@ -1,6 +1,6 @@
 package org.batfish.grammar.arista;
 
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
@@ -82,7 +82,7 @@ public class AristaGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/arista/testconfigs/";
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private @Nonnull CiscoConfiguration parseVendorConfig(String hostname) {
+  private static @Nonnull CiscoConfiguration parseVendorConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
@@ -112,11 +112,17 @@ public class AristaGrammarTest {
     return batfish;
   }
 
-  private @Nonnull Configuration parseConfig(String hostname) throws IOException {
-    Map<String, Configuration> configs = parseTextConfigs(hostname);
-    String canonicalHostname = hostname.toLowerCase();
-    assertThat(configs, hasEntry(equalTo(canonicalHostname), hasHostname(canonicalHostname)));
-    return configs.get(canonicalHostname);
+  private @Nonnull Configuration parseConfig(String hostname) {
+    try {
+      Map<String, Configuration> configs = parseTextConfigs(hostname);
+      String canonicalHostname = hostname.toLowerCase();
+      assertThat(configs, hasKey(canonicalHostname));
+      Configuration c = configs.get(canonicalHostname);
+      assertThat(c, hasConfigurationFormat(ConfigurationFormat.ARISTA));
+      return c;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -229,7 +235,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressConversion() throws IOException {
+  public void testAggregateAddressConversion() {
     // Don't crash.
     parseConfig("arista_bgp_aggregate_address");
   }
@@ -339,7 +345,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNeighborConversion() throws IOException {
+  public void testNeighborConversion() {
     Configuration c = parseConfig("arista_bgp_neighbors");
     assertThat(c.getDefaultVrf(), notNullValue());
     BgpProcess proc = c.getDefaultVrf().getBgpProcess();
@@ -420,7 +426,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVrfConversion() throws IOException {
+  public void testVrfConversion() {
     Configuration c = parseConfig("arista_bgp_vrf");
     assertThat(
         c.getVrfs().keySet(), containsInAnyOrder(AristaBgpProcess.DEFAULT_VRF, "FOO", "BAR"));
@@ -524,7 +530,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVxlanConversion() throws IOException {
+  public void testVxlanConversion() {
     Configuration config = parseConfig("arista_vxlan");
     {
       VniSettings vniSettings = config.getVrfs().get("VRF_1").getVniSettings().get(10001);
@@ -564,14 +570,14 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testInterfaceConversion() throws IOException {
+  public void testInterfaceConversion() {
     Configuration c = parseConfig("arista_interface");
     assertThat(c, hasInterface("Ethernet1", hasVrf(hasName(equalTo("VRF_1")))));
     assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
   }
 
   @Test
-  public void testEvpnConversion() throws IOException {
+  public void testEvpnConversion() {
     Configuration c = parseConfig("arista_evpn");
     Ip[] neighborIPs = {Ip.parse("192.168.255.1"), Ip.parse("192.168.255.2")};
     for (Ip ip : neighborIPs) {
