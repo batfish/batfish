@@ -346,7 +346,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ipsecPhase2Policy;
   }
 
-  void applyToVpnGateway(AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
+  void applyToVpnGateway(
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     if (!awsConfiguration.getConfigurationNodes().containsKey(_vpnGatewayId)) {
       warnings.redFlag(
           String.format(
