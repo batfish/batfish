@@ -533,6 +533,13 @@ public class AristaGrammarTest {
   public void testVxlanConversion() {
     Configuration config = parseConfig("arista_vxlan");
     {
+      VniSettings vniSettings = config.getVrfs().get("TENANT").getVniSettings().get(10000);
+      assertThat(
+          vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
+      assertThat(vniSettings.getBumTransportIps(), empty());
+      assertThat(vniSettings.getVlan(), nullValue());
+    }
+    {
       VniSettings vniSettings = config.getVrfs().get("VRF_1").getVniSettings().get(10001);
       assertThat(
           vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));

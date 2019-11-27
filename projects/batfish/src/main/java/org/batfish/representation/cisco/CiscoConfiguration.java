@@ -3581,6 +3581,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 org.batfish.datamodel.Vrf vrf = getVrfForVlan(c, vlan).orElse(c.getDefaultVrf());
                 vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface));
               });
+      _eosVxlan
+          .getVrfToVni()
+          .forEach(
+              (vrfName, vni) ->
+                  Optional.ofNullable(c.getVrfs().get(vrfName))
+                      .map(
+                          vrf ->
+                              vrf.getVniSettings()
+                                  .put(vni, toVniSettings(_eosVxlan, vni, null, sourceIface))));
     }
 
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
@@ -3932,7 +3941,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static VniSettings toVniSettings(
       @Nonnull AristaEosVxlan vxlan,
       @Nonnull Integer vni,
-      @Nonnull Integer vlan,
+      @Nullable Integer vlan,
       @Nullable Interface sourceInterface) {
     Ip sourceAddress =
         sourceInterface == null
@@ -3941,7 +3950,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Prefer VLAN-specific or general flood address (in that order) over multicast address
     SortedSet<Ip> bumTransportIps =
-        firstNonNull(vxlan.getVlanFloodAddresses().get(vlan), vxlan.getFloodAddresses());
+        firstNonNull(
+            vlan != null ? vxlan.getVlanFloodAddresses().get(vlan) : null,
+            vxlan.getFloodAddresses());
 
     // default to unicast flooding unless specified otherwise
     BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;

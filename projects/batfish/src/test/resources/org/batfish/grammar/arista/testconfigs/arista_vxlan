@@ -2,6 +2,7 @@
 !
 hostname arista_vxlan
 !
+vrf instance TENANT
 vrf instance VRF_1
 vrf instance VRF_2
 !
