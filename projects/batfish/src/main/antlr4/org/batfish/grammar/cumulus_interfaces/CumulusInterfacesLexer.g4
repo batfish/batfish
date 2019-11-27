@@ -139,9 +139,24 @@ LINK_SPEED
   'link-speed'
 ;
 
+LINK_AUTONEG
+:
+  'link-autoneg'
+;
+
 LOOPBACK
 :
   'loopback'
+;
+
+OFF
+:
+  'off'
+;
+
+ON
+:
+  'on'
 ;
 
 MSTPCTL_BPDUGUARD
@@ -162,6 +177,11 @@ MSTPCTL_PORTBPDUFILTER
 NO
 :
   'no'
+;
+
+STATIC
+:
+  'static'
 ;
 
 VLAN_ID
