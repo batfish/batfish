@@ -257,6 +257,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("HundredGigE", "HundredGigabitEthernet")
           .put("ip", "ip")
           .put("Group-Async", "Group-Async")
+          .put("lo", "Loopback")
           .put("LongReachEthernet", "LongReachEthernet")
           .put("Loopback", "Loopback")
           .put("ma", "Management")

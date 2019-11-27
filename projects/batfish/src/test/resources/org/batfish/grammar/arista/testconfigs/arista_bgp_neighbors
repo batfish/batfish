@@ -29,7 +29,7 @@ router bgp 1
   neighbor 1.1.1.1 route-map RM_IN in
   neighbor 1.1.1.1 route-map RM_OUT out
   neighbor 1.1.1.1 send-community
-  neighbor 1.1.1.1 update-source Loopback0
+  neighbor 1.1.1.1 update-source Lo0
 !
   neighbor 2.2.2.2 remote-as 36
   neighbor 2.2.2.2 default-originate always route-map DEF_ORIG_MAP

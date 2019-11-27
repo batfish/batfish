@@ -2664,7 +2664,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbinc_update_source(Eos_rbinc_update_sourceContext ctx) {
-    _currentAristaBgpNeighbor.setUpdateSource(ctx.iface.getText());
+    String iface = toInterfaceName(ctx.iface);
+    _currentAristaBgpNeighbor.setUpdateSource(iface);
+    _configuration.referenceStructure(
+        INTERFACE, iface, BGP_UPDATE_SOURCE_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
