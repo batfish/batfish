@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_frr;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -94,6 +95,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
@@ -109,6 +111,8 @@ import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
+import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
 import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
@@ -310,6 +314,23 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (aggregateNetworks.put(prefix, agg) != null) {
       _w.addWarning(
           ctx, ctx.getText(), _parser, "Overwriting aggregate-address for " + prefix.toString());
+    }
+  }
+
+  @Override
+  public void exitSbnp_update_source(Sbnp_update_sourceContext ctx) {
+    if (_currentBgpNeighbor == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp neighbor");
+      return;
+    }
+
+    if (ctx.ip != null) {
+      _currentBgpNeighbor.setBgpNeighborSource(
+          new BgpNeighborSourceAddress(Ip.parse(ctx.ip.getText())));
+    } else if (ctx.name != null) {
+      _currentBgpNeighbor.setBgpNeighborSource(new BgpNeighborSourceInterface(ctx.name.getText()));
+    } else {
+      _w.addWarning(ctx, ctx.getText(), _parser, "either Ip or Interface is needed");
     }
   }
 

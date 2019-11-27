@@ -16,7 +16,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -51,6 +53,8 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
+import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
@@ -1192,5 +1196,35 @@ public class CumulusFrrGrammarTest {
   public void testBgpConfederationId() {
     parseLines("router bgp 65001", "bgp confederation identifier 100");
     assertThat(_config.getBgpProcess().getDefaultVrf().getConfederationId(), equalTo(100L));
+  }
+
+  @Test
+  public void testBgpNeighborUpdateSource_Address() {
+    parseLines("router bgp 65001", "neighbor 1.1.1.1 update-source 2.2.2.2");
+
+    assertNotNull(_config.getBgpProcess());
+    assertThat(
+        _config
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("1.1.1.1")
+            .getBgpNeighborSource(),
+        equalTo(new BgpNeighborSourceAddress(Ip.parse("2.2.2.2"))));
+  }
+
+  @Test
+  public void testBgpNeighborUpdateSource_Interface() {
+    parseLines("router bgp 65001", "neighbor 1.1.1.1 update-source lo");
+
+    assertNotNull(_config.getBgpProcess());
+    assertThat(
+        _config
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("1.1.1.1")
+            .getBgpNeighborSource(),
+        equalTo(new BgpNeighborSourceInterface("lo")));
   }
 }
