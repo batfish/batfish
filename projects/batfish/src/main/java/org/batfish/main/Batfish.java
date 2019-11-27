@@ -229,6 +229,7 @@ import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
@@ -1759,7 +1760,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .forEach(
             config -> {
               Map<String, Interface> allInterfaces = config.getAllInterfaces();
-              Graph<String, Dependency> graph = new SimpleDirectedGraph<>(Dependency.class);
+              Graph<String, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
               allInterfaces.keySet().forEach(graph::addVertex);
               allInterfaces
                   .values()
@@ -1771,12 +1772,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                   dependency ->
                                       graph.addEdge(
                                           // Reverse edge direction to aid topological sort
-                                          dependency.getInterfaceName(),
-                                          iface.getName(),
-                                          dependency)));
+                                          dependency.getInterfaceName(), iface.getName())));
 
               // Traverse interfaces in topological order and deactivate if necessary
-              for (TopologicalOrderIterator<String, Dependency> iterator =
+              for (TopologicalOrderIterator<String, DefaultEdge> iterator =
                       new TopologicalOrderIterator<>(graph);
                   iterator.hasNext(); ) {
                 String ifaceName = iterator.next();
