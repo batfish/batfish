@@ -410,7 +410,7 @@ public class SubnetTest {
     subnet1.processRoute(
         subnet1Cfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
     subnet2.processRoute(
-        subnet1Cfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
+        subnet2Cfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
 
     // the VPC should have static routes to both subnets in the VRF
     assertThat(
@@ -421,9 +421,9 @@ public class SubnetTest {
                     subnet1.getCidrBlock(),
                     Utils.getInterfaceIp(subnet1Cfg, suffixedInterfaceName(vpcCfg, connectionId))),
                 toStaticRoute(
-                    subnet1.getCidrBlock(),
+                    subnet2.getCidrBlock(),
                     Utils.getInterfaceIp(
-                        subnet1Cfg, suffixedInterfaceName(vpcCfg, connectionId))))));
+                        subnet2Cfg, suffixedInterfaceName(vpcCfg, connectionId))))));
   }
 
   /** The subnet has two peering connections */
