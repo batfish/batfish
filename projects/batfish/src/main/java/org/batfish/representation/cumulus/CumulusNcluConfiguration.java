@@ -48,6 +48,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -321,7 +322,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
-        .setLocalIp(computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName()))
+        .setLocalIp(
+            firstNonNull(
+                resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, _w),
+                computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
         .setPeerAddress(neighbor.getPeerIp())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
@@ -332,6 +336,53 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setEvpnAddressFamily(
             toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
         .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static Ip resolveLocalIpFromUpdateSource(
+      @Nullable BgpNeighborSource source, Configuration c, Warnings warnings) {
+    if (source == null) {
+      return null;
+    }
+
+    BgpNeighborSourceVisitor<Ip> visitor =
+        new BgpNeighborSourceVisitor<Ip>() {
+
+          @Override
+          public Ip visitBgpNeighborSourceAddress(BgpNeighborSourceAddress updateSourceAddress) {
+            return updateSourceAddress.getAddress();
+          }
+
+          @Nullable
+          @Override
+          public Ip visitBgpNeighborSourceInterface(
+              BgpNeighborSourceInterface updateSourceInterface) {
+            org.batfish.datamodel.Interface iface =
+                c.getAllInterfaces().get(updateSourceInterface.getInterface());
+
+            if (iface == null) {
+              warnings.redFlag(
+                  String.format(
+                      "cannot find interface named %s for update-source",
+                      updateSourceInterface.getInterface()));
+              return null;
+            }
+
+            ConcreteInterfaceAddress concreteAddress = iface.getConcreteAddress();
+            if (concreteAddress == null) {
+              warnings.redFlag(
+                  String.format(
+                      "cannot find an address for interface named %s for update-source",
+                      updateSourceInterface.getInterface()));
+              return null;
+            }
+
+            return iface.getConcreteAddress().getIp();
+          }
+        };
+
+    return source.accept(visitor);
   }
 
   @Nonnull

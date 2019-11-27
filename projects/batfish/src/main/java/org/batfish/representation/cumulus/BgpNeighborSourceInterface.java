@@ -19,6 +19,11 @@ public class BgpNeighborSourceInterface implements BgpNeighborSource {
   }
 
   @Override
+  public <T> T accept(BgpNeighborSourceVisitor<T> visitor) {
+    return visitor.visitBgpNeighborSourceInterface(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (o == this) {
       return true;

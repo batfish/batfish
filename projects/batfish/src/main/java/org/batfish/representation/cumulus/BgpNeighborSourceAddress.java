@@ -20,6 +20,11 @@ public class BgpNeighborSourceAddress implements BgpNeighborSource {
   }
 
   @Override
+  public <T> T accept(BgpNeighborSourceVisitor<T> visitor) {
+    return visitor.visitBgpNeighborSourceAddress(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (o == this) {
       return true;

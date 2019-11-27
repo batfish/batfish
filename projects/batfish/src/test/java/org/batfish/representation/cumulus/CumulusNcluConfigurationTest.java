@@ -1,15 +1,18 @@
 package org.batfish.representation.cumulus;
 
+import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.getSetNextHop;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.resolveLocalIpFromUpdateSource;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.toCommunityList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -22,6 +25,8 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.SortedMap;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.Warning;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -835,5 +840,90 @@ public class CumulusNcluConfigurationTest {
     CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
     org.batfish.datamodel.Interface iface = vendorConfiguration.createVIInterfaceForLo();
     assertThat(iface.getBandwidth(), equalTo(CumulusNcluConfiguration.DEFAULT_LOOPBACK_BANDWIDTH));
+  }
+
+  @Test
+  public void testResolveLocalIpFromUpdateSource_Null() {
+    Warnings warnings = new Warnings(false, true, false);
+
+    // create vi config
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    assertNull(resolveLocalIpFromUpdateSource(null, c, warnings));
+  }
+
+  @Test
+  public void testResolveLocalIpFromUpdateSource_Ip() {
+    Warnings warnings = new Warnings(false, true, false);
+    BgpNeighborSourceAddress source = new BgpNeighborSourceAddress(Ip.parse("1.1.1.1"));
+
+    // create vi config
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    assertEquals(resolveLocalIpFromUpdateSource(source, c, warnings), Ip.parse("1.1.1.1"));
+  }
+
+  @Test
+  public void testResolveLocalIpFromUpdateSource_Interface_NoInterface() {
+    Warnings warnings = new Warnings(false, true, false);
+    BgpNeighborSourceInterface source = new BgpNeighborSourceInterface("lo");
+
+    // create vi config
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    assertNull(resolveLocalIpFromUpdateSource(source, c, warnings));
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        equalTo(
+            ImmutableList.of(
+                new Warning("cannot find interface named lo for update-source", TAG_RED_FLAG))));
+  }
+
+  @Test
+  public void testResolveLocalIpFromUpdateSource_Interface_NoInterfaceAddress() {
+    Warnings warnings = new Warnings(false, true, false);
+    BgpNeighborSourceInterface source = new BgpNeighborSourceInterface("lo");
+
+    // create vi config
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    nf.interfaceBuilder().setType(PHYSICAL).setOwner(c).setName("lo").build();
+
+    assertNull(resolveLocalIpFromUpdateSource(source, c, warnings));
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        equalTo(
+            ImmutableList.of(
+                new Warning(
+                    "cannot find an address for interface named lo for update-source",
+                    TAG_RED_FLAG))));
+  }
+
+  @Test
+  public void testResolveLocalIpFromUpdateSource_Interface() {
+    Warnings warnings = new Warnings(false, true, false);
+    BgpNeighborSourceInterface source = new BgpNeighborSourceInterface("lo");
+
+    // create vi config
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    nf.interfaceBuilder()
+        .setType(PHYSICAL)
+        .setOwner(c)
+        .setName("lo")
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .build();
+
+    assertEquals(resolveLocalIpFromUpdateSource(source, c, warnings), Ip.parse("1.1.1.1"));
   }
 }
