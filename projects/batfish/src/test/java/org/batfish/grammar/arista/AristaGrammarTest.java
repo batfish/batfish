@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -39,6 +41,7 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
@@ -58,6 +61,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
+import org.batfish.representation.cisco.eos.AristaBgpDefaultOriginate;
 import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
@@ -282,7 +286,10 @@ public class AristaGrammarTest {
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getAllowAsIn(), nullValue());
-      // TODO: default-originate
+      AristaBgpDefaultOriginate defaultOriginate = neighbor.getDefaultOriginate();
+      assertThat(defaultOriginate, notNullValue());
+      assertThat(defaultOriginate.getAlways(), equalTo(true));
+      assertThat(defaultOriginate.getRouteMap(), nullValue());
       assertThat(neighbor.getDescription(), equalTo("SOME NEIGHBOR"));
       assertTrue(neighbor.getDontCapabilityNegotiate());
       assertThat(neighbor.getEbgpMultihop(), equalTo(Integer.MAX_VALUE));
@@ -303,6 +310,10 @@ public class AristaGrammarTest {
       Ip neighborAddr = Ip.parse("2.2.2.2");
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      AristaBgpDefaultOriginate defaultOriginate = neighbor.getDefaultOriginate();
+      assertThat(defaultOriginate, notNullValue());
+      assertThat(defaultOriginate.getAlways(), equalTo(true));
+      assertThat(defaultOriginate.getRouteMap(), equalTo("DEF_ORIG_MAP"));
       assertThat(neighbor.getEbgpMultihop(), equalTo(10));
       assertThat(neighbor.getRemoteAs(), equalTo(36L));
       assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.ALL));
@@ -357,6 +368,10 @@ public class AristaGrammarTest {
       assertThat(neighbor.getClusterId(), equalTo(Ip.parse("99.99.99.99").asLong()));
       assertThat(neighbor.getEnforceFirstAs(), equalTo(true));
       assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
+      assertThat(neighbor.getGeneratedRoutes(), hasSize(1));
+      GeneratedRoute defaultOriginate = Iterables.getOnlyElement(neighbor.getGeneratedRoutes());
+      assertThat(defaultOriginate.getGenerationPolicy(), nullValue());
+      assertThat(defaultOriginate.getAttributePolicy(), nullValue());
       Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
       assertThat(af.getAddressFamilyCapabilities().getAllowLocalAsIn(), equalTo(true));
       assertThat(af.getAddressFamilyCapabilities().getAllowRemoteAsOut(), equalTo(true));
@@ -372,6 +387,7 @@ public class AristaGrammarTest {
       assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
       BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
       assertThat(neighbor.getEnforceFirstAs(), equalTo(false));
+      assertThat(neighbor.getGeneratedRoutes(), empty());
       Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
       assertThat(af, notNullValue());
       assertThat(af.getRouteReflectorClient(), equalTo(true));

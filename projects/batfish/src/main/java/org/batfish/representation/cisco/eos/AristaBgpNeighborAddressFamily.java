@@ -8,7 +8,6 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
   @Nullable private Boolean _activate;
   @Nullable private AristaBgpAdditionalPathsConfig _additionalPaths;
   private boolean _defaultActivate = false;
-  @Nullable private AristaBgpDefaultOriginate _defaultOriginate;
   @Nullable private Boolean _nextHopUnchanged;
   @Nullable private String _prefixListIn;
   @Nullable private String _prefixListOut;
@@ -41,15 +40,6 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
 
   public void setDefaultActivate(boolean defaultActivate) {
     _defaultActivate = defaultActivate;
-  }
-
-  @Nullable
-  public AristaBgpDefaultOriginate getDefaultOriginate() {
-    return _defaultOriginate;
-  }
-
-  public void setDefaultOriginate(@Nullable AristaBgpDefaultOriginate defaultOriginate) {
-    _defaultOriginate = defaultOriginate;
   }
 
   @Nullable
