@@ -28,6 +28,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_DELETED = "Deleted";
   String JSON_KEY_DESCRIPTION = "Description";
   String JSON_KEY_DESTINATION_CIDR_BLOCK = "DestinationCidrBlock";
+  String JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK = "DestinationIpv6CidrBlock";
   String JSON_KEY_DHCP_OPTIONS = "DhcpOptions";
   String JSON_KEY_DOMAIN_NAME = "DomainName";
   String JSON_KEY_DOMAIN_STATUS_LIST = "DomainStatusList";
@@ -50,6 +51,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_IP_PERMISSIONS_EGRESS = "IpPermissionsEgress";
   String JSON_KEY_IP_PROTOCOL = "IpProtocol";
   String JSON_KEY_IP_RANGES = "IpRanges";
+  String JSON_KEY_IPV6_CIDR_BLOCK = "Ipv6CidrBlock";
   String JSON_KEY_IS_DEFAULT = "IsDefault";
   String JSON_KEY_KEY = "Key";
   String JSON_KEY_MAIN = "Main";

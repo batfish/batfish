@@ -100,7 +100,8 @@ public class SubnetTest {
                         vpc.getId(),
                         ImmutableList.of(new Association(false, subnet.getId())),
                         ImmutableList.of(
-                            new Route(privatePrefix, State.ACTIVE, "local", TargetType.Gateway)))))
+                            new RouteV4(
+                                privatePrefix, State.ACTIVE, "local", TargetType.Gateway)))))
             .build();
 
     AwsConfiguration awsConfiguration =
@@ -192,8 +193,8 @@ public class SubnetTest {
                         vpc.getId(),
                         ImmutableList.of(new Association(false, subnet.getId())),
                         ImmutableList.of(
-                            new Route(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
-                            new Route(
+                            new RouteV4(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
+                            new RouteV4(
                                 Prefix.parse("0.0.0.0/0"),
                                 State.ACTIVE,
                                 vgw.getId(),
@@ -277,8 +278,8 @@ public class SubnetTest {
                         vpc.getId(),
                         ImmutableList.of(new Association(false, subnet.getId())),
                         ImmutableList.of(
-                            new Route(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
-                            new Route(
+                            new RouteV4(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
+                            new RouteV4(
                                 Prefix.parse("0.0.0.0/0"),
                                 State.ACTIVE,
                                 igw.getId(),

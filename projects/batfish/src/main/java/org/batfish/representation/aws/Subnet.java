@@ -231,15 +231,17 @@ public class Subnet implements AwsVpcEntity, Serializable {
           .getRoutes()
           .forEach(
               route -> {
-                StaticRoute sr =
-                    getStaticRoute(
-                        route,
-                        optInternetGateway.orElse(null),
-                        optVpnGateway.orElse(null),
-                        awsConfiguration,
-                        warnings);
-                if (sr != null) {
-                  addStaticRoute(cfgNode, sr);
+                if (route instanceof RouteV4) {
+                  StaticRoute sr =
+                      getStaticRoute(
+                          (RouteV4) route,
+                          optInternetGateway.orElse(null),
+                          optVpnGateway.orElse(null),
+                          awsConfiguration,
+                          warnings);
+                  if (sr != null) {
+                    addStaticRoute(cfgNode, sr);
+                  }
                 }
               });
     }
@@ -266,7 +268,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
    */
   @Nullable
   StaticRoute getStaticRoute(
-      Route route,
+      RouteV4 route,
       @Nullable InternetGateway igw,
       @Nullable VpnGateway vgw,
       AwsConfiguration awsConfiguration,

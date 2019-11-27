@@ -1,0 +1,26 @@
+{
+  "NetworkAcls": [
+    {
+      "Associations": [
+        {
+          "NetworkAclAssociationId": "aclassoc-1f248c78",
+          "NetworkAclId": "acl-4db39c28",
+          "SubnetId": "subnet-1f315846"
+        }
+      ],
+      "Entries": [
+        {
+          "Ipv6CidrBlock": "::/0",
+          "Egress": true,
+          "Protocol": "-1",
+          "RuleAction": "allow",
+          "RuleNumber": 100
+        }
+      ],
+      "IsDefault": true,
+      "NetworkAclId": "acl-4db39c28",
+      "Tags": [],
+      "VpcId": "vpc-f8fad69d"
+    }
+  ]
+}
