@@ -424,67 +424,64 @@ final class Region implements Serializable {
     }
   }
 
-  void toConfigurationNodes(
-      AwsConfiguration awsConfiguration,
-      Map<String, Configuration> configurationNodes,
-      Warnings warnings) {
+  void toConfigurationNodes(ConvertedConfiguration awsConfiguration, Warnings warnings) {
 
     // updates the Ips which have been allocated already in subnets of all interfaces
     updateAllocatedIps();
 
     for (Vpc vpc : getVpcs().values()) {
       Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this, warnings);
-      configurationNodes.put(cfgNode.getHostname(), cfgNode);
+      awsConfiguration.addNode(cfgNode);
     }
 
     for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
       Configuration cfgNode =
           elasticsearchDomain.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
-      configurationNodes.put(cfgNode.getHostname(), cfgNode);
+      awsConfiguration.addNode(cfgNode);
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
       Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
-      configurationNodes.put(cfgNode.getHostname(), cfgNode);
+      awsConfiguration.addNode(cfgNode);
     }
 
     for (NatGateway ngw : getNatGateways().values()) {
       warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
       Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this, warnings);
-      configurationNodes.put(cfgNode.getHostname(), cfgNode);
+      awsConfiguration.addNode(cfgNode);
     }
 
     for (VpnGateway vgw : getVpnGateways().values()) {
       Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this, warnings);
-      configurationNodes.put(cfgNode.getHostname(), cfgNode);
+      awsConfiguration.addNode(cfgNode);
     }
 
     for (Instance instance : getInstances().values()) {
-      Configuration cfgNode = instance.toConfigurationNode(this, warnings);
+      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
-      configurationNodes.put(cfgNode.getHostname(), cfgNode);
+      awsConfiguration.addNode(cfgNode);
     }
 
     for (RdsInstance rdsInstance : getRdsInstances().values()) {
       Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
-      configurationNodes.put(cfgNode.getHostname(), cfgNode);
+      awsConfiguration.addNode(cfgNode);
     }
 
     for (Subnet subnet : getSubnets().values()) {
       Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this, warnings);
-      configurationNodes.put(cfgNode.getHostname(), cfgNode);
+      awsConfiguration.addNode(cfgNode);
     }
 
     for (VpnConnection vpnConnection : getVpnConnections().values()) {
       vpnConnection.applyToVpnGateway(awsConfiguration, this, warnings);
     }
 
-    applySecurityGroupsAcls(configurationNodes);
+    applySecurityGroupsAcls(awsConfiguration.getConfigurationNodes());
 
     // TODO: for now, set all interfaces to have the same bandwidth
-    for (Configuration cfgNode : configurationNodes.values()) {
+    for (Configuration cfgNode : awsConfiguration.getConfigurationNodes().values()) {
       for (Vrf vrf : cfgNode.getVrfs().values()) {
         for (Interface iface : vrf.getInterfaces().values()) {
           iface.setBandwidth(1E12d);
