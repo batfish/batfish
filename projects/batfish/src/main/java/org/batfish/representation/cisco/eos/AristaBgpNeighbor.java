@@ -15,6 +15,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
 
   @Nullable private Integer _allowAsIn;
   @Nullable private Boolean _autoLocalAddr;
+  @Nullable private AristaBgpDefaultOriginate _defaultOriginate;
   @Nullable private String _description;
   @Nullable private Boolean _dontCapabilityNegotiate;
   @Nullable private Integer _ebgpMultihop;
@@ -46,6 +47,15 @@ public abstract class AristaBgpNeighbor implements Serializable {
 
   public void setAutoLocalAddr(@Nullable Boolean autoLocalAddr) {
     _autoLocalAddr = autoLocalAddr;
+  }
+
+  @Nullable
+  public AristaBgpDefaultOriginate getDefaultOriginate() {
+    return _defaultOriginate;
+  }
+
+  public void setDefaultOriginate(@Nullable AristaBgpDefaultOriginate defaultOriginate) {
+    _defaultOriginate = defaultOriginate;
   }
 
   @Nullable
@@ -182,6 +192,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
       _autoLocalAddr = other._autoLocalAddr;
     }
     // do not inherit description
+    if (_defaultOriginate == null) {
+      _defaultOriginate = other._defaultOriginate;
+    }
     if (_dontCapabilityNegotiate == null) {
       _dontCapabilityNegotiate = other._dontCapabilityNegotiate;
     }
