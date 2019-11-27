@@ -38465,26 +38465,6 @@
             ]
           }
         }
-      },
-      "vxlan" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "vxlan",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "vxlan",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default"
-          }
-        }
       }
     }
   }
