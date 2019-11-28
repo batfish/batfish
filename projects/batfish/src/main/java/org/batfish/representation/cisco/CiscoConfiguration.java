@@ -1220,8 +1220,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
 
-    int defaultMetric = proc.getDefaultMetric();
-
     /*
      * Create common bgp export policy. This policy encompasses network
      * statements, aggregate-address with/without summary-only, redistribution
@@ -1598,7 +1596,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setRouteReflectorClient(lpg.getRouteReflectorClient())
               .build());
       newNeighborBuilder.setClusterId(clusterId.asLong());
-      newNeighborBuilder.setDefaultMetric(defaultMetric);
+      newNeighborBuilder.setDefaultMetric(proc.getDefaultMetric());
       newNeighborBuilder.setDescription(description);
       newNeighborBuilder.setEbgpMultihop(lpg.getEbgpMultihop());
       if (defaultRoute != null) {
