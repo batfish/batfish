@@ -51,9 +51,10 @@ public class VpcPeeringConnectionTest {
                 new VpcPeeringConnection(
                     "pcx-f754069e",
                     "vpc-f6c5c790",
-                    Prefix.parse("10.199.100.0/24"),
+                    ImmutableList.of(Prefix.parse("10.199.100.0/24")),
                     "vpc-07acbc61",
-                    Prefix.parse("10.130.0.0/16")))));
+                    ImmutableList.of(
+                        Prefix.parse("10.130.0.0/16"), Prefix.parse("10.131.0.0/16"))))));
   }
 
   @Test
@@ -87,7 +88,12 @@ public class VpcPeeringConnectionTest {
 
     // add a static route to both
     VpcPeeringConnection connection =
-        new VpcPeeringConnection("connection", vpc1.getId(), vpc1Prefix, vpc2.getId(), vpc2Prefix);
+        new VpcPeeringConnection(
+            "connection",
+            vpc1.getId(),
+            ImmutableList.of(vpc1Prefix),
+            vpc2.getId(),
+            ImmutableList.of(vpc2Prefix));
 
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(
