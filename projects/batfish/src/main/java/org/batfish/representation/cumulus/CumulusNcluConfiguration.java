@@ -323,9 +323,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
         .setLocalIp(
-            firstNonNull(
-                resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, _w),
-                computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
+            Optional.ofNullable(
+                    resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, _w))
+                .orElse(computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
         .setPeerAddress(neighbor.getPeerIp())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
