@@ -1,6 +1,5 @@
 package org.batfish.grammar.cumulus_frr;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
