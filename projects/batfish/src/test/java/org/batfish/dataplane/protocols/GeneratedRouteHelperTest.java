@@ -15,7 +15,6 @@ import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
@@ -35,8 +34,7 @@ public class GeneratedRouteHelperTest {
   public void activateWhenPolicyIsNull() {
     GeneratedRoute gr = _builder.setNetwork(Prefix.ZERO).build();
 
-    Builder newRoute =
-        GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of(), "vrf");
+    Builder newRoute = GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of());
 
     assertThat(newRoute, notNullValue());
   }
@@ -45,7 +43,7 @@ public class GeneratedRouteHelperTest {
   public void testDiscardIsHonored() {
     GeneratedRoute gr = _builder.setDiscard(true).setNetwork(Prefix.ZERO).build();
 
-    GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of(), "vrf");
+    GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of());
 
     assertThat(gr.getDiscard(), equalTo(true));
   }
@@ -67,8 +65,7 @@ public class GeneratedRouteHelperTest {
             .setStatements(ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))
             .build();
 
-    Builder newRoute =
-        GeneratedRouteHelper.activateGeneratedRoute(gr, policy, ImmutableSet.of(), "vrf");
+    Builder newRoute = GeneratedRouteHelper.activateGeneratedRoute(gr, policy, ImmutableSet.of());
     assertThat(newRoute, nullValue());
   }
 
@@ -81,7 +78,7 @@ public class GeneratedRouteHelperTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname("n1")
             .build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    nf.vrfBuilder().setOwner(c).build();
 
     RoutingPolicy policy =
         nf.routingPolicyBuilder()
@@ -103,8 +100,7 @@ public class GeneratedRouteHelperTest {
                         .setAdministrativeCost(1)
                         .setMetric(0L)
                         .setTag(1L)
-                        .build())),
-            vrf.getName());
+                        .build())));
 
     assertThat(newRoute, notNullValue());
   }
