@@ -1193,4 +1193,29 @@ public class CumulusFrrGrammarTest {
     parseLines("router bgp 65001", "bgp confederation identifier 100");
     assertThat(_config.getBgpProcess().getDefaultVrf().getConfederationId(), equalTo(100L));
   }
+
+  @Test
+  public void testStaticRoute_vrf() {
+    parseLines("ip route 1.2.3.4/24 1.1.1.1 vrf VRF");
+    assertThat(
+        _config.getVrfs().get("VRF").getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                new StaticRoute(Prefix.parse("1.2.3.4/24"), Ip.parse("1.1.1.1"), null))));
+
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VRF, "VRF", CumulusStructureUsage.STATIC_ROUTE_VRF),
+        contains(1));
+  }
+
+  @Test
+  public void testStaticRoute_defaultVrf() {
+    parseLines("ip route 1.2.3.4/24 1.1.1.1");
+    assertThat(
+        _config.getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                new StaticRoute(Prefix.parse("1.2.3.4/24"), Ip.parse("1.1.1.1"), null))));
+  }
 }
