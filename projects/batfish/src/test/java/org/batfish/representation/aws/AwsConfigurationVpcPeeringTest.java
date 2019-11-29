@@ -56,15 +56,12 @@ public class AwsConfigurationVpcPeeringTest {
   // various entities in the configs
   private static String _vpcA = "vpc-0404e08ceddf7f650";
   private static String _vpcB = "vpc-00a31ce9d0c06675c";
-  private static String _vpcC = "vpc-09095dbf2886404ee";
 
   private static String _subnetA = "subnet-006a19c846f047bd7";
   private static String _subnetB = "subnet-0ebf6378a79a3e534";
-  private static String _subnetC = "subnet-0af94b59d214ff20a";
 
   private static String _instanceA = "i-06ba034d88c84ef07";
   private static String _instanceB = "i-0b14080af811fda3d";
-  private static String _instanceC = "i-04a292ff83b3aa833";
 
   private static Ip _instanceAIp = Ip.parse("10.10.10.157");
   private static Ip _instanceBIp = Ip.parse("192.168.1.106");
