@@ -79,6 +79,12 @@ final class Region implements Serializable {
 
   @Nonnull private final Map<String, TransitGatewayAttachment> _transitGatewayAttachments;
 
+  @Nonnull private final Map<String, TransitGatewayPropagations> _transitGatewayPropagations;
+
+  @Nonnull private final Map<String, TransitGatewayRouteTable> _transitGatewayRouteTables;
+
+  @Nonnull private final Map<String, TransitGatewayStaticRoutes> _transitGatewayStaticRoutes;
+
   @Nonnull private final Map<String, TransitGatewayVpcAttachment> _transitGatewayVpcAttachments;
 
   @Nonnull private final Map<String, TransitGateway> _transitGateways;
@@ -94,6 +100,9 @@ final class Region implements Serializable {
   public Region(String name) {
     this(
         name,
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
         new HashMap<>(),
         new HashMap<>(),
         new HashMap<>(),
@@ -132,6 +141,9 @@ final class Region implements Serializable {
       Map<String, SecurityGroup> securityGroups,
       Map<String, Subnet> subnets,
       Map<String, TransitGatewayAttachment> transitGatewayAttachments,
+      Map<String, TransitGatewayPropagations> transitGatewayPropagations,
+      Map<String, TransitGatewayRouteTable> transitGatewayRouteTables,
+      Map<String, TransitGatewayStaticRoutes> transitGatewayStaticRoutes,
       Map<String, TransitGatewayVpcAttachment> transitGatewayVpcAttachments,
       Map<String, TransitGateway> transitGateways,
       Map<String, VpcPeeringConnection> vpcPeerings,
@@ -153,6 +165,9 @@ final class Region implements Serializable {
     _securityGroups = securityGroups;
     _subnets = subnets;
     _transitGatewayAttachments = transitGatewayAttachments;
+    _transitGatewayPropagations = transitGatewayPropagations;
+    _transitGatewayRouteTables = transitGatewayRouteTables;
+    _transitGatewayStaticRoutes = transitGatewayStaticRoutes;
     _transitGatewayVpcAttachments = transitGatewayVpcAttachments;
     _transitGateways = transitGateways;
     _vpcPeerings = vpcPeerings;
@@ -309,6 +324,29 @@ final class Region implements Serializable {
             _transitGatewayAttachments.put(tGatewayAttachment.getId(), tGatewayAttachment);
           }
         };
+      case AwsVpcEntity.JSON_KEY_TRANSIT_GATEWAY_PROPAGATIONS:
+        return json -> {
+          TransitGatewayPropagations propagations =
+              BatfishObjectMapper.mapper().convertValue(json, TransitGatewayPropagations.class);
+          _transitGatewayPropagations.put(propagations.getId(), propagations);
+        };
+      case AwsVpcEntity.JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLES:
+        return json -> {
+          String state = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          if (state.equals(AwsVpcEntity.STATE_AVAILABLE)) {
+            TransitGatewayRouteTable transitGatewayRouteTable =
+                BatfishObjectMapper.mapper().convertValue(json, TransitGatewayRouteTable.class);
+            _transitGatewayRouteTables.put(
+                transitGatewayRouteTable.getId(), transitGatewayRouteTable);
+          }
+        };
+      case AwsVpcEntity.JSON_KEY_TRANSIT_GATEWAY_STATIC_ROUTES:
+        return json -> {
+          TransitGatewayStaticRoutes transitGatewayStaticRoutes =
+              BatfishObjectMapper.mapper().convertValue(json, TransitGatewayStaticRoutes.class);
+          _transitGatewayStaticRoutes.put(
+              transitGatewayStaticRoutes.getId(), transitGatewayStaticRoutes);
+        };
       case AwsVpcEntity.JSON_KEY_TRANSIT_GATEWAY_VPC_ATTACHMENTS:
         return json -> {
           String state = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
@@ -434,6 +472,21 @@ final class Region implements Serializable {
   @Nonnull
   Map<String, TransitGatewayAttachment> getTransitGatewayAttachments() {
     return _transitGatewayAttachments;
+  }
+
+  @Nonnull
+  Map<String, TransitGatewayPropagations> getTransitGatewayPropagations() {
+    return _transitGatewayPropagations;
+  }
+
+  @Nonnull
+  Map<String, TransitGatewayRouteTable> getTransitGatewayRouteTables() {
+    return _transitGatewayRouteTables;
+  }
+
+  @Nonnull
+  Map<String, TransitGatewayStaticRoutes> getTransitGatewayStaticRoutes() {
+    return _transitGatewayStaticRoutes;
   }
 
   @Nonnull
@@ -671,6 +724,9 @@ final class Region implements Serializable {
     private Map<String, SecurityGroup> _securityGroups;
     private Map<String, Subnet> _subnets;
     private Map<String, TransitGatewayAttachment> _transitGatewayAttachments;
+    private Map<String, TransitGatewayPropagations> _transitGatewayPropagations;
+    private Map<String, TransitGatewayRouteTable> _transitGatewayRouteTables;
+    private Map<String, TransitGatewayStaticRoutes> _transitGatewayStaticRoutes;
     private Map<String, TransitGatewayVpcAttachment> _transitGatewayVpcAttachments;
     private Map<String, TransitGateway> _transitGateways;
     private Map<String, VpcPeeringConnection> _vpcPeerings;
@@ -760,6 +816,24 @@ final class Region implements Serializable {
       return this;
     }
 
+    public RegionBuilder setTransitGatewayPropagations(
+        Map<String, TransitGatewayPropagations> transitGatewayPropagations) {
+      this._transitGatewayPropagations = transitGatewayPropagations;
+      return this;
+    }
+
+    public RegionBuilder setTransitGatewayRouteTables(
+        Map<String, TransitGatewayRouteTable> transitGatewayRouteTables) {
+      this._transitGatewayRouteTables = transitGatewayRouteTables;
+      return this;
+    }
+
+    public RegionBuilder setTransitGatewayStaticRoutes(
+        Map<String, TransitGatewayStaticRoutes> transitGatewayStaticRoutes) {
+      this._transitGatewayStaticRoutes = transitGatewayStaticRoutes;
+      return this;
+    }
+
     public RegionBuilder setTransitGatewayVpcAttachments(
         Map<String, TransitGatewayVpcAttachment> transitGatewayVpcAttachments) {
       this._transitGatewayVpcAttachments = transitGatewayVpcAttachments;
@@ -809,6 +883,9 @@ final class Region implements Serializable {
           firstNonNull(_securityGroups, ImmutableMap.of()),
           firstNonNull(_subnets, ImmutableMap.of()),
           firstNonNull(_transitGatewayAttachments, ImmutableMap.of()),
+          firstNonNull(_transitGatewayPropagations, ImmutableMap.of()),
+          firstNonNull(_transitGatewayRouteTables, ImmutableMap.of()),
+          firstNonNull(_transitGatewayStaticRoutes, ImmutableMap.of()),
           firstNonNull(_transitGatewayVpcAttachments, ImmutableMap.of()),
           firstNonNull(_transitGateways, ImmutableMap.of()),
           firstNonNull(_vpcPeerings, ImmutableMap.of()),

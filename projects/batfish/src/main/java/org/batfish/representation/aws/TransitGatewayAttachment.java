@@ -20,7 +20,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
 
   enum ResourceType {
-    VPC
+    VPC,
+    VPN
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)

@@ -80,7 +80,7 @@ public class InstanceTest {
   public void testToConfigurationNode() {
     String vpcId = "vpc";
 
-    Subnet subnet = new Subnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId);
+    Subnet subnet = new Subnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId, "zone");
 
     NetworkInterface networkInterface =
         new NetworkInterface(

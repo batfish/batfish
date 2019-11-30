@@ -27,6 +27,8 @@ public interface AwsVpcEntity {
   String JSON_KEY_DB_INSTANCE_IDENTIFIER = "DBInstanceIdentifier";
   String JSON_KEY_DB_INSTANCE_STATUS = "DBInstanceStatus";
   String JSON_KEY_DB_SUBNET_GROUP = "DBSubnetGroup";
+  String JSON_KEY_DEFAULT_ASSOCIATION_ROUTE_TABLE = "DefaultAssociationRouteTable";
+  String JSON_KEY_DEFAULT_PROPAGATION_ROUTE_TABLE = "DefaultPropagationRouteTable";
   String JSON_KEY_DEFAULT_ROUTE_TABLE_ASSOCIATION = "DefaultRouteTableAssociation";
   String JSON_KEY_DEFAULT_ROUTE_TABLE_PROPAGATION = "DefaultRouteTablePropagation";
   String JSON_KEY_DELETED = "Deleted";
@@ -105,8 +107,12 @@ public interface AwsVpcEntity {
   String JSON_KEY_TO_PORT = "ToPort";
   String JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID = "TransitGatewayAttachmentId";
   String JSON_KEY_TRANSIT_GATEWAY_ATTACHMENTS = "TransitGatewayAttachments";
+  String JSON_KEY_TRANSIT_GATEWAY_PROPAGATIONS = "TransitGatewayPropagations";
   String JSON_KEY_TRANSIT_GATEWAY_ID = "TransitGatewayId";
   String JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID = "TransitGatewayRouteTableId";
+  String JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_PROPAGATIONS = "TransitGatewayRouteTablePropagations";
+  String JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLES = "TransitGatewayRouteTables";
+  String JSON_KEY_TRANSIT_GATEWAY_STATIC_ROUTES = "TransitGatewayStaticRoutes";
   String JSON_KEY_TRANSIT_GATEWAY_VPC_ATTACHMENTS = "TransitGatewayVpcAttachments";
   String JSON_KEY_TRANSIT_GATEWAYS = "TransitGateways";
   String JSON_KEY_TYPE = "Type";

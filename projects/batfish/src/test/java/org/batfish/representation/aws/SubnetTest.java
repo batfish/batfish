@@ -46,7 +46,9 @@ public class SubnetTest {
   public void testDeserialization() {
     assertThat(
         _subnetList,
-        equalTo(ImmutableList.of(new Subnet(Prefix.parse("172.31.0.0/20"), "subnet-1", "vpc-1"))));
+        equalTo(
+            ImmutableList.of(
+                new Subnet(Prefix.parse("172.31.0.0/20"), "subnet-1", "vpc-1", "us-west-2c"))));
   }
 
   @Test
@@ -76,7 +78,7 @@ public class SubnetTest {
             "desc",
             null);
 
-    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId());
+    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId(), "zone");
 
     Region region =
         Region.builder("region")
@@ -165,7 +167,7 @@ public class SubnetTest {
             "desc",
             null);
 
-    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId());
+    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId(), "zone");
 
     Region region =
         Region.builder("region")
@@ -249,7 +251,7 @@ public class SubnetTest {
             "desc",
             null);
 
-    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId());
+    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId(), "zone");
 
     Region region =
         Region.builder("region")

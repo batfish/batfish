@@ -11,6 +11,8 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.Configuration;
 
 /**
  * Represents an AWS Transit Gateway
@@ -200,6 +202,18 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   public TransitGateway(String gatewayId, TransitGatewayOptions options) {
     _gatewayId = gatewayId;
     _options = options;
+  }
+
+  /**
+   * Creates a node for the transit gateway. Other essential elements of this node are created
+   * elsewhere.
+   */
+  Configuration toConfigurationNode(
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
+    Configuration cfgNode = Utils.newAwsConfiguration(_gatewayId, "aws");
+    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
+
+    return cfgNode;
   }
 
   @Override
