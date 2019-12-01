@@ -30,6 +30,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
 
 /** Tests for {@link VpnGateway} */
@@ -66,6 +67,7 @@ public class VpnGatewayTest {
             false,
             "vpnConnectionId",
             "customerGatewayId",
+            GatewayType.VPN,
             vgw.getId(),
             ImmutableList.of(),
             ImmutableList.of(),
@@ -100,6 +102,7 @@ public class VpnGatewayTest {
             true,
             "vpnConnectionId",
             "customerGatewayId",
+            GatewayType.VPN,
             vgw.getId(),
             ImmutableList.of(),
             ImmutableList.of(),

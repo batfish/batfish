@@ -116,7 +116,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
     // if this VGW has any BGP-based VPN connections, configure BGP on it
     boolean doBgp =
         region.getVpnConnections().values().stream()
-            .filter(conn -> _vpnGatewayId.equals(conn.getVpnGatewayId()))
+            .filter(conn -> _vpnGatewayId.equals(conn.getAwsGatewayId()))
             .anyMatch(VpnConnection::isBgpConnection);
 
     if (doBgp) {

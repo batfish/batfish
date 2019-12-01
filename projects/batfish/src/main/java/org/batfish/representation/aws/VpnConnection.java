@@ -176,6 +176,11 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
+  enum GatewayType {
+    TRANSIT,
+    VPN
+  }
+
   @Nonnull private final String _customerGatewayId;
 
   @Nonnull private final List<IpsecTunnel> _ipsecTunnels;
@@ -190,12 +195,15 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _vpnConnectionId;
 
-  @Nonnull private final String _vpnGatewayId;
+  @Nonnull private final GatewayType _awsGatewayType;
+
+  @Nonnull private final String _awsGatewayId;
 
   @JsonCreator
   private static VpnConnection create(
       @Nullable @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) String vpnConnectionId,
       @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) String customerGatewayId,
+      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String transitGatewayId,
       @Nullable @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) String vpnGatewayId,
       @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) String cgwConfiguration,
       @Nullable @JsonProperty(JSON_KEY_ROUTES) List<VpnRoute> routes,
@@ -204,7 +212,12 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     checkArgument(vpnConnectionId != null, "VPN connection Id cannot be null");
     checkArgument(
         customerGatewayId != null, "Customer gateway Id cannot be null for VPN connection");
-    checkArgument(vpnGatewayId != null, "VPN gateway Id cannot be null for VPN connection");
+    checkArgument(
+        transitGatewayId != null || vpnGatewayId != null,
+        "At least one of Transit or VPN gateway must be non-null for VPN connection");
+    checkArgument(
+        transitGatewayId == null || vpnGatewayId == null,
+        "At least one of Transit or VPN gateway must be null for VPN connection");
     checkArgument(
         cgwConfiguration != null,
         "Customer gateway configuration cannot be null for VPN connection");
@@ -251,7 +264,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         isBgpConnection,
         vpnConnectionId,
         customerGatewayId,
-        vpnGatewayId,
+        transitGatewayId != null ? GatewayType.TRANSIT : GatewayType.VPN,
+        transitGatewayId != null ? transitGatewayId : vpnGatewayId,
         ipsecTunnels.build(),
         routes.stream()
             .map(VpnRoute::getDestinationCidrBlock)
@@ -264,7 +278,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       boolean isBgpConnection,
       String vpnConnectionId,
       String customerGatewayId,
-      String vpnGatewayId,
+      GatewayType awsGatewayType,
+      String awsGatewayId,
       List<IpsecTunnel> ipsecTunnels,
       List<Prefix> routes,
       List<VgwTelemetry> vgwTelemetrys,
@@ -272,7 +287,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     _isBgpConnection = isBgpConnection;
     _vpnConnectionId = vpnConnectionId;
     _customerGatewayId = customerGatewayId;
-    _vpnGatewayId = vpnGatewayId;
+    _awsGatewayType = awsGatewayType;
+    _awsGatewayId = awsGatewayId;
     _ipsecTunnels = ipsecTunnels;
     _routes = routes;
     _vgwTelemetrys = vgwTelemetrys;
@@ -348,14 +364,14 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   void applyToVpnGateway(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    if (!awsConfiguration.getConfigurationNodes().containsKey(_vpnGatewayId)) {
+    if (!awsConfiguration.getConfigurationNodes().containsKey(_awsGatewayId)) {
       warnings.redFlag(
           String.format(
               "VPN Gateway \"%s\" referred by VPN connection \"%s\" not found",
-              _vpnGatewayId, _vpnConnectionId));
+              _awsGatewayId, _vpnConnectionId));
       return;
     }
-    Configuration vgwCfgNode = awsConfiguration.getConfigurationNodes().get(_vpnGatewayId);
+    Configuration vgwCfgNode = awsConfiguration.getConfigurationNodes().get(_awsGatewayId);
 
     ImmutableSortedMap.Builder<String, IkePhase1Policy> ikePhase1PolicyMapBuilder =
         ImmutableSortedMap.naturalOrder();
@@ -494,8 +510,13 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  String getVpnGatewayId() {
-    return _vpnGatewayId;
+  GatewayType getAwsGatewayType() {
+    return _awsGatewayType;
+  }
+
+  @Nonnull
+  String getAwsGatewayId() {
+    return _awsGatewayId;
   }
 
   @Override
@@ -514,7 +535,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         && Objects.equals(_routes, that._routes)
         && Objects.equals(_vgwTelemetrys, that._vgwTelemetrys)
         && Objects.equals(_vpnConnectionId, that._vpnConnectionId)
-        && Objects.equals(_vpnGatewayId, that._vpnGatewayId);
+        && Objects.equals(_awsGatewayType, that._awsGatewayType)
+        && Objects.equals(_awsGatewayId, that._awsGatewayId);
   }
 
   @Override
@@ -527,7 +549,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         _staticRoutesOnly,
         _vgwTelemetrys,
         _vpnConnectionId,
-        _vpnGatewayId);
+        _awsGatewayType.ordinal(),
+        _awsGatewayId);
   }
 
   @Override
@@ -540,7 +563,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         .add("_staticRoutesOnly", _staticRoutesOnly)
         .add("_vgwTelemetrys", _vgwTelemetrys)
         .add("_vpnConnectionId", _vpnConnectionId)
-        .add("_vpnGatewayId", _vpnGatewayId)
+        .add("_awsGatewayType", _awsGatewayType)
+        .add("_awsGatewayId", _awsGatewayId)
         .toString();
   }
 }

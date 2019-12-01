@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+/** An interface implemented by all AWS entities */
+@SuppressWarnings("JavaDoc") // all constants below create a warning
 public interface AwsVpcEntity {
 
   String JSON_KEY_ACCEPTED_ROUTE_COUNT = "AcceptedRouteCount";
