@@ -446,7 +446,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
             .build();
       }
 
-      // configure IPsec
+      // configure static routes -- this list of routes should be empty in case of transit gateway
       _routes.forEach(
           pfx -> addStaticRoute(gwCfg, toStaticRoute(pfx, ipsecTunnel.getCgwInsideAddress())));
     }

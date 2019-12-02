@@ -21,6 +21,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -38,6 +39,13 @@ final class Utils {
   static final Statement ACCEPT_ALL_BGP =
       new If(
           new MatchProtocol(RoutingProtocol.BGP),
+          ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+
+  static final Statement ACCEPT_ALL_BGP_AND_STATIC =
+      new If(
+          new Disjunction(
+              new MatchProtocol(RoutingProtocol.BGP), new MatchProtocol(RoutingProtocol.STATIC)),
           ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
           ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 

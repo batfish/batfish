@@ -138,6 +138,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_VPN_GATEWAYS = "VpnGateways";
 
   String STATE_AVAILABLE = "available";
+  String STATE_ASSOCIATED = "associated";
   String STATE_DELETED = "deleted";
 
   String STATUS_ACTIVE = "active";

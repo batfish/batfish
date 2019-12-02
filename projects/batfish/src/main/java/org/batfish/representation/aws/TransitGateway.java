@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
+import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP_AND_STATIC;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
@@ -10,7 +11,6 @@ import static org.batfish.representation.aws.Utils.toStaticRoute;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Collections;
@@ -302,7 +302,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
   }
 
-  void connectVpc(
+  private void connectVpc(
       Configuration tgwCfg,
       TransitGatewayAttachment attachment,
       List<String> subnetIds,
@@ -318,6 +318,13 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           String.format(
               "VPC %s for attachment %s not found in region %s",
               attachment.getResourceId(), attachment.getId(), region.getName()));
+      return;
+    }
+    if (!attachment.getAssociation().getState().equals(STATE_ASSOCIATED)) {
+      warnings.redFlag(
+          String.format(
+              "Skipped VPC %s as attachment because it is in (non-associated) state '%s'",
+              attachment.getResourceId(), attachment.getAssociation().getState()));
       return;
     }
 
@@ -404,8 +411,12 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     // TODO: check if vpn ecmp support setting in transit gateway has an impact here
     proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
-    // TODO: configure an appropriate export policy as needed
-    RoutingPolicy.builder().setName(bgpExportPolicyName(vrf.getName())).setOwner(tgwCfg).build();
+    // TODO: confirm if this is the policy we really want
+    RoutingPolicy.builder()
+        .setName(bgpExportPolicyName(vrf.getName()))
+        .setOwner(tgwCfg)
+        .setStatements(Collections.singletonList(ACCEPT_ALL_BGP_AND_STATIC))
+        .build();
 
     RoutingPolicy.builder()
         .setName(bgpImportPolicyName(vrf.getName()))
@@ -472,7 +483,24 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         }
       case VPN:
         {
-          // TODO: point to IPSec tunnels
+          Optional<VpnConnection> vpnConnection =
+              region.findTransitGatewayVpnConnection(tgwAttachment.getResourceId(), _gatewayId);
+          if (!vpnConnection.isPresent()) {
+            warnings.redFlag(
+                String.format(
+                    "VPN connection %s for transit gateway %s",
+                    tgwAttachment.getResourceId(), _gatewayId));
+            return;
+          }
+          vpnConnection
+              .get()
+              .getIpsecTunnels()
+              .forEach(
+                  tunnel ->
+                      addStaticRoute(
+                          vrf,
+                          toStaticRoute(
+                              route.getDestinationCidrBlock(), tunnel.getCgwInsideAddress())));
           return;
         }
       default:
@@ -483,12 +511,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
   }
 
-  @VisibleForTesting
   static String bgpExportPolicyName(String vrfName) {
     return String.format("~tgw~export-policy~%s~", vrfName);
   }
 
-  @VisibleForTesting
   static String bgpImportPolicyName(String vrfName) {
     return String.format("~tgw~import-policy~%s~", vrfName);
   }
