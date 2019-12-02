@@ -1427,7 +1427,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   public void setVrfs(@Nonnull Map<String, Vrf> vrfs) {
-    _vrfs = ImmutableMap.copyOf(vrfs);
+    _vrfs = new HashMap<>(vrfs);
   }
 
   public void setVxlans(Map<String, Vxlan> vxlans) {

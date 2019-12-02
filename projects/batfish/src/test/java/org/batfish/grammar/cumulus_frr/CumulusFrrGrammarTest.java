@@ -1207,6 +1207,9 @@ public class CumulusFrrGrammarTest {
         getStructureReferences(
             CumulusStructureType.VRF, "VRF", CumulusStructureUsage.STATIC_ROUTE_VRF),
         contains(1));
+
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.VRF, "VRF").getDefinitionLines(), contains(1));
   }
 
   @Test

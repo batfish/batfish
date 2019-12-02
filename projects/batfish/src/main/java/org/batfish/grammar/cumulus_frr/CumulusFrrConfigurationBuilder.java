@@ -120,6 +120,7 @@ import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkCon
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
+import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
@@ -146,6 +147,7 @@ import org.batfish.representation.cumulus.RouteMapSetMetric;
 import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
+import org.batfish.vendor.StructureType;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
   private final CumulusNcluConfiguration _c;
@@ -870,7 +872,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _c.getStaticRoutes().add(route);
     } else {
       String vrfName = ctx.vrf.getText();
-      _c.getVrfs().computeIfAbsent(vrfName, k -> new Vrf(vrfName)).getStaticRoutes().add(route);
+      // create vrf if not defined
+      if (!_c.getVrfs().containsKey(vrfName)) {
+        _c.getVrfs().put(vrfName, new Vrf(vrfName));
+        _c.defineStructure(CumulusStructureType.VRF, vrfName, ctx);
+      }
+      _c.getVrfs().get(vrfName).getStaticRoutes().add(route);
       _c.referenceStructure(
           VRF, vrfName, CumulusStructureUsage.STATIC_ROUTE_VRF, ctx.vrf.getStart().getLine());
     }
