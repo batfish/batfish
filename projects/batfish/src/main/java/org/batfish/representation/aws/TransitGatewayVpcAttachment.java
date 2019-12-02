@@ -5,10 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -95,14 +95,14 @@ final class TransitGatewayVpcAttachment implements AwsVpcEntity, Serializable {
       return false;
     }
     TransitGatewayVpcAttachment that = (TransitGatewayVpcAttachment) o;
-    return Objects.equal(_attachmentId, that._attachmentId)
-        && Objects.equal(_gatewayId, that._gatewayId)
-        && Objects.equal(_vpcId, that._vpcId)
-        && Objects.equal(_subnetIds, that._subnetIds);
+    return Objects.equals(_attachmentId, that._attachmentId)
+        && Objects.equals(_gatewayId, that._gatewayId)
+        && Objects.equals(_vpcId, that._vpcId)
+        && Objects.equals(_subnetIds, that._subnetIds);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_attachmentId, _gatewayId, _vpcId, _subnetIds);
+    return Objects.hash(_attachmentId, _gatewayId, _vpcId, _subnetIds);
   }
 }

@@ -6,6 +6,7 @@ import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSO
 import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -19,10 +20,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.aws.TransitGateway.TransitGatewayOptions;
 import org.batfish.representation.aws.TransitGatewayAttachment.Association;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
+import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
 
 /** Tests for {@link TransitGateway} */
@@ -116,5 +119,86 @@ public class TransitGatewayTest {
             ImmutableSet.of(
                 toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME),
                 toStaticRoute(Prefix.ZERO, tgwInterface.getConcreteAddress().getIp()))));
+  }
+
+  @Test
+  public void testToConfigurationNodesVpnAttachment() {
+
+    String routeTableId = "tgw-rtb";
+    TransitGateway tgw =
+        new TransitGateway(
+            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+
+    IpsecTunnel ipsecTunnel =
+        new IpsecTunnel(
+            65301L,
+            Ip.parse("169.254.15.194"),
+            30,
+            Ip.parse("147.75.69.27"),
+            "sha1",
+            "aes-128-cbc",
+            28800,
+            "main",
+            "group2",
+            "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+            "hmac-sha1-96",
+            "aes-128-cbc",
+            3600,
+            "tunnel",
+            "group2",
+            "esp",
+            65401L,
+            Ip.parse("169.254.15.193"),
+            30,
+            Ip.parse("52.27.166.152"));
+
+    VpnConnection vpnConnection =
+        new VpnConnection(
+            true,
+            "vpn",
+            "cgw-fb76ace5",
+            GatewayType.VPN,
+            tgw.getId(),
+            ImmutableList.of(ipsecTunnel),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            false);
+
+    TransitGatewayAttachment tgwAttachment =
+        new TransitGatewayAttachment(
+            "tgw-attach",
+            tgw.getId(),
+            ResourceType.VPN,
+            vpnConnection.getId(),
+            new Association(routeTableId, STATE_ASSOCIATED));
+
+    Region region =
+        Region.builder("region")
+            .setTransitGateways(ImmutableMap.of(tgw.getId(), tgw))
+            .setTransitGatewayAttachments(ImmutableMap.of(tgwAttachment.getId(), tgwAttachment))
+            .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
+            .build();
+
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+
+    Warnings warnings = new Warnings(true, true, true);
+    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+
+    // check that the vrf exists
+    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
+
+    // check that BGP process was created
+    assertThat(
+        tgwCfg.getVrfs().get(TransitGateway.vrfNameForRouteTable(routeTableId)).getBgpProcess(),
+        notNullValue());
+
+    // if applyGateway was called with the right params, such an interface must exist
+    Interface tgwInterface =
+        tgwCfg
+            .getAllInterfaces()
+            .get(
+                VpnConnection.getExternalInterfaceName(
+                    VpnConnection.getTunnelId(vpnConnection.getId(), 1)));
+    assertThat(tgwInterface, hasVrfName(TransitGateway.vrfNameForRouteTable(routeTableId)));
   }
 }

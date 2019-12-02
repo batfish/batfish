@@ -11,10 +11,10 @@ import static org.batfish.representation.aws.Utils.toStaticRoute;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -251,6 +251,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                             addTransitGatewayStaticRoute(
                                 cfgNode, table, route, awsConfiguration, region, warnings)));
 
+    // TODO: handle route propagations
+
     return cfgNode;
   }
 
@@ -272,13 +274,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                     attachment.getResourceId(), _gatewayId));
             return;
           }
-          connectVpc(
-              cfgNode,
-              attachment,
-              vpcAttachment.get().getSubnetIds(),
-              awsConfiguration,
-              region,
-              warnings);
+          connectVpc(cfgNode, attachment, awsConfiguration, region, warnings);
           return;
         }
       case VPN:
@@ -292,7 +288,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                     attachment.getResourceId(), _gatewayId));
             return;
           }
-          connectVpn(cfgNode, attachment, vpnConnection.get(), awsConfiguration, region, warnings);
+          connectVpn(cfgNode, attachment, vpnConnection.get(), awsConfiguration, warnings);
           return;
         }
       default:
@@ -305,7 +301,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   private void connectVpc(
       Configuration tgwCfg,
       TransitGatewayAttachment attachment,
-      List<String> subnetIds,
       ConvertedConfiguration awsConfiguration,
       Region region,
       Warnings warnings) {
@@ -368,7 +363,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       TransitGatewayAttachment attachment,
       VpnConnection vpnConnection,
       ConvertedConfiguration awsConfiguration,
-      Region region,
       Warnings warnings) {
 
     String vrfName = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
@@ -377,7 +371,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
     Vrf vrf = tgwCfg.getVrfs().get(vrfName);
 
-    if (vpnConnection.isBgpConnection() && vrf.getBgpProcess() != null) {
+    if (vpnConnection.isBgpConnection() && vrf.getBgpProcess() == null) {
       createBgpProcess(tgwCfg, vrf, awsConfiguration);
     }
 
@@ -389,7 +383,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         warnings);
   }
 
-  private void createBgpProcess(
+  @VisibleForTesting
+  static void createBgpProcess(
       Configuration tgwCfg, Vrf vrf, ConvertedConfiguration awsConfiguration) {
     String loopbackBgp = "loopbackBgp";
     ConcreteInterfaceAddress loopbackBgpAddress =

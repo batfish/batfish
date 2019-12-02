@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -91,13 +91,13 @@ final class TransitGatewayRouteTable implements AwsVpcEntity, Serializable {
     TransitGatewayRouteTable that = (TransitGatewayRouteTable) o;
     return _defaultAssociationRouteTable == that._defaultAssociationRouteTable
         && _defaultPropagationRouteTable == that._defaultPropagationRouteTable
-        && Objects.equal(_gatewayId, that._gatewayId)
-        && Objects.equal(_routeTableId, that._routeTableId);
+        && Objects.equals(_gatewayId, that._gatewayId)
+        && Objects.equals(_routeTableId, that._routeTableId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _gatewayId, _routeTableId, _defaultAssociationRouteTable, _defaultPropagationRouteTable);
   }
 

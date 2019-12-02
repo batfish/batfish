@@ -6,10 +6,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -60,12 +60,12 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
         return false;
       }
       Attachment that = (Attachment) o;
-      return Objects.equal(_attachmentId, that._attachmentId);
+      return Objects.equals(_attachmentId, that._attachmentId);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_attachmentId);
+      return Objects.hash(_attachmentId);
     }
   }
 
@@ -147,15 +147,15 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
         return false;
       }
       TransitGatewayRoute that = (TransitGatewayRoute) o;
-      return Objects.equal(_destinationCidrBlock, that._destinationCidrBlock)
+      return Objects.equals(_destinationCidrBlock, that._destinationCidrBlock)
           && _state == that._state
           && _type == that._type
-          && Objects.equal(_attachmentIds, that._attachmentIds);
+          && Objects.equals(_attachmentIds, that._attachmentIds);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_destinationCidrBlock, _state, _type, _attachmentIds);
+      return Objects.hash(_destinationCidrBlock, _state, _type, _attachmentIds);
     }
 
     @Override
@@ -213,11 +213,12 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
       return false;
     }
     TransitGatewayStaticRoutes that = (TransitGatewayStaticRoutes) o;
-    return Objects.equal(_routeTableId, that._routeTableId) && Objects.equal(_routes, that._routes);
+    return Objects.equals(_routeTableId, that._routeTableId)
+        && Objects.equals(_routes, that._routes);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_routeTableId, _routes);
+    return Objects.hash(_routeTableId, _routes);
   }
 }

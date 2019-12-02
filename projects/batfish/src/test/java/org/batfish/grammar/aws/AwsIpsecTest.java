@@ -101,7 +101,7 @@ public class AwsIpsecTest {
                     IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("abcdefghijklmnop" + CommonUtil.salt()))),
                 hasRemoteIdentity(containsIp(Ip.parse("4.4.4.27"))),
-                hasLocalInterface(equalTo("external1")),
+                hasLocalInterface(equalTo("external-vpn-ba2e34a8-1")),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("vpn-ba2e34a8-1"))))));
 
     // test for IKE phase1 proposals
@@ -160,8 +160,8 @@ public class AwsIpsecTest {
                     hasDestinationAddress(Ip.parse("4.4.4.27")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("vpn-ba2e34a8-1"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("vpn-ba2e34a8-1"),
-                    hasSourceInterface("external1"),
+                    hasSourceInterface("external-vpn-ba2e34a8-1"),
                     hasLocalAddress(Ip.parse("1.2.3.4")),
-                    hasTunnelInterface(equalTo("vpn1"))))));
+                    hasTunnelInterface(equalTo("vpn-vpn-ba2e34a8-1"))))));
   }
 }

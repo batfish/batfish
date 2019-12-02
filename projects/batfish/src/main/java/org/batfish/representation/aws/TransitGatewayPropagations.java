@@ -5,9 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -65,12 +65,12 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
         return false;
       }
       Propagation that = (Propagation) o;
-      return _enabled == that._enabled && Objects.equal(_attachmentId, that._attachmentId);
+      return _enabled == that._enabled && Objects.equals(_attachmentId, that._attachmentId);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_attachmentId, _enabled);
+      return Objects.hash(_attachmentId, _enabled);
     }
   }
 
@@ -114,12 +114,12 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
       return false;
     }
     TransitGatewayPropagations that = (TransitGatewayPropagations) o;
-    return Objects.equal(_routeTableId, that._routeTableId)
-        && Objects.equal(_propagations, that._propagations);
+    return Objects.equals(_routeTableId, that._routeTableId)
+        && Objects.equals(_propagations, that._propagations);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_routeTableId, _propagations);
+    return Objects.hash(_routeTableId, _propagations);
   }
 }

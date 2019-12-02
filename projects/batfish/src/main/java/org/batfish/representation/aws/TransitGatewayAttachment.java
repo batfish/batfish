@@ -5,8 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -67,12 +67,13 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
         return false;
       }
       Association that = (Association) o;
-      return Objects.equal(_routeTableId, that._routeTableId) && Objects.equal(_state, that._state);
+      return Objects.equals(_routeTableId, that._routeTableId)
+          && Objects.equals(_state, that._state);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_routeTableId, _state);
+      return Objects.hash(_routeTableId, _state);
     }
   }
 
@@ -157,15 +158,15 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
       return false;
     }
     TransitGatewayAttachment that = (TransitGatewayAttachment) o;
-    return Objects.equal(_attachmentId, that._attachmentId)
-        && Objects.equal(_gatewayId, that._gatewayId)
+    return Objects.equals(_attachmentId, that._attachmentId)
+        && Objects.equals(_gatewayId, that._gatewayId)
         && _resourceType == that._resourceType
-        && Objects.equal(_resourceId, that._resourceId)
-        && Objects.equal(_association, that._association);
+        && Objects.equals(_resourceId, that._resourceId)
+        && Objects.equals(_association, that._association);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_attachmentId, _gatewayId, _resourceType, _resourceId, _association);
+    return Objects.hash(_attachmentId, _gatewayId, _resourceType, _resourceId, _association);
   }
 }
