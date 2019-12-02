@@ -386,12 +386,11 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   static void createBgpProcess(
       Configuration tgwCfg, Vrf vrf, ConvertedConfiguration awsConfiguration) {
-    String loopbackBgp = "loopbackBgp";
     ConcreteInterfaceAddress loopbackBgpAddress =
         ConcreteInterfaceAddress.create(
             awsConfiguration.getNextGeneratedLinkSubnet().getStartIp(), Prefix.MAX_PREFIX_LENGTH);
     Utils.newInterface(
-        loopbackBgp,
+        "bgp-loopback-" + vrf.getName(),
         tgwCfg,
         vrf.getName(),
         loopbackBgpAddress,

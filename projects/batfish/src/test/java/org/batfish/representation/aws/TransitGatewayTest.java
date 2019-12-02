@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
+import static org.batfish.representation.aws.TransitGateway.createBgpProcess;
 import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSOCIATED;
 import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
@@ -22,6 +23,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.TransitGateway.TransitGatewayOptions;
 import org.batfish.representation.aws.TransitGatewayAttachment.Association;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
@@ -200,5 +202,22 @@ public class TransitGatewayTest {
                 VpnConnection.getExternalInterfaceName(
                     VpnConnection.getTunnelId(vpnConnection.getId(), 1)));
     assertThat(tgwInterface, hasVrfName(TransitGateway.vrfNameForRouteTable(routeTableId)));
+  }
+
+  @Test
+  public void testCreateBgpProcess() {
+    Configuration tgwCfg = Utils.newAwsConfiguration("tgw", "local");
+    Vrf vrf = Vrf.builder().setOwner(tgwCfg).setName("vrf").build();
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+
+    createBgpProcess(tgwCfg, vrf, awsConfiguration);
+
+    // interface exists
+    Interface bgpInterface = tgwCfg.getAllInterfaces().get("bgp-loopback- + vrf.getName()");
+    assertThat(bgpInterface, hasVrfName(vrf.getName()));
+
+    assertThat(vrf.getBgpProcess(), notNullValue());
+
+    // TODO: check on routing policies
   }
 }
