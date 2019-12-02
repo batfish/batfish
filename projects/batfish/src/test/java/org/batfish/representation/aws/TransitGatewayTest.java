@@ -213,7 +213,7 @@ public class TransitGatewayTest {
     createBgpProcess(tgwCfg, vrf, awsConfiguration);
 
     // interface exists
-    Interface bgpInterface = tgwCfg.getAllInterfaces().get("bgp-loopback- + vrf.getName()");
+    Interface bgpInterface = tgwCfg.getAllInterfaces().get("bgp-loopback-" + vrf.getName());
     assertThat(bgpInterface, hasVrfName(vrf.getName()));
 
     assertThat(vrf.getBgpProcess(), notNullValue());
