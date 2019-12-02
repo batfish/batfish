@@ -26,7 +26,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static final class Association {
+  static final class Association implements Serializable {
 
     @Nonnull private final String _routeTableId;
 
@@ -37,8 +37,8 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
         @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) String routeTableId,
         @Nullable @JsonProperty(JSON_KEY_STATE) String state) {
       checkArgument(
-          routeTableId != null, "Route table id cannot be nul for transit gateway attachment");
-      checkArgument(state != null, "State cannot be nul for transit gateway attachment");
+          routeTableId != null, "Route table id cannot be null for transit gateway attachment");
+      checkArgument(state != null, "State cannot be null for transit gateway attachment");
 
       return new Association(routeTableId, state);
     }

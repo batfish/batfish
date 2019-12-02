@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
@@ -155,6 +156,16 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
     @Override
     public int hashCode() {
       return Objects.hashCode(_destinationCidrBlock, _state, _type, _attachmentIds);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .add("_destinationCidrBlock", _destinationCidrBlock)
+          .add("_state", _state)
+          .add("_type", _type)
+          .add("_attachmentIds", _attachmentIds)
+          .toString();
     }
   }
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -49,6 +50,19 @@ final class TransitGatewayVpcAttachment implements AwsVpcEntity, Serializable {
     _gatewayId = gatewayId;
     _vpcId = vpcId;
     _subnetIds = subnetIds;
+  }
+
+  /**
+   * Returns the list of availability zones that this attachment is present in. This is based on the
+   * subnets that it is connected to.
+   */
+  @Nonnull
+  public List<String> getAvailabilityZones(Region region) {
+    return _subnetIds.stream()
+        .map(s -> region.getSubnets().get(s))
+        .filter(java.util.Objects::nonNull)
+        .map(Subnet::getAvailabilityZone)
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nonnull

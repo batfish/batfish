@@ -109,7 +109,7 @@ public class VpcPeeringConnectionTest {
 
     connection.createConnection(regions, awsConfiguration, new Warnings());
 
-    String vrfName = Vpc.vrfNameForPeeeringConnection(connection.getId());
+    String vrfName = Vpc.vrfNameForLink(connection.getId());
 
     assertThat(vpc1Cfg, hasVrf(vrfName, Matchers.any(Vrf.class)));
     assertThat(vpc2Cfg, hasVrf(vrfName, Matchers.any(Vrf.class)));

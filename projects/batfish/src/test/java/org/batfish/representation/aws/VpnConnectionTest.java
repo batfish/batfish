@@ -4,9 +4,8 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpnConnection.getExternalInterfaceName;
+import static org.batfish.representation.aws.VpnConnection.getTunnelId;
 import static org.batfish.representation.aws.VpnConnection.getVpnInterfaceName;
-import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
-import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -14,7 +13,6 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -188,7 +186,7 @@ public class VpnConnectionTest {
   }
 
   @Test
-  public void testApplyToVpnGateway() {
+  public void testApplyToGateway() {
     VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of());
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
     BgpProcess bgpProc =
@@ -235,23 +233,19 @@ public class VpnConnectionTest {
             ImmutableList.of(),
             false);
 
-    Region region =
-        Region.builder("region")
-            .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
-            .build();
-
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vgwConfig.getHostname(), vgwConfig));
-
     Warnings warnings = new Warnings(true, true, true);
-    vpnConnection.applyToVpnGateway(awsConfiguration, region, warnings);
+    vpnConnection.applyToGateway(
+        vgwConfig, vgwConfig.getDefaultVrf(), "ExportPolicy", "ImportPolicy", warnings);
 
     // quick check to see if things processed fine
     assertTrue(warnings.getRedFlagWarnings().isEmpty());
 
     assertThat(
         vgwConfig.getAllInterfaces().keySet(),
-        equalTo(ImmutableSet.of(getExternalInterfaceName(1), getVpnInterfaceName(1))));
+        equalTo(
+            ImmutableSet.of(
+                getExternalInterfaceName(getTunnelId(vpnConnection.getVpnConnectionId(), 1)),
+                getVpnInterfaceName(getTunnelId(vpnConnection.getVpnConnectionId(), 1)))));
 
     // TODO: check IPSec
 
@@ -269,8 +263,8 @@ public class VpnConnectionTest {
                 .setLocalIp(ipsecTunnel.getVgwInsideAddress())
                 .setIpv4UnicastAddressFamily(
                     Ipv4UnicastAddressFamily.builder()
-                        .setExportPolicy(VGW_EXPORT_POLICY_NAME)
-                        .setImportPolicy(VGW_IMPORT_POLICY_NAME)
+                        .setExportPolicy("ExportPolicy")
+                        .setImportPolicy("ImportPolicy")
                         .build())
                 .build()));
 

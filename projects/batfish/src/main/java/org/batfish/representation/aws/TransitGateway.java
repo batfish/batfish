@@ -1,18 +1,37 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.connect;
+import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.representation.aws.Route.State;
+import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute;
 
 /**
  * Represents an AWS Transit Gateway
@@ -29,7 +48,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static final class TransitGatewayOptions {
+  static final class TransitGatewayOptions implements Serializable {
 
     private final long _amazonSideAsn;
 
@@ -204,16 +223,284 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     _options = options;
   }
 
-  /**
-   * Creates a node for the transit gateway. Other essential elements of this node are created
-   * elsewhere.
-   */
+  /** Creates a node for the transit gateway. */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_gatewayId, "aws");
+    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_gatewayId), "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
+    // make connections to the attachments
+    region.getTransitGatewayAttachments().values().stream()
+        .filter(a -> a.getGatewayId().equals(_gatewayId))
+        .forEach(a -> connectAttachment(cfgNode, a, awsConfiguration, region, warnings));
+
+    // add static routes that were configured for route tables
+    region.getTransitGatewayRouteTables().values().stream()
+        .filter(
+            table ->
+                table.getGatewayId().equals(_gatewayId)
+                    && region.getTransitGatewayStaticRoutes().containsKey(table.getId()))
+        .forEach(
+            table ->
+                region
+                    .getTransitGatewayStaticRoutes()
+                    .get(table.getId())
+                    .getRoutes()
+                    .forEach(
+                        route ->
+                            addTransitGatewayStaticRoute(
+                                cfgNode, table, route, awsConfiguration, region, warnings)));
+
     return cfgNode;
+  }
+
+  private void connectAttachment(
+      Configuration cfgNode,
+      TransitGatewayAttachment attachment,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+    switch (attachment.getResourceType()) {
+      case VPC:
+        {
+          Optional<TransitGatewayVpcAttachment> vpcAttachment =
+              region.findTransitGatewayVpcAttachment(attachment.getResourceId(), _gatewayId);
+          if (!vpcAttachment.isPresent()) {
+            warnings.redFlag(
+                String.format(
+                    "VPC attachment not found for %s for transit gateway %s",
+                    attachment.getResourceId(), _gatewayId));
+            return;
+          }
+          connectVpc(
+              cfgNode,
+              attachment,
+              vpcAttachment.get().getSubnetIds(),
+              awsConfiguration,
+              region,
+              warnings);
+          return;
+        }
+      case VPN:
+        {
+          Optional<VpnConnection> vpnConnection =
+              region.findTransitGatewayVpnConnection(attachment.getResourceId(), _gatewayId);
+          if (!vpnConnection.isPresent()) {
+            warnings.redFlag(
+                String.format(
+                    "VPN connection %s for transit gateway %s",
+                    attachment.getResourceId(), _gatewayId));
+            return;
+          }
+          connectVpn(cfgNode, attachment, vpnConnection.get(), awsConfiguration, region, warnings);
+          return;
+        }
+      default:
+        warnings.redFlag(
+            "Unsupported resource type in transit gateway attachment: "
+                + attachment.getResourceType());
+    }
+  }
+
+  void connectVpc(
+      Configuration tgwCfg,
+      TransitGatewayAttachment attachment,
+      List<String> subnetIds,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+
+    // we don't need to look beyond the region; all VPCs attached to the transit gateway should be
+    // in the same region
+    Vpc vpc = region.getVpcs().get(attachment.getResourceId());
+    if (vpc == null) {
+      warnings.redFlag(
+          String.format(
+              "VPC %s for attachment %s not found in region %s",
+              attachment.getResourceId(), attachment.getId(), region.getName()));
+      return;
+    }
+
+    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+
+    String vrfNameOnVpc = Vpc.vrfNameForLink(attachment.getId());
+    String vrfNameOnTgw = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
+
+    // the VRF will exist if there is a subnet routing table that mentions this attachment,
+    if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
+      Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
+      vpc.initializeVrf(vrf);
+    }
+
+    // the VRF will exist if this routing table has been encountered before
+    if (!tgwCfg.getVrfs().containsKey(vrfNameOnTgw)) {
+      Vrf.builder().setOwner(tgwCfg).setName(vrfNameOnTgw).build();
+    }
+
+    connect(awsConfiguration, tgwCfg, vrfNameOnTgw, vpcCfg, vrfNameOnVpc, attachment.getId());
+
+    addStaticRoute(
+        vpcCfg.getVrfs().get(vrfNameOnVpc),
+        toStaticRoute(
+            Prefix.ZERO,
+            Utils.getInterfaceIp(tgwCfg, suffixedInterfaceName(vpcCfg, attachment.getId()))));
+
+    vpc.getCidrBlockAssociations()
+        .forEach(
+            pfx ->
+                addStaticRoute(
+                    tgwCfg.getVrfs().get(vrfNameOnTgw),
+                    toStaticRoute(
+                        pfx,
+                        Utils.getInterfaceIp(
+                            vpcCfg, suffixedInterfaceName(tgwCfg, attachment.getId())))));
+  }
+
+  private void connectVpn(
+      Configuration tgwCfg,
+      TransitGatewayAttachment attachment,
+      VpnConnection vpnConnection,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+
+    String vrfName = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
+    if (!tgwCfg.getVrfs().containsKey(vrfName)) {
+      Vrf.builder().setOwner(tgwCfg).setName(vrfName).build();
+    }
+    Vrf vrf = tgwCfg.getVrfs().get(vrfName);
+
+    if (vpnConnection.isBgpConnection() && vrf.getBgpProcess() != null) {
+      createBgpProcess(tgwCfg, vrf, awsConfiguration);
+    }
+
+    vpnConnection.applyToGateway(
+        tgwCfg,
+        tgwCfg.getVrfs().get(vrfName),
+        bgpExportPolicyName(vrfName),
+        bgpImportPolicyName(vrfName),
+        warnings);
+  }
+
+  private void createBgpProcess(
+      Configuration tgwCfg, Vrf vrf, ConvertedConfiguration awsConfiguration) {
+    String loopbackBgp = "loopbackBgp";
+    ConcreteInterfaceAddress loopbackBgpAddress =
+        ConcreteInterfaceAddress.create(
+            awsConfiguration.getNextGeneratedLinkSubnet().getStartIp(), Prefix.MAX_PREFIX_LENGTH);
+    Utils.newInterface(
+        loopbackBgp,
+        tgwCfg,
+        vrf.getName(),
+        loopbackBgpAddress,
+        "BGP loopback for " + vrf.getName());
+
+    BgpProcess proc =
+        BgpProcess.builder()
+            .setRouterId(loopbackBgpAddress.getIp())
+            .setVrf(vrf)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
+            .build();
+    // TODO: check if vpn ecmp support setting in transit gateway has an impact here
+    proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+
+    // TODO: configure an appropriate export policy as needed
+    RoutingPolicy.builder().setName(bgpExportPolicyName(vrf.getName())).setOwner(tgwCfg).build();
+
+    RoutingPolicy.builder()
+        .setName(bgpImportPolicyName(vrf.getName()))
+        .setOwner(tgwCfg)
+        .setStatements(Collections.singletonList(ACCEPT_ALL_BGP))
+        .build();
+  }
+
+  private void addTransitGatewayStaticRoute(
+      Configuration tgwCfg,
+      TransitGatewayRouteTable routeTable,
+      TransitGatewayRoute route,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+    String vrfName = vrfNameForRouteTable(routeTable.getId());
+    if (!tgwCfg.getVrfs().containsKey(vrfName)) {
+      Vrf.builder().setOwner(tgwCfg).setName(vrfName).build();
+    }
+    Vrf vrf = tgwCfg.getVrfs().get(vrfName);
+    if (route.getState() == State.BLACKHOLE) {
+      addStaticRoute(
+          vrf, toStaticRoute(route.getDestinationCidrBlock(), Interface.NULL_INTERFACE_NAME));
+      return;
+    }
+    route
+        .getAttachmentIds()
+        .forEach(
+            attachmentId ->
+                addTransitGatewayStaticRouteAttachment(
+                    tgwCfg, vrf, route, attachmentId, awsConfiguration, region, warnings));
+  }
+
+  void addTransitGatewayStaticRouteAttachment(
+      Configuration tgwCfg,
+      Vrf vrf,
+      TransitGatewayRoute route,
+      String attachmentId,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+    TransitGatewayAttachment tgwAttachment =
+        region.findTransitGatewayAttachment(attachmentId, _gatewayId).orElse(null);
+    if (tgwAttachment == null) {
+      warnings.redFlag(
+          String.format(
+              "Transit gateway attachment %s not found for route %s", attachmentId, route));
+      return;
+    }
+    switch (tgwAttachment.getResourceType()) {
+      case VPC:
+        {
+          Configuration vpcCfg =
+              awsConfiguration
+                  .getConfigurationNodes()
+                  .get(Vpc.nodeName(tgwAttachment.getResourceId()));
+          addStaticRoute(
+              vrf,
+              toStaticRoute(
+                  route.getDestinationCidrBlock(),
+                  Utils.getInterfaceIp(
+                      vpcCfg, suffixedInterfaceName(tgwCfg, tgwAttachment.getId()))));
+          return;
+        }
+      case VPN:
+        {
+          // TODO: point to IPSec tunnels
+          return;
+        }
+      default:
+        warnings.redFlag(
+            String.format(
+                "Transit gateway attachment type %s not handled in addRoute",
+                tgwAttachment.getResourceType()));
+    }
+  }
+
+  @VisibleForTesting
+  static String bgpExportPolicyName(String vrfName) {
+    return String.format("~tgw~export-policy~%s~", vrfName);
+  }
+
+  @VisibleForTesting
+  static String bgpImportPolicyName(String vrfName) {
+    return String.format("~tgw~import-policy~%s~", vrfName);
+  }
+
+  /** Returns the {@link Configuration} node name given to transit gateway with the provided id */
+  static String nodeName(String gatewayId) {
+    return gatewayId;
+  }
+
+  /** Return the VRF name used for a route table */
+  static String vrfNameForRouteTable(String routeTableId) {
+    return "vrf-" + routeTableId;
   }
 
   @Override

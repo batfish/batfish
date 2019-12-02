@@ -140,9 +140,12 @@ final class Vpc implements AwsVpcEntity, Serializable {
     return vpcId;
   }
 
-  /** Return the VRF name used on the VPC node for a VPC peering connection */
-  static String vrfNameForPeeeringConnection(String vpcPeeringConnectionId) {
-    return "vrf-" + vpcPeeringConnectionId;
+  /**
+   * Return the VRF name used on the VPC node for links to remote entities (e.g., a VPC peering
+   * connection or a transit gateway attachment).
+   */
+  static String vrfNameForLink(String linkId) {
+    return "vrf-" + linkId;
   }
 
   @Override

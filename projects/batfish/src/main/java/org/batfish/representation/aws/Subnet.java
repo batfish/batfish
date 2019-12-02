@@ -343,39 +343,77 @@ public class Subnet implements AwsVpcEntity, Serializable {
               String.format("Route target is null for a VPC peering connection type: %s", route));
           return;
         }
-        // have we processed this peering connection for this subnet node before?
-        if (!cfgNode.getAllInterfaces().containsKey(suffixedInterfaceName(vpcNode, connectionId))) {
-          // the interface on the VPC node is in the peering connection VRF
-          String vrfNameOnVpc = Vpc.vrfNameForPeeeringConnection(connectionId);
-
-          // have we created a VRF for this peering connection on the VPC node before?
-          if (!vpcNode.getVrfs().containsKey(vrfNameOnVpc)) {
-            Vrf vrf = Vrf.builder().setOwner(vpcNode).setName(vrfNameOnVpc).build();
-            region.getVpcs().get(_vpcId).initializeVrf(vrf);
-          }
-
-          connect(
-              awsConfiguration,
-              cfgNode,
-              cfgNode.getDefaultVrf().getName(),
-              vpcNode,
-              vrfNameOnVpc,
-              connectionId);
-
-          addStaticRoute(
-              vpcNode.getVrfs().get(vrfNameOnVpc),
-              toStaticRoute(
-                  _cidrBlock,
-                  getInterfaceIp(cfgNode, suffixedInterfaceName(vpcNode, connectionId))));
-        }
+        initializeVpcLink(
+            awsConfiguration, cfgNode, vpcNode, region.getVpcs().get(_vpcId), connectionId);
         addStaticRoute(
             cfgNode,
             sr.setNextHopIp(getInterfaceIp(vpcNode, suffixedInterfaceName(cfgNode, connectionId)))
                 .build());
         return;
+      case TransitGateway:
+        assert route.getTarget() != null; // suppress warning
+        TransitGatewayVpcAttachment attachment =
+            region.findTransitGatewayVpcAttachment(_vpcId, route.getTarget()).orElse(null);
+        if (attachment == null) {
+          warnings.redFlag(
+              String.format(
+                  "Transit gateway VPC attachment between %s and %s not found. Needed for route: %s",
+                  _vpcId, route.getTarget(), route));
+          return;
+        }
+        // this attachment is not reachable if it is not present in our availability zone
+        if (!attachment.getAvailabilityZones(region).contains(_availabilityZone)) {
+          addStaticRoute(cfgNode, sr.setNextHopInterface(Interface.NULL_INTERFACE_NAME).build());
+          return;
+        }
+        initializeVpcLink(
+            awsConfiguration, cfgNode, vpcNode, region.getVpcs().get(_vpcId), attachment.getId());
+        addStaticRoute(
+            cfgNode,
+            sr.setNextHopIp(
+                    getInterfaceIp(vpcNode, suffixedInterfaceName(cfgNode, attachment.getId())))
+                .build());
+        return;
+
       default:
         warnings.redFlag("Unsupported target type: " + route.getTargetType());
     }
+  }
+
+  /**
+   * Initializes what is needed on the VPC to allow a subnet to use its link to a remote entities
+   * (e.g., a VPC peering connection or a transit gateway attachment)
+   */
+  private void initializeVpcLink(
+      ConvertedConfiguration awsConfiguration,
+      Configuration cfgNode,
+      Configuration vpcNode,
+      Vpc vpc,
+      String linkId) {
+    // do nothing if have we processed this link before
+    if (cfgNode.getAllInterfaces().containsKey(suffixedInterfaceName(vpcNode, linkId))) {
+      return;
+    }
+    // the interface on the VPC node is in the link-specific VRF
+    String vrfNameOnVpc = Vpc.vrfNameForLink(linkId);
+
+    // have we created a VRF for this link on the VPC node before?
+    if (!vpcNode.getVrfs().containsKey(vrfNameOnVpc)) {
+      Vrf vrf = Vrf.builder().setOwner(vpcNode).setName(vrfNameOnVpc).build();
+      vpc.initializeVrf(vrf);
+    }
+
+    connect(
+        awsConfiguration,
+        cfgNode,
+        cfgNode.getDefaultVrf().getName(),
+        vpcNode,
+        vrfNameOnVpc,
+        linkId);
+
+    addStaticRoute(
+        vpcNode.getVrfs().get(vrfNameOnVpc),
+        toStaticRoute(_cidrBlock, getInterfaceIp(cfgNode, suffixedInterfaceName(vpcNode, linkId))));
   }
 
   @Override

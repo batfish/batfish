@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
@@ -26,12 +27,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /** Represents an AWS VPN gateway */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -40,12 +36,6 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
 
   static final String VGW_EXPORT_POLICY_NAME = "~vgw~export-policy~";
   static final String VGW_IMPORT_POLICY_NAME = "~vgw~import-policy~";
-
-  static final Statement ACCEPT_ALL_BGP =
-      new If(
-          new MatchProtocol(RoutingProtocol.BGP),
-          ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -152,6 +142,18 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
           .setStatements(Collections.singletonList(ACCEPT_ALL_BGP))
           .build();
     }
+
+    // process all VPN connections
+    region.getVpnConnections().values().stream()
+        .filter(c -> _vpnGatewayId.equals(c.getAwsGatewayId()))
+        .forEach(
+            c ->
+                c.applyToGateway(
+                    cfgNode,
+                    cfgNode.getDefaultVrf(),
+                    VGW_EXPORT_POLICY_NAME,
+                    VGW_IMPORT_POLICY_NAME,
+                    warnings));
 
     return cfgNode;
   }

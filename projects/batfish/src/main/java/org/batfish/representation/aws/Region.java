@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -400,6 +401,13 @@ final class Region implements Serializable {
   }
 
   @Nonnull
+  Set<TransitGatewayRouteTable> getTransitGatewayRouteTables(String transitGatewayId) {
+    return _transitGatewayRouteTables.values().stream()
+        .filter(rt -> rt.getGatewayId().equals(transitGatewayId))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @Nonnull
   Map<String, Address> getAddresses() {
     return _addresses;
   }
@@ -584,8 +592,9 @@ final class Region implements Serializable {
       awsConfiguration.addNode(cfgNode);
     }
 
-    for (VpnConnection vpnConnection : getVpnConnections().values()) {
-      vpnConnection.applyToVpnGateway(awsConfiguration, this, warnings);
+    for (TransitGateway tgw : getTransitGateways().values()) {
+      Configuration cfgNode = tgw.toConfigurationNode(awsConfiguration, this, warnings);
+      awsConfiguration.addNode(cfgNode);
     }
 
     // VpcPeeringConnections are processed in AwsConfiguration since they can be cross region
@@ -663,6 +672,39 @@ final class Region implements Serializable {
   Optional<InternetGateway> findInternetGateway(String vpcId) {
     return _internetGateways.values().stream()
         .filter(igw -> igw.getAttachmentVpcIds().contains(vpcId))
+        .findFirst();
+  }
+
+  /** Returns the {@link TransitGateway} that owns the provided route table */
+  Optional<TransitGateway> findTransitGateway(String routeTableId) {
+    return _transitGateways.values().stream()
+        .filter(
+            tgw ->
+                _transitGatewayRouteTables.values().stream()
+                    .anyMatch(tgwRt -> tgwRt.getId().equals(routeTableId)))
+        .findFirst();
+  }
+
+  /** Returns {@link TransitGatewayAttachment} given the gateway and attachment id's */
+  Optional<TransitGatewayAttachment> findTransitGatewayAttachment(
+      String attachmentId, String transitGatewayId) {
+    return _transitGatewayAttachments.values().stream()
+        .filter(a -> a.getId().equals(attachmentId) && a.getGatewayId().equals(transitGatewayId))
+        .findFirst();
+  }
+
+  /** Returns {@link TransitGatewayVpcAttachment} between the VPC and Transit Gateway */
+  Optional<TransitGatewayVpcAttachment> findTransitGatewayVpcAttachment(
+      String vpcId, String transitGatewayId) {
+    return _transitGatewayVpcAttachments.values().stream()
+        .filter(a -> a.getVpcId().equals(vpcId) && a.getGatewayId().equals(transitGatewayId))
+        .findFirst();
+  }
+
+  /** Returns {@link VpnConnection} for the Transit Gateway */
+  Optional<VpnConnection> findTransitGatewayVpnConnection(String vpnId, String transitGatewayId) {
+    return _vpnConnections.values().stream()
+        .filter(c -> c.getId().equals(vpnId) && c.getAwsGatewayId().equals(transitGatewayId))
         .findFirst();
   }
 

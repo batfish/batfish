@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,8 +18,13 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -28,6 +34,12 @@ import org.w3c.dom.NodeList;
 final class Utils {
 
   private static final NetworkFactory FACTORY = new NetworkFactory();
+
+  static final Statement ACCEPT_ALL_BGP =
+      new If(
+          new MatchProtocol(RoutingProtocol.BGP),
+          ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   static void checkNonNull(@Nullable Object value, String fieldName, String objectType) {
     if (value == null) {
