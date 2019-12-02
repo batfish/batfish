@@ -332,10 +332,7 @@ public class SubnetTest {
                 toStaticRoute(publicIp, subnetCfg.getAllInterfaces().get(subnet.getId())))));
   }
 
-  /**
-   * Tests that we do the right thing when processing a route for VPC peering connection. Other
-   * route types are tested as part of tests for {@link Subnet#toConfigurationNode}
-   */
+  /** Tests that we do the right thing when processing a route for VPC peering connection. */
   @Test
   public void testProcessRouteVpcPeeringConnection() {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of());

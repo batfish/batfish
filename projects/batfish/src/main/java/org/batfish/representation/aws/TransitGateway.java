@@ -444,7 +444,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                     tgwCfg, vrf, route, attachmentId, awsConfiguration, region, warnings));
   }
 
-  void addTransitGatewayStaticRouteAttachment(
+  private void addTransitGatewayStaticRouteAttachment(
       Configuration tgwCfg,
       Vrf vrf,
       TransitGatewayRoute route,

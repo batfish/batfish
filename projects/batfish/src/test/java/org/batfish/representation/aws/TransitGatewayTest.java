@@ -24,9 +24,12 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.TransitGateway.TransitGatewayOptions;
 import org.batfish.representation.aws.TransitGatewayAttachment.Association;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
+import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute;
+import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute.Type;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
 
@@ -218,6 +221,168 @@ public class TransitGatewayTest {
 
     assertThat(vrf.getBgpProcess(), notNullValue());
 
-    // TODO: check on routing policies
+    // TODO: check on routing policies once settled
+  }
+
+  @Test
+  public void testToConfigurationNodesStaticRoutesVpc() {
+
+    String routeTableId = "tgw-rtb";
+    TransitGateway tgw =
+        new TransitGateway(
+            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of()); // no prefix
+    Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
+
+    TransitGatewayAttachment tgwAttachment =
+        new TransitGatewayAttachment(
+            "tgw-attach",
+            tgw.getId(),
+            ResourceType.VPC,
+            vpc.getId(),
+            new Association(routeTableId, STATE_ASSOCIATED));
+
+    TransitGatewayVpcAttachment vpcAttachment =
+        new TransitGatewayVpcAttachment(
+            tgwAttachment.getId(), tgw.getId(), vpc.getId(), ImmutableList.of());
+
+    TransitGatewayRouteTable routeTable =
+        new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true);
+
+    Prefix activeRoutePrefix = Prefix.parse("6.6.6.6/32");
+    Prefix blackholeRoutePrefix = Prefix.parse("9.9.9.9/32");
+    TransitGatewayStaticRoutes staticRoutes =
+        new TransitGatewayStaticRoutes(
+            routeTableId,
+            ImmutableList.of(
+                new TransitGatewayRoute(
+                    activeRoutePrefix,
+                    State.ACTIVE,
+                    Type.STATIC,
+                    ImmutableList.of(tgwAttachment.getId())),
+                new TransitGatewayRoute(
+                    Prefix.parse("9.9.9.9/32"),
+                    State.BLACKHOLE,
+                    Type.STATIC,
+                    ImmutableList.of(tgwAttachment.getId()))));
+
+    Region region =
+        Region.builder("region")
+            .setTransitGateways(ImmutableMap.of(tgw.getId(), tgw))
+            .setTransitGatewayAttachments(ImmutableMap.of(tgwAttachment.getId(), tgwAttachment))
+            .setTransitGatewayVpcAttachments(ImmutableMap.of(vpcAttachment.getId(), vpcAttachment))
+            .setTransitGatewayRouteTables(ImmutableMap.of(routeTableId, routeTable))
+            .setTransitGatewayStaticRoutes(ImmutableMap.of(routeTableId, staticRoutes))
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .build();
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+
+    Warnings warnings = new Warnings(true, true, true);
+    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+
+    // check that vrf exists
+    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
+
+    // check that VRFs have the right static routes
+    assertThat(
+        tgwCfg.getVrfs().get(TransitGateway.vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                toStaticRoute(
+                    activeRoutePrefix,
+                    Utils.getInterfaceIp(
+                        vpcCfg, suffixedInterfaceName(tgwCfg, tgwAttachment.getId()))),
+                toStaticRoute(blackholeRoutePrefix, NULL_INTERFACE_NAME))));
+  }
+
+  @Test
+  public void testToConfigurationNodesStaticRoutesVpn() {
+
+    String routeTableId = "tgw-rtb";
+    TransitGateway tgw =
+        new TransitGateway(
+            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+
+    IpsecTunnel ipsecTunnel =
+        new IpsecTunnel(
+            65301L,
+            Ip.parse("169.254.15.194"),
+            30,
+            Ip.parse("147.75.69.27"),
+            "sha1",
+            "aes-128-cbc",
+            28800,
+            "main",
+            "group2",
+            "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+            "hmac-sha1-96",
+            "aes-128-cbc",
+            3600,
+            "tunnel",
+            "group2",
+            "esp",
+            65401L,
+            Ip.parse("169.254.15.193"),
+            30,
+            Ip.parse("52.27.166.152"));
+
+    VpnConnection vpnConnection =
+        new VpnConnection(
+            true,
+            "vpn",
+            "cgw-fb76ace5",
+            GatewayType.VPN,
+            tgw.getId(),
+            ImmutableList.of(ipsecTunnel),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            false);
+
+    TransitGatewayAttachment tgwAttachment =
+        new TransitGatewayAttachment(
+            "tgw-attach",
+            tgw.getId(),
+            ResourceType.VPN,
+            vpnConnection.getId(),
+            new Association(routeTableId, STATE_ASSOCIATED));
+
+    TransitGatewayRouteTable routeTable =
+        new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true);
+
+    Prefix activeRoutePrefix = Prefix.parse("6.6.6.6/32");
+    TransitGatewayStaticRoutes staticRoutes =
+        new TransitGatewayStaticRoutes(
+            routeTableId,
+            ImmutableList.of(
+                new TransitGatewayRoute(
+                    activeRoutePrefix,
+                    State.ACTIVE,
+                    Type.STATIC,
+                    ImmutableList.of(tgwAttachment.getId()))));
+
+    Region region =
+        Region.builder("region")
+            .setTransitGateways(ImmutableMap.of(tgw.getId(), tgw))
+            .setTransitGatewayAttachments(ImmutableMap.of(tgwAttachment.getId(), tgwAttachment))
+            .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
+            .setTransitGatewayRouteTables(ImmutableMap.of(routeTableId, routeTable))
+            .setTransitGatewayStaticRoutes(ImmutableMap.of(routeTableId, staticRoutes))
+            .build();
+
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+
+    Warnings warnings = new Warnings(true, true, true);
+    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+
+    // check that the vrf exists
+    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
+
+    assertThat(
+        tgwCfg.getVrfs().get(TransitGateway.vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(toStaticRoute(activeRoutePrefix, ipsecTunnel.getCgwInsideAddress()))));
   }
 }
