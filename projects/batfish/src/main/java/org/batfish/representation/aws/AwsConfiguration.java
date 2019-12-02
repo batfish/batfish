@@ -4,6 +4,7 @@ import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,13 @@ public class AwsConfiguration extends VendorConfiguration {
     for (Region region : _regions.values()) {
       region.toConfigurationNodes(_convertedConfiguration, getWarnings());
     }
+    // We do this de-duplication because cross-region connections will show up in both regions
+    Set<VpcPeeringConnection> vpcPeeringConnections =
+        _regions.values().stream()
+            .flatMap(r -> r.getVpcPeeringConnections().values().stream())
+            .collect(ImmutableSet.toImmutableSet());
+    vpcPeeringConnections.forEach(
+        c -> c.createConnection(_regions, _convertedConfiguration, getWarnings()));
   }
 
   @Override
