@@ -1,0 +1,94 @@
+{
+ "VpcPeeringConnections": [
+  {
+   "AccepterVpcInfo": {
+    "CidrBlock": "192.168.0.0/16",
+    "CidrBlockSet": [
+     {
+      "CidrBlock": "192.168.0.0/16"
+     }
+    ],
+    "OwnerId": "554773406868",
+    "PeeringOptions": {
+     "AllowDnsResolutionFromRemoteVpc": false,
+     "AllowEgressFromLocalClassicLinkToRemoteVpc": false,
+     "AllowEgressFromLocalVpcToRemoteClassicLink": false
+    },
+    "Region": "us-east-2",
+    "VpcId": "vpc-09095dbf2886404ee"
+   },
+   "RequesterVpcInfo": {
+    "CidrBlock": "10.10.0.0/16",
+    "CidrBlockSet": [
+     {
+      "CidrBlock": "10.10.0.0/16"
+     }
+    ],
+    "OwnerId": "554773406868",
+    "PeeringOptions": {
+     "AllowDnsResolutionFromRemoteVpc": false,
+     "AllowEgressFromLocalClassicLinkToRemoteVpc": false,
+     "AllowEgressFromLocalVpcToRemoteClassicLink": false
+    },
+    "Region": "us-east-2",
+    "VpcId": "vpc-0404e08ceddf7f650"
+   },
+   "Status": {
+    "Code": "active",
+    "Message": "Active"
+   },
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "A-C"
+    }
+   ],
+   "VpcPeeringConnectionId": "pcx-0d5b836985ac8ca8c"
+  },
+  {
+   "AccepterVpcInfo": {
+    "CidrBlock": "192.168.0.0/16",
+    "CidrBlockSet": [
+     {
+      "CidrBlock": "192.168.0.0/16"
+     }
+    ],
+    "OwnerId": "554773406868",
+    "PeeringOptions": {
+     "AllowDnsResolutionFromRemoteVpc": false,
+     "AllowEgressFromLocalClassicLinkToRemoteVpc": false,
+     "AllowEgressFromLocalVpcToRemoteClassicLink": false
+    },
+    "Region": "us-east-2",
+    "VpcId": "vpc-00a31ce9d0c06675c"
+   },
+   "RequesterVpcInfo": {
+    "CidrBlock": "10.10.0.0/16",
+    "CidrBlockSet": [
+     {
+      "CidrBlock": "10.10.0.0/16"
+     }
+    ],
+    "OwnerId": "554773406868",
+    "PeeringOptions": {
+     "AllowDnsResolutionFromRemoteVpc": false,
+     "AllowEgressFromLocalClassicLinkToRemoteVpc": false,
+     "AllowEgressFromLocalVpcToRemoteClassicLink": false
+    },
+    "Region": "us-east-2",
+    "VpcId": "vpc-0404e08ceddf7f650"
+   },
+   "Status": {
+    "Code": "active",
+    "Message": "Active"
+   },
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "A-B"
+    }
+   ],
+   "VpcPeeringConnectionId": "pcx-0b89b559e3319d6cf"
+  }
+ ]
+}

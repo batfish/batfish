@@ -1,0 +1,97 @@
+{
+ "Vpcs": [
+  {
+   "CidrBlock": "192.168.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-065156f4cd43a7b80",
+     "CidrBlock": "192.168.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    },
+    {
+     "AssociationId": "vpc-cidr-assoc-02bb9aa8172739f93",
+     "CidrBlock": "192.169.0.0/16",
+     "CidrBlockState": {
+      "State": "disassociated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-071fbce13fd224af4",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "OwnerId": "554773406868",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "VPC B"
+    }
+   ],
+   "VpcId": "vpc-00a31ce9d0c06675c"
+  },
+  {
+   "CidrBlock": "192.168.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-09978b47e856cc613",
+     "CidrBlock": "192.168.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    },
+    {
+     "AssociationId": "vpc-cidr-assoc-092b0ac1ce3c3f218",
+     "CidrBlock": "192.169.0.0/16",
+     "CidrBlockState": {
+      "State": "disassociated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-071fbce13fd224af4",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "OwnerId": "554773406868",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "VPC C"
+    }
+   ],
+   "VpcId": "vpc-09095dbf2886404ee"
+  },
+  {
+   "CidrBlock": "10.10.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-0dd7a90596732db69",
+     "CidrBlock": "10.10.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    },
+    {
+     "AssociationId": "vpc-cidr-assoc-0c3a11e17f4188ef2",
+     "CidrBlock": "10.11.0.0/16",
+     "CidrBlockState": {
+      "State": "disassociated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-071fbce13fd224af4",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "OwnerId": "554773406868",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "VPC A"
+    }
+   ],
+   "VpcId": "vpc-0404e08ceddf7f650"
+  }
+ ]
+}

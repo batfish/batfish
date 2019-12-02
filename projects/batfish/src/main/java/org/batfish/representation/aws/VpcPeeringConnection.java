@@ -1,16 +1,25 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 
 /** Represents an AWS VPC peering connection */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,22 +28,47 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
+  private static final class CidrBlock {
+    @Nonnull private final Prefix _cidrBlock;
+
+    @JsonCreator
+    private static CidrBlock create(@Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock) {
+      checkArgument(cidrBlock != null, "CidrBlock cannot null in CidrBlockSet");
+      return new CidrBlock(cidrBlock);
+    }
+
+    private CidrBlock(Prefix cidrBlock) {
+      _cidrBlock = cidrBlock;
+    }
+
+    @Nonnull
+    Prefix getCidrBlock() {
+      return _cidrBlock;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
   private static final class VpcInfo {
     @Nonnull private final String _vpcId;
 
-    @Nonnull private final Prefix _cidrBlock;
+    @Nonnull private final List<Prefix> _cidrBlocks;
 
     @JsonCreator
     private static VpcInfo create(
         @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-        @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock) {
+        @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK_SET) List<CidrBlock> cidrBlockSet) {
       checkArgument(vpcId != null, "VPC id cannot be null in VPC info");
-      checkArgument(cidrBlock != null, "CIDR block cannot null in VPC info");
-      return new VpcInfo(vpcId, cidrBlock);
+      checkArgument(cidrBlockSet != null, "CIDR block set cannot null in VPC info");
+      return new VpcInfo(
+          vpcId,
+          cidrBlockSet.stream()
+              .map(CidrBlock::getCidrBlock)
+              .collect(ImmutableList.toImmutableList()));
     }
 
-    private VpcInfo(String vpcId, Prefix cidrBlock) {
-      _cidrBlock = cidrBlock;
+    private VpcInfo(String vpcId, List<Prefix> cidrBlockSet) {
+      _cidrBlocks = cidrBlockSet;
       _vpcId = vpcId;
     }
 
@@ -44,16 +78,16 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    Prefix getCidrBlock() {
-      return _cidrBlock;
+    List<Prefix> getCidrBlocks() {
+      return _cidrBlocks;
     }
   }
 
-  @Nonnull private final Prefix _accepterVpcCidrBlock;
+  @Nonnull private final List<Prefix> _accepterVpcCidrBlock;
 
   @Nonnull private final String _accepterVpcId;
 
-  @Nonnull private final Prefix _requesterVpcCidrBlock;
+  @Nonnull private final List<Prefix> _requesterVpcCidrBlock;
 
   @Nonnull private final String _requesterVpcId;
 
@@ -73,26 +107,98 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
     return new VpcPeeringConnection(
         vpcPeeringConnectionId,
         accepterVpcInfo.getVpcId(),
-        accepterVpcInfo.getCidrBlock(),
+        accepterVpcInfo.getCidrBlocks(),
         requesterVpcInfo.getVpcId(),
-        requesterVpcInfo.getCidrBlock());
+        requesterVpcInfo.getCidrBlocks());
   }
 
   VpcPeeringConnection(
       String vpcPeeringConnectionId,
       String accepterVpcId,
-      Prefix accepterVpcCidrBlock,
+      List<Prefix> accepterVpcCidrBlocks,
       String requesterVpcId,
-      Prefix requesterVpcCidrBlock) {
+      List<Prefix> requesterVpcCidrBlocks) {
     _vpcPeeringConnectionId = vpcPeeringConnectionId;
     _accepterVpcId = accepterVpcId;
-    _accepterVpcCidrBlock = accepterVpcCidrBlock;
+    _accepterVpcCidrBlock = accepterVpcCidrBlocks;
     _requesterVpcId = requesterVpcId;
-    _requesterVpcCidrBlock = requesterVpcCidrBlock;
+    _requesterVpcCidrBlock = requesterVpcCidrBlocks;
+  }
+
+  /**
+   * Creates the VPC peering between the two VPCs. It creates the interfaces that link the two VPCs,
+   * adds default routes in the right VRFs on both nodes that point to each other, and null routes
+   * the cidr blocks that are local (so they are not sent over the connection -- more specific
+   * routes that belong to subnets were inserted during subnet processing).
+   */
+  void createConnection(
+      Map<String, Region> regions, ConvertedConfiguration awsConfiguration, Warnings warnings) {
+    Vpc accepterVpc =
+        regions.values().stream()
+            .flatMap(r -> r.getVpcs().values().stream())
+            .filter(vpc -> vpc.getId().equals(_accepterVpcId))
+            .findFirst()
+            .orElse(null);
+    Vpc requesterVpc =
+        regions.values().stream()
+            .flatMap(r -> r.getVpcs().values().stream())
+            .filter(vpc -> vpc.getId().equals(_accepterVpcId))
+            .findFirst()
+            .orElse(null);
+
+    if (accepterVpc == null) {
+      warnings.redFlag(
+          String.format(
+              "Accepter VPC %s not found for connection %s. Will not create the connection.",
+              _accepterVpcId, _vpcPeeringConnectionId));
+      return;
+    }
+    if (requesterVpc == null) {
+      warnings.redFlag(
+          String.format(
+              "Requested VPC %s not found for connection %s. Will not create the connection.",
+              _requesterVpcId, _vpcPeeringConnectionId));
+      return;
+    }
+
+    Configuration accepterCfg =
+        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_accepterVpcId));
+    Configuration requesterCfg =
+        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_requesterVpcId));
+
+    String vrfName = Vpc.vrfNameForPeeeringConnection(_vpcPeeringConnectionId);
+    // VRFs will not exist if none of the subnets were using the connection
+    if (!accepterCfg.getVrfs().containsKey(vrfName)) {
+      Vrf.builder().setOwner(accepterCfg).setName(vrfName).build();
+    }
+    // VRFs will not exist if none of the subnets were using the connection
+    if (!requesterCfg.getVrfs().containsKey(vrfName)) {
+      Vrf.builder().setOwner(requesterCfg).setName(vrfName).build();
+    }
+
+    String ifaceNameSuffix = _vpcPeeringConnectionId;
+    Utils.connect(awsConfiguration, accepterCfg, vrfName, requesterCfg, vrfName, ifaceNameSuffix);
+
+    _requesterVpcCidrBlock.forEach(
+        prefix ->
+            addStaticRoute(
+                accepterCfg.getVrfs().get(vrfName),
+                toStaticRoute(
+                    prefix,
+                    Utils.getInterfaceIp(
+                        requesterCfg, suffixedInterfaceName(accepterCfg, ifaceNameSuffix)))));
+    _accepterVpcCidrBlock.forEach(
+        prefix ->
+            addStaticRoute(
+                requesterCfg.getVrfs().get(vrfName),
+                toStaticRoute(
+                    prefix,
+                    Utils.getInterfaceIp(
+                        accepterCfg, suffixedInterfaceName(requesterCfg, ifaceNameSuffix)))));
   }
 
   @Nonnull
-  Prefix getAccepterVpcCidrBlock() {
+  List<Prefix> getAccepterVpcCidrBlock() {
     return _accepterVpcCidrBlock;
   }
 
@@ -107,7 +213,7 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  Prefix getRequesterVpcCidrBlock() {
+  List<Prefix> getRequesterVpcCidrBlock() {
     return _requesterVpcCidrBlock;
   }
 
