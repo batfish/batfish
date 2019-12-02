@@ -870,10 +870,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _c.getStaticRoutes().add(route);
     } else {
       String vrfName = ctx.vrf.getText();
-      // create vrf if not defined
       if (!_c.getVrfs().containsKey(vrfName)) {
-        _c.getVrfs().put(vrfName, new Vrf(vrfName));
-        _c.defineStructure(CumulusStructureType.VRF, vrfName, ctx);
+        _w.redFlag(
+            String.format("the static route is ignored since vrf %s is not defined", vrfName));
+        return;
       }
       _c.getVrfs().get(vrfName).getStaticRoutes().add(route);
       _c.referenceStructure(
