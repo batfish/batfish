@@ -2,7 +2,6 @@ package org.batfish.grammar.cumulus_frr;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -147,7 +146,6 @@ import org.batfish.representation.cumulus.RouteMapSetMetric;
 import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
-import org.batfish.vendor.StructureType;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
   private final CumulusNcluConfiguration _c;
