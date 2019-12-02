@@ -4,6 +4,7 @@ import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_TAG;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,17 +13,26 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -285,5 +295,31 @@ public class BgpProtocolHelperTest {
         nextHopIp,
         UNSET_ROUTE_NEXT_HOP_IP);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
+  }
+
+  @Test
+  public void testTransformGeneratedRouteWithAttrPolicy() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.ARISTA)
+            .build();
+    StandardCommunity community = StandardCommunity.of(1L);
+    Bgpv4Route result =
+        convertGeneratedRouteToBgp(
+            GeneratedRoute.builder().setNetwork(Prefix.ZERO).setDiscard(true).build(),
+            RoutingPolicy.builder(nf)
+                .setOwner(c)
+                .setStatements(
+                    ImmutableList.of(
+                        new SetCommunity(new LiteralCommunity(community)),
+                        Statements.ReturnTrue.toStaticStatement()))
+                .build(),
+            Ip.MAX,
+            Ip.ZERO,
+            true);
+
+    assertThat(result.getCommunities(), equalTo(ImmutableSet.of(community)));
   }
 }

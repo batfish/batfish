@@ -920,6 +920,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         exportCandidate.getRoute() instanceof GeneratedRoute
             ? BgpProtocolHelper.convertGeneratedRouteToBgp(
                     (GeneratedRoute) exportCandidate.getRoute(),
+                    Optional.ofNullable(
+                            ((GeneratedRoute) exportCandidate.getRoute()).getAttributePolicy())
+                        .map(p -> _c.getRoutingPolicies().get(p))
+                        .orElse(null),
                     _process.getRouterId(),
                     sessionProperties.getHeadIp(),
                     false)
