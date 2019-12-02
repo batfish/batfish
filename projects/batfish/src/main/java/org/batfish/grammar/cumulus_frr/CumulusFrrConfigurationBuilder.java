@@ -119,7 +119,6 @@ import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkCon
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
-import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
