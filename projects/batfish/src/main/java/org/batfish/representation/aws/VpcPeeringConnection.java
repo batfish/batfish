@@ -167,6 +167,7 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
         awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_requesterVpcId));
 
     String vrfName = Vpc.vrfNameForLink(_vpcPeeringConnectionId);
+
     // VRFs will not exist if none of the subnets were using the connection
     if (!accepterCfg.getVrfs().containsKey(vrfName)) {
       Vrf.builder().setOwner(accepterCfg).setName(vrfName).build();

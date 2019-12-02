@@ -374,7 +374,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
                     getInterfaceIp(vpcNode, suffixedInterfaceName(cfgNode, attachment.getId())))
                 .build());
         return;
-
       default:
         warnings.redFlag("Unsupported target type: " + route.getTargetType());
     }
