@@ -908,7 +908,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nullable
   Bgpv4Route exportNonBgpRouteToBgp(
       @Nonnull AnnotatedRoute<AbstractRoute> exportCandidate,
-      @Nonnull BgpPeerConfigId ourConfigId,
       @Nonnull BgpPeerConfigId remoteConfigId,
       @Nonnull BgpPeerConfig ourConfig,
       @Nonnull BgpSessionProperties sessionProperties) {
@@ -1012,7 +1011,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     for (EdgeId edge : _evpnType5IncomingRoutes.keySet()) {
       RibDelta.Builder<EvpnType5Route> ebgp = RibDelta.builder();
       RibDelta.Builder<EvpnType5Route> ibgp = RibDelta.builder();
-      BgpPeerConfigId ourConfigId = edge.head();
       BgpPeerConfig ourConfig = nc.getBgpPeerConfig(edge.head());
       assert ourConfig != null;
 
@@ -1041,8 +1039,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   BgpPeerConfigId remoteConfigId = edge.tail();
                   BgpSessionProperties session = getSessionProperties(_topology, edge);
                   Bgpv4Route bgpv4Route =
-                      exportNonBgpRouteToBgp(
-                          ra.getRoute(), ourConfigId, remoteConfigId, ourConfig, session);
+                      exportNonBgpRouteToBgp(ra.getRoute(), remoteConfigId, ourConfig, session);
                   if (bgpv4Route != null) {
                     bgpv4RouteToType5Route(ebgp, ibgp, ourConfig, ra, bgpv4Route, srcVrf);
                   }
