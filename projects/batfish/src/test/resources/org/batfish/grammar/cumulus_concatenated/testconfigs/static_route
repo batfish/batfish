@@ -1,0 +1,8 @@
+static_route
+# This file describes the network interfaces
+iface VRF
+  vrf-table auto
+# ports.conf --
+frr version test
+ip route 1.1.1.1/24 10.0.0.1
+ip route 2.2.2.2/24 10.0.0.2 vrf VRF
