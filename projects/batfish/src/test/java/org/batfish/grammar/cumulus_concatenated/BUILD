@@ -12,6 +12,7 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources/org/batfish/grammar/cumulus_concatenated/testconfigs",
+        "//projects/batfish/src/test/resources/org/batfish/grammar/cumulus_concatenated/testrigs",
     ],
     deps = [
         "//projects/batfish",
