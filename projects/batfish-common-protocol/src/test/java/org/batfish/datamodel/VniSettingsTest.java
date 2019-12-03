@@ -6,10 +6,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.SortedSet;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,21 +50,6 @@ public class VniSettingsTest {
             .setVni(10007)
             .build();
     assertThat(SerializationUtils.clone(vs), equalTo(vs));
-  }
-
-  @Test
-  public void testJsonSerialization() throws IOException {
-    SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
-    VniSettings vs =
-        VniSettings.builder()
-            .setBumTransportIps(bumTransportIps)
-            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-            .setSourceAddress(Ip.parse("1.2.3.4"))
-            .setUdpPort(2345)
-            .setVlan(7)
-            .setVni(10007)
-            .build();
-    assertThat(BatfishObjectMapper.clone(vs, VniSettings.class), equalTo(vs));
   }
 
   @Test
