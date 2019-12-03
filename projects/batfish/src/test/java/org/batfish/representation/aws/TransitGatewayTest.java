@@ -2,6 +2,8 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.TransitGateway.createBgpProcess;
 import static org.batfish.representation.aws.TransitGateway.supportedVpnBgpConfiguration;
 import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSOCIATED;
@@ -198,9 +200,7 @@ public class TransitGatewayTest {
     Interface tgwInterface =
         tgwCfg
             .getAllInterfaces()
-            .get(
-                VpnConnection.getExternalInterfaceName(
-                    VpnConnection.getTunnelId(vpnConnection.getId(), 1)));
+            .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
     assertThat(tgwInterface, hasVrfName(TransitGateway.vrfNameForRouteTable(routeTableId)));
   }
 
@@ -264,9 +264,7 @@ public class TransitGatewayTest {
     Interface tgwInterface =
         tgwCfg
             .getAllInterfaces()
-            .get(
-                VpnConnection.getExternalInterfaceName(
-                    VpnConnection.getTunnelId(vpnConnection.getId(), 1)));
+            .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
     assertThat(tgwInterface, hasVrfName(TransitGateway.vrfNameForRouteTable(routeTableId)));
   }
 

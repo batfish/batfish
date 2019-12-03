@@ -2,13 +2,15 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -381,11 +383,11 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         ImmutableSortedMap.naturalOrder();
 
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
-      String tunnelId = getTunnelId(_vpnConnectionId, i + 1);
+      String tunnelId = vpnTunnelId(_vpnConnectionId, i + 1);
       IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
 
       // create representation structures and add to configuration node
-      String externalInterfaceName = getExternalInterfaceName(tunnelId);
+      String externalInterfaceName = vpnExternalInterfaceName(tunnelId);
       ConcreteInterfaceAddress externalInterfaceAddress =
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
@@ -396,12 +398,12 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
           externalInterfaceAddress,
           "IPSec tunnel " + tunnelId);
 
-      String vpnInterfaceName = getVpnInterfaceName(tunnelId);
+      String vpnIfaceName = vpnInterfaceName(tunnelId);
       ConcreteInterfaceAddress vpnInterfaceAddress =
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
       Utils.newInterface(
-          vpnInterfaceName, gwCfg, vrf.getName(), vpnInterfaceAddress, "VPN " + tunnelId);
+          vpnIfaceName, gwCfg, vrf.getName(), vpnInterfaceAddress, "VPN " + tunnelId);
 
       // configure Ipsec
       ikePhase1ProposalMapBuilder.put(tunnelId, toIkePhase1Proposal(tunnelId, ipsecTunnel));
@@ -422,7 +424,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       ipsecPeerConfigMapBuilder.put(
           tunnelId,
           IpsecStaticPeerConfig.builder()
-              .setTunnelInterface(vpnInterfaceName)
+              .setTunnelInterface(vpnIfaceName)
               .setIkePhase1Policy(tunnelId)
               .setIpsecPolicy(tunnelId)
               .setSourceInterface(externalInterfaceName)
@@ -457,21 +459,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     gwCfg.setIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
     gwCfg.setIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
     gwCfg.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
-  }
-
-  @VisibleForTesting
-  static String getExternalInterfaceName(String tunnelId) {
-    return "external-" + tunnelId;
-  }
-
-  @VisibleForTesting
-  static String getTunnelId(String vpnConnectionId, int idNum) {
-    return String.format("%s-%s", vpnConnectionId, idNum);
-  }
-
-  @VisibleForTesting
-  static String getVpnInterfaceName(String tunnelId) {
-    return "vpn-" + tunnelId;
   }
 
   @Nonnull

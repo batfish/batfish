@@ -1,11 +1,11 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
-import static org.batfish.representation.aws.VpnConnection.getExternalInterfaceName;
-import static org.batfish.representation.aws.VpnConnection.getTunnelId;
-import static org.batfish.representation.aws.VpnConnection.getVpnInterfaceName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -244,8 +244,8 @@ public class VpnConnectionTest {
         vgwConfig.getAllInterfaces().keySet(),
         equalTo(
             ImmutableSet.of(
-                getExternalInterfaceName(getTunnelId(vpnConnection.getVpnConnectionId(), 1)),
-                getVpnInterfaceName(getTunnelId(vpnConnection.getVpnConnectionId(), 1)))));
+                vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)),
+                vpnInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)))));
 
     // TODO: check IPSec
 

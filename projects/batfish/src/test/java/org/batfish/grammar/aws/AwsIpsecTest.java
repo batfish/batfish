@@ -15,6 +15,9 @@ import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasLocalAdd
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasSourceInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasTunnelInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
+import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -52,6 +55,10 @@ public class AwsIpsecTest {
   private static String TESTRIG_PREFIX = "org/batfish/grammar/host/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  private static String _vpnConnectionId = "vpn-ba2e34a8";
+  private static String _vpnInterface1 = vpnInterfaceName(vpnTunnelId(_vpnConnectionId, 1));
+  private static String _vpnInterface2 = vpnInterfaceName(vpnTunnelId(_vpnConnectionId, 2));
 
   private SortedMap<String, Configuration> awsIpsecHelper() throws IOException {
     String testrigResourcePrefix = TESTRIG_PREFIX + "ipsec-vpn-host-aws-cisco";
@@ -160,8 +167,9 @@ public class AwsIpsecTest {
                     hasDestinationAddress(Ip.parse("4.4.4.27")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("vpn-ba2e34a8-1"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("vpn-ba2e34a8-1"),
-                    hasSourceInterface("external-vpn-ba2e34a8-1"),
+                    hasSourceInterface(vpnExternalInterfaceName(vpnTunnelId("vpn-ba2e34a8", 1))),
                     hasLocalAddress(Ip.parse("1.2.3.4")),
-                    hasTunnelInterface(equalTo("vpn-vpn-ba2e34a8-1"))))));
+                    hasTunnelInterface(
+                        equalTo(vpnInterfaceName(vpnTunnelId("vpn-ba2e34a8", 1))))))));
   }
 }
