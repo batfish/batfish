@@ -1,0 +1,12 @@
+{
+ "CustomerGateways": [
+  {
+   "BgpAsn": "65000",
+   "CustomerGatewayId": "cgw-09e5ca92b2f2d71cc",
+   "IpAddress": "2.2.2.2",
+   "State": "available",
+   "Tags": [],
+   "Type": "ipsec.1"
+  }
+ ]
+}

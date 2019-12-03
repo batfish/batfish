@@ -2,15 +2,15 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
-import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
-import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -48,6 +48,7 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -176,6 +177,11 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
+  enum GatewayType {
+    TRANSIT,
+    VPN
+  }
+
   @Nonnull private final String _customerGatewayId;
 
   @Nonnull private final List<IpsecTunnel> _ipsecTunnels;
@@ -190,12 +196,15 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _vpnConnectionId;
 
-  @Nonnull private final String _vpnGatewayId;
+  @Nonnull private final GatewayType _awsGatewayType;
+
+  @Nonnull private final String _awsGatewayId;
 
   @JsonCreator
   private static VpnConnection create(
       @Nullable @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) String vpnConnectionId,
       @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) String customerGatewayId,
+      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String transitGatewayId,
       @Nullable @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) String vpnGatewayId,
       @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) String cgwConfiguration,
       @Nullable @JsonProperty(JSON_KEY_ROUTES) List<VpnRoute> routes,
@@ -204,7 +213,12 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     checkArgument(vpnConnectionId != null, "VPN connection Id cannot be null");
     checkArgument(
         customerGatewayId != null, "Customer gateway Id cannot be null for VPN connection");
-    checkArgument(vpnGatewayId != null, "VPN gateway Id cannot be null for VPN connection");
+    checkArgument(
+        transitGatewayId != null || vpnGatewayId != null,
+        "At least one of Transit or VPN gateway must be non-null for VPN connection");
+    checkArgument(
+        transitGatewayId == null || vpnGatewayId == null,
+        "At least one of Transit or VPN gateway must be null for VPN connection");
     checkArgument(
         cgwConfiguration != null,
         "Customer gateway configuration cannot be null for VPN connection");
@@ -251,7 +265,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         isBgpConnection,
         vpnConnectionId,
         customerGatewayId,
-        vpnGatewayId,
+        transitGatewayId != null ? GatewayType.TRANSIT : GatewayType.VPN,
+        transitGatewayId != null ? transitGatewayId : vpnGatewayId,
         ipsecTunnels.build(),
         routes.stream()
             .map(VpnRoute::getDestinationCidrBlock)
@@ -264,7 +279,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       boolean isBgpConnection,
       String vpnConnectionId,
       String customerGatewayId,
-      String vpnGatewayId,
+      GatewayType awsGatewayType,
+      String awsGatewayId,
       List<IpsecTunnel> ipsecTunnels,
       List<Prefix> routes,
       List<VgwTelemetry> vgwTelemetrys,
@@ -272,7 +288,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     _isBgpConnection = isBgpConnection;
     _vpnConnectionId = vpnConnectionId;
     _customerGatewayId = customerGatewayId;
-    _vpnGatewayId = vpnGatewayId;
+    _awsGatewayType = awsGatewayType;
+    _awsGatewayId = awsGatewayId;
     _ipsecTunnels = ipsecTunnels;
     _routes = routes;
     _vgwTelemetrys = vgwTelemetrys;
@@ -346,17 +363,12 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ipsecPhase2Policy;
   }
 
-  void applyToVpnGateway(
-      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    if (!awsConfiguration.getConfigurationNodes().containsKey(_vpnGatewayId)) {
-      warnings.redFlag(
-          String.format(
-              "VPN Gateway \"%s\" referred by VPN connection \"%s\" not found",
-              _vpnGatewayId, _vpnConnectionId));
-      return;
-    }
-    Configuration vgwCfgNode = awsConfiguration.getConfigurationNodes().get(_vpnGatewayId);
-
+  void applyToGateway(
+      Configuration gwCfg,
+      Vrf vrf,
+      @Nullable String exportPolicyName,
+      @Nullable String importPolicyName,
+      Warnings warnings) {
     ImmutableSortedMap.Builder<String, IkePhase1Policy> ikePhase1PolicyMapBuilder =
         ImmutableSortedMap.naturalOrder();
     ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeyMapBuilder =
@@ -371,46 +383,50 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         ImmutableSortedMap.naturalOrder();
 
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
-      int idNum = i + 1;
-      String vpnId = _vpnConnectionId + "-" + idNum;
+      String tunnelId = vpnTunnelId(_vpnConnectionId, i + 1);
       IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
 
       // create representation structures and add to configuration node
-      String externalInterfaceName = getExternalInterfaceName(idNum);
+      String externalInterfaceName = vpnExternalInterfaceName(tunnelId);
       ConcreteInterfaceAddress externalInterfaceAddress =
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
       Utils.newInterface(
-          externalInterfaceName, vgwCfgNode, externalInterfaceAddress, "IPSec tunnel " + idNum);
+          externalInterfaceName,
+          gwCfg,
+          vrf.getName(),
+          externalInterfaceAddress,
+          "IPSec tunnel " + tunnelId);
 
-      String vpnInterfaceName = getVpnInterfaceName(idNum);
+      String vpnIfaceName = vpnInterfaceName(tunnelId);
       ConcreteInterfaceAddress vpnInterfaceAddress =
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
-      Utils.newInterface(vpnInterfaceName, vgwCfgNode, vpnInterfaceAddress, "VPN " + idNum);
+      Utils.newInterface(
+          vpnIfaceName, gwCfg, vrf.getName(), vpnInterfaceAddress, "VPN " + tunnelId);
 
       // configure Ipsec
-      ikePhase1ProposalMapBuilder.put(vpnId, toIkePhase1Proposal(vpnId, ipsecTunnel));
+      ikePhase1ProposalMapBuilder.put(tunnelId, toIkePhase1Proposal(tunnelId, ipsecTunnel));
       IkePhase1Key ikePhase1Key =
           toIkePhase1PreSharedKey(
               ipsecTunnel, ipsecTunnel.getCgwOutsideAddress(), externalInterfaceName);
-      ikePhase1KeyMapBuilder.put(vpnId, ikePhase1Key);
+      ikePhase1KeyMapBuilder.put(tunnelId, ikePhase1Key);
       ikePhase1PolicyMapBuilder.put(
-          vpnId,
+          tunnelId,
           toIkePhase1Policy(
-              vpnId,
-              vpnId,
+              tunnelId,
+              tunnelId,
               ikePhase1Key,
               ipsecTunnel.getCgwOutsideAddress(),
               externalInterfaceName));
-      ipsecPhase2ProposalMapBuilder.put(vpnId, toIpsecPhase2Proposal(ipsecTunnel, warnings));
-      ipsecPhase2PolicyMapBuilder.put(vpnId, toIpsecPhase2Policy(ipsecTunnel, vpnId));
+      ipsecPhase2ProposalMapBuilder.put(tunnelId, toIpsecPhase2Proposal(ipsecTunnel, warnings));
+      ipsecPhase2PolicyMapBuilder.put(tunnelId, toIpsecPhase2Policy(ipsecTunnel, tunnelId));
       ipsecPeerConfigMapBuilder.put(
-          vpnId,
+          tunnelId,
           IpsecStaticPeerConfig.builder()
-              .setTunnelInterface(vpnInterfaceName)
-              .setIkePhase1Policy(vpnId)
-              .setIpsecPolicy(vpnId)
+              .setTunnelInterface(vpnIfaceName)
+              .setIkePhase1Policy(tunnelId)
+              .setIpsecPolicy(tunnelId)
               .setSourceInterface(externalInterfaceName)
               .setLocalAddress(ipsecTunnel.getVgwOutsideAddress())
               .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
@@ -421,38 +437,28 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         BgpActivePeerConfig.builder()
             .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
             .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
-            .setBgpProcess(vgwCfgNode.getDefaultVrf().getBgpProcess())
+            .setBgpProcess(vrf.getBgpProcess())
             .setLocalAs(ipsecTunnel.getVgwBgpAsn())
             .setLocalIp(ipsecTunnel.getVgwInsideAddress())
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setExportPolicy(VGW_EXPORT_POLICY_NAME)
-                    .setImportPolicy(VGW_IMPORT_POLICY_NAME)
+                    .setExportPolicy(exportPolicyName)
+                    .setImportPolicy(importPolicyName)
                     .build())
             .build();
       }
 
-      // configure IPsec
+      // configure static routes -- this list of routes should be empty in case of transit gateway
       _routes.forEach(
-          pfx -> addStaticRoute(vgwCfgNode, toStaticRoute(pfx, ipsecTunnel.getCgwInsideAddress())));
+          pfx -> addStaticRoute(gwCfg, toStaticRoute(pfx, ipsecTunnel.getCgwInsideAddress())));
     }
 
-    vgwCfgNode.setIkePhase1Proposals(ikePhase1ProposalMapBuilder.build());
-    vgwCfgNode.setIkePhase1Keys(ikePhase1KeyMapBuilder.build());
-    vgwCfgNode.setIkePhase1Policies(ikePhase1PolicyMapBuilder.build());
-    vgwCfgNode.setIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
-    vgwCfgNode.setIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
-    vgwCfgNode.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
-  }
-
-  @VisibleForTesting
-  static String getExternalInterfaceName(int idNum) {
-    return "external" + idNum;
-  }
-
-  @VisibleForTesting
-  static String getVpnInterfaceName(int idNum) {
-    return "vpn" + idNum;
+    gwCfg.setIkePhase1Proposals(ikePhase1ProposalMapBuilder.build());
+    gwCfg.setIkePhase1Keys(ikePhase1KeyMapBuilder.build());
+    gwCfg.setIkePhase1Policies(ikePhase1PolicyMapBuilder.build());
+    gwCfg.setIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
+    gwCfg.setIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
+    gwCfg.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
   }
 
   @Nonnull
@@ -494,8 +500,13 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  String getVpnGatewayId() {
-    return _vpnGatewayId;
+  GatewayType getAwsGatewayType() {
+    return _awsGatewayType;
+  }
+
+  @Nonnull
+  String getAwsGatewayId() {
+    return _awsGatewayId;
   }
 
   @Override
@@ -514,7 +525,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         && Objects.equals(_routes, that._routes)
         && Objects.equals(_vgwTelemetrys, that._vgwTelemetrys)
         && Objects.equals(_vpnConnectionId, that._vpnConnectionId)
-        && Objects.equals(_vpnGatewayId, that._vpnGatewayId);
+        && Objects.equals(_awsGatewayType, that._awsGatewayType)
+        && Objects.equals(_awsGatewayId, that._awsGatewayId);
   }
 
   @Override
@@ -527,7 +539,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         _staticRoutesOnly,
         _vgwTelemetrys,
         _vpnConnectionId,
-        _vpnGatewayId);
+        _awsGatewayType.ordinal(),
+        _awsGatewayId);
   }
 
   @Override
@@ -540,7 +553,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         .add("_staticRoutesOnly", _staticRoutesOnly)
         .add("_vgwTelemetrys", _vgwTelemetrys)
         .add("_vpnConnectionId", _vpnConnectionId)
-        .add("_vpnGatewayId", _vpnGatewayId)
+        .add("_awsGatewayType", _awsGatewayType)
+        .add("_awsGatewayId", _awsGatewayId)
         .toString();
   }
 }

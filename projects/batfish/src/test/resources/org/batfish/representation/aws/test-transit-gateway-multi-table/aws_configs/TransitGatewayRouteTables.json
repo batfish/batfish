@@ -1,0 +1,32 @@
+{
+ "TransitGatewayRouteTables": [
+  {
+   "CreationTime": "2019-12-02 20:01:37+00:00",
+   "DefaultAssociationRouteTable": false,
+   "DefaultPropagationRouteTable": false,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "rt B"
+    }
+   ],
+   "TransitGatewayId": "tgw-044be4464fcc69aff",
+   "TransitGatewayRouteTableId": "tgw-rtb-096a7119299ab1c42"
+  },
+  {
+   "CreationTime": "2019-11-29 18:25:13+00:00",
+   "DefaultAssociationRouteTable": true,
+   "DefaultPropagationRouteTable": true,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "default"
+    }
+   ],
+   "TransitGatewayId": "tgw-044be4464fcc69aff",
+   "TransitGatewayRouteTableId": "tgw-rtb-0fa40c8df355dce6e"
+  }
+ ]
+}

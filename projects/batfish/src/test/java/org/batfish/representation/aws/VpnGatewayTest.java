@@ -3,8 +3,8 @@ package org.batfish.representation.aws;
 import static org.batfish.common.util.IspModelingUtils.getAdvertiseStaticStatement;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPN_GATEWAYS;
+import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
-import static org.batfish.representation.aws.VpnGateway.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +30,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
 
 /** Tests for {@link VpnGateway} */
@@ -66,6 +67,7 @@ public class VpnGatewayTest {
             false,
             "vpnConnectionId",
             "customerGatewayId",
+            GatewayType.VPN,
             vgw.getId(),
             ImmutableList.of(),
             ImmutableList.of(),
@@ -100,6 +102,7 @@ public class VpnGatewayTest {
             true,
             "vpnConnectionId",
             "customerGatewayId",
+            GatewayType.VPN,
             vgw.getId(),
             ImmutableList.of(),
             ImmutableList.of(),

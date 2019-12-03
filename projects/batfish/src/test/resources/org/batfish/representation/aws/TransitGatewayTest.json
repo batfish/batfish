@@ -1,0 +1,50 @@
+{
+  "TransitGateways": [
+    {
+      "TransitGatewayId": "tgw-044be4464fcc69aff",
+      "TransitGatewayArn": "arn:aws:ec2:us-east-2:554773406868:transit-gateway/tgw-044be4464fcc69aff",
+      "State": "available",
+      "OwnerId": "554773406868",
+      "CreationTime": "2019-11-29T18:24:53.000Z",
+      "Options": {
+        "AmazonSideAsn": 64512,
+        "AutoAcceptSharedAttachments": "disable",
+        "DefaultRouteTableAssociation": "enable",
+        "AssociationDefaultRouteTableId": "tgw-rtb-0fa40c8df355dce6e",
+        "DefaultRouteTablePropagation": "enable",
+        "PropagationDefaultRouteTableId": "tgw-rtb-0fa40c8df355dce6e",
+        "VpnEcmpSupport": "enable",
+        "DnsSupport": "enable"
+      },
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "transit-test"
+        }
+      ]
+    },
+    {
+      "TransitGatewayId": "tgw-pending",
+      "TransitGatewayArn": "arn:aws:ec2:us-east-2:554773406868:transit-gateway/tgw-044be4464fcc69aff",
+      "State": "pending",
+      "OwnerId": "554773406868",
+      "CreationTime": "2019-11-29T18:24:53.000Z",
+      "Options": {
+        "AmazonSideAsn": 64512,
+        "AutoAcceptSharedAttachments": "disable",
+        "DefaultRouteTableAssociation": "enable",
+        "AssociationDefaultRouteTableId": "tgw-rtb-0fa40c8df355dce6e",
+        "DefaultRouteTablePropagation": "enable",
+        "PropagationDefaultRouteTableId": "tgw-rtb-0fa40c8df355dce6e",
+        "VpnEcmpSupport": "enable",
+        "DnsSupport": "enable"
+      },
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "transit-test"
+        }
+      ]
+    }
+  ]
+}

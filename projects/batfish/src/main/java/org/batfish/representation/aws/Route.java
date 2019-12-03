@@ -8,6 +8,7 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCE_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAY_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NETWORK_INTERFACE_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_STATE;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_TRANSIT_GATEWAY_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTION_ID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -36,6 +37,7 @@ abstract class Route implements Serializable {
     Instance,
     NatGateway,
     NetworkInterface,
+    TransitGateway,
     Unavailable,
     VpcPeeringConnection,
     Unknown
@@ -55,6 +57,7 @@ abstract class Route implements Serializable {
       @Nullable @JsonProperty(JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK)
           Prefix6 destinationIpv6CidrBlock,
       @Nullable @JsonProperty(JSON_KEY_STATE) String stateStr,
+      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String transitGatewayId,
       @Nullable @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) String vpcPeeringConnectionId,
       @Nullable @JsonProperty(JSON_KEY_GATEWAY_ID) String gatewayId,
       @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ID) String natGatewayId,
@@ -73,7 +76,10 @@ abstract class Route implements Serializable {
     String target;
     TargetType targetType;
 
-    if (vpcPeeringConnectionId != null) {
+    if (transitGatewayId != null) {
+      targetType = TargetType.TransitGateway;
+      target = transitGatewayId;
+    } else if (vpcPeeringConnectionId != null) {
       targetType = TargetType.VpcPeeringConnection;
       target = vpcPeeringConnectionId;
     } else if (gatewayId != null) {
