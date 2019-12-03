@@ -1,0 +1,316 @@
+{
+ "Reservations": [
+  {
+   "Groups": [],
+   "Instances": [
+    {
+     "AmiLaunchIndex": 0,
+     "Architecture": "x86_64",
+     "BlockDeviceMappings": [
+      {
+       "DeviceName": "/dev/sda1",
+       "Ebs": {
+        "AttachTime": "2019-11-28 18:50:44+00:00",
+        "DeleteOnTermination": true,
+        "Status": "attached",
+        "VolumeId": "vol-0bf6b6699d072c88e"
+       }
+      }
+     ],
+     "CapacityReservationSpecification": {
+      "CapacityReservationPreference": "open"
+     },
+     "ClientToken": "",
+     "CpuOptions": {
+      "CoreCount": 1,
+      "ThreadsPerCore": 1
+     },
+     "EbsOptimized": false,
+     "EnaSupport": true,
+     "HibernationOptions": {
+      "Configured": false
+     },
+     "Hypervisor": "xen",
+     "ImageId": "ami-0d5d9d301c853a04a",
+     "InstanceId": "i-06ba034d88c84ef07",
+     "InstanceType": "t2.micro",
+     "KeyName": "vpc-peering-experiments",
+     "LaunchTime": "2019-11-28 18:50:43+00:00",
+     "Monitoring": {
+      "State": "disabled"
+     },
+     "NetworkInterfaces": [
+      {
+       "Attachment": {
+        "AttachTime": "2019-11-28 18:50:43+00:00",
+        "AttachmentId": "eni-attach-0954405c33a3cce89",
+        "DeleteOnTermination": true,
+        "DeviceIndex": 0,
+        "Status": "attached"
+       },
+       "Description": "Primary network interface",
+       "Groups": [
+        {
+         "GroupId": "sg-09606ce9642cac154",
+         "GroupName": "launch-wizard-2"
+        }
+       ],
+       "InterfaceType": "interface",
+       "Ipv6Addresses": [],
+       "MacAddress": "0a:63:9f:a8:c0:9a",
+       "NetworkInterfaceId": "eni-0f0708220e812876c",
+       "OwnerId": "554773406868",
+       "PrivateIpAddress": "10.10.10.157",
+       "PrivateIpAddresses": [
+        {
+         "Primary": true,
+         "PrivateIpAddress": "10.10.10.157"
+        }
+       ],
+       "SourceDestCheck": true,
+       "Status": "in-use",
+       "SubnetId": "subnet-006a19c846f047bd7",
+       "VpcId": "vpc-0404e08ceddf7f650"
+      }
+     ],
+     "Placement": {
+      "AvailabilityZone": "us-east-2c",
+      "GroupName": "",
+      "Tenancy": "default"
+     },
+     "PrivateDnsName": "ip-10-10-10-157.us-east-2.compute.internal",
+     "PrivateIpAddress": "10.10.10.157",
+     "ProductCodes": [],
+     "PublicDnsName": "",
+     "RootDeviceName": "/dev/sda1",
+     "RootDeviceType": "ebs",
+     "SecurityGroups": [
+      {
+       "GroupId": "sg-09606ce9642cac154",
+       "GroupName": "launch-wizard-2"
+      }
+     ],
+     "SourceDestCheck": true,
+     "State": {
+      "Code": 16,
+      "Name": "running"
+     },
+     "StateTransitionReason": "",
+     "SubnetId": "subnet-006a19c846f047bd7",
+     "VirtualizationType": "hvm",
+     "VpcId": "vpc-0404e08ceddf7f650"
+    }
+   ],
+   "OwnerId": "554773406868",
+   "ReservationId": "r-03a6a522fd883aadc"
+  },
+  {
+   "Groups": [],
+   "Instances": [
+    {
+     "AmiLaunchIndex": 0,
+     "Architecture": "x86_64",
+     "BlockDeviceMappings": [
+      {
+       "DeviceName": "/dev/sda1",
+       "Ebs": {
+        "AttachTime": "2019-11-28 18:51:21+00:00",
+        "DeleteOnTermination": true,
+        "Status": "attached",
+        "VolumeId": "vol-0cae4b2646b4329be"
+       }
+      }
+     ],
+     "CapacityReservationSpecification": {
+      "CapacityReservationPreference": "open"
+     },
+     "ClientToken": "",
+     "CpuOptions": {
+      "CoreCount": 1,
+      "ThreadsPerCore": 1
+     },
+     "EbsOptimized": false,
+     "EnaSupport": true,
+     "HibernationOptions": {
+      "Configured": false
+     },
+     "Hypervisor": "xen",
+     "ImageId": "ami-0d5d9d301c853a04a",
+     "InstanceId": "i-04a292ff83b3aa833",
+     "InstanceType": "t2.micro",
+     "KeyName": "vpc-peering-experiments",
+     "LaunchTime": "2019-11-28 18:51:20+00:00",
+     "Monitoring": {
+      "State": "disabled"
+     },
+     "NetworkInterfaces": [
+      {
+       "Attachment": {
+        "AttachTime": "2019-11-28 18:51:20+00:00",
+        "AttachmentId": "eni-attach-0cdce0fd64f3616f2",
+        "DeleteOnTermination": true,
+        "DeviceIndex": 0,
+        "Status": "attached"
+       },
+       "Description": "Primary network interface",
+       "Groups": [
+        {
+         "GroupId": "sg-0b3df494998412a48",
+         "GroupName": "launch-wizard-3"
+        }
+       ],
+       "InterfaceType": "interface",
+       "Ipv6Addresses": [],
+       "MacAddress": "06:c5:01:e3:73:54",
+       "NetworkInterfaceId": "eni-06347554b65539ff3",
+       "OwnerId": "554773406868",
+       "PrivateIpAddress": "192.168.2.229",
+       "PrivateIpAddresses": [
+        {
+         "Primary": true,
+         "PrivateIpAddress": "192.168.2.229"
+        }
+       ],
+       "SourceDestCheck": true,
+       "Status": "in-use",
+       "SubnetId": "subnet-0af94b59d214ff20a",
+       "VpcId": "vpc-09095dbf2886404ee"
+      }
+     ],
+     "Placement": {
+      "AvailabilityZone": "us-east-2b",
+      "GroupName": "",
+      "Tenancy": "default"
+     },
+     "PrivateDnsName": "ip-192-168-2-229.us-east-2.compute.internal",
+     "PrivateIpAddress": "192.168.2.229",
+     "ProductCodes": [],
+     "PublicDnsName": "",
+     "RootDeviceName": "/dev/sda1",
+     "RootDeviceType": "ebs",
+     "SecurityGroups": [
+      {
+       "GroupId": "sg-0b3df494998412a48",
+       "GroupName": "launch-wizard-3"
+      }
+     ],
+     "SourceDestCheck": true,
+     "State": {
+      "Code": 16,
+      "Name": "running"
+     },
+     "StateTransitionReason": "",
+     "SubnetId": "subnet-0af94b59d214ff20a",
+     "VirtualizationType": "hvm",
+     "VpcId": "vpc-09095dbf2886404ee"
+    }
+   ],
+   "OwnerId": "554773406868",
+   "ReservationId": "r-0d8f8d4aacfed042b"
+  },
+  {
+   "Groups": [],
+   "Instances": [
+    {
+     "AmiLaunchIndex": 0,
+     "Architecture": "x86_64",
+     "BlockDeviceMappings": [
+      {
+       "DeviceName": "/dev/sda1",
+       "Ebs": {
+        "AttachTime": "2019-11-28 18:49:59+00:00",
+        "DeleteOnTermination": true,
+        "Status": "attached",
+        "VolumeId": "vol-0bf8601ca7e0fba80"
+       }
+      }
+     ],
+     "CapacityReservationSpecification": {
+      "CapacityReservationPreference": "open"
+     },
+     "ClientToken": "",
+     "CpuOptions": {
+      "CoreCount": 1,
+      "ThreadsPerCore": 1
+     },
+     "EbsOptimized": false,
+     "EnaSupport": true,
+     "HibernationOptions": {
+      "Configured": false
+     },
+     "Hypervisor": "xen",
+     "ImageId": "ami-0d5d9d301c853a04a",
+     "InstanceId": "i-0b14080af811fda3d",
+     "InstanceType": "t2.micro",
+     "KeyName": "vpc-peering-experiments",
+     "LaunchTime": "2019-11-28 18:49:58+00:00",
+     "Monitoring": {
+      "State": "disabled"
+     },
+     "NetworkInterfaces": [
+      {
+       "Attachment": {
+        "AttachTime": "2019-11-28 18:49:58+00:00",
+        "AttachmentId": "eni-attach-09fcf1e54332997bd",
+        "DeleteOnTermination": true,
+        "DeviceIndex": 0,
+        "Status": "attached"
+       },
+       "Description": "Primary network interface",
+       "Groups": [
+        {
+         "GroupId": "sg-065c26b39e45ae384",
+         "GroupName": "launch-wizard-1"
+        }
+       ],
+       "InterfaceType": "interface",
+       "Ipv6Addresses": [],
+       "MacAddress": "06:78:cb:6c:fa:36",
+       "NetworkInterfaceId": "eni-0024c0af5aa1387e5",
+       "OwnerId": "554773406868",
+       "PrivateIpAddress": "192.168.1.106",
+       "PrivateIpAddresses": [
+        {
+         "Primary": true,
+         "PrivateIpAddress": "192.168.1.106"
+        }
+       ],
+       "SourceDestCheck": true,
+       "Status": "in-use",
+       "SubnetId": "subnet-0ebf6378a79a3e534",
+       "VpcId": "vpc-00a31ce9d0c06675c"
+      }
+     ],
+     "Placement": {
+      "AvailabilityZone": "us-east-2b",
+      "GroupName": "",
+      "Tenancy": "default"
+     },
+     "PrivateDnsName": "ip-192-168-1-106.us-east-2.compute.internal",
+     "PrivateIpAddress": "192.168.1.106",
+     "ProductCodes": [],
+     "PublicDnsName": "",
+     "RootDeviceName": "/dev/sda1",
+     "RootDeviceType": "ebs",
+     "SecurityGroups": [
+      {
+       "GroupId": "sg-065c26b39e45ae384",
+       "GroupName": "launch-wizard-1"
+      }
+     ],
+     "SourceDestCheck": true,
+     "State": {
+      "Code": 16,
+      "Name": "running"
+     },
+     "StateTransitionReason": "",
+     "SubnetId": "subnet-0ebf6378a79a3e534",
+     "VirtualizationType": "hvm",
+     "VpcId": "vpc-00a31ce9d0c06675c"
+    }
+   ],
+   "OwnerId": "554773406868",
+   "ReservationId": "r-00ac2f7eaec00464d"
+  }
+ ]
+}

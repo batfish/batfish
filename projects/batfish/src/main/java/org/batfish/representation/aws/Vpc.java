@@ -18,6 +18,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 
 /** Represents an AWS VPC https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-vpcs.html */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -107,15 +108,24 @@ final class Vpc implements AwsVpcEntity, Serializable {
    * subnets and internet gateways
    */
   Configuration toConfigurationNode(
-      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_vpcId, "aws");
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
+    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_vpcId), "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+
+    initializeVrf(cfgNode.getDefaultVrf());
+    return cfgNode;
+  }
+
+  /*
+   * Add null routes for all prefixes associated with the VPC, to ensure that traffic not headed to
+   * one of the subnets in the VPC is dropped on the floors. More specific prefixes that belong to
+   * subnets are added when subnets are processed.
+   */
+  void initializeVrf(Vrf vrf) {
     _cidrBlockAssociations.forEach(
         cb ->
-            cfgNode
-                .getDefaultVrf()
-                .getStaticRoutes()
+            vrf.getStaticRoutes()
                 .add(
                     StaticRoute.builder()
                         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
@@ -123,7 +133,16 @@ final class Vpc implements AwsVpcEntity, Serializable {
                         .setNetwork(cb)
                         .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
                         .build()));
-    return cfgNode;
+  }
+
+  /** Return the hostname used for a VPC Id */
+  static String nodeName(String vpcId) {
+    return vpcId;
+  }
+
+  /** Return the VRF name used on the VPC node for a VPC peering connection */
+  static String vrfNameForPeeeringConnection(String vpcPeeringConnectionId) {
+    return "vrf-" + vpcPeeringConnectionId;
   }
 
   @Override

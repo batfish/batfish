@@ -34,5 +34,6 @@ router bgp 65001
  neighbor 10.0.0.2 remote-as 65002
  neighbor 10.0.0.2 update-source lo
 !
+ip route 10.0.0.2/32 1.1.1.2
 !
 line vty

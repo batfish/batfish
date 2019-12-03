@@ -20,6 +20,7 @@ public enum CumulusStructureUsage implements StructureUsage {
   INTERFACE_VRF("interface vrf"),
   LOOPBACK_SELF_REFERENCE("loopback self-reference"),
   NET_ADD_INTERFACE("net add interface"),
+  STATIC_ROUTE_VRF("static route vrf"),
   ROUTE_MAP_CALL("route map call"),
   ROUTE_MAP_MATCH_COMMUNITY_LIST("route-map match community"),
   ROUTE_MAP_MATCH_INTERFACE("route-map match interface"),

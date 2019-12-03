@@ -46,6 +46,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
@@ -877,6 +878,26 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitIp_prefix_list(Ip_prefix_listContext ctx) {
     _currentIpPrefixList = null;
+  }
+
+  @Override
+  public void exitIp_route(Ip_routeContext ctx) {
+    StaticRoute route =
+        new StaticRoute(
+            Prefix.parse(ctx.network.getText()), Ip.parse(ctx.next_hop_ip.getText()), null);
+    if (ctx.vrf == null) {
+      _c.getStaticRoutes().add(route);
+    } else {
+      String vrfName = ctx.vrf.getText();
+      if (!_c.getVrfs().containsKey(vrfName)) {
+        _w.redFlag(
+            String.format("the static route is ignored since vrf %s is not defined", vrfName));
+        return;
+      }
+      _c.getVrfs().get(vrfName).getStaticRoutes().add(route);
+      _c.referenceStructure(
+          VRF, vrfName, CumulusStructureUsage.STATIC_ROUTE_VRF, ctx.vrf.getStart().getLine());
+    }
   }
 
   @Override

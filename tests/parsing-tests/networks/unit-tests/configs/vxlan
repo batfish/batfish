@@ -1,4 +1,0 @@
-!
-hostname vxlan
-!
-vxlan dummy-l2-tunnel-udp-port 1234

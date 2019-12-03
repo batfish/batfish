@@ -113,6 +113,8 @@ import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -227,6 +229,7 @@ import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
@@ -1757,7 +1760,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .forEach(
             config -> {
               Map<String, Interface> allInterfaces = config.getAllInterfaces();
-              Graph<String, Dependency> graph = new SimpleDirectedGraph<>(Dependency.class);
+              Graph<String, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
               allInterfaces.keySet().forEach(graph::addVertex);
               allInterfaces
                   .values()
@@ -1769,12 +1772,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                   dependency ->
                                       graph.addEdge(
                                           // Reverse edge direction to aid topological sort
-                                          dependency.getInterfaceName(),
-                                          iface.getName(),
-                                          dependency)));
+                                          dependency.getInterfaceName(), iface.getName())));
 
               // Traverse interfaces in topological order and deactivate if necessary
-              for (TopologicalOrderIterator<String, Dependency> iterator =
+              for (TopologicalOrderIterator<String, DefaultEdge> iterator =
                       new TopologicalOrderIterator<>(graph);
                   iterator.hasNext(); ) {
                 String ifaceName = iterator.next();
@@ -2383,13 +2384,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
         configurations = getConfigurations(vendorConfigs, runtimeData, answerElement);
       }
 
+      Set<Layer1Edge> layer1Edges =
+          vendorConfigs.values().stream()
+              .flatMap(vc -> vc.getLayer1Edges().stream())
+              .collect(ImmutableSet.toImmutableSet());
+
       addInternetAndIspNodes(configurations, vendorConfigs, answerElement.getWarnings());
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
         assert storeSpan != null; // avoid unused warning
-        _storage.storeConfigurations(
-            configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
+        try {
+          _storage.storeConfigurations(
+              configurations,
+              answerElement,
+              // we don't write anything if no Layer1 edges were produced
+              // empty topologies are currently dangerous for L1 computation
+              layer1Edges.isEmpty() ? null : new Layer1Topology(layer1Edges),
+              _settings.getContainer(),
+              _testrigSettings.getName());
+        } catch (IOException e) {
+          throw new BatfishException("Could not store vendor independent configs to disk: %s", e);
+        }
       }
 
       try (ActiveSpan ppSpan =

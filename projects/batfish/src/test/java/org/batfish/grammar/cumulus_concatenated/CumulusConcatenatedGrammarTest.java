@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -39,9 +38,9 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpConfederation;
-import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -240,6 +239,30 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
+  public void testStaticRoute() {
+    CumulusNcluConfiguration vsConfig = parseVendorConfig("static_route");
+    Configuration viConfig = vsConfig.toVendorIndependentConfigurations().get(0);
+    assertThat(
+        viConfig.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("1.1.1.1/24"))
+                    .setNextHopIp(Ip.parse("10.0.0.1"))
+                    .setAdministrativeCost(1)
+                    .build())));
+    assertThat(
+        viConfig.getVrfs().get("VRF").getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("2.2.2.2/24"))
+                    .setNextHopIp(Ip.parse("10.0.0.2"))
+                    .setAdministrativeCost(1)
+                    .build())));
+  }
+
+  @Test
   public void testBgpSessionUpdateSource() throws IOException {
     String testrigName = "bgp_update_source";
     List<String> configurationNames = ImmutableList.of("n1", "n2");
@@ -251,11 +274,10 @@ public class CumulusConcatenatedGrammarTest {
                 .build(),
             _folder);
 
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Map<String, Set<String>>> ipOwners =
-        batfish.getTopologyProvider().getIpOwners(batfish.getNetworkSnapshot()).getIpVrfOwners();
+    batfish.computeDataPlane();
+
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, null).getGraph();
+        batfish.getTopologyProvider().getBgpTopology(batfish.getNetworkSnapshot()).getGraph();
 
     String vrf = "default";
     // Edge one direction
