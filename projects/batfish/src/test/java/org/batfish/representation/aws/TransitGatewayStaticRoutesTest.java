@@ -11,8 +11,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.aws.Route.State;
-import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute;
-import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute.Type;
+import org.batfish.representation.aws.TransitGatewayRoute.Type;
 import org.junit.Test;
 
 /** Tests for {@link TransitGatewayStaticRoutes} */
@@ -39,7 +38,7 @@ public class TransitGatewayStaticRoutesTest {
                 new TransitGatewayStaticRoutes(
                     "tgw-rtb-08262a9ed03306288",
                     ImmutableList.of(
-                        new TransitGatewayRoute(
+                        new TransitGatewayRouteV4(
                             Prefix.parse("1.1.1.1/32"),
                             State.ACTIVE,
                             Type.STATIC,
