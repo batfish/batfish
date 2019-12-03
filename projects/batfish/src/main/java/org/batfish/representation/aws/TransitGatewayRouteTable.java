@@ -36,7 +36,7 @@ final class TransitGatewayRouteTable implements AwsVpcEntity, Serializable {
           Boolean defaultAssociationRouteTable,
       @Nullable @JsonProperty(JSON_KEY_DEFAULT_PROPAGATION_ROUTE_TABLE)
           Boolean defaultPropagationRouteTable) {
-    checkArgument(gatewayId != null, "Gateway id cannot be nul for transit gateway route table");
+    checkArgument(gatewayId != null, "Gateway id cannot be null for transit gateway route table");
     checkArgument(
         routeTableId != null, "Route table id cannot be null for transit gateway route table");
     checkArgument(

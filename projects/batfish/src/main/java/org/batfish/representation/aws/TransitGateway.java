@@ -273,8 +273,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                             addTransitGatewayStaticRoute(
                                 cfgNode, table, route, awsConfiguration, region, warnings)));
 
-    // TODO: handle route propagations
-
     return cfgNode;
   }
 
@@ -497,7 +495,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
             tgwCfg, table, propagation.getAttachmentId(), vpc, awsConfiguration, warnings);
         return;
       case VPN:
-        // TODO:
+        /*
+        For currently supported configurations, we don't need to do anything here.
+        (We warn about lack of support in connectVpn.)
+        */
         return;
       default:
         warnings.redFlag(

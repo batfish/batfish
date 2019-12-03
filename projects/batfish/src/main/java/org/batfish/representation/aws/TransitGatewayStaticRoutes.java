@@ -95,11 +95,11 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
             List<Attachment> attachments) {
       checkArgument(
           destinationCidrBlock != null,
-          "Destination CIDR block cannot be nul for transit gateway static route");
-      checkArgument(state != null, "State cannot be nul for transit gateway attachment");
-      checkArgument(type != null, "Type cannot be nul for transit gateway attachment");
+          "Destination CIDR block cannot be null for transit gateway static route");
+      checkArgument(state != null, "State cannot be null for transit gateway attachment");
+      checkArgument(type != null, "Type cannot be null for transit gateway attachment");
       checkArgument(
-          attachments != null, "Attachments cannot be nul for transit gateway attachment");
+          attachments != null, "Attachments cannot be null for transit gateway attachment");
 
       return new TransitGatewayRoute(
           destinationCidrBlock,
@@ -178,7 +178,7 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) String routeTableId,
       @Nullable @JsonProperty(JSON_KEY_ROUTES) List<TransitGatewayRoute> routes) {
     checkArgument(routeTableId != null, "Route table id cannot be null for transit gateway");
-    checkArgument(routes != null, "Static routes cannot be nul for transit gateway");
+    checkArgument(routes != null, "Static routes cannot be null for transit gateway");
 
     return new TransitGatewayStaticRoutes(
         routeTableId,

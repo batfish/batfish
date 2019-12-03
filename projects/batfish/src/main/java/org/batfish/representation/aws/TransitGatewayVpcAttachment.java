@@ -37,9 +37,11 @@ final class TransitGatewayVpcAttachment implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_SUBNET_IDS) List<String> subnetIds) {
     checkArgument(
         attachmentId != null, "Attachment id cannot be null for transit gateway VPC attachment");
-    checkArgument(gatewayId != null, "Gateway id cannot be nul for transit gateway VPC attachment");
-    checkArgument(vpcId != null, "VPC id cannot be nul for transit gateway VPC attachment");
-    checkArgument(subnetIds != null, "Subnet Ids cannot be nul for transit gateway VPC attachment");
+    checkArgument(
+        gatewayId != null, "Gateway id cannot be null for transit gateway VPC attachment");
+    checkArgument(vpcId != null, "VPC id cannot be null for transit gateway VPC attachment");
+    checkArgument(
+        subnetIds != null, "Subnet Ids cannot be null for transit gateway VPC attachment");
 
     return new TransitGatewayVpcAttachment(attachmentId, gatewayId, vpcId, subnetIds);
   }

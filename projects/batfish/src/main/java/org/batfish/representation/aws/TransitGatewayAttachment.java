@@ -96,11 +96,11 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_ASSOCIATION) Association association) {
     checkArgument(
         attachmentId != null, "Attachment id cannot be null for transit gateway attachment");
-    checkArgument(gatewayId != null, "Gateway id cannot be nul for transit gateway attachment");
+    checkArgument(gatewayId != null, "Gateway id cannot be null for transit gateway attachment");
     checkArgument(
-        resourceType != null, "Resource type cannot be nul for transit gateway attachment");
-    checkArgument(resourceId != null, "Resource id cannot be nul for transit gateway attachment");
-    checkArgument(association != null, "Association cannot be nul for transit gateway attachment");
+        resourceType != null, "Resource type cannot be null for transit gateway attachment");
+    checkArgument(resourceId != null, "Resource id cannot be null for transit gateway attachment");
+    checkArgument(association != null, "Association cannot be null for transit gateway attachment");
 
     return new TransitGatewayAttachment(
         attachmentId,

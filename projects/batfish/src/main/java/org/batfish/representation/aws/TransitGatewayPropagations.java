@@ -14,7 +14,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 
 /**
- * Represents AWS Transit Gateway Static Routes
+ * Represents AWS Transit Gateway Propagations
  * https://docs.aws.amazon.com/cli/latest/reference/ec2/get-transit-gateway-route-table-propagations.html
  *
  * <p>The JSON input is a custom format that wraps around multiple calls to the API above, once per
@@ -45,10 +45,10 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
       checkArgument(
           attachmentId != null, "Attachment id cannot be null for transit gateway attachment");
       checkArgument(
-          resourceType != null, "Resource type cannot be nul for transit gateway propagation");
+          resourceType != null, "Resource type cannot be null for transit gateway propagation");
       checkArgument(
-          resourceId != null, "Resource id cannot be nul for transit gateway propagation");
-      checkArgument(state != null, "State cannot be nul for transit gateway attachment");
+          resourceId != null, "Resource id cannot be null for transit gateway propagation");
+      checkArgument(state != null, "State cannot be null for transit gateway attachment");
 
       return new Propagation(
           attachmentId,
@@ -115,7 +115,7 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_PROPAGATIONS)
           List<Propagation> propagations) {
     checkArgument(routeTableId != null, "Route table id cannot be null for transit gateway");
-    checkArgument(propagations != null, "Propagations cannot be nul for transit gateway");
+    checkArgument(propagations != null, "Propagations cannot be null for transit gateway");
 
     return new TransitGatewayPropagations(routeTableId, propagations);
   }
