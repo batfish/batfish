@@ -1,0 +1,39 @@
+n2
+# This file describes the network interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+    address 10.0.0.2/32
+
+auto swp1
+iface swp1
+    address 1.1.1.2/24
+
+# ports.conf --
+# ports.conf --
+#
+#   configure port speed, aggregation, and subdivision.
+#
+#   The ports in Cumulus VX are not configurable from here.
+#frr version
+
+frr version
+frr defaults datacenter
+hostname n2
+username cumulus nopassword
+!
+service integrated-vtysh-config
+!
+log syslog informational
+!
+router bgp 65002
+ bgp router-id 10.0.0.2
+ neighbor 10.0.0.1 remote-as 65001
+ neighbor 10.0.0.1 update-source lo
+!
+ip route 10.0.0.1/32 1.1.1.1
+!
+line vty
