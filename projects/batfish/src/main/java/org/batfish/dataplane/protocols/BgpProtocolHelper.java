@@ -2,6 +2,7 @@ package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
@@ -18,6 +19,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
@@ -27,6 +29,8 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 @ParametersAreNonnullByDefault
 public final class BgpProtocolHelper {
@@ -213,11 +217,38 @@ public final class BgpProtocolHelper {
    * Convert an aggregate/generated route to a BGP route.
    *
    * @param generatedRoute a {@link GeneratedRoute} to convert to a {@link Bgpv4Route}.
+   * @param attributePolicy a {@link RoutingPolicy} to use to set BGP route attributes after
+   *     conversion
    * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
    * @param nonRouting Whether to mark the Bgpv4Route as non-routing
    */
   @Nonnull
   public static Bgpv4Route convertGeneratedRouteToBgp(
+      GeneratedRoute generatedRoute,
+      @Nullable RoutingPolicy attributePolicy,
+      Ip routerId,
+      Ip nextHopIp,
+      boolean nonRouting) {
+    Builder builder = convertGeneratedRouteToBgp(generatedRoute, routerId, nextHopIp, nonRouting);
+    if (attributePolicy == null) {
+      return builder.build();
+    }
+    builder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+    boolean accepted = attributePolicy.process(builder.build(), builder, Direction.OUT);
+    assert accepted;
+    return builder.setNextHopIp(nextHopIp).build();
+  }
+
+  /**
+   * Convert an aggregate/generated route to a BGP route builder.
+   *
+   * @param generatedRoute a {@link GeneratedRoute} to convert to a {@link Bgpv4Route}.
+   * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
+   * @param nonRouting Whether to mark the Bgpv4Route as non-routing
+   */
+  @Nonnull
+  @VisibleForTesting
+  static Builder convertGeneratedRouteToBgp(
       GeneratedRoute generatedRoute, Ip routerId, Ip nextHopIp, boolean nonRouting) {
     return Bgpv4Route.builder()
         .setAdmin(generatedRoute.getAdministrativeCost())
@@ -236,8 +267,7 @@ public final class BgpProtocolHelper {
         .setOriginatorIp(routerId)
         .setOriginType(OriginType.INCOMPLETE)
         .setReceivedFromIp(nextHopIp)
-        .setNonRouting(nonRouting)
-        .build();
+        .setNonRouting(nonRouting);
   }
 
   /**

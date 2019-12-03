@@ -128,10 +128,11 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _fromBgpProcess,
           _toBgpProcess,
           convertGeneratedRouteToBgp(
-              (GeneratedRoute) route,
-              _fromBgpProcess.getRouterId(),
-              _headNeighbor.getLocalIp(),
-              false),
+                  (GeneratedRoute) route,
+                  _fromBgpProcess.getRouterId(),
+                  _headNeighbor.getLocalIp(),
+                  false)
+              .build(),
           Type.IPV4_UNICAST);
     } else if (route instanceof Bgpv4Route) {
       return BgpProtocolHelper.transformBgpRoutePreExport(
@@ -193,7 +194,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   public void testConvertGeneratedToBgpHasNextHop() {
     Ip nextHopIp = Ip.parse("1.1.1.1");
     assertThat(
-        convertGeneratedRouteToBgp(_baseAggRouteBuilder.build(), Ip.ZERO, nextHopIp, false),
+        convertGeneratedRouteToBgp(_baseAggRouteBuilder.build(), Ip.ZERO, nextHopIp, false).build(),
         hasNextHopIp(nextHopIp));
   }
 
