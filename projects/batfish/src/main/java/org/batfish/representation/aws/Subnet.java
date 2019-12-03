@@ -234,16 +234,19 @@ public class Subnet implements AwsVpcEntity, Serializable {
           .get()
           .getRoutes()
           .forEach(
-              route ->
+              route -> {
+                if (route instanceof RouteV4) {
                   processRoute(
                       cfgNode,
                       region,
-                      route,
+                      (RouteV4) route,
                       vpcConfigNode,
                       optInternetGateway.orElse(null),
                       optVpnGateway.orElse(null),
                       awsConfiguration,
-                      warnings));
+                      warnings);
+                }
+              });
     }
 
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
@@ -271,7 +274,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   void processRoute(
       Configuration cfgNode,
       Region region,
-      Route route,
+      RouteV4 route,
       Configuration vpcNode,
       @Nullable InternetGateway igw,
       @Nullable VpnGateway vgw,

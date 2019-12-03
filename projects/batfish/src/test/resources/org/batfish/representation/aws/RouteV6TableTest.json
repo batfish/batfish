@@ -1,0 +1,34 @@
+{
+  "RouteTables": [
+    {
+      "Associations": [
+        {
+          "Main": true,
+          "RouteTableAssociationId": "rtbassoc-4432313c",
+          "RouteTableId": "rtb-296bf350"
+        }
+      ],
+      "PropagatingVgws": [
+        {
+          "GatewayId": "vgw-81fd279f"
+        }
+      ],
+      "RouteTableId": "rtb-296bf350",
+      "Routes": [
+        {
+          "DestinationIpv6CidrBlock": "2600:1f16:751:7800::/56",
+          "GatewayId": "local",
+          "Origin": "CreateRouteTable",
+          "State": "active"
+        }
+      ],
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "GNS3-BGP-Test"
+        }
+      ],
+      "VpcId": "vpc-815775e7"
+    }
+  ]
+}
