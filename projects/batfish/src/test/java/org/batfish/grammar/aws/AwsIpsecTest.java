@@ -56,10 +56,6 @@ public class AwsIpsecTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private static String _vpnConnectionId = "vpn-ba2e34a8";
-  private static String _vpnInterface1 = vpnInterfaceName(vpnTunnelId(_vpnConnectionId, 1));
-  private static String _vpnInterface2 = vpnInterfaceName(vpnTunnelId(_vpnConnectionId, 2));
-
   private SortedMap<String, Configuration> awsIpsecHelper() throws IOException {
     String testrigResourcePrefix = TESTRIG_PREFIX + "ipsec-vpn-host-aws-cisco";
     List<String> awsFilenames =
