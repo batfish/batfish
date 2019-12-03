@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESTINATION_CIDR_BLOCK;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_GATEWAY_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCE_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAY_ID;
@@ -15,16 +16,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 
 /** Representation of a route in AWS */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class Route implements Serializable {
+abstract class Route implements Serializable {
 
   enum State {
     ACTIVE,
@@ -46,15 +47,15 @@ final class Route implements Serializable {
 
   static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
-  @Nonnull private final Prefix _destinationCidrBlock;
-
-  @Nonnull private final State _state;
-  @Nullable private final String _target;
-  @Nonnull private final TargetType _targetType;
+  @Nonnull protected final State _state;
+  @Nullable protected final String _target;
+  @Nonnull protected final TargetType _targetType;
 
   @JsonCreator
   private static Route create(
       @Nullable @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) Prefix destinationCidrBlock,
+      @Nullable @JsonProperty(JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK)
+          Prefix6 destinationIpv6CidrBlock,
       @Nullable @JsonProperty(JSON_KEY_STATE) String stateStr,
       @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String transitGatewayId,
       @Nullable @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) String vpcPeeringConnectionId,
@@ -64,7 +65,11 @@ final class Route implements Serializable {
       @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId) {
 
     checkArgument(
-        destinationCidrBlock != null, "Destination CIDR block cannot be null for a route");
+        destinationCidrBlock != null || destinationIpv6CidrBlock != null,
+        "At least one of v4 or v6 destination CIDR block must be present for a route");
+    checkArgument(
+        destinationCidrBlock == null || destinationIpv6CidrBlock == null,
+        "Only one of v4 or v6 destination CIDR block must be present for a route");
     checkArgument(stateStr != null, "State cannot be null for a route");
 
     State state = State.valueOf(stateStr.toUpperCase());
@@ -99,19 +104,17 @@ final class Route implements Serializable {
       target = null;
     }
 
-    return new Route(destinationCidrBlock, state, target, targetType);
+    if (destinationCidrBlock != null) {
+      return new RouteV4(destinationCidrBlock, state, target, targetType);
+    } else {
+      return new RouteV6(destinationIpv6CidrBlock, state, target, targetType);
+    }
   }
 
-  Route(Prefix destinationCidrBlock, State state, @Nullable String target, TargetType targetType) {
-    _destinationCidrBlock = destinationCidrBlock;
+  protected Route(State state, @Nullable String target, TargetType targetType) {
     _state = state;
     _target = target;
     _targetType = targetType;
-  }
-
-  @Nonnull
-  public Prefix getDestinationCidrBlock() {
-    return _destinationCidrBlock;
   }
 
   @Nonnull
@@ -130,29 +133,8 @@ final class Route implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof Route)) {
-      return false;
-    }
-    Route route = (Route) o;
-    return Objects.equals(_destinationCidrBlock, route._destinationCidrBlock)
-        && _state == route._state
-        && Objects.equals(_target, route._target)
-        && _targetType == route._targetType;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_destinationCidrBlock, _state, _target, _targetType);
-  }
-
-  @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("_destinationCidrBlock", _destinationCidrBlock)
         .add("_state", _state)
         .add("_target", _target)
         .add("_targetType", _targetType)

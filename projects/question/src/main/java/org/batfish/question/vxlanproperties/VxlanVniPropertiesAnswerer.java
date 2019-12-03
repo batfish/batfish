@@ -2,12 +2,12 @@ package org.batfish.question.vxlanproperties;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Table;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -128,14 +128,18 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
           RowBuilder row = Row.builder(columns).put(COL_NODE, nodeName).put(COL_VNI, vni);
           boolean unicast =
               vniSettings.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
-          SortedSet<Ip> bumTransportIps = vniSettings.getBumTransportIps();
+          Set<Ip> bumTransportIps = vniSettings.getBumTransportIps();
           VxlanVniPropertiesRow vxlanVniProperties =
               new VxlanVniPropertiesRow(
                   nodeName,
                   vni,
                   vniSettings.getVlan(),
                   vniSettings.getSourceAddress(),
-                  unicast ? null : bumTransportIps.isEmpty() ? null : bumTransportIps.first(),
+                  unicast
+                      ? null
+                      : bumTransportIps.isEmpty()
+                          ? null
+                          : Iterables.getOnlyElement(bumTransportIps),
                   unicast ? bumTransportIps : null,
                   vniSettings.getUdpPort());
 

@@ -52,6 +52,8 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
+import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
@@ -1230,5 +1232,35 @@ public class CumulusFrrGrammarTest {
         equalTo(
             ImmutableSet.of(
                 new StaticRoute(Prefix.parse("1.2.3.4/24"), Ip.parse("1.1.1.1"), null))));
+  }
+
+  @Test
+  public void testBgpNeighborUpdateSource_Address() {
+    parseLines("router bgp 65001", "neighbor 1.1.1.1 update-source 2.2.2.2");
+
+    assertNotNull(_config.getBgpProcess());
+    assertThat(
+        _config
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("1.1.1.1")
+            .getBgpNeighborSource(),
+        equalTo(new BgpNeighborSourceAddress(Ip.parse("2.2.2.2"))));
+  }
+
+  @Test
+  public void testBgpNeighborUpdateSource_Interface() {
+    parseLines("router bgp 65001", "neighbor 1.1.1.1 update-source lo");
+
+    assertNotNull(_config.getBgpProcess());
+    assertThat(
+        _config
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("1.1.1.1")
+            .getBgpNeighborSource(),
+        equalTo(new BgpNeighborSourceInterface("lo")));
   }
 }

@@ -114,7 +114,8 @@ public class SubnetTest {
                         vpc.getId(),
                         ImmutableList.of(new Association(false, subnet.getId())),
                         ImmutableList.of(
-                            new Route(privatePrefix, State.ACTIVE, "local", TargetType.Gateway)))))
+                            new RouteV4(
+                                privatePrefix, State.ACTIVE, "local", TargetType.Gateway)))))
             .build();
 
     ConvertedConfiguration awsConfiguration =
@@ -204,8 +205,8 @@ public class SubnetTest {
                         vpc.getId(),
                         ImmutableList.of(new Association(false, subnet.getId())),
                         ImmutableList.of(
-                            new Route(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
-                            new Route(
+                            new RouteV4(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
+                            new RouteV4(
                                 Prefix.parse("0.0.0.0/0"),
                                 State.ACTIVE,
                                 vgw.getId(),
@@ -288,8 +289,8 @@ public class SubnetTest {
                         vpc.getId(),
                         ImmutableList.of(new Association(false, subnet.getId())),
                         ImmutableList.of(
-                            new Route(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
-                            new Route(
+                            new RouteV4(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
+                            new RouteV4(
                                 Prefix.parse("0.0.0.0/0"),
                                 State.ACTIVE,
                                 igw.getId(),
@@ -351,8 +352,8 @@ public class SubnetTest {
 
     Region region = Region.builder("region").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
 
-    Route route =
-        new Route(remotePrefix, State.ACTIVE, connectionId, TargetType.VpcPeeringConnection);
+    RouteV4 route =
+        new RouteV4(remotePrefix, State.ACTIVE, connectionId, TargetType.VpcPeeringConnection);
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
 
@@ -411,8 +412,8 @@ public class SubnetTest {
                 ImmutableMap.of(tgwVpcAttachment.getId(), tgwVpcAttachment))
             .build();
 
-    Route route =
-        new Route(
+    RouteV4 route =
+        new RouteV4(
             remotePrefix, State.ACTIVE, tgwVpcAttachment.getGatewayId(), TargetType.TransitGateway);
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
@@ -477,8 +478,8 @@ public class SubnetTest {
                 ImmutableMap.of(tgwVpcAttachment.getId(), tgwVpcAttachment))
             .build();
 
-    Route route =
-        new Route(
+    RouteV4 route =
+        new RouteV4(
             remotePrefix, State.ACTIVE, tgwVpcAttachment.getGatewayId(), TargetType.TransitGateway);
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());

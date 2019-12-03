@@ -754,10 +754,16 @@ public class VirtualRouter implements Serializable {
     for (AbstractRoute grAbstract : _generatedRib.getRoutes()) {
       GeneratedRoute gr = (GeneratedRoute) grAbstract;
 
-      // Prevent route from being merged into the main RIB by marking it non-routing
       Bgpv4Route br =
           BgpProtocolHelper.convertGeneratedRouteToBgp(
-              gr, _vrf.getBgpProcess().getRouterId(), Ip.ZERO, true);
+              gr,
+              Optional.ofNullable(gr.getAttributePolicy())
+                  .map(p -> _c.getRoutingPolicies().get(p))
+                  .orElse(null),
+              _vrf.getBgpProcess().getRouterId(),
+              Ip.ZERO,
+              // Prevent route from being merged into the main RIB by marking it non-routing
+              true);
       /* TODO: tests for this */
       RibDelta<Bgpv4Route> d1 = _bgpRoutingProcess._bgpv4Rib.mergeRouteGetDelta(br);
       _bgpRoutingProcess._bgpv4DeltaBuilder.from(d1);
@@ -1806,12 +1812,17 @@ public class VirtualRouter implements Serializable {
       @Nonnull GeneratedRoute generatedRoute, Ip nextHopIp) {
     String policyName = generatedRoute.getGenerationPolicy();
     RoutingPolicy policy = policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
+    @Nullable
+    RoutingPolicy attrPolicy =
+        generatedRoute.getAttributePolicy() != null
+            ? _c.getRoutingPolicies().get(generatedRoute.getAttributePolicy())
+            : null;
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
             generatedRoute, policy, _mainRib.getTypedRoutes());
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
-            builder.build(), _vrf.getBgpProcess().getRouterId(), nextHopIp, false)
+            builder.build(), attrPolicy, _vrf.getBgpProcess().getRouterId(), nextHopIp, false)
         : null;
   }
 

@@ -15,8 +15,10 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -27,7 +29,9 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
@@ -40,6 +44,7 @@ import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,6 +58,9 @@ public class CumulusConcatenatedGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/grammar/cumulus_concatenated/testconfigs/";
+
+  private static final String TESTRIGS_PREFIX =
+      "org/batfish/grammar/cumulus_concatenated/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -252,5 +260,40 @@ public class CumulusConcatenatedGrammarTest {
                     .setNextHopIp(Ip.parse("10.0.0.2"))
                     .setAdministrativeCost(1)
                     .build())));
+  }
+
+  @Test
+  public void testBgpSessionUpdateSource() throws IOException {
+    String testrigName = "bgp_update_source";
+    List<String> configurationNames = ImmutableList.of("n1", "n2");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        batfish.getTopologyProvider().getBgpTopology(batfish.getNetworkSnapshot()).getGraph();
+
+    String vrf = "default";
+    // Edge one direction
+    assertThat(
+        bgpTopology
+            .adjacentNodes(new BgpPeerConfigId("n1", vrf, Prefix.parse("10.0.0.2/32"), false))
+            .iterator()
+            .next(),
+        equalTo(new BgpPeerConfigId("n2", vrf, Prefix.parse("10.0.0.1/32"), false)));
+
+    // Edge the other direction
+    assertThat(
+        bgpTopology
+            .adjacentNodes(new BgpPeerConfigId("n2", vrf, Prefix.parse("10.0.0.1/32"), false))
+            .iterator()
+            .next(),
+        equalTo(new BgpPeerConfigId("n1", vrf, Prefix.parse("10.0.0.2/32"), false)));
   }
 }

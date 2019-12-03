@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -83,7 +84,6 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_OSPF_PROCESSES = "ospfProcesses";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
-  private static final String PROP_VNI_SETTINGS = "vniSettings";
 
   public static @Nonnull Builder builder() {
     return new Builder(null);
@@ -105,7 +105,7 @@ public class Vrf extends ComparableStructure<String> {
   private RipProcess _ripProcess;
   private SnmpServer _snmpServer;
   private SortedSet<StaticRoute> _staticRoutes;
-  private NavigableMap<Integer, VniSettings> _vniSettings;
+  private Map<Integer, VniSettings> _vniSettings;
 
   public Vrf(@Nonnull String name) {
     super(name);
@@ -117,7 +117,7 @@ public class Vrf extends ComparableStructure<String> {
     _kernelRoutes = ImmutableSortedSet.of();
     _ospfProcesses = ImmutableSortedMap.of();
     _staticRoutes = new TreeSet<>();
-    _vniSettings = new TreeMap<>();
+    _vniSettings = new HashMap<>();
   }
 
   @JsonCreator
@@ -237,8 +237,8 @@ public class Vrf extends ComparableStructure<String> {
     return _staticRoutes;
   }
 
-  @JsonProperty(PROP_VNI_SETTINGS)
-  public NavigableMap<Integer, VniSettings> getVniSettings() {
+  @JsonIgnore
+  public Map<Integer, VniSettings> getVniSettings() {
     return _vniSettings;
   }
 
@@ -358,8 +358,7 @@ public class Vrf extends ComparableStructure<String> {
     _staticRoutes = staticRoutes;
   }
 
-  @JsonProperty(PROP_VNI_SETTINGS)
-  public void setVniSettings(NavigableMap<Integer, VniSettings> vniSetting) {
-    _vniSettings = vniSetting;
+  public void setVniSettings(Map<Integer, VniSettings> vniSettings) {
+    _vniSettings = ImmutableMap.copyOf(vniSettings);
   }
 }

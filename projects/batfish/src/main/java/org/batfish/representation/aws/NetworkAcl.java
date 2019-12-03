@@ -114,8 +114,9 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
   private IpAccessList getAcl(boolean isEgress) {
     List<IpAccessListLine> lines =
         _entries.stream()
+            .filter(e -> e instanceof NetworkAclEntryV4) // ignore v6
             .filter(e -> (isEgress && e.getIsEgress()) || (!isEgress && !e.getIsEgress()))
-            .map(NetworkAcl::getAclLine)
+            .map(e -> getAclLine((NetworkAclEntryV4) e))
             .collect(ImmutableList.toImmutableList());
     IpAccessList list =
         IpAccessList.builder()
@@ -128,7 +129,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
   }
 
   @VisibleForTesting
-  static IpAccessListLine getAclLine(NetworkAclEntry entry) {
+  static IpAccessListLine getAclLine(NetworkAclEntryV4 entry) {
     int key = entry.getRuleNumber();
     LineAction action = entry.getIsAllow() ? LineAction.PERMIT : LineAction.DENY;
     Prefix prefix = entry.getCidrBlock();

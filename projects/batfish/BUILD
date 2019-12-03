@@ -44,6 +44,7 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/juniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto",
+        "//projects/batfish/src/main/java/org/batfish/representation/aws",
         "//projects/bdd",
         "//projects/symbolic",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
