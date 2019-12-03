@@ -468,7 +468,6 @@ public class SubnetTest {
     TransitGatewayVpcAttachment tgwVpcAttachment =
         new TransitGatewayVpcAttachment(
             "attachment", "tgw", vpc.getId(), ImmutableList.of(otherSubnet.getId()));
-    String linkId = tgwVpcAttachment.getId();
 
     Region region =
         Region.builder("region")
