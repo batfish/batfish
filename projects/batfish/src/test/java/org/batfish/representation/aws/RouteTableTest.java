@@ -13,6 +13,7 @@ import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
 import org.batfish.representation.aws.RouteTable.Association;
@@ -42,8 +43,36 @@ public class RouteTableTest {
                     "vpc-815775e7",
                     ImmutableList.of(new Association(true, null)),
                     ImmutableList.of(
-                        new Route(
+                        new RouteV4(
                             Prefix.parse("10.100.0.0/16"),
+                            State.ACTIVE,
+                            "local",
+                            TargetType.Gateway))))));
+  }
+
+  @Test
+  public void testDeserializationV6() throws IOException {
+    String text = CommonUtil.readResource("org/batfish/representation/aws/RouteV6TableTest.json");
+
+    JsonNode json = BatfishObjectMapper.mapper().readTree(text);
+    ArrayNode array = (ArrayNode) json.get(JSON_KEY_ROUTE_TABLES);
+    List<RouteTable> tables = new LinkedList<>();
+
+    for (int index = 0; index < array.size(); index++) {
+      tables.add(BatfishObjectMapper.mapper().convertValue(array.get(index), RouteTable.class));
+    }
+
+    assertThat(
+        tables,
+        equalTo(
+            ImmutableList.of(
+                new RouteTable(
+                    "rtb-296bf350",
+                    "vpc-815775e7",
+                    ImmutableList.of(new Association(true, null)),
+                    ImmutableList.of(
+                        new RouteV6(
+                            Prefix6.parse("2600:1f16:751:7800::/56"),
                             State.ACTIVE,
                             "local",
                             TargetType.Gateway))))));
