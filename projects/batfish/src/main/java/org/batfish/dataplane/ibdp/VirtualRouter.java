@@ -417,7 +417,7 @@ public class VirtualRouter implements Serializable {
           policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
-              gr, generationPolicy, _mainRib.getTypedRoutes(), _vrf.getName());
+              gr, generationPolicy, _mainRib.getTypedRoutes());
 
       if (grb != null) {
         // Routes have been changed
@@ -1419,7 +1419,7 @@ public class VirtualRouter implements Serializable {
                 adv -> {
                   Bgpv4Route bgpRoute =
                       _bgpRoutingProcess.exportNonBgpRouteToBgp(
-                          adv.getRoute(), ourConfigId, remoteConfigId, ourConfig, session);
+                          adv.getRoute(), remoteConfigId, ourConfig, session);
                   return bgpRoute == null
                       ? null
                       : RouteAdvertisement.<Bgpv4Route>builder()
@@ -1808,7 +1808,7 @@ public class VirtualRouter implements Serializable {
     RoutingPolicy policy = policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
-            generatedRoute, policy, _mainRib.getTypedRoutes(), _vrf.getName());
+            generatedRoute, policy, _mainRib.getTypedRoutes());
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
             builder.build(), _vrf.getBgpProcess().getRouterId(), nextHopIp, false)

@@ -1382,8 +1382,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         GeneratedRouteHelper.activateGeneratedRoute(
             r,
             generationPolicy,
-            mainRibDelta.getRoutesStream().collect(ImmutableSet.toImmutableSet()),
-            _vrfName);
+            mainRibDelta.getRoutesStream().collect(ImmutableSet.toImmutableSet()));
     return activatedRoute == null ? null : activatedRoute.build();
   }
 
