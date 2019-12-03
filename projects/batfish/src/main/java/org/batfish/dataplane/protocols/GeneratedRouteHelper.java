@@ -24,15 +24,13 @@ public class GeneratedRouteHelper {
    *     If {@code null}, then route will be considered ready for activation.
    * @param contributingRoutes A set of routes that can contribute trigger route's activation.
    *     Usually a set of routes from the Main RIB.
-   * @param vrfName VRF name in which the {@code generatedRoute} resides.
    * @return A generated route builder, or {@code null} if the route should not be activated.
    */
   @Nullable
   public static GeneratedRoute.Builder activateGeneratedRoute(
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy policy,
-      Set<AnnotatedRoute<AbstractRoute>> contributingRoutes,
-      String vrfName) {
+      Set<AnnotatedRoute<AbstractRoute>> contributingRoutes) {
     GeneratedRoute.Builder grb = generatedRoute.toBuilder();
 
     // Null route if necessary
