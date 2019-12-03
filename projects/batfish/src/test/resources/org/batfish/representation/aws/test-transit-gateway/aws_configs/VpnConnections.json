@@ -1,0 +1,17 @@
+{
+ "VpnConnections": [
+  {
+   "Category": "VPN",
+   "CustomerGatewayId": "cgw-09e5ca92b2f2d71cc",
+   "Options": {
+    "StaticRoutesOnly": false
+   },
+   "Routes": [],
+   "State": "deleted",
+   "Tags": [],
+   "TransitGatewayId": "tgw-044be4464fcc69aff",
+   "Type": "ipsec.1",
+   "VpnConnectionId": "vpn-034885b776a3f8a80"
+  }
+ ]
+}

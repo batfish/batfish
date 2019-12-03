@@ -1,0 +1,97 @@
+{
+ "NetworkAcls": [
+  {
+   "Associations": [
+    {
+     "NetworkAclAssociationId": "aclassoc-0ccef44a2576bfcc9",
+     "NetworkAclId": "acl-0b0c7a5db2fc8fa08",
+     "SubnetId": "subnet-0b5b8ddd5a69fcfcd"
+    },
+    {
+     "NetworkAclAssociationId": "aclassoc-064ae69d70dd38370",
+     "NetworkAclId": "acl-0b0c7a5db2fc8fa08",
+     "SubnetId": "subnet-006a19c846f047bd7"
+    }
+   ],
+   "Entries": [
+    {
+     "CidrBlock": "0.0.0.0/0",
+     "Egress": true,
+     "Protocol": "-1",
+     "RuleAction": "allow",
+     "RuleNumber": 100
+    },
+    {
+     "CidrBlock": "0.0.0.0/0",
+     "Egress": true,
+     "Protocol": "-1",
+     "RuleAction": "deny",
+     "RuleNumber": 32767
+    },
+    {
+     "CidrBlock": "0.0.0.0/0",
+     "Egress": false,
+     "Protocol": "-1",
+     "RuleAction": "allow",
+     "RuleNumber": 100
+    },
+    {
+     "CidrBlock": "0.0.0.0/0",
+     "Egress": false,
+     "Protocol": "-1",
+     "RuleAction": "deny",
+     "RuleNumber": 32767
+    }
+   ],
+   "IsDefault": true,
+   "NetworkAclId": "acl-0b0c7a5db2fc8fa08",
+   "OwnerId": "554773406868",
+   "Tags": [],
+   "VpcId": "vpc-0404e08ceddf7f650"
+  },
+  {
+   "Associations": [
+    {
+     "NetworkAclAssociationId": "aclassoc-042d0236d547ba1d5",
+     "NetworkAclId": "acl-060c3d111b1e1692d",
+     "SubnetId": "subnet-0ebf6378a79a3e534"
+    }
+   ],
+   "Entries": [
+    {
+     "CidrBlock": "0.0.0.0/0",
+     "Egress": true,
+     "Protocol": "-1",
+     "RuleAction": "allow",
+     "RuleNumber": 100
+    },
+    {
+     "CidrBlock": "0.0.0.0/0",
+     "Egress": true,
+     "Protocol": "-1",
+     "RuleAction": "deny",
+     "RuleNumber": 32767
+    },
+    {
+     "CidrBlock": "0.0.0.0/0",
+     "Egress": false,
+     "Protocol": "-1",
+     "RuleAction": "allow",
+     "RuleNumber": 100
+    },
+    {
+     "CidrBlock": "0.0.0.0/0",
+     "Egress": false,
+     "Protocol": "-1",
+     "RuleAction": "deny",
+     "RuleNumber": 32767
+    }
+   ],
+   "IsDefault": true,
+   "NetworkAclId": "acl-060c3d111b1e1692d",
+   "OwnerId": "554773406868",
+   "Tags": [],
+   "VpcId": "vpc-00a31ce9d0c06675c"
+  }
+ ]
+}

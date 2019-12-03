@@ -119,4 +119,16 @@ public class AwsConfiguration extends VendorConfiguration {
   public void setVendor(ConfigurationFormat format) {
     throw new IllegalStateException("Setting the format is not allowed for AWS configs");
   }
+
+  public static String vpnExternalInterfaceName(String tunnelId) {
+    return "external-" + tunnelId;
+  }
+
+  public static String vpnTunnelId(String vpnConnectionId, int idNum) {
+    return String.format("%s-%s", vpnConnectionId, idNum);
+  }
+
+  public static String vpnInterfaceName(String tunnelId) {
+    return "vpn-" + tunnelId;
+  }
 }

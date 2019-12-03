@@ -1,6 +1,8 @@
 package org.batfish.grammar.host;
 
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
+import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
+import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
@@ -39,6 +41,10 @@ public class HostTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static String _vpnConnectionId = "vpn-ba2e34a8";
+  private static String _vpnInterface1 = vpnInterfaceName(vpnTunnelId(_vpnConnectionId, 1));
+  private static String _vpnInterface2 = vpnInterfaceName(vpnTunnelId(_vpnConnectionId, 2));
 
   public Batfish getBatfishForConfigs(String hostFilename) throws IOException {
     String testrigResourcePrefix = TESTRIG_PREFIX + "ipsec-vpn-host-aws-cisco";
@@ -84,15 +90,15 @@ public class HostTest {
             hasItems(
                 new Edge(
                     NodeInterfacePair.of("cisco_host", "Tunnel1"),
-                    NodeInterfacePair.of("vgw-81fd279f", "vpn1")),
+                    NodeInterfacePair.of("vgw-81fd279f", _vpnInterface1)),
                 new Edge(
                     NodeInterfacePair.of("cisco_host", "Tunnel2"),
-                    NodeInterfacePair.of("vgw-81fd279f", "vpn2")),
+                    NodeInterfacePair.of("vgw-81fd279f", _vpnInterface2)),
                 new Edge(
-                    NodeInterfacePair.of("vgw-81fd279f", "vpn1"),
+                    NodeInterfacePair.of("vgw-81fd279f", _vpnInterface1),
                     NodeInterfacePair.of("cisco_host", "Tunnel1")),
                 new Edge(
-                    NodeInterfacePair.of("vgw-81fd279f", "vpn2"),
+                    NodeInterfacePair.of("vgw-81fd279f", _vpnInterface2),
                     NodeInterfacePair.of("cisco_host", "Tunnel2")))));
   }
 
@@ -111,15 +117,15 @@ public class HostTest {
         hasItems(
             new Edge(
                 NodeInterfacePair.of("cisco_host", "Tunnel1"),
-                NodeInterfacePair.of("vgw-81fd279f", "vpn1")),
+                NodeInterfacePair.of("vgw-81fd279f", _vpnInterface1)),
             new Edge(
                 NodeInterfacePair.of("cisco_host", "Tunnel2"),
-                NodeInterfacePair.of("vgw-81fd279f", "vpn2")),
+                NodeInterfacePair.of("vgw-81fd279f", _vpnInterface2)),
             new Edge(
-                NodeInterfacePair.of("vgw-81fd279f", "vpn1"),
+                NodeInterfacePair.of("vgw-81fd279f", _vpnInterface1),
                 NodeInterfacePair.of("cisco_host", "Tunnel1")),
             new Edge(
-                NodeInterfacePair.of("vgw-81fd279f", "vpn2"),
+                NodeInterfacePair.of("vgw-81fd279f", _vpnInterface2),
                 NodeInterfacePair.of("cisco_host", "Tunnel2"))));
   }
 

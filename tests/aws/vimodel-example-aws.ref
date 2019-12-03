@@ -4871,7 +4871,7 @@
           "vpn-ba2e34a8-1" : {
             "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
             "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
-            "localInterface" : "external1",
+            "localInterface" : "external-vpn-ba2e34a8-1",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpIpSpace",
               "ip" : "147.75.69.27"
@@ -4880,7 +4880,7 @@
           "vpn-ba2e34a8-2" : {
             "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
             "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
-            "localInterface" : "external2",
+            "localInterface" : "external-vpn-ba2e34a8-2",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpIpSpace",
               "ip" : "147.75.69.27"
@@ -4893,7 +4893,7 @@
             "ikePhase1Key" : {
               "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
               "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
-              "localInterface" : "external1",
+              "localInterface" : "external-vpn-ba2e34a8-1",
               "remoteIdentity" : {
                 "class" : "org.batfish.datamodel.IpIpSpace",
                 "ip" : "147.75.69.27"
@@ -4902,7 +4902,7 @@
             "ikePhase1Proposals" : [
               "vpn-ba2e34a8-1"
             ],
-            "localInterface" : "external1",
+            "localInterface" : "external-vpn-ba2e34a8-1",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpIpSpace",
               "ip" : "147.75.69.27"
@@ -4913,7 +4913,7 @@
             "ikePhase1Key" : {
               "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
               "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
-              "localInterface" : "external2",
+              "localInterface" : "external-vpn-ba2e34a8-2",
               "remoteIdentity" : {
                 "class" : "org.batfish.datamodel.IpIpSpace",
                 "ip" : "147.75.69.27"
@@ -4922,7 +4922,7 @@
             "ikePhase1Proposals" : [
               "vpn-ba2e34a8-2"
             ],
-            "localInterface" : "external2",
+            "localInterface" : "external-vpn-ba2e34a8-2",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpIpSpace",
               "ip" : "147.75.69.27"
@@ -4946,8 +4946,8 @@
           }
         },
         "interfaces" : {
-          "external1" : {
-            "name" : "external1",
+          "external-vpn-ba2e34a8-1" : {
+            "name" : "external-vpn-ba2e34a8-1",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -4958,7 +4958,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "IPSec tunnel 1",
+            "description" : "IPSec tunnel vpn-ba2e34a8-1",
             "mtu" : 1500,
             "prefix" : "52.27.166.152/32",
             "proxyArp" : false,
@@ -4971,8 +4971,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "external2" : {
-            "name" : "external2",
+          "external-vpn-ba2e34a8-2" : {
+            "name" : "external-vpn-ba2e34a8-2",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -4983,7 +4983,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "IPSec tunnel 2",
+            "description" : "IPSec tunnel vpn-ba2e34a8-2",
             "mtu" : 1500,
             "prefix" : "52.39.121.126/32",
             "proxyArp" : false,
@@ -5021,8 +5021,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpn1" : {
-            "name" : "vpn1",
+          "vpn-vpn-ba2e34a8-1" : {
+            "name" : "vpn-vpn-ba2e34a8-1",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -5033,7 +5033,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "VPN 1",
+            "description" : "VPN vpn-ba2e34a8-1",
             "mtu" : 1500,
             "prefix" : "169.254.15.193/30",
             "proxyArp" : false,
@@ -5046,8 +5046,8 @@
             "type" : "VPN",
             "vrf" : "default"
           },
-          "vpn2" : {
-            "name" : "vpn2",
+          "vpn-vpn-ba2e34a8-2" : {
+            "name" : "vpn-vpn-ba2e34a8-2",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -5058,7 +5058,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "VPN 2",
+            "description" : "VPN vpn-ba2e34a8-2",
             "mtu" : 1500,
             "prefix" : "169.254.13.237/30",
             "proxyArp" : false,
@@ -5079,8 +5079,8 @@
             "ikePhase1Policy" : "vpn-ba2e34a8-1",
             "ipsecPolicy" : "vpn-ba2e34a8-1",
             "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external1",
-            "tunnelInterface" : "vpn1"
+            "sourceInterface" : "external-vpn-ba2e34a8-1",
+            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
           },
           "vpn-ba2e34a8-2" : {
             "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
@@ -5088,8 +5088,8 @@
             "ikePhase1Policy" : "vpn-ba2e34a8-2",
             "ipsecPolicy" : "vpn-ba2e34a8-2",
             "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external2",
-            "tunnelInterface" : "vpn2"
+            "sourceInterface" : "external-vpn-ba2e34a8-2",
+            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
           }
         },
         "ipsecPhase2Policies" : {
@@ -5268,11 +5268,11 @@
               "tieBreaker" : "ARRIVAL_ORDER"
             },
             "interfaces" : [
-              "external1",
-              "external2",
+              "external-vpn-ba2e34a8-1",
+              "external-vpn-ba2e34a8-2",
               "loopbackBgp",
-              "vpn1",
-              "vpn2"
+              "vpn-vpn-ba2e34a8-1",
+              "vpn-vpn-ba2e34a8-2"
             ],
             "staticRoutes" : [
               {

@@ -74,7 +74,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_INTERNET_GATEWAY_ID) String internetGatewayId,
       @Nullable @JsonProperty(JSON_KEY_ATTACHMENTS) List<Attachment> attachments) {
     checkArgument(internetGatewayId != null, "Id cannot be null for Internet gateway");
-    checkArgument(attachments != null, "Attachments cannot be nul for Internet gateway");
+    checkArgument(attachments != null, "Attachments cannot be null for Internet gateway");
 
     return new InternetGateway(
         internetGatewayId,

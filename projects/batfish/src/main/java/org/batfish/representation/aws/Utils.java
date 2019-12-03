@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,8 +18,14 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -28,6 +35,19 @@ import org.w3c.dom.NodeList;
 final class Utils {
 
   private static final NetworkFactory FACTORY = new NetworkFactory();
+
+  static final Statement ACCEPT_ALL_BGP =
+      new If(
+          new MatchProtocol(RoutingProtocol.BGP),
+          ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+
+  static final Statement ACCEPT_ALL_BGP_AND_STATIC =
+      new If(
+          new Disjunction(
+              new MatchProtocol(RoutingProtocol.BGP), new MatchProtocol(RoutingProtocol.STATIC)),
+          ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   static void checkNonNull(@Nullable Object value, String fieldName, String objectType) {
     if (value == null) {
@@ -147,11 +167,6 @@ final class Utils {
   }
 
   @Nonnull
-  static StaticRoute toStaticRoute(Ip targetIp, Ip nextHopIp) {
-    return toStaticRoute(targetIp.toPrefix(), nextHopIp);
-  }
-
-  @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
@@ -162,20 +177,21 @@ final class Utils {
   }
 
   @Nonnull
-  static StaticRoute toStaticRoute(Ip targetIp, Interface nextHopInterface) {
-    return toStaticRoute(targetIp.toPrefix(), nextHopInterface);
-  }
-
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, Interface nextHopInterface) {
-    return toStaticRoute(targetPrefix, nextHopInterface.getName());
-  }
-
-  @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
         .setNextHopInterface(nextHopInterfaceName)
+        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+        .build();
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName, Ip nextHopIp) {
+    return StaticRoute.builder()
+        .setNetwork(targetPrefix)
+        .setNextHopInterface(nextHopInterfaceName)
+        .setNextHopIp(nextHopIp)
         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
         .build();
