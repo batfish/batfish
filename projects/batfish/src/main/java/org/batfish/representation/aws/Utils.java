@@ -18,6 +18,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -57,6 +58,24 @@ final class Utils {
         .setName(name)
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
+        .setAddress(primaryAddress)
+        .setDescription(description)
+        .build();
+  }
+
+  static Interface newInterface(
+      String name,
+      Configuration c,
+      String vrfName,
+      ConcreteInterfaceAddress primaryAddress,
+      String description) {
+    checkArgument(
+        c.getVrfs().containsKey(vrfName), "VRF %s does not exist on %s", vrfName, c.getHostname());
+    return FACTORY
+        .interfaceBuilder()
+        .setName(name)
+        .setOwner(c)
+        .setVrf(c.getVrfs().get(vrfName))
         .setAddress(primaryAddress)
         .setDescription(description)
         .build();
@@ -122,6 +141,11 @@ final class Utils {
     cfgNode.getDefaultVrf().getStaticRoutes().add(staticRoute);
   }
 
+  /** Adds a static route on {@code vrf} */
+  static void addStaticRoute(Vrf vrf, StaticRoute staticRoute) {
+    vrf.getStaticRoutes().add(staticRoute);
+  }
+
   @Nonnull
   static StaticRoute toStaticRoute(Ip targetIp, Ip nextHopIp) {
     return toStaticRoute(targetIp.toPrefix(), nextHopIp);
@@ -159,11 +183,43 @@ final class Utils {
 
   /**
    * Creates a subnet link between the two nodes represented by {@code cfgNode1} and {@code
-   * cfgNode2}. Create a new interface on each node for this purpose and assigns it a name that
-   * corresponds to the name of the other node
+   * cfgNode2}. Create a new interface on each node in the supplied VRF names and assigns it a name
+   * that corresponds to the name of the other node plus {@code ifaceNameSuffix}
    */
   static void connect(
-      AwsConfiguration awsConfiguration, Configuration cfgNode1, Configuration cfgNode2) {
+      ConvertedConfiguration awsConfiguration,
+      Configuration cfgNode1,
+      String vrfName1,
+      Configuration cfgNode2,
+      String vrfName2,
+      String ifaceNameSuffix) {
+    Prefix linkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
+    ConcreteInterfaceAddress ifaceAddress1 =
+        ConcreteInterfaceAddress.create(linkPrefix.getStartIp(), linkPrefix.getPrefixLength());
+    ConcreteInterfaceAddress ifaceAddress2 =
+        ConcreteInterfaceAddress.create(linkPrefix.getEndIp(), linkPrefix.getPrefixLength());
+
+    String ifaceName1 = suffixedInterfaceName(cfgNode2, ifaceNameSuffix);
+    Utils.newInterface(ifaceName1, cfgNode1, vrfName1, ifaceAddress1, "To " + ifaceName1);
+
+    String ifaceName2 = suffixedInterfaceName(cfgNode1, ifaceNameSuffix);
+    Utils.newInterface(ifaceName2, cfgNode2, vrfName2, ifaceAddress2, "To " + ifaceName2);
+
+    addLayer1Edge(
+        awsConfiguration, cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
+  }
+
+  static String suffixedInterfaceName(Configuration otherCfg, String suffix) {
+    return otherCfg.getHostname() + "-" + suffix;
+  }
+
+  /**
+   * Creates a subnet link between the two nodes represented by {@code cfgNode1} and {@code
+   * cfgNode2}. Create a new interface on each node for this purpose and assigns it a name that
+   * corresponds to the name of the other node.
+   */
+  static void connect(
+      ConvertedConfiguration awsConfiguration, Configuration cfgNode1, Configuration cfgNode2) {
     Prefix linkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
     ConcreteInterfaceAddress ifaceAddress1 =
         ConcreteInterfaceAddress.create(linkPrefix.getStartIp(), linkPrefix.getPrefixLength());
@@ -175,6 +231,20 @@ final class Utils {
 
     String ifaceName2 = cfgNode1.getHostname();
     Utils.newInterface(ifaceName2, cfgNode2, ifaceAddress2, "To " + ifaceName2);
+
+    addLayer1Edge(
+        awsConfiguration, cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
+  }
+
+  /** Adds a bidirectional layer1 edge between the interfaces and nodes */
+  static void addLayer1Edge(
+      ConvertedConfiguration awsConfiguration,
+      String node1,
+      String iface1,
+      String node2,
+      String iface2) {
+    awsConfiguration.addEdge(node1, iface1, node2, iface2);
+    awsConfiguration.addEdge(node2, iface2, node1, iface1);
   }
 
   /**

@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix6;
 
-/** Representation of a route in AWS */
+/** Representation of a IPv6 route in AWS */
 @ParametersAreNonnullByDefault
 final class RouteV6 extends Route {
 

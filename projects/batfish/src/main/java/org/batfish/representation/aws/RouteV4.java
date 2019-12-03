@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
 
-/** Representation of a route in AWS */
+/** Representation of an IPv4 route in AWS */
 @ParametersAreNonnullByDefault
 final class RouteV4 extends Route {
 

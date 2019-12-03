@@ -912,9 +912,6 @@
         ],
         "vmx4" : [
           "configs/gh-2658-juniper-vrf-import-export.cfg"
-        ],
-        "vxlan" : [
-          "configs/vxlan"
         ]
       },
       "parseStatus" : {
@@ -1219,7 +1216,6 @@
         "configs/variables" : "PASSED",
         "configs/variables_dos" : "PASSED",
         "configs/vlan_access_map2" : "PASSED",
-        "configs/vxlan" : "PASSED",
         "hosts/host1.json" : "PASSED",
         "hosts/host2.json" : "PASSED",
         "hosts/hostEmpty.json" : "EMPTY",
@@ -9853,8 +9849,8 @@
             "          VARIABLE:'client-id-list'",
             "          DEC:'1234'",
             "          MAC_ADDRESS:'mac-address'",
-            "          M_COMMENT_NON_NEWLINE:' dead.beef.feed'  <== mode:M_COMMENT",
-            "          NEWLINE:'\\n'  <== mode:M_COMMENT))))",
+            "          MAC_ADDRESS_LITERAL:'dead.beef.feed'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_cable",
             "      CABLE:'cable'",
@@ -20177,7 +20173,7 @@
             "        (null_rest_of_line",
             "          VERIFY:'verify'",
             "          MAC_ADDRESS:'mac-address'",
-            "          NEWLINE:'\\n'  <== mode:M_COMMENT))))",
+            "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_ip_dhcp",
             "      NO:'no'",
@@ -22511,8 +22507,8 @@
             "          (if_hsrp_null",
             "            MAC_ADDRESS:'mac-address'",
             "            (null_rest_of_line",
-            "              M_COMMENT_NON_NEWLINE:' 0123.4567.89AB'  <== mode:M_COMMENT",
-            "              NEWLINE:'\\n'  <== mode:M_COMMENT))",
+            "              MAC_ADDRESS_LITERAL:'0123.4567.89AB'",
+            "              NEWLINE:'\\n'))",
             "          (if_hsrp_null",
             "            NAME:'name'",
             "            (null_rest_of_line",
@@ -75634,25 +75630,6 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/vxlan" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VXLAN:'vxlan'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_block",
-            "        VXLAN:'vxlan'",
-            "        (null_rest_of_line",
-            "          VARIABLE:'dummy-l2-tunnel-udp-port'",
-            "          DEC:'1234'",
-            "          NEWLINE:'\\n\\n'))))",
-            "  EOF:<EOF>)"
-          ]
-        },
         "iptables/host1.iptables" : {
           "sentences" : [
             "(iptables_configuration",
@@ -78070,8 +78047,7 @@
         "variables" : "PASSED",
         "variables_dos" : "PASSED",
         "vlan_access_map4" : "PASSED",
-        "vmx4" : "PASSED",
-        "vxlan" : "PASSED"
+        "vmx4" : "PASSED"
       },
       "definedStructures" : {
         "aws_configs" : { },
@@ -85972,7 +85948,6 @@
           }
         },
         "configs/vlan_access_map2" : { },
-        "configs/vxlan" : { },
         "hosts/host1.json" : { }
       },
       "fileMap" : {
@@ -86877,9 +86852,6 @@
         ],
         "configs/vlan_access_map2" : [
           "vlan_access_map4"
-        ],
-        "configs/vxlan" : [
-          "vxlan"
         ],
         "hosts/host1.json" : [
           "host1"
@@ -95465,7 +95437,6 @@
         "configs/variables" : "PASSED",
         "configs/variables_dos" : "PASSED",
         "configs/vlan_access_map2" : "PASSED",
-        "configs/vxlan" : "PASSED",
         "hosts/host1.json" : "PASSED",
         "hosts/host2.json" : "PASSED",
         "hosts/hostEmpty.json" : "EMPTY",

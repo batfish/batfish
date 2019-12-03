@@ -21,6 +21,9 @@
         "CidrBlockSet": [
           {
             "CidrBlock": "10.130.0.0/16"
+          },
+          {
+            "CidrBlock": "10.131.0.0/16"
           }
         ],
         "OwnerId": "118292266645",

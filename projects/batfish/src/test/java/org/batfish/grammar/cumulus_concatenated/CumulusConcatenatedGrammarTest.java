@@ -32,7 +32,9 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.grammar.GrammarSettings;
@@ -226,5 +228,29 @@ public class CumulusConcatenatedGrammarTest {
     Interface swp2 = c.getAllInterfaces().get("swp2");
     assertEquals(swp2.getAddress(), ConcreteInterfaceAddress.parse("3.3.3.3/24"));
     assertEquals(swp2.getSpeed(), Double.valueOf(10000 * 10e6));
+  }
+
+  @Test
+  public void testStaticRoute() {
+    CumulusNcluConfiguration vsConfig = parseVendorConfig("static_route");
+    Configuration viConfig = vsConfig.toVendorIndependentConfigurations().get(0);
+    assertThat(
+        viConfig.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("1.1.1.1/24"))
+                    .setNextHopIp(Ip.parse("10.0.0.1"))
+                    .setAdministrativeCost(1)
+                    .build())));
+    assertThat(
+        viConfig.getVrfs().get("VRF").getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("2.2.2.2/24"))
+                    .setNextHopIp(Ip.parse("10.0.0.2"))
+                    .setAdministrativeCost(1)
+                    .build())));
   }
 }

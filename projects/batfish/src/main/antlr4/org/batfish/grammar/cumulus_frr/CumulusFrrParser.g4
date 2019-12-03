@@ -75,7 +75,13 @@ s_ip
     ip_as_path
     | ip_community_list
     | ip_prefix_list
+    | ip_route
   )
+;
+
+ip_route
+:
+  ROUTE network = prefix next_hop_ip = ip_address (VRF vrf = word)? NEWLINE
 ;
 
 s_line
