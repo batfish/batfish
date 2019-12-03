@@ -22,15 +22,15 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * E2e tests for transit gateway. The configuration was pulled after creating two VPCs A and B and
- * connecting them via a transit gateway. VPC A has two subnets in different availability zones,
- * only one of which is connected to the VPC's attachment to the gateway. VPC B has only one subnet,
- * which is connected to the attachment.
+ * E2e tests for transit gateway configuration with multiple tables. The configuration was pulled
+ * after creating two VPCs A and B and connecting them via a transit gateway with two route tables.
+ * VPC A is associated with route table A and propagates to route table B (but not A). VPC B is
+ * associated to route table B and propagates to route table A.
  */
-public class AwsConfigurationTransitGatewayTest {
+public class AwsConfigurationTransitGatewayMultiTableTest {
 
   private static final String TESTCONFIGS_DIR =
-      "org/batfish/representation/aws/test-transit-gateway";
+      "org/batfish/representation/aws/test-transit-gateway-multi-table";
 
   private static final List<String> fileNames =
       ImmutableList.of(
@@ -61,15 +61,12 @@ public class AwsConfigurationTransitGatewayTest {
   private static String _vpcB = "vpc-00a31ce9d0c06675c";
 
   private static String _subnetA = "subnet-006a19c846f047bd7";
-  private static String _subnetA2 = "subnet-0b5b8ddd5a69fcfcd"; // not connected to the gateway
   private static String _subnetB = "subnet-0ebf6378a79a3e534";
 
   private static String _instanceA = "i-06ba034d88c84ef07";
-  private static String _instanceA2 = "i-075e846ed41670385";
   private static String _instanceB = "i-0b14080af811fda3d";
 
   private static Ip _instanceAIp = Ip.parse("10.10.10.157");
-  private static Ip _instanceA2Ip = Ip.parse("10.10.20.154");
   private static Ip _instanceBIp = Ip.parse("192.168.1.106");
 
   @BeforeClass
@@ -129,25 +126,5 @@ public class AwsConfigurationTransitGatewayTest {
         _instanceAIp,
         FlowDisposition.DENIED_IN,
         ImmutableList.of(_instanceB, _subnetB, _vpcB, _tgw, _vpcA, _subnetA, _instanceA));
-  }
-
-  /** Test connectivity from A2 to B -- should die at the subnet router */
-  @Test
-  public void testFromA2toB() {
-    testTrace(
-        _instanceA2,
-        _instanceBIp,
-        FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(_instanceA2, _subnetA2));
-  }
-
-  /** Test connectivity from B to A2 -- should die at the VPC */
-  @Test
-  public void testFromBtoA2() {
-    testTrace(
-        _instanceB,
-        _instanceA2Ip,
-        FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(_instanceB, _subnetB, _vpcB, _tgw, _vpcA));
   }
 }

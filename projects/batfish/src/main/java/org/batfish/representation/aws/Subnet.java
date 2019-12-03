@@ -31,6 +31,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
@@ -225,8 +226,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Ip nhipOnIgw = getInterfaceIp(cfgNode, igwConfig.getHostname());
       publicIps.forEach(
           pip -> {
-            addStaticRoute(igwConfig, toStaticRoute(pip, nhipOnIgw));
-            addStaticRoute(cfgNode, toStaticRoute(pip, subnetToInstances));
+            addStaticRoute(igwConfig, toStaticRoute(pip.toPrefix(), nhipOnIgw));
+            addStaticRoute(cfgNode, toStaticRoute(pip.toPrefix(), subnetToInstances.getName()));
           });
     } else if (!publicIps.isEmpty()) {
       warnings.redFlag(
@@ -344,11 +345,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
           return;
         }
         initializeVpcLink(
-            awsConfiguration, cfgNode, vpcNode, region.getVpcs().get(_vpcId), connectionId);
-        addStaticRoute(
-            cfgNode,
-            sr.setNextHopIp(getInterfaceIp(vpcNode, suffixedInterfaceName(cfgNode, connectionId)))
-                .build());
+            cfgNode, vpcNode, region.getVpcs().get(_vpcId), connectionId, sr, awsConfiguration);
         return;
       case TransitGateway:
         assert route.getTarget() != null; // suppress warning
@@ -367,12 +364,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
           return;
         }
         initializeVpcLink(
-            awsConfiguration, cfgNode, vpcNode, region.getVpcs().get(_vpcId), attachment.getId());
-        addStaticRoute(
             cfgNode,
-            sr.setNextHopIp(
-                    getInterfaceIp(vpcNode, suffixedInterfaceName(cfgNode, attachment.getId())))
-                .build());
+            vpcNode,
+            region.getVpcs().get(_vpcId),
+            attachment.getId(),
+            sr,
+            awsConfiguration);
         return;
       default:
         warnings.redFlag("Unsupported target type: " + route.getTargetType());
@@ -383,36 +380,42 @@ public class Subnet implements AwsVpcEntity, Serializable {
    * Initializes what is needed on the VPC to allow a subnet to use its link to a remote entities
    * (e.g., a VPC peering connection or a transit gateway attachment)
    */
-  private void initializeVpcLink(
-      ConvertedConfiguration awsConfiguration,
+  @VisibleForTesting
+  void initializeVpcLink(
       Configuration cfgNode,
       Configuration vpcNode,
       Vpc vpc,
-      String linkId) {
-    // do nothing if have we processed this link before
-    if (cfgNode.getAllInterfaces().containsKey(suffixedInterfaceName(vpcNode, linkId))) {
-      return;
-    }
-    // the interface on the VPC node is in the link-specific VRF
-    String vrfNameOnVpc = Vpc.vrfNameForLink(linkId);
+      String linkId,
+      Builder sr,
+      ConvertedConfiguration awsConfiguration) {
+    // if we are not connected to the VPC for this link, do that first
+    if (!cfgNode.getAllInterfaces().containsKey(suffixedInterfaceName(vpcNode, linkId))) {
+      // the interface on the VPC node is in the link-specific VRF
+      String vrfNameOnVpc = Vpc.vrfNameForLink(linkId);
 
-    // have we created a VRF for this link on the VPC node before?
-    if (!vpcNode.getVrfs().containsKey(vrfNameOnVpc)) {
-      Vrf vrf = Vrf.builder().setOwner(vpcNode).setName(vrfNameOnVpc).build();
-      vpc.initializeVrf(vrf);
-    }
+      // have we created a VRF for this link on the VPC node before?
+      if (!vpcNode.getVrfs().containsKey(vrfNameOnVpc)) {
+        Vrf vrf = Vrf.builder().setOwner(vpcNode).setName(vrfNameOnVpc).build();
+        vpc.initializeVrf(vrf);
+      }
 
-    connect(
-        awsConfiguration,
-        cfgNode,
-        cfgNode.getDefaultVrf().getName(),
-        vpcNode,
-        vrfNameOnVpc,
-        linkId);
+      connect(
+          awsConfiguration,
+          cfgNode,
+          cfgNode.getDefaultVrf().getName(),
+          vpcNode,
+          vrfNameOnVpc,
+          linkId);
+
+      addStaticRoute(
+          vpcNode.getVrfs().get(vrfNameOnVpc),
+          toStaticRoute(
+              _cidrBlock, getInterfaceIp(cfgNode, suffixedInterfaceName(vpcNode, linkId))));
+    }
 
     addStaticRoute(
-        vpcNode.getVrfs().get(vrfNameOnVpc),
-        toStaticRoute(_cidrBlock, getInterfaceIp(cfgNode, suffixedInterfaceName(vpcNode, linkId))));
+        cfgNode,
+        sr.setNextHopIp(getInterfaceIp(vpcNode, suffixedInterfaceName(cfgNode, linkId))).build());
   }
 
   @Override

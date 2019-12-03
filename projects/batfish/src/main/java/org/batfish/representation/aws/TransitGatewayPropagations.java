@@ -11,6 +11,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 
 /**
  * Represents AWS Transit Gateway Static Routes
@@ -29,21 +30,38 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
 
     @Nonnull private final String _attachmentId;
 
+    @Nonnull private final ResourceType _resourceType;
+
+    @Nonnull private final String _resourceId;
+
     private final boolean _enabled;
 
     @JsonCreator
     private static Propagation create(
         @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) String attachmentId,
+        @Nullable @JsonProperty(JSON_KEY_RESOURCE_ID) String resourceId,
+        @Nullable @JsonProperty(JSON_KEY_RESOURCE_TYPE) String resourceType,
         @Nullable @JsonProperty(JSON_KEY_STATE) String state) {
       checkArgument(
           attachmentId != null, "Attachment id cannot be null for transit gateway attachment");
+      checkArgument(
+          resourceType != null, "Resource type cannot be nul for transit gateway propagation");
+      checkArgument(
+          resourceId != null, "Resource id cannot be nul for transit gateway propagation");
       checkArgument(state != null, "State cannot be nul for transit gateway attachment");
 
-      return new Propagation(attachmentId, state.equalsIgnoreCase("enabled"));
+      return new Propagation(
+          attachmentId,
+          ResourceType.valueOf(resourceType.toUpperCase()),
+          resourceId,
+          state.equalsIgnoreCase("enabled"));
     }
 
-    Propagation(String attachmentId, boolean enabled) {
+    Propagation(
+        String attachmentId, ResourceType resourceType, String resourceId, boolean enabled) {
       _attachmentId = attachmentId;
+      _resourceId = resourceId;
+      _resourceType = resourceType;
       _enabled = enabled;
     }
 
@@ -56,6 +74,16 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
       return _enabled;
     }
 
+    @Nonnull
+    public ResourceType getResourceType() {
+      return _resourceType;
+    }
+
+    @Nonnull
+    public String getResourceId() {
+      return _resourceId;
+    }
+
     @Override
     public boolean equals(Object o) {
       if (this == o) {
@@ -65,12 +93,15 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
         return false;
       }
       Propagation that = (Propagation) o;
-      return _enabled == that._enabled && Objects.equals(_attachmentId, that._attachmentId);
+      return _enabled == that._enabled
+          && Objects.equals(_resourceId, that._resourceId)
+          && Objects.equals(_resourceType, that._resourceType)
+          && Objects.equals(_attachmentId, that._attachmentId);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_attachmentId, _enabled);
+      return Objects.hash(_attachmentId, _resourceId, _resourceType, _enabled);
     }
   }
 

@@ -167,11 +167,6 @@ final class Utils {
   }
 
   @Nonnull
-  static StaticRoute toStaticRoute(Ip targetIp, Ip nextHopIp) {
-    return toStaticRoute(targetIp.toPrefix(), nextHopIp);
-  }
-
-  @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
@@ -182,20 +177,21 @@ final class Utils {
   }
 
   @Nonnull
-  static StaticRoute toStaticRoute(Ip targetIp, Interface nextHopInterface) {
-    return toStaticRoute(targetIp.toPrefix(), nextHopInterface);
-  }
-
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, Interface nextHopInterface) {
-    return toStaticRoute(targetPrefix, nextHopInterface.getName());
-  }
-
-  @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
         .setNextHopInterface(nextHopInterfaceName)
+        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+        .build();
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName, Ip nextHopIp) {
+    return StaticRoute.builder()
+        .setNetwork(targetPrefix)
+        .setNextHopInterface(nextHopInterfaceName)
+        .setNextHopIp(nextHopIp)
         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
         .build();

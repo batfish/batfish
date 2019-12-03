@@ -12,7 +12,7 @@
         {
           "ResourceId": "vpc-00a31ce9d0c06675c",
           "ResourceType": "vpc",
-          "State": "enabled",
+          "State": "not-enabled",
           "TransitGatewayAttachmentId": "tgw-attach-0ae2696617bb06fb4"
         }
       ]

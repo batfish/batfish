@@ -1,0 +1,20 @@
+{
+ "InternetGateways": [
+  {
+   "Attachments": [
+    {
+     "State": "available",
+     "VpcId": "vpc-00a31ce9d0c06675c"
+    }
+   ],
+   "InternetGatewayId": "igw-0a4895a3c58cac8cb",
+   "OwnerId": "554773406868",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "transit-test"
+    }
+   ]
+  }
+ ]
+}

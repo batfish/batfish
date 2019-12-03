@@ -13,10 +13,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -31,6 +34,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.Route.State;
+import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
 import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute;
 
 /**
@@ -234,6 +238,24 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         .filter(a -> a.getGatewayId().equals(_gatewayId))
         .forEach(a -> connectAttachment(cfgNode, a, awsConfiguration, region, warnings));
 
+    Set<TransitGatewayRouteTable> routeTables =
+        region.getTransitGatewayRouteTables().values().stream()
+            .filter(routeTable -> routeTable.getGatewayId().equals(_gatewayId))
+            .collect(ImmutableSet.toImmutableSet());
+
+    // propagate routes
+    routeTables.forEach(
+        table ->
+            region
+                .getTransitGatewayPropagations()
+                .getOrDefault(
+                    table.getId(), new TransitGatewayPropagations("dummy", ImmutableList.of()))
+                .getPropagations()
+                .forEach(
+                    propagation ->
+                        propagateRoutes(
+                            cfgNode, table, propagation, awsConfiguration, region, warnings)));
+
     // add static routes that were configured for route tables
     region.getTransitGatewayRouteTables().values().stream()
         .filter(
@@ -256,8 +278,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     return cfgNode;
   }
 
-  private void connectAttachment(
-      Configuration cfgNode,
+  private static void connectAttachment(
+      Configuration tgwCfg,
       TransitGatewayAttachment attachment,
       ConvertedConfiguration awsConfiguration,
       Region region,
@@ -266,29 +288,31 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       case VPC:
         {
           Optional<TransitGatewayVpcAttachment> vpcAttachment =
-              region.findTransitGatewayVpcAttachment(attachment.getResourceId(), _gatewayId);
+              region.findTransitGatewayVpcAttachment(
+                  attachment.getResourceId(), tgwCfg.getHostname());
           if (!vpcAttachment.isPresent()) {
             warnings.redFlag(
                 String.format(
-                    "VPC attachment not found for %s for transit gateway %s",
-                    attachment.getResourceId(), _gatewayId));
+                    "VPC attachment %s not found for transit gateway %s",
+                    attachment.getResourceId(), tgwCfg.getHostname()));
             return;
           }
-          connectVpc(cfgNode, attachment, awsConfiguration, region, warnings);
+          connectVpc(tgwCfg, attachment, awsConfiguration, region, warnings);
           return;
         }
       case VPN:
         {
           Optional<VpnConnection> vpnConnection =
-              region.findTransitGatewayVpnConnection(attachment.getResourceId(), _gatewayId);
+              region.findTransitGatewayVpnConnection(
+                  attachment.getResourceId(), tgwCfg.getHostname());
           if (!vpnConnection.isPresent()) {
             warnings.redFlag(
                 String.format(
                     "VPN connection %s for transit gateway %s",
-                    attachment.getResourceId(), _gatewayId));
+                    attachment.getResourceId(), tgwCfg.getHostname()));
             return;
           }
-          connectVpn(cfgNode, attachment, vpnConnection.get(), awsConfiguration, warnings);
+          connectVpn(tgwCfg, attachment, vpnConnection.get(), awsConfiguration, region, warnings);
           return;
         }
       default:
@@ -298,7 +322,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
   }
 
-  private void connectVpc(
+  private static void connectVpc(
       Configuration tgwCfg,
       TransitGatewayAttachment attachment,
       ConvertedConfiguration awsConfiguration,
@@ -328,7 +352,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     String vrfNameOnVpc = Vpc.vrfNameForLink(attachment.getId());
     String vrfNameOnTgw = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
 
-    // the VRF will exist if there is a subnet routing table that mentions this attachment,
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
       Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
       vpc.initializeVrf(vrf);
@@ -346,23 +369,14 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         toStaticRoute(
             Prefix.ZERO,
             Utils.getInterfaceIp(tgwCfg, suffixedInterfaceName(vpcCfg, attachment.getId()))));
-
-    vpc.getCidrBlockAssociations()
-        .forEach(
-            pfx ->
-                addStaticRoute(
-                    tgwCfg.getVrfs().get(vrfNameOnTgw),
-                    toStaticRoute(
-                        pfx,
-                        Utils.getInterfaceIp(
-                            vpcCfg, suffixedInterfaceName(tgwCfg, attachment.getId())))));
   }
 
-  private void connectVpn(
+  private static void connectVpn(
       Configuration tgwCfg,
       TransitGatewayAttachment attachment,
       VpnConnection vpnConnection,
       ConvertedConfiguration awsConfiguration,
+      Region region,
       Warnings warnings) {
 
     String vrfName = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
@@ -371,8 +385,16 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
     Vrf vrf = tgwCfg.getVrfs().get(vrfName);
 
-    if (vpnConnection.isBgpConnection() && vrf.getBgpProcess() == null) {
-      createBgpProcess(tgwCfg, vrf, awsConfiguration);
+    if (vpnConnection.isBgpConnection()) {
+      Optional<String> unsupported =
+          supportedVpnBgpConfiguration(attachment, vpnConnection, region);
+      if (unsupported.isPresent()) {
+        warnings.redFlag(unsupported.get());
+        return;
+      }
+      if (vrf.getBgpProcess() == null) {
+        createBgpProcess(tgwCfg, vrf, awsConfiguration);
+      }
     }
 
     vpnConnection.applyToGateway(
@@ -381,6 +403,37 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         bgpExportPolicyName(vrfName),
         bgpImportPolicyName(vrfName),
         warnings);
+  }
+
+  /**
+   * Currently, we only support VPN attachments that use the same table for association and
+   * propagation.
+   *
+   * @return Optional.empty if supported; explanatory message otherwise
+   */
+  @VisibleForTesting
+  static Optional<String> supportedVpnBgpConfiguration(
+      TransitGatewayAttachment attachment, VpnConnection vpnConnection, Region region) {
+    String associatedRoutingTableId = attachment.getAssociation().getRouteTableId();
+    Set<String> propagatedRoutingTableIds =
+        region.getTransitGatewayPropagations().values().stream()
+            .filter(
+                props ->
+                    props.getPropagations().stream()
+                        .anyMatch(
+                            prop ->
+                                prop.isEnabled()
+                                    && prop.getResourceId().equals(vpnConnection.getId())))
+            .map(TransitGatewayPropagations::getId)
+            .collect(ImmutableSet.toImmutableSet());
+    if (propagatedRoutingTableIds.equals(ImmutableSet.of(associatedRoutingTableId))) {
+      return Optional.empty();
+    } else {
+      return Optional.of(
+          String.format(
+              "Unsupported VPN attachment configuration for %s. Association route table = %s. Propagation route tables = %s",
+              vpnConnection.getId(), associatedRoutingTableId, propagatedRoutingTableIds));
+    }
   }
 
   @VisibleForTesting
@@ -417,6 +470,82 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         .setOwner(tgwCfg)
         .setStatements(Collections.singletonList(ACCEPT_ALL_BGP))
         .build();
+  }
+
+  private static void propagateRoutes(
+      Configuration tgwCfg,
+      TransitGatewayRouteTable table,
+      Propagation propagation,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+    if (!propagation.isEnabled()) {
+      return;
+    }
+    switch (propagation.getResourceType()) {
+      case VPC:
+        // need to look only in region; all VPCs attached to the gateway should have same region
+        Vpc vpc = region.getVpcs().get(propagation.getResourceId());
+        if (vpc == null) {
+          warnings.redFlag(
+              String.format(
+                  "VPC %s for propagating attachment %s not found in region %s",
+                  propagation.getResourceId(), propagation.getAttachmentId(), region.getName()));
+          return;
+        }
+        propagateRoutesVpc(
+            tgwCfg, table, propagation.getAttachmentId(), vpc, awsConfiguration, warnings);
+        return;
+      case VPN:
+        // TODO:
+        return;
+      default:
+        warnings.redFlag(
+            String.format(
+                "Resource type %s for transit gateway route propagation",
+                propagation.getResourceType()));
+    }
+  }
+
+  private static void propagateRoutesVpc(
+      Configuration tgwCfg,
+      TransitGatewayRouteTable table,
+      String attachmentId,
+      Vpc vpc,
+      ConvertedConfiguration awsConfiguration,
+      Warnings warnings) {
+
+    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    if (vpcCfg == null) {
+      warnings.redFlag(String.format("VPC configuration node for VPC %s not found", vpc.getId()));
+      return;
+    }
+
+    Interface localIface =
+        tgwCfg.getAllInterfaces().get(suffixedInterfaceName(vpcCfg, attachmentId));
+    if (localIface == null) {
+      warnings.redFlag(String.format("Interface facing VPC %s not found on TGW", vpc.getId()));
+      return;
+    }
+
+    Interface remoteIface =
+        vpcCfg.getAllInterfaces().get(suffixedInterfaceName(tgwCfg, attachmentId));
+    if (remoteIface == null) {
+      warnings.redFlag(String.format("Interface facing TGW not found on VPC %s", vpc.getId()));
+      return;
+    }
+
+    String vrfName = vrfNameForRouteTable(table.getId());
+    if (!tgwCfg.getVrfs().containsKey(vrfName)) {
+      Vrf.builder().setOwner(tgwCfg).setName(vrfName).build();
+    }
+    vpc.getCidrBlockAssociations()
+        .forEach(
+            pfx ->
+                addStaticRoute(
+                    tgwCfg.getVrfs().get(vrfName),
+                    toStaticRoute(
+                        pfx, localIface.getName(), remoteIface.getConcreteAddress().getIp())));
   }
 
   private void addTransitGatewayStaticRoute(
@@ -471,8 +600,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
               vrf,
               toStaticRoute(
                   route.getDestinationCidrBlock(),
-                  Utils.getInterfaceIp(
-                      vpcCfg, suffixedInterfaceName(tgwCfg, tgwAttachment.getId()))));
+                  Utils.getInterfaceIp(vpcCfg, suffixedInterfaceName(tgwCfg, attachmentId))));
           return;
         }
       case VPN:
