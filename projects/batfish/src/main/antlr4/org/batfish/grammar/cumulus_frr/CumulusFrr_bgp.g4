@@ -175,6 +175,7 @@ sbn_property
 | sbnp_bfd
 | sbnp_password
 | sbnp_remote_as
+| sbnp_update_source
 ;
 
 sbnp_bfd
@@ -205,6 +206,11 @@ sbnp_peer_group
 sbnp_remote_as
 :
   REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL)
+;
+
+sbnp_update_source
+:
+  UPDATE_SOURCE (ip = IP_ADDRESS | name = word)
 ;
 
 sbafi_neighbor

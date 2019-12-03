@@ -18,6 +18,7 @@ public abstract class BgpNeighbor implements Serializable {
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _ipv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _l2vpnEvpnAddressFamily;
   private @Nullable Long _ebgpMultihop;
+  private @Nullable BgpNeighborSource _bgpNeighborSource;
 
   // Whether this configuration has inherited from its parent.
   private boolean _inherited = false;
@@ -130,5 +131,14 @@ public abstract class BgpNeighbor implements Serializable {
     } else if (other.getL2vpnEvpnAddressFamily() != null) {
       _l2vpnEvpnAddressFamily.inheritFrom(other.getL2vpnEvpnAddressFamily());
     }
+  }
+
+  @Nullable
+  public BgpNeighborSource getBgpNeighborSource() {
+    return _bgpNeighborSource;
+  }
+
+  public void setBgpNeighborSource(@Nullable BgpNeighborSource bgpNeighborSource) {
+    _bgpNeighborSource = bgpNeighborSource;
   }
 }

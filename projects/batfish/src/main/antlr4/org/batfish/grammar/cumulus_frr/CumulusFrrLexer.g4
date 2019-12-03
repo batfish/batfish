@@ -588,6 +588,11 @@ UINT32
   F_Uint32
 ;
 
+UPDATE_SOURCE
+:
+  'update-source' -> pushMode(M_Update_Source)
+;
+
 USERNAME
 :
   'username' -> pushMode(M_Words)
@@ -861,3 +866,26 @@ M_Remark_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
+
+mode M_Update_Source;
+
+M_Update_Source_IP_Address
+:
+  F_IpAddress -> type(IP_ADDRESS) , popMode
+;
+
+M_Update_Source_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_Update_Source_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_Update_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ), popMode
+;
+
