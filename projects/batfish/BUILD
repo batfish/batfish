@@ -119,6 +119,7 @@ junit_tests(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_ports",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/representation/palo_alto",
+        "//projects/batfish/src/main/java/org/batfish/representation/aws",
         "//projects/bdd",
         "//projects/symbolic",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
