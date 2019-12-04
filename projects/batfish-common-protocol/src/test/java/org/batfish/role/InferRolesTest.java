@@ -2,16 +2,21 @@ package org.batfish.role;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.junit.Test;
@@ -89,29 +94,31 @@ public class InferRolesTest {
 
   @Test
   public void inferRolesOnExampleTopology() throws JsonProcessingException {
-    List<NodeRoleDimension> roles = new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
+    Optional<RoleMapping> roleMappingOpt =
+        new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
 
-    assertThat(BatfishObjectMapper.writePrettyString(roles), roles, hasSize(2));
+    assertTrue(roleMappingOpt.isPresent());
 
-    // Note: currently we do not find a "host" role because it does not match the majority
-    // tokenization. If we had as1host1, e.g., we would.
-    NodeRoleDimension d1 = roles.get(0);
-    assertThat(
-        d1.createRoleNodesMap(EXAMPLE_NODES),
-        equalTo(
-            ImmutableMap.of(
-                "border",
-                filterSet(EXAMPLE_NODES, s -> s.contains("border")),
-                "core",
-                filterSet(EXAMPLE_NODES, s -> s.contains("core")),
-                "dept",
-                filterSet(EXAMPLE_NODES, s -> s.contains("dept")),
-                "dist",
-                filterSet(EXAMPLE_NODES, s -> s.contains("dist")))));
+    RoleMapping roleMapping = roleMappingOpt.get();
 
-    NodeRoleDimension d2 = roles.get(1);
-    assertThat(
-        d2.createRoleNodesMap(EXAMPLE_NODES),
-        equalTo(ImmutableMap.of("as", filterSet(EXAMPLE_NODES, s -> s.startsWith("as")))));
+    assertThat(roleMapping.getRegex(), equalTo("\\p{Alpha}+\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+"));
+
+    assertThat(roleMapping.getRoleDimensionsGroups().entrySet(), hasSize(2));
+
+    for (Map.Entry<String, List<Integer>> entry :
+        roleMapping.getRoleDimensionsGroups().entrySet()) {
+      String dimName = entry.getKey();
+      List<Integer> groups = entry.getValue();
+      if (dimName.equals(NodeRoleDimension.AUTO_DIMENSION_PRIMARY)) {
+        assertThat(groups, equalTo(ImmutableList.of(2)));
+      } else if (dimName.equals(NodeRoleDimension.AUTO_DIMENSION_PREFIX + "1")) {
+        assertThat(groups, equalTo(ImmutableList.of(1)));
+      } else {
+        fail();
+      }
+    }
+
+    assertNull(roleMapping.getCanonicalRoleNames());
+    assertFalse(roleMapping.getCaseSensitive());
   }
 }
