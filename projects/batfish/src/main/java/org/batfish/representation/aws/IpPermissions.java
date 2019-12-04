@@ -1,13 +1,17 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_FROM_PORT;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_GROUP_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_IP_PROTOCOL;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_IP_RANGES;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_PREFIX_LIST_ID;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_PREFIX_LIST_IDS;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_TO_PORT;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_USER_GROUP_ID_PAIRS;
+import static org.batfish.representation.aws.Utils.checkNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -76,6 +80,45 @@ final class IpPermissions implements Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
+  private static final class PrefixListId implements Serializable {
+
+    @Nonnull private final String _id;
+
+    @JsonCreator
+    private static PrefixListId create(@Nullable @JsonProperty(JSON_KEY_PREFIX_LIST_ID) String id) {
+      checkNonNull(id, JSON_KEY_PREFIX_LIST_ID, "PrefixListIds");
+      return new PrefixListId(id);
+    }
+
+    PrefixListId(String id) {
+      _id = id;
+    }
+
+    @Nonnull
+    public String getId() {
+      return _id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof PrefixListId)) {
+        return false;
+      }
+      PrefixListId that = (PrefixListId) o;
+      return Objects.equals(_id, that._id);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_id);
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
   private static final class UserIdGroupPair implements Serializable {
 
     @Nonnull private final String _groupId;
@@ -120,6 +163,8 @@ final class IpPermissions implements Serializable {
 
   @Nonnull private final List<Prefix> _ipRanges;
 
+  @Nonnull private final List<String> _prefixList;
+
   @Nonnull private final List<String> _securityGroups;
 
   private int _toPort;
@@ -130,6 +175,7 @@ final class IpPermissions implements Serializable {
       @Nullable @JsonProperty(JSON_KEY_FROM_PORT) Integer fromPort,
       @Nullable @JsonProperty(JSON_KEY_TO_PORT) Integer toPort,
       @Nullable @JsonProperty(JSON_KEY_IP_RANGES) List<IpRange> ipRanges,
+      @Nullable @JsonProperty(JSON_KEY_PREFIX_LIST_IDS) List<PrefixListId> prefixes,
       @Nullable @JsonProperty(JSON_KEY_USER_GROUP_ID_PAIRS)
           List<UserIdGroupPair> userIdGroupPairs) {
     checkArgument(ipProtocol != null, "IP protocol cannot be null for IP permissions");
@@ -141,7 +187,10 @@ final class IpPermissions implements Serializable {
         ipProtocol,
         (fromPort == null || fromPort < 0 || fromPort > 65535) ? 0 : fromPort,
         (toPort == null || toPort < 0 || toPort > 65535) ? 65535 : toPort,
-        ipRanges.stream().map(IpRange::getPrefix).collect(ImmutableList.toImmutableList()),
+        (ipRanges.stream().map(IpRange::getPrefix).collect(ImmutableList.toImmutableList())),
+        firstNonNull(prefixes, ImmutableList.<PrefixListId>of()).stream()
+            .map(PrefixListId::getId)
+            .collect(ImmutableList.toImmutableList()),
         userIdGroupPairs.stream()
             .map(UserIdGroupPair::getGroupId)
             .collect(ImmutableList.toImmutableList()));
@@ -152,11 +201,13 @@ final class IpPermissions implements Serializable {
       int fromPort,
       int toPort,
       List<Prefix> ipRanges,
+      List<String> prefixList,
       List<String> securityGroups) {
     _ipProtocol = ipProtocol;
     _fromPort = fromPort;
     _toPort = toPort;
     _ipRanges = ipRanges;
+    _prefixList = prefixList;
     _securityGroups = securityGroups;
   }
 
@@ -171,6 +222,13 @@ final class IpPermissions implements Serializable {
         .filter(Objects::nonNull)
         .flatMap(sg -> sg.getUsersIpSpace().stream())
         .forEach(ipWildcardBuilder::add);
+
+    _prefixList.stream()
+        .map(id -> region.getPrefixLists().get(id))
+        .filter(Objects::nonNull)
+        .flatMap(prefixList -> prefixList.getCidrs().stream())
+        .forEach(pfx -> ipWildcardBuilder.add(IpWildcard.create(pfx)));
+
     return ipWildcardBuilder.build();
   }
 
@@ -209,15 +267,17 @@ final class IpPermissions implements Serializable {
     IpPermissions that = (IpPermissions) o;
     return _fromPort == that._fromPort
         && _toPort == that._toPort
-        && com.google.common.base.Objects.equal(_ipProtocol, that._ipProtocol)
-        && com.google.common.base.Objects.equal(_ipRanges, that._ipRanges)
-        && com.google.common.base.Objects.equal(_securityGroups, that._securityGroups);
+        && Objects.equals(_ipProtocol, that._ipProtocol)
+        && Objects.equals(_ipRanges, that._ipRanges)
+        && Objects.equals(_ipRanges, that._ipRanges)
+        && Objects.equals(_prefixList, that._prefixList)
+        && Objects.equals(_securityGroups, that._securityGroups);
   }
 
   @Override
   public int hashCode() {
     return com.google.common.base.Objects.hashCode(
-        _fromPort, _ipProtocol, _ipRanges, _securityGroups, _toPort);
+        _fromPort, _ipProtocol, _ipRanges, _prefixList, _securityGroups, _toPort);
   }
 
   @Override
@@ -226,6 +286,7 @@ final class IpPermissions implements Serializable {
         .add("_fromPort", _fromPort)
         .add("_ipProtocol", _ipProtocol)
         .add("_ipRanges", _ipRanges)
+        .add("_prefixList", _prefixList)
         .add("_securityGroups", _securityGroups)
         .add("_toPort", _toPort)
         .toString();

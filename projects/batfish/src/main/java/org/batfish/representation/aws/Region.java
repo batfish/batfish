@@ -70,6 +70,8 @@ final class Region implements Serializable {
 
   @Nonnull private final Map<String, NetworkInterface> _networkInterfaces;
 
+  @Nonnull private final Map<String, PrefixList> _prefixLists;
+
   @Nonnull private final Map<String, RdsInstance> _rdsInstances;
 
   @Nonnull private final Map<String, RouteTable> _routeTables;
@@ -123,6 +125,7 @@ final class Region implements Serializable {
         new HashMap<>(),
         new HashMap<>(),
         new HashMap<>(),
+        new HashMap<>(),
         new HashMap<>());
   }
 
@@ -137,6 +140,7 @@ final class Region implements Serializable {
       Map<String, NatGateway> natGateways,
       Map<String, NetworkAcl> networkAcls,
       Map<String, NetworkInterface> networkInterfaces,
+      Map<String, PrefixList> prefixLists,
       Map<String, RdsInstance> rdsInstances,
       Map<String, RouteTable> routeTables,
       Map<String, SecurityGroup> securityGroups,
@@ -161,6 +165,7 @@ final class Region implements Serializable {
     _natGateways = natGateways;
     _networkAcls = networkAcls;
     _networkInterfaces = networkInterfaces;
+    _prefixLists = prefixLists;
     _rdsInstances = rdsInstances;
     _routeTables = routeTables;
     _securityGroups = securityGroups;
@@ -299,6 +304,11 @@ final class Region implements Serializable {
           NetworkInterface networkInterface =
               BatfishObjectMapper.mapper().convertValue(json, NetworkInterface.class);
           _networkInterfaces.put(networkInterface.getId(), networkInterface);
+        };
+      case AwsVpcEntity.JSON_KEY_PREFIX_LISTS:
+        return json -> {
+          PrefixList prefixList = BatfishObjectMapper.mapper().convertValue(json, PrefixList.class);
+          _prefixLists.put(prefixList.getId(), prefixList);
         };
       case AwsVpcEntity.JSON_KEY_RESERVATIONS:
         return json -> {
@@ -460,6 +470,11 @@ final class Region implements Serializable {
   @Nonnull
   Map<String, NetworkAcl> getNetworkAcls() {
     return _networkAcls;
+  }
+
+  @Nonnull
+  Map<String, PrefixList> getPrefixLists() {
+    return _prefixLists;
   }
 
   @Nonnull
@@ -773,6 +788,7 @@ final class Region implements Serializable {
     private Map<String, NatGateway> _natGateways;
     private Map<String, NetworkAcl> _networkAcls;
     private Map<String, NetworkInterface> _networkInterfaces;
+    private Map<String, PrefixList> _prefixLists;
     private Map<String, RdsInstance> _rdsInstances;
     private Map<String, RouteTable> _routeTables;
     private Map<String, SecurityGroup> _securityGroups;
@@ -841,6 +857,11 @@ final class Region implements Serializable {
 
     public RegionBuilder setNetworkInterfaces(Map<String, NetworkInterface> networkInterfaces) {
       this._networkInterfaces = networkInterfaces;
+      return this;
+    }
+
+    public RegionBuilder setPrefixLists(Map<String, PrefixList> prefixLists) {
+      this._prefixLists = prefixLists;
       return this;
     }
 
@@ -932,6 +953,7 @@ final class Region implements Serializable {
           firstNonNull(_natGateways, ImmutableMap.of()),
           firstNonNull(_networkAcls, ImmutableMap.of()),
           firstNonNull(_networkInterfaces, ImmutableMap.of()),
+          firstNonNull(_prefixLists, ImmutableMap.of()),
           firstNonNull(_rdsInstances, ImmutableMap.of()),
           firstNonNull(_routeTables, ImmutableMap.of()),
           firstNonNull(_securityGroups, ImmutableMap.of()),
