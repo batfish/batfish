@@ -9,7 +9,6 @@ java_library(
         ":CumulusPortsParserListener.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_ports/parsing:cumulus_ports_base",
         "@maven//:org_antlr_antlr4_runtime",
     ],

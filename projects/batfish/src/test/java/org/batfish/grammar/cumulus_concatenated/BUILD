@@ -19,7 +19,6 @@ junit_tests(
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_concatenated",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_concatenated",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
         "@maven//:com_google_guava_guava",

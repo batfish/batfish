@@ -45,7 +45,6 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/question",
-        "@maven//:com_google_guava_guava",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
@@ -214,10 +213,8 @@ junit_tests(
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
         "//projects/minesweeper",
         "//projects/minesweeper:matchers",
-        "//projects/question",
         "@maven//:com_google_guava_guava",
         "@maven//:org_hamcrest_hamcrest",
     ],

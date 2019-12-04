@@ -51,7 +51,6 @@ java_library(
         exclude = ["src/test/java/**/*Test.java"],
     ),
     deps = [
-        ":client",
         "//projects/batfish-common-protocol:common",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_google_guava_guava",
