@@ -30,6 +30,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -183,8 +184,7 @@ final class Region implements Serializable {
   }
 
   void addConfigElement(
-      JsonNode json, String sourceFileName, ParseVendorConfigurationAnswerElement pvcae)
-      throws IOException {
+      JsonNode json, String sourceFileName, ParseVendorConfigurationAnswerElement pvcae) {
 
     Iterator<?> keys = json.fieldNames();
 
@@ -200,7 +200,10 @@ final class Region implements Serializable {
       ThrowingConsumer<JsonNode, IOException> integratorFunction = getChildConsumer(key);
 
       if (integratorFunction == null) {
-        // Add warning for unrecognized key in AWS file
+        // Add warning for unrecognized key in AWS file but don't warn if there is no data
+        if (json.get(key).isArray() && json.get(key).size() == 0) {
+          continue;
+        }
         pvcae.addUnimplementedWarning(
             BfConsts.RELPATH_AWS_CONFIGS_FILE,
             new Warning(
@@ -412,8 +415,12 @@ final class Region implements Serializable {
         };
       case AwsVpcEntity.JSON_KEY_VPN_GATEWAYS:
         return json -> {
-          VpnGateway vpnGateway = BatfishObjectMapper.mapper().convertValue(json, VpnGateway.class);
-          _vpnGateways.put(vpnGateway.getId(), vpnGateway);
+          String state = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          if (state.equals(AwsVpcEntity.STATE_AVAILABLE)) {
+            VpnGateway vpnGateway =
+                BatfishObjectMapper.mapper().convertValue(json, VpnGateway.class);
+            _vpnGateways.put(vpnGateway.getId(), vpnGateway);
+          }
         };
       default:
         return null;
@@ -664,6 +671,9 @@ final class Region implements Serializable {
               iface -> {
                 iface.setIncomingFilter(inAcl);
                 iface.setOutgoingFilter(outAcl);
+                iface.setFirewallSessionInterfaceInfo(
+                    new FirewallSessionInterfaceInfo(
+                        false, ImmutableList.of(iface.getName()), null, null));
               });
     }
   }
