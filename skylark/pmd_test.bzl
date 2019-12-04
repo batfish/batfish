@@ -56,7 +56,7 @@ def _impl(ctx):
     )
     return [DefaultInfo(executable = test_file, runfiles = runfiles)]
 
-pmd_test = rule(
+_pmd_test = rule(
     implementation = _impl,
     attrs = {
         "lib": attr.label(
@@ -76,3 +76,11 @@ pmd_test = rule(
     },
     test = True,
 )
+
+def pmd_test(name, **kwargs):
+    # Add the pmd_test tag so that pmd tests can be skipped with
+    # --test_tag_filters=-pmd-test"
+    if "tags" not in kwargs:
+        kwargs["tags"] = []
+    kwargs["tags"].append("pmd_test")
+    _pmd_test(name = name, **kwargs)
