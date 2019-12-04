@@ -34,10 +34,10 @@ final class PrefixList implements AwsVpcEntity, Serializable {
     checkNonNull(prefixListId, JSON_KEY_PREFIX_LIST_ID, "PrefixList");
     checkNonNull(prefixListName, JSON_KEY_PREFIX_LIST_NAME, "PrefixList");
 
-    return new PrefixList(cidrs, prefixListId, prefixListName);
+    return new PrefixList(prefixListId, cidrs, prefixListName);
   }
 
-  PrefixList(List<Prefix> cidrs, String prefixListId, String prefixListName) {
+  PrefixList(String prefixListId, List<Prefix> cidrs, String prefixListName) {
     _cidrs = cidrs;
     _prefixListId = prefixListId;
     _prefixListName = prefixListName;
@@ -63,7 +63,7 @@ final class PrefixList implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof PrefixList)) {
       return false;
     }
     PrefixList that = (PrefixList) o;

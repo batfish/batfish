@@ -108,12 +108,12 @@ final class IpPermissions implements Serializable {
         return false;
       }
       PrefixListId that = (PrefixListId) o;
-      return Objects.equals(_id, that._id);
+      return _id.equals(that._id);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_id);
+      return _id.hashCode();
     }
   }
 

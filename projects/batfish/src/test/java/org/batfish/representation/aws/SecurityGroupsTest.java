@@ -433,7 +433,7 @@ public class SecurityGroupsTest {
         Region.builder("r1")
             .setPrefixLists(
                 ImmutableMap.of(
-                    prefixListId, new PrefixList(ImmutableList.of(prefix), prefixListId, "test")))
+                    prefixListId, new PrefixList(prefixListId, ImmutableList.of(prefix), "test")))
             .build());
 
     IpAccessList outFilter =
