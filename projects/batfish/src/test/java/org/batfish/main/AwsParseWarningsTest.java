@@ -35,7 +35,7 @@ public class AwsParseWarningsTest {
 
   @Test
   public void testInvalidKeyWarning() {
-    Batfish.parseAwsConfigurations(ImmutableMap.of(_path, "{ \"invalidKey\": [] }"), _pvcae);
+    Batfish.parseAwsConfigurations(ImmutableMap.of(_path, "{ \"invalidKey\": [1] }"), _pvcae);
     assertThat(
         _pvcae.getWarnings().get(RELPATH_AWS_CONFIGS_FILE).getUnimplementedWarnings(),
         contains(
