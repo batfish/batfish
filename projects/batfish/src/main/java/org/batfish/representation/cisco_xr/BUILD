@@ -13,7 +13,6 @@ java_library(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cisco_xr",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
-        "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_lang3",
     ],
 )

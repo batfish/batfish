@@ -9,7 +9,6 @@ java_library(
         ":CiscoParserListener.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco/parsing:cisco_base_parser",
         "@maven//:org_antlr_antlr4_runtime",
     ],

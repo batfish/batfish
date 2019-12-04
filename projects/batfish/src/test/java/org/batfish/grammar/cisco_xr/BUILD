@@ -20,7 +20,6 @@ junit_tests(
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_xr",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco_xr",
-        "//projects/bdd",
         "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_lang3",

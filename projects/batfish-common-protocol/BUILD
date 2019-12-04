@@ -71,9 +71,7 @@ java_library(
         "@maven//:commons_beanutils_commons_beanutils",
     ],
     deps = [
-        ":parser_common",
         "//projects/bdd",
-        "//projects/lib/z3",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
@@ -127,7 +125,6 @@ java_library(
         "@maven//:junit_junit",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_configuration2",
-        "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
         "@maven//:org_parboiled_parboiled_core",
         "@maven//:org_parboiled_parboiled_java",
@@ -163,7 +160,6 @@ junit_tests(
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
         "@maven//:org_parboiled_parboiled_core",
-        "@maven//:org_parboiled_parboiled_java",
     ],
 )
 

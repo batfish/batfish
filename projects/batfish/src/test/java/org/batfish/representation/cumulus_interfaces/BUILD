@@ -15,7 +15,6 @@ junit_tests(
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus_interfaces",
         "@maven//:com_google_guava_guava",
-        "@maven//:com_google_guava_guava_testlib",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )

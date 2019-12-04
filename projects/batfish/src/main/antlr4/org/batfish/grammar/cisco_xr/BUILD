@@ -14,7 +14,6 @@ java_library(
         ":CiscoXrLexer.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_xr/parsing:cisco_xr_base_parser",
         "@maven//:org_antlr_antlr4_runtime",
     ],
@@ -28,7 +27,6 @@ java_library(
         ":CiscoXrParserListener.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_xr/parsing:cisco_xr_base_parser",
         "@maven//:org_antlr_antlr4_runtime",
     ],
