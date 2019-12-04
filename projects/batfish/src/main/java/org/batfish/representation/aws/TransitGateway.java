@@ -35,7 +35,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
-import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute;
 
 /**
  * Represents an AWS Transit Gateway
@@ -264,14 +263,17 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                     && region.getTransitGatewayStaticRoutes().containsKey(table.getId()))
         .forEach(
             table ->
-                region
-                    .getTransitGatewayStaticRoutes()
-                    .get(table.getId())
-                    .getRoutes()
+                region.getTransitGatewayStaticRoutes().get(table.getId()).getRoutes().stream()
+                    .filter(route -> route instanceof TransitGatewayRouteV4)
                     .forEach(
                         route ->
                             addTransitGatewayStaticRoute(
-                                cfgNode, table, route, awsConfiguration, region, warnings)));
+                                cfgNode,
+                                table,
+                                (TransitGatewayRouteV4) route,
+                                awsConfiguration,
+                                region,
+                                warnings)));
 
     return cfgNode;
   }
@@ -552,7 +554,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   private void addTransitGatewayStaticRoute(
       Configuration tgwCfg,
       TransitGatewayRouteTable routeTable,
-      TransitGatewayRoute route,
+      TransitGatewayRouteV4 route,
       ConvertedConfiguration awsConfiguration,
       Region region,
       Warnings warnings) {
@@ -577,7 +579,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   private void addTransitGatewayStaticRouteAttachment(
       Configuration tgwCfg,
       Vrf vrf,
-      TransitGatewayRoute route,
+      TransitGatewayRouteV4 route,
       String attachmentId,
       ConvertedConfiguration awsConfiguration,
       Region region,
