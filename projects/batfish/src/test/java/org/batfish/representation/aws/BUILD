@@ -20,6 +20,7 @@ junit_tests(
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )

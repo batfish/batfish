@@ -21,6 +21,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET = "CidrBlockAssociationSet";
   String JSON_KEY_CIDR_BLOCK_SET = "CidrBlockSet";
   String JSON_KEY_CIDR_IP = "CidrIp";
+  String JSON_KEY_CIDRS = "Cidrs";
   String JSON_KEY_CODE = "Code";
   String JSON_KEY_CREATED = "Created";
   String JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION = "CustomerGatewayConfiguration";
@@ -77,6 +78,10 @@ public interface AwsVpcEntity {
   String JSON_KEY_OUTSIDE_IP_ADDRESS = "OutsideIpAddress";
   String JSON_KEY_PLACEMENT_GROUPS = "PlacementGroups";
   String JSON_KEY_PORT_RANGE = "PortRange";
+  String JSON_KEY_PREFIX_LIST_ID = "PrefixListId";
+  String JSON_KEY_PREFIX_LIST_IDS = "PrefixListIds";
+  String JSON_KEY_PREFIX_LIST_NAME = "PrefixListName";
+  String JSON_KEY_PREFIX_LISTS = "PrefixLists";
   String JSON_KEY_PRIMARY = "Primary";
   String JSON_KEY_PRIVATE_IP_ADDRESS = "PrivateIpAddress";
   String JSON_KEY_PRIVATE_IP_ADDRESSES = "PrivateIpAddresses";
