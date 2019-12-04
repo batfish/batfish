@@ -82,6 +82,14 @@ public class SecurityGroupsTest {
                             0,
                             65535,
                             ImmutableList.of(Prefix.parse("0.0.0.0/0")),
+                            ImmutableList.of(),
+                            ImmutableList.of()),
+                        new IpPermissions(
+                            "-1",
+                            0,
+                            65535,
+                            ImmutableList.of(),
+                            ImmutableList.of("pl-7ba54012"),
                             ImmutableList.of())),
                     ImmutableList.of(
                         new IpPermissions(
@@ -89,6 +97,7 @@ public class SecurityGroupsTest {
                             22,
                             22,
                             ImmutableList.of(Prefix.parse("1.2.3.4/32")),
+                            ImmutableList.of(),
                             ImmutableList.of()))))));
   }
 
@@ -339,6 +348,56 @@ public class SecurityGroupsTest {
     assertThat(
         outFilter
             .filter(_flowBuilder.build(), null, ImmutableMap.of(), ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+  }
+
+  @Test
+  public void testPrefixList() {
+    String prefixListId = "pl-7ba54012";
+    Prefix prefix = Prefix.parse("10.10.10.0/24");
+
+    IpPermissions perms =
+        new IpPermissions(
+            "-1", 0, 65535, ImmutableList.of(), ImmutableList.of(prefixListId), ImmutableList.of());
+
+    SecurityGroup sg =
+        new SecurityGroup("test", "test", ImmutableList.of(perms), ImmutableList.of());
+
+    List<IpAccessListLine> inboundRules = new LinkedList<>();
+    List<IpAccessListLine> outboundRules = new LinkedList<>();
+
+    sg.addInOutAccessLines(
+        inboundRules,
+        outboundRules,
+        Region.builder("r1")
+            .setPrefixLists(
+                ImmutableMap.of(
+                    prefixListId, new PrefixList(prefixListId, ImmutableList.of(prefix), "test")))
+            .build());
+
+    IpAccessList outFilter =
+        IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
+
+    // flow in the prefix list range should be accepted
+    assertThat(
+        outFilter
+            .filter(
+                _flowBuilder.setDstIp(Ip.parse("10.10.10.1")).setSrcPort(10).setDstPort(10).build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.PERMIT));
+
+    // flow outside the prefix list range should be denied
+    assertThat(
+        outFilter
+            .filter(
+                _flowBuilder.setDstIp(Ip.parse("1.1.1.1")).setSrcPort(10).setDstPort(10).build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
             .getAction(),
         equalTo(LineAction.DENY));
   }

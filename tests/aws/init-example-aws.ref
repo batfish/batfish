@@ -38,17 +38,7 @@
     "parseStatus" : {
       "configs/lhr-border-02.cfg" : "PASSED"
     },
-    "version" : "0.36.0",
-    "warnings" : {
-      "aws_configs" : {
-        "Unimplemented features" : [
-          {
-            "tag" : "AWS",
-            "text" : "Unrecognized element 'PrefixLists' in AWS file aws_configs/us-west-2/PrefixLists.json"
-          }
-        ]
-      }
-    }
+    "version" : "0.36.0"
   },
   {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",

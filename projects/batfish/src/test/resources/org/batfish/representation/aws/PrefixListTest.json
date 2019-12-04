@@ -1,0 +1,12 @@
+{
+  "PrefixLists": [
+    {
+      "Cidrs": [
+        "52.94.28.0/23",
+        "52.94.10.0/24"
+      ],
+      "PrefixListId": "pl-00a54069",
+      "PrefixListName": "com.amazonaws.us-west-2.dynamodb"
+    }
+  ]
+}

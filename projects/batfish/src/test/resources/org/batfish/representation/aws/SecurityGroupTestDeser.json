@@ -31,6 +31,17 @@
           "Ipv6Ranges": [],
           "PrefixListIds": [],
           "UserIdGroupPairs": []
+        },
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [
+            {
+              "PrefixListId": "pl-7ba54012"
+            }
+          ],
+          "UserIdGroupPairs": []
         }
       ],
       "OwnerId": "118292266645",
