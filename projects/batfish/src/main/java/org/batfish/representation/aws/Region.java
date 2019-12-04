@@ -30,6 +30,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -649,6 +650,9 @@ final class Region implements Serializable {
               iface -> {
                 iface.setIncomingFilter(inAcl);
                 iface.setOutgoingFilter(outAcl);
+                iface.setFirewallSessionInterfaceInfo(
+                    new FirewallSessionInterfaceInfo(
+                        false, ImmutableList.of(iface.getName()), null, null));
               });
     }
   }
