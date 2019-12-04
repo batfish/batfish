@@ -79,8 +79,6 @@ _pmd_test = rule(
 
 def pmd_test(name, **kwargs):
     # Add the pmd_test tag so that pmd tests can be skipped with
-    # --test_tag_filters=-pmd-test"
-    if "tags" not in kwargs:
-        kwargs["tags"] = []
-    kwargs["tags"].append("pmd_test")
+    # --test_tag_filters=-pmd_test
+    kwargs["tags"] = kwargs.get("tags", []) + ["pmd_test"]
     _pmd_test(name = name, **kwargs)
