@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
@@ -13,9 +12,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Prefix;
-import org.batfish.representation.aws.Route.State;
-import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute.Type;
+import org.batfish.representation.aws.TransitGatewayRoute.Type;
 
 /**
  * Represents AWS Transit Gateway Static Routes
@@ -66,106 +63,6 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
     @Override
     public int hashCode() {
       return Objects.hash(_attachmentId);
-    }
-  }
-
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  @ParametersAreNonnullByDefault
-  static final class TransitGatewayRoute implements Serializable {
-
-    enum Type {
-      STATIC,
-      PROPAGATED
-    }
-
-    @Nonnull private final Prefix _destinationCidrBlock;
-
-    @Nonnull private final State _state;
-
-    @Nonnull private final Type _type;
-
-    @Nonnull private final List<String> _attachmentIds;
-
-    @JsonCreator
-    private static TransitGatewayRoute create(
-        @Nullable @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) Prefix destinationCidrBlock,
-        @Nullable @JsonProperty(JSON_KEY_STATE) String state,
-        @Nullable @JsonProperty(JSON_KEY_TYPE) String type,
-        @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENTS)
-            List<Attachment> attachments) {
-      checkArgument(
-          destinationCidrBlock != null,
-          "Destination CIDR block cannot be null for transit gateway static route");
-      checkArgument(state != null, "State cannot be null for transit gateway attachment");
-      checkArgument(type != null, "Type cannot be null for transit gateway attachment");
-      checkArgument(
-          attachments != null, "Attachments cannot be null for transit gateway attachment");
-
-      return new TransitGatewayRoute(
-          destinationCidrBlock,
-          State.valueOf(state.toUpperCase()),
-          Type.valueOf(type.toUpperCase()),
-          attachments.stream()
-              .map(Attachment::getAttachmentId)
-              .collect(ImmutableList.toImmutableList()));
-    }
-
-    TransitGatewayRoute(
-        Prefix destinationCidrBlock, State state, Type type, List<String> attachmentIds) {
-      _destinationCidrBlock = destinationCidrBlock;
-      _state = state;
-      _type = type;
-      _attachmentIds = attachmentIds;
-    }
-
-    @Nonnull
-    public List<String> getAttachmentIds() {
-      return _attachmentIds;
-    }
-
-    @Nonnull
-    public Prefix getDestinationCidrBlock() {
-      return _destinationCidrBlock;
-    }
-
-    @Nonnull
-    public State getState() {
-      return _state;
-    }
-
-    @Nonnull
-    public Type getType() {
-      return _type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof TransitGatewayRoute)) {
-        return false;
-      }
-      TransitGatewayRoute that = (TransitGatewayRoute) o;
-      return Objects.equals(_destinationCidrBlock, that._destinationCidrBlock)
-          && _state == that._state
-          && _type == that._type
-          && Objects.equals(_attachmentIds, that._attachmentIds);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(_destinationCidrBlock, _state, _type, _attachmentIds);
-    }
-
-    @Override
-    public String toString() {
-      return MoreObjects.toStringHelper(this)
-          .add("_destinationCidrBlock", _destinationCidrBlock)
-          .add("_state", _state)
-          .add("_type", _type)
-          .add("_attachmentIds", _attachmentIds)
-          .toString();
     }
   }
 

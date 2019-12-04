@@ -33,8 +33,7 @@ import org.batfish.representation.aws.TransitGateway.TransitGatewayOptions;
 import org.batfish.representation.aws.TransitGatewayAttachment.Association;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
-import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute;
-import org.batfish.representation.aws.TransitGatewayStaticRoutes.TransitGatewayRoute.Type;
+import org.batfish.representation.aws.TransitGatewayRoute.Type;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
 
@@ -386,12 +385,12 @@ public class TransitGatewayTest {
         new TransitGatewayStaticRoutes(
             routeTableId,
             ImmutableList.of(
-                new TransitGatewayRoute(
+                new TransitGatewayRouteV4(
                     activeRoutePrefix,
                     State.ACTIVE,
                     Type.STATIC,
                     ImmutableList.of(tgwAttachment.getId())),
-                new TransitGatewayRoute(
+                new TransitGatewayRouteV4(
                     Prefix.parse("9.9.9.9/32"),
                     State.BLACKHOLE,
                     Type.STATIC,
@@ -464,7 +463,7 @@ public class TransitGatewayTest {
         new TransitGatewayStaticRoutes(
             routeTableId,
             ImmutableList.of(
-                new TransitGatewayRoute(
+                new TransitGatewayRouteV4(
                     activeRoutePrefix,
                     State.ACTIVE,
                     Type.STATIC,
