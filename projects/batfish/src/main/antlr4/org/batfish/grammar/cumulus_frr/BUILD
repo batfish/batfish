@@ -9,7 +9,6 @@ java_library(
         ":CumulusFrrParserListener.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_frr/parsing:cumulus_frr_base",
         "@maven//:org_antlr_antlr4_runtime",
     ],

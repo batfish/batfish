@@ -8,7 +8,6 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
-        "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )

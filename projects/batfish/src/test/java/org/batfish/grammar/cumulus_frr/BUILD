@@ -12,7 +12,6 @@ junit_tests(
     ]),
     deps = [
         "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_frr",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",

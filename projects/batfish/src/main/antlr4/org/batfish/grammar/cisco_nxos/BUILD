@@ -9,7 +9,6 @@ java_library(
         ":CiscoNxosParserListener.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/parsing:cisco_nxos_base",
         "@maven//:org_antlr_antlr4_runtime",
     ],

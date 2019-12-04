@@ -41,7 +41,6 @@ java_library(
         "//projects/batfish-common-protocol:common_testlib",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
-        "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
@@ -68,9 +67,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/bdd",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
-        "@maven//:com_google_auto_service_auto_service_annotations",
         "@maven//:com_google_guava_guava",
-        "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
