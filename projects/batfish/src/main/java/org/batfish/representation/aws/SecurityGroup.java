@@ -144,7 +144,6 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
       List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules, Region region) {
     addIngressAccessLines(_ipPermsIngress, inboundRules, region);
     addEgressAccessLines(_ipPermsEgress, outboundRules, region);
-    addReverseAcls(inboundRules, outboundRules);
   }
 
   @Nonnull

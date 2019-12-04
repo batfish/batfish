@@ -27,6 +27,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -36,7 +37,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
@@ -147,17 +147,6 @@ public class RdsInstanceTest {
                   ImmutableList.of(
                       IpAccessListLine.acceptingHeaderSpace(
                           HeaderSpace.builder()
-                              .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                              .setDstIps(
-                                  Sets.newHashSet(
-                                      IpWildcard.parse("1.2.3.4/32"),
-                                      IpWildcard.parse("10.193.16.105/32"),
-                                      IpWildcard.parse("54.191.107.22")))
-                              .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
-                              .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
-                              .build()),
-                      IpAccessListLine.acceptingHeaderSpace(
-                          HeaderSpace.builder()
                               .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
                               .build())))));
       assertThat(
@@ -165,11 +154,6 @@ public class RdsInstanceTest {
           hasLines(
               equalTo(
                   ImmutableList.of(
-                      IpAccessListLine.acceptingHeaderSpace(
-                          HeaderSpace.builder()
-                              .setSrcIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
-                              .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
-                              .build()),
                       IpAccessListLine.acceptingHeaderSpace(
                           HeaderSpace.builder()
                               .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
@@ -180,6 +164,11 @@ public class RdsInstanceTest {
                                       IpWildcard.parse("54.191.107.22")))
                               .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
                               .build())))));
+      assertThat(
+          iface.getFirewallSessionInterfaceInfo(),
+          equalTo(
+              new FirewallSessionInterfaceInfo(
+                  false, ImmutableList.of(iface.getName()), null, null)));
     }
   }
 
