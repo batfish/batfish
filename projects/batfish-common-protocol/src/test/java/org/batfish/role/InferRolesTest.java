@@ -101,7 +101,7 @@ public class InferRolesTest {
 
     RoleMapping roleMapping = roleMappingOpt.get();
 
-    assertThat(roleMapping.getRegex(), equalTo("\\p{Alpha}+\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+"));
+    assertThat(roleMapping.getRegex(), equalTo("(\\p{Alpha}+)\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+"));
 
     assertThat(roleMapping.getRoleDimensionsGroups().entrySet(), hasSize(2));
 
@@ -118,7 +118,7 @@ public class InferRolesTest {
       }
     }
 
-    assertNull(roleMapping.getCanonicalRoleNames());
+    assertTrue(roleMapping.getCanonicalRoleNames().isEmpty());
     assertFalse(roleMapping.getCaseSensitive());
   }
 }

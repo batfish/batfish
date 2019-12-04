@@ -387,8 +387,11 @@ public final class InferRoles {
     for (int i = 0; i < _tokens.size(); i++) {
       switch (_tokens.get(i).getToken()) {
         case ALNUM_PLUS:
+          _regex.set(i, group(plus(ALPHABETIC_REGEX)) + star(ALPHANUMERIC_REGEX));
+          groups++;
+          break;
         case ALPHA_PLUS_DIGIT_PLUS:
-          _regex.set(i, group(_regex.get(i)));
+          _regex.set(i, group(plus(ALPHABETIC_REGEX)) + plus(DIGIT_REGEX));
           groups++;
           break;
         default:
