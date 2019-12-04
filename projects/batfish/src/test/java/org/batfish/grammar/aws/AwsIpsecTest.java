@@ -50,9 +50,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests of an AWS network with IPsec peering to a Cisco router on-prem. */
 public class AwsIpsecTest {
 
-  private static String TESTRIG_PREFIX = "org/batfish/grammar/host/testrigs/";
+  private static final String TESTRIG_PREFIX = "org/batfish/grammar/aws/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
