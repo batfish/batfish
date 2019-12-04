@@ -1,4 +1,4 @@
-package org.batfish.grammar.host;
+package org.batfish.grammar.aws;
 
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
 import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
@@ -34,9 +34,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-public class HostTest {
-
-  private static String TESTRIG_PREFIX = "org/batfish/grammar/host/testrigs/";
+/** Tests of {@link org.batfish.representation.host.HostInterface} in an AWS environment. */
+// TODO: this should just be a test of HostInterface, decoupled from AWS.
+public class AwsHostTest {
+  private static final String TESTRIG_PREFIX = "org/batfish/grammar/aws/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
