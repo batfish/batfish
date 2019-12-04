@@ -1546,7 +1546,7 @@ public final class CumulusNcluGrammarTest {
   public void testVxlanConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_vxlan_vrfs");
     assertThat(
-        c.getDefaultVrf().getVniSettings(),
+        c.getDefaultVrf().getLayer2Vnis(),
         hasEntry(
             equalTo(102000),
             allOf(
@@ -1557,7 +1557,7 @@ public final class CumulusNcluGrammarTest {
                 hasUdpPort(equalTo(NamedPort.VXLAN.number())))));
 
     assertThat(
-        c.getVrfs().get("VRF1").getVniSettings(),
+        c.getVrfs().get("VRF1").getLayer2Vnis(),
         hasEntry(
             equalTo(101000),
             allOf(
