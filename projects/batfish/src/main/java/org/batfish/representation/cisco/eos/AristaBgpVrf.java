@@ -15,6 +15,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 public final class AristaBgpVrf implements Serializable {
 
   private boolean _defaultIpv4Unicast;
+  @Nullable private Boolean _advertiseInactive;
   @Nullable private Boolean _bestpathAsPathMultipathRelax;
   @Nullable private AristaBgpBestpathTieBreaker _bestpathTieBreaker;
   @Nullable private Ip _clusterId;
@@ -62,6 +63,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setDefaultIpv4Unicast(boolean defaultIpv4Unicast) {
     _defaultIpv4Unicast = defaultIpv4Unicast;
+  }
+
+  @Nullable
+  public Boolean getAdvertiseInactive() {
+    return _advertiseInactive;
+  }
+
+  public void setAdvertiseInactive(@Nullable Boolean advertiseInactive) {
+    _advertiseInactive = advertiseInactive;
   }
 
   @Nullable

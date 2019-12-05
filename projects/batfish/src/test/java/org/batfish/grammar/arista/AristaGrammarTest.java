@@ -140,6 +140,7 @@ public class AristaGrammarTest {
     // Basic VRF config
     {
       AristaBgpVrf defaultVrf = config.getAristaBgp().getDefaultVrf();
+      assertThat(defaultVrf.getAdvertiseInactive(), equalTo(Boolean.TRUE));
       assertTrue(defaultVrf.getShutdown());
       assertThat(defaultVrf.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
       assertThat(defaultVrf.getKeepAliveTimer(), equalTo(3));
@@ -155,6 +156,7 @@ public class AristaGrammarTest {
     {
       String vrfName = "tenant_vrf";
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get(vrfName);
+      assertThat(vrf.getAdvertiseInactive(), nullValue());
       assertThat(vrf.getShutdown(), nullValue());
       assertThat(vrf.getRouterId(), equalTo(Ip.parse("5.6.7.8")));
       assertThat(vrf.getKeepAliveTimer(), equalTo(6));
@@ -168,8 +170,10 @@ public class AristaGrammarTest {
     }
     {
       String vrfName = "tenant2_vrf";
-      assertTrue(config.getAristaBgp().getVrfs().get(vrfName).getShutdown());
-      assertThat(config.getAristaBgp().getVrfs().get(vrfName).getRouterId(), nullValue());
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get(vrfName);
+      assertThat(vrf.getAdvertiseInactive(), nullValue());
+      assertTrue(vrf.getShutdown());
+      assertThat(vrf.getRouterId(), nullValue());
     }
   }
 
