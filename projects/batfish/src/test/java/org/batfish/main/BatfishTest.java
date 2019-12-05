@@ -1,6 +1,6 @@
 package org.batfish.main;
 
-import static org.batfish.common.util.ThrowableMatchers.hasStackTrace;
+import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
 import static org.batfish.main.Batfish.readAllFiles;
 import static org.hamcrest.Matchers.anEmptyMap;

@@ -3,7 +3,27 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 load("@batfish//skylark:junit.bzl", "junit_tests")
+
+java_library(
+    name = "matchers",
+    srcs = glob(
+        [
+            "*Matchers.java",
+            "*MatchersImpl.java",
+        ],
+    ),
+    deps = [
+        "//projects/bdd",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":matchers",
+)
 
 junit_tests(
     name = "tests",
@@ -11,11 +31,11 @@ junit_tests(
         "**/*Test.java",
     ]),
     deps = [
+        ":matchers",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/batfish/src/main/java/org/batfish/representation/cisco",
+        "//projects/bdd",
         "@maven//:com_google_guava_guava",
-        "@maven//:com_google_guava_guava_testlib",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
