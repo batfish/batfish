@@ -257,7 +257,6 @@ final class IpPermissions implements Serializable {
     }
     // if the range isn't all ports, set it in ACL
     if (_fromPort != 0 || _toPort != 65535) {
-      assert protocol == IpProtocol.TCP || protocol == IpProtocol.UDP;
       constraints.setDstPorts(ImmutableSet.of(new SubRange(_fromPort, _toPort)));
     }
     if (ingress) {
