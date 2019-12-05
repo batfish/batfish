@@ -631,7 +631,7 @@ final class Region implements Serializable {
 
     // VpcPeeringConnections are processed in AwsConfiguration since they can be cross region
 
-    applySecurityGroupsAcls(awsConfiguration.getConfigurationNodes());
+    applySecurityGroupsAcls(awsConfiguration.getConfigurationNodes(), warnings);
 
     // TODO: for now, set all interfaces to have the same bandwidth
     for (Configuration cfgNode : awsConfiguration.getConfigurationNodes().values()) {
@@ -643,7 +643,7 @@ final class Region implements Serializable {
     }
   }
 
-  private void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes) {
+  private void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
     for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
       Configuration cfgNode = cfgNodes.get(entry.getKey());
       List<IpAccessListLine> inboundRules = new LinkedList<>();
@@ -652,7 +652,7 @@ final class Region implements Serializable {
           .getValue()
           .forEach(
               securityGroup ->
-                  securityGroup.addInOutAccessLines(inboundRules, outboundRules, this));
+                  securityGroup.addInOutAccessLines(inboundRules, outboundRules, this, warnings));
 
       // create ACLs from inboundRules and outboundRules
       IpAccessList inAcl =
