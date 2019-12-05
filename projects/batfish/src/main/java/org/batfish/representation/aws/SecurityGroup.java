@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
@@ -64,17 +65,22 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   /** Adds any access lines for this security group to the inbound and outbound rules. */
   void addInOutAccessLines(
-      List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules, Region region) {
+      List<IpAccessListLine> inboundRules,
+      List<IpAccessListLine> outboundRules,
+      Region region,
+      Warnings warnings) {
     for (ListIterator<IpPermissions> it = _ipPermsIngress.listIterator(); it.hasNext(); ) {
       int seq = it.nextIndex();
       IpPermissions p = it.next();
-      p.toIpAccessListLine(true, region, _groupId + " - " + _groupName + " [ingress] " + seq)
+      p.toIpAccessListLine(
+              true, region, _groupId + " - " + _groupName + " [ingress] " + seq, warnings)
           .ifPresent(inboundRules::add);
     }
     for (ListIterator<IpPermissions> it = _ipPermsEgress.listIterator(); it.hasNext(); ) {
       int seq = it.nextIndex();
       IpPermissions p = it.next();
-      p.toIpAccessListLine(false, region, _groupId + " - " + _groupName + " [egress] " + seq)
+      p.toIpAccessListLine(
+              false, region, _groupId + " - " + _groupName + " [egress] " + seq, warnings)
           .ifPresent(outboundRules::add);
     }
   }
