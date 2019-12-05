@@ -16,7 +16,7 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
   public void testProperties() {
     String snapshot = "snapshot1";
     String dimension = "someDimension";
-    RoleMapping rMapping = new RoleMapping("mymap", "\\(.*\\)", null, null, false);
+    RoleMapping rMapping = new RoleMapping("mymap", "\\(.*\\)", null, null);
     NodeRolesData data =
         NodeRolesData.builder()
             .setRoleMappings(ImmutableList.of(rMapping))

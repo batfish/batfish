@@ -54,8 +54,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
                   nodes,
                   _batfish
                       .getTopologyProvider()
-                      .getInitialLayer3Topology(_batfish.getNetworkSnapshot()),
-                  question.getCaseSensitive())
+                      .getInitialLayer3Topology(_batfish.getNetworkSnapshot()))
               .inferRoles();
       return new InferRolesAnswerElement(roleMapping);
     }
@@ -68,15 +67,11 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
    */
   public static final class InferRolesQuestion extends Question {
     private static final String PROP_NODE_REGEX = "nodeRegex";
-    private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
     private NodesSpecifier _nodeRegex;
 
-    private boolean _caseSensitive;
-
     public InferRolesQuestion() {
       _nodeRegex = NodesSpecifier.ALL;
-      _caseSensitive = false;
     }
 
     @Override
@@ -97,16 +92,6 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
-    }
-
-    @JsonProperty(PROP_CASE_SENSITIVE)
-    public boolean getCaseSensitive() {
-      return _caseSensitive;
-    }
-
-    @JsonProperty(PROP_CASE_SENSITIVE)
-    public void setCaseSensitive(boolean caseSensitive) {
-      _caseSensitive = caseSensitive;
     }
   }
 

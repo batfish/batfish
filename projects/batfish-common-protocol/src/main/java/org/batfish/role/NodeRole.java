@@ -17,7 +17,6 @@ import org.batfish.datamodel.Names.Type;
 public class NodeRole implements Comparable<NodeRole> {
   private static final String PROP_NAME = "name";
   private static final String PROP_REGEX = "regex";
-  private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
   @Nonnull private final transient Pattern _compiledPattern;
 
@@ -25,33 +24,24 @@ public class NodeRole implements Comparable<NodeRole> {
 
   @Nonnull private final String _regex;
 
-  private final boolean _caseSensitive;
-
   @JsonCreator
   private static NodeRole create(
-      @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_REGEX) String regex,
-      @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
+      @JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_REGEX) String regex) {
     if (name == null) {
       throw new IllegalArgumentException("Node role name cannot be null");
     }
     if (regex == null) {
       throw new IllegalArgumentException("Node role regex cannot be null");
     }
-    return new NodeRole(name, regex, caseSensitive);
+    return new NodeRole(name, regex);
   }
 
   public NodeRole(String name, String regex) {
-    this(name, regex, false);
-  }
-
-  public NodeRole(String name, String regex, boolean caseSensitive) {
     Names.checkName(name, "role", Type.REFERENCE_OBJECT);
     _name = name;
     _regex = regex;
-    _caseSensitive = caseSensitive;
     try {
-      _compiledPattern = Pattern.compile(regex, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+      _compiledPattern = Pattern.compile(regex);
     } catch (PatternSyntaxException e) {
       throw new IllegalArgumentException("Bad regex: " + e.getMessage());
     }
@@ -61,7 +51,6 @@ public class NodeRole implements Comparable<NodeRole> {
   public int compareTo(NodeRole o) {
     return Comparator.comparing(NodeRole::getName)
         .thenComparing(NodeRole::getRegex)
-        .thenComparing(NodeRole::getCaseSensitive)
         .compare(this, o);
   }
 
@@ -71,8 +60,7 @@ public class NodeRole implements Comparable<NodeRole> {
       return false;
     }
     return Objects.equals(_name, ((NodeRole) o)._name)
-        && Objects.equals(_regex, ((NodeRole) o)._regex)
-        && _caseSensitive == ((NodeRole) o)._caseSensitive;
+        && Objects.equals(_regex, ((NodeRole) o)._regex);
   }
 
   @JsonProperty(PROP_NAME)
@@ -83,11 +71,6 @@ public class NodeRole implements Comparable<NodeRole> {
   @JsonProperty(PROP_REGEX)
   public String getRegex() {
     return _regex;
-  }
-
-  @JsonProperty(PROP_CASE_SENSITIVE)
-  public boolean getCaseSensitive() {
-    return _caseSensitive;
   }
 
   @Override
@@ -110,7 +93,6 @@ public class NodeRole implements Comparable<NodeRole> {
     return MoreObjects.toStringHelper(getClass())
         .add("name", _name)
         .add("regex", _regex)
-        .add("caseSensitive", _caseSensitive)
         .toString();
   }
 }

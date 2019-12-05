@@ -49,11 +49,10 @@ public class NodeRoleDimensionTest {
 
   @Test
   public void testNodeRoles() {
-    NodeRole nodeRole = new NodeRole("roleName", "x(.+)y.*", true);
+    NodeRole nodeRole = new NodeRole("roleName", "x(.+)y.*");
     RoleDimensionMapping rdMap = new RoleDimensionMapping(nodeRole);
 
     assertThat(rdMap.getRegex(), equalTo("(x(.+)y.*)"));
-    assertThat(rdMap.getCaseSensitive(), equalTo(true));
 
     NodeRoleDimension nrDim =
         NodeRoleDimension.builder()

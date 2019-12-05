@@ -96,30 +96,17 @@ public final class InferRoles {
   // the list of nodes that match _regex
   private List<String> _matchingNodes;
 
-  // should role names be case sensitive or not?
-  private boolean _caseSensitive;
-  // indicates whether to compile a pattern as case sensitive or not
-  private int _patternFlags;
-
   // the percentage of nodes that must match a regex for it to be used as
   // the base for determining roles
   private static final double REGEX_THRESHOLD = 0.5;
-  // the minimum role score for a candidate role regex to be chosen
-  private static final double ROLE_THRESHOLD = 0.9;
 
   private static final String ALPHABETIC_REGEX = "\\p{Alpha}";
   private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}";
   private static final String DIGIT_REGEX = "\\p{Digit}";
 
-  public InferRoles(Collection<String> nodes, Topology topology, boolean caseSensitive) {
+  public InferRoles(Collection<String> nodes, Topology topology) {
     _nodes = ImmutableSortedSet.copyOf(nodes);
     _topology = topology;
-    _caseSensitive = caseSensitive;
-    _patternFlags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
-  }
-
-  public InferRoles(Collection<String> nodes, Topology topology) {
-    this(nodes, topology, false);
   }
 
   // A node's name is first parsed into a sequence of simple "pretokens",
@@ -207,50 +194,13 @@ public final class InferRoles {
 
     RegexScore bestRegexAndScore = findBestRegex(allSingleGroupDimensions);
 
-    boolean bestIsAboveThreshold = bestRegexAndScore.getScore() >= ROLE_THRESHOLD;
-
-    if (bestIsAboveThreshold) {
-      roleDimensionGroups.put(
-          NodeRoleDimension.AUTO_DIMENSION_PRIMARY, bestRegexAndScore.getGroups());
-      // remove the dimension that has been selected as the primary inferred role dimension,
-      // so we do not duplicate it when creating the other role dimensions
-      allSingleGroupDimensions.remove(bestRegexAndScore.getGroups());
-      // record the set of role "dimensions" for each node, which is a part of its name
-      // that may indicate a useful grouping of nodes
-      // (e.g., the node's function, location, device type, etc.)
-      roleDimensionGroups.putAll(createRoleDimensionGroups(allSingleGroupDimensions));
-      return Optional.of(toRoleMapping(roleDimensionGroups));
-    } else {
-      return Optional.empty();
-    }
-
-    /*    if (!bestIsAboveThreshold) {
-      // if no single role group is above threshold, we attempt to make the best role found so far
-      // more specific.
-      // NOTE: we could try to refine all possible roles we've considered, rather than
-      // greedily only refining the best one, if the greedy approach fails often.
-
-      // try adding a second group around any alphanumeric sequence in the regex;
-      // now the role is a concatenation of the strings of both groups
-      // NOTE: We could also consider just using the leading alphabetic portion of an alphanumeric
-      // sequence as the second group, which would result in less specific groups and could
-      // be appropriate for some naming schemes.
-
-      List<List<Integer>> allDoubleGroupDimensions =
-          possibleSecondRoleGroups(bestRegexAndScore.getGroups()));
-
-      if (!candidateRegexes.isEmpty()) {
-        // determine the best one according to our metric, even if it's below threshold
-        allDims.add(
-            0,
-            toNodeRoleDimension(
-                findBestRegex(candidateRegexes),
-                candidateRegexes,
-                NodeRoleDimension.AUTO_DIMENSION_PRIMARY));
-      }
-    }
-
-    return allDims;*/
+    // give names to each of the role dimensions
+    // heuristically treat the dimension with the highest score as the primary dimension
+    roleDimensionGroups.put(
+        NodeRoleDimension.AUTO_DIMENSION_PRIMARY, bestRegexAndScore.getGroups());
+    allSingleGroupDimensions.remove(bestRegexAndScore.getGroups());
+    roleDimensionGroups.putAll(createRoleDimensionGroups(allSingleGroupDimensions));
+    return Optional.of(toRoleMapping(roleDimensionGroups));
   }
 
   // try to identify a regex that most node names match
@@ -264,7 +214,7 @@ public final class InferRoles {
           _tokens.stream()
               .map((p) -> p.getToken().tokenToRegex(p.getString()))
               .collect(Collectors.toList());
-      Pattern p = Pattern.compile(String.join("", _regex), _patternFlags);
+      Pattern p = Pattern.compile(String.join("", _regex));
       _matchingNodes =
           nodes.stream().filter((node) -> p.matcher(node).matches()).collect(Collectors.toList());
       // keep this regex if it matches a sufficient fraction of node names; otherwise try again
@@ -412,23 +362,6 @@ public final class InferRoles {
     return result;
   }
 
-  /*
-  private static List<List<Integer>> possibleSecondRoleGroups(List<Integer> bestSingleGroup) {
-    List<List<String>> candidateRegexes = new ArrayList<>();
-    for (int i = 0; i < tokens.size(); i++) {
-      String token = tokens.get(i);
-      // skip the token if it's a delimiter or the primary group
-      if (token.startsWith("\\Q") || token.startsWith("(")) {
-        continue;
-      }
-      List<String> regexCopy = new ArrayList<>(tokens);
-      regexCopy.set(i, group(token));
-      candidateRegexes.add(regexCopy);
-    }
-    return candidateRegexes;
-  }
-   */
-
   private double computeRoleScore(String regex, List<Integer> groups) {
 
     SortedMap<String, SortedSet<String>> nodeRolesMap = regexToNodeRolesMap(regex, groups, _nodes);
@@ -480,7 +413,7 @@ public final class InferRoles {
     SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
     Pattern pattern;
     try {
-      pattern = Pattern.compile(regex, _patternFlags);
+      pattern = Pattern.compile(regex);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
@@ -490,9 +423,6 @@ public final class InferRoles {
         try {
           List<String> roleParts = groups.stream().map(matcher::group).collect(Collectors.toList());
           String role = String.join("-", roleParts);
-          if (!_caseSensitive) {
-            role = role.toLowerCase();
-          }
           SortedSet<String> currNodes = roleNodesMap.computeIfAbsent(role, k -> new TreeSet<>());
           currNodes.add(node);
         } catch (IndexOutOfBoundsException e) {
@@ -534,42 +464,8 @@ public final class InferRoles {
         .orElseThrow(() -> new BatfishException("this exception should not be reachable"));
   }
 
-  /*
-    // the list of candidates must have at least one element
-    private Optional<NodeRoleDimension> toPrimaryNodeRoleDimensionIfAboveThreshold(
-        RegexScore bestRegexAndScore, List<List<String>> candidates) {
-      if (bestRegexAndScore.getScore() >= ROLE_THRESHOLD) {
-        NodeRoleDimension bestNRD =
-            toNodeRoleDimension(
-                bestRegexAndScore, candidates, NodeRoleDimension.AUTO_DIMENSION_PRIMARY);
-        return Optional.of(bestNRD);
-      } else {
-        return Optional.empty();
-      }
-    }
-  */
-
   private RoleMapping toRoleMapping(Map<String, List<Integer>> dimensionGroups) {
     return new RoleMapping(
-        null, regexTokensToRegex(_regex), ImmutableMap.copyOf(dimensionGroups), null, false);
-  }
-
-  /*
-  // the list of candidates must have at least one element
-  private NodeRoleDimension toNodeRoleDimension(
-      RegexScore bestRegexAndScore, List<List<String>> candidates, String dimName) {
-    List<String> bestRegexTokens = candidates.get(bestRegexAndScore.getIndex());
-    String bestRegex = regexTokensToRegex(bestRegexTokens);
-    return regexToNodeRoleDimension(bestRegex, dimName);
-  }
-   */
-
-  // converts a regex containing one or more groups indicating roles into a NodeRoleDimension
-  private NodeRoleDimension regexToNodeRoleDimension(String regex, String dimName) {
-    return NodeRoleDimension.builder()
-        .setName(dimName)
-        .setRoleDimensionMappings(
-            ImmutableList.of(new RoleDimensionMapping(regex, null, null, _caseSensitive)))
-        .build();
+        null, regexTokensToRegex(_regex), ImmutableMap.copyOf(dimensionGroups), null);
   }
 }
