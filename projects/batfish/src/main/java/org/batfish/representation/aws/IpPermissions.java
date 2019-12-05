@@ -30,6 +30,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
@@ -161,7 +162,7 @@ final class IpPermissions implements Serializable {
     }
   }
 
-  private final int _fromPort;
+  @Nullable private final Integer _fromPort;
 
   @Nonnull private final String _ipProtocol;
 
@@ -171,7 +172,7 @@ final class IpPermissions implements Serializable {
 
   @Nonnull private final List<String> _securityGroups;
 
-  private int _toPort;
+  @Nullable private final Integer _toPort;
 
   @JsonCreator
   private static IpPermissions create(
@@ -189,8 +190,8 @@ final class IpPermissions implements Serializable {
 
     return new IpPermissions(
         ipProtocol,
-        (fromPort == null || fromPort < 0 || fromPort > 65535) ? 0 : fromPort,
-        (toPort == null || toPort < 0 || toPort > 65535) ? 65535 : toPort,
+        fromPort,
+        toPort,
         (ipRanges.stream().map(IpRange::getPrefix).collect(ImmutableList.toImmutableList())),
         firstNonNull(prefixes, ImmutableList.<PrefixListId>of()).stream()
             .map(PrefixListId::getId)
@@ -202,8 +203,8 @@ final class IpPermissions implements Serializable {
 
   IpPermissions(
       String ipProtocol,
-      int fromPort,
-      int toPort,
+      @Nullable Integer fromPort,
+      @Nullable Integer toPort,
       List<Prefix> ipRanges,
       List<String> prefixList,
       List<String> securityGroups) {
@@ -242,11 +243,17 @@ final class IpPermissions implements Serializable {
    * <p>Returns {@link Optional#empty()} if the security group cannot be processed, e.g., uses an
    * unsupported definition of the affected IP addresses.
    */
-  Optional<IpAccessListLine> toIpAccessListLine(boolean ingress, Region region, String name) {
+  Optional<IpAccessListLine> toIpAccessListLine(
+      boolean ingress, Region region, String name, Warnings warnings) {
+    if (_ipProtocol.equals("icmpv6")) {
+      // Not valid in IPv4 packets.
+      return Optional.empty();
+    }
     Collection<IpWildcard> ips = collectIpWildCards(region);
     if (ips.isEmpty()) {
       // IPs should have been populated using either SG or IP ranges,  if not then this IpPermission
       // is incomplete.
+      // TODO: should we warn? It may be that rules can have only v6 addresses.
       return Optional.empty();
     }
 
@@ -255,10 +262,42 @@ final class IpPermissions implements Serializable {
     if (protocol != null) {
       constraints.setIpProtocols(protocol);
     }
-    // if the range isn't all ports, set it in ACL
-    if (_fromPort != 0 || _toPort != 65535) {
-      constraints.setDstPorts(ImmutableSet.of(new SubRange(_fromPort, _toPort)));
+    if (protocol == IpProtocol.TCP || protocol == IpProtocol.UDP) {
+      // if the range isn't all ports, set it in ACL
+      int low = (_fromPort == null || _fromPort == -1) ? 0 : _fromPort;
+      int hi = (_toPort == null || _toPort == -1) ? 65535 : _toPort;
+      if (low != 0 || hi != 65535) {
+        constraints.setDstPorts(ImmutableSet.of(new SubRange(low, hi)));
+      }
+    } else if (protocol == IpProtocol.ICMP) {
+      int type = firstNonNull(_fromPort, -1);
+      int code = firstNonNull(_toPort, -1);
+      if (type != -1) {
+        constraints.setIcmpTypes(type);
+        if (code != -1) {
+          constraints.setIcmpCodes(code);
+        }
+      } else {
+        // Code should not be configured if type isn't.
+        if (code != -1) {
+          warnings.redFlag(
+              String.format(
+                  "IpPermissions for term %s: unexpected for ICMP to have FromPort=%s and ToPort=%s",
+                  name, _fromPort, _toPort));
+          return Optional.empty();
+        }
+      }
+    } else {
+      // This should only be present for defined protocols.
+      if (_fromPort != null || _toPort != null) {
+        warnings.redFlag(
+            String.format(
+                "IpPermissions for term %s: unexpected to have IpProtocol=%s, FromPort=%s, and ToPort=%s",
+                name, _ipProtocol, _fromPort, _toPort));
+        return Optional.empty();
+      }
     }
+
     if (ingress) {
       constraints.setSrcIps(ips);
     } else {
