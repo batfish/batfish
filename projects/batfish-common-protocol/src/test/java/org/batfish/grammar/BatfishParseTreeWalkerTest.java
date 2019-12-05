@@ -1,6 +1,6 @@
 package org.batfish.grammar;
 
-import static org.batfish.common.util.ThrowableMatchers.hasStackTrace;
+import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
 import static org.hamcrest.Matchers.containsString;
 
 import javax.annotation.ParametersAreNonnullByDefault;
