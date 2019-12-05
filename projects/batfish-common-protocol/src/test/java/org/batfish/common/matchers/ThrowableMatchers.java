@@ -1,4 +1,4 @@
-package org.batfish.common.util;
+package org.batfish.common.matchers;
 
 import com.google.common.base.Throwables;
 import javax.annotation.Nonnull;
