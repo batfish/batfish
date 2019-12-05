@@ -261,7 +261,7 @@ eos_rbi_bgp
 //    | eos_rbib_host_routes
 //    | eos_rbib_labeled_unicast
     | eos_rbib_listen
-//    | eos_rbib_log_neighbor_changes
+    | eos_rbib_log_neighbor_changes
 //    | eos_rbib_missing_policy
 //    | eos_rbib_monitoring
 //    | eos_rbib_next_hop_unchanged
@@ -347,6 +347,11 @@ eos_rbibl_range
     | REMOTE_AS asn = bgp_asn
   )
   NEWLINE
+;
+
+eos_rbib_log_neighbor_changes
+:
+  LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
 eos_rbi_default_metric
