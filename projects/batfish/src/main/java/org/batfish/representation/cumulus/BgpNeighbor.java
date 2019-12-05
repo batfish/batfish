@@ -114,6 +114,14 @@ public abstract class BgpNeighbor implements Serializable {
     // Do not inherit name.
     // Do not inherit peer group.
 
+    if (_bgpNeighborSource == null) {
+      _bgpNeighborSource = other.getBgpNeighborSource();
+    }
+
+    if (_ebgpMultihop == null) {
+      _ebgpMultihop = other.getEbgpMultihop();
+    }
+
     if (_remoteAsType == null) {
       // These properties are coupled, but remoteAsType will be non-null if they have been set.
       _remoteAs = other.getRemoteAs();
