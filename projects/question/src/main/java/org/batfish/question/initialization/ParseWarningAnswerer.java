@@ -125,21 +125,19 @@ class ParseWarningAnswerer extends Answerer {
     } else {
       columnMetadata.add(
           new ColumnMetadata(COL_FILENAME, Schema.STRING, "The file that was parsed", true, false));
+      columnMetadata.add(
+          new ColumnMetadata(
+              COL_LINE,
+              Schema.INTEGER,
+              "The line number in the input file that caused the warning",
+              true,
+              false));
     }
 
     columnMetadata.add(
         new ColumnMetadata(
             COL_TEXT, Schema.STRING, "The text of the input that caused the warning", true, false));
 
-    if (!question.getAggregateDuplicates()) {
-      columnMetadata.add(
-          new ColumnMetadata(
-              COL_LINE,
-              Schema.INTEGER,
-              "The line number in the input file that caused the warning",
-              false,
-              false));
-    }
     columnMetadata
         .add(
             new ColumnMetadata(

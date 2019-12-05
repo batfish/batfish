@@ -11,18 +11,18 @@
           "schema" : "String"
         },
         {
+          "description" : "The line number in the input file that caused the warning",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Line",
+          "schema" : "Integer"
+        },
+        {
           "description" : "The text of the input that caused the warning",
           "isKey" : true,
           "isValue" : false,
           "name" : "Text",
           "schema" : "String"
-        },
-        {
-          "description" : "The line number in the input file that caused the warning",
-          "isKey" : false,
-          "isValue" : false,
-          "name" : "Line",
-          "schema" : "Integer"
         },
         {
           "description" : "The context of the Batfish parser when the warning occurred",
