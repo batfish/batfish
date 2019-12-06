@@ -2629,7 +2629,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbinc_maximum_routes(Eos_rbinc_maximum_routesContext ctx) {
-    todo(ctx);
+    if (!ctx.WARNING_ONLY().isEmpty()) {
+      // This is not a limit, Batfish's behavior is correct.
+      return;
+    }
+    int limit = toInteger(ctx.num);
+    if (limit > 0) {
+      warn(ctx, "Batfish does not limit the number of routes received over BGP.");
+    }
   }
 
   @Override
