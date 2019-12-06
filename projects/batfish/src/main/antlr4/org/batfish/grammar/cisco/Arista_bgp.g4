@@ -717,12 +717,20 @@ eos_rbino_neighbor
     | v6 = IPV6_ADDRESS
     | pg = variable
   )
-  eos_rbinon_enforce_first_as
+  (
+    eos_rbinon_enforce_first_as
+    | eos_rbinon_shutdown
+  )
 ;
 
 eos_rbinon_enforce_first_as
 :
   ENFORCE_FIRST_AS NEWLINE
+;
+
+eos_rbinon_shutdown
+:
+  SHUTDOWN NEWLINE
 ;
 
 // Defining a peer group
