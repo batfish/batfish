@@ -267,6 +267,7 @@ final class Utils {
         configuration.getHostname());
     return iface.getAddress();
   }
+
   /**
    * Returns the IP address of the interface with name {@code ifaceName} in {@code configuration}.
    * Throws an exception if the interface is not present or does not have an assigned address
