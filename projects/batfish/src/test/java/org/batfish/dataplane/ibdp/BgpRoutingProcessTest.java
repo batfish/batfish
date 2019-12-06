@@ -2,7 +2,7 @@ package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.vxlan.Layer2Vni.builder;
+import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.dataplane.ibdp.BgpRoutingProcess.initEvpnType3Route;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -113,7 +113,7 @@ public class BgpRoutingProcessTest {
     EvpnType3Route route =
         initEvpnType3Route(
             admin,
-            Layer2Vni.builder()
+            Layer2Vni.testBuilder()
                 .setVlan(1)
                 .setVni(10001)
                 .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
@@ -173,14 +173,14 @@ public class BgpRoutingProcessTest {
             .build();
     _bgpProcess.getActiveNeighbors().put(localIp.toPrefix(), evpnPeer);
     _vrf.addLayer2Vni(
-        builder()
+        testBuilder()
             .setVni(vni)
             .setVlan(1)
             .setBumTransportMethod(UNICAST_FLOOD_GROUP)
             .setSourceAddress(localIp)
             .build());
     _vrf2.addLayer2Vni(
-        builder()
+        testBuilder()
             .setVni(vni2)
             .setVlan(2)
             .setBumTransportMethod(UNICAST_FLOOD_GROUP)
@@ -393,14 +393,14 @@ public class BgpRoutingProcessTest {
         .build();
     _bgpProcess.getActiveNeighbors().put(peerIp.toPrefix(), evpnPeer);
     _vrf.addLayer2Vni(
-        builder()
+        testBuilder()
             .setVni(vni)
             .setVlan(1)
             .setBumTransportMethod(UNICAST_FLOOD_GROUP)
             .setSourceAddress(localIp)
             .build());
     _vrf2.addLayer2Vni(
-        builder()
+        testBuilder()
             .setVni(vni)
             .setVlan(2)
             .setBumTransportMethod(UNICAST_FLOOD_GROUP)

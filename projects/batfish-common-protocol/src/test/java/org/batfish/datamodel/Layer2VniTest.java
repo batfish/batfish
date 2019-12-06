@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
@@ -21,7 +22,7 @@ public class Layer2VniTest {
   public void testAllAttrs() {
     SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
     Layer2Vni vs =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(bumTransportIps)
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(Ip.parse("1.2.3.4"))
@@ -42,7 +43,7 @@ public class Layer2VniTest {
   public void testJavaSerialization() {
     SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
     Layer2Vni vs =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(bumTransportIps)
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(Ip.parse("1.2.3.4"))
@@ -56,7 +57,7 @@ public class Layer2VniTest {
   @Test
   public void testEquals() {
     Layer2Vni.Builder builder =
-        Layer2Vni.builder().setVni(1).setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP);
+        testBuilder().setVni(1).setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP);
 
     new EqualsTester()
         .addEqualityGroup(new Object())
@@ -76,7 +77,7 @@ public class Layer2VniTest {
   public void testToBuilder() {
     SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
     Layer2Vni vs =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(bumTransportIps)
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(Ip.parse("1.2.3.4"))
@@ -91,7 +92,7 @@ public class Layer2VniTest {
   public void testAddToFloodList() {
     Ip ip = Ip.parse("2.2.2.2");
     Layer2Vni vs =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(ip))
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(Ip.parse("1.2.3.4"))

@@ -1,6 +1,7 @@
 package org.batfish.question.edges;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.question.edges.EdgesAnswerer.COL_AS_NUMBER;
 import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IP;
@@ -133,7 +134,7 @@ public class EdgesAnswererTest {
     Vrf v2 = vb.setOwner(c2).build();
     Map<String, Configuration> configurations = ImmutableMap.of(VXLAN_NODE1, c1, VXLAN_NODE2, c2);
     Layer2Vni.Builder vniSettingsBuilder =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(VXLAN_MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(VXLAN_UDP_PORT)

@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 
 /** Configuration for an L3 VXLAN VNI */
@@ -19,18 +20,21 @@ public final class Layer3Vni implements Vni {
   @Nullable private final Ip _sourceAddress;
   @Nonnull private final Integer _udpPort;
   private final int _vni;
+  @Nonnull private final String _srcVrf;
 
   private Layer3Vni(
       Set<Ip> bumTransportIps,
       BumTransportMethod bumTransportMethod,
       @Nullable Ip sourceAddress,
       Integer udpPort,
-      int vni) {
+      int vni,
+      String srcVrf) {
     _bumTransportIps = ImmutableSet.copyOf(bumTransportIps);
     _bumTransportMethod = bumTransportMethod;
     _sourceAddress = sourceAddress;
     _udpPort = udpPort;
     _vni = vni;
+    _srcVrf = srcVrf;
   }
 
   @Override
@@ -71,6 +75,12 @@ public final class Layer3Vni implements Vni {
   }
 
   @Override
+  @Nonnull
+  public String getSrcVrf() {
+    return _srcVrf;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -105,6 +115,10 @@ public final class Layer3Vni implements Vni {
         .setBumTransportIps(_bumTransportIps);
   }
 
+  public static Builder testBuilder() {
+    return builder().setSrcVrf(Configuration.DEFAULT_VRF_NAME);
+  }
+
   /** Builder for {@link Layer3Vni} */
   public static final class Builder {
     @Nonnull private Set<Ip> _bumTransportIps = ImmutableSet.of();
@@ -112,6 +126,7 @@ public final class Layer3Vni implements Vni {
     @Nullable private Ip _sourceAddress;
     @Nullable private Integer _udpPort = Vni.DEFAULT_UDP_PORT;
     @Nullable private Integer _vni;
+    @Nullable private String _srcVrf;
 
     private Builder() {}
 
@@ -146,18 +161,26 @@ public final class Layer3Vni implements Vni {
     }
 
     @Nonnull
+    public Builder setSrcVrf(String srcVrf) {
+      _srcVrf = srcVrf;
+      return this;
+    }
+
+    @Nonnull
     public Layer3Vni build() {
       checkArgument(_vni != null, "VNI must not be null.");
       checkArgument(_bumTransportMethod != null, "BumTransportMethod must not be null.");
       checkArgument(
           _bumTransportMethod != BumTransportMethod.MULTICAST_GROUP || _bumTransportIps.size() <= 1,
           "Cannot specify more than one multicast group.");
+      checkArgument(_srcVrf != null, "Source VRF for VNI cannot be null");
       return new Layer3Vni(
           _bumTransportIps,
           _bumTransportMethod,
           _sourceAddress,
           firstNonNull(_udpPort, DEFAULT_UDP_PORT),
-          _vni);
+          _vni,
+          _srcVrf);
     }
   }
 }

@@ -6,6 +6,7 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
@@ -570,7 +571,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               // Grab the BgpVrf for the innerVrf, if it exists
               @Nullable
               BgpVrf innerBgpVrf =
-                  (innerVrfName.equals(Configuration.DEFAULT_VRF_NAME)
+                  (innerVrfName.equals(DEFAULT_VRF_NAME)
                       ? _bgpProcess.getDefaultVrf()
                       : _bgpProcess.getVrfs().get(innerVrfName));
               l3Vnis.add(
@@ -707,8 +708,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       return;
     }
     // First pass: only core processes
-    _c.getDefaultVrf()
-        .setBgpProcess(toBgpProcess(Configuration.DEFAULT_VRF_NAME, _bgpProcess.getDefaultVrf()));
+    _c.getDefaultVrf().setBgpProcess(toBgpProcess(DEFAULT_VRF_NAME, _bgpProcess.getDefaultVrf()));
     // We make one VI process per VRF because our current datamodel requires it
     _bgpProcess
         .getVrfs()
@@ -839,8 +839,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void convertDefaultVrf() {
-    org.batfish.datamodel.Vrf defaultVrf =
-        new org.batfish.datamodel.Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Vrf defaultVrf = new org.batfish.datamodel.Vrf(DEFAULT_VRF_NAME);
     defaultVrf.setStaticRoutes(
         _staticRoutes.stream()
             .map(StaticRoute::convert)
@@ -854,7 +853,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 defaultVrf.getInterfaces().put(ifaceName, iface);
               }
             });
-    _c.getVrfs().put(Configuration.DEFAULT_VRF_NAME, defaultVrf);
+    _c.getVrfs().put(DEFAULT_VRF_NAME, defaultVrf);
   }
 
   private void convertDnsServers() {
@@ -1000,7 +999,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 return;
               }
               // TODO: this logic is wrong, fix it later.
-              String vrfName = vniToVrf.getOrDefault(vxlan.getId(), Configuration.DEFAULT_VRF_NAME);
+              String vrfName = vniToVrf.getOrDefault(vxlan.getId(), DEFAULT_VRF_NAME);
               vrfToVniSettings
                   .computeIfAbsent(vrfName, k -> new HashSet<>())
                   .add(
@@ -1012,6 +1011,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                                   _loopback.getClagVxlanAnycastIp(), vxlan.getLocalTunnelip()))
                           .setUdpPort(NamedPort.VXLAN.number())
                           .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                          .setSrcVrf(DEFAULT_VRF_NAME)
                           .build());
             });
     vrfToVniSettings.forEach((vrfName, vnis) -> _c.getVrfs().get(vrfName).setLayer2Vnis(vnis));

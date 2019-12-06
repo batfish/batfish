@@ -1,5 +1,6 @@
 package org.batfish.question.switchedvlanproperties;
 
+import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.question.switchedvlanproperties.SwitchedVlanPropertiesAnswerer.COL_INTERFACES;
 import static org.batfish.question.switchedvlanproperties.SwitchedVlanPropertiesAnswerer.COL_NODE;
 import static org.batfish.question.switchedvlanproperties.SwitchedVlanPropertiesAnswerer.COL_VLAN_ID;
@@ -71,7 +72,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     Vrf v = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
     _ib = nf.interfaceBuilder().setOwner(c).setVrf(v).setName(INTERFACE).setActive(true);
     _configurations = ImmutableMap.of(c.getHostname(), c);
-    _vnb = Layer2Vni.builder().setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP);
+    _vnb = testBuilder().setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP);
     _specifierContext =
         new TestSpecifierContext() {
           @Override
