@@ -576,6 +576,8 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_peer_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_timersContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_additional_pathsContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_advertise_inactiveContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_cluster_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
@@ -2446,6 +2448,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbafnonc_activate(Eos_rbafnonc_activateContext ctx) {
     _currentAristaBgpNeighborAddressFamily.setDefaultActivate(false);
+  }
+
+  @Override
+  public void exitEos_rbib_additional_paths(Eos_rbib_additional_pathsContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEos_rbib_advertise_inactive(Eos_rbib_advertise_inactiveContext ctx) {
+    _currentAristaBgpVrf.setAdvertiseInactive(true);
   }
 
   @Override

@@ -245,7 +245,7 @@ eos_rbi_bgp
   BGP
   (
     eos_rbib_additional_paths
-//    | eos_rbib_advertise_inactive
+    | eos_rbib_advertise_inactive
 //    | eos_rbib_allowas_in
 //    | eos_rbib_always_compare_med
 //    | eos_rbib_asn
@@ -281,6 +281,11 @@ eos_rbib_additional_paths
     | INSTALL
   )
   NEWLINE
+;
+
+eos_rbib_advertise_inactive
+:
+  ADVERTISE_INACTIVE NEWLINE
 ;
 
 eos_rbib_bestpath
