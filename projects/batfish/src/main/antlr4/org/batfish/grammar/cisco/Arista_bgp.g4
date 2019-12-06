@@ -740,7 +740,8 @@ eos_rbi_redistribute
 :
   REDISTRIBUTE
   (
-    eos_rbir_attached_host
+    eos_rbir_aggregate
+    | eos_rbir_attached_host
     | eos_rbir_connected
     | eos_rbir_dynamic
     | eos_rbir_isis
@@ -749,6 +750,14 @@ eos_rbi_redistribute
     | eos_rbir_rip
     | eos_rbir_static
   )
+;
+
+eos_rbir_aggregate
+:
+  // This should not ever show up in real configs, but some engineering builds did include it.
+  // > Important! Aggregate routes are redistributed automatically, and their redistribution cannot be disabled.
+  // https://www.arista.com/en/um-eos/eos-section-33-4-bgp-commands#ww1117813
+  AGGREGATE NEWLINE
 ;
 
 eos_rbir_attached_host
