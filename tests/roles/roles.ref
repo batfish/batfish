@@ -5,14 +5,12 @@
       "name" : "default",
       "roleDimensionMappings" : [
         {
-          "caseSensitive" : false,
           "groups" : [
             1
           ],
           "regex" : "as.(.*).+"
         },
         {
-          "caseSensitive" : false,
           "groups" : [
             1
           ],

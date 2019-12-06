@@ -210,10 +210,7 @@ public class NodeRolesData {
         List<Integer> groups = entry.getValue();
         RoleDimensionMapping rdmap =
             new RoleDimensionMapping(
-                regex,
-                groups,
-                canonicalRoleNames.getOrDefault(dim, ImmutableMap.of()),
-                rmap.getCaseSensitive());
+                regex, groups, canonicalRoleNames.getOrDefault(dim, ImmutableMap.of()));
         List<RoleDimensionMapping> dimMaps = rdMaps.computeIfAbsent(dim, k -> new LinkedList<>());
         dimMaps.add(rdmap);
       }

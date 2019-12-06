@@ -11,7 +11,6 @@ public class RoleDimensionMappingBean {
   public String regex;
   public List<Integer> groups;
   public Map<String, String> canonicalRoleNames;
-  public boolean caseSensitive;
 
   @JsonCreator
   private RoleDimensionMappingBean() {}
@@ -21,7 +20,6 @@ public class RoleDimensionMappingBean {
     regex = rdMapping.getRegex();
     groups = rdMapping.getGroups();
     canonicalRoleNames = rdMapping.getCanonicalRoleNames();
-    caseSensitive = rdMapping.getCaseSensitive();
   }
 
   @Override
@@ -33,8 +31,7 @@ public class RoleDimensionMappingBean {
             regex, ((org.batfish.coordinator.resources.RoleDimensionMappingBean) o).regex)
         && Objects.equals(
             groups, ((org.batfish.coordinator.resources.RoleDimensionMappingBean) o).groups)
-        && Objects.equals(canonicalRoleNames, ((RoleDimensionMappingBean) o).canonicalRoleNames)
-        && caseSensitive == ((RoleDimensionMappingBean) o).caseSensitive;
+        && Objects.equals(canonicalRoleNames, ((RoleDimensionMappingBean) o).canonicalRoleNames);
   }
 
   @Override
@@ -44,6 +41,6 @@ public class RoleDimensionMappingBean {
 
   /** Gets a {@link RoleDimensionMapping} object from this bean. */
   public RoleDimensionMapping toRoleDimensionMapping() {
-    return new RoleDimensionMapping(regex, groups, canonicalRoleNames, caseSensitive);
+    return new RoleDimensionMapping(regex, groups, canonicalRoleNames);
   }
 }

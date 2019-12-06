@@ -212,6 +212,8 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.role.NodeRolesData.Type;
+import org.batfish.role.RoleMapping;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -2471,12 +2473,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
     Set<String> nodeNames = loadConfigurations().keySet();
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(getNetworkSnapshot());
-    List<NodeRoleDimension> autoRoles = new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
+    Optional<RoleMapping> autoRoles = new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
-      if (!autoRoles.isEmpty()) {
-        snapshotNodeRoles.setDefaultDimension(autoRoles.get(0).getName());
-        snapshotNodeRoles.setRoleDimensions(autoRoles);
+      if (autoRoles.isPresent()) {
+        snapshotNodeRoles.setDefaultDimension(NodeRoleDimension.AUTO_DIMENSION_PRIMARY);
+        snapshotNodeRoles.setRoleMappings(ImmutableList.of(autoRoles.get()));
+        snapshotNodeRoles.setType(Type.AUTO);
       }
       _storage.storeNodeRoles(snapshotNodeRoles.build(), snapshotNodeRolesId);
     } catch (IOException e) {

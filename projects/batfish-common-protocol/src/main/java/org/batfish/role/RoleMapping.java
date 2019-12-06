@@ -28,7 +28,6 @@ public class RoleMapping {
   private static final String PROP_REGEX = "regex";
   private static final String PROP_ROLE_DIMENSION_GROUPS = "roleDimensionGroups";
   private static final String PROP_CANONICAL_ROLE_NAMES = "canonicalRoleNames";
-  private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
   // a name for this mapping
   @Nullable private String _name;
@@ -41,23 +40,20 @@ public class RoleMapping {
   obtained from the node name to a canonical role name */
   @Nonnull private Map<String, Map<String, String>> _canonicalRoleNames;
 
-  private boolean _caseSensitive;
-
   @JsonCreator
   public RoleMapping(
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_REGEX) String regex,
       @JsonProperty(PROP_ROLE_DIMENSION_GROUPS) Map<String, List<Integer>> roleDimensionGroups,
-      @JsonProperty(PROP_CANONICAL_ROLE_NAMES) Map<String, Map<String, String>> canonicalRoleNames,
-      @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
+      @JsonProperty(PROP_CANONICAL_ROLE_NAMES)
+          Map<String, Map<String, String>> canonicalRoleNames) {
     _name = name;
     checkArgument(regex != null, "The regex cannot be null");
     _regex = regex;
     _roleDimensionGroups = firstNonNull(roleDimensionGroups, ImmutableMap.of());
     _canonicalRoleNames = firstNonNull(canonicalRoleNames, ImmutableMap.of());
-    _caseSensitive = caseSensitive;
     try {
-      Pattern.compile(regex, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+      Pattern.compile(regex);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
@@ -87,11 +83,6 @@ public class RoleMapping {
     return _regex;
   }
 
-  @JsonProperty(PROP_CASE_SENSITIVE)
-  public boolean getCaseSensitive() {
-    return _caseSensitive;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof RoleMapping)) {
@@ -100,12 +91,11 @@ public class RoleMapping {
     return Objects.equals(_name, ((RoleMapping) o)._name)
         && Objects.equals(_regex, ((RoleMapping) o)._regex)
         && Objects.equals(_roleDimensionGroups, ((RoleMapping) o)._roleDimensionGroups)
-        && Objects.equals(_canonicalRoleNames, ((RoleMapping) o)._canonicalRoleNames)
-        && Objects.equals(_caseSensitive, ((RoleMapping) o)._caseSensitive);
+        && Objects.equals(_canonicalRoleNames, ((RoleMapping) o)._canonicalRoleNames);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name, _regex, _roleDimensionGroups, _canonicalRoleNames, _caseSensitive);
+    return Objects.hash(_name, _regex, _roleDimensionGroups, _canonicalRoleNames);
   }
 }

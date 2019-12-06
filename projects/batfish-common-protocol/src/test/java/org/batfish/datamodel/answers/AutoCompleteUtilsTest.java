@@ -1101,8 +1101,7 @@ public class AutoCompleteUtilsTest {
                         "(.*)",
                         ImmutableMap.of(
                             "someDimension", ImmutableList.of(1), "blah", ImmutableList.of(1)),
-                        null,
-                        false)))
+                        null)))
             .build();
 
     assertThat(
@@ -1134,17 +1133,14 @@ public class AutoCompleteUtilsTest {
                         .setRoleDimensionMappings(
                             ImmutableList.of(
                                 new RoleDimensionMapping(
-                                    "(.*)",
-                                    null,
-                                    ImmutableMap.of("node1", "r1", "node2", "s1"),
-                                    false)))
+                                    "(.*)", null, ImmutableMap.of("node1", "r1", "node2", "s1"))))
                         .build(),
                     NodeRoleDimension.builder()
                         .setName("someOtherDimension")
                         .setRoleDimensionMappings(
                             ImmutableList.of(
                                 new RoleDimensionMapping(
-                                    "(.*)", null, ImmutableMap.of("node3", "r2"), false)))
+                                    "(.*)", null, ImmutableMap.of("node3", "r2"))))
                         .build()))
             .build();
 

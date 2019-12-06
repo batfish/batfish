@@ -84,8 +84,7 @@ public class LocationSpecifierTest {
                                 new RoleDimensionMapping(
                                     "(" + n1.getHostname() + ")",
                                     null,
-                                    ImmutableMap.of(n1.getHostname(), roleName),
-                                    true)))
+                                    ImmutableMap.of(n1.getHostname(), roleName))))
                         .build()))
             .build();
   }

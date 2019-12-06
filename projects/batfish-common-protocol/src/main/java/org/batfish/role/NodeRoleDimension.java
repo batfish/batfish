@@ -220,8 +220,7 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
               null,
               rdMap.getRegex(),
               ImmutableMap.of(_name, rdMap.getGroups()),
-              ImmutableMap.of(_name, rdMap.getCanonicalRoleNames()),
-              rdMap.getCaseSensitive()));
+              ImmutableMap.of(_name, rdMap.getCanonicalRoleNames())));
     }
     return copyOf(mappings);
   }
