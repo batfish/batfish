@@ -205,7 +205,8 @@ public final class SearchFiltersTest {
             .setAction("permit")
             .build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls =
+        answerer.getQueryAcls(_batfish.getSnapshot(), question);
     assertThat(queryAcls, hasSize(1));
     String queryConfig = queryAcls.get(0).getLeft();
     String queryAclName = queryAcls.get(0).getMiddle();
@@ -220,7 +221,8 @@ public final class SearchFiltersTest {
     SearchFiltersQuestion question =
         SearchFiltersQuestion.builder().setFilterSpecifier(ACL.getName()).setAction("deny").build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls =
+        answerer.getQueryAcls(_batfish.getSnapshot(), question);
     assertThat(queryAcls, hasSize(1));
     String queryConfig = queryAcls.get(0).getLeft();
     String queryAclName = queryAcls.get(0).getMiddle();
@@ -239,7 +241,8 @@ public final class SearchFiltersTest {
             .setAction("matchLine 2")
             .build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls =
+        answerer.getQueryAcls(_batfish.getSnapshot(), question);
     assertThat(queryAcls, hasSize(1));
     String queryConfig = queryAcls.get(0).getLeft();
     String queryAclName = queryAcls.get(0).getMiddle();

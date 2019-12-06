@@ -63,25 +63,21 @@ public class CompareFiltersAnswerer extends Answerer {
 
   @Override
   public AnswerElement answerDiff() {
-    _batfish.pushBaseSnapshot();
-    SpecifierContext currentContext = _batfish.specifierContext();
+    SpecifierContext currentContext = _batfish.specifierContext(_batfish.getSnapshot());
     Multimap<String, String> currentFilters =
         getSpecifiedFilters(
             currentContext,
             _question.getNodeSpecifier(),
             _question.getFilterSpecifier(),
             _question.getIgnoreComposites());
-    _batfish.popSnapshot();
 
-    _batfish.pushDeltaSnapshot();
-    SpecifierContext referenceContext = _batfish.specifierContext();
+    SpecifierContext referenceContext = _batfish.specifierContext(_batfish.getReferenceSnapshot());
     Multimap<String, String> referenceFilters =
         getSpecifiedFilters(
             referenceContext,
             _question.getNodeSpecifier(),
             _question.getFilterSpecifier(),
             _question.getIgnoreComposites());
-    _batfish.popSnapshot();
 
     Multimap<String, String> commonFilters =
         Multimaps.filterEntries(
