@@ -770,7 +770,9 @@ public class BatfishTest {
             TestrigText.builder().setConfigurationText(configurations).build(), _folder);
 
     // returns the text of the config if it exists
-    assertThat(batfish.getSnapshotInputObject("configs/" + fileName), equalTo(configText));
+    assertThat(
+        batfish.getSnapshotInputObject(batfish.getNetworkSnapshot(), "configs/" + fileName),
+        equalTo(configText));
   }
 
   @Test
@@ -786,6 +788,6 @@ public class BatfishTest {
 
     // should throw FileNotFoundException if file not found
     _thrown.expect(FileNotFoundException.class);
-    batfish.getSnapshotInputObject("missing file");
+    batfish.getSnapshotInputObject(batfish.getNetworkSnapshot(), "missing file");
   }
 }

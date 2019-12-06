@@ -103,13 +103,19 @@ public interface IBatfish extends IPluginConsumer {
    */
   ImmutableConfiguration getSettingsConfiguration();
 
+  /** @deprecated prefer {@link #getSnapshotInputObject(NetworkSnapshot, String)}. */
+  default String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
+    return getSnapshotInputObject(getNetworkSnapshot(), key);
+  }
+
   /**
    * Get a snapshot input object for the given key
    *
    * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
-  String getSnapshotInputObject(String key) throws FileNotFoundException, IOException;
+  String getSnapshotInputObject(NetworkSnapshot snapshot, String key)
+      throws FileNotFoundException, IOException;
 
   String getTaskId();
 
