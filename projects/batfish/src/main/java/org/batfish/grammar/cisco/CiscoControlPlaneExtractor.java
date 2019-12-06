@@ -607,6 +607,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_bpa_multipath_relaxCo
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_bgp_default_ipv4_unicastContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinon_enforce_first_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinon_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_attached_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_connectedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbir_dynamicContext;
@@ -2755,6 +2756,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinon_enforce_first_as(Eos_rbinon_enforce_first_asContext ctx) {
     _currentAristaBgpNeighbor.setEnforceFirstAs(false);
+  }
+
+  @Override
+  public void exitEos_rbinon_shutdown(Eos_rbinon_shutdownContext ctx) {
+    _currentAristaBgpNeighbor.setShutdown(false);
   }
 
   @Override
