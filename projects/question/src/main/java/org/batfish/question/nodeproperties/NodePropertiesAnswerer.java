@@ -73,7 +73,7 @@ public class NodePropertiesAnswerer extends Answerer {
     Multiset<Row> propertyRows =
         getProperties(
             question.getPropertySpecifier(),
-            _batfish.specifierContext(),
+            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap());
 

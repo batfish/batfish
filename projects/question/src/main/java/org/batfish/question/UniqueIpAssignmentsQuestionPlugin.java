@@ -87,7 +87,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
       UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
-      SpecifierContext ctxt = _batfish.specifierContext();
+      SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
       Map<String, Configuration> configs = ctxt.getConfigs();
       Set<String> nodes = question.getNodeSpecifier().resolve(ctxt);
       // we do nodes and interfaces separately because of interface equality is currently broken

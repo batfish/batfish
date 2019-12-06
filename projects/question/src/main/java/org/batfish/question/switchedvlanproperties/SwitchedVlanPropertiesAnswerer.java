@@ -250,12 +250,15 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
     SwitchedVlanPropertiesQuestion question = (SwitchedVlanPropertiesQuestion) _question;
     Map<String, Configuration> configurations =
         _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
-    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
+    Set<String> nodes =
+        question
+            .getNodesSpecifier()
+            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     Multiset<Row> propertyRows =
         getProperties(
-            _batfish.specifierContext(),
+            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()),
             configurations,
             nodes,
             question.getInterfacesSpecifier(),

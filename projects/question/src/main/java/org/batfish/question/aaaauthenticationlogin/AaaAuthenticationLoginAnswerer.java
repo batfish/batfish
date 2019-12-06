@@ -74,10 +74,10 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
 
     TableAnswerElement answerElement = create(question);
 
-    Set<String> specifiedNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> specifiedNodes =
+        question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
 
-    SortedMap<String, Configuration> configs =
-        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
+    SortedMap<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
     configs.forEach(
         (configName, config) -> {
           if (specifiedNodes.contains(configName)) {

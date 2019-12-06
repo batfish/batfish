@@ -116,7 +116,8 @@ public final class BDDLoopDetectionAnalysisTest {
     batfish.computeDataPlane();
 
     Set<Location> allLocations =
-        LocationSpecifier.ALL_LOCATIONS.resolve(batfish.specifierContext());
+        LocationSpecifier.ALL_LOCATIONS.resolve(
+            batfish.specifierContext(batfish.peekNetworkSnapshotStack()));
     IpSpaceAssignment srcIpSpaceAssignment =
         IpSpaceAssignment.builder().assign(allLocations, UniverseIpSpace.INSTANCE).build();
     DataPlane dataPlane = batfish.loadDataPlane();

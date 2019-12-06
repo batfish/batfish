@@ -54,7 +54,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
     Set<String> nodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext());
+            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
 
     List<String> properties =
         OspfInterfacePropertySpecifier.create(question.getProperties()).getMatchingProperties();

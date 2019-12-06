@@ -48,7 +48,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
     Set<String> nodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodeSpecInput(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext());
+            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
     Set<String> mlagIds =
         SpecifierFactories.getNameSetSpecifierOrDefault(
                 question.getMlagIdSpecInput(),
@@ -56,7 +56,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
                 new ConstantNameSetSpecifier(
                     getAllMlagIds(
                         _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()))))
-            .resolve(_batfish.specifierContext());
+            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
     SortedMap<String, Configuration> configs =
         _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
 

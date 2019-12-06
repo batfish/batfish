@@ -127,16 +127,16 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
       OspfStatusAnswerElement answerElement = new OspfStatusAnswerElement();
 
-      Map<String, Configuration> configurations =
-          _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
-      Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
+      Set<String> includeNodes =
+          question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
 
       for (String hostname : includeNodes) {
         Configuration c = configurations.get(hostname);
         Set<NodeInterfacePair> includeInterfaces =
             question
                 .getInterfaceSpecifier()
-                .resolve(ImmutableSet.of(hostname), _batfish.specifierContext());
+                .resolve(ImmutableSet.of(hostname), _batfish.specifierContext(snapshot));
         for (Vrf vrf : c.getVrfs().values()) {
           for (Entry<String, Interface> e2 : vrf.getInterfaces().entrySet()) {
             String interfaceName = e2.getKey();

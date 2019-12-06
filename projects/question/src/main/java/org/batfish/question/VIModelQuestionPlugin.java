@@ -50,8 +50,7 @@ public final class VIModelQuestionPlugin extends QuestionPlugin {
 
     @Override
     public VIModelAnswerElement answer(NetworkSnapshot snapshot) {
-      return new VIModelAnswerElement(
-          _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()));
+      return new VIModelAnswerElement(_batfish.loadConfigurations(snapshot));
     }
   }
 

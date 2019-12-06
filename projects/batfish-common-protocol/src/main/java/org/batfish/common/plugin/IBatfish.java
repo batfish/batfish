@@ -180,11 +180,6 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
-  /** Use more explicit {@link #specifierContext(NetworkSnapshot)} if possible. */
-  default SpecifierContext specifierContext() {
-    return specifierContext(peekNetworkSnapshotStack());
-  }
-
   /** Return a {@link SpecifierContext} for a given {@link NetworkSnapshot} */
   SpecifierContext specifierContext(NetworkSnapshot networkSnapshot);
 

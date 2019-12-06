@@ -52,7 +52,7 @@ public class DifferentialReachabilityAnswerer extends Answerer {
   private DifferentialReachabilityParameters parameters() {
     DifferentialReachabilityQuestion question = (DifferentialReachabilityQuestion) _question;
     PacketHeaderConstraints headerConstraints = question.getHeaderConstraints();
-    SpecifierContext ctxt = _batfish.specifierContext();
+    SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
 
     PathConstraints pathConstraints = createPathConstraints(question.getPathConstraints());
     Set<String> forbiddenTransitNodes = pathConstraints.getForbiddenLocations().resolve(ctxt);

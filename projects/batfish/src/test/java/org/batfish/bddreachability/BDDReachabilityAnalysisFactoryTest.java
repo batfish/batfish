@@ -161,7 +161,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           INSUFFICIENT_INFO);
 
   private static IpSpaceAssignment ipSpaceAssignment(Batfish batfish) {
-    SpecifierContext ctxt = batfish.specifierContext();
+    SpecifierContext ctxt = batfish.specifierContext(batfish.peekNetworkSnapshotStack());
     Set<Location> locations = LocationSpecifier.ALL_LOCATIONS.resolve(ctxt);
     return CONSTANT_UNIVERSE_IPSPACE_SPECIFIER.resolve(locations, ctxt);
   }

@@ -74,7 +74,7 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
     Multiset<Row> propertyRows =
         getProperties(
             orderedProperties,
-            _batfish.specifierContext(),
+            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()),
             question.getNodesSpecifier(),
             tableMetadata.toColumnMap());
 

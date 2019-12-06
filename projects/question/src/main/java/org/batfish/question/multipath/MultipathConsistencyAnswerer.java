@@ -54,7 +54,7 @@ public class MultipathConsistencyAnswerer extends Answerer {
     PacketHeaderConstraints headerConstraints = question.getHeaderConstraints();
     PathConstraints pathConstraints = createPathConstraints(question.getPathConstraints());
 
-    SpecifierContext ctxt = _batfish.specifierContext();
+    SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
     Set<String> forbiddenTransitNodes = pathConstraints.getForbiddenLocations().resolve(ctxt);
     Set<String> requiredTransitNodes = pathConstraints.getTransitLocations().resolve(ctxt);
     Set<Location> startLocations = pathConstraints.getStartLocation().resolve(ctxt);

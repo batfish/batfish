@@ -53,7 +53,7 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
         new TracerouteAnswererHelper(
             bidirectionalTracerouteQuestion.getHeaderConstraints(),
             bidirectionalTracerouteQuestion.getSourceLocationStr(),
-            _batfish.specifierContext());
+            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
     _ignoreFilters = bidirectionalTracerouteQuestion.getIgnoreFilters();
     _maxTraces = bidirectionalTracerouteQuestion.getMaxTraces();
   }

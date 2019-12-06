@@ -382,7 +382,8 @@ public final class SearchFiltersAnswerer extends Answerer {
       IBatfish batfish, Configuration node, IpAccessList acl, SearchFiltersParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    SpecifierContext specifierContext = batfish.specifierContext();
+    SpecifierContext specifierContext =
+        batfish.specifierContext(batfish.peekNetworkSnapshotStack());
 
     Set<String> inactiveIfaces =
         Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaceNames());
@@ -430,7 +431,8 @@ public final class SearchFiltersAnswerer extends Answerer {
     BDDPacket bddPacket = new BDDPacket();
 
     HeaderSpace headerSpace =
-        searchFiltersParameters.resolveHeaderspace(batfish.specifierContext());
+        searchFiltersParameters.resolveHeaderspace(
+            batfish.specifierContext(batfish.peekNetworkSnapshotStack()));
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 

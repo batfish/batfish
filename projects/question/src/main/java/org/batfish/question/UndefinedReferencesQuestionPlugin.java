@@ -55,7 +55,10 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       // Find all the filenames that produced the queried nodes. This might have false positives if
       // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
       // this question as a TableAnswerElement.
-      Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+      Set<String> includeNodes =
+          question
+              .getNodeSpecifier()
+              .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
       Multimap<String, String> hostnameFilenameMap =
           _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
       Set<String> includeFiles =

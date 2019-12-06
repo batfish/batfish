@@ -78,7 +78,10 @@ public class RoutesAnswerer extends Answerer {
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getRib()));
 
     DataPlane dp = _batfish.loadDataPlane();
-    Set<String> matchingNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> matchingNodes =
+        question
+            .getNodeSpecifier()
+            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
     Prefix network = question.getNetwork();
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
@@ -119,7 +122,10 @@ public class RoutesAnswerer extends Answerer {
     RoutesQuestion question = (RoutesQuestion) _question;
     TableAnswerElement diffAnswer = new TableAnswerElement(getDiffTableMetadata(question.getRib()));
 
-    Set<String> matchingNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> matchingNodes =
+        question
+            .getNodeSpecifier()
+            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
     Prefix network = question.getNetwork();
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();

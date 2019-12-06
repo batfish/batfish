@@ -78,7 +78,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   private SortedSet<RoutingPolicyId> resolvePolicies() {
-    SpecifierContext ctxt = _batfish.specifierContext();
+    SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
     NodeSpecifier nodeSpec =
         SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
 

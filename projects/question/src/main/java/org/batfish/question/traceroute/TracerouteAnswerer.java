@@ -44,7 +44,7 @@ public final class TracerouteAnswerer extends Answerer {
         new TracerouteAnswererHelper(
             tracerouteQuestion.getHeaderConstraints(),
             tracerouteQuestion.getSourceLocationStr(),
-            _batfish.specifierContext());
+            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
   }
 
   @Override

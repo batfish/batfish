@@ -164,8 +164,9 @@ public class BatfishBDDDifferentialReachabilityTest {
         ignoreFilters,
         invertSearch,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
-            LocationSpecifier.ALL_LOCATIONS.resolve(batfish.specifierContext()),
-            batfish.specifierContext()),
+            LocationSpecifier.ALL_LOCATIONS.resolve(
+                batfish.specifierContext(batfish.peekNetworkSnapshotStack())),
+            batfish.specifierContext(batfish.peekNetworkSnapshotStack())),
         TracePruner.DEFAULT_MAX_TRACES,
         ImmutableSet.of());
   }

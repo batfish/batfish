@@ -107,7 +107,8 @@ public class TestFiltersAnswerer extends Answerer {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     String node = c.getHostname();
     Set<Location> srcLocations =
-        question.getStartLocationSpecifier().resolve(_batfish.specifierContext()).stream()
+        question.getStartLocationSpecifier()
+            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack())).stream()
             .filter(LocationVisitor.onNode(node)::visit)
             .collect(Collectors.toSet());
 
@@ -123,12 +124,14 @@ public class TestFiltersAnswerer extends Answerer {
     IpSpaceAssignment srcIpAssignments =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
                 constraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
-            .resolve(srcLocations, _batfish.specifierContext());
+            .resolve(srcLocations, _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
 
     IpSpace dstIps =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
                 constraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .resolve(ImmutableSet.of(), _batfish.specifierContext()).getEntries().stream()
+            .resolve(
+                ImmutableSet.of(), _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()))
+            .getEntries().stream()
             .findFirst()
             .map(Entry::getIpSpace)
             .orElse(UniverseIpSpace.INSTANCE);
@@ -236,7 +239,10 @@ public class TestFiltersAnswerer extends Answerer {
     Map<String, Configuration> configurations =
         _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     SortedSet<String> includeNodes =
-        ImmutableSortedSet.copyOf(question.getNodeSpecifier().resolve(_batfish.specifierContext()));
+        ImmutableSortedSet.copyOf(
+            question
+                .getNodeSpecifier()
+                .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack())));
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
     Multiset<Row> rows = HashMultiset.create();
@@ -255,7 +261,8 @@ public class TestFiltersAnswerer extends Answerer {
       SortedSet<IpAccessList> filtersByName =
           ImmutableSortedSet.copyOf(
               Comparator.comparing(IpAccessList::getName),
-              filterSpecifier.resolve(node, _batfish.specifierContext()));
+              filterSpecifier.resolve(
+                  node, _batfish.specifierContext(_batfish.peekNetworkSnapshotStack())));
       for (IpAccessList filter : filtersByName) {
         foundMatchingFilter = true;
         for (Flow flow : flows) {
