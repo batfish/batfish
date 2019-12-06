@@ -41,8 +41,7 @@ class IpOwnersAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     IpOwnersQuestion question = (IpOwnersQuestion) _question;
-    Map<String, Configuration> configurations =
-        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     Map<Ip, Set<String>> ipNodeOwners = IpOwners.computeIpNodeOwners(configurations, false);
     Map<String, Set<Interface>> interfaces = computeNodeInterfaces(configurations);
 

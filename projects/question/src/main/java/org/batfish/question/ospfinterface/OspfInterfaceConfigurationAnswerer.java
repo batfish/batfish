@@ -49,12 +49,11 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     OspfInterfaceConfigurationQuestion question = (OspfInterfaceConfigurationQuestion) _question;
-    Map<String, Configuration> configurations =
-        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     Set<String> nodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
+            .resolve(_batfish.specifierContext(snapshot));
 
     List<String> properties =
         OspfInterfacePropertySpecifier.create(question.getProperties()).getMatchingProperties();

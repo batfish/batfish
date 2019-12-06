@@ -82,7 +82,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
     FindMatchingFilterLinesQuestion question = (FindMatchingFilterLinesQuestion) _question;
 
-    SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
+    SpecifierContext ctxt = _batfish.specifierContext(snapshot);
     Multimap<String, String> specifiedAcls =
         getSpecifiedFilters(
             ctxt,

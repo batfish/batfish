@@ -52,8 +52,7 @@ public class LpmRoutesAnswerer extends Answerer {
         getRows(
             _batfish.loadDataPlane().getRibs(),
             q.getIp(),
-            q.getNodeSpecifier()
-                .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack())),
+            q.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot)),
             Pattern.compile(q.getVrfs()),
             _columnMap));
     return answer;

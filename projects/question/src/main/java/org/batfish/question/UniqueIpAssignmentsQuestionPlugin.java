@@ -81,13 +81,13 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer(NetworkSnapshot snapshot) {
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
-      answerElement.setDuplicateIps(getDuplicateIps());
+      answerElement.setDuplicateIps(getDuplicateIps(snapshot));
       return answerElement;
     }
 
-    private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
+    private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps(NetworkSnapshot snapshot) {
       UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
-      SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
+      SpecifierContext ctxt = _batfish.specifierContext(snapshot);
       Map<String, Configuration> configs = ctxt.getConfigs();
       Set<String> nodes = question.getNodeSpecifier().resolve(ctxt);
       // we do nodes and interfaces separately because of interface equality is currently broken

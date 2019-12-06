@@ -144,7 +144,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
 
     Multiset<Row> propertyRows =
         getAnswerRows(
-            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()),
+            _batfish.specifierContext(snapshot),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap(),
             question.getPropertySpecifier());

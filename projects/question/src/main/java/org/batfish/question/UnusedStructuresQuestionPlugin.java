@@ -57,9 +57,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
       // this question as a TableAnswerElement.
       Set<String> includeNodes =
-          question
-              .getNodeSpecifier()
-              .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
+          question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
       Multimap<String, String> hostnameFilenameMap =
           _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
       Set<String> includeFiles =

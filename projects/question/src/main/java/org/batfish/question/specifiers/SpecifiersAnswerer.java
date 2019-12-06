@@ -40,7 +40,7 @@ public final class SpecifiersAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifiersQuestion question = (SpecifiersQuestion) _question;
-    SpecifierContext context = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
+    SpecifierContext context = _batfish.specifierContext(snapshot);
 
     switch (question.getQueryType()) {
       case FILTER:

@@ -88,7 +88,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
     Multiset<Row> propertyRows =
         getProperties(
             question.getPropertySpecifier(),
-            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()),
+            _batfish.specifierContext(snapshot),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap());
 

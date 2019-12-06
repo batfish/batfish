@@ -48,17 +48,14 @@ public final class MlagPropertiesAnswerer extends Answerer {
     Set<String> nodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodeSpecInput(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
+            .resolve(_batfish.specifierContext(snapshot));
     Set<String> mlagIds =
         SpecifierFactories.getNameSetSpecifierOrDefault(
                 question.getMlagIdSpecInput(),
                 Grammar.MLAG_ID_SPECIFIER,
-                new ConstantNameSetSpecifier(
-                    getAllMlagIds(
-                        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()))))
-            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
-    SortedMap<String, Configuration> configs =
-        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
+                new ConstantNameSetSpecifier(getAllMlagIds(_batfish.loadConfigurations(snapshot))))
+            .resolve(_batfish.specifierContext(snapshot));
+    SortedMap<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
 
     return computeAnswer(nodes, mlagIds, configs);
   }
