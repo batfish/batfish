@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP1;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP2;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -9,13 +11,14 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -71,23 +74,21 @@ final class Utils {
     return c;
   }
 
+  /** Creates a new interface on {@code c} with the provided name, address, and description. */
   static Interface newInterface(
-      String name, Configuration c, ConcreteInterfaceAddress primaryAddress, String description) {
-    return FACTORY
-        .interfaceBuilder()
-        .setName(name)
-        .setOwner(c)
-        .setVrf(c.getDefaultVrf())
-        .setAddress(primaryAddress)
-        .setDescription(description)
-        .build();
+      String name, Configuration c, InterfaceAddress primaryAddress, String description) {
+    return newInterface(name, c, c.getDefaultVrf().getName(), primaryAddress, description);
   }
 
+  /**
+   * Creates a new interface on {@code c} in the provided VRF name with the provided name, address,
+   * and description.
+   */
   static Interface newInterface(
       String name,
       Configuration c,
       String vrfName,
-      ConcreteInterfaceAddress primaryAddress,
+      InterfaceAddress primaryAddress,
       String description) {
     checkArgument(
         c.getVrfs().containsKey(vrfName), "VRF %s does not exist on %s", vrfName, c.getHostname());
@@ -209,24 +210,16 @@ final class Utils {
       Configuration cfgNode2,
       String vrfName2,
       String ifaceNameSuffix) {
-    Prefix linkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
-    ConcreteInterfaceAddress ifaceAddress1 =
-        ConcreteInterfaceAddress.create(linkPrefix.getStartIp(), linkPrefix.getPrefixLength());
-    ConcreteInterfaceAddress ifaceAddress2 =
-        ConcreteInterfaceAddress.create(linkPrefix.getEndIp(), linkPrefix.getPrefixLength());
+    String ifaceName1 = interfaceNameToRemote(cfgNode2, ifaceNameSuffix);
+    Utils.newInterface(
+        ifaceName1, cfgNode1, vrfName1, LinkLocalAddress.of(LINK_LOCAL_IP1), "To " + ifaceName1);
 
-    String ifaceName1 = suffixedInterfaceName(cfgNode2, ifaceNameSuffix);
-    Utils.newInterface(ifaceName1, cfgNode1, vrfName1, ifaceAddress1, "To " + ifaceName1);
-
-    String ifaceName2 = suffixedInterfaceName(cfgNode1, ifaceNameSuffix);
-    Utils.newInterface(ifaceName2, cfgNode2, vrfName2, ifaceAddress2, "To " + ifaceName2);
+    String ifaceName2 = interfaceNameToRemote(cfgNode1, ifaceNameSuffix);
+    Utils.newInterface(
+        ifaceName2, cfgNode2, vrfName2, LinkLocalAddress.of(LINK_LOCAL_IP2), "To " + ifaceName2);
 
     addLayer1Edge(
         awsConfiguration, cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
-  }
-
-  static String suffixedInterfaceName(Configuration otherCfg, String suffix) {
-    return otherCfg.getHostname() + "-" + suffix;
   }
 
   /**
@@ -236,20 +229,21 @@ final class Utils {
    */
   static void connect(
       ConvertedConfiguration awsConfiguration, Configuration cfgNode1, Configuration cfgNode2) {
-    Prefix linkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
-    ConcreteInterfaceAddress ifaceAddress1 =
-        ConcreteInterfaceAddress.create(linkPrefix.getStartIp(), linkPrefix.getPrefixLength());
-    ConcreteInterfaceAddress ifaceAddress2 =
-        ConcreteInterfaceAddress.create(linkPrefix.getEndIp(), linkPrefix.getPrefixLength());
+    connect(
+        awsConfiguration,
+        cfgNode1,
+        cfgNode1.getDefaultVrf().getName(),
+        cfgNode2,
+        cfgNode2.getDefaultVrf().getName(),
+        "");
+  }
 
-    String ifaceName1 = cfgNode2.getHostname();
-    Utils.newInterface(ifaceName1, cfgNode1, ifaceAddress1, "To " + ifaceName1);
+  static String interfaceNameToRemote(Configuration remoteCfg) {
+    return interfaceNameToRemote(remoteCfg, "");
+  }
 
-    String ifaceName2 = cfgNode1.getHostname();
-    Utils.newInterface(ifaceName2, cfgNode2, ifaceAddress2, "To " + ifaceName2);
-
-    addLayer1Edge(
-        awsConfiguration, cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
+  static String interfaceNameToRemote(Configuration remoteCfg, String suffix) {
+    return suffix.isEmpty() ? remoteCfg.getHostname() : remoteCfg.getHostname() + "-" + suffix;
   }
 
   /** Adds a bidirectional layer1 edge between the interfaces and nodes */
@@ -263,25 +257,31 @@ final class Utils {
     awsConfiguration.addEdge(node2, iface2, node1, iface1);
   }
 
-  /**
-   * Returns the IP address of the interface with name {@code ifaceName} in {@code configuration}.
-   * Throws an exception if the interface is not present or does not have an assigned address
-   */
-  @Nonnull
-  static Ip getInterfaceIp(Configuration configuration, String ifaceName) {
+  private static InterfaceAddress getInterfaceAddress(
+      Configuration configuration, String ifaceName) {
     Interface iface = configuration.getAllInterfaces().get(ifaceName);
     checkArgument(
         iface != null,
         "Interface name '%s' not found on node %s",
         ifaceName,
         configuration.getHostname());
-    checkArgument(
-        iface.getConcreteAddress() != null,
-        "Concrete address for interface name '%s' on node %s is null",
-        ifaceName,
-        configuration);
+    return iface.getAddress();
+  }
 
-    return iface.getConcreteAddress().getIp();
+  /**
+   * Returns the IP address of the interface with name {@code ifaceName} in {@code configuration}.
+   * Throws an exception if the interface is not present or does not have an assigned address
+   */
+  @Nonnull
+  static Ip getInterfaceLinkLocalIp(Configuration configuration, String ifaceName) {
+    InterfaceAddress ifaceAddress = getInterfaceAddress(configuration, ifaceName);
+    if (ifaceAddress instanceof LinkLocalAddress) {
+      return ((LinkLocalAddress) ifaceAddress).getIp();
+    }
+    throw new IllegalArgumentException(
+        String.format(
+            "Interface %s on %s does not have a link local address",
+            ifaceName, configuration.getHostname()));
   }
 
   /** Extracts the text content of the first element with {@code tag} within {@code element}. */

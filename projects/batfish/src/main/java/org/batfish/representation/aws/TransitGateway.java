@@ -1,11 +1,11 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP1;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP_AND_STATIC;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
-import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,10 +25,10 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -368,7 +368,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         vpcCfg.getVrfs().get(vrfNameOnVpc),
         toStaticRoute(
             Prefix.ZERO,
-            Utils.getInterfaceIp(tgwCfg, suffixedInterfaceName(vpcCfg, attachment.getId()))));
+            Utils.interfaceNameToRemote(tgwCfg, attachment.getId()),
+            Utils.getInterfaceLinkLocalIp(
+                tgwCfg, Utils.interfaceNameToRemote(vpcCfg, attachment.getId()))));
   }
 
   private static void connectVpn(
@@ -439,9 +441,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   static void createBgpProcess(
       Configuration tgwCfg, Vrf vrf, ConvertedConfiguration awsConfiguration) {
-    ConcreteInterfaceAddress loopbackBgpAddress =
-        ConcreteInterfaceAddress.create(
-            awsConfiguration.getNextGeneratedLinkSubnet().getStartIp(), Prefix.MAX_PREFIX_LENGTH);
+    LinkLocalAddress loopbackBgpAddress = LinkLocalAddress.of(LINK_LOCAL_IP1);
     Utils.newInterface(
         "bgp-loopback-" + vrf.getName(),
         tgwCfg,
@@ -525,14 +525,14 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
 
     Interface localIface =
-        tgwCfg.getAllInterfaces().get(suffixedInterfaceName(vpcCfg, attachmentId));
+        tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, attachmentId));
     if (localIface == null) {
       warnings.redFlag(String.format("Interface facing VPC %s not found on TGW", vpc.getId()));
       return;
     }
 
     Interface remoteIface =
-        vpcCfg.getAllInterfaces().get(suffixedInterfaceName(tgwCfg, attachmentId));
+        vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, attachmentId));
     if (remoteIface == null) {
       warnings.redFlag(String.format("Interface facing TGW not found on VPC %s", vpc.getId()));
       return;
@@ -548,7 +548,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                 addStaticRoute(
                     tgwCfg.getVrfs().get(vrfName),
                     toStaticRoute(
-                        pfx, localIface.getName(), remoteIface.getConcreteAddress().getIp())));
+                        pfx, localIface.getName(), remoteIface.getLinkLocalAddress().getIp())));
   }
 
   private void addTransitGatewayStaticRoute(
@@ -603,7 +603,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
               vrf,
               toStaticRoute(
                   route.getDestinationCidrBlock(),
-                  Utils.getInterfaceIp(vpcCfg, suffixedInterfaceName(tgwCfg, attachmentId))));
+                  Utils.interfaceNameToRemote(vpcCfg, attachmentId),
+                  Utils.getInterfaceLinkLocalIp(
+                      vpcCfg, Utils.interfaceNameToRemote(tgwCfg, attachmentId))));
           return;
         }
       case VPN:
