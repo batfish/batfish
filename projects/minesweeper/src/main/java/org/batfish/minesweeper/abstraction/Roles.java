@@ -99,7 +99,9 @@ public class Roles {
     SortedSet<String> incomingAclNull = new TreeSet<>();
     SortedSet<String> outgoingAclNull = new TreeSet<>();
 
-    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(_graph.getBatfish());
+    IBatfish batfish = _graph.getBatfish();
+    Set<String> includeNodes =
+        _nodeSpecifier.getMatchingNodes(batfish, batfish.peekNetworkSnapshotStack());
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
 

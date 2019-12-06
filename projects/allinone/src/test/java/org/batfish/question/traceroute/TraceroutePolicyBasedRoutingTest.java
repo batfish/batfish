@@ -143,7 +143,7 @@ public class TraceroutePolicyBasedRoutingTest {
         new TracerouteQuestion(SOURCE_LOCATION_STR, header, false, DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),
@@ -166,7 +166,7 @@ public class TraceroutePolicyBasedRoutingTest {
         new TracerouteQuestion(SOURCE_LOCATION_STR, header, false, DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),
@@ -189,7 +189,7 @@ public class TraceroutePolicyBasedRoutingTest {
         new TracerouteQuestion(SOURCE_LOCATION_STR, header, false, DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),

@@ -58,12 +58,12 @@ public class CompareSameNameTest {
             null,
             true);
     CompareSameNameAnswerer csnAnswerer = new CompareSameNameAnswerer(csnQuestion, batfish);
-    CompareSameNameAnswerElement answerNoAssumption = csnAnswerer.answer();
+    CompareSameNameAnswerElement answerNoAssumption = csnAnswerer.answer(batfish.getSnapshot());
     batfish
         .getSettings()
         .setDebugFlags(
             ImmutableList.of(CompareSameNameQuestionPlugin.DEBUG_FLAG_ASSUME_ALL_UNIQUE));
-    CompareSameNameAnswerElement answerAssumeAllUnique = csnAnswerer.answer();
+    CompareSameNameAnswerElement answerAssumeAllUnique = csnAnswerer.answer(batfish.getSnapshot());
 
     assertThat(
         answerNoAssumption

@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.ErrorDetails.ParseExceptionContext;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -42,7 +43,7 @@ public class InitIssuesAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ConvertConfigurationAnswerElement ccae =
         _batfish.loadConvertConfigurationAnswerElementOrReparse();
     ParseVendorConfigurationAnswerElement pvcae =

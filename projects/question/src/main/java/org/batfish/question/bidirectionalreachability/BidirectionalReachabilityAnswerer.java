@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.TracePruner;
@@ -51,7 +52,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     PathConstraints pathConstraints = createPathConstraints(_pathConstraintsInput);
     HeaderSpace headerSpace = toHeaderSpaceBuilder(_headerConstraints).build();
 

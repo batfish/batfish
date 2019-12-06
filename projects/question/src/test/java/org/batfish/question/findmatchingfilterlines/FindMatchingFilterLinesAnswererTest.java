@@ -69,7 +69,7 @@ public class FindMatchingFilterLinesAnswererTest {
     FindMatchingFilterLinesAnswerer answerer =
         new FindMatchingFilterLinesAnswerer(UNCONSTRAINED_QUESTION, batfish);
     _thrown.expect(IllegalArgumentException.class);
-    answerer.answer();
+    answerer.answer(batfish.getSnapshot());
   }
 
   @Test
@@ -206,7 +206,7 @@ public class FindMatchingFilterLinesAnswererTest {
       FindMatchingFilterLinesAnswerer answerer =
           new FindMatchingFilterLinesAnswerer(UNCONSTRAINED_QUESTION, mockBatfish);
       assertThat(
-          answerer.answer().getRows().getData(),
+          answerer.answer(mockBatfish.getSnapshot()).getRows().getData(),
           containsInAnyOrder(c1Acl1Matcher, c1Acl2Matcher, c2Acl1Matcher));
     }
     {
@@ -215,7 +215,8 @@ public class FindMatchingFilterLinesAnswererTest {
           new FindMatchingFilterLinesAnswerer(
               new FindMatchingFilterLinesQuestion("c1", null, null, null, null), mockBatfish);
       assertThat(
-          answerer.answer().getRows().getData(), containsInAnyOrder(c1Acl1Matcher, c1Acl2Matcher));
+          answerer.answer(mockBatfish.getSnapshot()).getRows().getData(),
+          containsInAnyOrder(c1Acl1Matcher, c1Acl2Matcher));
     }
     {
       // Answerer with filters "acl1" should not give row for c1 acl2
@@ -223,7 +224,8 @@ public class FindMatchingFilterLinesAnswererTest {
           new FindMatchingFilterLinesAnswerer(
               new FindMatchingFilterLinesQuestion(null, "acl1", null, null, null), mockBatfish);
       assertThat(
-          answerer.answer().getRows().getData(), containsInAnyOrder(c1Acl1Matcher, c2Acl1Matcher));
+          answerer.answer(mockBatfish.getSnapshot()).getRows().getData(),
+          containsInAnyOrder(c1Acl1Matcher, c2Acl1Matcher));
     }
   }
 

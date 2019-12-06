@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Flow;
@@ -37,7 +38,7 @@ public class MultipathConsistencyAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     MultipathConsistencyParameters parameters = parameters();
     Set<Flow> flows = _batfish.bddMultipathConsistency(parameters);
     SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);

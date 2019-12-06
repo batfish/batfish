@@ -16,9 +16,10 @@ import org.junit.Test;
 public class ConversionStatusAnswererTest {
   @Test
   public void testAnswer() {
+    TestBatfish batfish = new TestBatfish();
     ConversionStatusAnswerer answerer =
-        new ConversionStatusAnswerer(new ConversionStatusQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new ConversionStatusAnswerer(new ConversionStatusQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(
         answer.getRows(),
         equalTo(

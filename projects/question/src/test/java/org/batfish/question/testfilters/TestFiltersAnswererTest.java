@@ -132,7 +132,7 @@ public class TestFiltersAnswererTest {
         new TestFiltersQuestion(
             null, null, PacketHeaderConstraints.builder().setSrcIp("1.0.0.4").build(), null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     /*
      * Trace should be present for referencing acl with one event:
@@ -187,7 +187,7 @@ public class TestFiltersAnswererTest {
                 c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3));
     TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // There should be 6 rows
     assertThat(answer.getRows(), hasSize(6));
@@ -234,7 +234,7 @@ public class TestFiltersAnswererTest {
 
     TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // There should be 2 rows
     assertThat(answer.getRows(), hasSize(2));
@@ -257,7 +257,7 @@ public class TestFiltersAnswererTest {
     // Test that filtering by node gives only that node's ACLs
     TestFiltersQuestion question = new TestFiltersQuestion(c1.getHostname(), null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-    Rows rows = answerer.answer().getRows();
+    Rows rows = answerer.answer(batfish.getSnapshot()).getRows();
 
     assertThat(rows, hasSize(2));
     for (Row row : rows.getData()) {
@@ -267,7 +267,7 @@ public class TestFiltersAnswererTest {
     // Test that filtering by ACL name gives only matching ACLs
     question = new TestFiltersQuestion(null, "acl1", null, null);
     answerer = new TestFiltersAnswerer(question, batfish);
-    rows = answerer.answer().getRows();
+    rows = answerer.answer(batfish.getSnapshot()).getRows();
 
     assertThat(rows, hasSize(2));
     for (Row row : rows.getData()) {
@@ -277,7 +277,7 @@ public class TestFiltersAnswererTest {
     // Test that filtering by both gives only the one matching ACL
     question = new TestFiltersQuestion(c1.getHostname(), "acl1", null, null);
     answerer = new TestFiltersAnswerer(question, batfish);
-    rows = answerer.answer().getRows();
+    rows = answerer.answer(batfish.getSnapshot()).getRows();
 
     assertThat(rows, hasSize(1));
   }
@@ -295,7 +295,7 @@ public class TestFiltersAnswererTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("No matching filters");
-    answerer.answer();
+    answerer.answer(batfish.getSnapshot());
   }
 
   @Test
@@ -312,6 +312,6 @@ public class TestFiltersAnswererTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("No matching filters");
-    answerer.answer();
+    answerer.answer(batfish.getSnapshot());
   }
 }

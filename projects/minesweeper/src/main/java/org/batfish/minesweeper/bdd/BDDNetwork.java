@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
@@ -84,7 +85,9 @@ public class BDDNetwork {
    * representation of the import and export policies on this interface.
    */
   private void computeInterfacePolicies() {
-    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(_graph.getBatfish());
+    IBatfish batfish = _graph.getBatfish();
+    Set<String> includeNodes =
+        _nodeSpecifier.getMatchingNodes(batfish, batfish.peekNetworkSnapshotStack());
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
       if (!includeNodes.contains(router)) { // skip if we don't care about this node

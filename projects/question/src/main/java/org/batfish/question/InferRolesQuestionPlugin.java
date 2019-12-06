@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -42,19 +43,15 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public InferRolesAnswerElement answer() {
+    public InferRolesAnswerElement answer(NetworkSnapshot snapshot) {
 
       InferRolesQuestion question = (InferRolesQuestion) _question;
 
       // collect relevant nodes in a list.
-      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish, snapshot);
 
       Optional<RoleMapping> roleMapping =
-          new InferRoles(
-                  nodes,
-                  _batfish
-                      .getTopologyProvider()
-                      .getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack()))
+          new InferRoles(nodes, _batfish.getTopologyProvider().getInitialLayer3Topology(snapshot))
               .inferRoles();
       return new InferRolesAnswerElement(roleMapping);
     }

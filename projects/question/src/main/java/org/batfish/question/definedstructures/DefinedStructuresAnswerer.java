@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -34,7 +35,7 @@ public class DefinedStructuresAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     DefinedStructuresQuestion question = (DefinedStructuresQuestion) _question;
     Multiset<Row> structures = rawAnswer(question);
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));

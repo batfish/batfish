@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -23,7 +24,7 @@ public final class DetectLoopsAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     DetectLoopsQuestion question = (DetectLoopsQuestion) _question;
     Set<Flow> flows = _batfish.bddLoopDetection();
 

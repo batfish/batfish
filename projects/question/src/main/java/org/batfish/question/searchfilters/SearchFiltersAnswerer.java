@@ -84,7 +84,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     SearchFiltersQuestion question = (SearchFiltersQuestion) _question;
     nonDifferentialAnswer(question);
     return _tableAnswerElement;

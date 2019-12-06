@@ -129,7 +129,7 @@ public class TracerouteTest {
 
     // without ignoreFilters we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),
@@ -142,7 +142,7 @@ public class TracerouteTest {
     // with ignoreFilters we get DELIVERED_TO_SUBNET, since the dst ip is in the interface subnet
     question = new TracerouteQuestion(ALL, header, true, DEFAULT_MAX_TRACES);
     answerer = new TracerouteAnswerer(question, batfish);
-    answer = (TableAnswerElement) answerer.answer();
+    answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),
@@ -220,7 +220,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     // should only have one trace
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -306,7 +306,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     assertThat(
         answer.getRows().getData(),
@@ -408,7 +408,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     return answer;
   }
 
@@ -545,7 +545,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     return answer;
   }
@@ -690,7 +690,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     return answer;
   }
@@ -778,7 +778,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(
         answer,
         hasRows(
@@ -799,7 +799,7 @@ public class TracerouteTest {
             1);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(
         answer,
         hasRows(
@@ -854,7 +854,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     // should only have one trace with disposition EXITS_NETWORK
     assertThat(
@@ -928,7 +928,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     // should only have one trace with disposition INSUFFICIENT_INFO
     assertThat(

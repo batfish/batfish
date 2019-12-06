@@ -22,9 +22,10 @@ public class ConversionWarningAnswererTest {
 
   @Test
   public void testAnswer() {
+    TestBatfish batfish = new TestBatfish();
     ConversionWarningAnswerer answerer =
-        new ConversionWarningAnswerer(new ConversionWarningQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new ConversionWarningAnswerer(new ConversionWarningQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(
         answer.getRows(),
         equalTo(

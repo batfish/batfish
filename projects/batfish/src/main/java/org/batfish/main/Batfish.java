@@ -659,7 +659,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (question.getDifferential()) {
         answerElement = Answerer.create(question, this).answerDiff();
       } else {
-        answerElement = Answerer.create(question, this).answer();
+        answerElement = Answerer.create(question, this).answer(getSnapshot());
       }
     } catch (Exception e) {
       exception = new BatfishException("Failed to answer question", e);

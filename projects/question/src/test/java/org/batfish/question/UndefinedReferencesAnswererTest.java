@@ -102,9 +102,10 @@ public class UndefinedReferencesAnswererTest {
 
   @Test
   public void testAnswererFlow() {
+    TestBatfish batfish = new TestBatfish();
     UndefinedReferencesAnswerer answerer =
-        new UndefinedReferencesAnswerer(new UndefinedReferencesQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new UndefinedReferencesAnswerer(new UndefinedReferencesQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows(), equalTo(new Rows().add(BASIC_ROW)));
   }
 

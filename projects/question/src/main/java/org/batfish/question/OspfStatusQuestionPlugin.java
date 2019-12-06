@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -120,7 +121,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answer() {
+    public AnswerElement answer(NetworkSnapshot snapshot) {
 
       OspfStatusQuestion question = (OspfStatusQuestion) _question;
 

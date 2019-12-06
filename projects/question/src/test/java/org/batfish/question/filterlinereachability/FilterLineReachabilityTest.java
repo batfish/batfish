@@ -490,6 +490,6 @@ public class FilterLineReachabilityTest {
           }
         };
     FilterLineReachabilityAnswerer answerer = new FilterLineReachabilityAnswerer(q, batfish);
-    return answerer.answer();
+    return answerer.answer(batfish.getSnapshot());
   }
 }

@@ -50,7 +50,7 @@ public class SmtReachabilityTwoLinkTest {
     question.setFinalNodeRegex(_dstNode.getHostname());
     question.setFailures(1);
 
-    final AnswerElement answer = Answerer.create(question, _batfish).answer();
+    final AnswerElement answer = Answerer.create(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -75,7 +75,7 @@ public class SmtReachabilityTwoLinkTest {
     question.setFailures(1);
     question.setNegate(true);
 
-    final AnswerElement answer = Answerer.create(question, _batfish).answer();
+    final AnswerElement answer = Answerer.create(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -95,7 +95,7 @@ public class SmtReachabilityTwoLinkTest {
     question.setNotFailNode1Regex(_srcNode.getHostname());
     question.setNotFailNode2Regex(".*");
 
-    final AnswerElement answer = Answerer.create(question, _batfish).answer();
+    final AnswerElement answer = Answerer.create(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -114,7 +114,7 @@ public class SmtReachabilityTwoLinkTest {
     question.setNotFailNode1Regex(".*");
     question.setNotFailNode2Regex(_srcNode.getHostname());
 
-    final AnswerElement answer = Answerer.create(question, _batfish).answer();
+    final AnswerElement answer = Answerer.create(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;

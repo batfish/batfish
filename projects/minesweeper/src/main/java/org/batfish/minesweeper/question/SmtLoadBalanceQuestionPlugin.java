@@ -3,6 +3,7 @@ package org.batfish.minesweeper.question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -21,7 +22,7 @@ public class SmtLoadBalanceQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answer() {
+    public AnswerElement answer(NetworkSnapshot snapshot) {
       LoadBalanceQuestion q = (LoadBalanceQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
       return p.checkLoadBalancing(q, q.getThreshold());

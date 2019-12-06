@@ -130,7 +130,8 @@ public class DifferentialReachabilityTest {
             TracePruner.DEFAULT_MAX_TRACES,
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer =
+        new DifferentialReachabilityAnswerer(question, batfish).answer(batfish.getSnapshot());
     Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
@@ -170,7 +171,8 @@ public class DifferentialReachabilityTest {
             PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer =
+        new DifferentialReachabilityAnswerer(question, batfish).answer(batfish.getSnapshot());
     Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
@@ -210,7 +212,8 @@ public class DifferentialReachabilityTest {
             PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer =
+        new DifferentialReachabilityAnswerer(question, batfish).answer(batfish.getSnapshot());
     assertThat(answer.getRows().size(), equalTo(0));
   }
 }

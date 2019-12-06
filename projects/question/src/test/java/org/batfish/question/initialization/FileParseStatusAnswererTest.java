@@ -48,9 +48,10 @@ public class FileParseStatusAnswererTest {
 
   @Test
   public void testAnswererFlow() {
+    TestBatfish batfish = new TestBatfish();
     FileParseStatusAnswerer answerer =
-        new FileParseStatusAnswerer(new FileParseStatusQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new FileParseStatusAnswerer(new FileParseStatusQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(
         answer.getRows(),
         equalTo(

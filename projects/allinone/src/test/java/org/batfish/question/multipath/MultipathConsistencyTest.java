@@ -55,7 +55,7 @@ public class MultipathConsistencyTest {
   public void testMultipath() {
     MultipathConsistencyQuestion question = new MultipathConsistencyQuestion();
     MultipathConsistencyAnswerer answerer = new MultipathConsistencyAnswerer(question, _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     assertThat(ae.getRows(), hasSize(1));
 

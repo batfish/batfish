@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
@@ -98,24 +99,26 @@ public class EdgesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     EdgesQuestion question = (EdgesQuestion) _question;
 
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
+    Set<String> includeNodes =
+        question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
     Set<String> includeRemoteNodes =
-        question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
+        question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
 
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getEdgeType()));
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     Topology topology =
         question.getInitial()
-            ? topologyProvider.getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack())
-            : topologyProvider.getLayer3Topology(_batfish.peekNetworkSnapshotStack());
+            ? topologyProvider.getInitialLayer3Topology(snapshot)
+            : topologyProvider.getLayer3Topology(snapshot);
     answer.postProcessAnswer(
         _question,
         generateRows(
             configurations,
+            snapshot,
             topology,
             includeNodes,
             includeRemoteNodes,
@@ -126,6 +129,7 @@ public class EdgesAnswerer extends Answerer {
 
   private Collection<Row> generateRows(
       Map<String, Configuration> configurations,
+      NetworkSnapshot snapshot,
       Topology topology,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
@@ -134,8 +138,7 @@ public class EdgesAnswerer extends Answerer {
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     switch (edgeType) {
       case BGP:
-        BgpTopology bgpTopology =
-            topologyProvider.getBgpTopology(_batfish.peekNetworkSnapshotStack());
+        BgpTopology bgpTopology = topologyProvider.getBgpTopology(snapshot);
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
         EigrpTopology eigrpTopology =
@@ -153,13 +156,13 @@ public class EdgesAnswerer extends Answerer {
             includeNodes,
             includeRemoteNodes,
             initial
-                ? topologyProvider.getInitialOspfTopology(_batfish.peekNetworkSnapshotStack())
-                : topologyProvider.getOspfTopology(_batfish.peekNetworkSnapshotStack()));
+                ? topologyProvider.getInitialOspfTopology(snapshot)
+                : topologyProvider.getOspfTopology(snapshot));
       case VXLAN:
         VxlanTopology vxlanTopology =
             initial
-                ? topologyProvider.getInitialVxlanTopology(_batfish.peekNetworkSnapshotStack())
-                : topologyProvider.getVxlanTopology(_batfish.peekNetworkSnapshotStack());
+                ? topologyProvider.getInitialVxlanTopology(snapshot)
+                : topologyProvider.getVxlanTopology(snapshot);
         return getVxlanEdges(
             NetworkConfigurations.of(configurations),
             includeNodes,
@@ -167,7 +170,7 @@ public class EdgesAnswerer extends Answerer {
             vxlanTopology);
       case LAYER1:
         return topologyProvider
-            .getLayer1LogicalTopology(_batfish.peekNetworkSnapshotStack())
+            .getLayer1LogicalTopology(snapshot)
             .map(
                 layer1LogicalTopology ->
                     getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))

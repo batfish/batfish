@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
@@ -245,7 +246,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     SwitchedVlanPropertiesQuestion question = (SwitchedVlanPropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());

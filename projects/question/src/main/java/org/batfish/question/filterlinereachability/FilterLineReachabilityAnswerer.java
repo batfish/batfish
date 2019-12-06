@@ -24,6 +24,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -58,7 +59,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     FilterLineReachabilityQuestion question = (FilterLineReachabilityQuestion) _question;
     FilterLineReachabilityRows answerRows = new FilterLineReachabilityRows();
 

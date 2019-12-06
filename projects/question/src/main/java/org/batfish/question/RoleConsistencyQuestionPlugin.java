@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -56,7 +57,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public RoleConsistencyAnswerElement answer() {
+    public RoleConsistencyAnswerElement answer(NetworkSnapshot snapshot) {
 
       RoleConsistencyQuestion question = (RoleConsistencyQuestion) _question;
       _answerElement = new RoleConsistencyAnswerElement();
@@ -72,7 +73,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
       // find all outliers for protocol-specific servers, on a per-role basis
       PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
-      PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
+      PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer(snapshot);
       List<OutlierSet<NavigableSet<String>>> answers = new LinkedList<>();
       for (Map.Entry<String, AnswerElement> entry : roleAE.getAnswers().entrySet()) {
         String role = entry.getKey();

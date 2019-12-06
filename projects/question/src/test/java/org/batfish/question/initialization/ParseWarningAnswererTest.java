@@ -99,9 +99,9 @@ public class ParseWarningAnswererTest {
 
   @Test
   public void testAnswererFlow() {
-    ParseWarningAnswerer answerer =
-        new ParseWarningAnswerer(new ParseWarningQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+    TestBatfish batfish = new TestBatfish();
+    ParseWarningAnswerer answerer = new ParseWarningAnswerer(new ParseWarningQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(
         answer.getRows(),
         equalTo(

@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -18,7 +19,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public InitInfoAnswerElement answer() {
+    public InitInfoAnswerElement answer(NetworkSnapshot snapshot) {
       InitInfoQuestion question = (InitInfoQuestion) _question;
       boolean b = question._environmentBgpTables;
       if (b) {

@@ -358,7 +358,7 @@ public final class SearchFiltersTest {
   public void testAnswer() {
     SearchFiltersQuestion question = new SearchFiltersQuestion();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(
         ae,
         hasRows(
@@ -381,7 +381,7 @@ public final class SearchFiltersTest {
     SearchFiltersQuestion question =
         SearchFiltersQuestion.builder().setGenerateExplanations(true).setAction("deny").build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(
         ae,
         hasRows(

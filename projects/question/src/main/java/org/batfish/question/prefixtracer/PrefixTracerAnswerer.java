@@ -11,6 +11,7 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Prefix;
@@ -36,7 +37,7 @@ class PrefixTracerAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     PrefixTracerQuestion question = (PrefixTracerQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata());
     DataPlane dp = _batfish.loadDataPlane();
@@ -48,9 +49,7 @@ class PrefixTracerAnswerer extends Answerer {
         getRows(
             prefixTracingInfo,
             question.getPrefix(),
-            question
-                .getNodeSpecifier()
-                .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()))));
+            question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot))));
 
     return answer;
   }

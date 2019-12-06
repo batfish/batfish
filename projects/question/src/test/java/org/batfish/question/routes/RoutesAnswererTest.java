@@ -449,22 +449,16 @@ public class RoutesAnswererTest {
                             vrf.getName())))));
     NetworkConfigurations nc = NetworkConfigurations.of(ImmutableMap.of(c.getHostname(), c));
 
+    MockBatfish batfish = new MockBatfish(nc, MockDataPlane.builder().setRibs(ribs).build());
     AnswerElement el =
-        new RoutesAnswerer(
-                new RoutesQuestion(),
-                new MockBatfish(nc, MockDataPlane.builder().setRibs(ribs).build()))
-            .answer();
+        new RoutesAnswerer(new RoutesQuestion(), batfish).answer(batfish.getSnapshot());
 
     assert el.getSummary() != null;
     assertThat(el.getSummary().getNumResults(), equalTo(1));
 
     // no results for empty ribs
-    el =
-        new RoutesAnswerer(
-                new RoutesQuestion(),
-                new MockBatfish(
-                    nc, MockDataPlane.builder().setRibs(ImmutableSortedMap.of()).build()))
-            .answer();
+    batfish = new MockBatfish(nc, MockDataPlane.builder().setRibs(ImmutableSortedMap.of()).build());
+    el = new RoutesAnswerer(new RoutesQuestion(), batfish).answer(batfish.getSnapshot());
     assert el.getSummary() != null;
     assertThat(el.getSummary().getNumResults(), equalTo(0));
   }

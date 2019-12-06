@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.role.NodeRoleDimension;
@@ -235,8 +236,8 @@ public class NodesSpecifier {
   }
 
   /** Return the set of nodes that match this specifier */
-  public Set<String> getMatchingNodes(IBatfish batfish) {
-    return getMatchingNodes(batfish.specifierContext());
+  public Set<String> getMatchingNodes(IBatfish batfish, NetworkSnapshot snapshot) {
+    return getMatchingNodes(batfish.specifierContext(snapshot));
   }
 
   /** Return the set of nodes that match this specifier. */

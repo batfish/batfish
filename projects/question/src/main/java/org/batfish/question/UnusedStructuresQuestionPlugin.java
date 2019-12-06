@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -49,7 +50,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public TableAnswerElement answer() {
+    public TableAnswerElement answer(NetworkSnapshot snapshot) {
       UnusedStructuresQuestion question = (UnusedStructuresQuestion) _question;
 
       // Find all the filenames that produced the queried nodes. This might have false positives if

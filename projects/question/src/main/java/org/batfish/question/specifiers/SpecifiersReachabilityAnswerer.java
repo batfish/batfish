@@ -2,6 +2,7 @@ package org.batfish.question.specifiers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
@@ -17,7 +18,7 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifiersReachabilityQuestion question = (SpecifiersReachabilityQuestion) _question;
     AnswerElement answer = _batfish.standard(question.getReachabilityParameters());
     if (answer instanceof TraceWrapperAsAnswerElement) {

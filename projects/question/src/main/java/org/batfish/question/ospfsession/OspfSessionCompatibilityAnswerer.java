@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -45,13 +46,13 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     OspfSessionCompatibilityQuestion question = (OspfSessionCompatibilityQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
 
-    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
+    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext(snapshot));
     Set<String> remoteNodes =
-        question.getRemoteNodesSpecifier().resolve(_batfish.specifierContext());
+        question.getRemoteNodesSpecifier().resolve(_batfish.specifierContext(snapshot));
 
     TableMetadata tableMetadata = createTableMetadata();
 
@@ -60,9 +61,7 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
     CandidateOspfTopology candidateTopo =
         OspfTopologyUtils.computeCandidateOspfTopology(
             NetworkConfigurations.of(configurations),
-            _batfish
-                .getTopologyProvider()
-                .getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack()));
+            _batfish.getTopologyProvider().getInitialLayer3Topology(snapshot));
     Multiset<Row> propertyRows =
         getRows(
             configurations,

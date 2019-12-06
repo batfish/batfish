@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Flow;
@@ -58,7 +59,7 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     String tag = _batfish.getFlowTag();
     Set<Flow> flows = _helper.getFlows(tag);
     TracerouteEngine tracerouteEngine = _batfish.getTracerouteEngine();

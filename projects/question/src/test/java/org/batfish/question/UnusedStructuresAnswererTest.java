@@ -95,9 +95,10 @@ public class UnusedStructuresAnswererTest {
 
   @Test
   public void testAnswererFlow() {
+    TestBatfish batfish = new TestBatfish();
     UnusedStructuresAnswerer answerer =
-        new UnusedStructuresAnswerer(new UnusedStructuresQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new UnusedStructuresAnswerer(new UnusedStructuresQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows(), equalTo(new Rows().add(BASIC_ROW)));
   }
 

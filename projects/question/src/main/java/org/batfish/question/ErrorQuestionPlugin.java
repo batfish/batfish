@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -18,7 +19,7 @@ public class ErrorQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answer() {
+    public AnswerElement answer(NetworkSnapshot snapshot) {
       throw new BatfishException(
           "error question debugging outer exception",
           new BatfishException("error question debugging inner exception"));

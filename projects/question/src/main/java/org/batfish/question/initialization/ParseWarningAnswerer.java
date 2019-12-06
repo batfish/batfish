@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfish;
@@ -27,7 +28,7 @@ import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
 class ParseWarningAnswerer extends Answerer {
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ParseWarningQuestion question = (ParseWarningQuestion) _question;
     TableMetadata metadata = createMetadata(question);
     Map<String, ColumnMetadata> columnMetadataMap = metadata.toColumnMap();

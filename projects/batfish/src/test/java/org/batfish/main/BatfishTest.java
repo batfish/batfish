@@ -39,6 +39,7 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
@@ -588,7 +589,7 @@ public class BatfishTest {
     Answerer testAnswerer =
         new Answerer(testQuestion, batfish) {
           @Override
-          public AnswerElement answer() {
+          public AnswerElement answer(NetworkSnapshot snapshot) {
             throw new UnsupportedOperationException("no implementation for generated method");
           }
         };

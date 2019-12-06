@@ -33,7 +33,7 @@ public class DetectLoopsTest {
     initNetwork(false);
     DetectLoopsAnswerer answerer =
         new DetectLoopsAnswerer(new DetectLoopsQuestion(TracePruner.DEFAULT_MAX_TRACES), _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(ae.getRows(), hasSize(0));
   }
 
@@ -45,7 +45,7 @@ public class DetectLoopsTest {
 
     DetectLoopsAnswerer answerer =
         new DetectLoopsAnswerer(new DetectLoopsQuestion(TracePruner.DEFAULT_MAX_TRACES), _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     // we find 2 loopy flows, but they are for the same destination, so the answerer
     // only reports 1.

@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -28,7 +29,7 @@ import org.batfish.datamodel.table.TableMetadata;
 /** Implements {@link FileParseStatusQuestion}. */
 class FileParseStatusAnswerer extends Answerer {
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ParseVendorConfigurationAnswerElement pvcae =
         _batfish.loadParseVendorConfigurationAnswerElement();
     ConvertConfigurationAnswerElement ccae =

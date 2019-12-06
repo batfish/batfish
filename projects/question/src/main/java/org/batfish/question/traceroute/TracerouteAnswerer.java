@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Flow;
@@ -47,7 +48,7 @@ public final class TracerouteAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     TracerouteQuestion question = (TracerouteQuestion) _question;
     String tag = _batfish.getFlowTag();
     Set<Flow> flows = _helper.getFlows(tag);

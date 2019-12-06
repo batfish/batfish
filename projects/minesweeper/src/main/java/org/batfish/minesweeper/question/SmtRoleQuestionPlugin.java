@@ -3,6 +3,7 @@ package org.batfish.minesweeper.question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -23,7 +24,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answer() {
+    public AnswerElement answer(NetworkSnapshot snapshot) {
       RoleQuestion q = (RoleQuestion) _question;
       Roles roles = Roles.create(_batfish, q.getDstIps(), new NodesSpecifier(q.getNodeRegex()));
       return roles.asAnswer(q.getType());

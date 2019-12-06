@@ -11,6 +11,7 @@ import java.util.SortedMap;
 import java.util.regex.Pattern;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.GenericRib;
@@ -43,7 +44,7 @@ public class LpmRoutesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     LpmRoutesQuestion q = (LpmRoutesQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(getMetadata());
     answer.postProcessAnswer(
