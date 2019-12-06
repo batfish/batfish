@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.SortedMap;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -77,15 +78,14 @@ public class TestFiltersAnswererTest {
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       return _configurations;
     }
 
     @Override
     public SpecifierContext specifierContext() {
       return firstNonNull(
-          _specifierContext,
-          MockSpecifierContext.builder().setConfigs(loadConfigurations()).build());
+          _specifierContext, MockSpecifierContext.builder().setConfigs(_configurations).build());
     }
   }
 

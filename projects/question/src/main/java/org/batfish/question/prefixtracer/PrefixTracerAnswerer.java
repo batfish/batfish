@@ -50,7 +50,7 @@ class PrefixTracerAnswerer extends Answerer {
             question.getPrefix(),
             question
                 .getNodeSpecifier()
-                .resolve(_batfish.specifierContext(_batfish.getNetworkSnapshot()))));
+                .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()))));
 
     return answer;
   }

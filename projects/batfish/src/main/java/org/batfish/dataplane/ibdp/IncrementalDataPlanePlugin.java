@@ -26,7 +26,9 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   public ComputeDataPlaneResult computeDataPlane() {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Topology topology =
-        _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot());
+        _batfish
+            .getTopologyProvider()
+            .getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack());
     return computeDataPlane(configurations, topology);
   }
 
@@ -40,7 +42,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   public ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations, Topology topology) {
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
-    NetworkSnapshot networkSnapshot = _batfish.getNetworkSnapshot();
+    NetworkSnapshot networkSnapshot = _batfish.peekNetworkSnapshotStack();
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     TopologyContext topologyContext =
         TopologyContext.builder()

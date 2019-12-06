@@ -217,7 +217,10 @@ public class BatfishTest {
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
 
     assertThat(
-        batfish.getTopologyProvider().getRawLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        batfish
+            .getTopologyProvider()
+            .getRawLayer3Topology(batfish.peekNetworkSnapshotStack())
+            .getEdges(),
         containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
   }
 
@@ -259,7 +262,7 @@ public class BatfishTest {
     Layer1Topology layer1Topology =
         batfish
             .getTopologyProvider()
-            .getRawLayer1PhysicalTopology(batfish.getNetworkSnapshot())
+            .getRawLayer1PhysicalTopology(batfish.peekNetworkSnapshotStack())
             .orElse(null);
 
     Layer1Node c1i1 = new Layer1Node("c1", "i1");
@@ -771,7 +774,7 @@ public class BatfishTest {
 
     // returns the text of the config if it exists
     assertThat(
-        batfish.getSnapshotInputObject(batfish.getNetworkSnapshot(), "configs/" + fileName),
+        batfish.getSnapshotInputObject(batfish.peekNetworkSnapshotStack(), "configs/" + fileName),
         equalTo(configText));
   }
 
@@ -788,6 +791,6 @@ public class BatfishTest {
 
     // should throw FileNotFoundException if file not found
     _thrown.expect(FileNotFoundException.class);
-    batfish.getSnapshotInputObject(batfish.getNetworkSnapshot(), "missing file");
+    batfish.getSnapshotInputObject(batfish.peekNetworkSnapshotStack(), "missing file");
   }
 }

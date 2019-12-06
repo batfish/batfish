@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -236,7 +237,7 @@ public class FindMatchingFilterLinesAnswererTest {
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       return _configs;
     }
 

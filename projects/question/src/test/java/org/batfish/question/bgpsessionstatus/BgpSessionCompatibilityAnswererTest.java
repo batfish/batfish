@@ -582,7 +582,7 @@ public class BgpSessionCompatibilityAnswererTest {
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       return _configs;
     }
 

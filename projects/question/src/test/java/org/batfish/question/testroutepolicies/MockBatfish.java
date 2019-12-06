@@ -43,13 +43,8 @@ final class MockBatfish extends IBatfishTestAdapter {
   }
 
   @Override
-  public NetworkSnapshot getNetworkSnapshot() {
+  public NetworkSnapshot peekNetworkSnapshotStack() {
     return _snapshots.peek();
-  }
-
-  @Override
-  public SortedMap<String, Configuration> loadConfigurations() {
-    return loadConfigurations(getNetworkSnapshot());
   }
 
   @Override

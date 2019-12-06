@@ -110,8 +110,8 @@ public class EdgesAnswerer extends Answerer {
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     Topology topology =
         question.getInitial()
-            ? topologyProvider.getInitialLayer3Topology(_batfish.getNetworkSnapshot())
-            : topologyProvider.getLayer3Topology(_batfish.getNetworkSnapshot());
+            ? topologyProvider.getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack())
+            : topologyProvider.getLayer3Topology(_batfish.peekNetworkSnapshotStack());
     answer.postProcessAnswer(
         _question,
         generateRows(
@@ -134,7 +134,8 @@ public class EdgesAnswerer extends Answerer {
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     switch (edgeType) {
       case BGP:
-        BgpTopology bgpTopology = topologyProvider.getBgpTopology(_batfish.getNetworkSnapshot());
+        BgpTopology bgpTopology =
+            topologyProvider.getBgpTopology(_batfish.peekNetworkSnapshotStack());
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
         EigrpTopology eigrpTopology =
@@ -152,13 +153,13 @@ public class EdgesAnswerer extends Answerer {
             includeNodes,
             includeRemoteNodes,
             initial
-                ? topologyProvider.getInitialOspfTopology(_batfish.getNetworkSnapshot())
-                : topologyProvider.getOspfTopology(_batfish.getNetworkSnapshot()));
+                ? topologyProvider.getInitialOspfTopology(_batfish.peekNetworkSnapshotStack())
+                : topologyProvider.getOspfTopology(_batfish.peekNetworkSnapshotStack()));
       case VXLAN:
         VxlanTopology vxlanTopology =
             initial
-                ? topologyProvider.getInitialVxlanTopology(_batfish.getNetworkSnapshot())
-                : topologyProvider.getVxlanTopology(_batfish.getNetworkSnapshot());
+                ? topologyProvider.getInitialVxlanTopology(_batfish.peekNetworkSnapshotStack())
+                : topologyProvider.getVxlanTopology(_batfish.peekNetworkSnapshotStack());
         return getVxlanEdges(
             NetworkConfigurations.of(configurations),
             includeNodes,
@@ -166,7 +167,7 @@ public class EdgesAnswerer extends Answerer {
             vxlanTopology);
       case LAYER1:
         return topologyProvider
-            .getLayer1LogicalTopology(_batfish.getNetworkSnapshot())
+            .getLayer1LogicalTopology(_batfish.peekNetworkSnapshotStack())
             .map(
                 layer1LogicalTopology ->
                     getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))

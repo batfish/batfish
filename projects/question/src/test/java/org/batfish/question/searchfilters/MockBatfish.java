@@ -43,14 +43,9 @@ final class MockBatfish extends IBatfishTestAdapter {
   }
 
   @Override
-  public SortedMap<String, Configuration> loadConfigurations() {
+  public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     Configuration config = _snapshotStack.peek() ? _baseConfig : _deltaConfig;
     return ImmutableSortedMap.of(config.getHostname(), config);
-  }
-
-  @Override
-  public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
-    return loadConfigurations();
   }
 
   @Override

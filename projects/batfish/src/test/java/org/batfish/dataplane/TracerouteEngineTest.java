@@ -116,7 +116,8 @@ public class TracerouteEngineTest {
     // Compute flow traces
     SortedMap<Flow, List<Trace>> traces =
         new TracerouteEngineImpl(
-                dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()))
+                dp,
+                batfish.getTopologyProvider().getLayer3Topology(batfish.peekNetworkSnapshotStack()))
             .computeTraces(ImmutableSet.of(flow1, flow2), false);
 
     assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
@@ -167,7 +168,8 @@ public class TracerouteEngineTest {
             .build();
     List<Trace> traces =
         new TracerouteEngineImpl(
-                dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()))
+                dp,
+                batfish.getTopologyProvider().getLayer3Topology(batfish.peekNetworkSnapshotStack()))
             .computeTraces(ImmutableSet.of(flow), false)
             .get(flow);
 
@@ -357,7 +359,7 @@ public class TracerouteEngineTest {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Node missingNode is not in the network");
     new TracerouteEngineImpl(
-            dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()))
+            dp, batfish.getTopologyProvider().getLayer3Topology(batfish.peekNetworkSnapshotStack()))
         .computeTraces(
             ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
             false);

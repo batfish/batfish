@@ -61,7 +61,7 @@ public class ReachabilityParametersResolverTest {
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(_node.getHostname(), _node);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     _batfish.computeDataPlane();
-    _snapshot = _batfish.getNetworkSnapshot();
+    _snapshot = _batfish.peekNetworkSnapshotStack();
   }
 
   @Test

@@ -141,18 +141,13 @@ public final class VxlanVniPropertiesAnswererTest {
   private static class TestBatfish extends IBatfishTestAdapter {
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       Configuration conf = new Configuration("hostname", ConfigurationFormat.ARISTA);
       conf.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME)));
       Configuration confMinimal = new Configuration("minimal", ConfigurationFormat.ARISTA);
       confMinimal.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME)));
 
       return ImmutableSortedMap.of("hostname", conf, "minimal", confMinimal);
-    }
-
-    @Override
-    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
-      return loadConfigurations();
     }
 
     @Override

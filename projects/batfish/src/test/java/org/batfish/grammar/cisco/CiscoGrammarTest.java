@@ -3550,7 +3550,10 @@ public final class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Map<String, Set<String>>> ipOwners =
-        batfish.getTopologyProvider().getIpOwners(batfish.getNetworkSnapshot()).getIpVrfOwners();
+        batfish
+            .getTopologyProvider()
+            .getIpOwners(batfish.peekNetworkSnapshotStack())
+            .getIpVrfOwners();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, null).getGraph();
 
@@ -6142,14 +6145,17 @@ public final class CiscoGrammarTest {
     assertThat(
         batfish
             .getTopologyProvider()
-            .getInitialTunnelTopology(batfish.getNetworkSnapshot())
+            .getInitialTunnelTopology(batfish.peekNetworkSnapshotStack())
             .asEdgeSet(),
         containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
 
     batfish.computeDataPlane();
     // NO overlay edge in final L3 topology
     assertThat(
-        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        batfish
+            .getTopologyProvider()
+            .getLayer3Topology(batfish.peekNetworkSnapshotStack())
+            .getEdges(),
         empty());
   }
 
@@ -6175,14 +6181,17 @@ public final class CiscoGrammarTest {
     assertThat(
         batfish
             .getTopologyProvider()
-            .getInitialTunnelTopology(batfish.getNetworkSnapshot())
+            .getInitialTunnelTopology(batfish.peekNetworkSnapshotStack())
             .asEdgeSet(),
         containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
 
     batfish.computeDataPlane();
     // overlay edge in final L3 topology as well
     assertThat(
-        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        batfish
+            .getTopologyProvider()
+            .getLayer3Topology(batfish.peekNetworkSnapshotStack())
+            .getEdges(),
         containsInAnyOrder(
             overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
   }

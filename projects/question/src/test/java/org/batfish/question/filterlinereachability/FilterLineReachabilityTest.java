@@ -485,11 +485,6 @@ public class FilterLineReachabilityTest {
     IBatfish batfish =
         new IBatfishTestAdapter() {
           @Override
-          public SortedMap<String, Configuration> loadConfigurations() {
-            return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
-          }
-
-          @Override
           public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
             return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
           }

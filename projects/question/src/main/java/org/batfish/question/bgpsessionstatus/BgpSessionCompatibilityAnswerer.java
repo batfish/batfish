@@ -137,7 +137,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     Layer2Topology layer2Topology =
         _batfish
             .getTopologyProvider()
-            .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
+            .getInitialLayer2Topology(_batfish.peekNetworkSnapshotStack())
             .orElse(null);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners = new IpOwners(configurations).getIpVrfOwners();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =

@@ -277,7 +277,7 @@ public class CumulusConcatenatedGrammarTest {
     batfish.computeDataPlane();
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        batfish.getTopologyProvider().getBgpTopology(batfish.getNetworkSnapshot()).getGraph();
+        batfish.getTopologyProvider().getBgpTopology(batfish.peekNetworkSnapshotStack()).getGraph();
 
     String vrf = "default";
     // Edge one direction

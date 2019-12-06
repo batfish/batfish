@@ -54,7 +54,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
                   nodes,
                   _batfish
                       .getTopologyProvider()
-                      .getInitialLayer3Topology(_batfish.getNetworkSnapshot()))
+                      .getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack()))
               .inferRoles();
       return new InferRolesAnswerElement(roleMapping);
     }

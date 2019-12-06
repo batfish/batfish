@@ -85,7 +85,7 @@ public interface IBatfish extends IPluginConsumer {
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);
 
   @Nonnull
-  NetworkSnapshot getNetworkSnapshot();
+  NetworkSnapshot peekNetworkSnapshotStack();
 
   NodeRolesData getNodeRolesData();
 
@@ -105,7 +105,7 @@ public interface IBatfish extends IPluginConsumer {
 
   /** @deprecated prefer {@link #getSnapshotInputObject(NetworkSnapshot, String)}. */
   default String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
-    return getSnapshotInputObject(getNetworkSnapshot(), key);
+    return getSnapshotInputObject(peekNetworkSnapshotStack(), key);
   }
 
   /**
@@ -125,7 +125,11 @@ public interface IBatfish extends IPluginConsumer {
 
   InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError);
 
-  SortedMap<String, Configuration> loadConfigurations();
+  /** @deprecated prefer {@link #loadConfigurations(NetworkSnapshot)}. */
+  @Deprecated
+  default SortedMap<String, Configuration> loadConfigurations() {
+    return loadConfigurations(peekNetworkSnapshotStack());
+  }
 
   /** Returns the configurations for given snapshot. */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);

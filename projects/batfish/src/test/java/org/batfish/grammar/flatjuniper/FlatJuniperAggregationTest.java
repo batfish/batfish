@@ -38,7 +38,7 @@ public class FlatJuniperAggregationTest {
             _folder);
     SortedMap<String, Configuration> configs = batfish.loadConfigurations();
     Topology t =
-        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getNetworkSnapshot());
+        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.peekNetworkSnapshotStack());
     // Ensure port channel members and bandwidth is setup correctly for the logical ae1.0/ae1.1
     // interfaces
     assertThat(configs.get("ae1"), hasInterface("ae1.0", hasBandwidth(1e9)));

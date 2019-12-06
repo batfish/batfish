@@ -320,7 +320,7 @@ public class BatfishCompressionTest {
         new Topology(
             batfish
                 .getTopologyProvider()
-                .getLayer3Topology(batfish.getNetworkSnapshot())
+                .getLayer3Topology(batfish.peekNetworkSnapshotStack())
                 .sortedEdges());
 
     /* Node A should have a route with C as a next hop. */

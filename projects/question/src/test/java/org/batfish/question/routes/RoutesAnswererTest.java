@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
@@ -487,7 +488,7 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       return _configs.getMap().entrySet().stream()
           .collect(toImmutableSortedMap(naturalOrder(), Entry::getKey, Entry::getValue));
     }

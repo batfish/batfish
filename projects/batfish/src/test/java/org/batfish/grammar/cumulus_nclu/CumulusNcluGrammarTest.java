@@ -836,7 +836,7 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         batfish
             .getTopologyProvider()
-            .getInitialLayer3Topology(batfish.getNetworkSnapshot())
+            .getInitialLayer3Topology(batfish.peekNetworkSnapshotStack())
             .getEdges(),
         containsInAnyOrder(edge, edge.reverse()));
   }

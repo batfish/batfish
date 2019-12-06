@@ -763,7 +763,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /* Write the dataplane to disk and cache, and write the answer element to disk.
    */
   private void saveDataPlane(ComputeDataPlaneResult result) {
-    _cachedDataPlanes.put(getNetworkSnapshot(), result._dataPlane);
+    _cachedDataPlanes.put(peekNetworkSnapshotStack(), result._dataPlane);
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
@@ -773,7 +773,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       serializeObject(result._dataPlane, _testrigSettings.getDataPlanePath());
       serializeObject(result._answerElement, _testrigSettings.getDataPlaneAnswerPath());
       TopologyContainer topologies = result._topologies;
-      NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+      NetworkSnapshot networkSnapshot = peekNetworkSnapshotStack();
       _storage.storeBgpTopology(topologies.getBgpTopology(), networkSnapshot);
       _storage.storeEigrpTopology(topologies.getEigrpTopology(), networkSnapshot);
       _storage.storeLayer2Topology(topologies.getLayer2Topology(), networkSnapshot);
@@ -1219,7 +1219,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public NetworkSnapshot getNetworkSnapshot() {
+  public NetworkSnapshot peekNetworkSnapshotStack() {
     return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
   }
 
@@ -1294,11 +1294,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, Configuration> loadConfigurations() {
-    return loadConfigurations(getNetworkSnapshot());
-  }
-
-  @Override
   public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Load configurations").startActive()) {
       assert span != null; // avoid unused warning
@@ -1364,7 +1359,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public DataPlane loadDataPlane() {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Load data plane").startActive()) {
       assert span != null; // avoid unused warning
-      NetworkSnapshot snapshot = getNetworkSnapshot();
+      NetworkSnapshot snapshot = peekNetworkSnapshotStack();
       DataPlane dp = _cachedDataPlanes.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
@@ -1377,7 +1372,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
-    NetworkSnapshot snapshot = getNetworkSnapshot();
+    NetworkSnapshot snapshot = peekNetworkSnapshotStack();
     SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables =
         _cachedEnvironmentBgpTables.get(snapshot);
     if (environmentBgpTables == null) {
@@ -1854,7 +1849,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public TracerouteEngine getTracerouteEngine() {
     return new TracerouteEngineImpl(
-        loadDataPlane(), _topologyProvider.getLayer3Topology(getNetworkSnapshot()));
+        loadDataPlane(), _topologyProvider.getLayer3Topology(peekNetworkSnapshotStack()));
   }
 
   /** Function that processes an interface blacklist across all configurations */
@@ -2047,7 +2042,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   private void updateBlacklistedAndInactiveConfigs(Map<String, Configuration> configurations) {
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+    NetworkSnapshot networkSnapshot = peekNetworkSnapshotStack();
     NetworkId networkId = networkSnapshot.getNetwork();
     SnapshotId snapshotId = networkSnapshot.getSnapshot();
 
@@ -2168,7 +2163,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path inputPath = _testrigSettings.getSerializeVendorPath();
       answer.append(serializeIndependentConfigs(inputPath));
       // TODO: compute topology on initialization in cleaner way
-      initializeTopology(getNetworkSnapshot());
+      initializeTopology(peekNetworkSnapshotStack());
       updateSnapshotNodeRoles();
       action = true;
     }
@@ -2222,7 +2217,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Could not serialize layer-3 POJO topology", e);
     }
-    Topology layer3Topology = _topologyProvider.getInitialLayer3Topology(getNetworkSnapshot());
+    Topology layer3Topology =
+        _topologyProvider.getInitialLayer3Topology(peekNetworkSnapshotStack());
     try {
       _storage.storeInitialTopology(
           layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
@@ -2370,7 +2366,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answer.addAnswerElement(answerElement);
       }
 
-      NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+      NetworkSnapshot networkSnapshot = peekNetworkSnapshotStack();
       SnapshotRuntimeData runtimeData =
           firstNonNull(
               _storage.loadRuntimeData(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()),
@@ -2433,7 +2429,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
     ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
 
-    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+    NetworkSnapshot networkSnapshot = peekNetworkSnapshotStack();
     IspConfiguration ispConfiguration =
         _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (ispConfiguration != null) {
@@ -2472,7 +2468,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SnapshotId snapshotId = _settings.getTestrig();
     NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
     Set<String> nodeNames = loadConfigurations().keySet();
-    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(getNetworkSnapshot());
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(peekNetworkSnapshotStack());
     Optional<RoleMapping> autoRoles = new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
@@ -2802,7 +2798,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, getNetworkSnapshot());
+    return new SpecifierContextImpl(this, peekNetworkSnapshotStack());
   }
 
   @Override
@@ -2815,7 +2811,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       BDDPacket bddPacket, ReachabilityParameters parameters) {
     ResolvedReachabilityParameters params;
     try {
-      params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+      params = resolveReachabilityParameters(this, parameters, peekNetworkSnapshotStack());
     } catch (InvalidReachabilityParametersException e) {
       throw new BatfishException("Error resolving reachability parameters", e);
     }
@@ -2845,7 +2841,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       assert span != null; // avoid not used warning
       ResolvedReachabilityParameters params;
       try {
-        params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+        params = resolveReachabilityParameters(this, parameters, peekNetworkSnapshotStack());
       } catch (InvalidReachabilityParametersException e) {
         return e.getInvalidParametersAnswer();
       }
@@ -2998,7 +2994,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment() {
-    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, getNetworkSnapshot());
+    SpecifierContextImpl specifierContext =
+        new SpecifierContextImpl(this, peekNetworkSnapshotStack());
     Set<Location> locations =
         new UnionLocationSpecifier(
                 AllInterfacesLocationSpecifier.INSTANCE,

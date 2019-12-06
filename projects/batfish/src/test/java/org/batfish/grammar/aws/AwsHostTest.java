@@ -80,7 +80,7 @@ public class AwsHostTest {
     Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
     batfish.computeDataPlane();
     Topology fixedPointLayer3Topology =
-        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
+        batfish.getTopologyProvider().getLayer3Topology(batfish.peekNetworkSnapshotStack());
 
     /*
      * NAT settings on host1 (not-shared version) should result in edges between tunnel interfaces and AWS VPNs being pruned
@@ -108,7 +108,7 @@ public class AwsHostTest {
     Batfish batfish = getBatfishForConfigs("host1-shared.json");
     batfish.computeDataPlane();
     Topology fixedPointLayer3Topology =
-        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
+        batfish.getTopologyProvider().getLayer3Topology(batfish.peekNetworkSnapshotStack());
 
     /*
      * NAT settings on host1 (not-shared version) should result in edges between tunnel interfaces and AWS VPNs not being pruned

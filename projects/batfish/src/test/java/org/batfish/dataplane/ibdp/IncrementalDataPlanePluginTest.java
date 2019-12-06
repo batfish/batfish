@@ -870,7 +870,7 @@ public class IncrementalDataPlanePluginTest {
     assertThat(
         batfish
             .getTopologyProvider()
-            .getBgpTopology(batfish.getNetworkSnapshot())
+            .getBgpTopology(batfish.peekNetworkSnapshotStack())
             .getGraph()
             .edges()
             .size(),
@@ -882,7 +882,7 @@ public class IncrementalDataPlanePluginTest {
     assertThat(
         batfish
             .getTopologyProvider()
-            .getBgpTopology(batfish.getNetworkSnapshot())
+            .getBgpTopology(batfish.peekNetworkSnapshotStack())
             .getGraph()
             .edges(),
         equalTo(

@@ -283,11 +283,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, Configuration> loadConfigurations() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
@@ -380,7 +375,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, getNetworkSnapshot());
+    return new SpecifierContextImpl(this, peekNetworkSnapshotStack());
   }
 
   @Override
@@ -414,7 +409,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public NetworkSnapshot getNetworkSnapshot() {
+  public NetworkSnapshot peekNetworkSnapshotStack() {
     return new NetworkSnapshot(
         new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
   }

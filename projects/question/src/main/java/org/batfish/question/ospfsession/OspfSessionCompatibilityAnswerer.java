@@ -60,7 +60,9 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
     CandidateOspfTopology candidateTopo =
         OspfTopologyUtils.computeCandidateOspfTopology(
             NetworkConfigurations.of(configurations),
-            _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot()));
+            _batfish
+                .getTopologyProvider()
+                .getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack()));
     Multiset<Row> propertyRows =
         getRows(
             configurations,

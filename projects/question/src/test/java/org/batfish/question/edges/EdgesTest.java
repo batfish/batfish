@@ -113,12 +113,7 @@ public final class EdgesTest {
                       }
 
                       @Override
-                      public SortedMap<String, Configuration> loadConfigurations() {
-                        return configurations;
-                      }
-
-                      @Override
-                      public NetworkSnapshot getNetworkSnapshot() {
+                      public NetworkSnapshot peekNetworkSnapshotStack() {
                         return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
                       }
 
@@ -198,11 +193,6 @@ public final class EdgesTest {
                       }
 
                       @Override
-                      public SortedMap<String, Configuration> loadConfigurations() {
-                        return configurations;
-                      }
-
-                      @Override
                       public TopologyProvider getTopologyProvider() {
                         return new TopologyProviderTestAdapter(this) {
                           @Override
@@ -214,7 +204,7 @@ public final class EdgesTest {
                       }
 
                       @Override
-                      public NetworkSnapshot getNetworkSnapshot() {
+                      public NetworkSnapshot peekNetworkSnapshotStack() {
                         return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
                       }
                     })

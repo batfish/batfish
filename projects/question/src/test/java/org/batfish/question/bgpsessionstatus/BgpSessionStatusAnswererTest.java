@@ -649,11 +649,6 @@ public class BgpSessionStatusAnswererTest {
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
-      return _configs;
-    }
-
-    @Override
     public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       return _configs;
     }

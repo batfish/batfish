@@ -81,7 +81,7 @@ public class BatfishTestUtils {
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
-      batfish.initializeTopology(batfish.getNetworkSnapshot());
+      batfish.initializeTopology(batfish.peekNetworkSnapshotStack());
     }
     registerDataPlanePlugins(batfish);
     return batfish;

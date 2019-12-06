@@ -135,11 +135,14 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Set<String> nodes = question.getNodeSpecifier().resolve(specifierContext);
     Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-        _batfish.getTopologyProvider().getIpOwners(_batfish.getNetworkSnapshot()).getIpVrfOwners();
+        _batfish
+            .getTopologyProvider()
+            .getIpOwners(_batfish.peekNetworkSnapshotStack())
+            .getIpVrfOwners();
     Layer2Topology layer2Topology =
         _batfish
             .getTopologyProvider()
-            .getLayer2Topology(_batfish.getNetworkSnapshot())
+            .getLayer2Topology(_batfish.peekNetworkSnapshotStack())
             .orElse(null);
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
@@ -147,7 +150,10 @@ public class BgpSessionStatusAnswerer extends Answerer {
             .getGraph();
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology =
-        _batfish.getTopologyProvider().getBgpTopology(_batfish.getNetworkSnapshot()).getGraph();
+        _batfish
+            .getTopologyProvider()
+            .getBgpTopology(_batfish.peekNetworkSnapshotStack())
+            .getGraph();
 
     // Generate answer row for each BGP peer (or rows, for dynamic peers with multiple remotes)
     return configuredTopology.nodes().stream()
