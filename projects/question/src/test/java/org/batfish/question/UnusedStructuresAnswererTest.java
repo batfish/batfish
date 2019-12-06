@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -118,7 +119,8 @@ public class UnusedStructuresAnswererTest {
     }
 
     @Override
-    public SpecifierContext specifierContext() {
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       Configuration c1 = new Configuration("h", ConfigurationFormat.CISCO_IOS);
       Configuration c2 = new Configuration("h2", ConfigurationFormat.CISCO_IOS);
       return MockSpecifierContext.builder()

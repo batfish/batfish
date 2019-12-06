@@ -594,7 +594,8 @@ public class BgpSessionCompatibilityAnswererTest {
     }
 
     @Override
-    public SpecifierContext specifierContext() {
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       return MockSpecifierContext.builder().setConfigs(_configs).build();
     }
 

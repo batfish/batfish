@@ -1,6 +1,5 @@
 package org.batfish.question.testfilters;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
@@ -65,8 +64,8 @@ public class TestFiltersAnswererTest {
 
   private static final class MockBatfish extends IBatfishTestAdapter {
 
-    SortedMap<String, Configuration> _configurations;
-    SpecifierContext _specifierContext;
+    final SortedMap<String, Configuration> _configurations;
+    final SpecifierContext _specifierContext;
 
     public MockBatfish(SortedMap<String, Configuration> configurations) {
       this(configurations, null);
@@ -74,18 +73,23 @@ public class TestFiltersAnswererTest {
 
     public MockBatfish(SortedMap<String, Configuration> configurations, SpecifierContext ctxt) {
       _configurations = configurations;
-      _specifierContext = ctxt;
+      if (ctxt != null) {
+        _specifierContext = ctxt;
+      } else {
+        _specifierContext = MockSpecifierContext.builder().setConfigs(_configurations).build();
+      }
     }
 
     @Override
     public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       return _configurations;
     }
 
     @Override
-    public SpecifierContext specifierContext() {
-      return firstNonNull(
-          _specifierContext, MockSpecifierContext.builder().setConfigs(_configurations).build());
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
+      return _specifierContext;
     }
   }
 

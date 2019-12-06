@@ -2807,11 +2807,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, peekNetworkSnapshotStack());
-  }
-
-  @Override
   public SpecifierContext specifierContext(NetworkSnapshot networkSnapshot) {
     return new SpecifierContextImpl(this, networkSnapshot);
   }

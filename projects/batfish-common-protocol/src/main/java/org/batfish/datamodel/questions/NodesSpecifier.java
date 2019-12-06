@@ -115,19 +115,6 @@ public class NodesSpecifier {
   }
 
   /**
-   * Prepares for calling the full auto complete function: {@link
-   * NodesSpecifier#autoComplete(String, Set, NodeRolesData)} by extracting the set of nodes and
-   * node roles from batfish pointer.
-   *
-   * @param query The query to auto complete
-   * @param batfish The pointer to batfish
-   * @return A list of {@link AutocompleteSuggestion} objects
-   */
-  public static List<AutocompleteSuggestion> autoComplete(String query, IBatfish batfish) {
-    return autoComplete(query, batfish.loadConfigurations().keySet(), batfish.getNodeRolesData());
-  }
-
-  /**
    * Produces a list of suggestions based on the query (prefix string).
    *
    * <p>What is produced for various queries:

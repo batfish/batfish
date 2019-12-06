@@ -82,7 +82,7 @@ public class IBatfishTestAdapter implements IBatfish {
           .map(
               l1PhysicalTopology ->
                   TopologyUtil.computeLayer1LogicalTopology(
-                      l1PhysicalTopology, _batfish.loadConfigurations()));
+                      l1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
     }
 
     @Override
@@ -371,11 +371,6 @@ public class IBatfishTestAdapter implements IBatfish {
   public void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin) {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, peekNetworkSnapshotStack());
   }
 
   @Override

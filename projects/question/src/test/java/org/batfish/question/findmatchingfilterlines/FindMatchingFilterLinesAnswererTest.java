@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -240,11 +241,13 @@ public class FindMatchingFilterLinesAnswererTest {
 
     @Override
     public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       return _configs;
     }
 
     @Override
-    public SpecifierContext specifierContext() {
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       return _specifierContext;
     }
   }

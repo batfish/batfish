@@ -483,6 +483,7 @@ public class RoutesAnswererTest {
 
     @Override
     public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       return _configs.getMap().entrySet().stream()
           .collect(toImmutableSortedMap(naturalOrder(), Entry::getKey, Entry::getValue));
     }
@@ -493,8 +494,8 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public SpecifierContext specifierContext() {
-      return MockSpecifierContext.builder().setConfigs(loadConfigurations()).build();
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      return MockSpecifierContext.builder().setConfigs(loadConfigurations(snapshot)).build();
     }
   }
 

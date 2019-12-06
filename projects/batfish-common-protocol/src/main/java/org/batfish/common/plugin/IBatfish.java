@@ -110,6 +110,7 @@ public interface IBatfish extends IPluginConsumer {
   ImmutableConfiguration getSettingsConfiguration();
 
   /** @deprecated prefer {@link #getSnapshotInputObject(NetworkSnapshot, String)}. */
+  @Deprecated
   default String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
     return getSnapshotInputObject(peekNetworkSnapshotStack(), key);
   }
@@ -186,7 +187,9 @@ public interface IBatfish extends IPluginConsumer {
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
   /** Use more explicit {@link #specifierContext(NetworkSnapshot)} if possible. */
-  SpecifierContext specifierContext();
+  default SpecifierContext specifierContext() {
+    return specifierContext(peekNetworkSnapshotStack());
+  }
 
   /** Return a {@link SpecifierContext} for a given {@link NetworkSnapshot} */
   SpecifierContext specifierContext(NetworkSnapshot networkSnapshot);
