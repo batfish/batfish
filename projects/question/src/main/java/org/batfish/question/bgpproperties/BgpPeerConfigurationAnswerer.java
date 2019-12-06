@@ -15,6 +15,7 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMM
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -53,6 +55,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
   public static final String COL_VRF = "VRF";
+  public static final String COL_ADDRESS_FAMILIES = "Address_Families";
   public static final String COL_LOCAL_INTERFACE = "Local_Interface";
   public static final String COL_REMOTE_IP = "Remote_IP";
 
@@ -60,6 +63,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       ImmutableList.of(
           COL_NODE,
           COL_VRF,
+          COL_ADDRESS_FAMILIES,
           LOCAL_AS,
           LOCAL_IP,
           COL_LOCAL_INTERFACE,
@@ -99,6 +103,10 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
                             true)));
     columnMetadatas.put(COL_NODE, new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
     columnMetadatas.put(COL_VRF, new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
+    columnMetadatas.put(
+        COL_ADDRESS_FAMILIES,
+        new ColumnMetadata(
+            COL_ADDRESS_FAMILIES, Schema.set(Schema.STRING), "Address Family", true, false));
     columnMetadatas.put(
         COL_LOCAL_INTERFACE,
         new ColumnMetadata(COL_LOCAL_INTERFACE, Schema.STRING, "Local Interface", true, false));
@@ -188,7 +196,15 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       BgpPeerConfig peer,
       Map<String, ColumnMetadata> columnMetadata,
       BgpPeerPropertySpecifier propertySpecifier) {
-    RowBuilder rowBuilder = Row.builder(columnMetadata).put(COL_NODE, node).put(COL_VRF, vrfName);
+    RowBuilder rowBuilder =
+        Row.builder(columnMetadata)
+            .put(COL_NODE, node)
+            .put(COL_VRF, vrfName)
+            .put(
+                COL_ADDRESS_FAMILIES,
+                peer.getAllAddressFamilies().stream()
+                    .map(AddressFamily::getType)
+                    .collect(ImmutableSet.toImmutableSet()));
 
     // Row should have local interface for unnumbered peers, local & remote IP for other peers.
     // Local IP will be taken care of in BgpPeerPropertySpecifier (see its getLocalIp() method).

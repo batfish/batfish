@@ -11,6 +11,7 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.PEER_GROU
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.ROUTE_REFLECTOR_CLIENT;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMMUNITY;
+import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_ADDRESS_FAMILIES;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_NODE;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_REMOTE_IP;
@@ -39,6 +40,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.pojo.Node;
@@ -142,6 +144,7 @@ public final class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, Ip.parse("2.2.2.2")))
             .put(getColumnName(LOCAL_AS), 100L)
             .put(COL_LOCAL_INTERFACE, null)
@@ -160,6 +163,7 @@ public final class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(getColumnName(LOCAL_AS), 100L)
             .put(COL_LOCAL_INTERFACE, null)
             .put(
@@ -180,6 +184,7 @@ public final class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(getColumnName(LOCAL_AS), 100L)
             .put(COL_LOCAL_INTERFACE, "iface")
             .put(COL_REMOTE_IP, null)
@@ -218,6 +223,7 @@ public final class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, Ip.parse("2.2.2.2")))
             .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.1"))
@@ -226,6 +232,7 @@ public final class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(COL_LOCAL_INTERFACE, null)
             .put(
                 COL_REMOTE_IP,
@@ -236,6 +243,7 @@ public final class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(COL_LOCAL_INTERFACE, "iface")
             .put(COL_REMOTE_IP, null)
             .put(getColumnName(LOCAL_IP), null)
