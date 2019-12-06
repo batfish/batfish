@@ -184,6 +184,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
@@ -420,7 +421,8 @@ public final class FlatJuniperGrammarTest {
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
+    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
   }
 
   @Test
@@ -654,7 +656,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration c1 = configurations.get(c1Name);
     Configuration c2 = configurations.get(c2Name);
     Configuration c3 = configurations.get(c3Name);
@@ -812,7 +815,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
@@ -874,7 +878,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     MultipathEquivalentAsPathMatchMode multipleAsDisabled =
         configurations
             .get("multiple_as_disabled")
@@ -1168,7 +1173,9 @@ public final class FlatJuniperGrammarTest {
   public void testBgpDisable() throws IOException {
     // Config has "set protocols bgp disable"; no VI BGP process should be created
     String hostname = "bgp_disable";
-    Configuration c = getBatfishForConfigurationNames(hostname).loadConfigurations().get(hostname);
+    IBatfish iBatfish = getBatfishForConfigurationNames(hostname);
+    Configuration c =
+        iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack()).get(hostname);
     assertThat(c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess(), nullValue());
   }
 
@@ -3098,7 +3105,13 @@ public final class FlatJuniperGrammarTest {
     String filename = "juniper-apply-groups-node";
 
     Batfish batfish = getBatfishForConfigurationNames(filename);
-    Configuration c = batfish.loadConfigurations().entrySet().iterator().next().getValue();
+    Configuration c =
+        batfish
+            .loadConfigurations(batfish.peekNetworkSnapshotStack())
+            .entrySet()
+            .iterator()
+            .next()
+            .getValue();
 
     /* hostname should not be overwritten from node0 nor node1 group */
     assertThat(c, hasHostname(filename));
@@ -3118,7 +3131,13 @@ public final class FlatJuniperGrammarTest {
     String filename = "juniper-apply-groups-node-no-hostname";
 
     Batfish batfish = getBatfishForConfigurationNames(filename);
-    Configuration c = batfish.loadConfigurations().entrySet().iterator().next().getValue();
+    Configuration c =
+        batfish
+            .loadConfigurations(batfish.peekNetworkSnapshotStack())
+            .entrySet()
+            .iterator()
+            .next()
+            .getValue();
 
     /* hostname should be generated, and not gotten from node0 nor node1 group */
     assertThat(c, hasHostname(not(equalTo("juniper-apply-groups-node0"))));
@@ -3696,7 +3715,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     // There should be 3 configs: the master, and one for each logical system
     // ls1's name should be derived from master hostname and logical-system name
@@ -3723,7 +3743,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 
@@ -3754,7 +3775,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 
@@ -3791,7 +3813,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 

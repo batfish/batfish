@@ -130,7 +130,8 @@ public class NamedStructuresAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
     NamedStructuresQuestion question = (NamedStructuresQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
 
     TableMetadata tableMetadata = createMetadata(question);

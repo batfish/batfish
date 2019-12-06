@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -73,7 +74,8 @@ public class NxosBgpTest {
 
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
+    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
   }
 
   @Test
@@ -156,7 +158,7 @@ public class NxosBgpTest {
       String snapshotName, String hubName, String listenerName) throws IOException {
 
     Batfish batfish = getBatfishForSnapshot(snapshotName, hubName, listenerName);
-    batfish.loadConfigurations();
+    batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     batfish.computeDataPlane(); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
 

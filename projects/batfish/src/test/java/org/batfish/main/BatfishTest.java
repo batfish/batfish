@@ -165,7 +165,8 @@ public class BatfishTest {
                 .setIptablesFilesText(iptablesFilesText)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     assertThat(
         configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilterName(),
         is(notNullValue()));
@@ -186,7 +187,7 @@ public class BatfishTest {
 
     // We should get all three configs, with modified hostnames for the first two
     assertThat(
-        batfish.loadConfigurations().keySet(),
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).keySet(),
         containsInAnyOrder(
             ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr1"),
             ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr2"),
@@ -204,7 +205,9 @@ public class BatfishTest {
             _folder);
 
     // we should get only two configs, with real names -- no memory of old duplicates
-    assertThat(batfish2.loadConfigurations().keySet(), equalTo(ImmutableSet.of("rtr1", "rtr2")));
+    assertThat(
+        batfish2.loadConfigurations(batfish2.peekNetworkSnapshotStack()).keySet(),
+        equalTo(ImmutableSet.of("rtr1", "rtr2")));
   }
 
   @Test
@@ -239,7 +242,11 @@ public class BatfishTest {
                 .setRuntimeDataText(snapshotResourcePrefix)
                 .build(),
             _folder);
-    Map<String, Interface> interfaces = batfish.loadConfigurations().get("rtr1").getAllInterfaces();
+    Map<String, Interface> interfaces =
+        batfish
+            .loadConfigurations(batfish.peekNetworkSnapshotStack())
+            .get("rtr1")
+            .getAllInterfaces();
 
     // Ethernet0 should be inactive and blacklisted
     Interface ethernet0 = interfaces.get("Ethernet0");
@@ -292,7 +299,8 @@ public class BatfishTest {
                 .setConfigurationText(testrigResourcePrefix, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
     assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r2")));
   }
@@ -457,7 +465,8 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder().setConfigurationText(configMap).build(), _folder);
-    Map<String, Configuration> configs = batfish.loadConfigurations();
+    Map<String, Configuration> configs =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     // Assert that the config parsed successfully
     assertThat(configs, hasKey("host1"));
@@ -759,7 +768,7 @@ public class BatfishTest {
             _folder);
     batfish.getSettings().setHaltOnParseError(true);
     _thrown.expect(hasStackTrace(containsString("Error parsing configuration file")));
-    batfish.loadConfigurations();
+    batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
   }
 
   @Test

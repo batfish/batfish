@@ -43,8 +43,8 @@ public class OspfAreaConfigurationAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     OspfAreaConfigurationQuestion question = (OspfAreaConfigurationQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
+    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext(snapshot));
     TableMetadata tableMetadata = createTableMetadata();
 
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);

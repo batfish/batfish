@@ -241,7 +241,8 @@ public final class SearchFiltersAnswerer extends Answerer {
      * For each query ACL, try to get a flow. If one exists, run traceFilter on that flow.
      * Concatenate the answers for all flows into one big table.
      */
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     for (Triple<String, String, IpAccessList> triple : acls) {
       String hostname = triple.getLeft();
       String aclname = triple.getMiddle();

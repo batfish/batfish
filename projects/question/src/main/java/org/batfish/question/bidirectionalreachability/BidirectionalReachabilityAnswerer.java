@@ -48,7 +48,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
     _pathConstraintsInput = question.getPathConstraintsInput();
     _headerConstraints = question.getHeaderConstraints();
     _returnFlowType = question.getReturnFlowType();
-    _configs = _batfish.loadConfigurations();
+    _configs = _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
   }
 
   @Override

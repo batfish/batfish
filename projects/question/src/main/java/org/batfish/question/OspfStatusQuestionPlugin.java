@@ -127,7 +127,8 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
       OspfStatusAnswerElement answerElement = new OspfStatusAnswerElement();
 
-      Map<String, Configuration> configurations = _batfish.loadConfigurations();
+      Map<String, Configuration> configurations =
+          _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
       Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
 
       for (String hostname : includeNodes) {

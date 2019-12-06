@@ -174,7 +174,8 @@ public class ReachabilityParametersResolverTest {
 
   @Test
   public void testLocationIsActive() {
-    Map<String, Configuration> configs = _batfish.loadConfigurations();
+    Map<String, Configuration> configs =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     String hostname = _node.getHostname();
     assertTrue(isActive(new InterfaceLinkLocation(hostname, _activeInterface.getName()), configs));
     assertFalse(

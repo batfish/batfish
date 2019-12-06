@@ -644,7 +644,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _settings.setDiffQuestion(diff);
 
     // Ensures configurations are parsed and ready
-    loadConfigurations();
+    loadConfigurations(peekNetworkSnapshotStack());
 
     try (ActiveSpan initQuestionEnvSpan =
         GlobalTracer.get().buildSpan("Init question environment").startActive()) {
@@ -1604,7 +1604,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables = new TreeMap<>();
     List<ParseEnvironmentBgpTableJob> jobs = new ArrayList<>();
-    SortedMap<String, Configuration> configurations = loadConfigurations();
+    SortedMap<String, Configuration> configurations =
+        loadConfigurations(peekNetworkSnapshotStack());
     for (Entry<Path, String> bgpFile : inputData.entrySet()) {
       Path currentFile = bgpFile.getKey();
       String fileText = bgpFile.getValue();
@@ -2215,7 +2216,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /** Initialize topologies, commit {raw, raw pojo, pruned} layer-3 topologies to storage. */
   @VisibleForTesting
   void initializeTopology(NetworkSnapshot networkSnapshot) {
-    Map<String, Configuration> configurations = loadConfigurations();
+    Map<String, Configuration> configurations = loadConfigurations(peekNetworkSnapshotStack());
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
@@ -2477,7 +2478,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NetworkId networkId = _settings.getContainer();
     SnapshotId snapshotId = _settings.getTestrig();
     NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
-    Set<String> nodeNames = loadConfigurations().keySet();
+    Set<String> nodeNames = loadConfigurations(peekNetworkSnapshotStack()).keySet();
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(peekNetworkSnapshotStack());
     Optional<RoleMapping> autoRoles = new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
@@ -2824,7 +2825,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     DataPlane dataPlane = loadDataPlane();
     return new BidirectionalReachabilityAnalysis(
             bddPacket,
-            loadConfigurations(),
+            loadConfigurations(peekNetworkSnapshotStack()),
             dataPlane.getForwardingAnalysis(),
             new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
             params.getSourceIpAssignment(),
@@ -3018,7 +3019,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane = loadDataPlane();
       return new BDDReachabilityAnalysisFactory(
           pkt,
-          loadConfigurations(),
+          loadConfigurations(peekNetworkSnapshotStack()),
           dataPlane.getForwardingAnalysis(),
           new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
           ignoreFilters,

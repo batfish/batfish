@@ -76,7 +76,8 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
 
     Set<String> specifiedNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
 
-    SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
+    SortedMap<String, Configuration> configs =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     configs.forEach(
         (configName, config) -> {
           if (specifiedNodes.contains(configName)) {

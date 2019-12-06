@@ -171,7 +171,7 @@ public class Graph {
       // A simple way to do this is to create a deep clone of each entry using Java serialization.
       Map<String, Configuration> clonedConfigs =
           _batfish
-              .loadConfigurations()
+              .loadConfigurations(_batfish.peekNetworkSnapshotStack())
               .entrySet()
               .parallelStream()
               .collect(toMap(Entry::getKey, entry -> SerializationUtils.clone(entry.getValue())));

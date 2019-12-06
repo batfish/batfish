@@ -1002,7 +1002,7 @@ public final class F5BigipImishGrammarTest {
     batfish.getSettings().setDisableUnrecognized(false);
     batfish.getSettings().setThrowOnLexerError(false);
     batfish.getSettings().setThrowOnParserError(false);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     assertThat(c, hasIpAccessLists(hasKey("acl2")));
     InitInfoAnswerElement initAns = batfish.initInfo(false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));

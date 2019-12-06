@@ -159,7 +159,7 @@ public class BatfishBDDDifferentialReachabilityTest {
     return new DifferentialReachabilityParameters(
         dispositions,
         ImmutableSet.of(),
-        batfish.loadConfigurations().keySet(),
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).keySet(),
         headerSpace,
         ignoreFilters,
         invertSearch,

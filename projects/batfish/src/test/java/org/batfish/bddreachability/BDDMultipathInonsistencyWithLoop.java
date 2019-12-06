@@ -35,7 +35,7 @@ public class BDDMultipathInonsistencyWithLoop {
         new MultipathConsistencyParameters(
             AclLineMatchExprs.TRUE,
             batfish.getAllSourcesInferFromLocationIpSpaceAssignment(),
-            batfish.loadConfigurations().keySet(),
+            batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).keySet(),
             ImmutableSet.of(),
             TracePruner.DEFAULT_MAX_TRACES,
             ImmutableSet.of());

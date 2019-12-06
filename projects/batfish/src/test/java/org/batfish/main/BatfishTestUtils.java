@@ -16,6 +16,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
@@ -287,7 +288,8 @@ public class BatfishTestUtils {
 
   public static SortedMap<String, Configuration> parseTextConfigs(
       TemporaryFolder folder, String... configurationNames) throws IOException {
-    return getBatfishForTextConfigs(folder, configurationNames).loadConfigurations();
+    IBatfish iBatfish = getBatfishForTextConfigs(folder, configurationNames);
+    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
   }
 
   private static void writeTemporaryTestrigFiles(

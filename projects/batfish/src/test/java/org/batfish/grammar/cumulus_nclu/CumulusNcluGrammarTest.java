@@ -246,7 +246,8 @@ public final class CumulusNcluGrammarTest {
             _folder);
 
     // Sanity check configured peers
-    Map<String, Configuration> configs = batfish.loadConfigurations();
+    Map<String, Configuration> configs =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     String iface = "swp1";
     assertThat(
         configs.get(node1),
@@ -861,7 +862,9 @@ public final class CumulusNcluGrammarTest {
     String filename = "cumulus_nclu_hostname";
     String hostname = "custom_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
-    assertThat(batfish.loadConfigurations(), hasEntry(equalTo(hostname), hasHostname(hostname)));
+    assertThat(
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()),
+        hasEntry(equalTo(hostname), hasHostname(hostname)));
   }
 
   @Test

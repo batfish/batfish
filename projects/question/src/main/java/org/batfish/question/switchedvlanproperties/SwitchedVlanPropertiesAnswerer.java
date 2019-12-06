@@ -248,7 +248,8 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
     SwitchedVlanPropertiesQuestion question = (SwitchedVlanPropertiesQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);

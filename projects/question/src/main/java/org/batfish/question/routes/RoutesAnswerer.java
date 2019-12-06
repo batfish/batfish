@@ -82,7 +82,8 @@ public class RoutesAnswerer extends Answerer {
     Prefix network = question.getNetwork();
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
-    Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+    Map<Ip, Set<String>> ipOwners =
+        computeIpNodeOwners(_batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()), true);
 
     Multiset<Row> rows;
 
@@ -154,14 +155,18 @@ public class RoutesAnswerer extends Answerer {
       default:
         _batfish.pushBaseSnapshot();
         dp = _batfish.loadDataPlane();
-        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+        ipOwners =
+            computeIpNodeOwners(
+                _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()), true);
         routesGroupedByKeyInBase =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
         dp = _batfish.loadDataPlane();
-        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+        ipOwners =
+            computeIpNodeOwners(
+                _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()), true);
         routesGroupedByKeyInDelta =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
         _batfish.popSnapshot();

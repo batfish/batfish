@@ -63,11 +63,11 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     FilterLineReachabilityQuestion question = (FilterLineReachabilityQuestion) _question;
     FilterLineReachabilityRows answerRows = new FilterLineReachabilityRows();
 
-    SpecifierContext ctxt = _batfish.specifierContext();
+    SpecifierContext ctxt = _batfish.specifierContext(snapshot);
 
     Map<String, Set<IpAccessList>> specifiedAcls = getSpecifiedFilters(question, ctxt);
 
-    SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
+    SortedMap<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     List<AclSpecs> aclSpecs = getAclSpecs(configurations, specifiedAcls, answerRows);
     answerAclReachability(aclSpecs, answerRows);
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));

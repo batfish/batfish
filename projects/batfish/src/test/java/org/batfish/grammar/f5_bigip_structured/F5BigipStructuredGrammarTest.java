@@ -180,6 +180,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -396,7 +397,8 @@ public final class F5BigipStructuredGrammarTest {
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
+    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
   }
 
   @Test
@@ -1608,7 +1610,7 @@ public final class F5BigipStructuredGrammarTest {
   public void testPrefixList() throws IOException {
     String hostname = "f5_bigip_structured_net_routing_prefix_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     String v4Name = "/Common/MY_IPV4_PREFIX_LIST";
     String v6Name = "/Common/MY_IPV6_PREFIX_LIST";
     String invalidName = "/Common/INVALID_MIXED_PREFIX_LIST";
@@ -3106,7 +3108,7 @@ public final class F5BigipStructuredGrammarTest {
     batfish.getSettings().setDisableUnrecognized(false);
     batfish.getSettings().setThrowOnLexerError(false);
     batfish.getSettings().setThrowOnParserError(false);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     assertThat(c, hasInterfaces(hasKey("1.0")));
     InitInfoAnswerElement initAns = batfish.initInfo(false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));

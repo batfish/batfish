@@ -126,7 +126,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
   @Nonnull
   private Stream<RoutingPolicy> getResults(SortedSet<RoutingPolicyId> policies) {
-    Map<String, Configuration> configs = _batfish.loadConfigurations();
+    Map<String, Configuration> configs =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     return policies.stream()
         .map(
             policyId ->

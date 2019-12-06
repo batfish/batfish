@@ -891,7 +891,7 @@ public final class CiscoGrammarTest {
     String hostname = "asa-acl-object";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
@@ -1459,7 +1459,7 @@ public final class CiscoGrammarTest {
     String hostname = "ios-acl-object-group";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
@@ -1606,7 +1606,7 @@ public final class CiscoGrammarTest {
 
     // Confirm that BGP peer on r1 is missing its local IP, as expected
     Prefix r1NeighborPeerAddress = Prefix.parse("2.2.2.2/32");
-    Configuration r1 = batfish.loadConfigurations().get("r1");
+    Configuration r1 = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get("r1");
     SortedMap<Prefix, BgpActivePeerConfig> r1Peers =
         r1.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors();
     assertTrue(r1Peers.containsKey(r1NeighborPeerAddress));
@@ -2497,7 +2497,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration abr = configurations.get(originatorName);
 
     // Sanity check: ensure the ABR has a generated default route in its OSPF process
@@ -2542,7 +2543,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration abr = configurations.get(originatorName);
 
     // Sanity check: ensure the ABR has a generated default route in its OSPF process
@@ -2586,7 +2588,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration abr = configurations.get(originatorName);
 
     // Sanity check: ensure the ABR has a generated default route in its OSPF process
@@ -2631,7 +2634,8 @@ public final class CiscoGrammarTest {
             _folder);
 
     // Sanity check: both devices have a generated default route in their OSPF processes
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration r1 = configurations.get(r1Name);
     Configuration r2 = configurations.get(r2Name);
     Set<GeneratedRoute> r1OspfGeneratedRoutes =
@@ -3175,7 +3179,7 @@ public final class CiscoGrammarTest {
      generated policies permit 10.1.1.0/24 and not other routes.
     */
     Ip peerAddress = Ip.parse("1.2.3.4");
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     String generatedImportPolicyName =
         computeBgpPeerImportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
     String generatedExportPolicyName =
@@ -3231,7 +3235,11 @@ public final class CiscoGrammarTest {
     String hostname = "ios-route-map-set-weight";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     RoutingPolicy setWeightPolicy =
-        batfish.loadConfigurations().get(hostname).getRoutingPolicies().get("SET_WEIGHT");
+        batfish
+            .loadConfigurations(batfish.peekNetworkSnapshotStack())
+            .get(hostname)
+            .getRoutingPolicies()
+            .get("SET_WEIGHT");
     Bgpv4Route r =
         Bgpv4Route.builder()
             .setWeight(1)
@@ -3253,7 +3261,7 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
 
     /* Confirm community strings are correctly parsed */
     assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("test$#!@")))));
@@ -3342,7 +3350,7 @@ public final class CiscoGrammarTest {
     String hostname = "ios-zone-security";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
@@ -3548,7 +3556,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Map<Ip, Map<String, Set<String>>> ipOwners =
         batfish
             .getTopologyProvider()
@@ -3587,7 +3596,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     org.batfish.datamodel.BgpProcess aristaDisabled =
         configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
     org.batfish.datamodel.BgpProcess aristaEnabled =
@@ -3714,7 +3724,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     Configuration iosCommunityListConfig = configurations.get(iosName);
     Map<String, CommunityList> iosCommunityLists = iosCommunityListConfig.getCommunityLists();
@@ -4145,7 +4156,7 @@ public final class CiscoGrammarTest {
     Prefix neighborWithoutRemoteAs = Prefix.parse("2.2.2.2/32");
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
@@ -4182,7 +4193,7 @@ public final class CiscoGrammarTest {
     String hostname = "eos-port-channel";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
 
     assertThat(c, hasInterface("Ethernet0", hasBandwidth(40E9D)));
     assertThat(c, hasInterface("Ethernet0", hasSpeed(40E9D)));
@@ -4209,7 +4220,7 @@ public final class CiscoGrammarTest {
     String hostname = "eos-mlag";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
 
     final String mlagName = "MLAG_DOMAIN_ID";
     assertThat(c, hasMlagConfig(mlagName, hasId(mlagName)));
@@ -4231,17 +4242,20 @@ public final class CiscoGrammarTest {
         getBatfishForConfigurationNames(
             hostnameBase, hostnameNoSourceIface, hostnameNoLoopbackAddr);
     // Config with proper loopback iface, VLAN-specific unicast, explicit UDP port
-    Configuration configBase = batfish.loadConfigurations().get(hostnameBase);
+    Configuration configBase =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostnameBase);
     assertThat(configBase, hasDefaultVrf(hasVniSettings(hasKey(10002))));
     VniSettings vnisBase = configBase.getDefaultVrf().getVniSettings().get(10002);
 
     // Config with no loopback address, using multicast, and default UDP port
-    Configuration configNoLoopbackAddr = batfish.loadConfigurations().get(hostnameNoLoopbackAddr);
+    Configuration configNoLoopbackAddr =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostnameNoLoopbackAddr);
     assertThat(configNoLoopbackAddr, hasDefaultVrf(hasVniSettings(hasKey(10002))));
     VniSettings vnisNoAddr = configNoLoopbackAddr.getDefaultVrf().getVniSettings().get(10002);
 
     // Config with no source interface and general VXLAN unicast address
-    Configuration configNoSourceIface = batfish.loadConfigurations().get(hostnameNoSourceIface);
+    Configuration configNoSourceIface =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostnameNoSourceIface);
     assertThat(configNoSourceIface, hasDefaultVrf(hasVniSettings(hasKey(10002))));
     VniSettings vnisNoIface = configNoSourceIface.getDefaultVrf().getVniSettings().get(10002);
 
@@ -4277,7 +4291,8 @@ public final class CiscoGrammarTest {
     String hostname = "eos-vxlan-misconfig";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration config = batfish.loadConfigurations().get(hostname);
+    Configuration config =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
 
     // Make sure that misconfigured VXLAN is still converted into VI model properly
     assertThat(config, hasDefaultVrf(hasVniSettings(hasKey(10002))));
@@ -4298,7 +4313,7 @@ public final class CiscoGrammarTest {
     String hostname = "eos_trunk_group";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
 
     assertThat(
         c, hasInterface("Port-Channel1", hasAllowedVlans(IntegerSpace.of(Range.closed(1, 2)))));
@@ -4357,7 +4372,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     Interface i1 = configurations.get(iosHostname).getAllInterfaces().get(i1Name);
     assertThat(i1, hasDeclaredNames("Ethernet0/0", "e0/0", "Eth0/0", "ether0/0-1"));
@@ -4378,7 +4394,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     Configuration c1 = configurations.get(host1name);
     Configuration c2 = configurations.get(host2name);
@@ -4498,7 +4515,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     ValueGraph<IpsecPeerConfigId, IpsecSession> graph =
         IpsecUtil.initIpsecTopology(configurations).getGraph();
 
@@ -4536,7 +4554,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     Configuration iosMaxMetric = configurations.get(iosMaxMetricName);
     Configuration iosMaxMetricCustom = configurations.get(iosMaxMetricCustomName);
@@ -4594,7 +4613,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     Configuration abr = configurations.get(abrName);
 
     // Sanity check: ensure the ABR does not have suppressType7 set for area 1
@@ -4629,7 +4649,7 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    configurations = batfish.loadConfigurations();
+    configurations = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     abr = configurations.get(abrName);
 
     // This time the ABR should have suppressType7 set for area 1
@@ -4665,7 +4685,8 @@ public final class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     String eth0 = "Ethernet0/0";
     String eth1 = "Ethernet0/1";
@@ -4757,7 +4778,8 @@ public final class CiscoGrammarTest {
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     Configuration iosRecovery = configurations.get(hostname);
     Map<String, Interface> iosRecoveryInterfaces = iosRecovery.getAllInterfaces();
@@ -4794,7 +4816,8 @@ public final class CiscoGrammarTest {
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     Configuration iosRecovery = configurations.get(hostname);
     assertThat(iosRecovery, allOf(Matchers.notNullValue(), hasInterface("Loopback0", anything())));
@@ -4829,7 +4852,8 @@ public final class CiscoGrammarTest {
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     /* Hostname is unknown, but a file should be generated nonetheless */
     assertThat(configurations.entrySet(), hasSize(1));
@@ -4849,7 +4873,8 @@ public final class CiscoGrammarTest {
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     batfish.getSettings().setThrowOnParserError(false);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
 
     /* Parser should not crash, and configuration with hostname from file should be generated */
     assertThat(configurations, hasKey(hostname));
@@ -5239,7 +5264,7 @@ public final class CiscoGrammarTest {
     String hostname = "asa-interface";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 

@@ -132,12 +132,6 @@ public interface IBatfish extends IPluginConsumer {
 
   InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError);
 
-  /** @deprecated prefer {@link #loadConfigurations(NetworkSnapshot)}. */
-  @Deprecated
-  default SortedMap<String, Configuration> loadConfigurations() {
-    return loadConfigurations(peekNetworkSnapshotStack());
-  }
-
   /** Returns the configurations for given snapshot. */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);
 

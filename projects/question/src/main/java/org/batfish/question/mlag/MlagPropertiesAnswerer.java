@@ -53,9 +53,12 @@ public final class MlagPropertiesAnswerer extends Answerer {
         SpecifierFactories.getNameSetSpecifierOrDefault(
                 question.getMlagIdSpecInput(),
                 Grammar.MLAG_ID_SPECIFIER,
-                new ConstantNameSetSpecifier(getAllMlagIds(_batfish.loadConfigurations())))
+                new ConstantNameSetSpecifier(
+                    getAllMlagIds(
+                        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()))))
             .resolve(_batfish.specifierContext());
-    SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
+    SortedMap<String, Configuration> configs =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
 
     return computeAnswer(nodes, mlagIds, configs);
   }

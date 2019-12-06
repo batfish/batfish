@@ -126,7 +126,8 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
 
   BDDReachabilityAnalysis initAnalysis(
       IpSpace initialSrcIp, FlowDisposition disposition, boolean ignoreFilters) {
-    Map<String, Configuration> configs = batfish.loadConfigurations();
+    Map<String, Configuration> configs =
+        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
     DataPlane dataPlane = batfish.loadDataPlane();
     return new BDDReachabilityAnalysisFactory(
             PKT,

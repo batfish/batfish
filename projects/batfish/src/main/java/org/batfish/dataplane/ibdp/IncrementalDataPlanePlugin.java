@@ -24,7 +24,8 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   public ComputeDataPlaneResult computeDataPlane() {
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     Topology topology =
         _batfish
             .getTopologyProvider()

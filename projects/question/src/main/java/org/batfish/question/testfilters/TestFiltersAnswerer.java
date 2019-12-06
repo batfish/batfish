@@ -233,7 +233,8 @@ public class TestFiltersAnswerer extends Answerer {
   @VisibleForTesting
   Multiset<Row> getRows() {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     SortedSet<String> includeNodes =
         ImmutableSortedSet.copyOf(question.getNodeSpecifier().resolve(_batfish.specifierContext()));
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();

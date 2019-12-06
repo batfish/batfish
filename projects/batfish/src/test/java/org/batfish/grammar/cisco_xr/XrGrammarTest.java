@@ -669,7 +669,7 @@ public final class XrGrammarTest {
   public void testPrefixSet() {
     String hostname = "prefix-set";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
 
     Prefix permittedPrefix = Prefix.parse("1.2.3.4/30");
     Prefix6 permittedPrefix6 = Prefix6.parse("2001::ffff:0/124");

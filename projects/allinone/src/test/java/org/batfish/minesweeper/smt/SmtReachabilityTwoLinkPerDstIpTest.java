@@ -60,7 +60,8 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
   @Before
   public void setup() throws IOException {
     _batfish = TwoNodeNetworkWithTwoLinks.create(_temp);
-    Map<String, Configuration> configs = _batfish.loadConfigurations();
+    Map<String, Configuration> configs =
+        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
     _dstNode = configs.get(TwoNodeNetworkWithTwoLinks.DST_NODE);
     _srcNode = configs.get(TwoNodeNetworkWithTwoLinks.SRC_NODE);
 

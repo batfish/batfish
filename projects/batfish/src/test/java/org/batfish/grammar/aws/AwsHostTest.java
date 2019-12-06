@@ -135,7 +135,8 @@ public class AwsHostTest {
     Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
 
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
-        IpsecUtil.initIpsecTopology(batfish.loadConfigurations()).getGraph();
+        IpsecUtil.initIpsecTopology(batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()))
+            .getGraph();
 
     IpsecPeerConfigId tunnel1 = new IpsecPeerConfigId("Tunnel1", "cisco_host");
     IpsecPeerConfigId tunnel2 = new IpsecPeerConfigId("Tunnel2", "cisco_host");
@@ -182,7 +183,8 @@ public class AwsHostTest {
     Batfish batfish = getBatfishForConfigs("host1-shared.json");
 
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
-        IpsecUtil.initIpsecTopology(batfish.loadConfigurations()).getGraph();
+        IpsecUtil.initIpsecTopology(batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()))
+            .getGraph();
 
     IpsecPeerConfigId tunnel1 = new IpsecPeerConfigId("Tunnel1", "cisco_host");
     IpsecPeerConfigId tunnel2 = new IpsecPeerConfigId("Tunnel2", "cisco_host");

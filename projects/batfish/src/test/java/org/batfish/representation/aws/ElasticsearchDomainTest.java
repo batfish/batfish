@@ -78,7 +78,7 @@ public class ElasticsearchDomainTest {
                 .setAwsText("org/batfish/representation/aws/test", awsFilenames)
                 .build(),
             _folder);
-    return batfish.loadConfigurations();
+    return batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
   }
 
   @Test
