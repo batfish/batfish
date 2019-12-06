@@ -141,7 +141,7 @@ public final class InferRoles {
         case ALPHA_PLUS_DIGIT_PLUS:
           return plus(ALPHABETIC_REGEX) + plus(DIGIT_REGEX);
         case ALNUM_PLUS:
-          return plus(ALPHABETIC_REGEX) + (ALPHANUMERIC_REGEX);
+          return plus(ALPHANUMERIC_REGEX);
         case DELIMITER:
           return Pattern.quote(s);
         case DIGIT_PLUS:
