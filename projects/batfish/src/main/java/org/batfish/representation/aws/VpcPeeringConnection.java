@@ -2,7 +2,6 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
-import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -186,16 +185,18 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
                 accepterCfg.getVrfs().get(vrfName),
                 toStaticRoute(
                     prefix,
-                    Utils.getInterfaceIp(
-                        requesterCfg, suffixedInterfaceName(accepterCfg, ifaceNameSuffix)))));
+                    Utils.interfaceNameToRemote(requesterCfg, ifaceNameSuffix),
+                    Utils.getInterfaceLinkLocalIp(
+                        requesterCfg, Utils.interfaceNameToRemote(accepterCfg, ifaceNameSuffix)))));
     _accepterVpcCidrBlock.forEach(
         prefix ->
             addStaticRoute(
                 requesterCfg.getVrfs().get(vrfName),
                 toStaticRoute(
                     prefix,
-                    Utils.getInterfaceIp(
-                        accepterCfg, suffixedInterfaceName(requesterCfg, ifaceNameSuffix)))));
+                    Utils.interfaceNameToRemote(accepterCfg, ifaceNameSuffix),
+                    Utils.getInterfaceLinkLocalIp(
+                        accepterCfg, Utils.interfaceNameToRemote(requesterCfg, ifaceNameSuffix)))));
   }
 
   @Nonnull

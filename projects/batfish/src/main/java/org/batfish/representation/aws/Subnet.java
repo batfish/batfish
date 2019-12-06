@@ -3,8 +3,8 @@ package org.batfish.representation.aws;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
-import static org.batfish.representation.aws.Utils.getInterfaceIp;
-import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
+import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
+import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -176,7 +176,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
     connect(awsConfiguration, cfgNode, vpcConfigNode);
 
     // add a static route on the vpc router for this subnet;
-    addStaticRoute(vpcConfigNode, toStaticRoute(_cidrBlock, getInterfaceIp(cfgNode, _vpcId)));
+    addStaticRoute(
+        vpcConfigNode,
+        toStaticRoute(
+            _cidrBlock, interfaceNameToRemote(cfgNode), getInterfaceLinkLocalIp(cfgNode, _vpcId)));
 
     // add network acls on the subnet node
     List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
@@ -209,8 +212,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Configuration vgwConfig =
           awsConfiguration.getConfigurationNodes().get(optVpnGateway.get().getId());
       connect(awsConfiguration, cfgNode, vgwConfig);
-      Ip nhipOnVgw = getInterfaceIp(cfgNode, vgwConfig.getHostname());
-      addStaticRoute(vgwConfig, toStaticRoute(_cidrBlock, nhipOnVgw));
+      Ip nhipOnVgw = getInterfaceLinkLocalIp(cfgNode, vgwConfig.getHostname());
+      addStaticRoute(
+          vgwConfig, toStaticRoute(_cidrBlock, interfaceNameToRemote(cfgNode), nhipOnVgw));
     }
 
     // 1. connect the internet gateway if one exists
@@ -223,10 +227,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Configuration igwConfig =
           awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
       connect(awsConfiguration, cfgNode, igwConfig);
-      Ip nhipOnIgw = getInterfaceIp(cfgNode, igwConfig.getHostname());
+      Ip nhipOnIgw = getInterfaceLinkLocalIp(cfgNode, igwConfig.getHostname());
       publicIps.forEach(
           pip -> {
-            addStaticRoute(igwConfig, toStaticRoute(pip.toPrefix(), nhipOnIgw));
+            addStaticRoute(
+                igwConfig,
+                toStaticRoute(pip.toPrefix(), interfaceNameToRemote(cfgNode), nhipOnIgw));
             addStaticRoute(cfgNode, toStaticRoute(pip.toPrefix(), subnetToInstances.getName()));
           });
     } else if (!publicIps.isEmpty()) {
@@ -312,26 +318,30 @@ public class Subnet implements AwsVpcEntity, Serializable {
         }
         if (route.getTarget().equals("local")) {
           // To VPC
-          addStaticRoute(cfgNode, sr.setNextHopIp(getInterfaceIp(vpcNode, _subnetId)).build());
+          addStaticRoute(
+              cfgNode,
+              sr.setNextHopIp(getInterfaceLinkLocalIp(vpcNode, _subnetId))
+                  .setNextHopInterface(interfaceNameToRemote(vpcNode))
+                  .build());
           return;
         }
         if (igw != null && route.getTarget().equals(igw.getId())) {
           // To IGW
+          Configuration igwConfig = awsConfiguration.getConfigurationNodes().get(igw.getId());
           addStaticRoute(
               cfgNode,
-              sr.setNextHopIp(
-                      getInterfaceIp(
-                          awsConfiguration.getConfigurationNodes().get(igw.getId()), _subnetId))
+              sr.setNextHopIp(getInterfaceLinkLocalIp(igwConfig, _subnetId))
+                  .setNextHopInterface(interfaceNameToRemote(igwConfig))
                   .build());
           return;
         }
         if (vgw != null && route.getTarget().equals(vgw.getId())) {
           // To VGW
+          Configuration vgwConfig = awsConfiguration.getConfigurationNodes().get(vgw.getId());
           addStaticRoute(
               cfgNode,
-              sr.setNextHopIp(
-                      getInterfaceIp(
-                          awsConfiguration.getConfigurationNodes().get(vgw.getId()), _subnetId))
+              sr.setNextHopIp(getInterfaceLinkLocalIp(vgwConfig, _subnetId))
+                  .setNextHopInterface(interfaceNameToRemote(vgwConfig))
                   .build());
           return;
         }
@@ -392,7 +402,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Builder sr,
       ConvertedConfiguration awsConfiguration) {
     // if we are not connected to the VPC for this link, do that first
-    if (!cfgNode.getAllInterfaces().containsKey(suffixedInterfaceName(vpcNode, linkId))) {
+    if (!cfgNode.getAllInterfaces().containsKey(Utils.interfaceNameToRemote(vpcNode, linkId))) {
       // the interface on the VPC node is in the link-specific VRF
       String vrfNameOnVpc = Vpc.vrfNameForLink(linkId);
 
@@ -413,12 +423,17 @@ public class Subnet implements AwsVpcEntity, Serializable {
       addStaticRoute(
           vpcNode.getVrfs().get(vrfNameOnVpc),
           toStaticRoute(
-              _cidrBlock, getInterfaceIp(cfgNode, suffixedInterfaceName(vpcNode, linkId))));
+              _cidrBlock,
+              Utils.interfaceNameToRemote(cfgNode, linkId),
+              getInterfaceLinkLocalIp(cfgNode, Utils.interfaceNameToRemote(vpcNode, linkId))));
     }
 
     addStaticRoute(
         cfgNode,
-        sr.setNextHopIp(getInterfaceIp(vpcNode, suffixedInterfaceName(cfgNode, linkId))).build());
+        sr.setNextHopInterface(Utils.interfaceNameToRemote(vpcNode, linkId))
+            .setNextHopIp(
+                getInterfaceLinkLocalIp(vpcNode, Utils.interfaceNameToRemote(cfgNode, linkId)))
+            .build());
   }
 
   @Override

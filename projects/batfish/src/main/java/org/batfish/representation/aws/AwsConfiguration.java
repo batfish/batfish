@@ -5,7 +5,6 @@ import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
@@ -26,6 +26,10 @@ import org.batfish.vendor.VendorConfiguration;
 /** The top-level class that represent AWS configuration */
 @ParametersAreNonnullByDefault
 public class AwsConfiguration extends VendorConfiguration {
+
+  static Ip LINK_LOCAL_IP1 = Ip.parse("169.254.0.1");
+
+  static Ip LINK_LOCAL_IP2 = Ip.parse("169.254.0.2");
 
   @Nullable private ConvertedConfiguration _convertedConfiguration;
 
@@ -44,8 +48,7 @@ public class AwsConfiguration extends VendorConfiguration {
       String region,
       JsonNode json,
       String sourceFileName,
-      ParseVendorConfigurationAnswerElement pvcae)
-      throws IOException {
+      ParseVendorConfigurationAnswerElement pvcae) {
     _regions
         .computeIfAbsent(region, r -> new Region(region))
         .addConfigElement(json, sourceFileName, pvcae);
