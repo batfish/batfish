@@ -329,9 +329,11 @@ public class AristaGrammarTest {
       Ip neighborAddr = Ip.parse("3.3.3.3");
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(neighbor.getEnforceFirstAs(), equalTo(Boolean.FALSE));
       assertThat(neighbor.getPeerGroup(), equalTo("PEER_G2"));
       assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.REPLACE_AS));
       assertThat(neighbor.getRouteReflectorClient(), nullValue());
+      assertThat(neighbor.getShutdown(), equalTo(Boolean.FALSE));
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");
