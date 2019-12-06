@@ -17,7 +17,6 @@ public class RoleDimensionMappingBeanTest {
     String regex = "(.*)";
     List<Integer> groups = ImmutableList.of(3, 4, 1);
     Map<String, String> canonicalRoleNames = ImmutableMap.of("baz", "bar", "bar", "foo");
-    boolean caseSensitive = true;
     RoleDimensionMapping rdMap = new RoleDimensionMapping(regex, groups, canonicalRoleNames);
     RoleDimensionMappingBean bean = new RoleDimensionMappingBean(rdMap);
 
@@ -31,7 +30,6 @@ public class RoleDimensionMappingBeanTest {
     String regex = "(.*)";
     List<Integer> groups = ImmutableList.of(3, 4, 1);
     Map<String, String> canonicalRoleNames = ImmutableMap.of("baz", "bar", "bar", "foo");
-    boolean caseSensitive = true;
     RoleDimensionMapping rdMap = new RoleDimensionMapping(regex, groups, canonicalRoleNames);
     RoleDimensionMappingBean bean = new RoleDimensionMappingBean(rdMap);
 
