@@ -12,11 +12,13 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -39,7 +41,6 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
   private static final String PROP_REGEX = "regex";
   private static final String PROP_GROUPS = "groups";
   private static final String PROP_CANONICAL_ROLE_NAMES = "canonicalRoleNames";
-  private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
   // the regular expression that induces this role mapping on node names
   @Nonnull private String _regex;
@@ -52,23 +53,17 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
    */
   @Nonnull private Map<String, String> _canonicalRoleNames;
 
-  @Nonnull private boolean _caseSensitive;
-
   @Nonnull private Pattern _pattern;
-
-  private int _patternFlags;
 
   @JsonCreator
   public RoleDimensionMapping(
       @JsonProperty(PROP_REGEX) String regex,
       @JsonProperty(PROP_GROUPS) @Nullable List<Integer> groups,
-      @JsonProperty(PROP_CANONICAL_ROLE_NAMES) @Nullable Map<String, String> canonicalRoleNames,
-      @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
+      @JsonProperty(PROP_CANONICAL_ROLE_NAMES) @Nullable Map<String, String> canonicalRoleNames) {
     checkArgument(regex != null, "The regex cannot be null");
     _regex = regex;
-    _patternFlags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
     try {
-      _pattern = Pattern.compile(regex, _patternFlags);
+      _pattern = Pattern.compile(regex);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
@@ -79,11 +74,10 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
                 .boxed()
                 .collect(Collectors.toList()));
     _canonicalRoleNames = firstNonNull(canonicalRoleNames, ImmutableMap.of());
-    _caseSensitive = caseSensitive;
   }
 
   public RoleDimensionMapping(String regex) {
-    this(regex, null, null, false);
+    this(regex, null, null);
   }
 
   /**
@@ -96,8 +90,7 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
     this(
         "(" + role.getRegex() + ")",
         ImmutableList.of(1),
-        ImmutableMap.of(role.getRegex(), role.getName()),
-        role.getCaseSensitive());
+        ImmutableMap.of(role.getRegex(), role.getName()));
   }
 
   @Override
@@ -109,11 +102,8 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
         .thenComparing(
             mapping -> mapping.getCanonicalRoleNames().entrySet(),
             Comparators.lexicographical(
-                (e1, e2) -> {
-                  int cKey = e1.getKey().compareTo(e2.getKey());
-                  return cKey != 0 ? cKey : e1.getValue().compareTo(e2.getValue());
-                }))
-        .thenComparing(RoleDimensionMapping::getCaseSensitive)
+                Comparator.comparing((Function<Entry<String, String>, String>) Entry::getKey)
+                    .thenComparing(Entry::getValue)))
         .compare(this, o);
   }
 
@@ -124,19 +114,13 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
     }
     return Objects.equals(_regex, ((RoleDimensionMapping) o)._regex)
         && Objects.equals(_groups, ((RoleDimensionMapping) o)._groups)
-        && Objects.equals(_canonicalRoleNames, ((RoleDimensionMapping) o)._canonicalRoleNames)
-        && _caseSensitive == ((RoleDimensionMapping) o)._caseSensitive;
+        && Objects.equals(_canonicalRoleNames, ((RoleDimensionMapping) o)._canonicalRoleNames);
   }
 
   @JsonProperty(PROP_CANONICAL_ROLE_NAMES)
   @Nonnull
   public Map<String, String> getCanonicalRoleNames() {
     return _canonicalRoleNames;
-  }
-
-  @JsonProperty(PROP_CASE_SENSITIVE)
-  public boolean getCaseSensitive() {
-    return _caseSensitive;
   }
 
   @JsonProperty(PROP_GROUPS)
@@ -162,7 +146,7 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_regex, _groups, _canonicalRoleNames, _caseSensitive);
+    return Objects.hash(_regex, _groups, _canonicalRoleNames);
   }
 
   private Optional<String> roleNameForNode(String nodeName) {
@@ -172,16 +156,14 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
     }
     List<String> roleNameParts = _groups.stream().map(matcher::group).collect(Collectors.toList());
     String roleName = String.join("-", roleNameParts);
-    if (!_caseSensitive) {
-      roleName = roleName.toLowerCase();
-    }
+
     // convert to a canonical role name if there is one provided
     for (Map.Entry<String, String> entry : _canonicalRoleNames.entrySet()) {
       String roleRegex = entry.getKey();
       String canonicalRoleName = entry.getValue();
       Pattern p;
       try {
-        p = Pattern.compile(roleRegex, _patternFlags);
+        p = Pattern.compile(roleRegex);
       } catch (PatternSyntaxException e) {
         throw new BatfishException(
             "Supplied regex is not a valid Java regex: \"" + roleRegex + "\"", e);
@@ -200,7 +182,6 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
         .add(PROP_REGEX, _regex)
         .add(PROP_GROUPS, _groups)
         .add(PROP_CANONICAL_ROLE_NAMES, _canonicalRoleNames)
-        .add(PROP_CASE_SENSITIVE, _caseSensitive)
         .toString();
   }
 }

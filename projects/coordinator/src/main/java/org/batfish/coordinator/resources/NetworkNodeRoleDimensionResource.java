@@ -77,8 +77,7 @@ public final class NetworkNodeRoleDimensionResource {
             m.getName().orElse(null),
             m.getRegex(),
             delDimensionFromMap(dimension, m.getRoleDimensionsGroups()),
-            delDimensionFromMap(dimension, m.getCanonicalRoleNames()),
-            m.getCaseSensitive());
+            delDimensionFromMap(dimension, m.getCanonicalRoleNames()));
     if (result.getRoleDimensionsGroups().isEmpty()) {
       // this role mapping is useless so let's delete it entirely
       return null;

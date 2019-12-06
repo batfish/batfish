@@ -38,7 +38,7 @@ public class RoleDimensionMappingTest {
   @Test
   public void testGroups() {
     RoleDimensionMapping rdMap =
-        new RoleDimensionMapping("x(b.*d)(.+)y.*", ImmutableList.of(2, 1), null, false);
+        new RoleDimensionMapping("x(b.*d)(.+)y.*", ImmutableList.of(2, 1), null);
     Set<String> nodes = ImmutableSet.of("xbordery", "core", "xbordery2", "xcorey");
     SortedMap<String, String> nodeRolesMap = rdMap.createNodeRolesMap(nodes);
     assertThat(
@@ -49,7 +49,7 @@ public class RoleDimensionMappingTest {
   @Test
   public void testCanonicalNameMap() {
     RoleDimensionMapping rdMap =
-        new RoleDimensionMapping("x(.+)y.*", null, ImmutableMap.of("border", "something"), false);
+        new RoleDimensionMapping("x(.+)y.*", null, ImmutableMap.of("border", "something"));
     Set<String> nodes = ImmutableSet.of("xbordery", "core", "xbordery2", "xcorey");
     SortedMap<String, String> nodeRolesMap = rdMap.createNodeRolesMap(nodes);
     assertThat(
@@ -57,25 +57,5 @@ public class RoleDimensionMappingTest {
         equalTo(
             ImmutableSortedMap.of(
                 "xbordery", "something", "xbordery2", "something", "xcorey", "core")));
-  }
-
-  @Test
-  public void testCaseInsensitive() {
-    RoleDimensionMapping rdMap = new RoleDimensionMapping("x(.+)y.*");
-    Set<String> nodes = ImmutableSet.of("xBorDery", "core", "xboRderY2", "xcorey");
-    SortedMap<String, String> nodeRolesMap = rdMap.createNodeRolesMap(nodes);
-    assertThat(
-        nodeRolesMap,
-        equalTo(
-            ImmutableSortedMap.of("xBorDery", "border", "xboRderY2", "border", "xcorey", "core")));
-  }
-
-  @Test
-  public void testCaseSensitive() {
-    RoleDimensionMapping rdMap = new RoleDimensionMapping("x(.+)y.*", null, null, true);
-    Set<String> nodes = ImmutableSet.of("xBorDery", "core", "xboRderY2", "xcorey");
-    SortedMap<String, String> nodeRolesMap = rdMap.createNodeRolesMap(nodes);
-    assertThat(
-        nodeRolesMap, equalTo(ImmutableSortedMap.of("xBorDery", "BorDer", "xcorey", "core")));
   }
 }

@@ -115,8 +115,8 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
             NodeRolesData.builder()
                 .setRoleMappings(
                     ImmutableList.of(
-                        new RoleMapping(name, "", null, null, false),
-                        new RoleMapping(name, "", null, null, false)))
+                        new RoleMapping(name, "", null, null),
+                        new RoleMapping(name, "", null, null)))
                 .build(),
             null);
 
@@ -132,8 +132,8 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
             NodeRolesData.builder()
                 .setRoleMappings(
                     ImmutableList.of(
-                        new RoleMapping(name1, "", null, null, false),
-                        new RoleMapping(name2, "", null, null, false)))
+                        new RoleMapping(name1, "", null, null),
+                        new RoleMapping(name2, "", null, null)))
                 .build(),
             null);
 
@@ -149,8 +149,8 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
             NodeRolesData.builder()
                 .setRoleMappings(
                     ImmutableList.of(
-                        new RoleMapping(name1, "", null, null, false),
-                        new RoleMapping(name2, "", null, null, false)))
+                        new RoleMapping(name1, "", null, null),
+                        new RoleMapping(name2, "", null, null)))
                 .build(),
             null);
 
@@ -167,8 +167,8 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
             NodeRolesData.builder()
                 .setRoleMappings(
                     ImmutableList.of(
-                        new RoleMapping(name, "", null, null, false),
-                        new RoleMapping(name, "", null, null, false)))
+                        new RoleMapping(name, "", null, null),
+                        new RoleMapping(name, "", null, null)))
                 .build(),
             null);
     Response response =

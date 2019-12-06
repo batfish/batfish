@@ -1,35 +1,16 @@
 [
   {
     "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesAnswerElement",
-    "matchingNodesCount" : {
-      "auto0" : 13,
-      "auto1" : 13
-    },
-    "roleDimensions" : [
-      {
-        "name" : "auto0",
-        "roleDimensionMappings" : [
-          {
-            "caseSensitive" : false,
-            "groups" : [
-              1
-            ],
-            "regex" : "\\p{Alpha}+\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+"
-          }
-        ]
-      },
-      {
-        "name" : "auto1",
-        "roleDimensionMappings" : [
-          {
-            "caseSensitive" : false,
-            "groups" : [
-              1
-            ],
-            "regex" : "(\\p{Alpha}+)\\p{Digit}+\\p{Alpha}+\\p{Digit}+"
-          }
+    "roleMapping" : {
+      "regex" : "(\\p{Alpha}+)\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+",
+      "roleDimensionGroups" : {
+        "auto0" : [
+          2
+        ],
+        "auto1" : [
+          1
         ]
       }
-    ]
+    }
   }
 ]

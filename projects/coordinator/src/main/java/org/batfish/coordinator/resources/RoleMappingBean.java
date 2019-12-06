@@ -12,7 +12,6 @@ public class RoleMappingBean {
   public String regex;
   public Map<String, List<Integer>> roleDimensionGroups;
   public Map<String, Map<String, String>> canonicalRoleNames;
-  public boolean caseSensitive;
 
   @JsonCreator
   private RoleMappingBean() {}
@@ -23,7 +22,6 @@ public class RoleMappingBean {
     regex = roleMapping.getRegex();
     roleDimensionGroups = roleMapping.getRoleDimensionsGroups();
     canonicalRoleNames = roleMapping.getCanonicalRoleNames();
-    caseSensitive = roleMapping.getCaseSensitive();
   }
 
   @Override
@@ -34,17 +32,16 @@ public class RoleMappingBean {
     return Objects.equals(name, ((RoleMappingBean) o).name)
         && Objects.equals(regex, ((RoleMappingBean) o).regex)
         && Objects.equals(roleDimensionGroups, ((RoleMappingBean) o).roleDimensionGroups)
-        && Objects.equals(canonicalRoleNames, ((RoleMappingBean) o).canonicalRoleNames)
-        && caseSensitive == ((RoleMappingBean) o).caseSensitive;
+        && Objects.equals(canonicalRoleNames, ((RoleMappingBean) o).canonicalRoleNames);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, regex, roleDimensionGroups, canonicalRoleNames, caseSensitive);
+    return Objects.hash(name, regex, roleDimensionGroups, canonicalRoleNames);
   }
 
   /** Gets a {@link RoleMapping} object from this bean. */
   public RoleMapping toRoleMapping() {
-    return new RoleMapping(name, regex, roleDimensionGroups, canonicalRoleNames, caseSensitive);
+    return new RoleMapping(name, regex, roleDimensionGroups, canonicalRoleNames);
   }
 }
