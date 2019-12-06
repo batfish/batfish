@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.UUID;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
@@ -325,7 +325,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public void popSnapshot() {
-    throw new UnsupportedOperationException();
+    _snapshotStack.pop();
   }
 
   @Override
@@ -335,12 +335,12 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public void pushBaseSnapshot() {
-    throw new UnsupportedOperationException();
+    _snapshotStack.push(getSnapshot());
   }
 
   @Override
   public void pushDeltaSnapshot() {
-    throw new UnsupportedOperationException();
+    _snapshotStack.push(getReferenceSnapshot());
   }
 
   @Nullable
@@ -410,8 +410,23 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public NetworkSnapshot peekNetworkSnapshotStack() {
-    return new NetworkSnapshot(
-        new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
+    return _snapshotStack.peek();
+  }
+
+  @Override
+  public NetworkSnapshot getSnapshot() {
+    if (_snapshot == null) {
+      _snapshot = new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss"));
+    }
+    return _snapshot;
+  }
+
+  @Override
+  public NetworkSnapshot getReferenceSnapshot() {
+    if (_referenceSnapshot == null) {
+      _referenceSnapshot = new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ref"));
+    }
+    return _referenceSnapshot;
   }
 
   @Nonnull
@@ -420,4 +435,13 @@ public class IBatfishTestAdapter implements IBatfish {
       BDDPacket bddPacket, ReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
+
+  public IBatfishTestAdapter() {
+    _snapshotStack = new Stack<>();
+    _snapshotStack.push(getSnapshot());
+  }
+
+  private NetworkSnapshot _snapshot;
+  private NetworkSnapshot _referenceSnapshot;
+  private final @Nonnull Stack<NetworkSnapshot> _snapshotStack;
 }

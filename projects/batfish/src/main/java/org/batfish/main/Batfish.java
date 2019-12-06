@@ -1224,6 +1224,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public NetworkSnapshot getSnapshot() {
+    return new NetworkSnapshot(_settings.getContainer(), _baseTestrigSettings.getName());
+  }
+
+  @Override
+  public NetworkSnapshot getReferenceSnapshot() {
+    return new NetworkSnapshot(_settings.getContainer(), _deltaTestrigSettings.getName());
+  }
+
+  @Override
   public String getTaskId() {
     return _settings.getTaskId();
   }

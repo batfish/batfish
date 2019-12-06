@@ -87,6 +87,12 @@ public interface IBatfish extends IPluginConsumer {
   @Nonnull
   NetworkSnapshot peekNetworkSnapshotStack();
 
+  @Nonnull
+  NetworkSnapshot getSnapshot();
+
+  @Nonnull
+  NetworkSnapshot getReferenceSnapshot();
+
   NodeRolesData getNodeRolesData();
 
   Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
