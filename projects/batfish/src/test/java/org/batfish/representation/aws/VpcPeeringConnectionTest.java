@@ -2,7 +2,6 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS;
-import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -120,15 +119,17 @@ public class VpcPeeringConnectionTest {
             ImmutableSet.of(
                 toStaticRoute(
                     vpc2Prefix,
-                    Utils.getInterfaceIp(
-                        vpc2Cfg, suffixedInterfaceName(vpc1Cfg, connection.getId()))))));
+                    Utils.interfaceNameToRemote(vpc2Cfg, connection.getId()),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpc2Cfg, Utils.interfaceNameToRemote(vpc1Cfg, connection.getId()))))));
     assertThat(
         vpc2Cfg.getVrfs().get(vrfName).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
                     vpc1Prefix,
-                    Utils.getInterfaceIp(
-                        vpc1Cfg, suffixedInterfaceName(vpc2Cfg, connection.getId()))))));
+                    Utils.interfaceNameToRemote(vpc1Cfg, connection.getId()),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpc1Cfg, Utils.interfaceNameToRemote(vpc2Cfg, connection.getId()))))));
   }
 }

@@ -7,7 +7,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
 import static org.batfish.representation.aws.Subnet.findMyNetworkAcl;
-import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
+import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.any;
@@ -149,14 +149,18 @@ public class SubnetTest {
             ImmutableSet.of(
                 toStaticRoute(
                     privatePrefix,
-                    subnetCfg.getAllInterfaces().get(vpc.getId()).getConcreteAddress().getIp()))));
+                    interfaceNameToRemote(subnetCfg),
+                    subnetCfg.getAllInterfaces().get(vpc.getId()).getLinkLocalAddress().getIp()))));
 
     // the subnet router should have routes from the table
     assertThat(
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(privatePrefix, Utils.getInterfaceIp(vpcConfig, subnet.getId())))));
+                toStaticRoute(
+                    privatePrefix,
+                    Utils.interfaceNameToRemote(vpcConfig, ""),
+                    Utils.getInterfaceLinkLocalIp(vpcConfig, subnet.getId())))));
   }
 
   @Test
@@ -239,7 +243,10 @@ public class SubnetTest {
         vgwConfig.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(privatePrefix, Utils.getInterfaceIp(subnetCfg, vgw.getId())))));
+                toStaticRoute(
+                    privatePrefix,
+                    interfaceNameToRemote(subnetCfg),
+                    Utils.getInterfaceLinkLocalIp(subnetCfg, vgw.getId())))));
   }
 
   @Test
@@ -323,15 +330,24 @@ public class SubnetTest {
         igwConfig.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(publicIp.toPrefix(), Utils.getInterfaceIp(subnetCfg, igw.getId())))));
+                toStaticRoute(
+                    publicIp.toPrefix(),
+                    interfaceNameToRemote(subnetCfg),
+                    Utils.getInterfaceLinkLocalIp(subnetCfg, igw.getId())))));
 
     // the subnet router should have routes from the table and to the public ip
     assertThat(
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(Prefix.ZERO, Utils.getInterfaceIp(igwConfig, subnet.getId())),
-                toStaticRoute(privatePrefix, Utils.getInterfaceIp(vpcConfig, subnet.getId())),
+                toStaticRoute(
+                    Prefix.ZERO,
+                    interfaceNameToRemote(igwConfig),
+                    Utils.getInterfaceLinkLocalIp(igwConfig, subnet.getId())),
+                toStaticRoute(
+                    privatePrefix,
+                    interfaceNameToRemote(vpcConfig),
+                    Utils.getInterfaceLinkLocalIp(vpcConfig, subnet.getId())),
                 toStaticRoute(
                     publicIp.toPrefix(),
                     subnetCfg.getAllInterfaces().get(subnet.getId()).getName()))));
@@ -366,11 +382,11 @@ public class SubnetTest {
 
     // there should be an interface on the Subnet pointed to the VPC node
     Interface subnetIface = Iterables.getOnlyElement(subnetCfg.getAllInterfaces().values());
-    assertThat(subnetIface, hasName(suffixedInterfaceName(vpcCfg, connectionId)));
+    assertThat(subnetIface, hasName(Utils.interfaceNameToRemote(vpcCfg, connectionId)));
 
     // there should be an interface on the VPC node
     Interface vpcIface = Iterables.getOnlyElement(vpcCfg.getAllInterfaces().values());
-    assertThat(vpcIface, hasName(suffixedInterfaceName(subnetCfg, connectionId)));
+    assertThat(vpcIface, hasName(Utils.interfaceNameToRemote(subnetCfg, connectionId)));
     assertThat(vpcIface, hasVrfName(vrfNameForLink(connectionId)));
 
     // right static routes on both sides
@@ -379,12 +395,17 @@ public class SubnetTest {
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
-                    route.getDestinationCidrBlock(), vpcIface.getConcreteAddress().getIp()))));
+                    route.getDestinationCidrBlock(),
+                    Utils.interfaceNameToRemote(vpcCfg, connectionId),
+                    vpcIface.getLinkLocalAddress().getIp()))));
     assertThat(
         vpcCfg.getVrfs().get(vrfName).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(subnet.getCidrBlock(), subnetIface.getConcreteAddress().getIp()))));
+                toStaticRoute(
+                    subnet.getCidrBlock(),
+                    Utils.interfaceNameToRemote(subnetCfg, connectionId),
+                    subnetIface.getLinkLocalAddress().getIp()))));
   }
 
   /** Tests that we do the right thing when processing a route for transit gateway. */
@@ -427,11 +448,11 @@ public class SubnetTest {
 
     // there should be an interface on the Subnet pointed to the VPC node
     Interface subnetIface = Iterables.getOnlyElement(subnetCfg.getAllInterfaces().values());
-    assertThat(subnetIface, hasName(suffixedInterfaceName(vpcCfg, linkId)));
+    assertThat(subnetIface, hasName(Utils.interfaceNameToRemote(vpcCfg, linkId)));
 
     // there should be an interface on the VPC node
     Interface vpcIface = Iterables.getOnlyElement(vpcCfg.getAllInterfaces().values());
-    assertThat(vpcIface, hasName(suffixedInterfaceName(subnetCfg, linkId)));
+    assertThat(vpcIface, hasName(Utils.interfaceNameToRemote(subnetCfg, linkId)));
     assertThat(vpcIface, hasVrfName(vrfNameForLink(linkId)));
 
     // right static routes on both sides
@@ -440,12 +461,17 @@ public class SubnetTest {
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
-                    route.getDestinationCidrBlock(), vpcIface.getConcreteAddress().getIp()))));
+                    route.getDestinationCidrBlock(),
+                    Utils.interfaceNameToRemote(vpcCfg, linkId),
+                    vpcIface.getLinkLocalAddress().getIp()))));
     assertThat(
         vpcCfg.getVrfs().get(vrfName).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(subnet.getCidrBlock(), subnetIface.getConcreteAddress().getIp()))));
+                toStaticRoute(
+                    subnet.getCidrBlock(),
+                    Utils.interfaceNameToRemote(subnetCfg, linkId),
+                    subnetIface.getLinkLocalAddress().getIp()))));
   }
 
   /**
@@ -528,10 +554,14 @@ public class SubnetTest {
             ImmutableSet.of(
                 toStaticRoute(
                     subnet1.getCidrBlock(),
-                    Utils.getInterfaceIp(subnet1Cfg, suffixedInterfaceName(vpcCfg, linkId))),
+                    Utils.interfaceNameToRemote(subnet1Cfg, linkId),
+                    Utils.getInterfaceLinkLocalIp(
+                        subnet1Cfg, Utils.interfaceNameToRemote(vpcCfg, linkId))),
                 toStaticRoute(
                     subnet2.getCidrBlock(),
-                    Utils.getInterfaceIp(subnet2Cfg, suffixedInterfaceName(vpcCfg, linkId))))));
+                    Utils.interfaceNameToRemote(subnet2Cfg, linkId),
+                    Utils.getInterfaceLinkLocalIp(
+                        subnet2Cfg, Utils.interfaceNameToRemote(vpcCfg, linkId))))));
   }
 
   /** The subnet has two links */
@@ -571,15 +601,19 @@ public class SubnetTest {
 
     // there should two interface on the Subnet pointed to the VPC node
     assertThat(
-        subnetCfg, hasInterface(suffixedInterfaceName(vpcCfg, linkId1), any(Interface.class)));
+        subnetCfg,
+        hasInterface(Utils.interfaceNameToRemote(vpcCfg, linkId1), any(Interface.class)));
     assertThat(
-        subnetCfg, hasInterface(suffixedInterfaceName(vpcCfg, linkId2), any(Interface.class)));
+        subnetCfg,
+        hasInterface(Utils.interfaceNameToRemote(vpcCfg, linkId2), any(Interface.class)));
 
     // there should be two interfaces on the VPC node
     assertThat(
-        vpcCfg, hasInterface(suffixedInterfaceName(subnetCfg, linkId1), any(Interface.class)));
+        vpcCfg,
+        hasInterface(Utils.interfaceNameToRemote(subnetCfg, linkId1), any(Interface.class)));
     assertThat(
-        vpcCfg, hasInterface(suffixedInterfaceName(subnetCfg, linkId2), any(Interface.class)));
+        vpcCfg,
+        hasInterface(Utils.interfaceNameToRemote(subnetCfg, linkId2), any(Interface.class)));
 
     // static routes
     assertThat(
@@ -588,24 +622,32 @@ public class SubnetTest {
             ImmutableSet.of(
                 toStaticRoute(
                     remotePrefix1,
-                    Utils.getInterfaceIp(vpcCfg, suffixedInterfaceName(subnetCfg, linkId1))),
+                    Utils.interfaceNameToRemote(vpcCfg, linkId1),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpcCfg, Utils.interfaceNameToRemote(subnetCfg, linkId1))),
                 toStaticRoute(
                     remotePrefix2,
-                    Utils.getInterfaceIp(vpcCfg, suffixedInterfaceName(subnetCfg, linkId2))))));
+                    Utils.interfaceNameToRemote(vpcCfg, linkId2),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpcCfg, Utils.interfaceNameToRemote(subnetCfg, linkId2))))));
     assertThat(
         vpcCfg.getVrfs().get(vrfNameForLink(linkId1)).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
                     subnet.getCidrBlock(),
-                    Utils.getInterfaceIp(subnetCfg, suffixedInterfaceName(vpcCfg, linkId1))))));
+                    Utils.interfaceNameToRemote(subnetCfg, linkId1),
+                    Utils.getInterfaceLinkLocalIp(
+                        subnetCfg, Utils.interfaceNameToRemote(vpcCfg, linkId1))))));
     assertThat(
         vpcCfg.getVrfs().get(vrfNameForLink(linkId2)).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
                     subnet.getCidrBlock(),
-                    Utils.getInterfaceIp(subnetCfg, suffixedInterfaceName(vpcCfg, linkId2))))));
+                    Utils.interfaceNameToRemote(subnetCfg, linkId2),
+                    Utils.getInterfaceLinkLocalIp(
+                        subnetCfg, Utils.interfaceNameToRemote(vpcCfg, linkId2))))));
   }
 
   /** The subnet has two routes going over the same connection */
@@ -643,11 +685,11 @@ public class SubnetTest {
 
     // there should two interface on the Subnet pointed to the VPC node
     assertThat(
-        subnetCfg, hasInterface(suffixedInterfaceName(vpcCfg, linkId), any(Interface.class)));
+        subnetCfg, hasInterface(Utils.interfaceNameToRemote(vpcCfg, linkId), any(Interface.class)));
 
     // there should be two interfaces on the VPC node
     assertThat(
-        vpcCfg, hasInterface(suffixedInterfaceName(subnetCfg, linkId), any(Interface.class)));
+        vpcCfg, hasInterface(Utils.interfaceNameToRemote(subnetCfg, linkId), any(Interface.class)));
 
     // static routes
     assertThat(
@@ -656,17 +698,23 @@ public class SubnetTest {
             ImmutableSet.of(
                 toStaticRoute(
                     remotePrefix1,
-                    Utils.getInterfaceIp(vpcCfg, suffixedInterfaceName(subnetCfg, linkId))),
+                    Utils.interfaceNameToRemote(vpcCfg, linkId),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpcCfg, Utils.interfaceNameToRemote(subnetCfg, linkId))),
                 toStaticRoute(
                     remotePrefix2,
-                    Utils.getInterfaceIp(vpcCfg, suffixedInterfaceName(subnetCfg, linkId))))));
+                    Utils.interfaceNameToRemote(vpcCfg, linkId),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpcCfg, Utils.interfaceNameToRemote(subnetCfg, linkId))))));
     assertThat(
         vpcCfg.getVrfs().get(vrfNameForLink(linkId)).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
                     subnet.getCidrBlock(),
-                    Utils.getInterfaceIp(subnetCfg, suffixedInterfaceName(vpcCfg, linkId))))));
+                    Utils.interfaceNameToRemote(subnetCfg, linkId),
+                    Utils.getInterfaceLinkLocalIp(
+                        subnetCfg, Utils.interfaceNameToRemote(vpcCfg, linkId))))));
   }
 
   @Test

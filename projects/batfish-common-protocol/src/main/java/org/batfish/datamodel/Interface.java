@@ -1283,6 +1283,12 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
+  @Nullable
+  public LinkLocalAddress getLinkLocalAddress() {
+    return _address instanceof LinkLocalAddress ? (LinkLocalAddress) _address : null;
+  }
+
+  @JsonIgnore
   public IpAccessList getPostTransformationIncomingFilter() {
     return _postTransformationIncomingFilter;
   }

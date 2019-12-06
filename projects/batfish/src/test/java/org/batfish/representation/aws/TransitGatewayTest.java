@@ -7,7 +7,6 @@ import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.TransitGateway.createBgpProcess;
 import static org.batfish.representation.aws.TransitGateway.supportedVpnBgpConfiguration;
 import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSOCIATED;
-import static org.batfish.representation.aws.Utils.suffixedInterfaceName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -134,9 +133,9 @@ public class TransitGatewayTest {
 
     // check that interfaces are created in the right VRFs
     Interface tgwInterface =
-        tgwCfg.getAllInterfaces().get(suffixedInterfaceName(vpcCfg, tgwAttachment.getId()));
+        tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, tgwAttachment.getId()));
     Interface vpcInterface =
-        vpcCfg.getAllInterfaces().get(suffixedInterfaceName(tgwCfg, tgwAttachment.getId()));
+        vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()));
     assertThat(tgwInterface, hasVrfName(TransitGateway.vrfNameForRouteTable(routeTableId)));
     assertThat(vpcInterface, hasVrfName(Vpc.vrfNameForLink(tgwAttachment.getId())));
 
@@ -149,7 +148,10 @@ public class TransitGatewayTest {
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME),
-                toStaticRoute(Prefix.ZERO, tgwInterface.getConcreteAddress().getIp()))));
+                toStaticRoute(
+                    Prefix.ZERO,
+                    Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()),
+                    tgwInterface.getLinkLocalAddress().getIp()))));
   }
 
   @Test
@@ -345,12 +347,12 @@ public class TransitGatewayTest {
                     vpcPrefix,
                     tgwCfg
                         .getAllInterfaces()
-                        .get(suffixedInterfaceName(vpcCfg, tgwAttachment.getId()))
+                        .get(Utils.interfaceNameToRemote(vpcCfg, tgwAttachment.getId()))
                         .getName(),
                     vpcCfg
                         .getAllInterfaces()
-                        .get(suffixedInterfaceName(tgwCfg, tgwAttachment.getId()))
-                        .getConcreteAddress()
+                        .get(Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()))
+                        .getLinkLocalAddress()
                         .getIp()))));
   }
 
@@ -422,8 +424,9 @@ public class TransitGatewayTest {
             ImmutableSet.of(
                 toStaticRoute(
                     activeRoutePrefix,
-                    Utils.getInterfaceIp(
-                        vpcCfg, suffixedInterfaceName(tgwCfg, tgwAttachment.getId()))),
+                    Utils.interfaceNameToRemote(vpcCfg, tgwAttachment.getId()),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpcCfg, Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()))),
                 toStaticRoute(blackholeRoutePrefix, NULL_INTERFACE_NAME))));
   }
 

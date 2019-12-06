@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP1;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
@@ -20,12 +21,11 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -111,9 +111,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
 
     if (doBgp) {
       String loopbackBgp = "loopbackBgp";
-      ConcreteInterfaceAddress loopbackBgpAddress =
-          ConcreteInterfaceAddress.create(
-              awsConfiguration.getNextGeneratedLinkSubnet().getStartIp(), Prefix.MAX_PREFIX_LENGTH);
+      LinkLocalAddress loopbackBgpAddress = LinkLocalAddress.of(LINK_LOCAL_IP1);
       Utils.newInterface(loopbackBgp, cfgNode, loopbackBgpAddress, "BGP loopback");
 
       BgpProcess proc =
