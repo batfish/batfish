@@ -35,51 +35,46 @@ public final class TracerouteAnswerer extends Answerer {
   public static final String COL_BASE_TRACE_COUNT = TableDiff.baseColumnName(COL_TRACE_COUNT);
   public static final String COL_DELTA_TRACE_COUNT = TableDiff.deltaColumnName(COL_TRACE_COUNT);
 
-  private final TracerouteAnswererHelper _helper;
-
   TracerouteAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
-    TracerouteQuestion tracerouteQuestion = (TracerouteQuestion) question;
-    _helper =
+  }
+
+  private SortedMap<Flow, List<Trace>> getTraces(
+      NetworkSnapshot snapshot, String tag, TracerouteQuestion q) {
+    TracerouteAnswererHelper helper =
         new TracerouteAnswererHelper(
-            tracerouteQuestion.getHeaderConstraints(),
-            tracerouteQuestion.getSourceLocationStr(),
-            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
+            q.getHeaderConstraints(),
+            q.getSourceLocationStr(),
+            _batfish.specifierContext(snapshot));
+    Set<Flow> flows = helper.getFlows(tag);
+    return _batfish.getTracerouteEngine(snapshot).computeTraces(flows, q.getIgnoreFilters());
   }
 
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
-    TracerouteQuestion question = (TracerouteQuestion) _question;
-    String tag = _batfish.getFlowTag();
-    Set<Flow> flows = _helper.getFlows(tag);
-    Multiset<Row> rows;
-    SortedMap<Flow, List<Trace>> flowTraces =
-        _batfish.getTracerouteEngine(snapshot).computeTraces(flows, question.getIgnoreFilters());
-    rows = flowTracesToRows(flowTraces, question.getMaxTraces());
+    TracerouteQuestion q = (TracerouteQuestion) _question;
+    SortedMap<Flow, List<Trace>> flowTraces = getTraces(snapshot, _batfish.getFlowTag(snapshot), q);
+    Multiset<Row> rows = flowTracesToRows(flowTraces, q.getMaxTraces());
+
     TableAnswerElement table = new TableAnswerElement(metadata(false));
     table.postProcessAnswer(_question, rows);
     return table;
   }
 
   @Override
-  public AnswerElement answerDiff() {
-    TracerouteQuestion question = ((TracerouteQuestion) _question);
-    boolean ignoreFilters = question.getIgnoreFilters();
-    Set<Flow> flows = _helper.getFlows(_batfish.getDifferentialFlowTag());
-    Multiset<Row> rows;
-    TableAnswerElement table;
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    TracerouteQuestion q = ((TracerouteQuestion) _question);
     _batfish.pushBaseSnapshot();
-    Map<Flow, List<Trace>> baseFlowTraces =
-        _batfish.buildFlows(_batfish.getSnapshot(), flows, ignoreFilters);
+    Map<Flow, List<Trace>> baseFlowTraces = getTraces(snapshot, _batfish.getFlowTag(snapshot), q);
     _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
     Map<Flow, List<Trace>> deltaFlowTraces =
-        _batfish.buildFlows(_batfish.getReferenceSnapshot(), flows, ignoreFilters);
+        getTraces(reference, _batfish.getFlowTag(reference), q);
     _batfish.popSnapshot();
 
-    rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, question.getMaxTraces());
-    table = new TableAnswerElement(metadata(true));
+    Multiset<Row> rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, q.getMaxTraces());
+    TableAnswerElement table = new TableAnswerElement(metadata(true));
     table.postProcessAnswer(_question, rows);
     return table;
   }

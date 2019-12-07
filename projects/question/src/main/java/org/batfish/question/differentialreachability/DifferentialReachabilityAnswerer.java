@@ -46,13 +46,14 @@ public class DifferentialReachabilityAnswerer extends Answerer {
 
   @Override
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
-    return answerDiff();
+    throw new IllegalStateException(
+        getClass().getSimpleName() + " can only be run in differential mode");
   }
 
-  private DifferentialReachabilityParameters parameters() {
+  private DifferentialReachabilityParameters parameters(NetworkSnapshot snapshot) {
     DifferentialReachabilityQuestion question = (DifferentialReachabilityQuestion) _question;
     PacketHeaderConstraints headerConstraints = question.getHeaderConstraints();
-    SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
+    SpecifierContext ctxt = _batfish.specifierContext(snapshot);
 
     PathConstraints pathConstraints = createPathConstraints(question.getPathConstraints());
     Set<String> forbiddenTransitNodes = pathConstraints.getForbiddenLocations().resolve(ctxt);
@@ -92,9 +93,10 @@ public class DifferentialReachabilityAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answerDiff() {
-    DifferentialReachabilityParameters parameters = parameters();
-    DifferentialReachabilityResult result = _batfish.bddDifferentialReachability(parameters);
+  public TableAnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    DifferentialReachabilityParameters parameters = parameters(snapshot);
+    DifferentialReachabilityResult result =
+        _batfish.bddDifferentialReachability(snapshot, reference, parameters);
 
     Set<Flow> flows =
         Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());

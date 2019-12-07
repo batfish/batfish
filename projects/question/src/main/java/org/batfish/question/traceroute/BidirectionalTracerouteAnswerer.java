@@ -41,30 +41,22 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
   static final String COL_REVERSE_FLOW = "Reverse_Flow";
   static final String COL_REVERSE_TRACES = "Reverse_Traces";
 
-  private final TracerouteAnswererHelper _helper;
-  private final boolean _ignoreFilters;
-  private final int _maxTraces;
-
   public BidirectionalTracerouteAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
-    BidirectionalTracerouteQuestion bidirectionalTracerouteQuestion =
-        (BidirectionalTracerouteQuestion) question;
-    _helper =
-        new TracerouteAnswererHelper(
-            bidirectionalTracerouteQuestion.getHeaderConstraints(),
-            bidirectionalTracerouteQuestion.getSourceLocationStr(),
-            _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
-    _ignoreFilters = bidirectionalTracerouteQuestion.getIgnoreFilters();
-    _maxTraces = bidirectionalTracerouteQuestion.getMaxTraces();
   }
 
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
-    String tag = _batfish.getFlowTag();
-    Set<Flow> flows = _helper.getFlows(tag);
+    BidirectionalTracerouteQuestion q = (BidirectionalTracerouteQuestion) _question;
+    TracerouteAnswererHelper helper =
+        new TracerouteAnswererHelper(
+            q.getHeaderConstraints(),
+            q.getSourceLocationStr(),
+            _batfish.specifierContext(snapshot));
+    Set<Flow> flows = helper.getFlows(_batfish.getFlowTag(snapshot));
     TracerouteEngine tracerouteEngine = _batfish.getTracerouteEngine(snapshot);
     return bidirectionalTracerouteAnswerElement(
-        _question, flows, tracerouteEngine, _ignoreFilters, _maxTraces);
+        _question, flows, tracerouteEngine, q.getIgnoreFilters(), q.getMaxTraces());
   }
 
   public static AnswerElement bidirectionalTracerouteAnswerElement(

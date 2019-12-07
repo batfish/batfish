@@ -79,7 +79,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
 
     Map<Location, BDD> answerBdds = getAnswerBdds(result, _returnFlowType);
 
-    String flowTag = _batfish.getFlowTag();
+    String flowTag = _batfish.getFlowTag(snapshot);
 
     Set<Flow> flows =
         answerBdds.entrySet().stream()

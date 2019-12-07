@@ -131,7 +131,8 @@ public class DifferentialReachabilityTest {
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
     TableAnswerElement answer =
-        new DifferentialReachabilityAnswerer(question, batfish).answer(batfish.getSnapshot());
+        new DifferentialReachabilityAnswerer(question, batfish)
+            .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
     Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
@@ -172,7 +173,8 @@ public class DifferentialReachabilityTest {
 
     Batfish batfish = initBatfish();
     TableAnswerElement answer =
-        new DifferentialReachabilityAnswerer(question, batfish).answer(batfish.getSnapshot());
+        new DifferentialReachabilityAnswerer(question, batfish)
+            .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
     Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
@@ -213,7 +215,8 @@ public class DifferentialReachabilityTest {
 
     Batfish batfish = initBatfish();
     TableAnswerElement answer =
-        new DifferentialReachabilityAnswerer(question, batfish).answer(batfish.getSnapshot());
+        new DifferentialReachabilityAnswerer(question, batfish)
+            .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
     assertThat(answer.getRows().size(), equalTo(0));
   }
 }

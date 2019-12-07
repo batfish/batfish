@@ -204,7 +204,9 @@ public class TestRoutePoliciesAnswererTest {
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
     // both policies permit and make the same modification, so no difference
-    TableAnswerElement diffAnswer = (TableAnswerElement) answerer.answerDiff();
+    TableAnswerElement diffAnswer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
     assertEquals(diffAnswer.getRows().size(), 0);
   }
 
@@ -234,7 +236,9 @@ public class TestRoutePoliciesAnswererTest {
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
     // both policies permit and make the same modification, so no difference
-    TableAnswerElement diffAnswer = (TableAnswerElement) answerer.answerDiff();
+    TableAnswerElement diffAnswer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
     assertEquals(diffAnswer.getRows().size(), 0);
   }
 
@@ -263,7 +267,9 @@ public class TestRoutePoliciesAnswererTest {
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
     // both policies permit and make the same modification, so no difference
-    TableAnswerElement diffAnswer = (TableAnswerElement) answerer.answerDiff();
+    TableAnswerElement diffAnswer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
     assertThat(
         diffAnswer.getRows().getData(),
         Matchers.contains(
@@ -314,7 +320,9 @@ public class TestRoutePoliciesAnswererTest {
             ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "600", "500")));
 
     // both policies permit and make the same modification, so no difference
-    TableAnswerElement diffAnswer = (TableAnswerElement) answerer.answerDiff();
+    TableAnswerElement diffAnswer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
     assertThat(
         diffAnswer.getRows().getData(),
         Matchers.contains(

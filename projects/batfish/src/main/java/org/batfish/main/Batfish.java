@@ -640,7 +640,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
       activeSpan
           .setTag("container-name", getContainerName().getId())
-          .setTag("testrig_name", getTestrigName().getId());
+          .setTag("testrig_name", getSnapshot().getSnapshot().getId());
       if (question.getInstance() != null) {
         activeSpan.setTag("question-name", question.getInstance().getInstanceName());
       }
@@ -668,7 +668,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan getAnswerSpan = GlobalTracer.get().buildSpan("Get answer").startActive()) {
       assert getAnswerSpan != null; // avoid not used warning
       if (question.getDifferential()) {
-        answerElement = Answerer.create(question, this).answerDiff();
+        answerElement =
+            Answerer.create(question, this).answerDiff(getSnapshot(), getReferenceSnapshot());
       } else {
         answerElement = Answerer.create(question, this).answer(getSnapshot());
       }
@@ -745,10 +746,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void checkSnapshotOutputReady() {
-    checkSnapshotOutputReady(peekNetworkSnapshotStack());
-  }
-
   public void checkSnapshotOutputReady(NetworkSnapshot snapshot) {
     TestrigSettings tr = getTestrigSettings(snapshot);
     checkState(
@@ -759,7 +756,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
-    checkSnapshotOutputReady();
+    checkSnapshotOutputReady(snapshot);
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(snapshot);
     saveDataPlane(snapshot, result);
     return result._answerElement;
@@ -1102,10 +1099,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getFlowTag() {
-    if (peekNetworkSnapshotStack().equals(getSnapshot())) {
+  public String getFlowTag(NetworkSnapshot snapshot) {
+    if (snapshot.equals(getSnapshot())) {
       return Flow.BASE_FLOW_TAG;
-    } else if (peekNetworkSnapshotStack().equals(getReferenceSnapshot())) {
+    } else if (snapshot.equals(getReferenceSnapshot())) {
       return Flow.DELTA_FLOW_TAG;
     } else {
       throw new BatfishException("Could not determine flow tag");
@@ -1253,11 +1250,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _terminatingExceptionMessage;
   }
 
-  @Override
-  public SnapshotId getTestrigName() {
-    return peekNetworkSnapshotStack().getSnapshot();
-  }
-
   @Nonnull
   @Override
   public TopologyProvider getTopologyProvider() {
@@ -1397,10 +1389,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
-    return loadEnvironmentBgpTables(peekNetworkSnapshotStack());
-  }
-
   public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(
       NetworkSnapshot snapshot) {
     SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables =
@@ -1863,10 +1851,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
-      Map<String, Configuration> configurations) {
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
-      Set<BgpAdvertisement> currentAdvertisements = plugin.loadExternalBgpAdvertisements();
+      Set<BgpAdvertisement> currentAdvertisements = plugin.loadExternalBgpAdvertisements(snapshot);
       advertSet.addAll(currentAdvertisements);
     }
     return advertSet;
@@ -2355,7 +2343,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.infof(
         "Testrig:%s in container:%s has total number of host configs:%d",
-        getTestrigName(), getContainerName(), allHostConfigurations.size());
+        snapshot.getSnapshot(), snapshot.getNetwork(), allHostConfigurations.size());
 
     // split into hostConfigurations and overlayConfigurations
     SortedMap<String, VendorConfiguration> overlayConfigurations =
@@ -2610,6 +2598,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * #serializeVendorConfigs(NetworkSnapshot, Path, Path)}, so leaving as-is for now.
    */
   private void serializeNetworkConfigs(
+      NetworkSnapshot snapshot,
       Path userUploadPath,
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement,
@@ -2617,7 +2606,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!overlayHostConfigurations.isEmpty()) {
       // Not able to cache with overlays.
       oldSerializeNetworkConfigs(
-          userUploadPath, outputPath, answerElement, overlayHostConfigurations);
+          snapshot, userUploadPath, outputPath, answerElement, overlayHostConfigurations);
       return;
     }
 
@@ -2667,7 +2656,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
-        getTestrigName(), getContainerName(), parseResults.size());
+        snapshot.getSnapshot(), snapshot.getNetwork(), parseResults.size());
 
     /* Assemble answer. */
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
@@ -2703,6 +2692,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void oldSerializeNetworkConfigs(
+      NetworkSnapshot snapshot,
       Path userUploadPath,
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement,
@@ -2722,12 +2712,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       vendorConfigurations =
           parseVendorConfigurations(keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
     }
-    if (vendorConfigurations == null) {
-      throw new BatfishException("Exiting due to parser errors");
-    }
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
-        getTestrigName(), getContainerName(), vendorConfigurations.size());
+        snapshot.getSnapshot(), snapshot.getNetwork(), vendorConfigurations.size());
 
     try (ActiveSpan serializeNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Serialize network configs").startActive()) {
@@ -2821,7 +2808,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // look for network configs in the `configs/` subfolder.
     if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR))) {
-      serializeNetworkConfigs(userUploadPath, outputPath, answerElement, overlayHostConfigurations);
+      serializeNetworkConfigs(
+          snapshot, userUploadPath, outputPath, answerElement, overlayHostConfigurations);
       configsFound = true;
     }
 
@@ -2916,7 +2904,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               params.getFinalNodes(),
               params.getActions());
 
-      String flowTag = getFlowTag();
+      String flowTag = getFlowTag(snapshot);
       Set<Flow> flows =
           reachableBDDs.entrySet().stream()
               .flatMap(
@@ -2963,7 +2951,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               getAllSourcesInferFromLocationIpSpaceAssignment());
       Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
-      String flowTag = getFlowTag();
+      String flowTag = getFlowTag(snapshot);
       try (ActiveSpan span1 =
           GlobalTracer.get().buildSpan("bddLoopDetection.computeResultFlows").startActive()) {
         assert span1 != null; // avoid unused warning
@@ -3041,7 +3029,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               failureDispositions);
 
       return ImmutableSet.copyOf(
-          computeMultipathInconsistencies(pkt, getFlowTag(), successBdds, failureBdds));
+          computeMultipathInconsistencies(pkt, getFlowTag(snapshot), successBdds, failureBdds));
     }
   }
 
@@ -3123,6 +3111,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public DifferentialReachabilityResult bddDifferentialReachability(
+      NetworkSnapshot snapshot,
+      NetworkSnapshot reference,
       DifferentialReachabilityParameters parameters) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("bddDifferentialReachability").startActive()) {
@@ -3144,7 +3134,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
        */
       pushBaseSnapshot();
       Map<IngressLocation, BDD> baseAcceptBDDs =
-          getBddReachabilityAnalysisFactory(getSnapshot(), pkt, parameters.getIgnoreFilters())
+          getBddReachabilityAnalysisFactory(snapshot, pkt, parameters.getIgnoreFilters())
               .getAllBDDs(
                   parameters.getIpSpaceAssignment(),
                   headerSpace,
@@ -3156,8 +3146,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       pushDeltaSnapshot();
       Map<IngressLocation, BDD> deltaAcceptBDDs =
-          getBddReachabilityAnalysisFactory(
-                  getReferenceSnapshot(), pkt, parameters.getIgnoreFilters())
+          getBddReachabilityAnalysisFactory(reference, pkt, parameters.getIgnoreFilters())
               .getAllBDDs(
                   parameters.getIpSpaceAssignment(),
                   headerSpace,

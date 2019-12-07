@@ -32,7 +32,6 @@ import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
-import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityResult;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
@@ -46,6 +45,8 @@ import org.batfish.specifier.SpecifierContext;
 public interface IBatfish extends IPluginConsumer {
 
   DifferentialReachabilityResult bddDifferentialReachability(
+      NetworkSnapshot snapshot,
+      NetworkSnapshot reference,
       DifferentialReachabilityParameters parameters);
 
   /**
@@ -59,7 +60,7 @@ public interface IBatfish extends IPluginConsumer {
   SortedMap<Flow, List<Trace>> buildFlows(
       NetworkSnapshot snapshot, Set<Flow> flows, boolean ignoreFilters);
 
-  void checkSnapshotOutputReady();
+  void checkSnapshotOutputReady(NetworkSnapshot snapshot);
 
   /** Compute the dataplane for the given {@link NetworkSnapshot} */
   DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot);
@@ -79,7 +80,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Environment getEnvironment();
 
-  String getFlowTag();
+  String getFlowTag(NetworkSnapshot snapshot);
 
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);
@@ -120,8 +121,6 @@ public interface IBatfish extends IPluginConsumer {
 
   String getTaskId();
 
-  SnapshotId getTestrigName();
-
   InitInfoAnswerElement initInfo(boolean summary, boolean verboseError);
 
   InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError);
@@ -133,7 +132,7 @@ public interface IBatfish extends IPluginConsumer {
 
   DataPlane loadDataPlane(NetworkSnapshot snapshot);
 
-  SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables();
+  SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot);
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
@@ -141,7 +140,8 @@ public interface IBatfish extends IPluginConsumer {
 
   void popSnapshot();
 
-  Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
+  Set<BgpAdvertisement> loadExternalBgpAnnouncements(
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations);
 
   /** @return a {@link TracerouteEngine} for the given snapshot. */
   TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot);
@@ -184,11 +184,6 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nullable
   String loadQuestionSettings(@Nonnull Question question);
-
-  default @Nonnull BidirectionalReachabilityResult bidirectionalReachability(
-      BDDPacket bddPacket, ReachabilityParameters parameters) {
-    return bidirectionalReachability(peekNetworkSnapshotStack(), bddPacket, parameters);
-  }
 
   /** Performs bidirectional reachability analysis. */
   @Nonnull

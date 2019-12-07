@@ -39,7 +39,7 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
       };
 
   @Override
-  public AnswerElement answerDiff() {
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
     throw new IllegalArgumentException(
         "This question should not be run in differential mode. Instead, consider: "
             + StringUtils.join(DIFFERENTIAL_ALTERNATIVES, ", "));

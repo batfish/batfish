@@ -283,13 +283,13 @@ public class TracerouteEngineTest {
         .build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    NetworkSnapshot snapshot = b.getSnapshot();
     Flow flow =
         Flow.builder()
             .setIngressNode(c.getHostname())
-            .setTag(Flow.BASE_FLOW_TAG)
+            .setTag(b.getFlowTag(snapshot))
             .setDstIp(Ip.parse("1.0.0.1"))
             .build();
-    NetworkSnapshot snapshot = b.getSnapshot();
     b.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(b.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
@@ -330,13 +330,13 @@ public class TracerouteEngineTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    NetworkSnapshot snapshot = b.getSnapshot();
     Flow flow =
         Flow.builder()
             .setIngressNode(c1.getHostname())
-            .setTag(Flow.BASE_FLOW_TAG)
+            .setTag(b.getFlowTag(snapshot))
             .setDstIp(Ip.parse("1.0.0.1"))
             .build();
-    NetworkSnapshot snapshot = b.getSnapshot();
     b.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(b.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));

@@ -63,7 +63,7 @@ public class CompareFiltersAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answerDiff() {
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
     SpecifierContext currentContext = _batfish.specifierContext(_batfish.getSnapshot());
     Multimap<String, String> currentFilters =
         getSpecifiedFilters(

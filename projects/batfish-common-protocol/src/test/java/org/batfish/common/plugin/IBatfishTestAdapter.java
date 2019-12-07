@@ -166,6 +166,8 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public DifferentialReachabilityResult bddDifferentialReachability(
+      NetworkSnapshot snapshot,
+      NetworkSnapshot reference,
       DifferentialReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
@@ -177,7 +179,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void checkSnapshotOutputReady() {
+  public void checkSnapshotOutputReady(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -222,8 +224,14 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getFlowTag() {
-    throw new UnsupportedOperationException();
+  public String getFlowTag(NetworkSnapshot snapshot) {
+    if (snapshot.equals(getSnapshot())) {
+      return Flow.BASE_FLOW_TAG;
+    }
+    if (snapshot.equals(getReferenceSnapshot())) {
+      return Flow.DELTA_FLOW_TAG;
+    }
+    throw new IllegalStateException("Snapshot " + snapshot);
   }
 
   @Override
@@ -261,11 +269,6 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public SnapshotId getTestrigName() {
-    throw new UnsupportedOperationException();
-  }
-
   @Nonnull
   @Override
   public TopologyProvider getTopologyProvider() {
@@ -298,13 +301,14 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
+  public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(
+      NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
-      Map<String, Configuration> configurations) {
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     throw new UnsupportedOperationException();
   }
 

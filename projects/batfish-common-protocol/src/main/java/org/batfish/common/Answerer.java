@@ -54,19 +54,23 @@ public abstract class Answerer {
    * it uses a JSON-level diff.
    *
    * <p>Answerers that want a custom differential answer, should override this function.
+   *
+   * @param snapshot
+   * @param reference
    */
-  public AnswerElement answerDiff() {
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
     _batfish.pushBaseSnapshot();
-    _batfish.checkSnapshotOutputReady();
+    _batfish.checkSnapshotOutputReady(snapshot);
     _batfish.popSnapshot();
     _batfish.pushDeltaSnapshot();
-    _batfish.checkSnapshotOutputReady();
+    _batfish.checkSnapshotOutputReady(reference);
     _batfish.popSnapshot();
+
     _batfish.pushBaseSnapshot();
-    AnswerElement baseAnswer = create(_question, _batfish).answer(_batfish.getSnapshot());
+    AnswerElement baseAnswer = create(_question, _batfish).answer(snapshot);
     _batfish.popSnapshot();
     _batfish.pushDeltaSnapshot();
-    AnswerElement deltaAnswer = create(_question, _batfish).answer(_batfish.getReferenceSnapshot());
+    AnswerElement deltaAnswer = create(_question, _batfish).answer(reference);
     _batfish.popSnapshot();
     if (baseAnswer instanceof TableAnswerElement) {
       TableAnswerElement rawTable =

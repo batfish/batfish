@@ -125,14 +125,12 @@ public class TestFiltersAnswerer extends Answerer {
     IpSpaceAssignment srcIpAssignments =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
                 constraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
-            .resolve(srcLocations, _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
+            .resolve(srcLocations, context);
 
     IpSpace dstIps =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
                 constraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .resolve(
-                ImmutableSet.of(), _batfish.specifierContext(_batfish.peekNetworkSnapshotStack()))
-            .getEntries().stream()
+            .resolve(ImmutableSet.of(), context).getEntries().stream()
             .findFirst()
             .map(Entry::getIpSpace)
             .orElse(UniverseIpSpace.INSTANCE);

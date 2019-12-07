@@ -29,9 +29,4 @@ final class MockBatfish extends IBatfishTestAdapter {
     Configuration config = snapshot.equals(getSnapshot()) ? _baseConfig : _deltaConfig;
     return ImmutableSortedMap.of(config.getHostname(), config);
   }
-
-  @Override
-  public String getFlowTag() {
-    return "flowTag";
-  }
 }

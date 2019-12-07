@@ -113,7 +113,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     SpecifierContext context = _batfish.specifierContext(snapshot);
     SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
     Multiset<Row> rows =
-        getResults(policies)
+        getResults(context, policies)
             .flatMap(this::testPolicy)
             .map(TestRoutePoliciesAnswerer::toRow)
             .collect(ImmutableMultiset.toImmutableMultiset());
@@ -124,9 +124,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   @Nonnull
-  private Stream<RoutingPolicy> getResults(SortedSet<RoutingPolicyId> policies) {
-    Map<String, Configuration> configs =
-        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
+  private Stream<RoutingPolicy> getResults(
+      SpecifierContext context, SortedSet<RoutingPolicyId> policies) {
+    Map<String, Configuration> configs = context.getConfigs();
     return policies.stream()
         .map(
             policyId ->
@@ -178,15 +178,16 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answerDiff() {
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    SpecifierContext context = _batfish.specifierContext(snapshot);
+    SpecifierContext referenceCtx = _batfish.specifierContext(reference);
+
     _batfish.pushBaseSnapshot();
-    SortedSet<RoutingPolicyId> basePolicies =
-        resolvePolicies(_batfish.specifierContext(_batfish.getSnapshot()));
+    SortedSet<RoutingPolicyId> basePolicies = resolvePolicies(context);
     _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
-    SortedSet<RoutingPolicyId> deltaPolicies =
-        resolvePolicies(_batfish.specifierContext(_batfish.getReferenceSnapshot()));
+    SortedSet<RoutingPolicyId> deltaPolicies = resolvePolicies(referenceCtx);
     _batfish.popSnapshot();
 
     SortedSet<RoutingPolicyId> policies =
@@ -195,13 +196,13 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     _batfish.pushBaseSnapshot();
     Map<Result.Key, Result> baseResults =
-        getResults(policies)
+        getResults(context, policies)
             .flatMap(this::testPolicy)
             .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
     _batfish.popSnapshot();
     _batfish.pushDeltaSnapshot();
     Map<Result.Key, Result> deltaResults =
-        getResults(policies)
+        getResults(referenceCtx, policies)
             .flatMap(this::testPolicy)
             .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
     _batfish.popSnapshot();
