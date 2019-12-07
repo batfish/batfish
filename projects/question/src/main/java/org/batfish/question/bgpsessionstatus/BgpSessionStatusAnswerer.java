@@ -6,6 +6,7 @@ import static org.batfish.datamodel.questions.BgpSessionStatus.NOT_COMPATIBLE;
 import static org.batfish.datamodel.questions.BgpSessionStatus.NOT_ESTABLISHED;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_ADDRESS_FAMILIES;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
@@ -47,6 +48,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
@@ -96,6 +98,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
               "Remote IP or prefix for this session",
               true,
               false),
+          new ColumnMetadata(
+              COL_ADDRESS_FAMILIES,
+              Schema.set(Schema.STRING),
+              "Address Families participating in this session",
+              false,
+              true),
           new ColumnMetadata(
               COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
           new ColumnMetadata(
@@ -192,6 +200,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Node remoteNode = null;
     Long localAs = activePeer.getLocalAs();
     String remoteAs = activePeer.getRemoteAsns().toString();
+    Set<Type> addressFamilies = ImmutableSet.of();
     if (establishedTopology.nodes().contains(activeId)
         && establishedTopology.outDegree(activeId) == 1) {
       status = ESTABLISHED;
@@ -205,6 +214,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
       remoteNode = new Node(remoteNodeName);
       localAs = getLocalAs(establishedTopology, activeId, remoteId, activePeer);
       remoteAs = getRemoteAs(establishedTopology, activeId, remoteId, activePeer);
+      addressFamilies = getAddressFamilies(establishedTopology, activeId, remoteId);
+
     } else if (getConfiguredStatus(activeId, activePeer, type, ipVrfOwners, configuredTopology)
         == UNIQUE_MATCH) {
       status = NOT_ESTABLISHED;
@@ -214,9 +225,11 @@ public class BgpSessionStatusAnswerer extends Answerer {
       remoteNode = new Node(remoteNodeName);
       localAs = getLocalAs(configuredTopology, activeId, remoteId, activePeer);
       remoteAs = getRemoteAs(configuredTopology, activeId, remoteId, activePeer);
+      addressFamilies = getAddressFamilies(configuredTopology, activeId, remoteId);
     }
     return Row.builder(METADATA_MAP)
         .put(COL_ESTABLISHED_STATUS, status)
+        .put(COL_ADDRESS_FAMILIES, addressFamilies)
         .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, localAs)
         .put(COL_LOCAL_IP, activePeer.getLocalIp())
@@ -240,6 +253,17 @@ public class BgpSessionStatusAnswerer extends Answerer {
         .edgeValue(local, remote)
         .map(BgpSessionProperties::getTailAs)
         .orElse(activePeer.getLocalAs());
+  }
+
+  @Nonnull
+  private static Set<Type> getAddressFamilies(
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> topology,
+      BgpPeerConfigId local,
+      BgpPeerConfigId remote) {
+    return topology
+        .edgeValue(local, remote)
+        .map(BgpSessionProperties::getAddressFamilies)
+        .orElse(ImmutableSet.of());
   }
 
   @Nonnull
@@ -271,6 +295,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     // Local and remote interface will not be filled in (reserved for unnumbered peers).
     Row.TypedRowBuilder rb =
         Row.builder(METADATA_MAP)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_LOCAL_AS, passivePeer.getLocalAs())
             .put(COL_LOCAL_IP, passivePeer.getLocalIp())
             .put(COL_NODE, new Node(passiveId.getHostname()))
@@ -312,6 +337,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
               BgpSessionStatus status =
                   establishedRemotes.contains(remoteId) ? ESTABLISHED : NOT_ESTABLISHED;
               return rb.put(COL_ESTABLISHED_STATUS, status)
+                  .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
                   .put(COL_LOCAL_IP, sessionProps.getTailIp())
                   .put(COL_LOCAL_AS, sessionProps.getTailAs())
                   .put(COL_REMOTE_AS, Long.toString(sessionProps.getHeadAs()))
@@ -334,18 +360,21 @@ public class BgpSessionStatusAnswerer extends Answerer {
     BgpPeerConfigId remoteId = null;
     Long localAs = unnumPeer.getLocalAs();
     String remoteAs = unnumPeer.getRemoteAsns().toString();
+    Set<Type> addressFamilies = ImmutableSet.of();
     if (establishedTopology.nodes().contains(unnumId)
         && establishedTopology.outDegree(unnumId) == 1) {
       status = ESTABLISHED;
       remoteId = establishedTopology.adjacentNodes(unnumId).iterator().next();
       localAs = getLocalAs(establishedTopology, unnumId, remoteId, unnumPeer);
       remoteAs = getRemoteAs(establishedTopology, unnumId, remoteId, unnumPeer);
+      addressFamilies = getAddressFamilies(establishedTopology, unnumId, remoteId);
 
     } else if (getConfiguredStatus(unnumId, unnumPeer, configuredTopology) == UNIQUE_MATCH) {
       status = NOT_ESTABLISHED;
       remoteId = configuredTopology.adjacentNodes(unnumId).iterator().next();
       localAs = getLocalAs(configuredTopology, unnumId, remoteId, unnumPeer);
       remoteAs = getRemoteAs(configuredTopology, unnumId, remoteId, unnumPeer);
+      addressFamilies = getAddressFamilies(configuredTopology, unnumId, remoteId);
     }
 
     // If there's enough info to identify a remote peer, get remote node and interface
@@ -358,6 +387,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
     return Row.builder(METADATA_MAP)
         .put(COL_ESTABLISHED_STATUS, status)
+        .put(COL_ADDRESS_FAMILIES, addressFamilies)
         .put(
             COL_LOCAL_INTERFACE,
             NodeInterfacePair.of(unnumId.getHostname(), unnumPeer.getPeerInterface()))
