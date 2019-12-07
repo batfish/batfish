@@ -11,7 +11,6 @@ import org.batfish.common.BatfishException;
 public enum Command {
   ADD_BATFISH_OPTION("add-batfish-option"),
   ANSWER("answer"),
-  ANSWER_REFERENCE("answer-reference"),
   AUTOCOMPLETE("autocomplete"),
   CHECK_API_KEY("checkapikey"),
   CONFIGURE_TEMPLATE("configure-template"),
@@ -25,7 +24,6 @@ public enum Command {
   DEL_SNAPSHOT("del-snapshot"),
   EXIT("exit"),
   GEN_DP("generate-dataplane"),
-  GEN_REFERENCE_DP("generate-reference-dataplane"),
   GET("get"),
   GET_ANSWER("get-answer"),
   GET_ANSWER_DIFFERENTIAL("get-answer-differential"),
@@ -35,7 +33,6 @@ public enum Command {
   GET_OBJECT("get-object"),
   GET_OBJECT_REFERENCE("get-reference-object"),
   GET_QUESTION_TEMPLATES("get-question-templates"),
-  GET_REFERENCE("get-reference"),
   GET_WORK_STATUS("get-work-status"),
   HELP("help"),
   INIT_NETWORK("init-network"),
@@ -123,11 +120,6 @@ public enum Command {
             "<template-name> [differential={true,false}] [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the current snapshot"));
     descs.put(
-        ANSWER_REFERENCE,
-        new CommandUsage(
-            "<template-name> [differential={true,false}] [questionName=name] [param1=value1 [param2=value2] ...]",
-            "Answer the template by name for the reference snapshot"));
-    descs.put(
         AUTOCOMPLETE,
         new CommandUsage(
             "[-maxSuggestions] <completion-type> <query>",
@@ -146,8 +138,6 @@ public enum Command {
     descs.put(DEL_SNAPSHOT, new CommandUsage("<snapshot-name>", "Delete the specified snapshot"));
     descs.put(EXIT, new CommandUsage("", "Terminate interactive client session"));
     descs.put(GEN_DP, new CommandUsage("", "Generate dataplane for the current snapshot"));
-    descs.put(
-        GEN_REFERENCE_DP, new CommandUsage("", "Generate dataplane for the reference snapshot"));
     descs.put(
         GET,
         new CommandUsage(
@@ -174,11 +164,6 @@ public enum Command {
         new CommandUsage("<object path>", "Get the object from reference snapshot"));
     descs.put(
         GET_QUESTION_TEMPLATES, new CommandUsage("", "Get question templates from coordinator"));
-    descs.put(
-        GET_REFERENCE,
-        new CommandUsage(
-            "<question-file>  [param1=value1 [param2=value2] ...]",
-            "Answer the question by type for the reference snapshot"));
     descs.put(
         GET_WORK_STATUS, new CommandUsage("<work-id>", "Get the status of the specified work id"));
     descs.put(HELP, new CommandUsage("[command]", "Print the list of supported commands"));

@@ -249,7 +249,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Pattern.compile("(\\Amgmt)|(\\Amanagement)", CASE_INSENSITIVE);
 
   /** The name of the [optional] topology file within a test-rig */
-  public static void applyBaseDir(TestrigSettings settings, Path containerDir, SnapshotId testrig) {
+  private static void applyBaseDir(
+      TestrigSettings settings, Path containerDir, SnapshotId testrig) {
     Path testrigDir =
         containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
     settings.setName(testrig);
@@ -346,7 +347,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public static void initTestrigSettings(Settings settings) {
+  public static void initSettings(Settings settings) {
     SnapshotId testrig = settings.getTestrig();
     Path containerDir = settings.getStorageBase().resolve(settings.getContainer().getId());
     if (testrig != null) {
@@ -356,7 +357,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (deltaTestrig != null) {
         applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig);
       }
-      if (settings.getDiffActive()) {
+      if (false) {
         settings.setActiveTestrigSettings(settings.getDeltaTestrigSettings());
       } else {
         settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
@@ -639,8 +640,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     boolean dp = question.getDataPlane();
     boolean diff = question.getDifferential();
-    boolean diffActive = _settings.getDiffActive() && !diff;
-    _settings.setDiffActive(diffActive);
     _settings.setDiffQuestion(diff);
 
     // Ensures configurations are parsed and ready
@@ -650,7 +649,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan initQuestionEnvSpan =
         GlobalTracer.get().buildSpan("Init question environment").startActive()) {
       assert initQuestionEnvSpan != null; // avoid not used warning
-      prepareToAnswerQuestions(diff, diffActive, dp);
+      prepareToAnswerQuestions(diff, dp);
     }
 
     AnswerElement answerElement = null;
@@ -1292,13 +1291,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void prepareToAnswerQuestions(boolean diff, boolean diffActive, boolean dp) {
-    if (diff || !diffActive) {
-      pushBaseSnapshot();
-      prepareToAnswerQuestions(getSnapshot(), dp);
-      popSnapshot();
-    }
-    if (diff || diffActive) {
+  private void prepareToAnswerQuestions(boolean diff, boolean dp) {
+    pushBaseSnapshot();
+    prepareToAnswerQuestions(getSnapshot(), dp);
+    popSnapshot();
+    if (diff) {
       pushDeltaSnapshot();
       prepareToAnswerQuestions(getReferenceSnapshot(), dp);
       popSnapshot();

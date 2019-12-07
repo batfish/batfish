@@ -246,10 +246,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _deltaTestrigSettings;
   }
 
-  public boolean getDiffActive() {
-    return _config.getBoolean(BfConsts.ARG_DIFF_ACTIVE);
-  }
-
   public boolean getDifferential() {
     return _config.getBoolean(BfConsts.ARG_DIFFERENTIAL);
   }
@@ -537,7 +533,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
-    setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
@@ -658,10 +653,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addListOption(ARG_DEBUG_FLAGS, "a list of flags to enable debugging code", "debug flags");
 
     addOption(BfConsts.ARG_DELTA_TESTRIG, "name of delta testrig", ARGNAME_NAME);
-
-    addBooleanOption(
-        BfConsts.ARG_DIFF_ACTIVE,
-        "make differential snapshot the active one for questions about a single snapshot");
 
     addBooleanOption(
         BfConsts.ARG_DIFFERENTIAL,
@@ -837,6 +828,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     for (String deprecatedStringArg :
         new String[] {
           "deltaenv",
+          "diffactive",
           "enable_cisco_nx_parser",
           "env",
           "flattenonthefly",
@@ -891,7 +883,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
     getStringListOptionValue(ARG_DEBUG_FLAGS);
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
-    getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
     getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
@@ -968,10 +959,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setDeltaTestrig(SnapshotId testrig) {
     _config.setProperty(BfConsts.ARG_DELTA_TESTRIG, testrig != null ? testrig.getId() : null);
-  }
-
-  public void setDiffActive(boolean diffActive) {
-    _config.setProperty(BfConsts.ARG_DIFF_ACTIVE, diffActive);
   }
 
   public void setDiffQuestion(boolean diffQuestion) {

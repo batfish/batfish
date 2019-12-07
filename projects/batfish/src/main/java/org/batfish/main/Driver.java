@@ -389,7 +389,7 @@ public class Driver {
   private static void mainRunWorker() {
     if (_mainSettings.canExecute()) {
       _mainSettings.setLogger(_mainLogger);
-      Batfish.initTestrigSettings(_mainSettings);
+      Batfish.initSettings(_mainSettings);
       if (runBatfish(_mainSettings) != null) {
         System.exit(1);
       }
@@ -645,7 +645,7 @@ public class Driver {
     }
 
     try {
-      Batfish.initTestrigSettings(settings);
+      Batfish.initSettings(settings);
     } catch (Exception e) {
       return Arrays.asList(
           "failure",

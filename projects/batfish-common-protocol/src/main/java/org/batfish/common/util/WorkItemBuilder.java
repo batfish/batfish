@@ -10,10 +10,9 @@ public class WorkItemBuilder {
       String containerName,
       String testrigName,
       String deltaTestrig,
-      boolean isDifferential,
-      boolean isDelta) {
+      boolean isDifferential) {
     return getWorkItemAnswerQuestion(
-        questionName, containerName, testrigName, deltaTestrig, null, isDifferential, isDelta);
+        questionName, containerName, testrigName, deltaTestrig, null, isDifferential);
   }
 
   public static WorkItem getWorkItemAnswerQuestion(
@@ -22,8 +21,7 @@ public class WorkItemBuilder {
       String testrigName,
       String deltaTestrig,
       String analysisName,
-      boolean isDifferential,
-      boolean isDelta) {
+      boolean isDifferential) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
     wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
@@ -32,9 +30,6 @@ public class WorkItemBuilder {
     }
     if (deltaTestrig != null) {
       wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
-    }
-    if (isDelta) {
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
     }
     if (analysisName != null) {
       wItem.addRequestParam(BfConsts.ARG_ANALYSIS_NAME, analysisName);
@@ -48,15 +43,6 @@ public class WorkItemBuilder {
     return wItem;
   }
 
-  public static WorkItem getWorkItemGenerateDeltaDataPlane(
-      String containerName, String testrigName, String deltaTestrigName) {
-    WorkItem wItem = new WorkItem(containerName, testrigName);
-    wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-    wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrigName);
-    wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-    return wItem;
-  }
-
   public static WorkItem getWorkItemParse(String containerName, String testrigName) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
@@ -67,25 +53,11 @@ public class WorkItemBuilder {
   }
 
   public static WorkItem getWorkItemRunAnalysis(
-      String analysisName,
-      String containerName,
-      String testrigName,
-      String deltaTestrig,
-      boolean delta,
-      boolean differential) {
+      String analysisName, String containerName, String testrigName) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_ANALYZE, "");
     wItem.addRequestParam(BfConsts.ARG_ANALYSIS_NAME, analysisName);
     wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
-    if (differential || delta) {
-      wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
-    }
-    if (delta) {
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-    }
-    if (differential) {
-      wItem.addRequestParam(BfConsts.ARG_DIFFERENTIAL, "");
-    }
     return wItem;
   }
 
