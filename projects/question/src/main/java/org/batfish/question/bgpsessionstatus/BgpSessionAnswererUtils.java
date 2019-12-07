@@ -31,6 +31,7 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 public final class BgpSessionAnswererUtils {
 
   /* Common column names for both BGP session questions*/
+  public static final String COL_ADDRESS_FAMILIES = "Address_Families";
   public static final String COL_LOCAL_INTERFACE = "Local_Interface";
   public static final String COL_LOCAL_AS = "Local_AS";
   public static final String COL_LOCAL_IP = "Local_IP";
