@@ -352,6 +352,35 @@
               "subnet-1f315846",
               "subnet-9c8adceb",
               "subnet-d9cafabc"
+            ],
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.31.0.0/20",
+                "nextHopInterface" : "subnet-1f315846",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.31.16.0/20",
+                "nextHopInterface" : "subnet-d9cafabc",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.31.32.0/20",
+                "nextHopInterface" : "subnet-9c8adceb",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
             ]
           }
         }
@@ -597,6 +626,53 @@
               "subnet-30398256",
               "subnet-7044ff16",
               "subnet-f73a8191"
+            ],
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.1.0/24",
+                "nextHopInterface" : "subnet-1641fa70",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.2.0/28",
+                "nextHopInterface" : "subnet-7044ff16",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.2.16/28",
+                "nextHopInterface" : "subnet-073b8061",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.2.32/28",
+                "nextHopInterface" : "subnet-30398256",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.2.48/28",
+                "nextHopInterface" : "subnet-f73a8191",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
             ]
           }
         }
@@ -773,6 +849,26 @@
               "backbone",
               "subnet-62f14104",
               "subnet-8d0cbdeb"
+            ],
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.0.0.0/24",
+                "nextHopInterface" : "subnet-62f14104",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.0.1.0/24",
+                "nextHopInterface" : "subnet-8d0cbdeb",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
             ]
           }
         }
