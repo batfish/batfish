@@ -112,7 +112,8 @@ public class UndefinedReferencesAnswererTest {
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+        NetworkSnapshot snapshot) {
       ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
       ccae.setUndefinedReferences(BASIC_UNDEFINED_REFS_MAP);
       return ccae;

@@ -291,7 +291,8 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+      NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 

@@ -1088,7 +1088,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
       Path inputPath, ParseEnvironmentBgpTablesAnswerElement answerElement) {
-    if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
+    if (!Files.exists(inputPath)) {
       return new TreeMap<>();
     }
     _logger.info("\n*** READING Environment BGP Tables ***\n");
@@ -1349,10 +1349,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
-    return loadConvertConfigurationAnswerElementOrReparse(peekNetworkSnapshotStack());
-  }
-
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
       NetworkSnapshot snapshot) {
     ConvertConfigurationAnswerElement ccae =

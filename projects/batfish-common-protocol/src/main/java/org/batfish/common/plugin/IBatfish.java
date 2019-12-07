@@ -128,7 +128,12 @@ public interface IBatfish extends IPluginConsumer {
   /** Returns the configurations for given snapshot. */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);
 
-  ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse();
+  default ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    return loadConvertConfigurationAnswerElementOrReparse(peekNetworkSnapshotStack());
+  }
+
+  ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+      NetworkSnapshot snapshot);
 
   DataPlane loadDataPlane(NetworkSnapshot snapshot);
 

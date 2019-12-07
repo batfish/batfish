@@ -21,6 +21,7 @@ import java.util.SortedMap;
 import javax.annotation.Nullable;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.ErrorDetails.ParseExceptionContext;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfish;
@@ -369,7 +370,8 @@ public class InitIssuesAnswererTest {
     }
 
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+        NetworkSnapshot snapshot) {
       return _ccae;
     }
   }

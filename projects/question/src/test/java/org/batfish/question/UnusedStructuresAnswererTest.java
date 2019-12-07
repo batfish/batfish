@@ -105,7 +105,8 @@ public class UnusedStructuresAnswererTest {
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+        NetworkSnapshot snapshot) {
       ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
       ccae.setDefinedStructures(BASIC_DEFINED_STRUCTS_MAP);
       return ccae;
