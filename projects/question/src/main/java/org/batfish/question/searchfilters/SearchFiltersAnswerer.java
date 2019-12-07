@@ -167,12 +167,12 @@ public final class SearchFiltersAnswerer extends Answerer {
                   baseTable.addRow(
                       toSearchFiltersRow(
                           description,
-                          testFiltersRow(true, node, aclName, flow),
+                          testFiltersRow(snapshot, node, aclName, flow),
                           question.getGenerateExplanations()));
                   deltaTable.addRow(
                       toSearchFiltersRow(
                           description,
-                          testFiltersRow(false, node, aclName, flow),
+                          testFiltersRow(reference, node, aclName, flow),
                           question.getGenerateExplanations()));
                 });
       }
@@ -260,7 +260,7 @@ public final class SearchFiltersAnswerer extends Answerer {
               rows.add(
                   toSearchFiltersRow(
                       result.getHeaderSpaceDescription().orElse(null),
-                      testFiltersRow(true, hostname, aclname, result.getExampleFlow()),
+                      testFiltersRow(snapshot, hostname, aclname, result.getExampleFlow()),
                       question.getGenerateExplanations())));
     }
 
@@ -368,8 +368,7 @@ public final class SearchFiltersAnswerer extends Answerer {
         .build();
   }
 
-  private Row testFiltersRow(boolean base, String hostname, String aclName, Flow flow) {
-    NetworkSnapshot snapshot = base ? _batfish.getSnapshot() : _batfish.getReferenceSnapshot();
+  private Row testFiltersRow(NetworkSnapshot snapshot, String hostname, String aclName, Flow flow) {
     Configuration c = _batfish.loadConfigurations(snapshot).get(hostname);
     Row row = TestFiltersAnswerer.getRow(c.getIpAccessLists().get(aclName), flow, c);
     return row;
