@@ -31,7 +31,7 @@ class FileParseStatusAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ParseVendorConfigurationAnswerElement pvcae =
-        _batfish.loadParseVendorConfigurationAnswerElement();
+        _batfish.loadParseVendorConfigurationAnswerElement(snapshot);
     ConvertConfigurationAnswerElement ccae =
         _batfish.loadConvertConfigurationAnswerElementOrReparse();
 

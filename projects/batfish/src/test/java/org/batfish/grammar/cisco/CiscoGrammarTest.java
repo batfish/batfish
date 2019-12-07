@@ -785,7 +785,7 @@ public final class CiscoGrammarTest {
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement();
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
         pvcae.getWarnings().get("configs/" + iosName).getParseWarnings(),
         contains(

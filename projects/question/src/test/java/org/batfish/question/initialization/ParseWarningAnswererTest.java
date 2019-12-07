@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -122,7 +123,8 @@ public class ParseWarningAnswererTest {
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+        NetworkSnapshot snapshot) {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       Warnings warnings = new Warnings();
       warnings.getParseWarnings().add(new ParseWarning(3, "text", "ctx", "comment"));

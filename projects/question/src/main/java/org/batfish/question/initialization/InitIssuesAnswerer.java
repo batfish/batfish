@@ -47,7 +47,7 @@ public class InitIssuesAnswerer extends Answerer {
     ConvertConfigurationAnswerElement ccae =
         _batfish.loadConvertConfigurationAnswerElementOrReparse();
     ParseVendorConfigurationAnswerElement pvcae =
-        _batfish.loadParseVendorConfigurationAnswerElement();
+        _batfish.loadParseVendorConfigurationAnswerElement(snapshot);
 
     Rows rows = new Rows();
 

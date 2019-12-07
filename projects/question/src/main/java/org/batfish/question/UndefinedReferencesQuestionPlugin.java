@@ -58,7 +58,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       Set<String> includeNodes =
           question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
       Multimap<String, String> hostnameFilenameMap =
-          _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
+          _batfish.loadParseVendorConfigurationAnswerElement(snapshot).getFileMap();
       Set<String> includeFiles =
           hostnameFilenameMap.entries().stream()
               .filter(e -> includeNodes.contains(e.getKey()))

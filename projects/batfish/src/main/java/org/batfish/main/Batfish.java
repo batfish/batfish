@@ -1263,7 +1263,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
-    ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
+    ParseVendorConfigurationAnswerElement parseAnswer =
+        loadParseVendorConfigurationAnswerElement(peekNetworkSnapshotStack());
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
     mergeConvertAnswer(summary, verboseError, answerElement);
     _logger.info(answerElement.toString());
@@ -1432,10 +1433,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
-    return loadParseVendorConfigurationAnswerElement(peekNetworkSnapshotStack());
-  }
-
   public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
       NetworkSnapshot snapshot) {
     return loadParseVendorConfigurationAnswerElement(snapshot, true);
@@ -2054,7 +2051,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void repairConfigurations(NetworkSnapshot snapshot) {
     // Needed to ensure vendor configs are written
-    loadParseVendorConfigurationAnswerElement();
+    loadParseVendorConfigurationAnswerElement(snapshot);
     Path inputPath = getTestrigSettings(snapshot).getSerializeVendorPath();
     serializeIndependentConfigs(inputPath);
   }

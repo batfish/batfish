@@ -69,7 +69,8 @@ public class FileParseStatusAnswererTest {
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+        NetworkSnapshot snapshot) {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       pvcae.setFileMap(ImmutableMultimap.of("h", "f"));
       pvcae.setParseStatus(ImmutableSortedMap.of("f", ParseStatus.PASSED));

@@ -314,7 +314,8 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 

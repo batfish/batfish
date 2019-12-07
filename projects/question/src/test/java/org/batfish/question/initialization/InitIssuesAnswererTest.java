@@ -365,7 +365,8 @@ public class InitIssuesAnswererTest {
     }
 
     @Override
-    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+        NetworkSnapshot snapshot) {
       return _pvcae;
     }
 

@@ -45,7 +45,7 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
       // ParseTreesQuestion question = (ParseTreesQuestion) _question;
       ParseTreesAnswerElement answerElement = new ParseTreesAnswerElement();
       ParseVendorConfigurationAnswerElement parseAnswer =
-          _batfish.loadParseVendorConfigurationAnswerElement();
+          _batfish.loadParseVendorConfigurationAnswerElement(snapshot);
       answerElement._parseTrees = parseAnswer.getParseTrees();
       return answerElement;
     }

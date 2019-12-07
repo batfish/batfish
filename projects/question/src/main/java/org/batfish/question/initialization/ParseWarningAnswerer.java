@@ -34,7 +34,7 @@ class ParseWarningAnswerer extends Answerer {
     Map<String, ColumnMetadata> columnMetadataMap = metadata.toColumnMap();
 
     ParseVendorConfigurationAnswerElement pvcae =
-        _batfish.loadParseVendorConfigurationAnswerElement();
+        _batfish.loadParseVendorConfigurationAnswerElement(snapshot);
 
     Map<String, Warnings> fileWarnings = pvcae.getWarnings();
 

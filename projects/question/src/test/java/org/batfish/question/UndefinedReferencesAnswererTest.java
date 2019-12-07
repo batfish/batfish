@@ -120,7 +120,8 @@ public class UndefinedReferencesAnswererTest {
     }
 
     @Override
-    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+        NetworkSnapshot snapshot) {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       pvcae.setFileMap(ImmutableMultimap.of("h", "f", "h2", "f2"));
       return pvcae;

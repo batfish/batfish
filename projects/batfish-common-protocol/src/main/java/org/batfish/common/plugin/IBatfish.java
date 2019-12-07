@@ -139,7 +139,8 @@ public interface IBatfish extends IPluginConsumer {
 
   SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot);
 
-  ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
+  ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot);
 
   AtomicInteger newBatch(String description, int jobs);
 
