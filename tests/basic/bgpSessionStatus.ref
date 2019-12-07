@@ -67,6 +67,13 @@
           "schema" : "SelfDescribing"
         },
         {
+          "description" : "Address Families participating in this session",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Address_Families",
+          "schema" : "Set<String>"
+        },
+        {
           "description" : "The type of this session",
           "isKey" : false,
           "isValue" : false,
@@ -86,6 +93,9 @@
     "rows" : [
       {
         "Established_Status" : "ESTABLISHED",
+        "Address_Families" : [
+          "IPV4_UNICAST"
+        ],
         "Local_Interface" : null,
         "Local_AS" : 2,
         "Local_IP" : "10.23.21.2",
