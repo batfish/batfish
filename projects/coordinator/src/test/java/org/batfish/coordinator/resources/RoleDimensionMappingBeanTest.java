@@ -17,15 +17,12 @@ public class RoleDimensionMappingBeanTest {
     String regex = "(.*)";
     List<Integer> groups = ImmutableList.of(3, 4, 1);
     Map<String, String> canonicalRoleNames = ImmutableMap.of("baz", "bar", "bar", "foo");
-    boolean caseSensitive = true;
-    RoleDimensionMapping rdMap =
-        new RoleDimensionMapping(regex, groups, canonicalRoleNames, caseSensitive);
+    RoleDimensionMapping rdMap = new RoleDimensionMapping(regex, groups, canonicalRoleNames);
     RoleDimensionMappingBean bean = new RoleDimensionMappingBean(rdMap);
 
     assertThat(bean.regex, equalTo(regex));
     assertThat(bean.groups, equalTo(groups));
     assertThat(bean.canonicalRoleNames, equalTo(canonicalRoleNames));
-    assertThat(bean.caseSensitive, equalTo(caseSensitive));
   }
 
   @Test
@@ -33,9 +30,7 @@ public class RoleDimensionMappingBeanTest {
     String regex = "(.*)";
     List<Integer> groups = ImmutableList.of(3, 4, 1);
     Map<String, String> canonicalRoleNames = ImmutableMap.of("baz", "bar", "bar", "foo");
-    boolean caseSensitive = true;
-    RoleDimensionMapping rdMap =
-        new RoleDimensionMapping(regex, groups, canonicalRoleNames, caseSensitive);
+    RoleDimensionMapping rdMap = new RoleDimensionMapping(regex, groups, canonicalRoleNames);
     RoleDimensionMappingBean bean = new RoleDimensionMappingBean(rdMap);
 
     assertThat(bean.toRoleDimensionMapping(), equalTo(rdMap));

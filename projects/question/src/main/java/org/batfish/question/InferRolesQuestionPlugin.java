@@ -3,12 +3,8 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -17,35 +13,25 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.InferRoles;
-import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.RoleMapping;
 
 @AutoService(Plugin.class)
 public class InferRolesQuestionPlugin extends QuestionPlugin {
 
   public static class InferRolesAnswerElement extends AnswerElement {
-    private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
-    private static final String PROP_MATCHING_NODES_COUNT = "matchingNodesCount";
+    private static final String PROP_ROLE_MAPPING = "roleMapping";
 
-    @Nonnull private final SortedSet<NodeRoleDimension> _roleDimensions;
-
-    @Nonnull private final SortedMap<String, Integer> _matchingNodesCount;
+    @Nonnull private final Optional<RoleMapping> _roleMapping;
 
     @JsonCreator
     public InferRolesAnswerElement(
-        @JsonProperty(PROP_ROLE_DIMENSIONS) SortedSet<NodeRoleDimension> roleDimensions,
-        @JsonProperty(PROP_MATCHING_NODES_COUNT) SortedMap<String, Integer> matchingNodesCount) {
-      _roleDimensions = roleDimensions == null ? new TreeSet<>() : roleDimensions;
-      _matchingNodesCount = matchingNodesCount == null ? new TreeMap<>() : matchingNodesCount;
+        @JsonProperty(PROP_ROLE_MAPPING) Optional<RoleMapping> roleMapping) {
+      _roleMapping = roleMapping;
     }
 
-    @JsonProperty(PROP_MATCHING_NODES_COUNT)
-    public SortedMap<String, Integer> getMatchingNodesCount() {
-      return _matchingNodesCount;
-    }
-
-    @JsonProperty(PROP_ROLE_DIMENSIONS)
-    public SortedSet<NodeRoleDimension> getRoleDimensions() {
-      return _roleDimensions;
+    @JsonProperty(PROP_ROLE_MAPPING)
+    public Optional<RoleMapping> getRoleDimensions() {
+      return _roleMapping;
     }
   }
 
@@ -59,31 +45,18 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     public InferRolesAnswerElement answer() {
 
       InferRolesQuestion question = (InferRolesQuestion) _question;
-      InferRolesAnswerElement answerElement = new InferRolesAnswerElement(null, null);
 
       // collect relevant nodes in a list.
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      List<NodeRoleDimension> roleDimensions =
+      Optional<RoleMapping> roleMapping =
           new InferRoles(
                   nodes,
                   _batfish
                       .getTopologyProvider()
-                      .getInitialLayer3Topology(_batfish.getNetworkSnapshot()),
-                  question.getCaseSensitive())
+                      .getInitialLayer3Topology(_batfish.getNetworkSnapshot()))
               .inferRoles();
-      answerElement.getRoleDimensions().addAll(roleDimensions);
-
-      for (NodeRoleDimension dimension : roleDimensions) {
-        SortedMap<String, SortedSet<String>> roleNodesMap = dimension.createRoleNodesMap(nodes);
-        SortedSet<String> matchingNodes = new TreeSet<>();
-        for (SortedSet<String> nodeSet : roleNodesMap.values()) {
-          matchingNodes.addAll(nodeSet);
-        }
-
-        answerElement.getMatchingNodesCount().put(dimension.getName(), matchingNodes.size());
-      }
-      return answerElement;
+      return new InferRolesAnswerElement(roleMapping);
     }
   }
 
@@ -94,15 +67,11 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
    */
   public static final class InferRolesQuestion extends Question {
     private static final String PROP_NODE_REGEX = "nodeRegex";
-    private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
     private NodesSpecifier _nodeRegex;
 
-    private boolean _caseSensitive;
-
     public InferRolesQuestion() {
       _nodeRegex = NodesSpecifier.ALL;
-      _caseSensitive = false;
     }
 
     @Override
@@ -123,16 +92,6 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
-    }
-
-    @JsonProperty(PROP_CASE_SENSITIVE)
-    public boolean getCaseSensitive() {
-      return _caseSensitive;
-    }
-
-    @JsonProperty(PROP_CASE_SENSITIVE)
-    public void setCaseSensitive(boolean caseSensitive) {
-      _caseSensitive = caseSensitive;
     }
   }
 
