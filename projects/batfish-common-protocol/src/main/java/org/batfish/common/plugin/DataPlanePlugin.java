@@ -59,17 +59,8 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   public abstract ComputeDataPlaneResult computeDataPlane();
 
-  /** @deprecated in favor of {@link #computeDataPlane()} */
-  @Deprecated
-  public abstract ComputeDataPlaneResult computeDataPlane(boolean differentialContext);
-
   public abstract ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations, Topology topology);
-
-  /** @deprecated in favor of {@link #computeDataPlane(Map, Topology)} */
-  @Deprecated
-  public abstract ComputeDataPlaneResult computeDataPlane(
-      boolean differentialContext, Map<String, Configuration> configurations, Topology topology);
 
   protected void dataPlanePluginInitialize() {}
 

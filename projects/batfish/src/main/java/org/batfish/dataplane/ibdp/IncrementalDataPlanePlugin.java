@@ -34,12 +34,6 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  @Deprecated
-  public ComputeDataPlaneResult computeDataPlane(boolean differentialContext) {
-    return computeDataPlane();
-  }
-
-  @Override
   public ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations, Topology topology) {
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
@@ -71,13 +65,6 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         ((IncrementalBdpAnswerElement) answer._answerElement).getDependentRoutesIterations(),
         averageRoutes);
     return answer;
-  }
-
-  @Override
-  @Deprecated
-  public ComputeDataPlaneResult computeDataPlane(
-      boolean differentialContext, Map<String, Configuration> configurations, Topology topology) {
-    return computeDataPlane(configurations, topology);
   }
 
   @Override
