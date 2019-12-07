@@ -1,5 +1,6 @@
 package org.batfish.question.routes;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableSortedMap.toImmutableSortedMap;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
@@ -489,7 +490,8 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public DataPlane loadDataPlane() {
+    public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
+      checkArgument(snapshot.equals(getSnapshot()));
       return _dp;
     }
 

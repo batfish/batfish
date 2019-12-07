@@ -425,7 +425,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   public void testGetAllBDDsLoop() throws IOException {
     SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(true);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
@@ -435,7 +435,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setHeaderSpace(new HeaderSpace())
             .build();
 
-    AnswerElement answer = batfish.bddSingleReachability(reachabilityParameters);
+    AnswerElement answer =
+        batfish.bddSingleReachability(batfish.getSnapshot(), reachabilityParameters);
 
     assertThat(answer, instanceOf(TraceWrapperAsAnswerElement.class));
     Map<Flow, List<Trace>> flowTraces = ((TraceWrapperAsAnswerElement) answer).getFlowTraces();
@@ -479,7 +480,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     configs.put(loopbackConfig.getHostname(), loopbackConfig);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
@@ -490,7 +491,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 HeaderSpace.builder().setDstIps(Ip.parse("2.0.0.0").toIpSpace()).build())
             .build();
 
-    AnswerElement answer = batfish.bddSingleReachability(reachabilityParameters);
+    AnswerElement answer =
+        batfish.bddSingleReachability(batfish.getSnapshot(), reachabilityParameters);
 
     assertThat(answer, instanceOf(TraceWrapperAsAnswerElement.class));
     Map<Flow, List<Trace>> flowTraces = ((TraceWrapperAsAnswerElement) answer).getFlowTraces();

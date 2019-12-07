@@ -23,31 +23,19 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   public IncrementalDataPlanePlugin() {}
 
   @Override
-  public ComputeDataPlaneResult computeDataPlane() {
-    Map<String, Configuration> configurations =
-        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
-    Topology topology =
-        _batfish
-            .getTopologyProvider()
-            .getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack());
-    return computeDataPlane(configurations, topology);
-  }
-
-  @Override
-  public ComputeDataPlaneResult computeDataPlane(
-      Map<String, Configuration> configurations, Topology topology) {
+  public ComputeDataPlaneResult computeDataPlane(NetworkSnapshot snapshot) {
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
+    Topology topology = _batfish.getTopologyProvider().getInitialLayer3Topology(snapshot);
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
-    NetworkSnapshot networkSnapshot = _batfish.peekNetworkSnapshotStack();
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     TopologyContext topologyContext =
         TopologyContext.builder()
-            .setIpsecTopology(topologyProvider.getInitialIpsecTopology(networkSnapshot))
-            .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(networkSnapshot))
-            .setLayer2Topology(topologyProvider.getInitialLayer2Topology(networkSnapshot))
+            .setIpsecTopology(topologyProvider.getInitialIpsecTopology(snapshot))
+            .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(snapshot))
+            .setLayer2Topology(topologyProvider.getInitialLayer2Topology(snapshot))
             .setLayer3Topology(topology)
-            .setOspfTopology(topologyProvider.getInitialOspfTopology(networkSnapshot))
-            .setRawLayer1PhysicalTopology(
-                topologyProvider.getRawLayer1PhysicalTopology(networkSnapshot))
+            .setOspfTopology(topologyProvider.getInitialOspfTopology(snapshot))
+            .setRawLayer1PhysicalTopology(topologyProvider.getRawLayer1PhysicalTopology(snapshot))
             .build();
 
     ComputeDataPlaneResult answer =
@@ -60,8 +48,8 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
                 .average()
                 .orElse(0.00d);
     _logger.infof(
-        "Generated data-plane for testrig:%s; iterations:%s, avg entries per node:%.2f\n",
-        _batfish.getTestrigName(),
+        "Generated data-plane for snapshot:%s; iterations:%s, avg entries per node:%.2f\n",
+        snapshot.getSnapshot(),
         ((IncrementalBdpAnswerElement) answer._answerElement).getDependentRoutesIterations(),
         averageRoutes);
     return answer;

@@ -61,8 +61,18 @@ public interface IBatfish extends IPluginConsumer {
 
   void checkSnapshotOutputReady();
 
-  /** Compute the dataplane for the current {@link NetworkSnapshot} */
-  DataPlaneAnswerElement computeDataPlane();
+  /**
+   * Compute the dataplane for the current {@link NetworkSnapshot}.
+   *
+   * @deprecated in favor of {@link #computeDataPlane(NetworkSnapshot)}.
+   */
+  @Deprecated
+  default DataPlaneAnswerElement computeDataPlane() {
+    return computeDataPlane(peekNetworkSnapshotStack());
+  }
+
+  /** Compute the dataplane for the given {@link NetworkSnapshot} */
+  DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot);
 
   boolean debugFlagEnabled(String flag);
 
@@ -137,7 +147,13 @@ public interface IBatfish extends IPluginConsumer {
 
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse();
 
-  DataPlane loadDataPlane();
+  /** @deprecated prefer {@link #loadDataPlane(NetworkSnapshot)}. */
+  @Deprecated
+  default DataPlane loadDataPlane() {
+    return loadDataPlane(peekNetworkSnapshotStack());
+  }
+
+  DataPlane loadDataPlane(NetworkSnapshot snapshot);
 
   SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables();
 

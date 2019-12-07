@@ -182,7 +182,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public DataPlaneAnswerElement computeDataPlane() {
+  public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -293,7 +293,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public DataPlane loadDataPlane() {
+  public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 

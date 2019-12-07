@@ -190,12 +190,14 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
                 new ConstantIpSpaceSpecifier(NODE2_ADDR.getIp().toIpSpace()));
 
     TraceWrapperAsAnswerElement traceWrapper =
-        (TraceWrapperAsAnswerElement) batfish.bddSingleReachability(parameters.build());
+        (TraceWrapperAsAnswerElement)
+            batfish.bddSingleReachability(batfish.getSnapshot(), parameters.build());
     assertThat(traceWrapper.getFlowTraces().entrySet(), empty());
 
     traceWrapper =
         (TraceWrapperAsAnswerElement)
-            batfish.bddSingleReachability(parameters.setIgnoreFilters(true).build());
+            batfish.bddSingleReachability(
+                batfish.getSnapshot(), parameters.setIgnoreFilters(true).build());
     assertThat(traceWrapper.getFlowTraces().entrySet(), hasSize(1));
   }
 }

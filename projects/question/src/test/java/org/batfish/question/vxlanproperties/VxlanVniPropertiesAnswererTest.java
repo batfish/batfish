@@ -149,8 +149,8 @@ public final class VxlanVniPropertiesAnswererTest {
     }
 
     @Override
-    public DataPlane loadDataPlane() {
-      SortedMap<String, Configuration> configs = loadConfigurations(peekNetworkSnapshotStack());
+    public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
+      SortedMap<String, Configuration> configs = loadConfigurations(snapshot);
       HashBasedTable<String, String, Set<VniSettings>> vnis = HashBasedTable.create();
       vnis.put(
           "hostname",
