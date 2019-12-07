@@ -228,13 +228,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
           awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
       connect(awsConfiguration, cfgNode, igwConfig);
       Ip nhipOnIgw = getInterfaceLinkLocalIp(cfgNode, igwConfig.getHostname());
-      publicIps.forEach(
-          pip -> {
-            addStaticRoute(
-                igwConfig,
-                toStaticRoute(pip.toPrefix(), interfaceNameToRemote(cfgNode), nhipOnIgw));
-            addStaticRoute(cfgNode, toStaticRoute(pip.toPrefix(), subnetToInstances.getName()));
-          });
+      addStaticRoute(
+          igwConfig, toStaticRoute(_cidrBlock, interfaceNameToRemote(cfgNode), nhipOnIgw));
     } else if (!publicIps.isEmpty()) {
       warnings.redFlag(
           String.format(

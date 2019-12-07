@@ -1,12 +1,17 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
+import static org.batfish.datamodel.FlowDiff.flowDiff;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.datamodel.transformation.IpField.DESTINATION;
+import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_AS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
@@ -15,7 +20,11 @@ import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TransformationStep;
+import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.BeforeClass;
@@ -69,36 +78,37 @@ public class AwsConfigurationPublicSubnetTest {
     _batfish.computeDataPlane();
   }
 
-  private static void testTrace(
+  private static Trace getTrace(String ingressNode, Ip dstIp) {
+    Flow flow = Flow.builder().setTag("test").setIngressNode(ingressNode).setDstIp(dstIp).build();
+    SortedMap<Flow, List<Trace>> traces =
+        _batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+
+    return getOnlyElement(traces.get(flow).iterator());
+  }
+
+  private static void testTraceNodesAndDisposition(
       String ingressNode,
       Ip dstIp,
       FlowDisposition expectedDisposition,
       List<String> expectedNodes) {
-    Flow flow =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(ingressNode)
-            .setDstIp(dstIp) // this public IP does not exists in the network
-            .build();
-    SortedMap<Flow, List<Trace>> traces =
-        _batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+    testTraceNodesAndDisposition(getTrace(ingressNode, dstIp), expectedDisposition, expectedNodes);
+  }
 
-    Trace trace = getOnlyElement(traces.get(flow).iterator());
-
+  private static void testTraceNodesAndDisposition(
+      Trace trace, FlowDisposition expectedDisposition, List<String> expectedNodes) {
     assertThat(
         trace.getHops().stream()
             .map(h -> h.getNode().getName())
             .collect(ImmutableList.toImmutableList()),
         equalTo(expectedNodes));
-    assertThat(trace.getDisposition(), equalTo(expectedDisposition));
+    assertThat(trace, hasDisposition(expectedDisposition));
   }
 
   @Test
-  public void testFromInternetToPublicIp() {
-    // to a valid public IP
-    testTrace(
-        IspModelingUtils.INTERNET_HOST_NAME,
-        _publicIp,
+  public void testFromInternetToValidPublicIp() {
+    Trace trace = getTrace(IspModelingUtils.INTERNET_HOST_NAME, _publicIp);
+    testTraceNodesAndDisposition(
+        trace,
         FlowDisposition.DENIED_IN, // by the default security settings
         ImmutableList.of(
             IspModelingUtils.INTERNET_HOST_NAME,
@@ -107,8 +117,20 @@ public class AwsConfigurationPublicSubnetTest {
             _subnet,
             _instance));
 
-    // to a public IP outside of our space
-    testTrace(
+    // Test NAT behavior
+    assertThat(
+        trace.getHops().get(2).getSteps().get(1),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(
+                    TransformationType.DEST_NAT,
+                    ImmutableSortedSet.of(flowDiff(DESTINATION, _publicIp, _privateIp))),
+                StepAction.TRANSFORMED)));
+  }
+
+  @Test
+  public void testFromInternetToInvalidPublicIp() {
+    testTraceNodesAndDisposition(
         IspModelingUtils.INTERNET_HOST_NAME,
         Ip.parse("54.191.107.23"),
         FlowDisposition.EXITS_NETWORK,
@@ -118,14 +140,14 @@ public class AwsConfigurationPublicSubnetTest {
   @Test
   public void testFromInternetToPrivateIp() {
     // we get insufficient info for private IPs that exist somewhere in the network
-    testTrace(
+    testTraceNodesAndDisposition(
         IspModelingUtils.INTERNET_HOST_NAME,
         _privateIp,
         FlowDisposition.INSUFFICIENT_INFO,
         ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME));
 
     // we get exits network for arbitrary private IPs
-    testTrace(
+    testTraceNodesAndDisposition(
         IspModelingUtils.INTERNET_HOST_NAME,
         Ip.parse("192.18.0.8"),
         FlowDisposition.EXITS_NETWORK,
@@ -134,9 +156,20 @@ public class AwsConfigurationPublicSubnetTest {
 
   @Test
   public void testToInternet() {
-    testTrace(
-        _instance,
-        Ip.parse("8.8.8.8"),
+    Ip dstIp = Ip.parse("8.8.8.8");
+    Flow flow =
+        Flow.builder()
+            .setTag("test")
+            .setIngressNode(_instance)
+            .setDstIp(dstIp)
+            .setSrcIp(_privateIp)
+            .build();
+    SortedMap<Flow, List<Trace>> traces =
+        _batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+    Trace trace = getOnlyElement(traces.get(flow).iterator());
+
+    testTraceNodesAndDisposition(
+        trace,
         FlowDisposition.EXITS_NETWORK,
         ImmutableList.of(
             _instance,
@@ -144,5 +177,15 @@ public class AwsConfigurationPublicSubnetTest {
             _igw,
             IspModelingUtils.getIspNodeName(AWS_BACKBONE_AS),
             IspModelingUtils.INTERNET_HOST_NAME));
+
+    // Test NAT behavior
+    assertThat(
+        trace.getHops().get(2).getSteps().get(2),
+        equalTo(
+            new TransformationStep(
+                new TransformationStepDetail(
+                    TransformationType.SOURCE_NAT,
+                    ImmutableSortedSet.of(flowDiff(SOURCE, _privateIp, _publicIp))),
+                StepAction.TRANSFORMED)));
   }
 }

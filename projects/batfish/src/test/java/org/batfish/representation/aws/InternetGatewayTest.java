@@ -1,12 +1,18 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_AS;
 import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
+import static org.batfish.representation.aws.InternetGateway.configureNat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -24,11 +30,14 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.junit.Test;
 
 /** Tests for {@link InternetGateway} */
@@ -62,6 +71,7 @@ public class InternetGatewayTest {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
+    Ip privateIp = Ip.parse("10.10.10.10");
     Ip publicIp = Ip.parse("1.1.1.1");
 
     NetworkInterface ni =
@@ -70,7 +80,7 @@ public class InternetGatewayTest {
             "subnet",
             vpc.getId(),
             ImmutableList.of(),
-            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.10.10"), publicIp)),
+            ImmutableList.of(new PrivateIpAddress(true, privateIp, publicIp)),
             "desc",
             null);
 
@@ -95,13 +105,27 @@ public class InternetGatewayTest {
             .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(BACKBONE_INTERFACE_NAME)));
 
-    Prefix bbInterfacePrefix =
-        igwConfig.getAllInterfaces().get(BACKBONE_INTERFACE_NAME).getConcreteAddress().getPrefix();
+    Interface bbInterface = igwConfig.getAllInterfaces().get(BACKBONE_INTERFACE_NAME);
+    Prefix bbInterfacePrefix = bbInterface.getConcreteAddress().getPrefix();
 
     assertTrue(igwConfig.getAllInterfaces().containsKey(BACKBONE_INTERFACE_NAME));
     assertThat(
         igwConfig.getDefaultVrf().getBgpProcess().getRouterId(),
         equalTo(bbInterfacePrefix.getStartIp()));
+
+    // check NAT configuration
+    assertThat(
+        bbInterface.getOutgoingTransformation(),
+        equalTo(
+            Transformation.when(matchSrc(privateIp))
+                .apply(shiftSourceIp(publicIp.toPrefix()))
+                .build()));
+    assertThat(
+        bbInterface.getIncomingTransformation(),
+        equalTo(
+            Transformation.when(matchDst(publicIp))
+                .apply(TransformationStep.shiftDestinationIp(privateIp.toPrefix()))
+                .build()));
 
     assertThat(
         igwConfig.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),
@@ -123,6 +147,46 @@ public class InternetGatewayTest {
                 .setIpv4UnicastAddressFamily(
                     Ipv4UnicastAddressFamily.builder()
                         .setExportPolicy(BACKBONE_EXPORT_POLICY_NAME)
+                        .build())
+                .build()));
+  }
+
+  @Test
+  public void testConfigureNatEmptyMap() {
+    Interface iface = Interface.builder().setName("iface").build();
+    configureNat(iface, ImmutableMap.of());
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(iface.getOutgoingTransformation(), nullValue());
+  }
+
+  @Test
+  public void testConfigureNat() {
+    Ip pvt1 = Ip.parse("10.10.10.1");
+    Ip pvt2 = Ip.parse("10.10.10.2");
+    Ip pub1 = Ip.parse("1.1.1.1");
+    Ip pub2 = Ip.parse("1.1.1.2");
+
+    Interface iface = Interface.builder().setName("iface").build();
+    configureNat(iface, ImmutableMap.of(pvt1, pub1, pvt2, pub2));
+
+    assertThat(
+        iface.getIncomingTransformation(),
+        equalTo(
+            Transformation.when(matchDst(pub2))
+                .apply(shiftDestinationIp(pvt2.toPrefix()))
+                .setOrElse(
+                    Transformation.when(matchDst(pub1))
+                        .apply(shiftDestinationIp(pvt1.toPrefix()))
+                        .build())
+                .build()));
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            Transformation.when(matchSrc(pvt2))
+                .apply(shiftSourceIp(pub2.toPrefix()))
+                .setOrElse(
+                    Transformation.when(matchSrc(pvt1))
+                        .apply(shiftSourceIp(pub1.toPrefix()))
                         .build())
                 .build()));
   }
