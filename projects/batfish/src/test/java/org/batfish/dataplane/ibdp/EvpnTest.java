@@ -185,8 +185,8 @@ public class EvpnTest {
   @Test
   public void testEbgpL3Vni() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp.getRibs();
@@ -219,8 +219,9 @@ public class EvpnTest {
                 .setConfigurationText(testRigResourcePrefix, exitGw, leaf1, spine)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 

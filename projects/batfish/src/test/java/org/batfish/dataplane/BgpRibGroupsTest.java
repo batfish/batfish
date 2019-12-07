@@ -248,8 +248,8 @@ public class BgpRibGroupsTest {
     SortedMap<String, Configuration> configs = makeTestNetwork();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     // Only 2.2.2.0/24 in VRF2
     Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =

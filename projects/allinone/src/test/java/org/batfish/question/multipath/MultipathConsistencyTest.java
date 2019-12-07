@@ -48,7 +48,7 @@ public class MultipathConsistencyTest {
   public void setup() throws IOException {
     _testNetwork = new TestNetwork();
     _batfish = BatfishTestUtils.getBatfish(_testNetwork._configs, temp);
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   @Test

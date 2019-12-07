@@ -82,7 +82,7 @@ public class BatfishTestUtils {
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
-      batfish.initializeTopology(batfish.peekNetworkSnapshotStack());
+      batfish.initializeTopology(batfish.getSnapshot());
     }
     registerDataPlanePlugins(batfish);
     return batfish;
@@ -289,7 +289,7 @@ public class BatfishTestUtils {
   public static SortedMap<String, Configuration> parseTextConfigs(
       TemporaryFolder folder, String... configurationNames) throws IOException {
     IBatfish iBatfish = getBatfishForTextConfigs(folder, configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   private static void writeTemporaryTestrigFiles(

@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
@@ -870,7 +871,7 @@ public class IncrementalDataPlanePluginTest {
     assertThat(
         batfish
             .getTopologyProvider()
-            .getBgpTopology(batfish.peekNetworkSnapshotStack())
+            .getBgpTopology(batfish.getSnapshot())
             .getGraph()
             .edges()
             .size(),
@@ -880,11 +881,7 @@ public class IncrementalDataPlanePluginTest {
     BgpPeerConfigId bgpConfig2 =
         new BgpPeerConfigId("n2", DEFAULT_VRF_NAME, lo1Ip.toPrefix(), false);
     assertThat(
-        batfish
-            .getTopologyProvider()
-            .getBgpTopology(batfish.peekNetworkSnapshotStack())
-            .getGraph()
-            .edges(),
+        batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot()).getGraph().edges(),
         equalTo(
             ImmutableSet.of(
                 EndpointPair.ordered(bgpConfig1, bgpConfig2),
@@ -897,8 +894,9 @@ public class IncrementalDataPlanePluginTest {
     Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
-    batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane deserializedDataPlane = SerializationUtils.clone(batfish.loadDataPlane());
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane deserializedDataPlane = SerializationUtils.clone(batfish.loadDataPlane(snapshot));
 
     assertNotNull(deserializedDataPlane.getForwardingAnalysis());
   }

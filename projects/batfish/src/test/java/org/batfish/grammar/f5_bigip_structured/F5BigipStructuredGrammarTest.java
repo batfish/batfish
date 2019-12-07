@@ -174,6 +174,7 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
@@ -398,7 +399,7 @@ public final class F5BigipStructuredGrammarTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   @Test
@@ -409,8 +410,9 @@ public final class F5BigipStructuredGrammarTest {
                 .setConfigurationText(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> routes1 =
         dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> routes2 =
@@ -1070,7 +1072,8 @@ public final class F5BigipStructuredGrammarTest {
                 .setHostsText(SNAPSHOTS_PREFIX + snapshotName, hostFilename)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     {
       // DNAT modulo ARP
@@ -1086,7 +1089,7 @@ public final class F5BigipStructuredGrammarTest {
               .setSrcPort(50000)
               .build();
       SortedMap<Flow, List<Trace>> flowTraces =
-          batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+          batfish.getTracerouteEngine(snapshot).computeTraces(ImmutableSet.of(flow), false);
       List<Trace> traces = flowTraces.get(flow);
       Optional<TransformationStepDetail> stepDetailOptional =
           traces.stream()
@@ -1125,7 +1128,7 @@ public final class F5BigipStructuredGrammarTest {
               .setSrcPort(50000)
               .build();
       SortedMap<Flow, List<Trace>> flowTraces =
-          batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+          batfish.getTracerouteEngine(snapshot).computeTraces(ImmutableSet.of(flow), false);
       List<Trace> traces = flowTraces.get(flow);
       Optional<TransformationStepDetail> stepDetailOptional =
           traces.stream()
@@ -1165,7 +1168,9 @@ public final class F5BigipStructuredGrammarTest {
               .setSrcPort(50000)
               .build();
       SortedMap<Flow, List<TraceAndReverseFlow>> flowTraces =
-          batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+          batfish
+              .getTracerouteEngine(snapshot)
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
       List<TraceAndReverseFlow> traces = flowTraces.get(flow);
 
       assertThat(traces, hasSize(1));
@@ -1188,7 +1193,7 @@ public final class F5BigipStructuredGrammarTest {
       Set<FirewallSessionTraceInfo> sessions = traces.get(0).getNewFirewallSessions();
       SortedMap<Flow, List<TraceAndReverseFlow>> reverseFlowTraces =
           batfish
-              .getTracerouteEngine()
+              .getTracerouteEngine(snapshot)
               .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), sessions, false);
 
       Optional<TransformationStepDetail> stepDetailOptional =
@@ -1610,7 +1615,7 @@ public final class F5BigipStructuredGrammarTest {
   public void testPrefixList() throws IOException {
     String hostname = "f5_bigip_structured_net_routing_prefix_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     String v4Name = "/Common/MY_IPV4_PREFIX_LIST";
     String v6Name = "/Common/MY_IPV6_PREFIX_LIST";
     String invalidName = "/Common/INVALID_MIXED_PREFIX_LIST";
@@ -2787,7 +2792,8 @@ public final class F5BigipStructuredGrammarTest {
     parseConfig(hostname);
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     // SNAT via snat /Common/snat1
     Flow flow =
@@ -2802,7 +2808,9 @@ public final class F5BigipStructuredGrammarTest {
             .setSrcPort(50000)
             .build();
     SortedMap<Flow, List<TraceAndReverseFlow>> flowTraces =
-        batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
     List<TraceAndReverseFlow> traces = flowTraces.get(flow);
 
     assertThat(traces, hasSize(1));
@@ -2825,7 +2833,7 @@ public final class F5BigipStructuredGrammarTest {
     Set<FirewallSessionTraceInfo> sessions = traces.get(0).getNewFirewallSessions();
     SortedMap<Flow, List<TraceAndReverseFlow>> reverseFlowTraces =
         batfish
-            .getTracerouteEngine()
+            .getTracerouteEngine(snapshot)
             .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), sessions, false);
 
     Optional<TransformationStepDetail> stepDetailOptional =
@@ -3108,7 +3116,7 @@ public final class F5BigipStructuredGrammarTest {
     batfish.getSettings().setDisableUnrecognized(false);
     batfish.getSettings().setThrowOnLexerError(false);
     batfish.getSettings().setThrowOnParserError(false);
-    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasInterfaces(hasKey("1.0")));
     InitInfoAnswerElement initAns = batfish.initInfo(false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -22,7 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests for {@link Batfish#bddLoopDetection()}. */
+/** Tests for {@link Batfish#bddLoopDetection(NetworkSnapshot)}. */
 public class BatfishBDDDetectLoopsTest {
   @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
 
@@ -31,24 +32,24 @@ public class BatfishBDDDetectLoopsTest {
   private void initNetwork(boolean includeLoop) throws IOException {
     SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(includeLoop);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   @Test
   public void testNoLoops() throws IOException {
     initNetwork(false);
-    Set<Flow> flows = _batfish.bddLoopDetection();
+    Set<Flow> flows = _batfish.bddLoopDetection(_batfish.getSnapshot());
     assertThat(flows, empty());
   }
 
   @Test
   public void testLoops() throws IOException {
     initNetwork(true);
-    Set<Flow> flows = _batfish.bddLoopDetection();
+    Set<Flow> flows = _batfish.bddLoopDetection(_batfish.getSnapshot());
     assertThat(flows, hasSize(2));
 
     SortedMap<Flow, List<Trace>> flowTraces =
-        _batfish.getTracerouteEngine().computeTraces(flows, false);
+        _batfish.getTracerouteEngine(_batfish.getSnapshot()).computeTraces(flows, false);
     Set<FlowDisposition> dispositions =
         flowTraces.values().stream()
             .flatMap(Collection::stream)

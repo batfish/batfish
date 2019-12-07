@@ -62,7 +62,7 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
   public AnswerElement answer(NetworkSnapshot snapshot) {
     String tag = _batfish.getFlowTag();
     Set<Flow> flows = _helper.getFlows(tag);
-    TracerouteEngine tracerouteEngine = _batfish.getTracerouteEngine();
+    TracerouteEngine tracerouteEngine = _batfish.getTracerouteEngine(snapshot);
     return bidirectionalTracerouteAnswerElement(
         _question, flows, tracerouteEngine, _ignoreFilters, _maxTraces);
   }

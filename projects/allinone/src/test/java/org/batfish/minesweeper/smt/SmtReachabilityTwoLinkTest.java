@@ -33,8 +33,7 @@ public class SmtReachabilityTwoLinkTest {
   @Before
   public void setup() throws IOException {
     _batfish = TwoNodeNetworkWithTwoLinks.create(_temp);
-    SortedMap<String, Configuration> configs =
-        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
+    SortedMap<String, Configuration> configs = _batfish.loadConfigurations(_batfish.getSnapshot());
     _dstNode = configs.get(TwoNodeNetworkWithTwoLinks.DST_NODE);
     _srcNode = configs.get(TwoNodeNetworkWithTwoLinks.SRC_NODE);
     _failureDesc = String.format("link(%s,%s)", _dstNode.getHostname(), _srcNode.getHostname());

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
@@ -54,7 +55,7 @@ public class PaloAltoNatTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
@@ -70,7 +71,8 @@ public class PaloAltoNatTest {
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/24
     String outside2Name = "ethernet1/2.2"; // 1.2.2.3/24
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     // This flow is NAT'd and should pass through the firewall
     Flow insideToOutside =
@@ -93,7 +95,7 @@ public class PaloAltoNatTest {
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
-            .getTracerouteEngine()
+            .getTracerouteEngine(snapshot)
             .computeTraces(
                 ImmutableSet.of(
                     insideToOutside, insideToOutsideBadSrcIp, outsideToOutsideBadIngressIface),
@@ -128,7 +130,8 @@ public class PaloAltoNatTest {
         c.getAllInterfaces().keySet(),
         containsInAnyOrder("ethernet1/1", inside1Name, "ethernet1/2", outside1Name));
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     Flow.Builder flowBuilder =
         Flow.builder()
@@ -149,7 +152,7 @@ public class PaloAltoNatTest {
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
-            .getTracerouteEngine()
+            .getTracerouteEngine(snapshot)
             .computeTraces(
                 ImmutableSet.of(
                     hitsPreRulebaseNatRule,
@@ -190,7 +193,8 @@ public class PaloAltoNatTest {
     // Test destination NAT is applied correctly
     Configuration c = parseConfig("destination-nat");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/31
     String inside2Name = "ethernet1/1.2"; // 1.1.2.3/31
     String outside1Name = "ethernet1/2.1"; // 1.2.1.3/31
@@ -224,7 +228,7 @@ public class PaloAltoNatTest {
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
-            .getTracerouteEngine()
+            .getTracerouteEngine(snapshot)
             .computeTraces(
                 ImmutableSet.of(
                     outsideToInsideNat, outsideToInsideBadSrcIp, insideToInsideBadIngressIface),
@@ -246,7 +250,8 @@ public class PaloAltoNatTest {
     // Test panorama destination NATs are applied in the right order
     Configuration c = parseConfig("destination-nat-panorama");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/31
     String outside1Name = "ethernet1/2.1"; // 1.2.1.3/31
     assertThat(
@@ -276,7 +281,7 @@ public class PaloAltoNatTest {
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
-            .getTracerouteEngine()
+            .getTracerouteEngine(snapshot)
             .computeTraces(
                 ImmutableSet.of(
                     outsideToInsideNatPreRulebase,
@@ -323,7 +328,8 @@ public class PaloAltoNatTest {
      */
     Configuration c = parseConfig("nat-match-noop-rules");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
     String ingressIfaceName = "ethernet1/1.1"; // 1.1.1.3/24
 
     // Create flows to match each rule
@@ -348,7 +354,7 @@ public class PaloAltoNatTest {
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
-            .getTracerouteEngine()
+            .getTracerouteEngine(snapshot)
             .computeTraces(
                 ImmutableSet.of(
                     matchesNoopRule,
@@ -400,7 +406,8 @@ public class PaloAltoNatTest {
      */
     Configuration c = parseConfig("nat-rules-empty-pool");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
     String ingressIfaceName = "ethernet1/1.1"; // 1.1.1.3/24
 
     // Create flows to match each rule
@@ -421,7 +428,7 @@ public class PaloAltoNatTest {
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
-            .getTracerouteEngine()
+            .getTracerouteEngine(snapshot)
             .computeTraces(
                 ImmutableSet.of(matchesEmptyPoolsRule, matchesSrcAndDstTranslationRule), false);
 

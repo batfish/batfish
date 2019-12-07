@@ -77,7 +77,7 @@ public class RoutesAnswerer extends Answerer {
     RoutesQuestion question = (RoutesQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getRib()));
 
-    DataPlane dp = _batfish.loadDataPlane();
+    DataPlane dp = _batfish.loadDataPlane(snapshot);
     Set<String> matchingNodes =
         question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
     Prefix network = question.getNetwork();
@@ -141,13 +141,13 @@ public class RoutesAnswerer extends Answerer {
     switch (question.getRib()) {
       case BGP:
         _batfish.pushBaseSnapshot();
-        dp = _batfish.loadDataPlane();
+        dp = _batfish.loadDataPlane(_batfish.getSnapshot());
         routesGroupedByKeyInBase =
             groupBgpRoutes(dp.getBgpRoutes(), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
-        dp = _batfish.loadDataPlane();
+        dp = _batfish.loadDataPlane(_batfish.getReferenceSnapshot());
         routesGroupedByKeyInDelta =
             groupBgpRoutes(dp.getBgpRoutes(), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
@@ -158,16 +158,14 @@ public class RoutesAnswerer extends Answerer {
       case MAIN:
       default:
         _batfish.pushBaseSnapshot();
-        dp = _batfish.loadDataPlane();
-        ipOwners =
-            computeIpNodeOwners(
-                _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()), true);
+        dp = _batfish.loadDataPlane(_batfish.getSnapshot());
+        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(_batfish.getSnapshot()), true);
         routesGroupedByKeyInBase =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
-        dp = _batfish.loadDataPlane();
+        dp = _batfish.loadDataPlane(_batfish.getReferenceSnapshot());
         ipOwners =
             computeIpNodeOwners(
                 _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack()), true);

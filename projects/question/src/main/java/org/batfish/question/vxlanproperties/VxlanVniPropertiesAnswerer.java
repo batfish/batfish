@@ -88,7 +88,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
             .resolve(_batfish.specifierContext(snapshot));
-    DataPlane dp = _batfish.loadDataPlane();
+    DataPlane dp = _batfish.loadDataPlane(snapshot);
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);

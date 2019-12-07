@@ -79,6 +79,7 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
@@ -91,6 +92,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -122,7 +124,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings;
-import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -246,8 +247,8 @@ public final class CumulusNcluGrammarTest {
             _folder);
 
     // Sanity check configured peers
-    Map<String, Configuration> configs =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    Map<String, Configuration> configs = batfish.loadConfigurations(snapshot);
     String iface = "swp1";
     assertThat(
         configs.get(node1),
@@ -289,8 +290,8 @@ public final class CumulusNcluGrammarTest {
                                             DEFAULT_VRF_NAME, iface))))))))));
 
     // Ensure reachability between nodes
-    batfish.computeDataPlane();
-    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> n1Routes = dp.getRibs().get(node1).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> n2Routes = dp.getRibs().get(node2).get(DEFAULT_VRF_NAME).getRoutes();
 
@@ -835,10 +836,7 @@ public final class CumulusNcluGrammarTest {
     Edge edge =
         new Edge(NodeInterfacePair.of(node1, peerlink), NodeInterfacePair.of(node2, peerlink));
     assertThat(
-        batfish
-            .getTopologyProvider()
-            .getInitialLayer3Topology(batfish.peekNetworkSnapshotStack())
-            .getEdges(),
+        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot()).getEdges(),
         containsInAnyOrder(edge, edge.reverse()));
   }
 
@@ -863,7 +861,7 @@ public final class CumulusNcluGrammarTest {
     String hostname = "custom_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     assertThat(
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()),
+        batfish.loadConfigurations(batfish.getSnapshot()),
         hasEntry(equalTo(hostname), hasHostname(hostname)));
   }
 

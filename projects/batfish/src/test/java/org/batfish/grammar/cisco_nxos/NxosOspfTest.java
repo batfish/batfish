@@ -72,7 +72,7 @@ public final class NxosOspfTest {
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   private @Nonnull CiscoNxosConfiguration parseVendorConfig(String hostname) {

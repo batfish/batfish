@@ -432,7 +432,7 @@ public final class CiscoNxosGrammarTest {
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   private @Nonnull CiscoNxosConfiguration parseVendorConfig(String hostname) {
@@ -1833,7 +1833,7 @@ public final class CiscoNxosGrammarTest {
                 .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
                 .build(),
             _folder);
-    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     Map<String, org.batfish.datamodel.Interface> interfaces = c.getAllInterfaces();
 
     // Get name-based default guess for speed and ensure it does not match configured/runtime values
@@ -1890,10 +1890,7 @@ public final class CiscoNxosGrammarTest {
                 .build(),
             _folder);
     Map<String, org.batfish.datamodel.Interface> interfaces =
-        batfish
-            .loadConfigurations(batfish.peekNetworkSnapshotStack())
-            .get(hostname)
-            .getAllInterfaces();
+        batfish.loadConfigurations(batfish.getSnapshot()).get(hostname).getAllInterfaces();
 
     // Get name-based default guess for bw and ensure it does not match configured/runtime values
     double defaultBandwidth = getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET);
@@ -1948,10 +1945,7 @@ public final class CiscoNxosGrammarTest {
                 .build(),
             _folder);
     Map<String, org.batfish.datamodel.Interface> interfaces =
-        batfish
-            .loadConfigurations(batfish.peekNetworkSnapshotStack())
-            .get(hostname)
-            .getAllInterfaces();
+        batfish.loadConfigurations(batfish.getSnapshot()).get(hostname).getAllInterfaces();
 
     // Ethernet1/0 has configured & runtime bw 2E8, configured & runtime speed 1E8.
     assertThat(interfaces.get("Ethernet1/0"), allOf(hasBandwidth(2E8), hasSpeed(1E8)));

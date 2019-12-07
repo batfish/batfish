@@ -82,7 +82,7 @@ public class AwsIpsecTest {
                 .setConfigurationText(testrigResourcePrefix, configurationFilenames)
                 .build(),
             _folder);
-    return batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    return batfish.loadConfigurations(batfish.getSnapshot());
   }
 
   @Test

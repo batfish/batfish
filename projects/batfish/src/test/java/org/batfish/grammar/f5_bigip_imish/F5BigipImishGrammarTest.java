@@ -55,6 +55,7 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
@@ -475,8 +476,9 @@ public final class F5BigipImishGrammarTest {
                 .setConfigurationText(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> routes1 =
         dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> routes2 =
@@ -1002,7 +1004,7 @@ public final class F5BigipImishGrammarTest {
     batfish.getSettings().setDisableUnrecognized(false);
     batfish.getSettings().setThrowOnLexerError(false);
     batfish.getSettings().setThrowOnParserError(false);
-    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasIpAccessLists(hasKey("acl2")));
     InitInfoAnswerElement initAns = batfish.initInfo(false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));

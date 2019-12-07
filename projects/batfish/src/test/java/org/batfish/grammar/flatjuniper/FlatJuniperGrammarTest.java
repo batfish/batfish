@@ -422,7 +422,7 @@ public final class FlatJuniperGrammarTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   @Test
@@ -656,8 +656,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration c1 = configurations.get(c1Name);
     Configuration c2 = configurations.get(c2Name);
     Configuration c3 = configurations.get(c3Name);
@@ -689,8 +688,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Set<AbstractRoute> r1Routes = dp.getRibs().get(c1Name).get(DEFAULT_VRF_NAME).getRoutes();
 
     assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("10.20.20.0/24")))));
@@ -768,17 +767,11 @@ public final class FlatJuniperGrammarTest {
             _folder);
 
     Layer1Topology layer1LogicalTopology =
-        batfish
-            .getTopologyProvider()
-            .getLayer1LogicalTopology(batfish.peekNetworkSnapshotStack())
-            .get();
+        batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getSnapshot()).get();
     Layer2Topology layer2Topology =
-        batfish
-            .getTopologyProvider()
-            .getInitialLayer2Topology(batfish.peekNetworkSnapshotStack())
-            .get();
+        batfish.getTopologyProvider().getInitialLayer2Topology(batfish.getSnapshot()).get();
     Topology layer3Topology =
-        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.peekNetworkSnapshotStack());
+        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
 
     // check layer-1 logical adjacencies
     assertThat(
@@ -815,8 +808,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
@@ -878,8 +870,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     MultipathEquivalentAsPathMatchMode multipleAsDisabled =
         configurations
             .get("multiple_as_disabled")
@@ -1174,8 +1165,7 @@ public final class FlatJuniperGrammarTest {
     // Config has "set protocols bgp disable"; no VI BGP process should be created
     String hostname = "bgp_disable";
     IBatfish iBatfish = getBatfishForConfigurationNames(hostname);
-    Configuration c =
-        iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack()).get(hostname);
+    Configuration c = iBatfish.loadConfigurations(iBatfish.getSnapshot()).get(hostname);
     assertThat(c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess(), nullValue());
   }
 
@@ -3106,12 +3096,7 @@ public final class FlatJuniperGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Configuration c =
-        batfish
-            .loadConfigurations(batfish.peekNetworkSnapshotStack())
-            .entrySet()
-            .iterator()
-            .next()
-            .getValue();
+        batfish.loadConfigurations(batfish.getSnapshot()).entrySet().iterator().next().getValue();
 
     /* hostname should not be overwritten from node0 nor node1 group */
     assertThat(c, hasHostname(filename));
@@ -3132,12 +3117,7 @@ public final class FlatJuniperGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Configuration c =
-        batfish
-            .loadConfigurations(batfish.peekNetworkSnapshotStack())
-            .entrySet()
-            .iterator()
-            .next()
-            .getValue();
+        batfish.loadConfigurations(batfish.getSnapshot()).entrySet().iterator().next().getValue();
 
     /* hostname should be generated, and not gotten from node0 nor node1 group */
     assertThat(c, hasHostname(not(equalTo("juniper-apply-groups-node0"))));
@@ -3234,8 +3214,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Set<AbstractRoute> r1Routes = dp.getRibs().get(r1).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> r2Routes = dp.getRibs().get(r2).get(DEFAULT_VRF_NAME).getRoutes();
 
@@ -3715,8 +3695,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
     // There should be 3 configs: the master, and one for each logical system
     // ls1's name should be derived from master hostname and logical-system name
@@ -3743,8 +3722,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 
@@ -3775,8 +3753,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 
@@ -3813,8 +3790,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 
@@ -5093,8 +5069,8 @@ public final class FlatJuniperGrammarTest {
      - VRF3 doesn't have any routes, so should have no impact on default VRF
     */
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
             .collect(
@@ -5113,8 +5089,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
@@ -5156,8 +5132,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup-with-policy";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
@@ -5218,8 +5194,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup-with-transformation";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()

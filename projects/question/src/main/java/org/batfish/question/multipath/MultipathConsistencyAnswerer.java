@@ -40,8 +40,8 @@ public class MultipathConsistencyAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     MultipathConsistencyParameters parameters = parameters(snapshot);
-    Set<Flow> flows = _batfish.bddMultipathConsistency(parameters);
-    SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
+    Set<Flow> flows = _batfish.bddMultipathConsistency(snapshot, parameters);
+    SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(snapshot, flows, false);
     TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
     TracerouteAnswerer.flowTracesToRows(flowTraces, parameters.getMaxTraces())
         .forEach(tableAnswer::addRow);

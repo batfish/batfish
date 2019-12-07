@@ -54,7 +54,7 @@ public final class TracerouteAnswerer extends Answerer {
     Set<Flow> flows = _helper.getFlows(tag);
     Multiset<Row> rows;
     SortedMap<Flow, List<Trace>> flowTraces =
-        _batfish.getTracerouteEngine().computeTraces(flows, question.getIgnoreFilters());
+        _batfish.getTracerouteEngine(snapshot).computeTraces(flows, question.getIgnoreFilters());
     rows = flowTracesToRows(flowTraces, question.getMaxTraces());
     TableAnswerElement table = new TableAnswerElement(metadata(false));
     table.postProcessAnswer(_question, rows);
@@ -69,11 +69,13 @@ public final class TracerouteAnswerer extends Answerer {
     Multiset<Row> rows;
     TableAnswerElement table;
     _batfish.pushBaseSnapshot();
-    Map<Flow, List<Trace>> baseFlowTraces = _batfish.buildFlows(flows, ignoreFilters);
+    Map<Flow, List<Trace>> baseFlowTraces =
+        _batfish.buildFlows(_batfish.getSnapshot(), flows, ignoreFilters);
     _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
-    Map<Flow, List<Trace>> deltaFlowTraces = _batfish.buildFlows(flows, ignoreFilters);
+    Map<Flow, List<Trace>> deltaFlowTraces =
+        _batfish.buildFlows(_batfish.getReferenceSnapshot(), flows, ignoreFilters);
     _batfish.popSnapshot();
 
     rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, question.getMaxTraces());

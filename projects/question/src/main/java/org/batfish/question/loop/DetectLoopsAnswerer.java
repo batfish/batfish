@@ -26,7 +26,7 @@ public final class DetectLoopsAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     DetectLoopsQuestion question = (DetectLoopsQuestion) _question;
-    Set<Flow> flows = _batfish.bddLoopDetection();
+    Set<Flow> flows = _batfish.bddLoopDetection(snapshot);
 
     /*
      * There can be many flows exercising the same loop, so let's pick one per dstIp.
@@ -39,7 +39,7 @@ public final class DetectLoopsAnswerer extends Answerer {
             .map(Optional::get) // safe: the min here cannot be empty by construction.
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
-    SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
+    SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(snapshot, flows, false);
     TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
     TracerouteAnswerer.flowTracesToRows(flowTraces, question.getMaxTraces())
         .forEach(tableAnswer::addRow);

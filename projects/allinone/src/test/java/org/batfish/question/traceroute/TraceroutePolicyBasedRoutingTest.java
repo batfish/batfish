@@ -135,7 +135,7 @@ public class TraceroutePolicyBasedRoutingTest {
   public void testWithNoPolicy() throws IOException {
     SortedMap<String, Configuration> configs = pbrNetwork(false);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     PacketHeaderConstraints header =
         PacketHeaderConstraints.builder().setSrcIp("1.1.1.222").setDstIp("9.9.9.9").build();
 
@@ -158,7 +158,7 @@ public class TraceroutePolicyBasedRoutingTest {
   public void testMatchesPolicyIf() throws IOException {
     SortedMap<String, Configuration> configs = pbrNetwork(true);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     PacketHeaderConstraints header =
         PacketHeaderConstraints.builder().setSrcIp("1.1.1.222").setDstIp("9.9.9.9").build();
 
@@ -181,7 +181,7 @@ public class TraceroutePolicyBasedRoutingTest {
   public void testDoesNotMatchPolicyIf() throws IOException {
     SortedMap<String, Configuration> configs = pbrNetwork(true);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     PacketHeaderConstraints header =
         PacketHeaderConstraints.builder().setSrcIp("1.1.1.222").setDstIp("9.9.9.233").build();
 

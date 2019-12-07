@@ -583,8 +583,7 @@ public final class SearchFiltersTest {
   public void testReachFilterNodeSpecifierDefault() {
     SearchFiltersQuestion q = new SearchFiltersQuestion();
     Set<String> nodes =
-        q.getNodesSpecifier()
-            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
+        q.getNodesSpecifier().resolve(_batfish.specifierContext(_batfish.getSnapshot()));
     assertThat(nodes, contains(_config.getHostname()));
 
     q =
@@ -593,9 +592,7 @@ public final class SearchFiltersTest {
             .setAction("permit")
             .setNodeSpecifier("UNMATCHABLE")
             .build();
-    nodes =
-        q.getNodesSpecifier()
-            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
+    nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext(_batfish.getSnapshot()));
     assertThat(nodes, emptyIterable());
   }
 

@@ -75,7 +75,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
 
     BDDPacket bddPacket = new BDDPacket();
     BidirectionalReachabilityResult result =
-        _batfish.bidirectionalReachability(bddPacket, parameters);
+        _batfish.bidirectionalReachability(snapshot, bddPacket, parameters);
 
     Map<Location, BDD> answerBdds = getAnswerBdds(result, _returnFlowType);
 
@@ -102,7 +102,11 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
             .collect(Collectors.toSet());
 
     return BidirectionalTracerouteAnswerer.bidirectionalTracerouteAnswerElement(
-        _question, flows, _batfish.getTracerouteEngine(), false, TracePruner.DEFAULT_MAX_TRACES);
+        _question,
+        flows,
+        _batfish.getTracerouteEngine(snapshot),
+        false,
+        TracePruner.DEFAULT_MAX_TRACES);
   }
 
   @VisibleForTesting

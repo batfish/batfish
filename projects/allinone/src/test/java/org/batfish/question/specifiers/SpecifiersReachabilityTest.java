@@ -68,7 +68,7 @@ public class SpecifiersReachabilityTest {
                 .build(),
             _folder);
 
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   /**

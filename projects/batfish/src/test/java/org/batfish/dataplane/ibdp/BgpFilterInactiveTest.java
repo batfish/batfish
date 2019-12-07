@@ -37,8 +37,9 @@ public final class BgpFilterInactiveTest {
                     SNAPSHOT_PATH, AS1_NAME, AS2_NO_ADVERTISE_INACTIVE_NAME, AS3_NAME)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
@@ -62,8 +63,9 @@ public final class BgpFilterInactiveTest {
                     SNAPSHOT_PATH, AS1_NAME, AS2_ADVERTISE_INACTIVE_NAME, AS3_NAME)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 

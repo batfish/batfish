@@ -40,7 +40,7 @@ class PrefixTracerAnswerer extends Answerer {
   public AnswerElement answer(NetworkSnapshot snapshot) {
     PrefixTracerQuestion question = (PrefixTracerQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata());
-    DataPlane dp = _batfish.loadDataPlane();
+    DataPlane dp = _batfish.loadDataPlane(snapshot);
 
     SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>> prefixTracingInfo =
         dp.getPrefixTracingInfoSummary();

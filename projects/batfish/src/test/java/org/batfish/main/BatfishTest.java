@@ -165,8 +165,7 @@ public class BatfishTest {
                 .setIptablesFilesText(iptablesFilesText)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     assertThat(
         configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilterName(),
         is(notNullValue()));
@@ -187,7 +186,7 @@ public class BatfishTest {
 
     // We should get all three configs, with modified hostnames for the first two
     assertThat(
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).keySet(),
+        batfish.loadConfigurations(batfish.getSnapshot()).keySet(),
         containsInAnyOrder(
             ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr1"),
             ParseVendorConfigurationResult.getModifiedNameBase("rtr1", "configs/rtr2"),
@@ -206,7 +205,7 @@ public class BatfishTest {
 
     // we should get only two configs, with real names -- no memory of old duplicates
     assertThat(
-        batfish2.loadConfigurations(batfish2.peekNetworkSnapshotStack()).keySet(),
+        batfish2.loadConfigurations(batfish2.getSnapshot()).keySet(),
         equalTo(ImmutableSet.of("rtr1", "rtr2")));
   }
 
@@ -221,10 +220,7 @@ public class BatfishTest {
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
 
     assertThat(
-        batfish
-            .getTopologyProvider()
-            .getRawLayer3Topology(batfish.peekNetworkSnapshotStack())
-            .getEdges(),
+        batfish.getTopologyProvider().getRawLayer3Topology(batfish.getSnapshot()).getEdges(),
         containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
   }
 
@@ -243,10 +239,7 @@ public class BatfishTest {
                 .build(),
             _folder);
     Map<String, Interface> interfaces =
-        batfish
-            .loadConfigurations(batfish.peekNetworkSnapshotStack())
-            .get("rtr1")
-            .getAllInterfaces();
+        batfish.loadConfigurations(batfish.getSnapshot()).get("rtr1").getAllInterfaces();
 
     // Ethernet0 should be inactive and blacklisted
     Interface ethernet0 = interfaces.get("Ethernet0");
@@ -270,7 +263,7 @@ public class BatfishTest {
     Layer1Topology layer1Topology =
         batfish
             .getTopologyProvider()
-            .getRawLayer1PhysicalTopology(batfish.peekNetworkSnapshotStack())
+            .getRawLayer1PhysicalTopology(batfish.getSnapshot())
             .orElse(null);
 
     Layer1Node c1i1 = new Layer1Node("c1", "i1");
@@ -299,8 +292,7 @@ public class BatfishTest {
                 .setConfigurationText(testrigResourcePrefix, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
     assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r2")));
   }
@@ -465,8 +457,7 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder().setConfigurationText(configMap).build(), _folder);
-    Map<String, Configuration> configs =
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());
 
     // Assert that the config parsed successfully
     assertThat(configs, hasKey("host1"));
@@ -768,7 +759,7 @@ public class BatfishTest {
             _folder);
     batfish.getSettings().setHaltOnParseError(true);
     _thrown.expect(hasStackTrace(containsString("Error parsing configuration file")));
-    batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
+    batfish.loadConfigurations(batfish.getSnapshot());
   }
 
   @Test
@@ -784,7 +775,7 @@ public class BatfishTest {
 
     // returns the text of the config if it exists
     assertThat(
-        batfish.getSnapshotInputObject(batfish.peekNetworkSnapshotStack(), "configs/" + fileName),
+        batfish.getSnapshotInputObject(batfish.getSnapshot(), "configs/" + fileName),
         equalTo(configText));
   }
 
@@ -801,6 +792,6 @@ public class BatfishTest {
 
     // should throw FileNotFoundException if file not found
     _thrown.expect(FileNotFoundException.class);
-    batfish.getSnapshotInputObject(batfish.peekNetworkSnapshotStack(), "missing file");
+    batfish.getSnapshotInputObject(batfish.getSnapshot(), "missing file");
   }
 }

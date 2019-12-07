@@ -25,7 +25,7 @@ public class DetectLoopsTest {
   private void initNetwork(boolean includeLoop) throws IOException {
     SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(includeLoop);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   @Test
@@ -40,7 +40,7 @@ public class DetectLoopsTest {
   @Test
   public void testLoops() throws IOException {
     initNetwork(true);
-    Set<Flow> flows = _batfish.bddLoopDetection();
+    Set<Flow> flows = _batfish.bddLoopDetection(_batfish.getSnapshot());
     assertThat(flows, Matchers.hasSize(2));
 
     DetectLoopsAnswerer answerer =

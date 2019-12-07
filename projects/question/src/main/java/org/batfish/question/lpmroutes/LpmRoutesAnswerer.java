@@ -50,7 +50,7 @@ public class LpmRoutesAnswerer extends Answerer {
     answer.postProcessAnswer(
         _question,
         getRows(
-            _batfish.loadDataPlane().getRibs(),
+            _batfish.loadDataPlane(snapshot).getRibs(),
             q.getIp(),
             q.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot)),
             Pattern.compile(q.getVrfs()),

@@ -108,11 +108,11 @@ public class BatfishBDDDifferentialReachabilityTest {
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
     batfish.pushBaseSnapshot();
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getReferenceSnapshot());
     batfish.popSnapshot();
 
     return batfish;
@@ -123,7 +123,8 @@ public class BatfishBDDDifferentialReachabilityTest {
 
     batfish.pushBaseSnapshot();
     Stream<Trace> traces =
-        batfish.getTracerouteEngine().computeTraces(flows, false).values().stream()
+        batfish.getTracerouteEngine(batfish.getSnapshot()).computeTraces(flows, false).values()
+            .stream()
             .flatMap(Collection::stream);
     assertTrue(
         String.format("all traces should have disposition %s in the base environment", disposition),
@@ -132,7 +133,8 @@ public class BatfishBDDDifferentialReachabilityTest {
 
     batfish.pushDeltaSnapshot();
     traces =
-        batfish.getTracerouteEngine().computeTraces(flows, false).values().stream()
+        batfish.getTracerouteEngine(batfish.getReferenceSnapshot()).computeTraces(flows, false)
+            .values().stream()
             .flatMap(Collection::stream);
     assertTrue(
         String.format("no traces should have disposition %s in the delta environment", disposition),
@@ -159,14 +161,14 @@ public class BatfishBDDDifferentialReachabilityTest {
     return new DifferentialReachabilityParameters(
         dispositions,
         ImmutableSet.of(),
-        batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).keySet(),
+        batfish.loadConfigurations(batfish.getSnapshot()).keySet(),
         headerSpace,
         ignoreFilters,
         invertSearch,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
             LocationSpecifier.ALL_LOCATIONS.resolve(
-                batfish.specifierContext(batfish.peekNetworkSnapshotStack())),
-            batfish.specifierContext(batfish.peekNetworkSnapshotStack())),
+                batfish.specifierContext(batfish.getSnapshot())),
+            batfish.specifierContext(batfish.getSnapshot())),
         TracePruner.DEFAULT_MAX_TRACES,
         ImmutableSet.of());
   }
@@ -697,11 +699,11 @@ public class BatfishBDDDifferentialReachabilityTest {
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
     batfish.pushBaseSnapshot();
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getReferenceSnapshot());
     batfish.popSnapshot();
 
     DifferentialReachabilityParameters reachabilityParameters =
@@ -717,12 +719,13 @@ public class BatfishBDDDifferentialReachabilityTest {
 
     batfish.pushBaseSnapshot();
     Map<Flow, List<Trace>> baseFlowTraces =
-        batfish.buildFlows(result.getIncreasedReachabilityFlows(), false);
+        batfish.buildFlows(batfish.getSnapshot(), result.getIncreasedReachabilityFlows(), false);
     batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
     Map<Flow, List<Trace>> deltaFlowTraces =
-        batfish.buildFlows(result.getIncreasedReachabilityFlows(), false);
+        batfish.buildFlows(
+            batfish.getReferenceSnapshot(), result.getIncreasedReachabilityFlows(), false);
     batfish.popSnapshot();
 
     Set<FlowDisposition> baseFlowDispositions =

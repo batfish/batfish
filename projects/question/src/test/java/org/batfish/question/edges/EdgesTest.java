@@ -109,7 +109,7 @@ public final class EdgesTest {
           }
 
           @Override
-          public NetworkSnapshot peekNetworkSnapshotStack() {
+          public NetworkSnapshot getSnapshot() {
             return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
           }
 
@@ -197,7 +197,7 @@ public final class EdgesTest {
           }
 
           @Override
-          public NetworkSnapshot peekNetworkSnapshotStack() {
+          public NetworkSnapshot getSnapshot() {
             return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
           }
         };

@@ -275,7 +275,7 @@ public final class PaloAltoGrammarTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
@@ -1754,7 +1754,7 @@ public final class PaloAltoGrammarTest {
     String vr2Name = "vr2";
     String hostname = "static-route";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     // Confirm static route shows up with correct extractions
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(123))))));
@@ -2227,7 +2227,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "vsys-zones";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
@@ -2285,7 +2285,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "zones";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.peekNetworkSnapshotStack()).get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 

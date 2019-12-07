@@ -102,12 +102,12 @@ public class DifferentialReachabilityAnswerer extends Answerer {
     TableAnswerElement table;
     _batfish.pushBaseSnapshot();
     Map<Flow, List<Trace>> baseFlowTraces =
-        _batfish.buildFlows(flows, parameters.getIgnoreFilters());
+        _batfish.buildFlows(_batfish.getSnapshot(), flows, parameters.getIgnoreFilters());
     _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
     Map<Flow, List<Trace>> deltaFlowTraces =
-        _batfish.buildFlows(flows, parameters.getIgnoreFilters());
+        _batfish.buildFlows(_batfish.getReferenceSnapshot(), flows, parameters.getIgnoreFilters());
     _batfish.popSnapshot();
 
     rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, parameters.getMaxTraces());

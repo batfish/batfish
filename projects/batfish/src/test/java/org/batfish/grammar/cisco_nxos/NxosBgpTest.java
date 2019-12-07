@@ -75,7 +75,7 @@ public class NxosBgpTest {
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   @Test
@@ -158,9 +158,9 @@ public class NxosBgpTest {
       String snapshotName, String hubName, String listenerName) throws IOException {
 
     Batfish batfish = getBatfishForSnapshot(snapshotName, hubName, listenerName);
-    batfish.loadConfigurations(batfish.peekNetworkSnapshotStack());
-    batfish.computeDataPlane(); // compute and cache the dataPlane
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.loadConfigurations(batfish.getSnapshot());
+    batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     return dp.getRibs().get(listenerName).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
   }

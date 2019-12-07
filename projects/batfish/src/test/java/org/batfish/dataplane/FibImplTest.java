@@ -90,10 +90,10 @@ public class FibImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_config.getHostname(), _config), folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     Fib fib =
         batfish
-            .loadDataPlane()
+            .loadDataPlane(batfish.getSnapshot())
             .getFibs()
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);
@@ -133,10 +133,10 @@ public class FibImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_config.getHostname(), _config), folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     Fib fib =
         batfish
-            .loadDataPlane()
+            .loadDataPlane(batfish.getSnapshot())
             .getFibs()
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);
@@ -163,10 +163,10 @@ public class FibImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_config.getHostname(), _config), folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     Fib fib =
         batfish
-            .loadDataPlane()
+            .loadDataPlane(batfish.getSnapshot())
             .getFibs()
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);

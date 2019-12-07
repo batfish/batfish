@@ -25,7 +25,6 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.flow.Trace;
@@ -57,19 +56,10 @@ public interface IBatfish extends IPluginConsumer {
    *     ignored
    * @return {@link SortedMap} of {@link Flow} to {@link List} of {@link Trace}s
    */
-  SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters);
+  SortedMap<Flow, List<Trace>> buildFlows(
+      NetworkSnapshot snapshot, Set<Flow> flows, boolean ignoreFilters);
 
   void checkSnapshotOutputReady();
-
-  /**
-   * Compute the dataplane for the current {@link NetworkSnapshot}.
-   *
-   * @deprecated in favor of {@link #computeDataPlane(NetworkSnapshot)}.
-   */
-  @Deprecated
-  default DataPlaneAnswerElement computeDataPlane() {
-    return computeDataPlane(peekNetworkSnapshotStack());
-  }
 
   /** Compute the dataplane for the given {@link NetworkSnapshot} */
   DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot);
@@ -119,12 +109,6 @@ public interface IBatfish extends IPluginConsumer {
    */
   ImmutableConfiguration getSettingsConfiguration();
 
-  /** @deprecated prefer {@link #getSnapshotInputObject(NetworkSnapshot, String)}. */
-  @Deprecated
-  default String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
-    return getSnapshotInputObject(peekNetworkSnapshotStack(), key);
-  }
-
   /**
    * Get a snapshot input object for the given key
    *
@@ -147,17 +131,9 @@ public interface IBatfish extends IPluginConsumer {
 
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse();
 
-  /** @deprecated prefer {@link #loadDataPlane(NetworkSnapshot)}. */
-  @Deprecated
-  default DataPlane loadDataPlane() {
-    return loadDataPlane(peekNetworkSnapshotStack());
-  }
-
   DataPlane loadDataPlane(NetworkSnapshot snapshot);
 
   SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables();
-
-  ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement();
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
@@ -167,8 +143,8 @@ public interface IBatfish extends IPluginConsumer {
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
-  /** @return a {@link TracerouteEngine} for the current snapshot. */
-  TracerouteEngine getTracerouteEngine();
+  /** @return a {@link TracerouteEngine} for the given snapshot. */
+  TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot);
 
   void pushBaseSnapshot();
 
@@ -199,17 +175,23 @@ public interface IBatfish extends IPluginConsumer {
   /** Return a {@link SpecifierContext} for a given {@link NetworkSnapshot} */
   SpecifierContext specifierContext(NetworkSnapshot networkSnapshot);
 
-  AnswerElement standard(ReachabilityParameters reachabilityParameters);
+  AnswerElement standard(NetworkSnapshot snapshot, ReachabilityParameters reachabilityParameters);
 
-  Set<Flow> bddLoopDetection();
+  Set<Flow> bddLoopDetection(NetworkSnapshot snapshot);
 
-  Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters);
+  Set<Flow> bddMultipathConsistency(
+      NetworkSnapshot snapshot, MultipathConsistencyParameters parameters);
 
   @Nullable
   String loadQuestionSettings(@Nonnull Question question);
 
+  default @Nonnull BidirectionalReachabilityResult bidirectionalReachability(
+      BDDPacket bddPacket, ReachabilityParameters parameters) {
+    return bidirectionalReachability(peekNetworkSnapshotStack(), bddPacket, parameters);
+  }
+
   /** Performs bidirectional reachability analysis. */
   @Nonnull
   BidirectionalReachabilityResult bidirectionalReachability(
-      BDDPacket bddPacket, ReachabilityParameters parameters);
+      NetworkSnapshot snapshot, BDDPacket bddPacket, ReachabilityParameters parameters);
 }

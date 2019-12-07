@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -100,10 +101,9 @@ public class TracerouteEngineTest {
     // Compute data plane
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
-
-    // Construct flows
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot); // Construct flows
     Flow.Builder fb =
         Flow.builder()
             .setDstIp(Ip.parse("3.3.3.3"))
@@ -115,9 +115,7 @@ public class TracerouteEngineTest {
 
     // Compute flow traces
     SortedMap<Flow, List<Trace>> traces =
-        new TracerouteEngineImpl(
-                dp,
-                batfish.getTopologyProvider().getLayer3Topology(batfish.peekNetworkSnapshotStack()))
+        new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot))
             .computeTraces(ImmutableSet.of(flow1, flow2), false);
 
     assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
@@ -157,8 +155,9 @@ public class TracerouteEngineTest {
             .put(other.getHostname(), other)
             .build();
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     Flow flow =
         Flow.builder()
             .setIngressNode(source.getHostname())
@@ -167,9 +166,7 @@ public class TracerouteEngineTest {
             .setTag("tag")
             .build();
     List<Trace> traces =
-        new TracerouteEngineImpl(
-                dp,
-                batfish.getTopologyProvider().getLayer3Topology(batfish.peekNetworkSnapshotStack()))
+        new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot))
             .computeTraces(ImmutableSet.of(flow), false)
             .get(flow);
 
@@ -286,14 +283,16 @@ public class TracerouteEngineTest {
         .build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
-    b.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setIngressNode(c.getHostname())
             .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(Ip.parse("1.0.0.1"))
             .build();
-    Trace trace = Iterables.getOnlyElement(b.buildFlows(ImmutableSet.of(flow), false).get(flow));
+    NetworkSnapshot snapshot = b.getSnapshot();
+    b.computeDataPlane(snapshot);
+    Trace trace =
+        Iterables.getOnlyElement(b.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace, hasDisposition(FlowDisposition.DENIED_OUT));
@@ -331,14 +330,16 @@ public class TracerouteEngineTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
-    b.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setIngressNode(c1.getHostname())
             .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(Ip.parse("1.0.0.1"))
             .build();
-    Trace trace = Iterables.getOnlyElement(b.buildFlows(ImmutableSet.of(flow), false).get(flow));
+    NetworkSnapshot snapshot = b.getSnapshot();
+    b.computeDataPlane(snapshot);
+    Trace trace =
+        Iterables.getOnlyElement(b.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace, hasDisposition(FlowDisposition.DENIED_OUT));
@@ -353,13 +354,13 @@ public class TracerouteEngineTest {
     Configuration c1 = cb.build();
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
 
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Node missingNode is not in the network");
-    new TracerouteEngineImpl(
-            dp, batfish.getTopologyProvider().getLayer3Topology(batfish.peekNetworkSnapshotStack()))
+    new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot))
         .computeTraces(
             ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
             false);

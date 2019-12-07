@@ -20,7 +20,7 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifiersReachabilityQuestion question = (SpecifiersReachabilityQuestion) _question;
-    AnswerElement answer = _batfish.standard(question.getReachabilityParameters());
+    AnswerElement answer = _batfish.standard(snapshot, question.getReachabilityParameters());
     if (answer instanceof TraceWrapperAsAnswerElement) {
       TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
       TracerouteAnswerer.flowTracesToRows(

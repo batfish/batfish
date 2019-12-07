@@ -51,8 +51,8 @@ public class EigrpTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     Map<String, Map<String, Set<AbstractRoute>>> routes = getRoutes(dp.getRibs());
 

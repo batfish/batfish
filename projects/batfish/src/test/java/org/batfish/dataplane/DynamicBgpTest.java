@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.List;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -54,10 +55,11 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane(); // compute and cache the dataPlane
-    DataPlane dp = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        batfish.getTopologyProvider().getBgpTopology(batfish.peekNetworkSnapshotStack()).getGraph();
+        batfish.getTopologyProvider().getBgpTopology(snapshot).getGraph();
 
     // Three sessions are established, so should see 6 directed edges.
     assertThat(bgpTopology.edges(), hasSize(6));
@@ -84,11 +86,11 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane(); // compute and cache the dataPlane
-
-    DataPlane dp = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        batfish.getTopologyProvider().getBgpTopology(batfish.peekNetworkSnapshotStack()).getGraph();
+        batfish.getTopologyProvider().getBgpTopology(snapshot).getGraph();
 
     // Three sessions are established, so should see 6 directed edges.
     assertThat(bgpTopology.edges(), hasSize(6));
@@ -126,11 +128,11 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane(); // compute and cache the dataPlane
-
-    DataPlane dp = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        batfish.getTopologyProvider().getBgpTopology(batfish.peekNetworkSnapshotStack()).getGraph();
+        batfish.getTopologyProvider().getBgpTopology(snapshot).getGraph();
 
     // Only two sessions are established (not r2 <--> r4), so should see 4 directed edges.
     assertThat(bgpTopology.edges(), hasSize(4));

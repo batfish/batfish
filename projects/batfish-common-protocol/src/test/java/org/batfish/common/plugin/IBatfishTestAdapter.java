@@ -31,7 +31,6 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -172,7 +171,8 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
+  public SortedMap<Flow, List<Trace>> buildFlows(
+      NetworkSnapshot snapshot, Set<Flow> flows, boolean ignoreFilters) {
     throw new UnsupportedOperationException();
   }
 
@@ -309,11 +309,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
     throw new UnsupportedOperationException();
   }
@@ -329,7 +324,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public TracerouteEngine getTracerouteEngine() {
+  public TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -379,17 +374,19 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
+  public AnswerElement standard(
+      NetworkSnapshot snapshot, ReachabilityParameters reachabilityParameters) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Set<Flow> bddLoopDetection() {
+  public Set<Flow> bddLoopDetection(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
+  public Set<Flow> bddMultipathConsistency(
+      NetworkSnapshot snapshot, MultipathConsistencyParameters parameters) {
     throw new UnsupportedOperationException();
   }
 
@@ -424,10 +421,9 @@ public class IBatfishTestAdapter implements IBatfish {
     return _referenceSnapshot;
   }
 
-  @Nonnull
   @Override
-  public BidirectionalReachabilityResult bidirectionalReachability(
-      BDDPacket bddPacket, ReachabilityParameters parameters) {
+  public @Nonnull BidirectionalReachabilityResult bidirectionalReachability(
+      NetworkSnapshot snapshot, BDDPacket bddPacket, ReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
 

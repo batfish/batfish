@@ -25,6 +25,7 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
@@ -121,7 +122,7 @@ public class CumulusConcatenatedGrammarTest {
   private SortedMap<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.peekNetworkSnapshotStack());
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   private @Nonnull Configuration parseConfig(String hostname) throws IOException {
@@ -276,10 +277,11 @@ public class CumulusConcatenatedGrammarTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        batfish.getTopologyProvider().getBgpTopology(batfish.peekNetworkSnapshotStack()).getGraph();
+        batfish.getTopologyProvider().getBgpTopology(snapshot).getGraph();
 
     String vrf = "default";
     // Edge one direction

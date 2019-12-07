@@ -78,8 +78,8 @@ public class BDDMultipathInconsistencyTest {
     _net = new TestNetwork();
     _batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
 
-    _batfish.computeDataPlane();
-    DataPlane dataPlane = _batfish.loadDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
+    DataPlane dataPlane = _batfish.loadDataPlane(_batfish.getSnapshot());
     _graphFactory =
         new BDDReachabilityAnalysisFactory(
             PKT,
