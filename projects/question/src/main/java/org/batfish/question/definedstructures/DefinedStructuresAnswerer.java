@@ -37,18 +37,16 @@ public class DefinedStructuresAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     DefinedStructuresQuestion question = (DefinedStructuresQuestion) _question;
-    Multiset<Row> structures = rawAnswer(question);
+    Multiset<Row> structures = rawAnswer(snapshot, question);
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
     answer.postProcessAnswer(question, structures);
     return answer;
   }
 
-  private Multiset<Row> rawAnswer(DefinedStructuresQuestion question) {
+  private Multiset<Row> rawAnswer(NetworkSnapshot snapshot, DefinedStructuresQuestion question) {
     Multiset<Row> structures = HashMultiset.create();
     Set<String> includeNodes =
-        question
-            .getNodeSpecifier()
-            .resolve(_batfish.specifierContext(_batfish.peekNetworkSnapshotStack()));
+        question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
     Multimap<String, String> hostnameFilenameMap =
         _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
     Set<String> includeFiles =

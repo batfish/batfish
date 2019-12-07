@@ -39,7 +39,7 @@ public class MultipathConsistencyAnswerer extends Answerer {
 
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
-    MultipathConsistencyParameters parameters = parameters();
+    MultipathConsistencyParameters parameters = parameters(snapshot);
     Set<Flow> flows = _batfish.bddMultipathConsistency(parameters);
     SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
     TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
@@ -48,13 +48,13 @@ public class MultipathConsistencyAnswerer extends Answerer {
     return tableAnswer;
   }
 
-  private MultipathConsistencyParameters parameters() {
+  private MultipathConsistencyParameters parameters(NetworkSnapshot snapshot) {
     MultipathConsistencyQuestion question = (MultipathConsistencyQuestion) _question;
 
     PacketHeaderConstraints headerConstraints = question.getHeaderConstraints();
     PathConstraints pathConstraints = createPathConstraints(question.getPathConstraints());
 
-    SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
+    SpecifierContext ctxt = _batfish.specifierContext(snapshot);
     Set<String> forbiddenTransitNodes = pathConstraints.getForbiddenLocations().resolve(ctxt);
     Set<String> requiredTransitNodes = pathConstraints.getTransitLocations().resolve(ctxt);
     Set<Location> startLocations = pathConstraints.getStartLocation().resolve(ctxt);

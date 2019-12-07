@@ -22,7 +22,6 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.TracePruner;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -41,14 +40,12 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
   private final PathConstraintsInput _pathConstraintsInput;
   private final PacketHeaderConstraints _headerConstraints;
   private final ReturnFlowType _returnFlowType;
-  private final Map<String, Configuration> _configs;
 
   BidirectionalReachabilityAnswerer(BidirectionalReachabilityQuestion question, IBatfish batfish) {
     super(question, batfish);
     _pathConstraintsInput = question.getPathConstraintsInput();
     _headerConstraints = question.getHeaderConstraints();
     _returnFlowType = question.getReturnFlowType();
-    _configs = _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
   }
 
   @Override
@@ -94,7 +91,8 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
                       .getFlow(locationBdd)
                       .map(
                           builder -> {
-                            setStartLocation(_configs, builder, startLocation);
+                            setStartLocation(
+                                _batfish.loadConfigurations(snapshot), builder, startLocation);
                             builder.setTag(flowTag);
                             return builder.build();
                           });

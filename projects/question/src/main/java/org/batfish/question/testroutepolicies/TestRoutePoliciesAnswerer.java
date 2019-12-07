@@ -77,18 +77,17 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     _policies = question.getPolicies();
   }
 
-  private SortedSet<RoutingPolicyId> resolvePolicies() {
-    SpecifierContext ctxt = _batfish.specifierContext(_batfish.peekNetworkSnapshotStack());
+  private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {
     NodeSpecifier nodeSpec =
         SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
 
     RoutingPolicySpecifier policySpec =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(_policies, ALL_ROUTING_POLICIES);
 
-    return nodeSpec.resolve(ctxt).stream()
+    return nodeSpec.resolve(context).stream()
         .flatMap(
             node ->
-                policySpec.resolve(node, ctxt).stream()
+                policySpec.resolve(node, context).stream()
                     .map(policy -> new RoutingPolicyId(node, policy.getName())))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
@@ -111,8 +110,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
-
-    SortedSet<RoutingPolicyId> policies = resolvePolicies();
+    SpecifierContext context = _batfish.specifierContext(snapshot);
+    SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
     Multiset<Row> rows =
         getResults(policies)
             .flatMap(this::testPolicy)
@@ -181,11 +180,13 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   @Override
   public AnswerElement answerDiff() {
     _batfish.pushBaseSnapshot();
-    SortedSet<RoutingPolicyId> basePolicies = resolvePolicies();
+    SortedSet<RoutingPolicyId> basePolicies =
+        resolvePolicies(_batfish.specifierContext(_batfish.getSnapshot()));
     _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
-    SortedSet<RoutingPolicyId> deltaPolicies = resolvePolicies();
+    SortedSet<RoutingPolicyId> deltaPolicies =
+        resolvePolicies(_batfish.specifierContext(_batfish.getReferenceSnapshot()));
     _batfish.popSnapshot();
 
     SortedSet<RoutingPolicyId> policies =

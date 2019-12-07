@@ -86,7 +86,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SearchFiltersQuestion question = (SearchFiltersQuestion) _question;
-    nonDifferentialAnswer(question);
+    nonDifferentialAnswer(snapshot, question);
     return _tableAnswerElement;
   }
 
@@ -112,7 +112,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     NetworkSnapshot reference = _batfish.getReferenceSnapshot();
     Multimap<String, String> baseAcls = getSpecifiedAcls(snapshot, question);
     Multimap<String, String> deltaAcls = getSpecifiedAcls(reference, question);
-    Map<String, Configuration> baseConfigs = _batfish.loadConfigurations(_batfish.getSnapshot());
+    Map<String, Configuration> baseConfigs = _batfish.loadConfigurations(snapshot);
     Map<String, Configuration> deltaConfigs = _batfish.loadConfigurations(reference);
 
     Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), deltaAcls.keySet());
@@ -150,7 +150,13 @@ public final class SearchFiltersAnswerer extends Answerer {
         // present in both snapshot
         DifferentialSearchFiltersResult results =
             differentialReachFilter(
-                _batfish, baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
+                _batfish.specifierContext(snapshot),
+                _batfish,
+                baseConfig,
+                baseAcl.get(),
+                deltaConfig,
+                deltaAcl.get(),
+                parameters);
 
         Stream.of(results.getDecreasedResult(), results.getIncreasedResult())
             .filter(Optional::isPresent)
@@ -229,7 +235,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     return rowBuilder.build();
   }
 
-  private void nonDifferentialAnswer(SearchFiltersQuestion question) {
+  private void nonDifferentialAnswer(NetworkSnapshot snapshot, SearchFiltersQuestion question) {
     List<Triple<String, String, IpAccessList>> acls =
         getQueryAcls(_batfish.getSnapshot(), question);
     if (acls.isEmpty()) {
@@ -241,15 +247,15 @@ public final class SearchFiltersAnswerer extends Answerer {
      * For each query ACL, try to get a flow. If one exists, run traceFilter on that flow.
      * Concatenate the answers for all flows into one big table.
      */
-    Map<String, Configuration> configurations =
-        _batfish.loadConfigurations(_batfish.peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     for (Triple<String, String, IpAccessList> triple : acls) {
       String hostname = triple.getLeft();
       String aclname = triple.getMiddle();
       Configuration node = configurations.get(hostname);
       IpAccessList acl = triple.getRight();
       Optional<SearchFiltersResult> optionalResult;
-      optionalResult = reachFilter(_batfish, node, acl, question.toSearchFiltersParameters());
+      optionalResult =
+          reachFilter(snapshot, _batfish, node, acl, question.toSearchFiltersParameters());
       optionalResult.ifPresent(
           result ->
               rows.add(
@@ -379,11 +385,14 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static Optional<SearchFiltersResult> reachFilter(
-      IBatfish batfish, Configuration node, IpAccessList acl, SearchFiltersParameters parameters) {
+      NetworkSnapshot snapshot,
+      IBatfish batfish,
+      Configuration node,
+      IpAccessList acl,
+      SearchFiltersParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    SpecifierContext specifierContext =
-        batfish.specifierContext(batfish.peekNetworkSnapshotStack());
+    SpecifierContext specifierContext = batfish.specifierContext(snapshot);
 
     Set<String> inactiveIfaces =
         Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaceNames());
@@ -422,6 +431,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
   @VisibleForTesting
   static DifferentialSearchFiltersResult differentialReachFilter(
+      SpecifierContext context,
       IBatfish batfish,
       Configuration baseConfig,
       IpAccessList baseAcl,
@@ -430,9 +440,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       SearchFiltersParameters searchFiltersParameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    HeaderSpace headerSpace =
-        searchFiltersParameters.resolveHeaderspace(
-            batfish.specifierContext(batfish.peekNetworkSnapshotStack()));
+    HeaderSpace headerSpace = searchFiltersParameters.resolveHeaderspace(context);
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 

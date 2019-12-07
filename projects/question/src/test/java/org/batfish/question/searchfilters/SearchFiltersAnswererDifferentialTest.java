@@ -87,7 +87,14 @@ public class SearchFiltersAnswererDifferentialTest {
     IBatfish batfish = getBatfish(baseConfig, deltaConfig);
 
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, _params);
+        differentialReachFilter(
+            batfish.specifierContext(batfish.getSnapshot()),
+            batfish,
+            baseConfig,
+            baseAcl,
+            deltaConfig,
+            deltaAcl,
+            _params);
     assertTrue("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertTrue("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(
@@ -95,7 +102,15 @@ public class SearchFiltersAnswererDifferentialTest {
         allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
     // flip base and delta
-    result = differentialReachFilter(batfish, deltaConfig, deltaAcl, baseConfig, baseAcl, _params);
+    result =
+        differentialReachFilter(
+            batfish.specifierContext(batfish.getSnapshot()),
+            batfish,
+            deltaConfig,
+            deltaAcl,
+            baseConfig,
+            baseAcl,
+            _params);
     assertTrue("Expected no increased result", !result.getIncreasedResult().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedResult().isPresent());
     assertThat(
@@ -112,7 +127,14 @@ public class SearchFiltersAnswererDifferentialTest {
     IBatfish batfish = getBatfish(config, config);
 
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(batfish, config, baseAcl, config, deltaAcl, _params);
+        differentialReachFilter(
+            batfish.specifierContext(batfish.getSnapshot()),
+            batfish,
+            config,
+            baseAcl,
+            config,
+            deltaAcl,
+            _params);
     assertTrue("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertTrue("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(result.getIncreasedResult().get().getExampleFlow(), hasDstIp(IP));
@@ -123,6 +145,7 @@ public class SearchFiltersAnswererDifferentialTest {
     // flip base and delta ACL; turn on explanations
     result =
         differentialReachFilter(
+            batfish.specifierContext(batfish.getSnapshot()),
             batfish,
             config,
             deltaAcl,
@@ -164,7 +187,14 @@ public class SearchFiltersAnswererDifferentialTest {
 
     // can match line 1 because IFACE1 is specified
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+        differentialReachFilter(
+            batfish.specifierContext(batfish.getSnapshot()),
+            batfish,
+            baseConfig,
+            baseAcl,
+            deltaConfig,
+            deltaAcl,
+            params);
     assertTrue("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertTrue("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(
@@ -178,7 +208,15 @@ public class SearchFiltersAnswererDifferentialTest {
             .build();
 
     // not can't match line 1 because IFACE2 is specified
-    result = differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+    result =
+        differentialReachFilter(
+            batfish.specifierContext(batfish.getSnapshot()),
+            batfish,
+            baseConfig,
+            baseAcl,
+            deltaConfig,
+            deltaAcl,
+            params);
     assertTrue("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertTrue("Expected no increased result", !result.getIncreasedResult().isPresent());
   }

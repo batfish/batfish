@@ -2216,7 +2216,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /** Initialize topologies, commit {raw, raw pojo, pruned} layer-3 topologies to storage. */
   @VisibleForTesting
   void initializeTopology(NetworkSnapshot networkSnapshot) {
-    Map<String, Configuration> configurations = loadConfigurations(peekNetworkSnapshotStack());
+    Map<String, Configuration> configurations = loadConfigurations(networkSnapshot);
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
@@ -2228,8 +2228,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Could not serialize layer-3 POJO topology", e);
     }
-    Topology layer3Topology =
-        _topologyProvider.getInitialLayer3Topology(peekNetworkSnapshotStack());
+    Topology layer3Topology = _topologyProvider.getInitialLayer3Topology(networkSnapshot);
     try {
       _storage.storeInitialTopology(
           layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
@@ -2475,11 +2474,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void updateSnapshotNodeRoles() {
     // Compute new auto role data and updates existing auto data with it
-    NetworkId networkId = _settings.getContainer();
-    SnapshotId snapshotId = _settings.getTestrig();
-    NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
-    Set<String> nodeNames = loadConfigurations(peekNetworkSnapshotStack()).keySet();
-    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(peekNetworkSnapshotStack());
+    NetworkSnapshot snapshot = peekNetworkSnapshotStack();
+    NodeRolesId snapshotNodeRolesId =
+        _idResolver.getSnapshotNodeRolesId(snapshot.getNetwork(), snapshot.getSnapshot());
+    Set<String> nodeNames = loadConfigurations(snapshot).keySet();
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(snapshot);
     Optional<RoleMapping> autoRoles = new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
