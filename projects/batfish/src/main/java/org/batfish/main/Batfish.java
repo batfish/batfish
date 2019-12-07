@@ -120,7 +120,6 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
-import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -347,23 +346,36 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public static void initSettings(Settings settings) {
-    SnapshotId testrig = settings.getTestrig();
+  @VisibleForTesting
+  TestrigSettings getSnapshotTestrigSettings() {
+    return _baseTestrigSettings;
+  }
+
+  @VisibleForTesting
+  TestrigSettings getReferenceTestrigSettings() {
+    return _deltaTestrigSettings;
+  }
+
+  private void initLocalSettings(Settings settings) {
+    if (settings == null || settings.getStorageBase() == null || settings.getContainer() == null) {
+      // This should only happen in tests.
+      return;
+    }
     Path containerDir = settings.getStorageBase().resolve(settings.getContainer().getId());
-    if (testrig != null) {
-      applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig);
-      SnapshotId deltaTestrig = settings.getDeltaTestrig();
-      TestrigSettings deltaTestrigSettings = settings.getDeltaTestrigSettings();
-      if (deltaTestrig != null) {
-        applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig);
-      }
-      if (false) {
-        settings.setActiveTestrigSettings(settings.getDeltaTestrigSettings());
-      } else {
-        settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
-      }
-    } else {
+
+    _baseTestrigSettings = new TestrigSettings();
+    SnapshotId snapshotId = settings.getTestrig();
+    _baseTestrigSettings.setName(snapshotId);
+    if (snapshotId == null) {
       throw new CleanBatfishException("Must supply argument to -" + BfConsts.ARG_TESTRIG);
+    }
+    applyBaseDir(_baseTestrigSettings, containerDir, snapshotId);
+
+    _deltaTestrigSettings = new TestrigSettings();
+    SnapshotId referenceId = settings.getDeltaTestrig();
+    if (referenceId != null) {
+      _deltaTestrigSettings.setName(referenceId);
+      applyBaseDir(_deltaTestrigSettings, containerDir, referenceId);
     }
   }
 
@@ -491,13 +503,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedDataPlanes = cachedDataPlanes;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
-    _testrigSettings = settings.getActiveTestrigSettings();
-    _baseTestrigSettings = settings.getBaseTestrigSettings();
+    initLocalSettings(settings);
+    _testrigSettings = _baseTestrigSettings;
+    _testrigSettingsStack = new ArrayList<>();
     _logger = _settings.getLogger();
-    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
     _terminatingExceptionMessage = null;
     _answererCreators = new HashMap<>();
-    _testrigSettingsStack = new ArrayList<>();
     _dataPlanePlugins = new HashMap<>();
     _storage =
         alternateStorageProvider != null
@@ -3277,5 +3288,104 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
     AnswererCreator creator = _answererCreators.get(question.getName());
     return creator != null ? creator.create(question, this) : null;
+  }
+
+  @VisibleForTesting
+  static final class TestrigSettings {
+
+    private Path _basePath;
+
+    private SnapshotId _name;
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      } else if (!(obj instanceof TestrigSettings)) {
+        return false;
+      }
+      TestrigSettings other = (TestrigSettings) obj;
+      return _name.equals(other._name);
+    }
+
+    @Nonnull
+    public Path getBasePath() {
+      checkState(_basePath != null, "base path is not configured");
+      return _basePath;
+    }
+
+    @Nonnull
+    public Path getDataPlanePath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE);
+    }
+
+    public Path getDataPlaneAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH);
+    }
+
+    public Path getEnvironmentBgpTablesPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
+    }
+
+    public Path getExternalBgpAnnouncementsPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+    }
+
+    public Path getInferredNodeRolesPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH);
+    }
+
+    public Path getInputPath() {
+      return getBasePath().resolve(BfConsts.RELPATH_INPUT);
+    }
+
+    public SnapshotId getName() {
+      return _name;
+    }
+
+    public Path getNodeRolesPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    }
+
+    public Path getOutputPath() {
+      return getBasePath().resolve(BfConsts.RELPATH_OUTPUT);
+    }
+
+    public Path getParseAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH);
+    }
+
+    public Path getReferenceLibraryPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+    }
+
+    public Path getSerializeEnvironmentBgpTablesPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
+    }
+
+    public Path getSerializeVendorPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+    }
+
+    public Path getValidateSnapshotAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_VALIDATE_SNAPSHOT_ANSWER);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_name);
+    }
+
+    public void setBasePath(Path basePath) {
+      _basePath = basePath;
+    }
+
+    public void setName(SnapshotId name) {
+      _name = name;
+    }
+
+    public Path getParseEnvironmentBgpTablesAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
+    }
   }
 }

@@ -29,6 +29,7 @@ import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.main.Batfish.TestrigSettings;
 import org.batfish.storage.StorageProvider;
 import org.junit.rules.TemporaryFolder;
 
@@ -62,16 +63,12 @@ public class BatfishTestUtils {
 
     settings.setStorageBase(tempFolder.newFolder().toPath());
     settings.setContainer("tempNetworkId");
+    settings.setTestrig("tempSnapshotId");
+    settings.setSnapshotName("tempSnapshot");
     if (!configurations.isEmpty()) {
-      settings.setTestrig("tempSnapshotId");
-      settings.setSnapshotName("tempSnapshot");
-      Batfish.initSettings(settings);
-      settings.getBaseTestrigSettings().getInputPath().toFile().mkdirs();
-      settings.getBaseTestrigSettings().getOutputPath().toFile().mkdirs();
       testrigs.put(
           new NetworkSnapshot(new NetworkId("tempNetworkId"), new SnapshotId("tempSnapshotId")),
           configurations);
-      settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
     Batfish batfish =
         new Batfish(
@@ -108,12 +105,8 @@ public class BatfishTestUtils {
       settings.setTestrig("tempSnapshotId");
       settings.setSnapshotName("tempSnapshot");
       settings.setDeltaTestrig(new SnapshotId("tempReferenceSnapshotId"));
-      Batfish.initSettings(settings);
-      settings.getBaseTestrigSettings().getOutputPath().toFile().mkdirs();
-      settings.getDeltaTestrigSettings().getOutputPath().toFile().mkdirs();
       testrigs.put(networkSnapshot, baseConfigs);
       testrigs.put(referenceNetworkSnapshot, deltaConfigs);
-      settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
     Batfish batfish =
         new Batfish(
@@ -176,15 +169,22 @@ public class BatfishTestUtils {
     settings.setContainer("tempNetworkId");
     settings.setTestrig("tempSnapshotId");
     settings.setSnapshotName("tempSnapshot");
-    Batfish.initSettings(settings);
-    Path testrigPath = settings.getBaseTestrigSettings().getInputPath();
-    settings.getBaseTestrigSettings().getOutputPath().toFile().mkdirs();
-    settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
+    Batfish batfish =
+        new Batfish(
+            settings,
+            makeTestrigCache(),
+            makeDataPlaneCache(),
+            makeEnvBgpCache(),
+            null,
+            new TestFileBasedIdResolver(settings.getStorageBase()));
+    TestrigSettings snapshotTr = batfish.getSnapshotTestrigSettings();
+    TestrigSettings referenceTr = batfish.getReferenceTestrigSettings();
+    Path testrigPath = snapshotTr.getInputPath();
+    snapshotTr.getOutputPath().toFile().mkdirs();
     writeTemporaryTestrigFiles(
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
     writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR));
-    writeTemporaryTestrigFiles(
-        bgpTablesText, settings.getBaseTestrigSettings().getEnvironmentBgpTablesPath());
+    writeTemporaryTestrigFiles(bgpTablesText, snapshotTr.getEnvironmentBgpTablesPath());
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
     if (layer1TopologyText != null) {
@@ -195,14 +195,6 @@ public class BatfishTestUtils {
       writeTemporaryTestrigFiles(
           ImmutableMap.of(BfConsts.RELPATH_RUNTIME_DATA_FILE, runtimeDataText), testrigPath);
     }
-    Batfish batfish =
-        new Batfish(
-            settings,
-            makeTestrigCache(),
-            makeDataPlaneCache(),
-            makeEnvBgpCache(),
-            null,
-            new TestFileBasedIdResolver(settings.getStorageBase()));
     registerDataPlanePlugins(batfish);
     return batfish;
   }

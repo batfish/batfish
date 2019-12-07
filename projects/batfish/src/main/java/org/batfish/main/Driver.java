@@ -389,7 +389,6 @@ public class Driver {
   private static void mainRunWorker() {
     if (_mainSettings.canExecute()) {
       _mainSettings.setLogger(_mainLogger);
-      Batfish.initSettings(_mainSettings);
       if (runBatfish(_mainSettings) != null) {
         System.exit(1);
       }
@@ -642,14 +641,6 @@ public class Driver {
     } catch (Exception e) {
       return Arrays.asList(
           "failure", "Initialization failed: " + Throwables.getStackTraceAsString(e));
-    }
-
-    try {
-      Batfish.initSettings(settings);
-    } catch (Exception e) {
-      return Arrays.asList(
-          "failure",
-          "Failed while applying auto basedir. (All arguments are supplied?): " + e.getMessage());
     }
 
     if (!settings.canExecute()) {
