@@ -6165,7 +6165,6 @@ public final class CiscoGrammarTest {
 
     // NO overlay edge in final L3 topology
     batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot);
     assertThat(batfish.getTopologyProvider().getLayer3Topology(snapshot).getEdges(), empty());
   }
 
@@ -6188,7 +6187,6 @@ public final class CiscoGrammarTest {
     // Overlay edge present in initial tunnel topology
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot);
     assertThat(
         batfish.getTopologyProvider().getInitialTunnelTopology(snapshot).asEdgeSet(),
         containsInAnyOrder(overlayEdge, overlayEdge.reverse()));

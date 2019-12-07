@@ -178,7 +178,6 @@ public class BatfishTestUtils {
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     TestrigSettings snapshotTr = batfish.getSnapshotTestrigSettings();
-    TestrigSettings referenceTr = batfish.getReferenceTestrigSettings();
     Path testrigPath = snapshotTr.getInputPath();
     snapshotTr.getOutputPath().toFile().mkdirs();
     writeTemporaryTestrigFiles(
