@@ -1,6 +1,7 @@
 package org.batfish.question.bgpsessionstatus;
 
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_ADDRESS_FAMILIES;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
@@ -62,6 +63,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
@@ -111,6 +113,7 @@ public class BgpSessionCompatibilityAnswererTest {
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_LOCAL_IP)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
@@ -168,6 +171,7 @@ public class BgpSessionCompatibilityAnswererTest {
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, localIp)
             .put(COL_LOCAL_AS, 1L)
@@ -200,6 +204,7 @@ public class BgpSessionCompatibilityAnswererTest {
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_REMOTE_AS)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
             .put(COL_LOCAL_AS, 1L)
@@ -238,6 +243,7 @@ public class BgpSessionCompatibilityAnswererTest {
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_MATCH_FOUND)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
             .put(COL_LOCAL_AS, 1L)
@@ -311,6 +317,7 @@ public class BgpSessionCompatibilityAnswererTest {
         Row.builder()
             // Columns that should be the same in both rows
             .put(COL_LOCAL_AS, 1L)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(COL_LOCAL_IP, localIp)
             .put(COL_NODE, new Node("c1"))
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
@@ -348,6 +355,7 @@ public class BgpSessionCompatibilityAnswererTest {
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.NO_REMOTE_AS)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_LOCAL_INTERFACE, NodeInterfacePair.of("c1", "iface"))
             .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
@@ -397,6 +405,7 @@ public class BgpSessionCompatibilityAnswererTest {
     Row expected =
         Row.builder()
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
             .put(COL_LOCAL_INTERFACE, NodeInterfacePair.of("c1", "iface"))
             .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
@@ -446,7 +455,8 @@ public class BgpSessionCompatibilityAnswererTest {
             .put(COL_CONFIGURED_STATUS, ConfiguredSessionStatus.UNIQUE_MATCH)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_REMOTE_INTERFACE, null)
-            .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP);
+            .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST));
     Row row1To2 =
         expectedRowBuilder
             .put(COL_LOCAL_IP, ip1)

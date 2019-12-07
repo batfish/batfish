@@ -5,6 +5,7 @@ import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MA
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_FOUND;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_ADDRESS_FAMILIES;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
@@ -21,6 +22,7 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.matc
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
@@ -94,6 +97,12 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
               "Remote IP or prefix for this session",
               true,
               false),
+          new ColumnMetadata(
+              COL_ADDRESS_FAMILIES,
+              Schema.set(Schema.STRING),
+              "Address Families participating in this session",
+              false,
+              true),
           new ColumnMetadata(
               COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
           new ColumnMetadata(
@@ -176,6 +185,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     Node remoteNode = null;
     Long localAs = activePeer.getLocalAs();
     String remoteAs = activePeer.getRemoteAsns().toString();
+    Set<Type> addressFamilies = ImmutableSet.of();
     if (status == UNIQUE_MATCH) {
       BgpPeerConfigId remoteId = configuredTopology.adjacentNodes(activeId).iterator().next();
       String remoteNodeName = remoteId.getHostname();
@@ -185,10 +195,12 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
       if (sessionProps.isPresent()) {
         remoteAs = Long.toString(sessionProps.get().getHeadAs());
         localAs = sessionProps.get().getTailAs();
+        addressFamilies = sessionProps.get().getAddressFamilies();
       }
     }
     return Row.builder(METADATA_MAP)
         .put(COL_CONFIGURED_STATUS, status)
+        .put(COL_ADDRESS_FAMILIES, addressFamilies)
         .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, localAs)
         .put(COL_LOCAL_IP, activePeer.getLocalIp())
@@ -224,6 +236,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
             .put(COL_REMOTE_AS, passivePeer.getRemoteAsns().toString())
             .put(
                 COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_SESSION_TYPE, SessionType.UNSET)
             .put(COL_VRF, passiveId.getVrfName());
 
@@ -247,6 +260,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
                   BgpActivePeerConfig activeRemote = nc.getBgpPointToPointPeerConfig(remoteId);
                   assert activeRemote != null;
                   return rb.put(COL_CONFIGURED_STATUS, DYNAMIC_MATCH)
+                      .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
                       .put(COL_LOCAL_IP, sessionProps.getTailIp())
                       .put(COL_LOCAL_AS, sessionProps.getTailAs())
                       .put(COL_REMOTE_AS, Long.toString(sessionProps.getHeadAs()))
@@ -276,6 +290,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     NodeInterfacePair remoteInterface = null;
     Long localAs = unnumPeer.getLocalAs();
     String remoteAs = unnumPeer.getRemoteAsns().toString();
+    Set<Type> addressFamilies = ImmutableSet.of();
     if (status == UNIQUE_MATCH) {
       BgpPeerConfigId remoteId = configuredTopology.adjacentNodes(unnumId).iterator().next();
       remoteNode = new Node(remoteId.getHostname());
@@ -284,6 +299,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
       if (sessionProps.isPresent()) {
         remoteAs = Long.toString(sessionProps.get().getHeadAs());
         localAs = sessionProps.get().getTailAs();
+        addressFamilies = sessionProps.get().getAddressFamilies();
       }
     }
     return Row.builder(METADATA_MAP)
@@ -298,6 +314,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, remoteInterface)
         .put(COL_REMOTE_IP, null)
+        .put(COL_ADDRESS_FAMILIES, addressFamilies)
         .put(COL_SESSION_TYPE, getSessionType(unnumPeer))
         .put(COL_VRF, unnumId.getVrfName())
         .build();
