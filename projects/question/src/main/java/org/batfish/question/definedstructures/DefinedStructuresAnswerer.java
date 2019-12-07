@@ -59,7 +59,7 @@ public class DefinedStructuresAnswerer extends Answerer {
     Pattern includeStructureTypes = Pattern.compile(question.getTypes(), Pattern.CASE_INSENSITIVE);
 
     ConvertConfigurationAnswerElement ccae =
-        _batfish.loadConvertConfigurationAnswerElementOrReparse();
+        _batfish.loadConvertConfigurationAnswerElementOrReparse(snapshot);
 
     ccae.getDefinedStructures()
         .forEach(

@@ -68,7 +68,9 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       Multiset<Row> rows = LinkedHashMultiset.create();
       SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
           undefinedReferences =
-              _batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
+              _batfish
+                  .loadConvertConfigurationAnswerElementOrReparse(snapshot)
+                  .getUndefinedReferences();
       undefinedReferences.entrySet().stream()
           .filter(e -> includeFiles.contains(e.getKey()))
           .forEach(e -> rows.addAll(processEntryToRows(e)));

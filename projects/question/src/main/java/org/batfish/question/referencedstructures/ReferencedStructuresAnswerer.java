@@ -50,7 +50,7 @@ public class ReferencedStructuresAnswerer extends Answerer {
 
     Multiset<Row> rows = LinkedHashMultiset.create();
     _batfish
-        .loadConvertConfigurationAnswerElementOrReparse()
+        .loadConvertConfigurationAnswerElementOrReparse(snapshot)
         .getReferencedStructures()
         .forEach(
             (filename, value) -> {

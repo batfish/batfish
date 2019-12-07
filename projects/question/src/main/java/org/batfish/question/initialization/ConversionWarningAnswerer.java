@@ -24,7 +24,7 @@ class ConversionWarningAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ConvertConfigurationAnswerElement ccae =
-        _batfish.loadConvertConfigurationAnswerElementOrReparse();
+        _batfish.loadConvertConfigurationAnswerElementOrReparse(snapshot);
 
     Map<String, Warnings> warnings = ccae.getWarnings();
 

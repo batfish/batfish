@@ -69,7 +69,9 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       Multiset<Row> rows = LinkedHashMultiset.create();
       SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
           definedStructures =
-              _batfish.loadConvertConfigurationAnswerElementOrReparse().getDefinedStructures();
+              _batfish
+                  .loadConvertConfigurationAnswerElementOrReparse(snapshot)
+                  .getDefinedStructures();
       definedStructures.entrySet().stream()
           .filter(e -> includeFiles.contains(e.getKey()))
           .forEach(e -> rows.addAll(processEntryToRows(e)));

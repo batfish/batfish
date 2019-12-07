@@ -33,7 +33,7 @@ class FileParseStatusAnswerer extends Answerer {
     ParseVendorConfigurationAnswerElement pvcae =
         _batfish.loadParseVendorConfigurationAnswerElement(snapshot);
     ConvertConfigurationAnswerElement ccae =
-        _batfish.loadConvertConfigurationAnswerElementOrReparse();
+        _batfish.loadConvertConfigurationAnswerElementOrReparse(snapshot);
 
     Map<String, ParseStatus> statusMap = pvcae.getParseStatus();
     Rows rows = new Rows();

@@ -1087,14 +1087,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
-      Path inputPath, ParseEnvironmentBgpTablesAnswerElement answerElement) {
+      NetworkSnapshot snapshot,
+      Path inputPath,
+      ParseEnvironmentBgpTablesAnswerElement answerElement) {
     if (!Files.exists(inputPath)) {
       return new TreeMap<>();
     }
     _logger.info("\n*** READING Environment BGP Tables ***\n");
     SortedMap<Path, String> inputData = readAllFiles(inputPath, _logger);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
-        parseEnvironmentBgpTables(inputData, answerElement);
+        parseEnvironmentBgpTables(snapshot, inputData, answerElement);
     return bgpTables;
   }
 
@@ -1607,13 +1609,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
-      SortedMap<Path, String> inputData, ParseEnvironmentBgpTablesAnswerElement answerElement) {
+      NetworkSnapshot snapshot,
+      SortedMap<Path, String> inputData,
+      ParseEnvironmentBgpTablesAnswerElement answerElement) {
     _logger.info("\n*** PARSING ENVIRONMENT BGP TABLES ***\n");
     _logger.resetTimer();
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables = new TreeMap<>();
     List<ParseEnvironmentBgpTableJob> jobs = new ArrayList<>();
-    SortedMap<String, Configuration> configurations =
-        loadConfigurations(peekNetworkSnapshotStack());
+    SortedMap<String, Configuration> configurations = loadConfigurations(snapshot);
     for (Entry<Path, String> bgpFile : inputData.entrySet()) {
       Path currentFile = bgpFile.getKey();
       String fileText = bgpFile.getValue();
@@ -2053,7 +2056,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Needed to ensure vendor configs are written
     loadParseVendorConfigurationAnswerElement(snapshot);
     Path inputPath = getTestrigSettings(snapshot).getSerializeVendorPath();
-    serializeIndependentConfigs(inputPath);
+    serializeIndependentConfigs(snapshot, inputPath);
   }
 
   /**
@@ -2190,7 +2193,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (_settings.getSerializeIndependent()) {
       Path inputPath = tr.getSerializeVendorPath();
-      answer.append(serializeIndependentConfigs(inputPath));
+      answer.append(serializeIndependentConfigs(snapshot, inputPath));
       // TODO: compute topology on initialization in cleaner way
       initializeTopology(snapshot);
       updateSnapshotNodeRoles(snapshot);
@@ -2285,7 +2288,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     answerElement.setVersion(BatfishVersion.getVersionStatic());
     answer.addAnswerElement(answerElement);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
-        getEnvironmentBgpTables(inputPath, answerElement);
+        getEnvironmentBgpTables(snapshot, inputPath, answerElement);
     serializeEnvironmentBgpTables(bgpTables, outputPath);
     serializeObject(
         answerElement, getTestrigSettings(snapshot).getParseEnvironmentBgpTablesAnswerPath());
@@ -2389,7 +2392,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return overlayConfigurations;
   }
 
-  private Answer serializeIndependentConfigs(Path vendorConfigPath) {
+  private Answer serializeIndependentConfigs(NetworkSnapshot snapshot, Path vendorConfigPath) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("Serialize vendor-independent configs").startActive()) {
       assert span != null; // avoid unused warning
@@ -2400,10 +2403,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answer.addAnswerElement(answerElement);
       }
 
-      NetworkSnapshot networkSnapshot = peekNetworkSnapshotStack();
       SnapshotRuntimeData runtimeData =
           firstNonNull(
-              _storage.loadRuntimeData(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()),
+              _storage.loadRuntimeData(snapshot.getNetwork(), snapshot.getSnapshot()),
               EMPTY_SNAPSHOT_RUNTIME_DATA);
       Map<String, VendorConfiguration> vendorConfigs;
       Map<String, Configuration> configurations;
@@ -2421,7 +2423,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .flatMap(vc -> vc.getLayer1Edges().stream())
               .collect(ImmutableSet.toImmutableSet());
 
-      addInternetAndIspNodes(configurations, vendorConfigs, answerElement.getWarnings());
+      addInternetAndIspNodes(snapshot, configurations, vendorConfigs, answerElement.getWarnings());
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
@@ -2433,8 +2435,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               // we don't write anything if no Layer1 edges were produced
               // empty topologies are currently dangerous for L1 computation
               layer1Edges.isEmpty() ? null : new Layer1Topology(layer1Edges),
-              _settings.getContainer(),
-              networkSnapshot.getSnapshot());
+              snapshot.getNetwork(),
+              snapshot.getSnapshot());
         } catch (IOException e) {
           throw new BatfishException("Could not store vendor independent configs to disk: %s", e);
         }
@@ -2443,13 +2445,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try (ActiveSpan ppSpan =
           GlobalTracer.get().buildSpan("Post-process vendor-independent configs").startActive()) {
         assert ppSpan != null; // avoid unused warning
-        postProcessSnapshot(networkSnapshot, configurations);
+        postProcessSnapshot(snapshot, configurations);
       }
       return answer;
     }
   }
 
   private void addInternetAndIspNodes(
+      NetworkSnapshot snapshot,
       Map<String, Configuration> configurations,
       Map<String, VendorConfiguration> vendorConfigs,
       SortedMap<String, Warnings> warnings) {
@@ -2463,9 +2466,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
     ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
 
-    NetworkSnapshot networkSnapshot = peekNetworkSnapshotStack();
     IspConfiguration ispConfiguration =
-        _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+        _storage.loadIspConfiguration(snapshot.getNetwork(), snapshot.getSnapshot());
     if (ispConfiguration != null) {
       ispConfigurations.add(ispConfiguration);
     }
@@ -2874,7 +2876,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       assert span != null; // avoid not used warning
       ResolvedReachabilityParameters params;
       try {
-        params = resolveReachabilityParameters(this, parameters, peekNetworkSnapshotStack());
+        params = resolveReachabilityParameters(this, parameters, snapshot);
       } catch (InvalidReachabilityParametersException e) {
         return e.getInvalidParametersAnswer();
       }
@@ -2941,7 +2943,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
       BDDLoopDetectionAnalysis analysis =
           bddReachabilityAnalysisFactory.bddLoopDetectionAnalysis(
-              getAllSourcesInferFromLocationIpSpaceAssignment());
+              getAllSourcesInferFromLocationIpSpaceAssignment(snapshot));
       Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
       String flowTag = getFlowTag(snapshot);
@@ -3027,9 +3029,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
-  public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment() {
-    SpecifierContextImpl specifierContext =
-        new SpecifierContextImpl(this, peekNetworkSnapshotStack());
+  public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment(
+      NetworkSnapshot snapshot) {
+    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, snapshot);
     Set<Location> locations =
         new UnionLocationSpecifier(
                 AllInterfacesLocationSpecifier.INSTANCE,
@@ -3053,28 +3055,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           ignoreFilters,
           false);
     }
-  }
-
-  @Nonnull
-  public BDDReachabilityAnalysis getBddReachabilityAnalysis(
-      BDDPacket pkt,
-      IpSpaceAssignment srcIpSpaceAssignment,
-      AclLineMatchExpr initialHeaderSpace,
-      Set<String> forbiddenTransitNodes,
-      Set<String> requiredTransitNodes,
-      Set<String> finalNodes,
-      Set<FlowDisposition> actions,
-      boolean ignoreFilters) {
-    return getBddReachabilityAnalysis(
-        peekNetworkSnapshotStack(),
-        pkt,
-        srcIpSpaceAssignment,
-        initialHeaderSpace,
-        forbiddenTransitNodes,
-        requiredTransitNodes,
-        finalNodes,
-        actions,
-        ignoreFilters);
   }
 
   public BDDReachabilityAnalysis getBddReachabilityAnalysis(

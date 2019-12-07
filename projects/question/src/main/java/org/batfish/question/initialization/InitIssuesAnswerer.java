@@ -45,7 +45,7 @@ public class InitIssuesAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ConvertConfigurationAnswerElement ccae =
-        _batfish.loadConvertConfigurationAnswerElementOrReparse();
+        _batfish.loadConvertConfigurationAnswerElementOrReparse(snapshot);
     ParseVendorConfigurationAnswerElement pvcae =
         _batfish.loadParseVendorConfigurationAnswerElement(snapshot);
 

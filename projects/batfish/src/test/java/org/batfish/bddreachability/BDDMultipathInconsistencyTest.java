@@ -191,7 +191,8 @@ public class BDDMultipathInconsistencyTest {
 
   @Test
   public void testAllDispositions() {
-    IpSpaceAssignment assignment = _batfish.getAllSourcesInferFromLocationIpSpaceAssignment();
+    IpSpaceAssignment assignment =
+        _batfish.getAllSourcesInferFromLocationIpSpaceAssignment(_batfish.getSnapshot());
     Set<FlowDisposition> dropDispositions =
         ImmutableSet.of(DENIED_IN, DENIED_OUT, NO_ROUTE, NULL_ROUTED);
 

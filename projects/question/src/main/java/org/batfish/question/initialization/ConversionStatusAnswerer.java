@@ -21,7 +21,7 @@ final class ConversionStatusAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ConvertConfigurationAnswerElement ccae =
-        _batfish.loadConvertConfigurationAnswerElementOrReparse();
+        _batfish.loadConvertConfigurationAnswerElementOrReparse(snapshot);
 
     Rows rows = new Rows();
     ccae.getConvertStatus()
