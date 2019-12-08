@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_concatenated;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
@@ -75,7 +76,7 @@ public class CumulusConcatenatedGrammarTest {
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
             src, new Warnings(), "", settings, null, false);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     return SerializationUtils.clone((CumulusNcluConfiguration) extractor.getVendorConfiguration());
   }
 
@@ -107,7 +108,7 @@ public class CumulusConcatenatedGrammarTest {
             src, new Warnings(), filename, parser.getSettings(), null, false);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     CumulusNcluConfiguration config = (CumulusNcluConfiguration) extractor.getVendorConfiguration();
     config.setFilename(TESTCONFIGS_PREFIX + filename);
     return config;

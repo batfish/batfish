@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.common.WillNotCommitException;
@@ -81,13 +82,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   private ConfigurationFormat _expectedFormat;
 
   private ParseTreeSentences _ptSentences;
-
+  final NetworkSnapshot _snapshot;
   @Nullable private SpanContext _spanContext;
-
   private Warnings _warnings;
 
   public ParseVendorConfigurationJob(
       Settings settings,
+      NetworkSnapshot snapshot,
       String fileText,
       String filename,
       Warnings warnings,
@@ -102,6 +103,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
     _spanContext = spanContext;
+    _snapshot = snapshot;
   }
 
   private static final Pattern WHITESPACE_ONLY = Pattern.compile("^\\s*$");
@@ -343,7 +345,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       _logger.info("\tPost-processing...");
 
       try {
-        extractor.processParseTree(tree);
+        extractor.processParseTree(_snapshot, tree);
       } catch (BatfishParseException e) {
         _warnings.setErrorDetails(e.getErrorDetails());
         throw new BatfishException("Error processing parse tree", e);

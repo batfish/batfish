@@ -35,6 +35,12 @@ import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
 
+  public static final String TEST_SNAPSHOT_NAME = "TestSsName";
+  public static final NetworkSnapshot TEST_SNAPSHOT =
+      new NetworkSnapshot(new NetworkId("testnet"), new SnapshotId("testss"));
+  public static final NetworkSnapshot TEST_REFERENCE_SNAPSHOT =
+      new NetworkSnapshot(new NetworkId("testnet"), new SnapshotId("testrefss"));
+
   private static class TestFileBasedIdResolver extends FileBasedIdResolver {
 
     public TestFileBasedIdResolver(Path storageBase) {
@@ -62,13 +68,11 @@ public class BatfishTestUtils {
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
     settings.setStorageBase(tempFolder.newFolder().toPath());
-    settings.setContainer("tempNetworkId");
-    settings.setTestrig("tempSnapshotId");
-    settings.setSnapshotName("tempSnapshot");
+    settings.setContainer(TEST_SNAPSHOT.getNetwork().getId());
+    settings.setTestrig(TEST_SNAPSHOT.getSnapshot().getId());
+    settings.setSnapshotName(TEST_SNAPSHOT_NAME);
     if (!configurations.isEmpty()) {
-      testrigs.put(
-          new NetworkSnapshot(new NetworkId("tempNetworkId"), new SnapshotId("tempSnapshotId")),
-          configurations);
+      testrigs.put(TEST_SNAPSHOT, configurations);
     }
     Batfish batfish =
         new Batfish(
@@ -95,18 +99,13 @@ public class BatfishTestUtils {
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
     settings.setStorageBase(tempFolder.newFolder().toPath());
-    settings.setContainer("tempNetworkId");
-    NetworkSnapshot networkSnapshot =
-        new NetworkSnapshot(new NetworkId("tempNetworkId"), new SnapshotId("tempSnapshotId"));
-    NetworkSnapshot referenceNetworkSnapshot =
-        new NetworkSnapshot(
-            new NetworkId("tempNetworkId"), new SnapshotId("tempReferenceSnapshotId"));
+    settings.setContainer(TEST_SNAPSHOT.getNetwork().getId());
     if (!baseConfigs.isEmpty()) {
-      settings.setTestrig("tempSnapshotId");
-      settings.setSnapshotName("tempSnapshot");
-      settings.setDeltaTestrig(new SnapshotId("tempReferenceSnapshotId"));
-      testrigs.put(networkSnapshot, baseConfigs);
-      testrigs.put(referenceNetworkSnapshot, deltaConfigs);
+      settings.setTestrig(TEST_SNAPSHOT.getSnapshot().getId());
+      settings.setSnapshotName(TEST_SNAPSHOT_NAME);
+      settings.setDeltaTestrig(TEST_REFERENCE_SNAPSHOT.getSnapshot());
+      testrigs.put(TEST_SNAPSHOT, baseConfigs);
+      testrigs.put(TEST_REFERENCE_SNAPSHOT, deltaConfigs);
     }
     Batfish batfish =
         new Batfish(
@@ -118,11 +117,11 @@ public class BatfishTestUtils {
             new TestFileBasedIdResolver(settings.getStorageBase()));
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
-      batfish.initializeTopology(networkSnapshot);
+      batfish.initializeTopology(TEST_SNAPSHOT);
     }
     if (!deltaConfigs.isEmpty()) {
       batfish.pushDeltaSnapshot();
-      batfish.initializeTopology(referenceNetworkSnapshot);
+      batfish.initializeTopology(TEST_REFERENCE_SNAPSHOT);
       batfish.popSnapshot();
     }
     registerDataPlanePlugins(batfish);
@@ -166,9 +165,9 @@ public class BatfishTestUtils {
     Settings settings = new Settings(new String[] {});
     configureBatfishTestSettings(settings);
     settings.setStorageBase(tempFolder.newFolder().toPath());
-    settings.setContainer("tempNetworkId");
-    settings.setTestrig("tempSnapshotId");
-    settings.setSnapshotName("tempSnapshot");
+    settings.setContainer(TEST_SNAPSHOT.getNetwork().getId());
+    settings.setTestrig(TEST_SNAPSHOT.getSnapshot().getId());
+    settings.setSnapshotName(TEST_SNAPSHOT_NAME);
     Batfish batfish =
         new Batfish(
             settings,
@@ -236,7 +235,7 @@ public class BatfishTestUtils {
       @Nonnull StorageProvider storageProvider, @Nonnull IdResolver idResolver) {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    settings.setContainer("tempContainer");
+    settings.setContainer(TEST_SNAPSHOT.getNetwork().getId());
     Batfish batfish =
         new Batfish(
             settings,

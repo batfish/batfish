@@ -1632,7 +1632,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Warnings warnings = buildWarnings(_settings);
       ParseEnvironmentBgpTableJob job =
           new ParseEnvironmentBgpTableJob(
-              _settings, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
+              _settings, snapshot, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -1654,7 +1654,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
    */
   private List<ParseVendorConfigurationJob> makeParseVendorConfigurationsJobs(
-      Map<String, String> keyedFileText, ConfigurationFormat expectedFormat) {
+      NetworkSnapshot snapshot,
+      Map<String, String> keyedFileText,
+      ConfigurationFormat expectedFormat) {
     List<ParseVendorConfigurationJob> jobs = new ArrayList<>(keyedFileText.size());
     for (Entry<String, String> vendorFile : keyedFileText.entrySet()) {
       @Nullable
@@ -1666,6 +1668,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings,
+              snapshot,
               vendorFile.getValue(),
               vendorFile.getKey(),
               buildWarnings(_settings),
@@ -1685,6 +1688,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
    */
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
+      NetworkSnapshot snapshot,
       Map<String, String> keyedConfigurationText,
       ParseVendorConfigurationAnswerElement answerElement,
       ConfigurationFormat expectedFormat) {
@@ -1692,7 +1696,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     List<ParseVendorConfigurationJob> jobs =
-        makeParseVendorConfigurationsJobs(keyedConfigurationText, expectedFormat);
+        makeParseVendorConfigurationsJobs(snapshot, keyedConfigurationText, expectedFormat);
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,
@@ -2332,7 +2336,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         GlobalTracer.get().buildSpan("Parse host configs").startActive()) {
       assert parseHostConfigsSpan != null; // avoid unused warning
       allHostConfigurations =
-          parseVendorConfigurations(keyedHostText, answerElement, ConfigurationFormat.HOST);
+          parseVendorConfigurations(
+              snapshot, keyedHostText, answerElement, ConfigurationFormat.HOST);
     }
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
@@ -2361,7 +2366,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     e -> testRigPath.relativize(e.getKey()).toString(), Entry::getValue));
 
     SortedMap<String, VendorConfiguration> iptablesConfigurations =
-        parseVendorConfigurations(keyedIptablesText, answerElement, ConfigurationFormat.IPTABLES);
+        parseVendorConfigurations(
+            snapshot, keyedIptablesText, answerElement, ConfigurationFormat.IPTABLES);
     for (VendorConfiguration vc : allHostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
@@ -2623,7 +2629,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .collect(
                     ImmutableMap.toImmutableMap(
                         e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
-        jobs = makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
+        jobs =
+            makeParseVendorConfigurationsJobs(
+                snapshot, keyedConfigText, ConfigurationFormat.UNKNOWN);
       }
 
       AtomicInteger batch = newBatch("Parse network configs", jobs.size());
@@ -2705,7 +2713,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   ImmutableMap.toImmutableMap(
                       e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
       vendorConfigurations =
-          parseVendorConfigurations(keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
+          parseVendorConfigurations(
+              snapshot, keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
     }
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
