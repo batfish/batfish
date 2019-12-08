@@ -1229,11 +1229,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public NetworkSnapshot peekNetworkSnapshotStack() {
-    return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
-  }
-
-  @Override
   public NetworkSnapshot getSnapshot() {
     return new NetworkSnapshot(_settings.getContainer(), _baseTestrigSettings.getName());
   }

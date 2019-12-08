@@ -409,11 +409,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public NetworkSnapshot peekNetworkSnapshotStack() {
-    return _snapshotStack.peek();
-  }
-
-  @Override
   public NetworkSnapshot getSnapshot() {
     if (_snapshot == null) {
       _snapshot = new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss"));

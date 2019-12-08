@@ -86,9 +86,6 @@ public interface IBatfish extends IPluginConsumer {
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);
 
   @Nonnull
-  NetworkSnapshot peekNetworkSnapshotStack();
-
-  @Nonnull
   NetworkSnapshot getSnapshot();
 
   @Nonnull
