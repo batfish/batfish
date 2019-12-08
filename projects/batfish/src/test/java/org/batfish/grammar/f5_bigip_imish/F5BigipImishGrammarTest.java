@@ -818,7 +818,7 @@ public final class F5BigipImishGrammarTest {
     String used = "123";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, BGP_PROCESS, used, 1));
@@ -1007,7 +1007,7 @@ public final class F5BigipImishGrammarTest {
     batfish.getSettings().setThrowOnParserError(false);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasIpAccessLists(hasKey("acl2")));
-    InitInfoAnswerElement initAns = batfish.initInfo(false, true);
+    InitInfoAnswerElement initAns = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));
   }
 
@@ -1131,7 +1131,7 @@ public final class F5BigipImishGrammarTest {
     String used = "route-map-used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, ROUTE_MAP, undefined));

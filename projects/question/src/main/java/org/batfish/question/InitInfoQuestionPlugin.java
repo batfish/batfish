@@ -23,9 +23,10 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       InitInfoQuestion question = (InitInfoQuestion) _question;
       boolean b = question._environmentBgpTables;
       if (b) {
-        return _batfish.initInfoBgpAdvertisements(question._summary, question._verboseError);
+        return _batfish.initInfoBgpAdvertisements(
+            snapshot, question._summary, question._verboseError);
       } else {
-        return _batfish.initInfo(question._summary, question._verboseError);
+        return _batfish.initInfo(snapshot, question._summary, question._verboseError);
       }
     }
   }

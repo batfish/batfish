@@ -25,7 +25,8 @@ public class JsonExternalBgpAdvertisementPlugin extends ExternalBgpAdvertisement
   @Override
   public Set<BgpAdvertisement> loadExternalBgpAdvertisements(NetworkSnapshot snapshot) {
     Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    String externalBgpAnnouncementsFileContents = _batfish.readExternalBgpAnnouncementsFile();
+    String externalBgpAnnouncementsFileContents =
+        _batfish.readExternalBgpAnnouncementsFile(snapshot);
     if (externalBgpAnnouncementsFileContents != null) {
       // Populate advertSet with BgpAdvertisements that
       // gets passed to populatePrecomputedBgpAdvertisements.

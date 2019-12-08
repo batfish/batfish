@@ -690,7 +690,7 @@ public final class XrGrammarTest {
     assertThat(c, hasRoute6FilterList("pre_combo", not(permits(rejectedPrefix6))));
 
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String filename = "configs/" + hostname;
     /*
      * pre_combo should be the only prefix set without a referrer

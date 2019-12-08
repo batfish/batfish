@@ -433,7 +433,7 @@ public final class FlatJuniperGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm application usage is tracked properly */
     assertThat(ccae, hasNumReferrers(filename, APPLICATION, "a2", 0));
@@ -450,7 +450,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     Configuration c = parseConfig(hostname);
 
     /* Check that appset2 contains definition of appset1 concatenated with definition of a3 */
@@ -606,7 +606,7 @@ public final class FlatJuniperGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm filter usage is tracked properly */
     assertThat(ccae, hasNumReferrers(filename, AUTHENTICATION_KEY_CHAIN, "KC", 1));
@@ -1175,7 +1175,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "default-applications";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
@@ -1266,7 +1266,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* esfilter should be referred, while esfilter2 should be unreferred */
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter", 1));
@@ -1280,7 +1280,7 @@ public final class FlatJuniperGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm filter usage is tracked properly */
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 3));
@@ -2259,7 +2259,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm defined structures in nested config show up with original definition line numbers */
     assertThat(
@@ -2664,7 +2664,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * We expect an undefined reference for VLAN_TEST_UNDEFINED
@@ -3662,7 +3662,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm definitions are tracked properly for structures defined by apply-groups/apply-path
     assertThat(
@@ -4412,7 +4412,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testPredefinedJunosApplications() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    InitInfoAnswerElement answer = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(
         answer.toString(),
         not(Matchers.containsString("unimplemented pre-defined junos application")));
@@ -4421,7 +4421,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testPredefinedJunosApplicationSets() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    InitInfoAnswerElement answer = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(
         answer.toString(),
         not(Matchers.containsString("unimplemented pre-defined junos application-set")));
@@ -4434,7 +4434,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     Flow flowAccepted1 = createFlow("1.2.3.4", "0.0.0.0");
     Flow flowAccepted2 = createFlow("1.2.3.5", "0.0.0.0");

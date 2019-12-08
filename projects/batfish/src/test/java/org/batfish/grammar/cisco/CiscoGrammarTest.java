@@ -701,7 +701,7 @@ public final class CiscoGrammarTest {
             _folder);
 
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // check expected references for {mac,ip}_acl{_unused,}
     assertThat(ccae, hasNumReferrers(filename, MAC_ACCESS_LIST, "mac_acl_unused", 0));
@@ -725,7 +725,9 @@ public final class CiscoGrammarTest {
 
     SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         undefinedReferences =
-            batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
+            batfish
+                .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+                .getUndefinedReferences();
 
     // only mac_acl_udef and ip_acl_udef should be undefined references
     assertThat(undefinedReferences, hasKey(filename));
@@ -896,7 +898,7 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * The produced ACL should permit if source matcher object on1, destination matches on2, and
@@ -1071,7 +1073,7 @@ public final class CiscoGrammarTest {
     parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm reference tracking is correct for globally applied ASA access list in access group
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_GLOBAL", 1));
@@ -1084,7 +1086,7 @@ public final class CiscoGrammarTest {
     parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm reference tracking is correct for ASA access lists in access group
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_IN", 1));
@@ -1156,7 +1158,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String osIcmpAclName = computeServiceObjectAclName("OS_ICMP");
     String osTcpAclName = computeServiceObjectAclName("OS_TCPUDP");
@@ -1232,7 +1234,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm objects have the correct number of referrers */
     assertThat(ccae, hasNumReferrers(filename, ICMP_TYPE_OBJECT_GROUP, "echo_group", 1));
@@ -1266,7 +1268,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm service have the correct number of referrers */
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "eng", 1));
@@ -1305,7 +1307,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm service have the correct number of referrers */
     assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, "proto1", 1));
@@ -1344,7 +1346,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm objects have the correct number of referrers */
     assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "service1", 1));
@@ -1464,7 +1466,7 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * The produced ACL should permit if source matchers object-group ogn1, destination matches
@@ -1530,7 +1532,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm reference counts are correct for ACLs
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
@@ -1568,7 +1570,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-unused", 0));
     assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-used", 1));
@@ -1584,7 +1586,7 @@ public final class CiscoGrammarTest {
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pl4in", 1));
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pl4out", 1));
@@ -2012,7 +2014,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "ci", 1));
     assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "ciunused", 0));
@@ -2058,7 +2060,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, KEYRING, "kused", 1));
     assertThat(ccae, hasNumReferrers(filename, KEYRING, "kunused", 0));
@@ -2216,7 +2218,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     Ip ognWildcardIp = Ip.parse("1.128.0.0");
     Ip ognHostIp = Ip.parse("2.0.0.1");
     Ip ognUnmatchedIp = Ip.parse("2.0.0.0");
@@ -2264,7 +2266,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String ogpIcmpName = "ogp1";
     String ogpTcpUdpName = "ogp2";
     String ogpEmptyName = "ogp3";
@@ -2353,7 +2355,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm the used object groups have referrers */
     assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "og-icmp", 2));
@@ -2668,7 +2670,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclin", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclout", 1));
@@ -3146,7 +3148,7 @@ public final class CiscoGrammarTest {
 
     /* Confirm access list uses are counted correctly */
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String filename = "configs/" + advertiserName;
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "100", 1));
@@ -3169,7 +3171,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm prefix list uses are counted correctly */
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 3));
@@ -3224,7 +3226,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm route map uses are counted correctly */
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_if", 1));
@@ -3267,7 +3269,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     /* Confirm community strings are correctly parsed */
@@ -3285,7 +3287,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * We expected the only unused acl to be aclunused
@@ -3306,7 +3308,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * We expected the only unused class-map to be cmunused
@@ -3345,7 +3347,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 1));
     assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 0));
@@ -3359,7 +3361,7 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * We expected the only unused zone to be zunreferenced
@@ -3392,7 +3394,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     Ip on1Ip = Ip.parse("1.2.3.4");
     Ip on2IpStart = Ip.parse("2.2.2.0");
     Ip on2IpEnd = Ip.parse("2.2.2.255");
@@ -3987,7 +3989,7 @@ public final class CiscoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(
         ccae,
@@ -4124,7 +4126,7 @@ public final class CiscoGrammarTest {
 
     /* Confirm RSA pubkey is referenced */
     assertThat(
-        batfish.loadConvertConfigurationAnswerElementOrReparse(),
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()),
         hasNumReferrers("configs/" + hostname, NAMED_RSA_PUB_KEY, "testrsa", 1));
   }
 
@@ -4161,7 +4163,7 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
@@ -4353,7 +4355,7 @@ public final class CiscoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, VXLAN, "Vxlan1", 1));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Loopback1", 2));
@@ -4896,7 +4898,7 @@ public final class CiscoGrammarTest {
     String prefixListName = "SET_COMMUNITY_65535:200";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm prefix-list with correct name was defined */
     assertThat(ccae, hasDefinedStructure(filename, PREFIX_LIST, prefixListName));
@@ -5259,7 +5261,7 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm interface's address is extracted properly
     assertThat(
@@ -5582,7 +5584,7 @@ public final class CiscoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // check expected references
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "inside", 4));
@@ -6020,7 +6022,7 @@ public final class CiscoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // check expected references
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "inside", 6));

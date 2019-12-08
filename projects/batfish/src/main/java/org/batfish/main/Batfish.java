@@ -1264,19 +1264,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
+  public InitInfoAnswerElement initInfo(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
     ParseVendorConfigurationAnswerElement parseAnswer =
-        loadParseVendorConfigurationAnswerElement(peekNetworkSnapshotStack());
+        loadParseVendorConfigurationAnswerElement(snapshot);
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
-    mergeConvertAnswer(summary, verboseError, answerElement);
+    ConvertConfigurationAnswerElement convertAnswer =
+        loadConvertConfigurationAnswerElementOrReparse(snapshot);
+    mergeConvertAnswer(summary, verboseError, convertAnswer, answerElement);
     _logger.info(answerElement.toString());
     return answerElement;
   }
 
   @Override
-  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
+  public InitInfoAnswerElement initInfoBgpAdvertisements(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
     ParseEnvironmentBgpTablesAnswerElement parseAnswer =
-        loadParseEnvironmentBgpTablesAnswerElement(peekNetworkSnapshotStack());
+        loadParseEnvironmentBgpTablesAnswerElement(snapshot);
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
     _logger.info(answerElement.toString());
     return answerElement;
@@ -1462,9 +1466,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void mergeConvertAnswer(
-      boolean summary, boolean verboseError, InitInfoAnswerElement answerElement) {
-    ConvertConfigurationAnswerElement convertAnswer =
-        loadConvertConfigurationAnswerElementOrReparse();
+      boolean summary,
+      boolean verboseError,
+      ConvertConfigurationAnswerElement convertAnswer,
+      InitInfoAnswerElement answerElement) {
     mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
     convertAnswer.getConvertStatus().entrySet().stream()
         .filter(s -> s.getValue() == ConvertStatus.FAILED)
@@ -1930,13 +1935,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettings = _deltaTestrigSettings;
   }
 
-  @Nullable
-  @Override
-  public String readExternalBgpAnnouncementsFile() {
-    return readExternalBgpAnnouncementsFile(peekNetworkSnapshotStack());
-  }
-
-  @Nullable
+  @Override @Nullable
   public String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
     Path externalBgpAnnouncementsPath =
         getTestrigSettings(snapshot).getExternalBgpAnnouncementsPath();
@@ -2205,7 +2204,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getInitInfo()) {
-      InitInfoAnswerElement initInfoAnswerElement = initInfo(true, false);
+      InitInfoAnswerElement initInfoAnswerElement = initInfo(snapshot, true, false);
       // In this context we can remove parse trees because they will be returned in preceding answer
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());

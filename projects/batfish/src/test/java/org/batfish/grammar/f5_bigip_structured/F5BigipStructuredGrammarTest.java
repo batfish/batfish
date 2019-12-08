@@ -609,7 +609,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/my_bgp_process";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, BGP_PROCESS, used, 1));
@@ -1049,7 +1049,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(
         ans.getDefinedStructures().get(file).get(DATA_GROUP_INTERNAL.getDescription()),
@@ -1329,7 +1329,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "1.0";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, VLAN_MEMBER_INTERFACE, undefined));
@@ -1356,7 +1356,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(
         ans.getDefinedStructures().get(file).get(F5BigipStructureType.RULE.getDescription()),
         aMapWithSize(11));
@@ -1378,7 +1378,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // monitor dns
     {
@@ -1507,7 +1507,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/node_used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, NODE, undefined));
@@ -1535,7 +1535,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // persistence cookie
     {
@@ -1600,7 +1600,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/pool_used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, POOL, undefined));
@@ -1644,7 +1644,8 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasRoute6FilterLists(not(hasKey(invalidName))));
 
     // Check errors
-    Warnings warnings = batfish.initInfo(false, true).getWarnings().get(hostname);
+    Warnings warnings =
+        batfish.initInfo(batfish.getSnapshot(), false, true).getWarnings().get(hostname);
 
     assertTrue(
         "Missing IPv4 prefix reported",
@@ -1691,7 +1692,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/prefix-list-used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, PREFIX_LIST, undefined));
@@ -1709,7 +1710,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // profile analytics
     {
@@ -2726,7 +2727,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/route-map-used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, ROUTE_MAP, undefined));
@@ -2745,7 +2746,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/route1";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, ROUTE, used, 1));
@@ -2757,7 +2758,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String undefined = "/Common/rule_undefined";
     String unused = "/Common/rule_unused";
     String used = "/Common/rule_used";
@@ -2779,7 +2780,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/self_used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, SELF, used, 1));
@@ -2998,7 +2999,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/snatpool_used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, SNATPOOL, undefined));
@@ -3016,7 +3017,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String used = "/Common/snat_used";
 
     // detect all structure references
@@ -3029,7 +3030,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String undefined = "/Common/192.0.2.6";
     String unused = "/Common/192.0.2.5";
     String used = "/Common/192.0.2.4";
@@ -3097,7 +3098,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "trunk_used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, VLAN_MEMBER_INTERFACE, undefined));
@@ -3119,7 +3120,7 @@ public final class F5BigipStructuredGrammarTest {
     batfish.getSettings().setThrowOnParserError(false);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasInterfaces(hasKey("1.0")));
-    InitInfoAnswerElement initAns = batfish.initInfo(false, true);
+    InitInfoAnswerElement initAns = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));
   }
 
@@ -3282,7 +3283,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String undefined = "/Common/192.0.2.9";
     String unused = "/Common/192.0.2.8";
     String used = "/Common/192.0.2.7";
@@ -3575,7 +3576,7 @@ public final class F5BigipStructuredGrammarTest {
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String used = "/Common/virtual_used";
 
     // detect all structure references
@@ -3674,7 +3675,7 @@ public final class F5BigipStructuredGrammarTest {
     String used = "/Common/vlan_used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, VLAN, undefined));

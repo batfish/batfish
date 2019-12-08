@@ -121,16 +121,13 @@ public interface IBatfish extends IPluginConsumer {
 
   String getTaskId();
 
-  InitInfoAnswerElement initInfo(boolean summary, boolean verboseError);
+  InitInfoAnswerElement initInfo(NetworkSnapshot snapshot, boolean summary, boolean verboseError);
 
-  InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError);
+  InitInfoAnswerElement initInfoBgpAdvertisements(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError);
 
   /** Returns the configurations for given snapshot. */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);
-
-  default ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
-    return loadConvertConfigurationAnswerElementOrReparse(peekNetworkSnapshotStack());
-  }
 
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
       NetworkSnapshot snapshot);
@@ -157,7 +154,7 @@ public interface IBatfish extends IPluginConsumer {
   void pushDeltaSnapshot();
 
   @Nullable
-  String readExternalBgpAnnouncementsFile();
+  String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot);
 
   void registerAnswerer(
       String questionName,

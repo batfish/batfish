@@ -276,12 +276,14 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
+  public InitInfoAnswerElement initInfo(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
+  public InitInfoAnswerElement initInfoBgpAdvertisements(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
     throw new UnsupportedOperationException();
   }
 
@@ -346,7 +348,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Nullable
   @Override
-  public String readExternalBgpAnnouncementsFile() {
+  public String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 

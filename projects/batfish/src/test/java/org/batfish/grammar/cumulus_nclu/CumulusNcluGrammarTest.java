@@ -664,9 +664,9 @@ public final class CumulusNcluGrammarTest {
   public void testBondReferences() throws IOException {
     String hostname = "cumulus_nclu_bond_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 3));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "bond2.4094", 2));
   }
@@ -1096,9 +1096,9 @@ public final class CumulusNcluGrammarTest {
   public void testInterfaceReferences() throws IOException {
     String hostname = "cumulus_nclu_interface_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 4));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp3", 1));
@@ -1151,9 +1151,9 @@ public final class CumulusNcluGrammarTest {
   public void testLoopbackReferences() throws IOException {
     String hostname = "cumulus_nclu_loopback_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(
         ans,
         hasNumReferrers(
@@ -1167,9 +1167,9 @@ public final class CumulusNcluGrammarTest {
   public void testRouteMapReferences() throws IOException {
     String hostname = "cumulus_nclu_route_map_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.ROUTE_MAP, "rm1", 2));
   }
 
@@ -1479,9 +1479,9 @@ public final class CumulusNcluGrammarTest {
   public void testVrfReferences() throws IOException {
     String hostname = "cumulus_nclu_vrf_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 7));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf3", 1));
@@ -1572,9 +1572,9 @@ public final class CumulusNcluGrammarTest {
   public void testVxlanReferences() throws IOException {
     String hostname = "cumulus_nclu_vxlan_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VXLAN, "v2", 1));
   }
 

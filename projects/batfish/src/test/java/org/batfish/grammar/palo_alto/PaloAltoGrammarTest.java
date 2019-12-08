@@ -450,7 +450,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_GROUP, group0, 2));
     assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_GROUP, group1, 0));
@@ -499,7 +499,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String objectName = computeObjectName(DEFAULT_VSYS_NAME, "11.11.11.11");
     String groupName = computeObjectName(DEFAULT_VSYS_NAME, "22.22.22.22");
@@ -565,13 +565,13 @@ public final class PaloAltoGrammarTest {
     // Confirm reference count is correct for used structure
     Batfish batfish1 = getBatfishForConfigurationNames(hostname1);
     ConvertConfigurationAnswerElement ccae1 =
-        batfish1.loadConvertConfigurationAnswerElementOrReparse();
+        batfish1.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
 
     assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name, 0));
 
     Batfish batfish2 = getBatfishForConfigurationNames(hostname2);
     ConvertConfigurationAnswerElement ccae2 =
-        batfish2.loadConvertConfigurationAnswerElementOrReparse();
+        batfish2.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
 
     // Confirm reference count is correct for used structure
     assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name, 2));
@@ -602,7 +602,7 @@ public final class PaloAltoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String app1Name = computeObjectName(DEFAULT_VSYS_NAME, "app1");
     String app2Name = computeObjectName(DEFAULT_VSYS_NAME, "app2");
@@ -1027,7 +1027,7 @@ public final class PaloAltoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String app1Name = computeObjectName(DEFAULT_VSYS_NAME, "ssh");
 
@@ -1063,7 +1063,7 @@ public final class PaloAltoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(
         ccae,
         hasNumReferrers(
@@ -1253,7 +1253,7 @@ public final class PaloAltoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm reference counts are correct for both used and unused structures
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 1));
@@ -1349,7 +1349,7 @@ public final class PaloAltoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm defined structures in nested config show up with original definition line numbers
     assertThat(
@@ -1631,7 +1631,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String serviceName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
     String z1Name = computeObjectName(DEFAULT_VSYS_NAME, "z1");
@@ -1790,7 +1790,7 @@ public final class PaloAltoGrammarTest {
 
     // assert static interface route reference
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String filename = "configs/" + hostname;
     assertThat(
         ccae, hasUndefinedReference(filename, INTERFACE, "ethernet1/1", STATIC_ROUTE_INTERFACE));
@@ -1883,7 +1883,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String service1Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE1");
     String service2Name = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE2");
@@ -1954,7 +1954,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String serviceHttp =
         computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.SERVICE_HTTP.getName());
@@ -2039,7 +2039,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String serviceAnyName = computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.ANY.getName());
     String serviceHttpName =
@@ -2088,7 +2088,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm structure definitions are recorded correctly, even for badly named shared-gateway
     assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg1"));
@@ -2208,7 +2208,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm structure definitions are tracked separately for each vsys
     assertThat(ccae, hasDefinedStructure(filename, SERVICE, vsys1ServiceName));
@@ -2230,7 +2230,7 @@ public final class PaloAltoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String zoneName = computeObjectName("vsys1", "z1");
     String zoneEmptyName = computeObjectName("vsys11", "z1");
@@ -2288,7 +2288,7 @@ public final class PaloAltoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String z1Name = computeObjectName(DEFAULT_VSYS_NAME, "zone 1");
     String zEmptyName = computeObjectName(DEFAULT_VSYS_NAME, "zempty");
