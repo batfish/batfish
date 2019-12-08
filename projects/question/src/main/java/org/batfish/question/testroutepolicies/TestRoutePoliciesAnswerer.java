@@ -182,30 +182,22 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     SpecifierContext context = _batfish.specifierContext(snapshot);
     SpecifierContext referenceCtx = _batfish.specifierContext(reference);
 
-    _batfish.pushBaseSnapshot();
     SortedSet<RoutingPolicyId> basePolicies = resolvePolicies(context);
-    _batfish.popSnapshot();
 
-    _batfish.pushDeltaSnapshot();
     SortedSet<RoutingPolicyId> deltaPolicies = resolvePolicies(referenceCtx);
-    _batfish.popSnapshot();
 
     SortedSet<RoutingPolicyId> policies =
         Sets.intersection(basePolicies, deltaPolicies).stream()
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
-    _batfish.pushBaseSnapshot();
     Map<Result.Key, Result> baseResults =
         getResults(context, policies)
             .flatMap(this::testPolicy)
             .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
     Map<Result.Key, Result> deltaResults =
         getResults(referenceCtx, policies)
             .flatMap(this::testPolicy)
             .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
-    _batfish.popSnapshot();
 
     checkState(
         baseResults.keySet().equals(deltaResults.keySet()),

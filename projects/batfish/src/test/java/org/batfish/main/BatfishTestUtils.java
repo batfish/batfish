@@ -120,9 +120,7 @@ public class BatfishTestUtils {
       batfish.initializeTopology(TEST_SNAPSHOT);
     }
     if (!deltaConfigs.isEmpty()) {
-      batfish.pushDeltaSnapshot();
       batfish.initializeTopology(TEST_REFERENCE_SNAPSHOT);
-      batfish.popSnapshot();
     }
     registerDataPlanePlugins(batfish);
     return batfish;

@@ -59,19 +59,11 @@ public abstract class Answerer {
    * @param reference
    */
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
-    _batfish.pushBaseSnapshot();
     _batfish.checkSnapshotOutputReady(snapshot);
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
     _batfish.checkSnapshotOutputReady(reference);
-    _batfish.popSnapshot();
 
-    _batfish.pushBaseSnapshot();
     AnswerElement baseAnswer = create(_question, _batfish).answer(snapshot);
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
     AnswerElement deltaAnswer = create(_question, _batfish).answer(reference);
-    _batfish.popSnapshot();
     if (baseAnswer instanceof TableAnswerElement) {
       TableAnswerElement rawTable =
           TableDiff.diffTables(

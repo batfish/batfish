@@ -108,13 +108,9 @@ public class DifferentialReachabilityTest {
     SortedMap<String, Configuration> deltaConfigs = generateConfigs(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
-    batfish.pushBaseSnapshot();
     batfish.computeDataPlane(batfish.getSnapshot());
-    batfish.popSnapshot();
 
-    batfish.pushDeltaSnapshot();
     batfish.computeDataPlane(batfish.getReferenceSnapshot());
-    batfish.popSnapshot();
 
     return batfish;
   }

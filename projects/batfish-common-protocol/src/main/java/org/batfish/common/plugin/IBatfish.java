@@ -138,17 +138,11 @@ public interface IBatfish extends IPluginConsumer {
 
   AtomicInteger newBatch(String description, int jobs);
 
-  void popSnapshot();
-
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(
       NetworkSnapshot snapshot, Map<String, Configuration> configurations);
 
   /** @return a {@link TracerouteEngine} for the given snapshot. */
   TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot);
-
-  void pushBaseSnapshot();
-
-  void pushDeltaSnapshot();
 
   @Nullable
   String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot);

@@ -64,14 +64,10 @@ public final class TracerouteAnswerer extends Answerer {
   @Override
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
     TracerouteQuestion q = ((TracerouteQuestion) _question);
-    _batfish.pushBaseSnapshot();
     Map<Flow, List<Trace>> baseFlowTraces = getTraces(snapshot, _batfish.getFlowTag(snapshot), q);
-    _batfish.popSnapshot();
 
-    _batfish.pushDeltaSnapshot();
     Map<Flow, List<Trace>> deltaFlowTraces =
         getTraces(reference, _batfish.getFlowTag(reference), q);
-    _batfish.popSnapshot();
 
     Multiset<Row> rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, q.getMaxTraces());
     TableAnswerElement table = new TableAnswerElement(metadata(true));

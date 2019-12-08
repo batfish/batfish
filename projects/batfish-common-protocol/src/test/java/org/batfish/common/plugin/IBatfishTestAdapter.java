@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
@@ -327,23 +326,8 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void popSnapshot() {
-    _snapshotStack.pop();
-  }
-
-  @Override
   public TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void pushBaseSnapshot() {
-    _snapshotStack.push(getSnapshot());
-  }
-
-  @Override
-  public void pushDeltaSnapshot() {
-    _snapshotStack.push(getReferenceSnapshot());
   }
 
   @Nullable
@@ -430,12 +414,6 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
-  public IBatfishTestAdapter() {
-    _snapshotStack = new Stack<>();
-    _snapshotStack.push(getSnapshot());
-  }
-
   private NetworkSnapshot _snapshot;
   private NetworkSnapshot _referenceSnapshot;
-  private final @Nonnull Stack<NetworkSnapshot> _snapshotStack;
 }

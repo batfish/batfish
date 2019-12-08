@@ -482,10 +482,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   // finished (null if job finished successfully)
   private String _terminatingExceptionMessage;
 
-  private TestrigSettings _testrigSettings;
-
-  private final List<TestrigSettings> _testrigSettingsStack;
-
   private Map<String, DataPlanePlugin> _dataPlanePlugins;
 
   private final TopologyProvider _topologyProvider;
@@ -504,8 +500,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     initLocalSettings(settings);
-    _testrigSettings = _baseTestrigSettings;
-    _testrigSettingsStack = new ArrayList<>();
     _logger = _settings.getLogger();
     _terminatingExceptionMessage = null;
     _answererCreators = new HashMap<>();
@@ -1297,13 +1291,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void prepareToAnswerQuestions(boolean diff, boolean dp) {
-    pushBaseSnapshot();
     prepareToAnswerQuestions(getSnapshot(), dp);
-    popSnapshot();
     if (diff) {
-      pushDeltaSnapshot();
       prepareToAnswerQuestions(getReferenceSnapshot(), dp);
-      popSnapshot();
     }
   }
 
@@ -1709,13 +1699,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return vendorConfigurations;
   }
 
-  @Override
-  public void popSnapshot() {
-    int lastIndex = _testrigSettingsStack.size() - 1;
-    _testrigSettings = _testrigSettingsStack.get(lastIndex);
-    _testrigSettingsStack.remove(lastIndex);
-  }
-
   private void populateChannelGroupMembers(
       Map<String, Interface> interfaces, String ifaceName, Interface iface) {
     String portChannelName = iface.getChannelGroup();
@@ -1916,18 +1899,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 }
               }
             });
-  }
-
-  @Override
-  public void pushBaseSnapshot() {
-    _testrigSettingsStack.add(_testrigSettings);
-    _testrigSettings = _baseTestrigSettings;
-  }
-
-  @Override
-  public void pushDeltaSnapshot() {
-    _testrigSettingsStack.add(_testrigSettings);
-    _testrigSettings = _deltaTestrigSettings;
   }
 
   @Override
@@ -3108,7 +3079,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * differential reachability, but we currently won't find it because it won't be in the
        * IpSpaceAssignment.
        */
-      pushBaseSnapshot();
       Map<IngressLocation, BDD> baseAcceptBDDs =
           getBddReachabilityAnalysisFactory(snapshot, pkt, parameters.getIgnoreFilters())
               .getAllBDDs(
@@ -3118,9 +3088,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   parameters.getRequiredTransitNodes(),
                   parameters.getFinalNodes(),
                   parameters.getFlowDispositions());
-      popSnapshot();
 
-      pushDeltaSnapshot();
       Map<IngressLocation, BDD> deltaAcceptBDDs =
           getBddReachabilityAnalysisFactory(reference, pkt, parameters.getIgnoreFilters())
               .getAllBDDs(
@@ -3130,7 +3098,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   parameters.getRequiredTransitNodes(),
                   parameters.getFinalNodes(),
                   parameters.getFlowDispositions());
-      popSnapshot();
 
       Set<IngressLocation> commonSources =
           Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
