@@ -26,7 +26,8 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer(NetworkSnapshot snapshot) {
       RoleQuestion q = (RoleQuestion) _question;
-      Roles roles = Roles.create(_batfish, q.getDstIps(), new NodesSpecifier(q.getNodeRegex()));
+      Roles roles =
+          Roles.create(snapshot, _batfish, q.getDstIps(), new NodesSpecifier(q.getNodeRegex()));
       return roles.asAnswer(q.getType());
     }
   }

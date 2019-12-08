@@ -34,7 +34,7 @@ public class SmtReachabilityQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer(NetworkSnapshot snapshot) {
       ReachabilityQuestion q = (ReachabilityQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkReachability(q);
+      return p.checkReachability(snapshot, q);
     }
   }
 

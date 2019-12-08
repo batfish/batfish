@@ -23,7 +23,7 @@ public class SmtEqualLengthQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer(NetworkSnapshot snapshot) {
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkEqualLength((EqualLengthQuestion) _question);
+      return p.checkEqualLength(snapshot, (EqualLengthQuestion) _question);
     }
   }
 

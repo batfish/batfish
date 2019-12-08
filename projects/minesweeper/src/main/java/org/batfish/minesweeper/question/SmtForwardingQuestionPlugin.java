@@ -24,7 +24,7 @@ public class SmtForwardingQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer(NetworkSnapshot snapshot) {
       ForwardingQuestion q = (ForwardingQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkForwarding(q);
+      return p.checkForwarding(snapshot, q);
     }
   }
 

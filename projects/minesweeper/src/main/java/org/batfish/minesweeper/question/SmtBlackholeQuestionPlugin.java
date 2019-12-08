@@ -24,7 +24,7 @@ public class SmtBlackholeQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer(NetworkSnapshot snapshot) {
       BlackholeQuestion q = (BlackholeQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkBlackHole(q);
+      return p.checkBlackHole(snapshot, q);
     }
   }
 

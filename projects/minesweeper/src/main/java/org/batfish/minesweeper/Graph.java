@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -73,6 +74,10 @@ import org.batfish.minesweeper.collections.Table2;
  */
 public class Graph {
 
+  public NetworkSnapshot getSnapshot() {
+    return _snapshot;
+  }
+
   public enum BgpSendType {
     TO_EBGP,
     TO_NONCLIENT,
@@ -85,6 +90,7 @@ public class Graph {
   private IBatfish _batfish;
   private Set<String> _routers;
   private Map<String, Configuration> _configurations;
+  private final NetworkSnapshot _snapshot;
   private Map<String, Set<Long>> _areaIds;
   private Table2<String, String, List<StaticRoute>> _staticRoutes;
   private Map<String, List<StaticRoute>> _nullStaticRoutes;
@@ -121,22 +127,23 @@ public class Graph {
    * configurations before use. This avoids side-effects that occur when {@link Graph} and other
    * code in this package mutates the configs in the graph.
    *
-   * <p>For increased, efficiency, use {@link #Graph(IBatfish, Map)} which will skip the cloning,
-   * assuming that the caller has made a defensive copy first.
+   * <p>For increased, efficiency, use {@link #Graph(IBatfish, NetworkSnapshot, Map)} which will
+   * skip the cloning, assuming that the caller has made a defensive copy first.
    */
-  public Graph(IBatfish batfish) {
-    this(batfish, null, null);
+  public Graph(IBatfish batfish, NetworkSnapshot snapshot) {
+    this(batfish, snapshot, null, null);
   }
 
   /**
    * Create a graph, using the specified configurations.
    *
    * <p>Note that the given {@code configs} may be mutated during computation; callers are advised
-   * to defensively copy them or use {@link #Graph(IBatfish)}, which will do the defensive copy
-   * automatically, to avoid this side effect.
+   * to defensively copy them or use {@link #Graph(IBatfish, NetworkSnapshot)}, which will do the
+   * defensive copy automatically, to avoid this side effect.
    */
-  public Graph(IBatfish batfish, @Nullable Map<String, Configuration> configs) {
-    this(batfish, configs, null);
+  public Graph(
+      IBatfish batfish, NetworkSnapshot snapshot, @Nullable Map<String, Configuration> configs) {
+    this(batfish, snapshot, configs, null);
   }
 
   /*
@@ -144,6 +151,7 @@ public class Graph {
    */
   public Graph(
       IBatfish batfish,
+      NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers) {
     _batfish = batfish;
@@ -164,14 +172,14 @@ public class Graph {
     _domainMapInverse = new HashMap<>();
     _configurations = configs;
     _communityDependencies = new TreeMap<>();
-
+    _snapshot = snapshot;
     if (_configurations == null) {
       // Since many functions that use the graph mutate the configurations, we must clone them
       // before that happens.
       // A simple way to do this is to create a deep clone of each entry using Java serialization.
       Map<String, Configuration> clonedConfigs =
           _batfish
-              .loadConfigurations(_batfish.peekNetworkSnapshotStack())
+              .loadConfigurations(snapshot)
               .entrySet()
               .parallelStream()
               .collect(toMap(Entry::getKey, entry -> SerializationUtils.clone(entry.getValue())));
@@ -180,10 +188,7 @@ public class Graph {
     }
     _routers = _configurations.keySet();
 
-    Topology topology =
-        _batfish
-            .getTopologyProvider()
-            .getInitialLayer3Topology(_batfish.peekNetworkSnapshotStack());
+    Topology topology = _batfish.getTopologyProvider().getInitialLayer3Topology(snapshot);
 
     // Remove the routers we don't want to model
     if (routers != null) {

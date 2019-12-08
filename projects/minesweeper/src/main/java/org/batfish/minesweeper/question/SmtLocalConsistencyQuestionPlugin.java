@@ -40,7 +40,7 @@ public class SmtLocalConsistencyQuestionPlugin extends QuestionPlugin {
       }
 
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkLocalEquivalence(routerRegex, q.getStrict(), q.getFullModel());
+      return p.checkLocalEquivalence(snapshot, routerRegex, q.getStrict(), q.getFullModel());
     }
   }
 

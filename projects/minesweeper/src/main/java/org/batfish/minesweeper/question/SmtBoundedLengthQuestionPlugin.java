@@ -30,7 +30,7 @@ public class SmtBoundedLengthQuestionPlugin extends QuestionPlugin {
         throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
       }
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkBoundedLength(q, q.getBound());
+      return p.checkBoundedLength(snapshot, q, q.getBound());
     }
   }
 

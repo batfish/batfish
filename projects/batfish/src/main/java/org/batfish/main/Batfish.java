@@ -1935,7 +1935,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettings = _deltaTestrigSettings;
   }
 
-  @Override @Nullable
+  @Override
+  @Nullable
   public String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
     Path externalBgpAnnouncementsPath =
         getTestrigSettings(snapshot).getExternalBgpAnnouncementsPath();
@@ -2173,11 +2174,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeVendorConfigs(snapshot, testRigPath, outputPath);
   }
 
-  public Answer run() {
+  public Answer run(NetworkSnapshot snapshot) {
     newBatch("Begin job", 0);
     boolean action = false;
     Answer answer = new Answer();
-    NetworkSnapshot snapshot = peekNetworkSnapshotStack();
     TestrigSettings tr = getTestrigSettings(snapshot);
 
     if (_settings.getFlatten()) {

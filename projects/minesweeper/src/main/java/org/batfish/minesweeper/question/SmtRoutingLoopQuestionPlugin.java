@@ -24,7 +24,7 @@ public class SmtRoutingLoopQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer(NetworkSnapshot snapshot) {
       RoutingLoopQuestion q = (RoutingLoopQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkRoutingLoop(q);
+      return p.checkRoutingLoop(snapshot, q);
     }
   }
 

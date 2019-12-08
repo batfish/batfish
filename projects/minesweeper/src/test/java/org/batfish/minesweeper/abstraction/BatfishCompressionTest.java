@@ -116,7 +116,8 @@ public class BatfishCompressionTest {
     tmp.create();
     IBatfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(configs), tmp);
     return new TreeMap<>(
-        new BatfishCompressor(new BDDPacket(), batfish, configs).compress(headerSpace));
+        new BatfishCompressor(batfish.getSnapshot(), new BDDPacket(), batfish, configs)
+            .compress(headerSpace));
   }
 
   /**

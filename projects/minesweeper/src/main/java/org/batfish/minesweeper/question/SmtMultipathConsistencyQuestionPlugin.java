@@ -24,7 +24,7 @@ public class SmtMultipathConsistencyQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer(NetworkSnapshot snapshot) {
       MultipathConsistencyQuestion q = (MultipathConsistencyQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkMultipathConsistency(q);
+      return p.checkMultipathConsistency(snapshot, q);
     }
   }
 

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
@@ -256,7 +257,7 @@ public class PropertyChecker {
   }
 
   private Tuple<Stream<Supplier<NetworkSlice>>, Long> findAllNetworkSlices(
-      HeaderQuestion q, @Nullable Graph graph, boolean useDefaultCase) {
+      HeaderQuestion q, Graph graph, boolean useDefaultCase) {
     if (q.getUseAbstraction()) {
       HeaderSpace h = q.getHeaderSpace();
       int numFailures = q.getFailures();
@@ -267,14 +268,14 @@ public class PropertyChecker {
       System.out.println("Created destination classes");
       System.out.println("Num Classes: " + dcs.getHeaderspaceMap().size());
       long l = System.currentTimeMillis();
-      List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(_bddPacket, dcs, numFailures);
+      List<Supplier<NetworkSlice>> ecs =
+          NetworkSlice.allSlices(graph.getSnapshot(), _bddPacket, dcs, numFailures);
       l = System.currentTimeMillis() - l;
       System.out.println("Created BDDs");
       return new Tuple<>(ecs.parallelStream(), l);
     } else {
       List<Supplier<NetworkSlice>> singleEc = new ArrayList<>();
-      Graph g = graph == null ? new Graph(_batfish) : graph;
-      Abstraction a = new Abstraction(g, null);
+      Abstraction a = new Abstraction(graph, null);
       NetworkSlice slice = new NetworkSlice(q.getHeaderSpace(), a, false);
       Supplier<NetworkSlice> sup = () -> slice;
       singleEc.add(sup);
@@ -303,11 +304,12 @@ public class PropertyChecker {
    * Forwarding will be determined only for a particular network
    * environment, failure scenario, and data plane packet.
    */
-  public AnswerElement checkForwarding(HeaderQuestion question) {
+  public AnswerElement checkForwarding(NetworkSnapshot snapshot, HeaderQuestion question) {
     long totalTime = System.currentTimeMillis();
     HeaderQuestion q = new HeaderQuestion(question);
     q.setFailures(0);
-    Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, null, true);
+    Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs =
+        findAllNetworkSlices(q, new Graph(_batfish, snapshot), true);
     Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
     Optional<Supplier<NetworkSlice>> opt = stream.findFirst();
@@ -353,13 +355,14 @@ public class PropertyChecker {
    *
    */
   private AnswerElement checkProperty(
+      NetworkSnapshot snapshot,
       HeaderLocationQuestion qOrig,
       TriFunction<Encoder, Set<String>, Set<GraphEdge>, Map<String, BoolExpr>> instrument,
       Function<VerifyParam, AnswerElement> answer) {
 
     long totalTime = System.currentTimeMillis();
     PathRegexes p = new PathRegexes(qOrig);
-    Graph graph = new Graph(_batfish);
+    Graph graph = new Graph(_batfish, snapshot);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
 
@@ -550,8 +553,9 @@ public class PropertyChecker {
    * Check if a collection of routers will be reachable to
    * one or more destinations.
    */
-  public AnswerElement checkReachability(HeaderLocationQuestion q) {
+  public AnswerElement checkReachability(NetworkSnapshot snapshot, HeaderLocationQuestion q) {
     return checkProperty(
+        snapshot,
         q,
         (enc, srcRouters, destPorts) -> {
           PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
@@ -591,8 +595,10 @@ public class PropertyChecker {
    * Compute whether the path length will always be bounded by a constant k
    * for a collection of source routers to any of a number of destination ports.
    */
-  public AnswerElement checkBoundedLength(HeaderLocationQuestion q, int k) {
+  public AnswerElement checkBoundedLength(
+      NetworkSnapshot snapshot, HeaderLocationQuestion q, int k) {
     return checkProperty(
+        snapshot,
         q,
         (enc, srcRouters, destPorts) -> {
           ArithExpr bound = enc.mkInt(k);
@@ -609,8 +615,9 @@ public class PropertyChecker {
    * Computes whether a collection of source routers will always have
    * equal path length to destination port(s).
    */
-  public AnswerElement checkEqualLength(HeaderLocationQuestion q) {
+  public AnswerElement checkEqualLength(NetworkSnapshot snapshot, HeaderLocationQuestion q) {
     return checkProperty(
+        snapshot,
         q,
         (enc, srcRouters, destPorts) -> {
           PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
@@ -636,8 +643,10 @@ public class PropertyChecker {
    * Computes whether load balancing for each source node in a collection is
    * within some threshold k of the each other.
    */
-  public AnswerElement checkLoadBalancing(HeaderLocationQuestion q, int k) {
+  public AnswerElement checkLoadBalancing(
+      NetworkSnapshot snapshot, HeaderLocationQuestion q, int k) {
     return checkProperty(
+        snapshot,
         q,
         (enc, srcRouters, destPorts) -> {
           PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
@@ -654,8 +663,8 @@ public class PropertyChecker {
    * Check if there exist multiple stable solutions to the network.
    * If so, reports the forwarding differences between the two cases.
    */
-  public AnswerElement checkDeterminism(HeaderQuestion q) {
-    Graph graph = new Graph(_batfish);
+  public AnswerElement checkDeterminism(NetworkSnapshot snapshot, HeaderQuestion q) {
+    Graph graph = new Graph(_batfish, snapshot);
     Encoder enc1 = new Encoder(graph, q);
     Encoder enc2 = new Encoder(enc1, graph, q);
     enc1.computeEncoding();
@@ -729,8 +738,8 @@ public class PropertyChecker {
    * Compute if there can ever be a black hole for routers that are
    * not at the edge of the network. This is almost certainly a bug.
    */
-  public AnswerElement checkBlackHole(HeaderQuestion q) {
-    Graph graph = new Graph(_batfish);
+  public AnswerElement checkBlackHole(NetworkSnapshot snapshot, HeaderQuestion q) {
+    Graph graph = new Graph(_batfish, snapshot);
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
     Context ctx = enc.getCtx();
@@ -787,13 +796,14 @@ public class PropertyChecker {
    * multiple paths will be treated equivalently by each path
    * (i.e., dropped or accepted by each).
    */
-  public AnswerElement checkMultipathConsistency(HeaderLocationQuestion q) {
+  public AnswerElement checkMultipathConsistency(
+      NetworkSnapshot snapshot, HeaderLocationQuestion q) {
     if (q.getNegate()) {
       throw new BatfishException("Negation not implemented for smt-multipath-consistency.");
     }
 
     PathRegexes p = new PathRegexes(q);
-    Graph graph = new Graph(_batfish);
+    Graph graph = new Graph(_batfish, snapshot);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     inferDestinationHeaderSpace(graph, destPorts, q);
 
@@ -833,8 +843,8 @@ public class PropertyChecker {
    * we only check for loops with routers that use static routes since
    * these can override the usual loop-prevention mechanisms.
    */
-  public AnswerElement checkRoutingLoop(HeaderQuestion q) {
-    Graph graph = new Graph(_batfish);
+  public AnswerElement checkRoutingLoop(NetworkSnapshot snapshot, HeaderQuestion q) {
+    Graph graph = new Graph(_batfish, snapshot);
 
     // Collect all relevant destinations
     List<Prefix> prefixes = new ArrayList<>();
@@ -890,8 +900,9 @@ public class PropertyChecker {
    * We finally check that their forwarding decisions and exported messages
    * will be equal given their equal inputs.
    */
-  public AnswerElement checkLocalEquivalence(Pattern n, boolean strict, boolean fullModel) {
-    Graph graph = new Graph(_batfish);
+  public AnswerElement checkLocalEquivalence(
+      NetworkSnapshot snapshot, Pattern n, boolean strict, boolean fullModel) {
+    Graph graph = new Graph(_batfish, snapshot);
     List<String> routers = PatternUtils.findMatchingNodes(graph, n, Pattern.compile(""));
 
     HeaderQuestion q = new HeaderQuestion();
@@ -916,7 +927,7 @@ public class PropertyChecker {
       // Create transfer function for router 1
       Set<String> toModel1 = new TreeSet<>();
       toModel1.add(r1);
-      Graph g1 = new Graph(_batfish, null, toModel1);
+      Graph g1 = new Graph(_batfish, snapshot, null, toModel1);
       Encoder e1 = new Encoder(g1, q);
       e1.computeEncoding();
 
@@ -925,7 +936,7 @@ public class PropertyChecker {
       // Create transfer function for router 2
       Set<String> toModel2 = new TreeSet<>();
       toModel2.add(r2);
-      Graph g2 = new Graph(_batfish, null, toModel2);
+      Graph g2 = new Graph(_batfish, snapshot, null, toModel2);
       Encoder e2 = new Encoder(e1, g2);
       e2.computeEncoding();
 

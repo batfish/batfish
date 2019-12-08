@@ -62,8 +62,6 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.identifiers.NetworkId;
-import org.batfish.identifiers.SnapshotId;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -551,10 +549,10 @@ public class Driver {
                         .startActive()) {
                   assert runBatfishSpan != null;
                   Answer answer = null;
-                  NetworkId containerName = settings.getContainer();
-                  SnapshotId testrigName = settings.getTestrig();
+                  NetworkSnapshot snapshot =
+                      new NetworkSnapshot(settings.getContainer(), settings.getTestrig());
                   try {
-                    answer = batfish.run();
+                    answer = batfish.run(snapshot);
                     if (answer.getStatus() == null) {
                       answer.setStatus(AnswerStatus.SUCCESS);
                     }
@@ -562,7 +560,7 @@ public class Driver {
                     String msg = "FATAL ERROR: " + e.getMessage();
                     logger.errorf(
                         "Exception in container:%s, testrig:%s; exception:%s",
-                        containerName, testrigName, msg);
+                        snapshot.getNetwork(), snapshot.getSnapshot(), msg);
                     batfish.setTerminatingExceptionMessage(
                         e.getClass().getName() + ": " + e.getMessage());
                     answer = Answer.failureAnswer(msg, null);
@@ -570,7 +568,7 @@ public class Driver {
                     String stackTrace = Throwables.getStackTraceAsString(e);
                     logger.errorf(
                         "Exception in container:%s, testrig:%s; exception:%s",
-                        containerName, testrigName, stackTrace);
+                        snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
                     batfish.setTerminatingExceptionMessage(
                         e.getClass().getName() + ": " + e.getMessage());
                     answer = e.getAnswer();
@@ -579,7 +577,7 @@ public class Driver {
                     String stackTrace = Throwables.getStackTraceAsString(e);
                     logger.errorf(
                         "Exception in container:%s, testrig:%s; exception:%s",
-                        containerName, testrigName, stackTrace);
+                        snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
                     batfish.setTerminatingExceptionMessage(
                         e.getClass().getName() + ": " + e.getMessage());
                     answer = new Answer();
@@ -589,7 +587,7 @@ public class Driver {
                     String stackTrace = Throwables.getStackTraceAsString(e);
                     logger.errorf(
                         "Exception in container:%s, testrig:%s; exception:%s",
-                        containerName, testrigName, stackTrace);
+                        snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
                     batfish.setTerminatingExceptionMessage(
                         e.getClass().getName() + ": " + e.getMessage());
                     answer = new Answer();

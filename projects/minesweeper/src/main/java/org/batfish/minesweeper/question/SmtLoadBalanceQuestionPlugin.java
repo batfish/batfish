@@ -25,7 +25,7 @@ public class SmtLoadBalanceQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer(NetworkSnapshot snapshot) {
       LoadBalanceQuestion q = (LoadBalanceQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkLoadBalancing(q, q.getThreshold());
+      return p.checkLoadBalancing(snapshot, q, q.getThreshold());
     }
   }
 
