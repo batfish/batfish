@@ -3935,10 +3935,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private static Layer2Vni toL2Vni(
-      @Nonnull AristaEosVxlan vxlan,
-      int vni,
-      int vlan,
-      @Nullable Interface sourceInterface) {
+      @Nonnull AristaEosVxlan vxlan, int vni, int vlan, @Nullable Interface sourceInterface) {
     Ip sourceAddress =
         sourceInterface == null
             ? null
