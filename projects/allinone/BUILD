@@ -7,6 +7,18 @@ java_binary(
     main_class = "org.batfish.allinone.Main",
     runtime_deps = [
         ":allinone",
+        "//projects/question",
+        "@maven//:org_slf4j_slf4j_jdk14",
+    ],
+)
+
+java_binary(
+    name = "allinone_with_minesweeper_main",
+    main_class = "org.batfish.allinone.Main",
+    runtime_deps = [
+        ":allinone",
+        "//projects/minesweeper",
+        "//projects/question",
         "@maven//:org_slf4j_slf4j_jdk14",
     ],
 )
@@ -17,10 +29,6 @@ java_library(
         "src/main/**/*.java",
     ]),
     resources = glob(["src/main/resources/**"]),
-    runtime_deps = [
-        "//projects/minesweeper",
-        "//projects/question",
-    ],
     deps = [
         "//projects/batfish",
         "//projects/batfish-client:client",
