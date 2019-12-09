@@ -54,9 +54,6 @@ public abstract class Answerer {
    * it uses a JSON-level diff.
    *
    * <p>Answerers that want a custom differential answer, should override this function.
-   *
-   * @param snapshot
-   * @param reference
    */
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
     _batfish.checkSnapshotOutputReady(snapshot);
