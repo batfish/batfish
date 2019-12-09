@@ -27,11 +27,11 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MockDataPlane;
-import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.junit.Test;
 
 /** Tests for {@link VxlanVniPropertiesAnswerer} */
@@ -49,10 +49,10 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
-                        .put(COL_VNI, 1)
+                        .put(COL_VNI, 10001)
                         .put(LOCAL_VTEP_IP, Ip.parse("1.2.3.4"))
                         .put(MULTICAST_GROUP, null)
-                        .put(VLAN, 10001)
+                        .put(VLAN, 1)
                         .put(
                             VTEP_FLOOD_LIST,
                             ImmutableSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")))
@@ -61,20 +61,20 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
-                        .put(COL_VNI, 2)
+                        .put(COL_VNI, 10002)
                         .put(LOCAL_VTEP_IP, Ip.parse("1.2.3.4"))
                         .put(MULTICAST_GROUP, Ip.parse("227.10.1.1"))
-                        .put(VLAN, 10002)
+                        .put(VLAN, 2)
                         .put(VTEP_FLOOD_LIST, null)
                         .put(VXLAN_PORT, 4789)
                         .build())
                 .add(
                     Row.builder()
                         .put(COL_NODE, "minimal")
-                        .put(COL_VNI, 1)
+                        .put(COL_VNI, 10001)
                         .put(LOCAL_VTEP_IP, null)
                         .put(MULTICAST_GROUP, null)
-                        .put(VLAN, null)
+                        .put(VLAN, 1)
                         .put(VTEP_FLOOD_LIST, null)
                         .put(VXLAN_PORT, 1234)
                         .build())));
@@ -95,10 +95,10 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "minimal")
-                        .put(COL_VNI, 1)
+                        .put(COL_VNI, 10001)
                         .put(LOCAL_VTEP_IP, null)
                         .put(MULTICAST_GROUP, null)
-                        .put(VLAN, null)
+                        .put(VLAN, 1)
                         .put(VTEP_FLOOD_LIST, null)
                         .put(VXLAN_PORT, 1234)
                         .build())));
@@ -119,20 +119,20 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
-                        .put(COL_VNI, 1)
-                        .put(VLAN, 10001)
+                        .put(COL_VNI, 10001)
+                        .put(VLAN, 1)
                         .build())
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
-                        .put(COL_VNI, 2)
-                        .put(VLAN, 10002)
+                        .put(COL_VNI, 10002)
+                        .put(VLAN, 2)
                         .build())
                 .add(
                     Row.builder()
                         .put(COL_NODE, "minimal")
-                        .put(COL_VNI, 1)
-                        .put(VLAN, null)
+                        .put(COL_VNI, 10001)
+                        .put(VLAN, 1)
                         .build())));
   }
 
@@ -151,23 +151,23 @@ public final class VxlanVniPropertiesAnswererTest {
     @Override
     public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
       SortedMap<String, Configuration> configs = loadConfigurations(snapshot);
-      HashBasedTable<String, String, Set<VniSettings>> vnis = HashBasedTable.create();
+      HashBasedTable<String, String, Set<Layer2Vni>> vnis = HashBasedTable.create();
       vnis.put(
           "hostname",
           DEFAULT_VRF_NAME,
           ImmutableSet.of(
-              VniSettings.builder()
-                  .setVni(1)
-                  .setVlan(10001)
+              Layer2Vni.builder()
+                  .setVni(10001)
+                  .setVlan(1)
                   .setSourceAddress(Ip.parse("1.2.3.4"))
                   .setUdpPort(4242)
                   .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                   .setBumTransportIps(
                       ImmutableSortedSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")))
                   .build(),
-              VniSettings.builder()
-                  .setVni(2)
-                  .setVlan(10002)
+              Layer2Vni.builder()
+                  .setVni(10002)
+                  .setVlan(2)
                   .setSourceAddress(Ip.parse("1.2.3.4"))
                   .setUdpPort(4789)
                   .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
@@ -177,8 +177,9 @@ public final class VxlanVniPropertiesAnswererTest {
           "minimal",
           DEFAULT_VRF_NAME,
           ImmutableSet.of(
-              VniSettings.builder()
-                  .setVni(1)
+              Layer2Vni.builder()
+                  .setVni(10001)
+                  .setVlan(1)
                   .setUdpPort(1234)
                   .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
                   .build()));
