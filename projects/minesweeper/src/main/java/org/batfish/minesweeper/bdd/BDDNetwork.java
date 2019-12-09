@@ -7,7 +7,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
@@ -23,9 +25,8 @@ import org.batfish.minesweeper.utils.MsPair;
 public class BDDNetwork {
 
   private final BDDPacket _pkt;
-
+  private final NetworkSnapshot _snapshot;
   private Graph _graph;
-
   private NodesSpecifier _nodeSpecifier;
 
   private PolicyQuotient _policyQuotient;
@@ -42,20 +43,27 @@ public class BDDNetwork {
 
   private Map<GraphEdge, BDDAcl> _outAcls;
 
-  public static BDDNetwork create(BDDPacket pkt, Graph g) {
-    return create(pkt, g, NodesSpecifier.ALL);
+  public static BDDNetwork create(NetworkSnapshot snapshot, BDDPacket pkt, Graph g) {
+    return create(snapshot, pkt, g, NodesSpecifier.ALL);
   }
 
-  public static BDDNetwork create(BDDPacket pkt, Graph g, NodesSpecifier nodesSpecifier) {
+  public static BDDNetwork create(
+      NetworkSnapshot snapshot, BDDPacket pkt, Graph g, NodesSpecifier nodesSpecifier) {
     PolicyQuotient pq = new PolicyQuotient(g);
-    BDDNetwork network = new BDDNetwork(pkt, g, nodesSpecifier, pq);
+    BDDNetwork network = new BDDNetwork(snapshot, pkt, g, nodesSpecifier, pq);
     network.computeInterfacePolicies();
     return network;
   }
 
-  private BDDNetwork(BDDPacket pkt, Graph graph, NodesSpecifier nodesSpecifier, PolicyQuotient pq) {
+  private BDDNetwork(
+      NetworkSnapshot snapshot,
+      BDDPacket pkt,
+      Graph graph,
+      NodesSpecifier nodesSpecifier,
+      PolicyQuotient pq) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
+    _snapshot = snapshot;
     _pkt = pkt;
     _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
@@ -84,7 +92,8 @@ public class BDDNetwork {
    * representation of the import and export policies on this interface.
    */
   private void computeInterfacePolicies() {
-    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(_graph.getBatfish());
+    IBatfish batfish = _graph.getBatfish();
+    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(batfish, _snapshot);
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
       if (!includeNodes.contains(router)) { // skip if we don't care about this node

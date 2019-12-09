@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
@@ -78,15 +79,15 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answer() {
+    public AnswerElement answer(NetworkSnapshot snapshot) {
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
-      answerElement.setDuplicateIps(getDuplicateIps());
+      answerElement.setDuplicateIps(getDuplicateIps(snapshot));
       return answerElement;
     }
 
-    private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
+    private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps(NetworkSnapshot snapshot) {
       UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
-      SpecifierContext ctxt = _batfish.specifierContext();
+      SpecifierContext ctxt = _batfish.specifierContext(snapshot);
       Map<String, Configuration> configs = ctxt.getConfigs();
       Set<String> nodes = question.getNodeSpecifier().resolve(ctxt);
       // we do nodes and interfaces separately because of interface equality is currently broken

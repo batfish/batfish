@@ -79,7 +79,7 @@ public class RdsInstanceTest {
                 .setAwsText("org/batfish/representation/aws/test", awsFilenames)
                 .build(),
             _folder);
-    return batfish.loadConfigurations();
+    return batfish.loadConfigurations(batfish.getSnapshot());
   }
 
   @Test

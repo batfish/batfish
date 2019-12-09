@@ -10,6 +10,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -54,7 +55,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
     }
 
     @Override
-    public NamedStructureRoleConsistencyAnswerElement answer() {
+    public NamedStructureRoleConsistencyAnswerElement answer(NetworkSnapshot snapshot) {
 
       NamedStructureRoleConsistencyQuestion question =
           (NamedStructureRoleConsistencyQuestion) _question;
@@ -70,7 +71,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
       PerRoleQuestion outerQ = new PerRoleQuestion(null, innerQ, question.getRoleDimension(), null);
 
       PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
-      PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
+      PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer(snapshot);
       List<NamedStructureOutlierSet<?>> answers = new LinkedList<>();
       for (Map.Entry<String, AnswerElement> entry : roleAE.getAnswers().entrySet()) {
         String role = entry.getKey();

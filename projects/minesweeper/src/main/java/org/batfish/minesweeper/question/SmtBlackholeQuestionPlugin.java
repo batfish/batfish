@@ -2,6 +2,7 @@ package org.batfish.minesweeper.question;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -20,10 +21,10 @@ public class SmtBlackholeQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answer() {
+    public AnswerElement answer(NetworkSnapshot snapshot) {
       BlackholeQuestion q = (BlackholeQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkBlackHole(q);
+      return p.checkBlackHole(snapshot, q);
     }
   }
 

@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.TracePruner;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -40,18 +40,16 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
   private final PathConstraintsInput _pathConstraintsInput;
   private final PacketHeaderConstraints _headerConstraints;
   private final ReturnFlowType _returnFlowType;
-  private final Map<String, Configuration> _configs;
 
   BidirectionalReachabilityAnswerer(BidirectionalReachabilityQuestion question, IBatfish batfish) {
     super(question, batfish);
     _pathConstraintsInput = question.getPathConstraintsInput();
     _headerConstraints = question.getHeaderConstraints();
     _returnFlowType = question.getReturnFlowType();
-    _configs = _batfish.loadConfigurations();
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     PathConstraints pathConstraints = createPathConstraints(_pathConstraintsInput);
     HeaderSpace headerSpace = toHeaderSpaceBuilder(_headerConstraints).build();
 
@@ -77,11 +75,11 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
 
     BDDPacket bddPacket = new BDDPacket();
     BidirectionalReachabilityResult result =
-        _batfish.bidirectionalReachability(bddPacket, parameters);
+        _batfish.bidirectionalReachability(snapshot, bddPacket, parameters);
 
     Map<Location, BDD> answerBdds = getAnswerBdds(result, _returnFlowType);
 
-    String flowTag = _batfish.getFlowTag();
+    String flowTag = _batfish.getFlowTag(snapshot);
 
     Set<Flow> flows =
         answerBdds.entrySet().stream()
@@ -93,7 +91,8 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
                       .getFlow(locationBdd)
                       .map(
                           builder -> {
-                            setStartLocation(_configs, builder, startLocation);
+                            setStartLocation(
+                                _batfish.loadConfigurations(snapshot), builder, startLocation);
                             builder.setTag(flowTag);
                             return builder.build();
                           });
@@ -103,7 +102,11 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
             .collect(Collectors.toSet());
 
     return BidirectionalTracerouteAnswerer.bidirectionalTracerouteAnswerElement(
-        _question, flows, _batfish.getTracerouteEngine(), false, TracePruner.DEFAULT_MAX_TRACES);
+        _question,
+        flows,
+        _batfish.getTracerouteEngine(snapshot),
+        false,
+        TracePruner.DEFAULT_MAX_TRACES);
   }
 
   @VisibleForTesting

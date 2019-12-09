@@ -34,6 +34,7 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -83,29 +84,20 @@ public final class SearchFiltersAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     SearchFiltersQuestion question = (SearchFiltersQuestion) _question;
-    nonDifferentialAnswer(question);
+    nonDifferentialAnswer(snapshot, question);
     return _tableAnswerElement;
   }
 
   @Override
-  public AnswerElement answerDiff() {
-    differentialAnswer((SearchFiltersQuestion) _question);
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    differentialAnswer((SearchFiltersQuestion) _question, snapshot, reference);
     return _tableAnswerElement;
   }
 
-  private void differentialAnswer(SearchFiltersQuestion question) {
-    _batfish.pushBaseSnapshot();
-    Map<String, Configuration> baseConfigs = _batfish.loadConfigurations();
-    Multimap<String, String> baseAcls = getSpecifiedAcls(question);
-    _batfish.popSnapshot();
-
-    _batfish.pushDeltaSnapshot();
-    Map<String, Configuration> deltaConfigs = _batfish.loadConfigurations();
-    Multimap<String, String> deltaAcls = getSpecifiedAcls(question);
-    _batfish.popSnapshot();
-
+  private void differentialAnswer(
+      SearchFiltersQuestion question, NetworkSnapshot snapshot, NetworkSnapshot reference) {
     SearchFiltersParameters parameters = question.toSearchFiltersParameters();
 
     TableAnswerElement baseTable =
@@ -116,6 +108,11 @@ public final class SearchFiltersAnswerer extends Answerer {
         toSearchFiltersTable(
             TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
             question.getGenerateExplanations());
+
+    Multimap<String, String> baseAcls = getSpecifiedAcls(snapshot, question);
+    Multimap<String, String> deltaAcls = getSpecifiedAcls(reference, question);
+    Map<String, Configuration> baseConfigs = _batfish.loadConfigurations(snapshot);
+    Map<String, Configuration> deltaConfigs = _batfish.loadConfigurations(reference);
 
     Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), deltaAcls.keySet());
     for (String node : commonNodes) {
@@ -140,7 +137,7 @@ public final class SearchFiltersAnswerer extends Answerer {
                   .build());
           continue;
         }
-        if (!baseAcl.isPresent() && deltaAcl.isPresent() && question.getIncludeOneTableKeys()) {
+        if (!baseAcl.isPresent() && question.getIncludeOneTableKeys()) {
           deltaTable.addRow(
               Row.builder(deltaTable.getMetadata().toColumnMap())
                   .put(COL_NODE, node)
@@ -152,7 +149,13 @@ public final class SearchFiltersAnswerer extends Answerer {
         // present in both snapshot
         DifferentialSearchFiltersResult results =
             differentialReachFilter(
-                _batfish, baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
+                snapshot,
+                _batfish,
+                baseConfig,
+                baseAcl.get(),
+                deltaConfig,
+                deltaAcl.get(),
+                parameters);
 
         Stream.of(results.getDecreasedResult(), results.getIncreasedResult())
             .filter(Optional::isPresent)
@@ -164,12 +167,12 @@ public final class SearchFiltersAnswerer extends Answerer {
                   baseTable.addRow(
                       toSearchFiltersRow(
                           description,
-                          testFiltersRow(true, node, aclName, flow),
+                          testFiltersRow(snapshot, node, aclName, flow),
                           question.getGenerateExplanations()));
                   deltaTable.addRow(
                       toSearchFiltersRow(
                           description,
-                          testFiltersRow(false, node, aclName, flow),
+                          testFiltersRow(reference, node, aclName, flow),
                           question.getGenerateExplanations()));
                 });
       }
@@ -231,8 +234,9 @@ public final class SearchFiltersAnswerer extends Answerer {
     return rowBuilder.build();
   }
 
-  private void nonDifferentialAnswer(SearchFiltersQuestion question) {
-    List<Triple<String, String, IpAccessList>> acls = getQueryAcls(question);
+  private void nonDifferentialAnswer(NetworkSnapshot snapshot, SearchFiltersQuestion question) {
+    List<Triple<String, String, IpAccessList>> acls =
+        getQueryAcls(_batfish.getSnapshot(), question);
     if (acls.isEmpty()) {
       throw new BatfishException("No matching filters");
     }
@@ -242,20 +246,21 @@ public final class SearchFiltersAnswerer extends Answerer {
      * For each query ACL, try to get a flow. If one exists, run traceFilter on that flow.
      * Concatenate the answers for all flows into one big table.
      */
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     for (Triple<String, String, IpAccessList> triple : acls) {
       String hostname = triple.getLeft();
       String aclname = triple.getMiddle();
       Configuration node = configurations.get(hostname);
       IpAccessList acl = triple.getRight();
       Optional<SearchFiltersResult> optionalResult;
-      optionalResult = reachFilter(_batfish, node, acl, question.toSearchFiltersParameters());
+      optionalResult =
+          reachFilter(snapshot, _batfish, node, acl, question.toSearchFiltersParameters());
       optionalResult.ifPresent(
           result ->
               rows.add(
                   toSearchFiltersRow(
                       result.getHeaderSpaceDescription().orElse(null),
-                      testFiltersRow(true, hostname, aclname, result.getExampleFlow()),
+                      testFiltersRow(snapshot, hostname, aclname, result.getExampleFlow()),
                       question.getGenerateExplanations())));
     }
 
@@ -266,12 +271,13 @@ public final class SearchFiltersAnswerer extends Answerer {
     _tableAnswerElement.postProcessAnswer(question, rows);
   }
 
-  private Multimap<String, String> getSpecifiedAcls(SearchFiltersQuestion question) {
-    SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
+  private Multimap<String, String> getSpecifiedAcls(
+      NetworkSnapshot snapshot, SearchFiltersQuestion question) {
+    SortedMap<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
-    SpecifierContext specifierContext = _batfish.specifierContext();
+    SpecifierContext specifierContext = _batfish.specifierContext(snapshot);
     ImmutableMultimap.Builder<String, String> acls = ImmutableMultimap.builder();
-    question.getNodesSpecifier().resolve(_batfish.specifierContext()).stream()
+    question.getNodesSpecifier().resolve(specifierContext).stream()
         .map(configs::get)
         .forEach(
             config ->
@@ -303,9 +309,10 @@ public final class SearchFiltersAnswerer extends Answerer {
   // Each triple in the result is a node name, ACL name, and the ACL itself.  The ACL itself
   // may rename the ACL, so we explicitly keep track of the original name for later use.
   @VisibleForTesting
-  List<Triple<String, String, IpAccessList>> getQueryAcls(SearchFiltersQuestion question) {
-    Map<String, Configuration> configs = _batfish.loadConfigurations();
-    return getSpecifiedAcls(question).entries().stream()
+  List<Triple<String, String, IpAccessList>> getQueryAcls(
+      NetworkSnapshot snapshot, SearchFiltersQuestion question) {
+    Map<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
+    return getSpecifiedAcls(snapshot, question).entries().stream()
         .map(
             entry -> {
               String hostName = entry.getKey();
@@ -361,15 +368,9 @@ public final class SearchFiltersAnswerer extends Answerer {
         .build();
   }
 
-  private Row testFiltersRow(boolean base, String hostname, String aclName, Flow flow) {
-    if (base) {
-      _batfish.pushBaseSnapshot();
-    } else {
-      _batfish.pushDeltaSnapshot();
-    }
-    Configuration c = _batfish.loadConfigurations().get(hostname);
+  private Row testFiltersRow(NetworkSnapshot snapshot, String hostname, String aclName, Flow flow) {
+    Configuration c = _batfish.loadConfigurations(snapshot).get(hostname);
     Row row = TestFiltersAnswerer.getRow(c.getIpAccessLists().get(aclName), flow, c);
-    _batfish.popSnapshot();
     return row;
   }
 
@@ -382,10 +383,14 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static Optional<SearchFiltersResult> reachFilter(
-      IBatfish batfish, Configuration node, IpAccessList acl, SearchFiltersParameters parameters) {
+      NetworkSnapshot snapshot,
+      IBatfish batfish,
+      Configuration node,
+      IpAccessList acl,
+      SearchFiltersParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    SpecifierContext specifierContext = batfish.specifierContext();
+    SpecifierContext specifierContext = batfish.specifierContext(snapshot);
 
     Set<String> inactiveIfaces =
         Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaceNames());
@@ -405,7 +410,7 @@ public final class SearchFiltersAnswerer extends Answerer {
             .and(headerSpaceBDD)
             .and(mgr.isValidValue());
 
-    return getFlow(bddPacket, mgr, node.getHostname(), bdd, batfish.getFlowTag())
+    return getFlow(bddPacket, mgr, node.getHostname(), bdd, batfish.getFlowTag(snapshot))
         .map(
             flow ->
                 new SearchFiltersResult(
@@ -424,6 +429,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
   @VisibleForTesting
   static DifferentialSearchFiltersResult differentialReachFilter(
+      NetworkSnapshot snapshot,
       IBatfish batfish,
       Configuration baseConfig,
       IpAccessList baseAcl,
@@ -433,7 +439,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     BDDPacket bddPacket = new BDDPacket();
 
     HeaderSpace headerSpace =
-        searchFiltersParameters.resolveHeaderspace(batfish.specifierContext());
+        searchFiltersParameters.resolveHeaderspace(batfish.specifierContext(snapshot));
     BDD headerSpaceBDD =
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
@@ -459,7 +465,7 @@ public final class SearchFiltersAnswerer extends Answerer {
             .and(mgr.isValidValue());
 
     String hostname = baseConfig.getHostname();
-    String flowTag = batfish.getFlowTag();
+    String flowTag = batfish.getFlowTag(snapshot);
 
     BDD increasedBDD = deltaAclBDD.diff(baseAclBDD);
     Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD, flowTag);

@@ -60,8 +60,8 @@ public class ReachabilityParametersResolverTest {
     _inactiveInterface = nf.interfaceBuilder().setActive(false).setOwner(_node).setVrf(vrf).build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(_node.getHostname(), _node);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    _batfish.computeDataPlane();
-    _snapshot = _batfish.getNetworkSnapshot();
+    _snapshot = _batfish.getSnapshot();
+    _batfish.computeDataPlane(_snapshot);
   }
 
   @Test
@@ -174,7 +174,7 @@ public class ReachabilityParametersResolverTest {
 
   @Test
   public void testLocationIsActive() {
-    Map<String, Configuration> configs = _batfish.loadConfigurations();
+    Map<String, Configuration> configs = _batfish.loadConfigurations(_batfish.getSnapshot());
     String hostname = _node.getHostname();
     assertTrue(isActive(new InterfaceLinkLocation(hostname, _activeInterface.getName()), configs));
     assertFalse(

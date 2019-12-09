@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Flow;
@@ -44,14 +45,15 @@ public class DifferentialReachabilityAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
-    return answerDiff();
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
+    throw new IllegalStateException(
+        getClass().getSimpleName() + " can only be run in differential mode");
   }
 
-  private DifferentialReachabilityParameters parameters() {
+  private DifferentialReachabilityParameters parameters(NetworkSnapshot snapshot) {
     DifferentialReachabilityQuestion question = (DifferentialReachabilityQuestion) _question;
     PacketHeaderConstraints headerConstraints = question.getHeaderConstraints();
-    SpecifierContext ctxt = _batfish.specifierContext();
+    SpecifierContext ctxt = _batfish.specifierContext(snapshot);
 
     PathConstraints pathConstraints = createPathConstraints(question.getPathConstraints());
     Set<String> forbiddenTransitNodes = pathConstraints.getForbiddenLocations().resolve(ctxt);
@@ -91,23 +93,20 @@ public class DifferentialReachabilityAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answerDiff() {
-    DifferentialReachabilityParameters parameters = parameters();
-    DifferentialReachabilityResult result = _batfish.bddDifferentialReachability(parameters);
+  public TableAnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    DifferentialReachabilityParameters parameters = parameters(snapshot);
+    DifferentialReachabilityResult result =
+        _batfish.bddDifferentialReachability(snapshot, reference, parameters);
 
     Set<Flow> flows =
         Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
     Multiset<Row> rows;
     TableAnswerElement table;
-    _batfish.pushBaseSnapshot();
     Map<Flow, List<Trace>> baseFlowTraces =
-        _batfish.buildFlows(flows, parameters.getIgnoreFilters());
-    _batfish.popSnapshot();
+        _batfish.buildFlows(snapshot, flows, parameters.getIgnoreFilters());
 
-    _batfish.pushDeltaSnapshot();
     Map<Flow, List<Trace>> deltaFlowTraces =
-        _batfish.buildFlows(flows, parameters.getIgnoreFilters());
-    _batfish.popSnapshot();
+        _batfish.buildFlows(reference, flows, parameters.getIgnoreFilters());
 
     rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, parameters.getMaxTraces());
     table = new TableAnswerElement(metadata(true));

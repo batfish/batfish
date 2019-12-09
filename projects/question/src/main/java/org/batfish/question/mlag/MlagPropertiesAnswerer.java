@@ -12,6 +12,7 @@ import java.util.SortedMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Mlag;
@@ -42,19 +43,19 @@ public final class MlagPropertiesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     MlagPropertiesQuestion question = (MlagPropertiesQuestion) _question;
     Set<String> nodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodeSpecInput(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext());
+            .resolve(_batfish.specifierContext(snapshot));
     Set<String> mlagIds =
         SpecifierFactories.getNameSetSpecifierOrDefault(
                 question.getMlagIdSpecInput(),
                 Grammar.MLAG_ID_SPECIFIER,
-                new ConstantNameSetSpecifier(getAllMlagIds(_batfish.loadConfigurations())))
-            .resolve(_batfish.specifierContext());
-    SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
+                new ConstantNameSetSpecifier(getAllMlagIds(_batfish.loadConfigurations(snapshot))))
+            .resolve(_batfish.specifierContext(snapshot));
+    SortedMap<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
 
     return computeAnswer(nodes, mlagIds, configs);
   }

@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
@@ -72,16 +73,18 @@ public class RoutesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     RoutesQuestion question = (RoutesQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getRib()));
 
-    DataPlane dp = _batfish.loadDataPlane();
-    Set<String> matchingNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    DataPlane dp = _batfish.loadDataPlane(snapshot);
+    Set<String> matchingNodes =
+        question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
     Prefix network = question.getNetwork();
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
-    Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+    Map<Ip, Set<String>> ipOwners =
+        computeIpNodeOwners(_batfish.loadConfigurations(snapshot), true);
 
     Multiset<Row> rows;
 
@@ -113,11 +116,12 @@ public class RoutesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answerDiff() {
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
     RoutesQuestion question = (RoutesQuestion) _question;
     TableAnswerElement diffAnswer = new TableAnswerElement(getDiffTableMetadata(question.getRib()));
 
-    Set<String> matchingNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> matchingNodes =
+        question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
     Prefix network = question.getNetwork();
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
@@ -134,36 +138,28 @@ public class RoutesAnswerer extends Answerer {
 
     switch (question.getRib()) {
       case BGP:
-        _batfish.pushBaseSnapshot();
-        dp = _batfish.loadDataPlane();
+        dp = _batfish.loadDataPlane(snapshot);
         routesGroupedByKeyInBase =
             groupBgpRoutes(dp.getBgpRoutes(), matchingNodes, vrfRegex, network, vrfRegex);
-        _batfish.popSnapshot();
 
-        _batfish.pushDeltaSnapshot();
-        dp = _batfish.loadDataPlane();
+        dp = _batfish.loadDataPlane(reference);
         routesGroupedByKeyInDelta =
             groupBgpRoutes(dp.getBgpRoutes(), matchingNodes, vrfRegex, network, vrfRegex);
-        _batfish.popSnapshot();
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
         rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP);
         break;
 
       case MAIN:
       default:
-        _batfish.pushBaseSnapshot();
-        dp = _batfish.loadDataPlane();
-        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+        dp = _batfish.loadDataPlane(snapshot);
+        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(snapshot), true);
         routesGroupedByKeyInBase =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
-        _batfish.popSnapshot();
 
-        _batfish.pushDeltaSnapshot();
-        dp = _batfish.loadDataPlane();
-        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
+        dp = _batfish.loadDataPlane(reference);
+        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(reference), true);
         routesGroupedByKeyInDelta =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
-        _batfish.popSnapshot();
 
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
         rows = getAbstractRouteRowsDiff(routesDiffRaw);

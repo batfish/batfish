@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -102,29 +103,33 @@ public class UndefinedReferencesAnswererTest {
 
   @Test
   public void testAnswererFlow() {
+    TestBatfish batfish = new TestBatfish();
     UndefinedReferencesAnswerer answerer =
-        new UndefinedReferencesAnswerer(new UndefinedReferencesQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new UndefinedReferencesAnswerer(new UndefinedReferencesQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows(), equalTo(new Rows().add(BASIC_ROW)));
   }
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+        NetworkSnapshot snapshot) {
       ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
       ccae.setUndefinedReferences(BASIC_UNDEFINED_REFS_MAP);
       return ccae;
     }
 
     @Override
-    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+        NetworkSnapshot snapshot) {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       pvcae.setFileMap(ImmutableMultimap.of("h", "f", "h2", "f2"));
       return pvcae;
     }
 
     @Override
-    public SpecifierContext specifierContext() {
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       Configuration c1 = new Configuration("h", ConfigurationFormat.CISCO_IOS);
       Configuration c2 = new Configuration("h2", ConfigurationFormat.CISCO_IOS);
       return MockSpecifierContext.builder()

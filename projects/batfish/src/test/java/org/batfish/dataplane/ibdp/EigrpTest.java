@@ -42,8 +42,9 @@ public class EigrpTest {
                     farlistener)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 

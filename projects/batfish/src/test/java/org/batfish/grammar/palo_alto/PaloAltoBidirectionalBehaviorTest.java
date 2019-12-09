@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
@@ -78,10 +79,10 @@ public final class PaloAltoBidirectionalBehaviorTest {
 
   private @Nonnull TracerouteEngine bidirTracerouteEngine(String hostname) throws IOException {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
-    return new TracerouteEngineImpl(
-        dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()));
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    return new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot));
   }
 
   private void assertForwardDropped(String hostname) throws IOException {

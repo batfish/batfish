@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Pattern;
 import net.sf.javabdd.BDD;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -121,13 +122,14 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     batfish =
         BatfishTestUtils.getBatfish(
             ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
   }
 
   BDDReachabilityAnalysis initAnalysis(
       IpSpace initialSrcIp, FlowDisposition disposition, boolean ignoreFilters) {
-    Map<String, Configuration> configs = batfish.loadConfigurations();
-    DataPlane dataPlane = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    Map<String, Configuration> configs = batfish.loadConfigurations(snapshot);
+    DataPlane dataPlane = batfish.loadDataPlane(snapshot);
     return new BDDReachabilityAnalysisFactory(
             PKT,
             configs,
@@ -189,12 +191,14 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
                 new ConstantIpSpaceSpecifier(NODE2_ADDR.getIp().toIpSpace()));
 
     TraceWrapperAsAnswerElement traceWrapper =
-        (TraceWrapperAsAnswerElement) batfish.bddSingleReachability(parameters.build());
+        (TraceWrapperAsAnswerElement)
+            batfish.bddSingleReachability(batfish.getSnapshot(), parameters.build());
     assertThat(traceWrapper.getFlowTraces().entrySet(), empty());
 
     traceWrapper =
         (TraceWrapperAsAnswerElement)
-            batfish.bddSingleReachability(parameters.setIgnoreFilters(true).build());
+            batfish.bddSingleReachability(
+                batfish.getSnapshot(), parameters.setIgnoreFilters(true).build());
     assertThat(traceWrapper.getFlowTraces().entrySet(), hasSize(1));
   }
 }

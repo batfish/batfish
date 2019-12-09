@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Prefix;
@@ -29,10 +30,9 @@ import org.batfish.minesweeper.utils.Tuple;
 public class Roles {
 
   private Graph _graph;
-
   private BDDNetwork _network;
-
   private NodesSpecifier _nodeSpecifier;
+  private final NetworkSnapshot _snapshot;
 
   private List<SortedSet<String>> _bgpInEcs = null;
 
@@ -47,15 +47,18 @@ public class Roles {
   private List<SortedSet<String>> _nodeEcs = null;
 
   public static Roles create(
-      IBatfish batfish, List<Prefix> prefixes, NodesSpecifier nodesSpecifier) {
-    Roles rf = new Roles(batfish, nodesSpecifier);
+      NetworkSnapshot snapshot,
+      IBatfish batfish,
+      List<Prefix> prefixes,
+      NodesSpecifier nodesSpecifier) {
+    Roles rf = new Roles(snapshot, batfish, nodesSpecifier);
     rf.computeRoles(prefixes);
     return rf;
   }
 
-  private Roles(IBatfish batfish, NodesSpecifier nodesSpecifier) {
-    _graph = new Graph(batfish);
-    _network = BDDNetwork.create(new BDDPacket(), _graph, nodesSpecifier);
+  private Roles(NetworkSnapshot snapshot, IBatfish batfish, NodesSpecifier nodesSpecifier) {
+    _graph = new Graph(batfish, snapshot);
+    _network = BDDNetwork.create(snapshot, new BDDPacket(), _graph, nodesSpecifier);
     _nodeSpecifier = nodesSpecifier;
     _bgpInEcs = null;
     _bgpOutEcs = null;
@@ -63,6 +66,7 @@ public class Roles {
     _aclOutEcs = null;
     _interfaceEcs = null;
     _nodeEcs = null;
+    _snapshot = snapshot;
   }
 
   public AnswerElement asAnswer(EquivalenceType t) {
@@ -99,7 +103,8 @@ public class Roles {
     SortedSet<String> incomingAclNull = new TreeSet<>();
     SortedSet<String> outgoingAclNull = new TreeSet<>();
 
-    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(_graph.getBatfish());
+    IBatfish batfish = _graph.getBatfish();
+    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(batfish, _snapshot);
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
 

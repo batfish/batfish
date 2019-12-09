@@ -68,7 +68,7 @@ public class SpecifiersReachabilityTest {
                 .build(),
             _folder);
 
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   /**
@@ -84,7 +84,8 @@ public class SpecifiersReachabilityTest {
                     .setStartLocation(String.format("%s[%s]", NODE1, LOOPBACK))
                     .build())
             .build();
-    AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
+    AnswerElement answer =
+        new SpecifiersReachabilityAnswerer(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(TableAnswerElement.class));
     TableAnswerElement tableAnswerElement = (TableAnswerElement) answer;
     assertThat(tableAnswerElement.getRowsList().size(), equalTo(1));
@@ -111,7 +112,8 @@ public class SpecifiersReachabilityTest {
                     .build())
             .setActions(new DispositionSpecifier(ImmutableSortedSet.of(FlowDisposition.NO_ROUTE)))
             .build();
-    AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
+    AnswerElement answer =
+        new SpecifiersReachabilityAnswerer(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(TableAnswerElement.class));
     TableAnswerElement tableAnswerElement = (TableAnswerElement) answer;
     assertThat(tableAnswerElement.getRowsList().size(), equalTo(1));
@@ -145,7 +147,8 @@ public class SpecifiersReachabilityTest {
                     .setForbiddenLocations(ALL)
                     .build())
             .build();
-    AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
+    AnswerElement answer =
+        new SpecifiersReachabilityAnswerer(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(TableAnswerElement.class));
     TableAnswerElement tableAnswerElement = (TableAnswerElement) answer;
     assertThat(tableAnswerElement.getRowsList().size(), equalTo(2));
@@ -191,7 +194,8 @@ public class SpecifiersReachabilityTest {
                     .setTransitLocations(ALL)
                     .build())
             .build();
-    AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
+    AnswerElement answer =
+        new SpecifiersReachabilityAnswerer(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(TableAnswerElement.class));
     TableAnswerElement tableAnswerElement = (TableAnswerElement) answer;
     assertThat(tableAnswerElement.getRowsList().size(), equalTo(2));
@@ -231,7 +235,7 @@ public class SpecifiersReachabilityTest {
     AnswerElement answer =
         new SpecifiersReachabilityAnswerer(
                 SpecifiersReachabilityQuestion.builder().build(), _batfish)
-            .answer();
+            .answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(TableAnswerElement.class));
     Set<Flow> flows =
         ((TableAnswerElement) answer)
@@ -252,7 +256,7 @@ public class SpecifiersReachabilityTest {
                     .setInvertSearch(true)
                     .build(),
                 _batfish)
-            .answer();
+            .answer(_batfish.getSnapshot());
     assertThat(answer, instanceOf(TableAnswerElement.class));
     flows =
         ((TableAnswerElement) answer)

@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_concatenated;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
@@ -25,7 +26,9 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -73,7 +76,7 @@ public class CumulusConcatenatedGrammarTest {
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
             src, new Warnings(), "", settings, null, false);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     return SerializationUtils.clone((CumulusNcluConfiguration) extractor.getVendorConfiguration());
   }
 
@@ -105,7 +108,7 @@ public class CumulusConcatenatedGrammarTest {
             src, new Warnings(), filename, parser.getSettings(), null, false);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     CumulusNcluConfiguration config = (CumulusNcluConfiguration) extractor.getVendorConfiguration();
     config.setFilename(TESTCONFIGS_PREFIX + filename);
     return config;
@@ -119,7 +122,8 @@ public class CumulusConcatenatedGrammarTest {
 
   private SortedMap<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   private @Nonnull Configuration parseConfig(String hostname) throws IOException {
@@ -274,10 +278,11 @@ public class CumulusConcatenatedGrammarTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        batfish.getTopologyProvider().getBgpTopology(batfish.getNetworkSnapshot()).getGraph();
+        batfish.getTopologyProvider().getBgpTopology(snapshot).getGraph();
 
     String vrf = "default";
     // Edge one direction

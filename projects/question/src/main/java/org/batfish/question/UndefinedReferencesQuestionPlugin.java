@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.Schema;
@@ -48,15 +49,16 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public TableAnswerElement answer() {
+    public TableAnswerElement answer(NetworkSnapshot snapshot) {
       UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
 
       // Find all the filenames that produced the queried nodes. This might have false positives if
       // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
       // this question as a TableAnswerElement.
-      Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+      Set<String> includeNodes =
+          question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
       Multimap<String, String> hostnameFilenameMap =
-          _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
+          _batfish.loadParseVendorConfigurationAnswerElement(snapshot).getFileMap();
       Set<String> includeFiles =
           hostnameFilenameMap.entries().stream()
               .filter(e -> includeNodes.contains(e.getKey()))
@@ -66,7 +68,9 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       Multiset<Row> rows = LinkedHashMultiset.create();
       SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
           undefinedReferences =
-              _batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
+              _batfish
+                  .loadConvertConfigurationAnswerElementOrReparse(snapshot)
+                  .getUndefinedReferences();
       undefinedReferences.entrySet().stream()
           .filter(e -> includeFiles.contains(e.getKey()))
           .forEach(e -> rows.addAll(processEntryToRows(e)));

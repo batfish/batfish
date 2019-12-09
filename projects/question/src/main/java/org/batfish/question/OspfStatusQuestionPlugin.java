@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -120,21 +121,22 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answer() {
+    public AnswerElement answer(NetworkSnapshot snapshot) {
 
       OspfStatusQuestion question = (OspfStatusQuestion) _question;
 
       OspfStatusAnswerElement answerElement = new OspfStatusAnswerElement();
 
-      Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
+      Set<String> includeNodes =
+          question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
 
       for (String hostname : includeNodes) {
         Configuration c = configurations.get(hostname);
         Set<NodeInterfacePair> includeInterfaces =
             question
                 .getInterfaceSpecifier()
-                .resolve(ImmutableSet.of(hostname), _batfish.specifierContext());
+                .resolve(ImmutableSet.of(hostname), _batfish.specifierContext(snapshot));
         for (Vrf vrf : c.getVrfs().values()) {
           for (Entry<String, Interface> e2 : vrf.getInterfaces().entrySet()) {
             String interfaceName = e2.getKey();

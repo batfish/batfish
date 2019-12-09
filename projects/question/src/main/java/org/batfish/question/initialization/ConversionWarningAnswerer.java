@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
@@ -21,9 +22,9 @@ import org.batfish.datamodel.table.TableMetadata;
 /** Implements answer to {@link ConversionWarningQuestion}. */
 class ConversionWarningAnswerer extends Answerer {
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ConvertConfigurationAnswerElement ccae =
-        _batfish.loadConvertConfigurationAnswerElementOrReparse();
+        _batfish.loadConvertConfigurationAnswerElementOrReparse(snapshot);
 
     Map<String, Warnings> warnings = ccae.getWarnings();
 

@@ -73,8 +73,8 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   public static void setup() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane();
-    DataPlane dataPlane = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     factory =
         new BDDReachabilityAnalysisFactory(
             pkt,

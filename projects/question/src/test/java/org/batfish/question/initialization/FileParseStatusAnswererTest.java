@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -48,9 +49,10 @@ public class FileParseStatusAnswererTest {
 
   @Test
   public void testAnswererFlow() {
+    TestBatfish batfish = new TestBatfish();
     FileParseStatusAnswerer answerer =
-        new FileParseStatusAnswerer(new FileParseStatusQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new FileParseStatusAnswerer(new FileParseStatusQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(
         answer.getRows(),
         equalTo(
@@ -67,7 +69,8 @@ public class FileParseStatusAnswererTest {
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+        NetworkSnapshot snapshot) {
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       pvcae.setFileMap(ImmutableMultimap.of("h", "f"));
       pvcae.setParseStatus(ImmutableSortedMap.of("f", ParseStatus.PASSED));
@@ -75,7 +78,8 @@ public class FileParseStatusAnswererTest {
     }
 
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+        NetworkSnapshot snapshot) {
       ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
       ccae.getFileMap().put("f", "h1");
       ccae.getFileMap().put("f", "h2");

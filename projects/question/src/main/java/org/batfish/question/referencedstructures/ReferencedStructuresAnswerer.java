@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.FileLines;
@@ -33,11 +34,11 @@ public class ReferencedStructuresAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     ReferencedStructuresQuestion question = (ReferencedStructuresQuestion) _question;
-    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish, snapshot);
     Multimap<String, String> hostnameFilenameMap =
-        _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
+        _batfish.loadParseVendorConfigurationAnswerElement(snapshot).getFileMap();
     Set<String> includeFiles =
         hostnameFilenameMap.entries().stream()
             .filter(e -> includeNodes.contains(e.getKey()))
@@ -49,7 +50,7 @@ public class ReferencedStructuresAnswerer extends Answerer {
 
     Multiset<Row> rows = LinkedHashMultiset.create();
     _batfish
-        .loadConvertConfigurationAnswerElementOrReparse()
+        .loadConvertConfigurationAnswerElementOrReparse(snapshot)
         .getReferencedStructures()
         .forEach(
             (filename, value) -> {

@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer2Topology;
@@ -116,11 +117,11 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     BgpSessionCompatibilityQuestion question = (BgpSessionCompatibilityQuestion) _question;
     TableAnswerElement answer =
         new TableAnswerElement(BgpSessionCompatibilityAnswerer.createMetadata(question));
-    answer.postProcessAnswer(question, getRows(question));
+    answer.postProcessAnswer(question, getRows(snapshot, question));
     return answer;
   }
 
@@ -128,17 +129,14 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
    * Return the answer for {@link BgpSessionCompatibilityQuestion} -- a set of BGP sessions and
    * their compatibility.
    */
-  private List<Row> getRows(BgpSessionCompatibilityQuestion question) {
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+  private List<Row> getRows(NetworkSnapshot snapshot, BgpSessionCompatibilityQuestion question) {
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    SpecifierContext specifierContext = _batfish.specifierContext();
+    SpecifierContext specifierContext = _batfish.specifierContext(snapshot);
     Set<String> nodes = question.getNodeSpecifier().resolve(specifierContext);
     Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
     Layer2Topology layer2Topology =
-        _batfish
-            .getTopologyProvider()
-            .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
-            .orElse(null);
+        _batfish.getTopologyProvider().getInitialLayer2Topology(snapshot).orElse(null);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners = new IpOwners(configurations).getIpVrfOwners();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipVrfOwners, true, layer2Topology)

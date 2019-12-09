@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
@@ -58,10 +59,10 @@ public class FilterTableAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     FilterTableQuestion question = (FilterTableQuestion) _question;
     Question innerQuestion = question.getInnerQuestion();
-    AnswerElement innerAnswer = _batfish.createAnswerer(innerQuestion).answer();
+    AnswerElement innerAnswer = _batfish.createAnswerer(innerQuestion).answer(snapshot);
     if (!(innerAnswer instanceof TableAnswerElement)) {
       throw new IllegalArgumentException("The inner question does not produce table answers");
     }
@@ -102,7 +103,7 @@ public class FilterTableAnswerer extends Answerer {
    *
    * @param columns The columns to select
    * @param inputRows The input set.
-   * @returns A new set of rows with specified columns
+   * @return A new set of rows with specified columns
    */
   @VisibleForTesting
   static Multiset<Row> selectColumns(Set<String> columns, Multiset<Row> inputRows) {

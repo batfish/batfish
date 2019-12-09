@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -53,18 +54,22 @@ import org.batfish.minesweeper.collections.Table2;
  */
 public class BatfishCompressor {
   private BDDPacket _bddPacket;
-
   private IBatfish _batfish;
+  private final NetworkSnapshot _snapshot;
 
   private Graph _graph;
 
   private String _internalRegex;
 
   public BatfishCompressor(
-      BDDPacket bddPacket, IBatfish batfish, Map<String, Configuration> configs) {
+      NetworkSnapshot snapshot,
+      BDDPacket bddPacket,
+      IBatfish batfish,
+      Map<String, Configuration> configs) {
     _bddPacket = bddPacket;
     _batfish = batfish;
-    _graph = new Graph(batfish, configs);
+    _graph = new Graph(batfish, snapshot, configs);
+    _snapshot = snapshot;
     _internalRegex = internalRegex();
   }
 
@@ -258,7 +263,7 @@ public class BatfishCompressor {
 
   public Map<String, Configuration> compress(HeaderSpace h) {
     DestinationClasses dcs = DestinationClasses.create(_batfish, _graph, h, true);
-    List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(_bddPacket, dcs, 0);
+    List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(_snapshot, _bddPacket, dcs, 0);
     Optional<Map<GraphEdge, EquivalenceClassFilter>> opt =
         ecs.stream().map(Supplier::get).map(this::processSlice).reduce(this::mergeFilters);
     if (!opt.isPresent()) {

@@ -78,8 +78,8 @@ public class BDDMultipathInconsistencyTest {
     _net = new TestNetwork();
     _batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
 
-    _batfish.computeDataPlane();
-    DataPlane dataPlane = _batfish.loadDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
+    DataPlane dataPlane = _batfish.loadDataPlane(_batfish.getSnapshot());
     _graphFactory =
         new BDDReachabilityAnalysisFactory(
             PKT,
@@ -191,7 +191,8 @@ public class BDDMultipathInconsistencyTest {
 
   @Test
   public void testAllDispositions() {
-    IpSpaceAssignment assignment = _batfish.getAllSourcesInferFromLocationIpSpaceAssignment();
+    IpSpaceAssignment assignment =
+        _batfish.getAllSourcesInferFromLocationIpSpaceAssignment(_batfish.getSnapshot());
     Set<FlowDisposition> dropDispositions =
         ImmutableSet.of(DENIED_IN, DENIED_OUT, NO_ROUTE, NULL_ROUTED);
 

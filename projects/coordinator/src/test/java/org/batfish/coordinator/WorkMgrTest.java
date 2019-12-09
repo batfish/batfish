@@ -1591,8 +1591,7 @@ public final class WorkMgrTest {
     WorkItem parseWorkItem = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
 
     WorkItem analysisWorkItem =
-        WorkItemBuilder.getWorkItemRunAnalysis(
-            "useranalysis", containerName, testrigName, null, false, false);
+        WorkItemBuilder.getWorkItemRunAnalysis("useranalysis", containerName, testrigName);
 
     List<WorkItem> workQueue = _manager.getAutoWorkQueue(containerName, testrigName);
 
@@ -1866,8 +1865,7 @@ public final class WorkMgrTest {
     WorkItem parseWorkItem = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
 
     WorkItem analysisWorkItem =
-        WorkItemBuilder.getWorkItemRunAnalysis(
-            "suggestedanalysis", containerName, testrigName, null, false, false);
+        WorkItemBuilder.getWorkItemRunAnalysis("suggestedanalysis", containerName, testrigName);
 
     List<WorkItem> workQueue = _manager.getAutoWorkQueue(containerName, testrigName);
 

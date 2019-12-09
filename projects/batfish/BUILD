@@ -129,3 +129,8 @@ pmd_test(
     name = "pmd",
     lib = ":batfish",
 )
+
+pmd_test(
+    name = "testlib_pmd",
+    lib = ":batfish",
+)

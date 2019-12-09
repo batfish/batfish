@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_nclu;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -32,7 +33,7 @@ public class CumulusNcluControlPlaneExtractor implements ControlPlaneExtractor {
   }
 
   @Override
-  public void processParseTree(ParserRuleContext tree) {
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     CumulusNcluConfigurationBuilder cb = new CumulusNcluConfigurationBuilder(_parser, _text, _w);
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(cb, tree);

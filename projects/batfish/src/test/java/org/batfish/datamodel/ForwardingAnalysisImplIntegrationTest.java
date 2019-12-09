@@ -42,9 +42,10 @@ public class ForwardingAnalysisImplIntegrationTest {
     String vrfName = vrf.getName();
 
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
-    ForwardingAnalysis forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
+    ForwardingAnalysis forwardingAnalysis =
+        batfish.loadDataPlane(batfish.getSnapshot()).getForwardingAnalysis();
 
     // the null route's prefix should not actually null route anything
     assertThat(
@@ -97,9 +98,10 @@ public class ForwardingAnalysisImplIntegrationTest {
     vrf.setStaticRoutes(ImmutableSortedSet.of(forwardingRoute, nonForwardingRoute));
 
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
-    ForwardingAnalysis forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
+    ForwardingAnalysis forwardingAnalysis =
+        batfish.loadDataPlane(batfish.getSnapshot()).getForwardingAnalysis();
 
     // the non-forwarding route's prefix should not be null routed
     assertThat(
@@ -155,9 +157,10 @@ public class ForwardingAnalysisImplIntegrationTest {
     Batfish batfish =
         BatfishTestUtils.getBatfish(
             ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
-    ForwardingAnalysis forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
+    ForwardingAnalysis forwardingAnalysis =
+        batfish.loadDataPlane(batfish.getSnapshot()).getForwardingAnalysis();
     Map<String, Map<String, Map<String, IpSpace>>> exitsNetwork =
         forwardingAnalysis.getExitsNetwork();
 
@@ -167,8 +170,8 @@ public class ForwardingAnalysisImplIntegrationTest {
 
     // after setting the static arp on i2, should not be exits network anymore
     i2.setAdditionalArpIps(prefix.getStartIp().toIpSpace());
-    batfish.computeDataPlane();
-    forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    forwardingAnalysis = batfish.loadDataPlane(batfish.getSnapshot()).getForwardingAnalysis();
     exitsNetwork = forwardingAnalysis.getExitsNetwork();
     assertThat(
         exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()),

@@ -10,6 +10,7 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
@@ -48,8 +49,8 @@ public final class VIModelQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public VIModelAnswerElement answer() {
-      return new VIModelAnswerElement(_batfish.loadConfigurations());
+    public VIModelAnswerElement answer(NetworkSnapshot snapshot) {
+      return new VIModelAnswerElement(_batfish.loadConfigurations(snapshot));
     }
   }
 

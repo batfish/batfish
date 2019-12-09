@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -23,9 +24,9 @@ public final class DetectLoopsAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     DetectLoopsQuestion question = (DetectLoopsQuestion) _question;
-    Set<Flow> flows = _batfish.bddLoopDetection();
+    Set<Flow> flows = _batfish.bddLoopDetection(snapshot);
 
     /*
      * There can be many flows exercising the same loop, so let's pick one per dstIp.
@@ -38,7 +39,7 @@ public final class DetectLoopsAnswerer extends Answerer {
             .map(Optional::get) // safe: the min here cannot be empty by construction.
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
-    SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
+    SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(snapshot, flows, false);
     TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
     TracerouteAnswerer.flowTracesToRows(flowTraces, question.getMaxTraces())
         .forEach(tableAnswer::addRow);

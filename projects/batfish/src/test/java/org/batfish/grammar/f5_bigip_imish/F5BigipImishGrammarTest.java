@@ -23,6 +23,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeAccessListRouteFilterName;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBgpPeerExportPolicyName;
@@ -55,6 +56,7 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
@@ -202,7 +204,7 @@ public final class F5BigipImishGrammarTest {
             settings.getPrintParseTreeLineNums());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     assertThat(
         String.format("Ensure '%s' was successfully parsed", hostname),
         extractor.getVendorConfiguration(),
@@ -475,8 +477,9 @@ public final class F5BigipImishGrammarTest {
                 .setConfigurationText(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> routes1 =
         dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> routes2 =
@@ -815,7 +818,7 @@ public final class F5BigipImishGrammarTest {
     String used = "123";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, BGP_PROCESS, used, 1));
@@ -1002,9 +1005,9 @@ public final class F5BigipImishGrammarTest {
     batfish.getSettings().setDisableUnrecognized(false);
     batfish.getSettings().setThrowOnLexerError(false);
     batfish.getSettings().setThrowOnParserError(false);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasIpAccessLists(hasKey("acl2")));
-    InitInfoAnswerElement initAns = batfish.initInfo(false, true);
+    InitInfoAnswerElement initAns = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));
   }
 
@@ -1128,7 +1131,7 @@ public final class F5BigipImishGrammarTest {
     String used = "route-map-used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // detect undefined reference
     assertThat(ans, hasUndefinedReference(file, ROUTE_MAP, undefined));

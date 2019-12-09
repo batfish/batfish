@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -54,7 +55,7 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     OspfProcessConfigurationQuestion question = (OspfProcessConfigurationQuestion) _question;
 
     Set<String> matchingProperties =
@@ -73,7 +74,7 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
     Multiset<Row> propertyRows =
         getProperties(
             orderedProperties,
-            _batfish.specifierContext(),
+            _batfish.specifierContext(snapshot),
             question.getNodesSpecifier(),
             tableMetadata.toColumnMap());
 

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.Configuration;
@@ -38,9 +39,9 @@ class IpOwnersAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     IpOwnersQuestion question = (IpOwnersQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     Map<Ip, Set<String>> ipNodeOwners = IpOwners.computeIpNodeOwners(configurations, false);
     Map<String, Set<Interface>> interfaces = computeNodeInterfaces(configurations);
 

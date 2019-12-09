@@ -204,8 +204,9 @@ public class BgpNextHopUnchangedTest {
   @Test
   public void ebgpNhUnchangedNotPresent() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(network(true, false), _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
@@ -217,8 +218,9 @@ public class BgpNextHopUnchangedTest {
   @Test
   public void ebgpNhUnchangedPresent() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(network(true, true), _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
@@ -230,8 +232,9 @@ public class BgpNextHopUnchangedTest {
   @Test
   public void ibgpNhUnchangedNotPresent() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(network(false, false), _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 

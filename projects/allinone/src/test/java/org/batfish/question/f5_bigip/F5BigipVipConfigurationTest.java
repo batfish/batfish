@@ -25,7 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** End-to-end tests of {@link F5BigpVipConfigurationQuestion} */
+/** End-to-end tests of {@link F5BigipVipConfigurationQuestion}. */
 public final class F5BigipVipConfigurationTest {
 
   private static String TESTCONFIGS_PREFIX = "org/batfish/allinone/testconfigs/";
@@ -47,7 +47,7 @@ public final class F5BigipVipConfigurationTest {
     F5BigipVipConfigurationQuestion question = new F5BigipVipConfigurationQuestion(".*");
     F5BigipVipConfigurationAnswerer answerer =
         new F5BigipVipConfigurationAnswerer(question, batfish);
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // answer should have one row per virtual
     assertThat(answer.getRows(), hasSize(3));
