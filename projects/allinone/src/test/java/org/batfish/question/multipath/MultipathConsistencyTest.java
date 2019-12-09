@@ -48,14 +48,14 @@ public class MultipathConsistencyTest {
   public void setup() throws IOException {
     _testNetwork = new TestNetwork();
     _batfish = BatfishTestUtils.getBatfish(_testNetwork._configs, temp);
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   @Test
   public void testMultipath() {
     MultipathConsistencyQuestion question = new MultipathConsistencyQuestion();
     MultipathConsistencyAnswerer answerer = new MultipathConsistencyAnswerer(question, _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     assertThat(ae.getRows(), hasSize(1));
 

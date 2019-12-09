@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.DataPlane;
@@ -81,13 +82,13 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     VxlanVniPropertiesQuestion question = (VxlanVniPropertiesQuestion) _question;
     Set<String> nodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext());
-    DataPlane dp = _batfish.loadDataPlane();
+            .resolve(_batfish.specifierContext(snapshot));
+    DataPlane dp = _batfish.loadDataPlane(snapshot);
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);

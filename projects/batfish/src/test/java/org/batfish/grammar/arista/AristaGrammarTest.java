@@ -5,6 +5,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
+import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -32,6 +33,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -99,7 +101,7 @@ public class AristaGrammarTest {
     ParserRuleContext tree =
         Batfish.parse(
             ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     CiscoConfiguration vendorConfiguration =
         (CiscoConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
@@ -131,7 +133,8 @@ public class AristaGrammarTest {
 
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   @Test

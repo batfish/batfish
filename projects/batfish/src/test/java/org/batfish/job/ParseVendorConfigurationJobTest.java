@@ -7,10 +7,13 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.junit.Test;
 
 /** Tests of {@link ParseVendorConfigurationJob}. */
@@ -20,6 +23,7 @@ public class ParseVendorConfigurationJobTest {
   private static ParseVendorConfigurationResult parseHost(String resourcePath) {
     return new ParseVendorConfigurationJob(
             new Settings(),
+            new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss")),
             CommonUtil.readResource(resourcePath),
             "filename",
             new Warnings(),

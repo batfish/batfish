@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -113,13 +114,14 @@ public final class BDDLoopDetectionAnalysisTest {
     SortedMap<String, Configuration> configs =
         ImmutableSortedMap.of(srcNode.getHostname(), srcNode, dstNode.getHostname(), dstNode);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _temporaryFolder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
 
     Set<Location> allLocations =
-        LocationSpecifier.ALL_LOCATIONS.resolve(batfish.specifierContext());
+        LocationSpecifier.ALL_LOCATIONS.resolve(batfish.specifierContext(snapshot));
     IpSpaceAssignment srcIpSpaceAssignment =
         IpSpaceAssignment.builder().assign(allLocations, UniverseIpSpace.INSTANCE).build();
-    DataPlane dataPlane = batfish.loadDataPlane();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dataPlane = batfish.loadDataPlane(snapshot);
     BDDLoopDetectionAnalysis analysis =
         new BDDReachabilityAnalysisFactory(
                 PKT,

@@ -603,39 +603,46 @@ public class BgpSessionStatusAnswererTest {
     BgpSessionStatusAnswerer answerer =
         new BgpSessionStatusAnswerer(new BgpSessionStatusQuestion(), batfish);
     assertThat(
-        (TableAnswerElement) answerer.answer(), hasRows(containsInAnyOrder(row1To2, row2To1)));
+        (TableAnswerElement) answerer.answer(batfish.getSnapshot()),
+        hasRows(containsInAnyOrder(row1To2, row2To1)));
 
     // Limit by node
     answerer =
         new BgpSessionStatusAnswerer(new BgpSessionStatusQuestion("c1", null, null, null), batfish);
-    assertThat((TableAnswerElement) answerer.answer(), hasRows(contains(row1To2)));
+    assertThat(
+        (TableAnswerElement) answerer.answer(batfish.getSnapshot()), hasRows(contains(row1To2)));
 
     // Limit by remote node
     answerer =
         new BgpSessionStatusAnswerer(new BgpSessionStatusQuestion(null, "c1", null, null), batfish);
-    assertThat((TableAnswerElement) answerer.answer(), hasRows(contains(row2To1)));
+    assertThat(
+        (TableAnswerElement) answerer.answer(batfish.getSnapshot()), hasRows(contains(row2To1)));
 
     // Limit by status. Since both rows have the same status, test twice with different statuses
     answerer =
         new BgpSessionStatusAnswerer(
             new BgpSessionStatusQuestion(null, null, "ESTABLISHED", null), batfish);
     assertThat(
-        (TableAnswerElement) answerer.answer(), hasRows(containsInAnyOrder(row1To2, row2To1)));
+        (TableAnswerElement) answerer.answer(batfish.getSnapshot()),
+        hasRows(containsInAnyOrder(row1To2, row2To1)));
     answerer =
         new BgpSessionStatusAnswerer(
             new BgpSessionStatusQuestion(null, null, "NOT_ESTABLISHED", null), batfish);
-    assertThat((TableAnswerElement) answerer.answer(), hasRows(emptyIterable()));
+    assertThat(
+        (TableAnswerElement) answerer.answer(batfish.getSnapshot()), hasRows(emptyIterable()));
 
     // Limit by type. Since both rows have the same type, test twice with different types
     answerer =
         new BgpSessionStatusAnswerer(
             new BgpSessionStatusQuestion(null, null, null, "EBGP_SINGLEHOP"), batfish);
     assertThat(
-        (TableAnswerElement) answerer.answer(), hasRows(containsInAnyOrder(row1To2, row2To1)));
+        (TableAnswerElement) answerer.answer(batfish.getSnapshot()),
+        hasRows(containsInAnyOrder(row1To2, row2To1)));
     answerer =
         new BgpSessionStatusAnswerer(
             new BgpSessionStatusQuestion(null, null, null, "IBGP"), batfish);
-    assertThat((TableAnswerElement) answerer.answer(), hasRows(emptyIterable()));
+    assertThat(
+        (TableAnswerElement) answerer.answer(batfish.getSnapshot()), hasRows(emptyIterable()));
   }
 
   static class MockBatfish extends IBatfishTestAdapter {
@@ -649,17 +656,13 @@ public class BgpSessionStatusAnswererTest {
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
-      return _configs;
-    }
-
-    @Override
     public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       return _configs;
     }
 
     @Override
-    public SpecifierContext specifierContext() {
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       return MockSpecifierContext.builder().setConfigs(_configs).build();
     }
 

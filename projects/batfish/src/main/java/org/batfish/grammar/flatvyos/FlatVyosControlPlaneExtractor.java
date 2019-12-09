@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -687,7 +688,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   }
 
   @Override
-  public void processParseTree(ParserRuleContext tree) {
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(this, tree);
   }

@@ -1,5 +1,6 @@
 package org.batfish.question.specifiers;
 
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,9 +14,9 @@ public class SpecifiersReachabilityAnswererTest {
   public void answerDiffCrashes() {
     SpecifiersReachabilityQuestion defaultQ =
         new SpecifiersReachabilityQuestion(null, null, null, null, null, null);
-    SpecifiersReachabilityAnswerer answerer =
-        new SpecifiersReachabilityAnswerer(defaultQ, new IBatfishTestAdapter());
+    IBatfish batfish = new IBatfishTestAdapter();
+    SpecifiersReachabilityAnswerer answerer = new SpecifiersReachabilityAnswerer(defaultQ, batfish);
     _expected.expectMessage("This question should not be run in differential mode.");
-    answerer.answerDiff();
+    answerer.answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
   }
 }

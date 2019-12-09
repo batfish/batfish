@@ -81,6 +81,7 @@ import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NX
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACKET_LENGTH_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_PORT_RANGE;
+import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
@@ -142,6 +143,7 @@ import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -430,7 +432,8 @@ public final class CiscoNxosGrammarTest {
 
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   private @Nonnull CiscoNxosConfiguration parseVendorConfig(String hostname) {
@@ -443,7 +446,7 @@ public final class CiscoNxosGrammarTest {
     ParserRuleContext tree =
         Batfish.parse(
             ciscoNxosParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     CiscoNxosConfiguration vendorConfiguration =
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
@@ -1831,7 +1834,7 @@ public final class CiscoNxosGrammarTest {
                 .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
                 .build(),
             _folder);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     Map<String, org.batfish.datamodel.Interface> interfaces = c.getAllInterfaces();
 
     // Get name-based default guess for speed and ensure it does not match configured/runtime values
@@ -1868,7 +1871,10 @@ public final class CiscoNxosGrammarTest {
 
     // Should see a single conversion warning for Ethernet1/1's conflicting speeds
     Warnings warnings =
-        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname);
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
     assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
     assertThat(
         warnings.getRedFlagWarnings().get(0).getText(),
@@ -1888,7 +1894,7 @@ public final class CiscoNxosGrammarTest {
                 .build(),
             _folder);
     Map<String, org.batfish.datamodel.Interface> interfaces =
-        batfish.loadConfigurations().get(hostname).getAllInterfaces();
+        batfish.loadConfigurations(batfish.getSnapshot()).get(hostname).getAllInterfaces();
 
     // Get name-based default guess for bw and ensure it does not match configured/runtime values
     double defaultBandwidth = getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET);
@@ -1922,7 +1928,10 @@ public final class CiscoNxosGrammarTest {
 
     // Should see a single conversion warning for Ethernet1/1's conflicting bandwidths
     Warnings warnings =
-        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname);
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
     assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
     assertThat(
         warnings.getRedFlagWarnings().get(0).getText(),
@@ -1943,7 +1952,7 @@ public final class CiscoNxosGrammarTest {
                 .build(),
             _folder);
     Map<String, org.batfish.datamodel.Interface> interfaces =
-        batfish.loadConfigurations().get(hostname).getAllInterfaces();
+        batfish.loadConfigurations(batfish.getSnapshot()).get(hostname).getAllInterfaces();
 
     // Ethernet1/0 has configured & runtime bw 2E8, configured & runtime speed 1E8.
     assertThat(interfaces.get("Ethernet1/0"), allOf(hasBandwidth(2E8), hasSpeed(1E8)));
@@ -1960,7 +1969,10 @@ public final class CiscoNxosGrammarTest {
 
     // No warnings
     assertNull(
-        batfish.loadConvertConfigurationAnswerElementOrReparse().getWarnings().get(hostname));
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname));
   }
 
   @Test
@@ -3495,8 +3507,9 @@ public final class CiscoNxosGrammarTest {
   public void testIpAccessListReferences() throws IOException {
     String hostname = "nxos_ip_access_list_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
 
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.IP_ACCESS_LIST, "acl_unused", 0));
@@ -4578,9 +4591,9 @@ public final class CiscoNxosGrammarTest {
   public void testObjectGroupIpAddressReferences() throws IOException {
     String hostname = "nxos_object_group_ip_address_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, OBJECT_GROUP_IP_ADDRESS, "og_used", 2));
     assertThat(ans, hasNumReferrers(filename, OBJECT_GROUP_IP_ADDRESS, "og_unused", 0));
     assertThat(ans, hasUndefinedReference(filename, OBJECT_GROUP_IP_ADDRESS, "og_undefined"));
@@ -5698,9 +5711,9 @@ public final class CiscoNxosGrammarTest {
   public void testPortChannelReferences() throws IOException {
     String hostname = "nxos_port_channel_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.PORT_CHANNEL, "port-channel1", 1));
     assertThat(
@@ -6935,9 +6948,9 @@ public final class CiscoNxosGrammarTest {
   public void testStaticRouteReferences() throws IOException {
     String hostname = "nxos_static_route_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.INTERFACE, "Ethernet1/1", 2));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf1", 2));
   }
@@ -7088,9 +7101,9 @@ public final class CiscoNxosGrammarTest {
   public void testVlanReferences() throws IOException {
     String hostname = "nxos_vlan_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VLAN, "1", 1));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VLAN, "2", 0));
     assertThat(ans, hasUndefinedReference(filename, CiscoNxosStructureType.VLAN, "3"));
@@ -7239,9 +7252,9 @@ public final class CiscoNxosGrammarTest {
   public void testVrfReferences() throws IOException {
     String hostname = "nxos_vrf_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf_used", 1));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf_unused", 0));
     assertThat(ans, hasUndefinedReference(filename, CiscoNxosStructureType.VRF, "vrf_undefined"));

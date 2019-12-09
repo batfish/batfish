@@ -129,12 +129,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final String TASK_ID = "taskid";
 
-  private TestrigSettings _activeTestrigSettings;
-
-  private TestrigSettings _baseTestrigSettings;
-
-  private final TestrigSettings _deltaTestrigSettings;
-
   private BatfishLogger _logger;
 
   public Settings() {
@@ -147,8 +141,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
             BfConsts.PROP_BATFISH_PROPERTIES_PATH,
             BfConsts.ABSPATH_CONFIG_FILE_NAME_BATFISH,
             ConfigurationLocator.class));
-    _baseTestrigSettings = new TestrigSettings();
-    _deltaTestrigSettings = new TestrigSettings();
     initConfigDefaults();
     initOptions();
     parseCommandLine(args);
@@ -161,9 +153,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    */
   public Settings(Settings other) {
     super(other._config);
-    _baseTestrigSettings = new TestrigSettings();
-    _deltaTestrigSettings = new TestrigSettings();
-    _activeTestrigSettings = new TestrigSettings();
     _logger = other._logger;
     initOptions();
   }
@@ -187,10 +176,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return getDebugFlags().contains(flag);
   }
 
-  public TestrigSettings getActiveTestrigSettings() {
-    return _activeTestrigSettings;
-  }
-
   public @Nullable AnalysisId getAnalysisName() {
     String id = _config.getString(BfConsts.ARG_ANALYSIS_NAME);
     return id != null ? new AnalysisId(id) : null;
@@ -206,10 +191,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public int getAvailableThreads() {
     return Math.min(Runtime.getRuntime().availableProcessors(), getJobs());
-  }
-
-  public TestrigSettings getBaseTestrigSettings() {
-    return _baseTestrigSettings;
   }
 
   public NetworkId getContainer() {
@@ -240,14 +221,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   public SnapshotId getDeltaTestrig() {
     String name = _config.getString(BfConsts.ARG_DELTA_TESTRIG);
     return name != null ? new SnapshotId(name) : null;
-  }
-
-  public TestrigSettings getDeltaTestrigSettings() {
-    return _deltaTestrigSettings;
-  }
-
-  public boolean getDiffActive() {
-    return _config.getBoolean(BfConsts.ARG_DIFF_ACTIVE);
   }
 
   public boolean getDifferential() {
@@ -441,8 +414,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
   }
 
-  public Path getStorageBase() {
-    return Paths.get(_config.getString(BfConsts.ARG_STORAGE_BASE));
+  public @Nullable Path getStorageBase() {
+    String storageBase = _config.getString(BfConsts.ARG_STORAGE_BASE);
+    if (storageBase == null) {
+      return null;
+    }
+    return Paths.get(storageBase);
   }
 
   @Nullable
@@ -537,7 +514,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
-    setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
@@ -658,10 +634,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addListOption(ARG_DEBUG_FLAGS, "a list of flags to enable debugging code", "debug flags");
 
     addOption(BfConsts.ARG_DELTA_TESTRIG, "name of delta testrig", ARGNAME_NAME);
-
-    addBooleanOption(
-        BfConsts.ARG_DIFF_ACTIVE,
-        "make differential snapshot the active one for questions about a single snapshot");
 
     addBooleanOption(
         BfConsts.ARG_DIFFERENTIAL,
@@ -837,6 +809,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     for (String deprecatedStringArg :
         new String[] {
           "deltaenv",
+          "diffactive",
           "enable_cisco_nx_parser",
           "env",
           "flattenonthefly",
@@ -891,7 +864,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
     getStringListOptionValue(ARG_DEBUG_FLAGS);
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
-    getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
     getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
@@ -950,10 +922,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
   }
 
-  public void setActiveTestrigSettings(TestrigSettings activeTestrigSettings) {
-    _activeTestrigSettings = activeTestrigSettings;
-  }
-
   public void setCanExecute(boolean canExecute) {
     _config.setProperty(CAN_EXECUTE, canExecute);
   }
@@ -968,10 +936,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setDeltaTestrig(SnapshotId testrig) {
     _config.setProperty(BfConsts.ARG_DELTA_TESTRIG, testrig != null ? testrig.getId() : null);
-  }
-
-  public void setDiffActive(boolean diffActive) {
-    _config.setProperty(BfConsts.ARG_DIFF_ACTIVE, diffActive);
   }
 
   public void setDiffQuestion(boolean diffQuestion) {

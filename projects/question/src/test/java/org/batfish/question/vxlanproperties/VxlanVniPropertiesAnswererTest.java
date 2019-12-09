@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
@@ -37,11 +38,10 @@ import org.junit.Test;
 public final class VxlanVniPropertiesAnswererTest {
   @Test
   public void testAnswer() {
+    IBatfish batfish = new VxlanVniPropertiesAnswererTest.TestBatfish();
     VxlanVniPropertiesAnswerer answerer =
-        new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion(null, "/.*/"),
-            new VxlanVniPropertiesAnswererTest.TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new VxlanVniPropertiesAnswerer(new VxlanVniPropertiesQuestion(null, "/.*/"), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(
         answer.getRows(),
         equalTo(
@@ -82,11 +82,10 @@ public final class VxlanVniPropertiesAnswererTest {
 
   @Test
   public void testSpecifyNodes() {
+    IBatfish batfish = new VxlanVniPropertiesAnswererTest.TestBatfish();
     VxlanVniPropertiesAnswerer answerer =
-        new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion("minimal", "/.*/"),
-            new VxlanVniPropertiesAnswererTest.TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new VxlanVniPropertiesAnswerer(new VxlanVniPropertiesQuestion("minimal", "/.*/"), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // Should have only the one VNI from the specified node
     assertThat(
@@ -107,11 +106,10 @@ public final class VxlanVniPropertiesAnswererTest {
 
   @Test
   public void testSpecifyProperties() {
+    IBatfish batfish = new VxlanVniPropertiesAnswererTest.TestBatfish();
     VxlanVniPropertiesAnswerer answerer =
-        new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion(null, VLAN),
-            new VxlanVniPropertiesAnswererTest.TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new VxlanVniPropertiesAnswerer(new VxlanVniPropertiesQuestion(null, VLAN), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // Should have the mandatory properties (Node, VNI) as well as the requested property: VLAN
     assertThat(
@@ -141,7 +139,7 @@ public final class VxlanVniPropertiesAnswererTest {
   private static class TestBatfish extends IBatfishTestAdapter {
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
       Configuration conf = new Configuration("hostname", ConfigurationFormat.ARISTA);
       conf.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME)));
       Configuration confMinimal = new Configuration("minimal", ConfigurationFormat.ARISTA);
@@ -151,13 +149,8 @@ public final class VxlanVniPropertiesAnswererTest {
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
-      return loadConfigurations();
-    }
-
-    @Override
-    public DataPlane loadDataPlane() {
-      SortedMap<String, Configuration> configs = loadConfigurations();
+    public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
+      SortedMap<String, Configuration> configs = loadConfigurations(snapshot);
       HashBasedTable<String, String, Set<VniSettings>> vnis = HashBasedTable.create();
       vnis.put(
           "hostname",

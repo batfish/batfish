@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
@@ -122,14 +123,14 @@ public class IncrementalDataPlanePluginTest {
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     // Test that compute Data Plane finishes in a finite time
-    dataPlanePlugin.computeDataPlane();
+    dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
   }
 
   private SortedMap<String, Configuration> generateNetworkWithDuplicates() {
     Ip coreId = Ip.parse("1.1.1.1");
     Ip neighborId1 = Ip.parse("1.1.1.9");
     Ip neighborId2 = Ip.parse("1.1.1.2");
-    final int interfcePrefixBits = 30;
+    final int interfacePrefixBits = 30;
     _vb.setName(DEFAULT_VRF_NAME);
 
     /*
@@ -145,7 +146,7 @@ public class IncrementalDataPlanePluginTest {
 
     Vrf corevrf = _vb.setOwner(core).build();
     _ib.setOwner(core).setVrf(corevrf);
-    _ib.setAddress(ConcreteInterfaceAddress.create(coreId, interfcePrefixBits)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(coreId, interfacePrefixBits)).build();
     BgpProcess coreProc =
         _pb.setRouterId(coreId)
             .setVrf(corevrf)
@@ -166,7 +167,7 @@ public class IncrementalDataPlanePluginTest {
     Configuration n1 = _cb.setHostname("n1").build();
     Vrf n1Vrf = _vb.setOwner(n1).build();
     _ib.setOwner(n1).setVrf(n1Vrf);
-    _ib.setAddress(ConcreteInterfaceAddress.create(neighborId1, interfcePrefixBits)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(neighborId1, interfacePrefixBits)).build();
     BgpProcess n1Proc =
         _pb.setRouterId(neighborId1)
             .setVrf(n1Vrf)
@@ -186,7 +187,7 @@ public class IncrementalDataPlanePluginTest {
     Configuration n2 = _cb.setHostname("n2").build();
     Vrf n2Vrf = _vb.setOwner(n2).build();
     _ib.setOwner(n2).setVrf(n2Vrf);
-    _ib.setAddress(ConcreteInterfaceAddress.create(neighborId2, interfcePrefixBits)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(neighborId2, interfacePrefixBits)).build();
     BgpProcess n2Proc =
         _pb.setRouterId(neighborId2)
             .setVrf(n2Vrf)
@@ -221,7 +222,7 @@ public class IncrementalDataPlanePluginTest {
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
 
     // Really just test that no exception is thrown
-    dataPlanePlugin.computeDataPlane();
+    dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
   }
 
   @Test
@@ -237,7 +238,7 @@ public class IncrementalDataPlanePluginTest {
             _folder);
     IncrementalDataPlanePlugin dataPlanePlugin = new IncrementalDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
-    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp._dataPlane.getRibs();
 
@@ -269,7 +270,7 @@ public class IncrementalDataPlanePluginTest {
             _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp._dataPlane.getRibs();
     Set<AbstractRoute> r2aRoutes = ribs.get("r2a").get(DEFAULT_VRF_NAME).getRoutes();
@@ -307,7 +308,7 @@ public class IncrementalDataPlanePluginTest {
 
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp._dataPlane.getRibs();
 
@@ -411,7 +412,7 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         result._topologies.getBgpTopology().getGraph();
 
@@ -465,7 +466,7 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(n1.getHostname(), n1), _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    DataPlane dp = dataPlanePlugin.computeDataPlane()._dataPlane;
+    DataPlane dp = dataPlanePlugin.computeDataPlane(batfish.getSnapshot())._dataPlane;
 
     assertThat(
         dp.getRibs().get(n1.getHostname()).get(vrf.getName()).getRoutes(),
@@ -479,7 +480,7 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
@@ -513,7 +514,7 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
@@ -547,7 +548,7 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
@@ -582,7 +583,7 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
@@ -618,7 +619,7 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
@@ -865,12 +866,12 @@ public class IncrementalDataPlanePluginTest {
 
     ImmutableSortedMap<String, Configuration> configs = ImmutableSortedMap.of("n1", c1, "n2", c2);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     assertThat(
         batfish
             .getTopologyProvider()
-            .getBgpTopology(batfish.getNetworkSnapshot())
+            .getBgpTopology(batfish.getSnapshot())
             .getGraph()
             .edges()
             .size(),
@@ -880,11 +881,7 @@ public class IncrementalDataPlanePluginTest {
     BgpPeerConfigId bgpConfig2 =
         new BgpPeerConfigId("n2", DEFAULT_VRF_NAME, lo1Ip.toPrefix(), false);
     assertThat(
-        batfish
-            .getTopologyProvider()
-            .getBgpTopology(batfish.getNetworkSnapshot())
-            .getGraph()
-            .edges(),
+        batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot()).getGraph().edges(),
         equalTo(
             ImmutableSet.of(
                 EndpointPair.ordered(bgpConfig1, bgpConfig2),
@@ -897,8 +894,9 @@ public class IncrementalDataPlanePluginTest {
     Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
-    batfish.computeDataPlane();
-    DataPlane deserializedDataPlane = SerializationUtils.clone(batfish.loadDataPlane());
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane deserializedDataPlane = SerializationUtils.clone(batfish.loadDataPlane(snapshot));
 
     assertNotNull(deserializedDataPlane.getForwardingAnalysis());
   }

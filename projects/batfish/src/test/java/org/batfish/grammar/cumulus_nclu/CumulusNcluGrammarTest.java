@@ -46,6 +46,7 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpPeerExportPolicyName;
 import static org.hamcrest.Matchers.allOf;
@@ -79,6 +80,7 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
@@ -91,6 +93,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -122,7 +125,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings;
-import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -217,7 +219,7 @@ public final class CumulusNcluGrammarTest {
         new CumulusNcluControlPlaneExtractor(src, parser, new Warnings());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     assertThat(
         String.format("Ensure '%s' was successfully parsed", hostname),
         extractor.getVendorConfiguration(),
@@ -246,7 +248,8 @@ public final class CumulusNcluGrammarTest {
             _folder);
 
     // Sanity check configured peers
-    Map<String, Configuration> configs = batfish.loadConfigurations();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    Map<String, Configuration> configs = batfish.loadConfigurations(snapshot);
     String iface = "swp1";
     assertThat(
         configs.get(node1),
@@ -288,8 +291,8 @@ public final class CumulusNcluGrammarTest {
                                             DEFAULT_VRF_NAME, iface))))))))));
 
     // Ensure reachability between nodes
-    batfish.computeDataPlane();
-    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> n1Routes = dp.getRibs().get(node1).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> n2Routes = dp.getRibs().get(node2).get(DEFAULT_VRF_NAME).getRoutes();
 
@@ -661,9 +664,9 @@ public final class CumulusNcluGrammarTest {
   public void testBondReferences() throws IOException {
     String hostname = "cumulus_nclu_bond_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 3));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "bond2.4094", 2));
   }
@@ -834,10 +837,7 @@ public final class CumulusNcluGrammarTest {
     Edge edge =
         new Edge(NodeInterfacePair.of(node1, peerlink), NodeInterfacePair.of(node2, peerlink));
     assertThat(
-        batfish
-            .getTopologyProvider()
-            .getInitialLayer3Topology(batfish.getNetworkSnapshot())
-            .getEdges(),
+        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot()).getEdges(),
         containsInAnyOrder(edge, edge.reverse()));
   }
 
@@ -861,7 +861,9 @@ public final class CumulusNcluGrammarTest {
     String filename = "cumulus_nclu_hostname";
     String hostname = "custom_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
-    assertThat(batfish.loadConfigurations(), hasEntry(equalTo(hostname), hasHostname(hostname)));
+    assertThat(
+        batfish.loadConfigurations(batfish.getSnapshot()),
+        hasEntry(equalTo(hostname), hasHostname(hostname)));
   }
 
   @Test
@@ -1094,9 +1096,9 @@ public final class CumulusNcluGrammarTest {
   public void testInterfaceReferences() throws IOException {
     String hostname = "cumulus_nclu_interface_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 4));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp3", 1));
@@ -1149,9 +1151,9 @@ public final class CumulusNcluGrammarTest {
   public void testLoopbackReferences() throws IOException {
     String hostname = "cumulus_nclu_loopback_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(
         ans,
         hasNumReferrers(
@@ -1165,9 +1167,9 @@ public final class CumulusNcluGrammarTest {
   public void testRouteMapReferences() throws IOException {
     String hostname = "cumulus_nclu_route_map_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.ROUTE_MAP, "rm1", 2));
   }
 
@@ -1477,9 +1479,9 @@ public final class CumulusNcluGrammarTest {
   public void testVrfReferences() throws IOException {
     String hostname = "cumulus_nclu_vrf_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 7));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf3", 1));
@@ -1570,9 +1572,9 @@ public final class CumulusNcluGrammarTest {
   public void testVxlanReferences() throws IOException {
     String hostname = "cumulus_nclu_vxlan_references";
     String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
-        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
-
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VXLAN, "v2", 1));
   }
 

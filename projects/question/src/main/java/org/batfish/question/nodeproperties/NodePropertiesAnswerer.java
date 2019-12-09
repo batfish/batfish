@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -65,14 +66,14 @@ public class NodePropertiesAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     NodePropertiesQuestion question = (NodePropertiesQuestion) _question;
     TableMetadata tableMetadata = createTableMetadata(question);
 
     Multiset<Row> propertyRows =
         getProperties(
             question.getPropertySpecifier(),
-            _batfish.specifierContext(),
+            _batfish.specifierContext(snapshot),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap());
 

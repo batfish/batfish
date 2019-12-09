@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -34,19 +35,20 @@ public class DefinedStructuresAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     DefinedStructuresQuestion question = (DefinedStructuresQuestion) _question;
-    Multiset<Row> structures = rawAnswer(question);
+    Multiset<Row> structures = rawAnswer(snapshot, question);
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
     answer.postProcessAnswer(question, structures);
     return answer;
   }
 
-  private Multiset<Row> rawAnswer(DefinedStructuresQuestion question) {
+  private Multiset<Row> rawAnswer(NetworkSnapshot snapshot, DefinedStructuresQuestion question) {
     Multiset<Row> structures = HashMultiset.create();
-    Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> includeNodes =
+        question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
     Multimap<String, String> hostnameFilenameMap =
-        _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
+        _batfish.loadParseVendorConfigurationAnswerElement(snapshot).getFileMap();
     Set<String> includeFiles =
         hostnameFilenameMap.entries().stream()
             .filter(e -> includeNodes.contains(e.getKey()))
@@ -57,7 +59,7 @@ public class DefinedStructuresAnswerer extends Answerer {
     Pattern includeStructureTypes = Pattern.compile(question.getTypes(), Pattern.CASE_INSENSITIVE);
 
     ConvertConfigurationAnswerElement ccae =
-        _batfish.loadConvertConfigurationAnswerElementOrReparse();
+        _batfish.loadConvertConfigurationAnswerElementOrReparse(snapshot);
 
     ccae.getDefinedStructures()
         .forEach(

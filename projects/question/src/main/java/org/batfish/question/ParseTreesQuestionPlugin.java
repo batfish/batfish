@@ -5,6 +5,7 @@ import com.google.auto.service.AutoService;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -40,11 +41,11 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public ParseTreesAnswerElement answer() {
+    public ParseTreesAnswerElement answer(NetworkSnapshot snapshot) {
       // ParseTreesQuestion question = (ParseTreesQuestion) _question;
       ParseTreesAnswerElement answerElement = new ParseTreesAnswerElement();
       ParseVendorConfigurationAnswerElement parseAnswer =
-          _batfish.loadParseVendorConfigurationAnswerElement();
+          _batfish.loadParseVendorConfigurationAnswerElement(snapshot);
       answerElement._parseTrees = parseAnswer.getParseTrees();
       return answerElement;
     }

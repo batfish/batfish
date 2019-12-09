@@ -46,7 +46,6 @@ public class BfConsts {
   public static final String ARG_BDP_RECORD_ALL_ITERATIONS = "bdprecordalliterations";
   public static final String ARG_CONTAINER = "container";
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
-  public static final String ARG_DIFF_ACTIVE = "diffactive";
   public static final String ARG_DIFFERENTIAL = "differential";
   public static final String ARG_DISABLE_UNRECOGNIZED = "disableunrecognized";
   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";

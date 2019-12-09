@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -46,7 +47,7 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
   }
 
   @Override
-  public void processParseTree(ParserRuleContext tree) {
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     F5BigipStructuredConfigurationBuilder cb =
         new F5BigipStructuredConfigurationBuilder(_parser, _text, _w);
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);

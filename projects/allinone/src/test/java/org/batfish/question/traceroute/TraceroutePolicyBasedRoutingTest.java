@@ -135,7 +135,7 @@ public class TraceroutePolicyBasedRoutingTest {
   public void testWithNoPolicy() throws IOException {
     SortedMap<String, Configuration> configs = pbrNetwork(false);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     PacketHeaderConstraints header =
         PacketHeaderConstraints.builder().setSrcIp("1.1.1.222").setDstIp("9.9.9.9").build();
 
@@ -143,7 +143,7 @@ public class TraceroutePolicyBasedRoutingTest {
         new TracerouteQuestion(SOURCE_LOCATION_STR, header, false, DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),
@@ -158,7 +158,7 @@ public class TraceroutePolicyBasedRoutingTest {
   public void testMatchesPolicyIf() throws IOException {
     SortedMap<String, Configuration> configs = pbrNetwork(true);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     PacketHeaderConstraints header =
         PacketHeaderConstraints.builder().setSrcIp("1.1.1.222").setDstIp("9.9.9.9").build();
 
@@ -166,7 +166,7 @@ public class TraceroutePolicyBasedRoutingTest {
         new TracerouteQuestion(SOURCE_LOCATION_STR, header, false, DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),
@@ -181,7 +181,7 @@ public class TraceroutePolicyBasedRoutingTest {
   public void testDoesNotMatchPolicyIf() throws IOException {
     SortedMap<String, Configuration> configs = pbrNetwork(true);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     PacketHeaderConstraints header =
         PacketHeaderConstraints.builder().setSrcIp("1.1.1.222").setDstIp("9.9.9.233").build();
 
@@ -189,7 +189,7 @@ public class TraceroutePolicyBasedRoutingTest {
         new TracerouteQuestion(SOURCE_LOCATION_STR, header, false, DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),

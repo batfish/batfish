@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -46,13 +47,13 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     OspfInterfaceConfigurationQuestion question = (OspfInterfaceConfigurationQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     Set<String> nodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext());
+            .resolve(_batfish.specifierContext(snapshot));
 
     List<String> properties =
         OspfInterfacePropertySpecifier.create(question.getProperties()).getMatchingProperties();

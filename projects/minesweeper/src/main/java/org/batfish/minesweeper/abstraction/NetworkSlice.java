@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Prefix;
@@ -34,8 +35,8 @@ public class NetworkSlice {
   }
 
   public static List<Supplier<NetworkSlice>> allSlices(
-      BDDPacket packet, DestinationClasses dcs, int fails) {
-    BDDNetwork network = BDDNetwork.create(packet, dcs.getGraph());
+      NetworkSnapshot snapshot, BDDPacket packet, DestinationClasses dcs, int fails) {
+    BDDNetwork network = BDDNetwork.create(snapshot, packet, dcs.getGraph());
     ArrayList<Supplier<NetworkSlice>> classes = new ArrayList<>();
     for (Entry<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> entry :
         dcs.getHeaderspaceMap().entrySet()) {

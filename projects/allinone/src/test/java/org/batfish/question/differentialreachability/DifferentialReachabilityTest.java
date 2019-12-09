@@ -108,13 +108,9 @@ public class DifferentialReachabilityTest {
     SortedMap<String, Configuration> deltaConfigs = generateConfigs(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
-    batfish.pushBaseSnapshot();
-    batfish.computeDataPlane();
-    batfish.popSnapshot();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
-    batfish.pushDeltaSnapshot();
-    batfish.computeDataPlane();
-    batfish.popSnapshot();
+    batfish.computeDataPlane(batfish.getReferenceSnapshot());
 
     return batfish;
   }
@@ -130,7 +126,9 @@ public class DifferentialReachabilityTest {
             TracePruner.DEFAULT_MAX_TRACES,
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer =
+        new DifferentialReachabilityAnswerer(question, batfish)
+            .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
     Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
@@ -170,7 +168,9 @@ public class DifferentialReachabilityTest {
             PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer =
+        new DifferentialReachabilityAnswerer(question, batfish)
+            .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
     Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
@@ -210,7 +210,9 @@ public class DifferentialReachabilityTest {
             PathConstraintsInput.unconstrained());
 
     Batfish batfish = initBatfish();
-    TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
+    TableAnswerElement answer =
+        new DifferentialReachabilityAnswerer(question, batfish)
+            .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
     assertThat(answer.getRows().size(), equalTo(0));
   }
 }

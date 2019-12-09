@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Flow;
@@ -37,23 +38,23 @@ public class MultipathConsistencyAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
-    MultipathConsistencyParameters parameters = parameters();
-    Set<Flow> flows = _batfish.bddMultipathConsistency(parameters);
-    SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
+  public AnswerElement answer(NetworkSnapshot snapshot) {
+    MultipathConsistencyParameters parameters = parameters(snapshot);
+    Set<Flow> flows = _batfish.bddMultipathConsistency(snapshot, parameters);
+    SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(snapshot, flows, false);
     TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
     TracerouteAnswerer.flowTracesToRows(flowTraces, parameters.getMaxTraces())
         .forEach(tableAnswer::addRow);
     return tableAnswer;
   }
 
-  private MultipathConsistencyParameters parameters() {
+  private MultipathConsistencyParameters parameters(NetworkSnapshot snapshot) {
     MultipathConsistencyQuestion question = (MultipathConsistencyQuestion) _question;
 
     PacketHeaderConstraints headerConstraints = question.getHeaderConstraints();
     PathConstraints pathConstraints = createPathConstraints(question.getPathConstraints());
 
-    SpecifierContext ctxt = _batfish.specifierContext();
+    SpecifierContext ctxt = _batfish.specifierContext(snapshot);
     Set<String> forbiddenTransitNodes = pathConstraints.getForbiddenLocations().resolve(ctxt);
     Set<String> requiredTransitNodes = pathConstraints.getTransitLocations().resolve(ctxt);
     Set<Location> startLocations = pathConstraints.getStartLocation().resolve(ctxt);

@@ -846,8 +846,7 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean answer(
-      String questionTemplateName, String paramsLine, boolean isDelta, FileWriter outWriter) {
+  private boolean answer(String questionTemplateName, String paramsLine, FileWriter outWriter) {
     String questionContentUnmodified = _bfq.get(questionTemplateName.toLowerCase());
     if (questionContentUnmodified == null) {
       throw new BatfishException("Invalid question template name: '" + questionTemplateName + "'");
@@ -901,7 +900,7 @@ public class Client extends AbstractClient implements IClient {
     boolean resultUpload =
         _workHelper.uploadQuestion(
             _currContainerName,
-            isDelta ? _currDeltaTestrig : _currTestrig,
+            _currTestrig,
             questionName,
             questionFile.toAbsolutePath().toString());
     if (!resultUpload) {
@@ -917,8 +916,7 @@ public class Client extends AbstractClient implements IClient {
             _currContainerName,
             _currTestrig,
             _currDeltaTestrig,
-            questionJsonDifferential || differentialParamValue,
-            isDelta);
+            questionJsonDifferential || differentialParamValue);
     return execute(wItemAs, outWriter);
   }
 
@@ -926,23 +924,20 @@ public class Client extends AbstractClient implements IClient {
       String[] words,
       @Nullable FileWriter outWriter,
       List<String> options,
-      List<String> parameters,
-      boolean delta) {
-    Command command = delta ? Command.ANSWER_REFERENCE : Command.ANSWER;
-    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
+      List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, Command.ANSWER)) {
       return false;
     }
-    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isDeltaReady())) {
+    if (!isSetTestrig() || !isSetContainer(true)) {
       return false;
     }
     String qTypeStr = parameters.get(0);
     String paramsLine =
         String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length));
-    return answer(qTypeStr, paramsLine, delta, outWriter);
+    return answer(qTypeStr, paramsLine, outWriter);
   }
 
-  private boolean answerFile(
-      Path questionFile, boolean isDifferential, boolean isDelta, FileWriter outWriter) {
+  private boolean answerFile(Path questionFile, boolean isDifferential, FileWriter outWriter) {
 
     if (!Files.exists(questionFile)) {
       throw new BatfishException("Question file not found: " + questionFile);
@@ -954,7 +949,7 @@ public class Client extends AbstractClient implements IClient {
     boolean resultUpload =
         _workHelper.uploadQuestion(
             _currContainerName,
-            isDelta ? _currDeltaTestrig : _currTestrig,
+            _currTestrig,
             questionName,
             questionFile.toAbsolutePath().toString());
 
@@ -967,18 +962,12 @@ public class Client extends AbstractClient implements IClient {
     // answer the question
     WorkItem wItemAs =
         WorkItemBuilder.getWorkItemAnswerQuestion(
-            questionName,
-            _currContainerName,
-            _currTestrig,
-            _currDeltaTestrig,
-            isDifferential,
-            isDelta);
+            questionName, _currContainerName, _currTestrig, _currDeltaTestrig, isDifferential);
 
     return execute(wItemAs, outWriter);
   }
 
-  private boolean answerType(
-      String questionType, String paramsLine, boolean isDelta, FileWriter outWriter) {
+  private boolean answerType(String questionType, String paramsLine, FileWriter outWriter) {
     JSONObject questionJson;
     try {
       String questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
@@ -1025,11 +1014,8 @@ public class Client extends AbstractClient implements IClient {
     // if no exception is thrown, then the modifiedQuestionJson is good
     Path questionFile = createTempFile("question", modifiedQuestionJson);
     questionFile.toFile().deleteOnExit();
-    boolean result =
-        answerFile(questionFile, modifiedQuestion.getDifferential(), isDelta, outWriter);
-    if (questionFile != null) {
-      CommonUtil.deleteIfExists(questionFile);
-    }
+    boolean result = answerFile(questionFile, modifiedQuestion.getDifferential(), outWriter);
+    CommonUtil.deleteIfExists(questionFile);
     return result;
   }
 
@@ -1223,22 +1209,6 @@ public class Client extends AbstractClient implements IClient {
     return execute(wItemGenDp, outWriter);
   }
 
-  private boolean generateReferenceDataplane(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_REFERENCE_DP)) {
-      return false;
-    }
-    if (!isDeltaReady() || !isSetTestrig() || !isSetContainer(true)) {
-      return false;
-    }
-
-    WorkItem wItemGenDdp =
-        WorkItemBuilder.getWorkItemGenerateDeltaDataPlane(
-            _currContainerName, _currTestrig, _currDeltaTestrig);
-
-    return execute(wItemGenDdp, outWriter);
-  }
-
   private void generateQuestions() {
 
     File questionsDir = Paths.get(_settings.getQuestionsDir()).toFile();
@@ -1268,19 +1238,17 @@ public class Client extends AbstractClient implements IClient {
       String[] words,
       @Nullable FileWriter outWriter,
       List<String> options,
-      List<String> parameters,
-      boolean delta) {
-    Command command = delta ? Command.GET_REFERENCE : Command.GET;
-    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
+      List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, Command.GET)) {
       return false;
     }
-    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isDeltaReady())) {
+    if (!isSetTestrig() || !isSetContainer(true)) {
       return false;
     }
     String qTypeStr = parameters.get(0).toLowerCase();
     String paramsLine =
         String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length));
-    return answerType(qTypeStr, paramsLine, delta, outWriter);
+    return answerType(qTypeStr, paramsLine, outWriter);
   }
 
   private boolean getAnswer(
@@ -2236,9 +2204,7 @@ public class Client extends AbstractClient implements IClient {
       case ADD_BATFISH_OPTION:
         return addBatfishOption(words, options, parameters);
       case ANSWER:
-        return answer(words, outWriter, options, parameters, false);
-      case ANSWER_REFERENCE:
-        return answer(words, outWriter, options, parameters, true);
+        return answer(words, outWriter, options, parameters);
       case AUTOCOMPLETE:
         return autoComplete(options, parameters);
       case CHECK_API_KEY:
@@ -2263,14 +2229,10 @@ public class Client extends AbstractClient implements IClient {
         return delSnapshot(outWriter, options, parameters);
       case GEN_DP:
         return generateDataplane(outWriter, options, parameters);
-      case GEN_REFERENCE_DP:
-        return generateReferenceDataplane(outWriter, options, parameters);
       case GET:
-        return get(words, outWriter, options, parameters, false);
+        return get(words, outWriter, options, parameters);
       case GET_CONFIGURATION:
         return getConfiguration(options, parameters);
-      case GET_REFERENCE:
-        return get(words, outWriter, options, parameters, true);
       case GET_ANSWER:
         return getAnswer(outWriter, options, parameters, false, false);
       case GET_ANSWER_REFERENCE:

@@ -1999,8 +1999,7 @@ public class WorkMgr extends AbstractCoordinator {
     Set<String> analysisNames = listAnalyses(networkName, AnalysisType.ALL);
     for (String analysis : analysisNames) {
       WorkItem analyzeWork =
-          WorkItemBuilder.getWorkItemRunAnalysis(
-              analysis, networkName, testrigName, null, false, false);
+          WorkItemBuilder.getWorkItemRunAnalysis(analysis, networkName, testrigName);
       autoWorkQueue.add(analyzeWork);
     }
     return autoWorkQueue;

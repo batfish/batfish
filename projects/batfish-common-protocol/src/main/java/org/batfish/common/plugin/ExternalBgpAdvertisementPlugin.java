@@ -1,6 +1,7 @@
 package org.batfish.common.plugin;
 
 import java.util.Set;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.BgpAdvertisement;
 
 public abstract class ExternalBgpAdvertisementPlugin extends BatfishPlugin
@@ -14,5 +15,5 @@ public abstract class ExternalBgpAdvertisementPlugin extends BatfishPlugin
 
   protected abstract void externalBgpAdvertisementPluginInitialize();
 
-  public abstract Set<BgpAdvertisement> loadExternalBgpAdvertisements();
+  public abstract Set<BgpAdvertisement> loadExternalBgpAdvertisements(NetworkSnapshot snapshot);
 }

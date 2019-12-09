@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -69,7 +70,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   }
 
   @Override
-  public void processParseTree(ParserRuleContext tree) {
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     _configuration = new CumulusNcluConfiguration();
 
     parseHostname();

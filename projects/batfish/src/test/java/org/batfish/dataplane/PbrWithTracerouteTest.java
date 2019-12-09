@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -51,7 +52,8 @@ public class PbrWithTracerouteTest {
     Configuration c = buildPBRConfig(nf);
 
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     Ip dstIp = Ip.parse("1.1.1.250");
     Flow flow =
@@ -63,7 +65,7 @@ public class PbrWithTracerouteTest {
             .setSrcIp(Ip.ZERO)
             .build();
     SortedMap<Flow, List<Trace>> traces =
-        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+        batfish.getTracerouteEngine(snapshot).computeTraces(ImmutableSet.of(flow), false);
     assertThat(
         traces.get(flow),
         contains(
@@ -102,7 +104,8 @@ public class PbrWithTracerouteTest {
     Batfish batfish =
         getBatfish(
             ImmutableSortedMap.of(c.getHostname(), c, acceptor.getHostname(), acceptor), _folder);
-    batfish.computeDataPlane();
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     Flow flow =
         Flow.builder()
@@ -113,7 +116,7 @@ public class PbrWithTracerouteTest {
             .setSrcIp(Ip.ZERO)
             .build();
     SortedMap<Flow, List<Trace>> traces =
-        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+        batfish.getTracerouteEngine(snapshot).computeTraces(ImmutableSet.of(flow), false);
     assertThat(traces.get(flow), contains(hasDisposition(FlowDisposition.ACCEPTED)));
   }
 

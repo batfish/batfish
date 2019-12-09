@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -135,7 +136,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     BgpPeerConfigurationQuestion question = (BgpPeerConfigurationQuestion) _question;
 
     TableMetadata tableMetadata = createTableMetadata(question);
@@ -143,7 +144,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
 
     Multiset<Row> propertyRows =
         getAnswerRows(
-            _batfish.specifierContext(),
+            _batfish.specifierContext(snapshot),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap(),
             question.getPropertySpecifier());

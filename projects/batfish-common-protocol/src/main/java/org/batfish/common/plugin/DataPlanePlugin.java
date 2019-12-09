@@ -1,10 +1,8 @@
 package org.batfish.common.plugin;
 
-import java.util.Map;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.topology.TopologyContainer;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 
 /**
@@ -57,19 +55,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
     dataPlanePluginInitialize();
   }
 
-  public abstract ComputeDataPlaneResult computeDataPlane();
-
-  /** @deprecated in favor of {@link #computeDataPlane()} */
-  @Deprecated
-  public abstract ComputeDataPlaneResult computeDataPlane(boolean differentialContext);
-
-  public abstract ComputeDataPlaneResult computeDataPlane(
-      Map<String, Configuration> configurations, Topology topology);
-
-  /** @deprecated in favor of {@link #computeDataPlane(Map, Topology)} */
-  @Deprecated
-  public abstract ComputeDataPlaneResult computeDataPlane(
-      boolean differentialContext, Map<String, Configuration> configurations, Topology topology);
+  public abstract ComputeDataPlaneResult computeDataPlane(NetworkSnapshot snapshot);
 
   protected void dataPlanePluginInitialize() {}
 

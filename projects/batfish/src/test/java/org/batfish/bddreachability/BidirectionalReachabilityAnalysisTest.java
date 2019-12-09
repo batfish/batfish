@@ -222,8 +222,8 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     FPFN_CONFIGS = ImmutableSortedMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
     Batfish batfish = getBatfish(FPFN_CONFIGS, FPFN_TEMP);
-    batfish.computeDataPlane();
-    DataPlane dataPlane = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     FPFN_FORWARDING_ANALYSIS = dataPlane.getForwardingAnalysis();
     FPFN_IPS_ROUTED_OUT_INTERFACES_FACTORY = new IpsRoutedOutInterfacesFactory(dataPlane.getFibs());
   }
@@ -303,7 +303,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         ImmutableSortedMap.of(
             source1.getHostname(), source1, source2.getHostname(), source2, fw.getHostname(), fw);
     Batfish batfish = getBatfish(configurations, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder()
@@ -318,7 +318,7 @@ public final class BidirectionalReachabilityAnalysisTest {
                 Ip.parse("10.0.0.3").toIpSpace())
             .build();
 
-    DataPlane dataPlane = batfish.loadDataPlane();
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
             PKT,
@@ -567,7 +567,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         ImmutableSortedMap.of(
             source1.getHostname(), source1, source2.getHostname(), source2, fw.getHostname(), fw);
     Batfish batfish = getBatfish(configurations, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     Location source1Loc = new InterfaceLocation(source1.getHostname(), source1Iface.getName());
     Location source2Loc = new InterfaceLinkLocation(source2.getHostname(), source2Iface1.getName());
@@ -590,7 +590,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Ip dstIp = Ip.parse("255.255.255.1");
     BDD dstIpBdd = PKT.getDstIp().value(dstIp.asLong());
 
-    DataPlane dataPlane = batfish.loadDataPlane();
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     BidirectionalReachabilityAnalysis analysis =
         new BidirectionalReachabilityAnalysis(
             PKT,
@@ -755,7 +755,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         ImmutableSortedMap.of(
             source1.getHostname(), source1, source2.getHostname(), source2, fw.getHostname(), fw);
     Batfish batfish = getBatfish(configurations, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     Location source1Loc = new InterfaceLocation(source1.getHostname(), source1Iface.getName());
     Location source2Loc = new InterfaceLinkLocation(source2.getHostname(), source2Iface1.getName());
@@ -792,7 +792,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Ip dstIp = Ip.parse("255.255.255.1");
     BDD dstIpBdd = PKT.getDstIp().value(dstIp.asLong());
 
-    DataPlane dataPlane = batfish.loadDataPlane();
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     BidirectionalReachabilityResult result =
         new BidirectionalReachabilityAnalysis(
                 PKT,
@@ -1068,10 +1068,10 @@ public final class BidirectionalReachabilityAnalysisTest {
       Set<FlowDisposition> forwardDispositions)
       throws IOException {
     Batfish batfish = getBatfish(configurations, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     // Bidirectional analysis
-    DataPlane dataPlane = batfish.loadDataPlane();
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     BidirectionalReachabilityAnalysis analysis =
         new BidirectionalReachabilityAnalysis(
             PKT,
@@ -1108,7 +1108,7 @@ public final class BidirectionalReachabilityAnalysisTest {
       Set<FlowDisposition> forwardDispositions)
       throws IOException {
     Batfish batfish = getBatfish(configurations, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     IpSpace srcIpSpaceOfInterest =
         AclIpSpace.rejecting(SFL_NEIGHBOR_IFACE_ADDRESS.getPrefix().toIpSpace())
@@ -1116,7 +1116,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             .build();
 
     // Bidirectional analysis
-    DataPlane dataPlane = batfish.loadDataPlane();
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     BidirectionalReachabilityAnalysis analysis =
         new BidirectionalReachabilityAnalysis(
             PKT,

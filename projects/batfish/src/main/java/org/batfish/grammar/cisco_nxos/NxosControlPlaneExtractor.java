@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -34,7 +35,7 @@ public final class NxosControlPlaneExtractor implements ControlPlaneExtractor {
   }
 
   @Override
-  public void processParseTree(ParserRuleContext tree) {
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     // extract metadata and set defaults
     walker.walk(new CiscoNxosPreprocessor(_text, _parser, _w, _configuration), tree);

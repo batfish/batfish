@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -22,9 +23,10 @@ public class ConversionWarningAnswererTest {
 
   @Test
   public void testAnswer() {
+    TestBatfish batfish = new TestBatfish();
     ConversionWarningAnswerer answerer =
-        new ConversionWarningAnswerer(new ConversionWarningQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new ConversionWarningAnswerer(new ConversionWarningQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(
         answer.getRows(),
         equalTo(
@@ -49,7 +51,8 @@ public class ConversionWarningAnswererTest {
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+        NetworkSnapshot snapshot) {
       ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
       Warnings warnings1 = new Warnings(true, true, true);
       warnings1.unimplemented("unimplemented1");

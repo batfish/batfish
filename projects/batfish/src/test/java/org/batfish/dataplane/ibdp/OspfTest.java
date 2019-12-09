@@ -1020,8 +1020,9 @@ public class OspfTest {
                 .setConfigurationText("org/batfish/dataplane/ibdp/ospf-edge", "A1", "A2", "FWL")
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
     assertRoute(routes, OSPF_E2, "a1", Prefix.ZERO, 1, Ip.parse("10.1.1.4"));
@@ -1042,8 +1043,9 @@ public class OspfTest {
                     "org/batfish/dataplane/ibdp/ospf-distribute-lists", "r1", "r2", "r3")
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
@@ -1071,8 +1073,9 @@ public class OspfTest {
                     "org/batfish/dataplane/ibdp/ospf-loopback-routes", "advertiser", "listener")
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 

@@ -5,6 +5,7 @@ import static org.batfish.question.initialization.ConversionStatusAnswerer.COL_N
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ConvertStatus;
@@ -16,9 +17,10 @@ import org.junit.Test;
 public class ConversionStatusAnswererTest {
   @Test
   public void testAnswer() {
+    TestBatfish batfish = new TestBatfish();
     ConversionStatusAnswerer answerer =
-        new ConversionStatusAnswerer(new ConversionStatusQuestion(), new TestBatfish());
-    TableAnswerElement answer = answerer.answer();
+        new ConversionStatusAnswerer(new ConversionStatusQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
     assertThat(
         answer.getRows(),
         equalTo(
@@ -30,7 +32,8 @@ public class ConversionStatusAnswererTest {
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+        NetworkSnapshot snapshot) {
       ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
       ccae.getConvertStatus().put("n1", ConvertStatus.PASSED);
       ccae.getConvertStatus().put("n2", ConvertStatus.WARNINGS);

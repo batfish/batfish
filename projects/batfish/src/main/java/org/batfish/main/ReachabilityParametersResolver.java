@@ -29,7 +29,7 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.SpecifierContextImpl;
+import org.batfish.specifier.SpecifierContext;
 
 /**
  * Resolve a {@link ReachabilityParameters} and return a {@link ResolvedReachabilityParameters}
@@ -37,7 +37,7 @@ import org.batfish.specifier.SpecifierContextImpl;
  * IpSpace specifiers. All validation of user input is done here.
  */
 public final class ReachabilityParametersResolver {
-  private final SpecifierContextImpl _context;
+  private final SpecifierContext _context;
 
   private final DataPlane _dataPlane;
 
@@ -48,9 +48,9 @@ public final class ReachabilityParametersResolver {
   @VisibleForTesting
   ReachabilityParametersResolver(
       IBatfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot) {
-    _dataPlane = batfish.loadDataPlane();
+    _dataPlane = batfish.loadDataPlane(snapshot);
     _params = params;
-    _context = new SpecifierContextImpl(batfish, snapshot);
+    _context = batfish.specifierContext(snapshot);
     _ipSpaceRepresentative = new IpSpaceRepresentative();
   }
 
@@ -60,7 +60,7 @@ public final class ReachabilityParametersResolver {
 
     ReachabilityParametersResolver resolver =
         new ReachabilityParametersResolver(batfish, params, snapshot);
-    SpecifierContextImpl context = resolver._context;
+    SpecifierContext context = resolver._context;
 
     // validate actions
     SortedSet<FlowDisposition> actions = params.getActions();

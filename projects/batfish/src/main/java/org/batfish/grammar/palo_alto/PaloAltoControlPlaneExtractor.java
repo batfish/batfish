@@ -2,6 +2,7 @@ package org.batfish.grammar.palo_alto;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -28,7 +29,7 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
   }
 
   @Override
-  public void processParseTree(ParserRuleContext tree) {
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     PaloAltoConfigurationBuilder cb = new PaloAltoConfigurationBuilder(_parser, _text, _w);
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(cb, tree);

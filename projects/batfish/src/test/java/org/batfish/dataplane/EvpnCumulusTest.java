@@ -38,8 +38,8 @@ public class EvpnCumulusTest {
                 .setLayer1TopologyText(SNAPSHOT_FOLDER)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp.getRibs();

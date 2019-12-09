@@ -47,8 +47,8 @@ public class EvpnType5CumulusTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane(); // compute and cache the dataPlane
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp.getRibs();

@@ -2,7 +2,6 @@ package org.batfish.client;
 
 import static org.batfish.client.Command.ADD_BATFISH_OPTION;
 import static org.batfish.client.Command.ANSWER;
-import static org.batfish.client.Command.ANSWER_REFERENCE;
 import static org.batfish.client.Command.CHECK_API_KEY;
 import static org.batfish.client.Command.DEL_BATFISH_OPTION;
 import static org.batfish.client.Command.DEL_NETWORK;
@@ -10,13 +9,11 @@ import static org.batfish.client.Command.DEL_QUESTION;
 import static org.batfish.client.Command.DEL_SNAPSHOT;
 import static org.batfish.client.Command.EXIT;
 import static org.batfish.client.Command.GEN_DP;
-import static org.batfish.client.Command.GEN_REFERENCE_DP;
 import static org.batfish.client.Command.GET;
 import static org.batfish.client.Command.GET_ANSWER;
 import static org.batfish.client.Command.GET_ANSWER_DIFFERENTIAL;
 import static org.batfish.client.Command.GET_ANSWER_REFERENCE;
 import static org.batfish.client.Command.GET_CONFIGURATION;
-import static org.batfish.client.Command.GET_REFERENCE;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_NETWORK;
 import static org.batfish.client.Command.INIT_REFERENCE_SNAPSHOT;
@@ -166,17 +163,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testAnswerReferenceInvalidParas() throws Exception {
-    testInvalidInput(ANSWER_REFERENCE, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testAnswerReferenceValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(ANSWER_REFERENCE, parameters, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
   public void testAnswerInvalidParas() throws Exception {
     testInvalidInput(ANSWER, new String[] {}, new String[] {});
   }
@@ -274,18 +260,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testGenerateDataplaneReferenceInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GEN_REFERENCE_DP, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testGenerateDataplaneReferenceValidParas() throws Exception {
-    checkProcessCommandErrorMessage(
-        GEN_REFERENCE_DP, new String[] {}, "Active delta snapshot is not set\n");
-  }
-
-  @Test
   public void testGenerateDataplaneInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(GEN_DP, new String[] {}, parameters);
@@ -317,17 +291,6 @@ public final class ClientTest {
   public void testGetAnswersValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     checkProcessCommandErrorMessage(GET_ANSWER, parameters, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testGetReferenceInvalidParas() throws Exception {
-    testInvalidInput(GET_REFERENCE, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testGetReferenceValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_REFERENCE, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test

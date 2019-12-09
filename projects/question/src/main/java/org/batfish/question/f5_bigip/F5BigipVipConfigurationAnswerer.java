@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -180,10 +181,10 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     F5BigipVipConfigurationQuestion question = (F5BigipVipConfigurationQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
+    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext(snapshot));
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     Multiset<Row> propertyRows = getAnswerRows(configurations, nodes, tableMetadata.toColumnMap());
