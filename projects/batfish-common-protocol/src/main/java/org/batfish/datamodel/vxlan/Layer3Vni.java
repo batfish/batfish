@@ -70,6 +70,18 @@ public final class Layer3Vni implements Vni {
     return _vni;
   }
 
+  @Nonnull
+  @Override
+  public Layer3Vni addToFloodList(Ip ip) {
+    checkArgument(
+        _bumTransportMethod == BumTransportMethod.UNICAST_FLOOD_GROUP,
+        "Cannot add new IPs if the transport method is not %s",
+        BumTransportMethod.UNICAST_FLOOD_GROUP);
+    return toBuilder()
+        .setBumTransportIps(ImmutableSet.<Ip>builder().addAll(_bumTransportIps).add(ip).build())
+        .build();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -93,6 +105,16 @@ public final class Layer3Vni implements Vni {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @Nonnull
+  public Builder toBuilder() {
+    return builder()
+        .setBumTransportMethod(_bumTransportMethod)
+        .setSourceAddress(_sourceAddress)
+        .setVni(_vni)
+        .setUdpPort(_udpPort)
+        .setBumTransportIps(_bumTransportIps);
   }
 
   /** Builder for {@link Layer3Vni} */

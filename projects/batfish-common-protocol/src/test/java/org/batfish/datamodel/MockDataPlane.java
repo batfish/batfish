@@ -146,7 +146,7 @@ public class MockDataPlane implements DataPlane {
 
   @Nonnull
   @Override
-  public Table<String, String, Set<Layer2Vni>> getVniSettings() {
+  public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
     return _vniSettings;
   }
 }

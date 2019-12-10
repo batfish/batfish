@@ -120,7 +120,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
       Set<String> nodes,
       Map<String, ColumnMetadata> columns) {
     Multiset<Row> rows = HashMultiset.create();
-    Table<String, String, Set<Layer2Vni>> allVniSettings = dp.getVniSettings();
+    Table<String, String, Set<Layer2Vni>> allVniSettings = dp.getLayer2Vnis();
 
     for (String nodeName : nodes) {
       for (Set<Layer2Vni> vrfVnis : allVniSettings.row(nodeName).values()) {
