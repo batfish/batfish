@@ -8,6 +8,7 @@ import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.VTEP_FLO
 import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.VXLAN_PORT;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_NODE;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VNI;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VRF;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -49,6 +50,7 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
+                        .put(COL_VRF, DEFAULT_VRF_NAME)
                         .put(COL_VNI, 10001)
                         .put(LOCAL_VTEP_IP, Ip.parse("1.2.3.4"))
                         .put(MULTICAST_GROUP, null)
@@ -61,6 +63,7 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
+                        .put(COL_VRF, DEFAULT_VRF_NAME)
                         .put(COL_VNI, 10002)
                         .put(LOCAL_VTEP_IP, Ip.parse("1.2.3.4"))
                         .put(MULTICAST_GROUP, Ip.parse("227.10.1.1"))
@@ -71,6 +74,7 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "minimal")
+                        .put(COL_VRF, DEFAULT_VRF_NAME)
                         .put(COL_VNI, 10001)
                         .put(LOCAL_VTEP_IP, null)
                         .put(MULTICAST_GROUP, null)
@@ -95,6 +99,7 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "minimal")
+                        .put(COL_VRF, DEFAULT_VRF_NAME)
                         .put(COL_VNI, 10001)
                         .put(LOCAL_VTEP_IP, null)
                         .put(MULTICAST_GROUP, null)
@@ -119,18 +124,21 @@ public final class VxlanVniPropertiesAnswererTest {
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
+                        .put(COL_VRF, DEFAULT_VRF_NAME)
                         .put(COL_VNI, 10001)
                         .put(VLAN, 1)
                         .build())
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
+                        .put(COL_VRF, DEFAULT_VRF_NAME)
                         .put(COL_VNI, 10002)
                         .put(VLAN, 2)
                         .build())
                 .add(
                     Row.builder()
                         .put(COL_NODE, "minimal")
+                        .put(COL_VRF, DEFAULT_VRF_NAME)
                         .put(COL_VNI, 10001)
                         .put(VLAN, 1)
                         .build())));
