@@ -37,5 +37,5 @@ public interface DataPlane extends Serializable {
    * a {@link Vrf}, but may include additional information obtained during dataplane computation,
    * such as updated flood lists due to EVPN route exchange.
    */
-  Table<String, String, Set<Layer2Vni>> getVniSettings();
+  Table<String, String, Set<Layer2Vni>> getLayer2Vnis();
 }

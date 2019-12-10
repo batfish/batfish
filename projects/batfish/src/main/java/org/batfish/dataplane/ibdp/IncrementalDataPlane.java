@@ -186,7 +186,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     for (Node node : _nodes.values()) {
       for (Entry<String, VirtualRouter> vr : node.getVirtualRouters().entrySet()) {
         result.put(
-            node.getConfiguration().getHostname(), vr.getKey(), vr.getValue().getVniSettings());
+            node.getConfiguration().getHostname(), vr.getKey(), vr.getValue().getLayer2Vnis());
       }
     }
     return result;
@@ -209,7 +209,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   @Nonnull
   @Override
-  public Table<String, String, Set<Layer2Vni>> getVniSettings() {
+  public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
     return _vniSettings;
   }
 
