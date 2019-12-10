@@ -181,7 +181,7 @@ public class EvpnTest {
   }
 
   @Test
-  public void testEbgpL3Vni() throws IOException {
+  public void testEbgpL2Vni() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
@@ -197,10 +197,10 @@ public class EvpnTest {
         n2Routes, hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("1.111.111.111/32")))));
     // Ensure VNI flood lists were updated with peer's VTEP address
     assertThat(
-        dp.getVniSettings().column(DEFAULT_VRF_NAME),
+        dp.getLayer2Vnis().column(DEFAULT_VRF_NAME),
         hasEntry(equalTo("n1"), contains(hasBumTransportIps(contains(Ip.parse("2.222.222.222"))))));
     assertThat(
-        dp.getVniSettings().column(DEFAULT_VRF_NAME),
+        dp.getLayer2Vnis().column(DEFAULT_VRF_NAME),
         hasEntry(equalTo("n2"), contains(hasBumTransportIps(contains(Ip.parse("1.111.111.111"))))));
   }
 

@@ -148,7 +148,7 @@ class IncrementalBdpEngine {
           // VXLAN
           VxlanTopology newVxlanTopology =
               prunedVxlanTopology(
-                  computeVxlanTopology(partialDataplane.getVniSettings()),
+                  computeVxlanTopology(partialDataplane.getLayer2Vnis()),
                   configurations,
                   trEngCurrentL3Topogy);
           // Layer-2

@@ -94,6 +94,8 @@ import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.AnnotatedRib;
@@ -187,10 +189,15 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting transient ImmutableMap<Long, EigrpRoutingProcess> _eigrpProcesses;
 
   /**
-   * VNI settings that are updated dynamically as the dataplane is being computed (e.g., based on
-   * EVPN route advertisements).
+   * Layer 2 VNI settings that are updated dynamically as the dataplane is being computed (e.g.,
+   * based on EVPN route advertisements).
    */
-  private Set<Layer2Vni> _vniSettings;
+  private Set<Layer2Vni> _layer2Vnis;
+  /**
+   * Layer 3 VNI settings that are updated dynamically as the dataplane is being computed (e.g.,
+   * based on EVPN route advertisements).
+   */
+  private Set<Layer3Vni> _layer3Vnis;
 
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
@@ -211,7 +218,8 @@ public class VirtualRouter implements Serializable {
     _prefixTracer = new PrefixTracer();
     _eigrpProcesses = ImmutableMap.of();
     _ospfProcesses = ImmutableMap.of();
-    _vniSettings = ImmutableSet.copyOf(_vrf.getLayer2Vnis().values());
+    _layer2Vnis = ImmutableSet.copyOf(_vrf.getLayer2Vnis().values());
+    _layer3Vnis = ImmutableSet.copyOf(_vrf.getLayer3Vnis().values());
     if (_vrf.getBgpProcess() != null) {
       _bgpRoutingProcess =
           new BgpRoutingProcess(
@@ -1995,8 +2003,13 @@ public class VirtualRouter implements Serializable {
   }
 
   /** Return the current set of {@link Layer2Vni} associated with this VRF */
-  public Set<Layer2Vni> getVniSettings() {
-    return _vniSettings;
+  public Set<Layer2Vni> getLayer2Vnis() {
+    return _layer2Vnis;
+  }
+
+  /** Return the current set of {@link Layer3Vni} associated with this VRF */
+  public Set<Layer3Vni> getLayer3Vnis() {
+    return _layer3Vnis;
   }
 
   /** Check whether this virtual router has any remaining computation to do */
@@ -2041,9 +2054,15 @@ public class VirtualRouter implements Serializable {
       return;
     }
     for (EvpnType3Route route : _bgpRoutingProcess.getEvpnType3Routes()) {
-      _vniSettings =
-          _vniSettings.stream()
+      _layer2Vnis =
+          _layer2Vnis.stream()
               .map(vs -> updateVniFloodList(vs, route))
+              .map(Layer2Vni.class::cast)
+              .collect(ImmutableSet.toImmutableSet());
+      _layer3Vnis =
+          _layer3Vnis.stream()
+              .map(vs -> updateVniFloodList(vs, route))
+              .map(Layer3Vni.class::cast)
               .collect(ImmutableSet.toImmutableSet());
     }
   }
@@ -2054,7 +2073,7 @@ public class VirtualRouter implements Serializable {
    * and if the {@link Layer2Vni#getBumTransportMethod()} is unicast flood group (otherwise returns
    * the original {@code vs}).
    */
-  private static Layer2Vni updateVniFloodList(Layer2Vni vs, EvpnType3Route route) {
+  private static Vni updateVniFloodList(Vni vs, EvpnType3Route route) {
     if (vs.getBumTransportMethod() != BumTransportMethod.UNICAST_FLOOD_GROUP
         || route.getVniIp().equals(vs.getSourceAddress())) {
       // Only update settings if transport method is unicast.
