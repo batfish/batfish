@@ -687,6 +687,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       Set<ExtendedCommunity> routeTargets = transformedRoute.getRouteTargets();
       if (routeTargets.isEmpty()) {
         // Skip if the route target is unrecognized
+        IncrementalDataPlanePlugin.getLogger()
+            .debug("Skipping EVPN route for %s with no route targets");
         continue;
       }
       // TODO:

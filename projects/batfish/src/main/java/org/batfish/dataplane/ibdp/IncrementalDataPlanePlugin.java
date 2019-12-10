@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.Plugin;
@@ -19,6 +20,11 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   public static final String PLUGIN_NAME = "ibdp";
 
   private IncrementalBdpEngine _engine;
+  /*
+  This is a bit hacky: since there will not be multiple ibdp plugins per batfish,
+  on each plugin initialize, set a static logger to avoid passing the logger to every class within BDP
+  */
+  private static BatfishLogger LOGGER = null;
 
   public IncrementalDataPlanePlugin() {}
 
@@ -58,6 +64,8 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   protected void dataPlanePluginInitialize() {
+    // Hack. See explanation in logger definition.
+    LOGGER = _logger;
     _engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(_batfish.getSettingsConfiguration()),
@@ -67,5 +75,9 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   @Override
   public String getName() {
     return PLUGIN_NAME;
+  }
+
+  public static BatfishLogger getLogger() {
+    return LOGGER;
   }
 }
