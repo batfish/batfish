@@ -336,11 +336,6 @@ final class Instance implements AwsVpcEntity, Serializable {
             ConcreteInterfaceAddress.create(
                 privateIp.getPrivateIp(), ifaceSubnet.getPrefixLength());
         ifaceAddressesBuilder.add(address);
-
-        if (privateIp.getPublicIp() != null) {
-          ifaceAddressesBuilder.add(
-              ConcreteInterfaceAddress.create(privateIp.getPublicIp(), Prefix.MAX_PREFIX_LENGTH));
-        }
       }
       Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
       ConcreteInterfaceAddress primaryAddress =

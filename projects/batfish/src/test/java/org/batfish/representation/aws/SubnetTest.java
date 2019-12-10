@@ -325,13 +325,13 @@ public class SubnetTest {
             .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(subnet.getId())));
 
-    // the igw router should have a static route to the public ip
+    // the igw router should have a static route to the private ip
     assertThat(
         igwConfig.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
-                    publicIp.toPrefix(),
+                    subnet.getCidrBlock(),
                     interfaceNameToRemote(subnetCfg),
                     Utils.getInterfaceLinkLocalIp(subnetCfg, igw.getId())))));
 
@@ -347,10 +347,7 @@ public class SubnetTest {
                 toStaticRoute(
                     privatePrefix,
                     interfaceNameToRemote(vpcConfig),
-                    Utils.getInterfaceLinkLocalIp(vpcConfig, subnet.getId())),
-                toStaticRoute(
-                    publicIp.toPrefix(),
-                    subnetCfg.getAllInterfaces().get(subnet.getId()).getName()))));
+                    Utils.getInterfaceLinkLocalIp(vpcConfig, subnet.getId())))));
   }
 
   /** Tests that we do the right thing when processing a route for VPC peering connection. */

@@ -184,8 +184,7 @@ public class ElasticsearchDomainTest {
                           .setSrcIps(
                               Sets.newHashSet(
                                   IpWildcard.parse("1.2.3.4/32"),
-                                  IpWildcard.parse("10.193.16.105/32"),
-                                  IpWildcard.parse("54.191.107.22")))
+                                  IpWildcard.parse("10.193.16.105/32")))
                           .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
                           .build()))));
       assertThat(
