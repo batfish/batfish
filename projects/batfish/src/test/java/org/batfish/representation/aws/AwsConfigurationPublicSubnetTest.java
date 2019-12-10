@@ -81,7 +81,9 @@ public class AwsConfigurationPublicSubnetTest {
   private static Trace getTrace(String ingressNode, Ip dstIp) {
     Flow flow = Flow.builder().setTag("test").setIngressNode(ingressNode).setDstIp(dstIp).build();
     SortedMap<Flow, List<Trace>> traces =
-        _batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+        _batfish
+            .getTracerouteEngine(_batfish.getSnapshot())
+            .computeTraces(ImmutableSet.of(flow), false);
 
     return getOnlyElement(traces.get(flow).iterator());
   }
