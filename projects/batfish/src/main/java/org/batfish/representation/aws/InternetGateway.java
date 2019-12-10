@@ -2,13 +2,19 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,10 +24,15 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 
 /**
  * Represents an AWS Internet Gateway
@@ -105,7 +116,20 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     ConcreteInterfaceAddress bbInterfaceAddress =
         ConcreteInterfaceAddress.create(
             bbInterfaceSubnet.getStartIp(), bbInterfaceSubnet.getPrefixLength());
-    Utils.newInterface(BACKBONE_INTERFACE_NAME, cfgNode, bbInterfaceAddress, "To AWS backbone");
+    Interface bbInterface =
+        Utils.newInterface(BACKBONE_INTERFACE_NAME, cfgNode, bbInterfaceAddress, "To AWS backbone");
+
+    // Implement NAT from private to public IPs
+    Map<Ip, Ip> privatePublicMap =
+        region.getNetworkInterfaces().values().stream()
+            .filter(ni -> _attachmentVpcIds.contains(ni.getVpcId()))
+            .flatMap(ni -> ni.getPrivateIpAddresses().stream())
+            .filter(pvtIp -> pvtIp.getPublicIp() != null)
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    PrivateIpAddress::getPrivateIp, PrivateIpAddress::getPublicIp));
+
+    configureNat(bbInterface, privatePublicMap);
 
     BgpProcess bgpProcess =
         BgpProcess.builder()
@@ -115,19 +139,17 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
             .build();
 
     /*
-     collect all public IPs in attached VPCs to we can create the right backbone facing policy.
-     internet gateway also needs static routes to these public IPs that point to the right subnet.
-     these routes, along with interfaces to subnet, are created when we process subnets
+    Create a BGP policy that announces public IPs by installing and advertising static routes
     */
     PrefixSpace publicPrefixSpace = new PrefixSpace();
-    for (String vpcId : _attachmentVpcIds) {
-      region.getNetworkInterfaces().values().stream()
-          .filter(ni -> ni.getVpcId().equals(vpcId))
-          .flatMap(ni -> ni.getPrivateIpAddresses().stream())
-          .map(PrivateIpAddress::getPublicIp)
-          .filter(Objects::nonNull)
-          .forEach(ip -> publicPrefixSpace.addPrefix(ip.toPrefix()));
-    }
+    privatePublicMap
+        .values()
+        .forEach(
+            publicIp -> {
+              publicPrefixSpace.addPrefix(publicIp.toPrefix());
+              addStaticRoute(cfgNode, toStaticRoute(publicIp.toPrefix(), NULL_INTERFACE_NAME));
+            });
+
     installRoutingPolicyAdvertiseStatic(
         BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory());
 
@@ -142,6 +164,34 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
         .build();
 
     return cfgNode;
+  }
+
+  @VisibleForTesting
+  static void configureNat(Interface bbInterface, Map<Ip, Ip> privatePublicMap) {
+    ImmutableList.Builder<Transformation.Builder> outgoingNatRules = ImmutableList.builder();
+    ImmutableList.Builder<Transformation.Builder> incomingNatRules = ImmutableList.builder();
+
+    privatePublicMap.forEach(
+        (pvtIp, pubIp) -> {
+          outgoingNatRules.add(
+              Transformation.when(AclLineMatchExprs.matchSrc(pvtIp))
+                  .apply(TransformationStep.shiftSourceIp(pubIp.toPrefix())));
+          incomingNatRules.add(
+              Transformation.when(AclLineMatchExprs.matchDst(pubIp))
+                  .apply(TransformationStep.shiftDestinationIp(pvtIp.toPrefix())));
+        });
+
+    bbInterface.setOutgoingTransformation(chain(outgoingNatRules.build()));
+    bbInterface.setIncomingTransformation(chain(incomingNatRules.build()));
+  }
+
+  @Nullable
+  private static Transformation chain(List<Transformation.Builder> rules) {
+    Transformation tail = null;
+    for (Transformation.Builder t : rules) {
+      tail = t.setOrElse(tail).build();
+    }
+    return tail;
   }
 
   @Override
