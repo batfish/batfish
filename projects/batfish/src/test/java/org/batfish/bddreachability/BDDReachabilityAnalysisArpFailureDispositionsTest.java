@@ -80,13 +80,13 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
   private Batfish initBatfish(SortedMap<String, Configuration> configs) throws IOException {
     Batfish batfish = getBatfish(configs, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     return batfish;
   }
 
   private BDDReachabilityAnalysisFactory initFactory() throws IOException {
     Batfish batfish = initBatfish(_configs);
-    DataPlane dataPlane = batfish.loadDataPlane();
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     return new BDDReachabilityAnalysisFactory(
         PKT,
         _configs,

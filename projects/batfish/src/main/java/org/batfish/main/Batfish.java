@@ -120,7 +120,6 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
-import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -249,7 +248,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Pattern.compile("(\\Amgmt)|(\\Amanagement)", CASE_INSENSITIVE);
 
   /** The name of the [optional] topology file within a test-rig */
-  public static void applyBaseDir(TestrigSettings settings, Path containerDir, SnapshotId testrig) {
+  private static void applyBaseDir(
+      TestrigSettings settings, Path containerDir, SnapshotId testrig) {
     Path testrigDir =
         containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
     settings.setName(testrig);
@@ -346,23 +346,36 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public static void initTestrigSettings(Settings settings) {
-    SnapshotId testrig = settings.getTestrig();
+  @VisibleForTesting
+  TestrigSettings getSnapshotTestrigSettings() {
+    return _baseTestrigSettings;
+  }
+
+  @VisibleForTesting
+  TestrigSettings getReferenceTestrigSettings() {
+    return _deltaTestrigSettings;
+  }
+
+  private void initLocalSettings(Settings settings) {
+    if (settings == null || settings.getStorageBase() == null || settings.getContainer() == null) {
+      // This should only happen in tests.
+      return;
+    }
     Path containerDir = settings.getStorageBase().resolve(settings.getContainer().getId());
-    if (testrig != null) {
-      applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig);
-      SnapshotId deltaTestrig = settings.getDeltaTestrig();
-      TestrigSettings deltaTestrigSettings = settings.getDeltaTestrigSettings();
-      if (deltaTestrig != null) {
-        applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig);
-      }
-      if (settings.getDiffActive()) {
-        settings.setActiveTestrigSettings(settings.getDeltaTestrigSettings());
-      } else {
-        settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
-      }
-    } else {
+
+    _baseTestrigSettings = new TestrigSettings();
+    SnapshotId snapshotId = settings.getTestrig();
+    _baseTestrigSettings.setName(snapshotId);
+    if (snapshotId == null) {
       throw new CleanBatfishException("Must supply argument to -" + BfConsts.ARG_TESTRIG);
+    }
+    applyBaseDir(_baseTestrigSettings, containerDir, snapshotId);
+
+    _deltaTestrigSettings = new TestrigSettings();
+    SnapshotId referenceId = settings.getDeltaTestrig();
+    if (referenceId != null) {
+      _deltaTestrigSettings.setName(referenceId);
+      applyBaseDir(_deltaTestrigSettings, containerDir, referenceId);
     }
   }
 
@@ -469,10 +482,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   // finished (null if job finished successfully)
   private String _terminatingExceptionMessage;
 
-  private TestrigSettings _testrigSettings;
-
-  private final List<TestrigSettings> _testrigSettingsStack;
-
   private Map<String, DataPlanePlugin> _dataPlanePlugins;
 
   private final TopologyProvider _topologyProvider;
@@ -490,13 +499,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedDataPlanes = cachedDataPlanes;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
-    _testrigSettings = settings.getActiveTestrigSettings();
-    _baseTestrigSettings = settings.getBaseTestrigSettings();
+    initLocalSettings(settings);
     _logger = _settings.getLogger();
-    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
     _terminatingExceptionMessage = null;
     _answererCreators = new HashMap<>();
-    _testrigSettingsStack = new ArrayList<>();
     _dataPlanePlugins = new HashMap<>();
     _storage =
         alternateStorageProvider != null
@@ -628,7 +634,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
       activeSpan
           .setTag("container-name", getContainerName().getId())
-          .setTag("testrig_name", getTestrigName().getId());
+          .setTag("testrig_name", getSnapshot().getSnapshot().getId());
       if (question.getInstance() != null) {
         activeSpan.setTag("question-name", question.getInstance().getInstanceName());
       }
@@ -639,17 +645,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     boolean dp = question.getDataPlane();
     boolean diff = question.getDifferential();
-    boolean diffActive = _settings.getDiffActive() && !diff;
-    _settings.setDiffActive(diffActive);
     _settings.setDiffQuestion(diff);
 
     // Ensures configurations are parsed and ready
-    loadConfigurations();
+    loadConfigurations(getSnapshot());
+    // TODO: why doesn't this check diff and load diff configurations?
 
     try (ActiveSpan initQuestionEnvSpan =
         GlobalTracer.get().buildSpan("Init question environment").startActive()) {
       assert initQuestionEnvSpan != null; // avoid not used warning
-      prepareToAnswerQuestions(diff, diffActive, dp);
+      prepareToAnswerQuestions(diff, dp);
     }
 
     AnswerElement answerElement = null;
@@ -657,9 +662,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan getAnswerSpan = GlobalTracer.get().buildSpan("Get answer").startActive()) {
       assert getAnswerSpan != null; // avoid not used warning
       if (question.getDifferential()) {
-        answerElement = Answerer.create(question, this).answerDiff();
+        answerElement =
+            Answerer.create(question, this).answerDiff(getSnapshot(), getReferenceSnapshot());
       } else {
-        answerElement = Answerer.create(question, this).answer();
+        answerElement = Answerer.create(question, this).answer(getSnapshot());
       }
     } catch (Exception e) {
       exception = new BatfishException("Failed to answer question", e);
@@ -733,63 +739,63 @@ public class Batfish extends PluginConsumer implements IBatfish {
             && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
-  public static void checkDataPlane(TestrigSettings testrigSettings) {
-    if (!Files.exists(testrigSettings.getDataPlanePath())) {
-      throw new CleanBatfishException(
-          "Missing data plane for testrig: \"" + testrigSettings.getName() + "\"\n");
-    }
-  }
-
   @Override
-  public void checkSnapshotOutputReady() {
-    checkSnapshotOutputReady(_testrigSettings);
-  }
-
-  public void checkSnapshotOutputReady(TestrigSettings testrigSettings) {
+  public void checkSnapshotOutputReady(NetworkSnapshot snapshot) {
+    TestrigSettings tr = getTestrigSettings(snapshot);
     checkState(
-        outputExists(testrigSettings),
+        outputExists(tr),
         "Output directory does not exist for snapshot %s",
-        testrigSettings.getName());
+        snapshot.getSnapshot());
   }
 
   @Override
-  public DataPlaneAnswerElement computeDataPlane() {
-    checkSnapshotOutputReady();
-    ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane();
-    saveDataPlane(result);
+  public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
+    checkSnapshotOutputReady(snapshot);
+    ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(snapshot);
+    saveDataPlane(snapshot, result);
     return result._answerElement;
+  }
+
+  private TestrigSettings getTestrigSettings(NetworkSnapshot snapshot) {
+    if (_baseTestrigSettings.getName().equals(snapshot.getSnapshot())) {
+      return _baseTestrigSettings;
+    }
+    if (_deltaTestrigSettings != null
+        && _deltaTestrigSettings.getName().equals(snapshot.getSnapshot())) {
+      return _deltaTestrigSettings;
+    }
+    throw new IllegalStateException("Unknown snapshot " + snapshot);
   }
 
   /* Write the dataplane to disk and cache, and write the answer element to disk.
    */
-  private void saveDataPlane(ComputeDataPlaneResult result) {
-    _cachedDataPlanes.put(getNetworkSnapshot(), result._dataPlane);
+  private void saveDataPlane(NetworkSnapshot snapshot, ComputeDataPlaneResult result) {
+    _cachedDataPlanes.put(snapshot, result._dataPlane);
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
     try (ActiveSpan writeDataplane =
         GlobalTracer.get().buildSpan("Writing data plane").startActive()) {
       assert writeDataplane != null; // avoid unused warning
-      serializeObject(result._dataPlane, _testrigSettings.getDataPlanePath());
-      serializeObject(result._answerElement, _testrigSettings.getDataPlaneAnswerPath());
+      serializeObject(result._dataPlane, getTestrigSettings(snapshot).getDataPlanePath());
+      serializeObject(result._answerElement, getTestrigSettings(snapshot).getDataPlaneAnswerPath());
       TopologyContainer topologies = result._topologies;
-      NetworkSnapshot networkSnapshot = getNetworkSnapshot();
-      _storage.storeBgpTopology(topologies.getBgpTopology(), networkSnapshot);
-      _storage.storeEigrpTopology(topologies.getEigrpTopology(), networkSnapshot);
-      _storage.storeLayer2Topology(topologies.getLayer2Topology(), networkSnapshot);
-      _storage.storeLayer3Topology(topologies.getLayer3Topology(), networkSnapshot);
-      _storage.storeOspfTopology(topologies.getOspfTopology(), networkSnapshot);
-      _storage.storeVxlanTopology(topologies.getVxlanTopology(), networkSnapshot);
+      _storage.storeBgpTopology(topologies.getBgpTopology(), snapshot);
+      _storage.storeEigrpTopology(topologies.getEigrpTopology(), snapshot);
+      _storage.storeLayer2Topology(topologies.getLayer2Topology(), snapshot);
+      _storage.storeLayer3Topology(topologies.getLayer3Topology(), snapshot);
+      _storage.storeOspfTopology(topologies.getOspfTopology(), snapshot);
+      _storage.storeVxlanTopology(topologies.getVxlanTopology(), snapshot);
     } catch (IOException e) {
       throw new BatfishException("Failed to save data plane", e);
     }
     _logger.printElapsedTime();
   }
 
-  private void computeEnvironmentBgpTables() {
-    Path outputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
-    Path inputPath = _testrigSettings.getEnvironmentBgpTablesPath();
-    serializeEnvironmentBgpTables(inputPath, outputPath);
+  private void computeEnvironmentBgpTables(NetworkSnapshot snapshot) {
+    Path outputPath = getTestrigSettings(snapshot).getSerializeEnvironmentBgpTablesPath();
+    Path inputPath = getTestrigSettings(snapshot).getEnvironmentBgpTablesPath();
+    serializeEnvironmentBgpTables(snapshot, inputPath, outputPath);
   }
 
   private Map<String, Configuration> convertConfigurations(
@@ -1075,27 +1081,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
-      Path inputPath, ParseEnvironmentBgpTablesAnswerElement answerElement) {
-    if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
+      NetworkSnapshot snapshot,
+      Path inputPath,
+      ParseEnvironmentBgpTablesAnswerElement answerElement) {
+    if (!Files.exists(inputPath)) {
       return new TreeMap<>();
     }
     _logger.info("\n*** READING Environment BGP Tables ***\n");
     SortedMap<Path, String> inputData = readAllFiles(inputPath, _logger);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
-        parseEnvironmentBgpTables(inputData, answerElement);
+        parseEnvironmentBgpTables(snapshot, inputData, answerElement);
     return bgpTables;
   }
 
   @Override
-  public String getFlowTag() {
-    return getFlowTag(_testrigSettings);
-  }
-
-  public String getFlowTag(TestrigSettings testrigSettings) {
-    if (testrigSettings == _deltaTestrigSettings) {
-      return Flow.DELTA_FLOW_TAG;
-    } else if (testrigSettings == _baseTestrigSettings) {
+  public String getFlowTag(NetworkSnapshot snapshot) {
+    if (snapshot.equals(getSnapshot())) {
       return Flow.BASE_FLOW_TAG;
+    } else if (snapshot.equals(getReferenceSnapshot())) {
+      return Flow.DELTA_FLOW_TAG;
     } else {
       throw new BatfishException("Could not determine flow tag");
     }
@@ -1219,8 +1223,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public NetworkSnapshot getNetworkSnapshot() {
-    return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
+  public NetworkSnapshot getSnapshot() {
+    return new NetworkSnapshot(_settings.getContainer(), _baseTestrigSettings.getName());
+  }
+
+  @Override
+  public NetworkSnapshot getReferenceSnapshot() {
+    return new NetworkSnapshot(_settings.getContainer(), _deltaTestrigSettings.getName());
   }
 
   @Override
@@ -1230,11 +1239,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public String getTerminatingExceptionMessage() {
     return _terminatingExceptionMessage;
-  }
-
-  @Override
-  public SnapshotId getTestrigName() {
-    return _testrigSettings.getName();
   }
 
   @Nonnull
@@ -1249,53 +1253,48 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
-    ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
+  public InitInfoAnswerElement initInfo(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
+    ParseVendorConfigurationAnswerElement parseAnswer =
+        loadParseVendorConfigurationAnswerElement(snapshot);
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
-    mergeConvertAnswer(summary, verboseError, answerElement);
+    ConvertConfigurationAnswerElement convertAnswer =
+        loadConvertConfigurationAnswerElementOrReparse(snapshot);
+    mergeConvertAnswer(summary, verboseError, convertAnswer, answerElement);
     _logger.info(answerElement.toString());
     return answerElement;
   }
 
   @Override
-  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
+  public InitInfoAnswerElement initInfoBgpAdvertisements(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
     ParseEnvironmentBgpTablesAnswerElement parseAnswer =
-        loadParseEnvironmentBgpTablesAnswerElement();
+        loadParseEnvironmentBgpTablesAnswerElement(snapshot);
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
     _logger.info(answerElement.toString());
     return answerElement;
   }
 
-  private void prepareToAnswerQuestions(boolean dp) {
-    if (!outputExists(_testrigSettings)) {
-      createDirectories(_testrigSettings.getOutputPath());
+  private void prepareToAnswerQuestions(NetworkSnapshot snapshot, boolean dp) {
+    TestrigSettings tr = getTestrigSettings(snapshot);
+    if (!outputExists(tr)) {
+      createDirectories(tr.getOutputPath());
     }
-    if (!environmentBgpTablesExist(_testrigSettings)) {
-      computeEnvironmentBgpTables();
+    if (!environmentBgpTablesExist(tr)) {
+      computeEnvironmentBgpTables(snapshot);
     }
     if (dp) {
-      if (!dataPlaneDependenciesExist(_testrigSettings)) {
-        computeDataPlane();
+      if (!dataPlaneDependenciesExist(tr)) {
+        computeDataPlane(snapshot);
       }
     }
   }
 
-  private void prepareToAnswerQuestions(boolean diff, boolean diffActive, boolean dp) {
-    if (diff || !diffActive) {
-      pushBaseSnapshot();
-      prepareToAnswerQuestions(dp);
-      popSnapshot();
+  private void prepareToAnswerQuestions(boolean diff, boolean dp) {
+    prepareToAnswerQuestions(getSnapshot(), dp);
+    if (diff) {
+      prepareToAnswerQuestions(getReferenceSnapshot(), dp);
     }
-    if (diff || diffActive) {
-      pushDeltaSnapshot();
-      prepareToAnswerQuestions(dp);
-      popSnapshot();
-    }
-  }
-
-  @Override
-  public SortedMap<String, Configuration> loadConfigurations() {
-    return loadConfigurations(getNetworkSnapshot());
   }
 
   @Override
@@ -1315,10 +1314,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
       if (configurations != null) {
         _logger.debugf("Loaded configurations for %s off disk", snapshot);
-        postProcessSnapshot(configurations);
+        postProcessSnapshot(snapshot, configurations);
       } else {
         // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
-        configurations = parseConfigurationsAndApplyEnvironment();
+        configurations = parseConfigurationsAndApplyEnvironment(snapshot);
       }
 
       _cachedConfigurations.put(snapshot, configurations);
@@ -1327,31 +1326,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
-  private SortedMap<String, Configuration> parseConfigurationsAndApplyEnvironment() {
-    _logger.infof("Repairing configurations for testrig %s", _testrigSettings.getName());
-    repairConfigurations();
+  private SortedMap<String, Configuration> parseConfigurationsAndApplyEnvironment(
+      NetworkSnapshot snapshot) {
+    _logger.infof("Repairing configurations for testrig %s", snapshot.getSnapshot());
+    repairConfigurations(snapshot);
     SortedMap<String, Configuration> configurations =
-        _storage.loadConfigurations(_settings.getContainer(), _testrigSettings.getName());
+        _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
     verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
-    postProcessSnapshot(configurations);
+    assert configurations != null;
+    postProcessSnapshot(snapshot, configurations);
     return configurations;
   }
 
   @Override
-  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+      NetworkSnapshot snapshot) {
     ConvertConfigurationAnswerElement ccae =
         _storage.loadConvertConfigurationAnswerElement(
-            _settings.getContainer(), _testrigSettings.getName());
+            snapshot.getNetwork(), snapshot.getSnapshot());
     if (ccae != null) {
       return ccae;
     }
 
-    repairConfigurations();
+    repairConfigurations(snapshot);
     ccae =
         _storage.loadConvertConfigurationAnswerElement(
-            _settings.getContainer(), _testrigSettings.getName());
+            snapshot.getNetwork(), snapshot.getSnapshot());
     if (ccae != null) {
       return ccae;
     } else {
@@ -1361,14 +1363,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public DataPlane loadDataPlane() {
+  public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Load data plane").startActive()) {
       assert span != null; // avoid unused warning
-      NetworkSnapshot snapshot = getNetworkSnapshot();
       DataPlane dp = _cachedDataPlanes.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
-        dp = deserializeObject(_testrigSettings.getDataPlanePath(), DataPlane.class);
+        dp = deserializeObject(getTestrigSettings(snapshot).getDataPlanePath(), DataPlane.class);
         _cachedDataPlanes.put(snapshot, dp);
       }
       return dp;
@@ -1376,29 +1377,31 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
-    NetworkSnapshot snapshot = getNetworkSnapshot();
+  public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(
+      NetworkSnapshot snapshot) {
     SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables =
         _cachedEnvironmentBgpTables.get(snapshot);
     if (environmentBgpTables == null) {
-      loadParseEnvironmentBgpTablesAnswerElement();
+      loadParseEnvironmentBgpTablesAnswerElement(snapshot);
       environmentBgpTables =
-          deserializeEnvironmentBgpTables(_testrigSettings.getSerializeEnvironmentBgpTablesPath());
+          deserializeEnvironmentBgpTables(
+              getTestrigSettings(snapshot).getSerializeEnvironmentBgpTablesPath());
       _cachedEnvironmentBgpTables.put(snapshot, environmentBgpTables);
     }
     return environmentBgpTables;
   }
 
-  @Override
-  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
-    return loadParseEnvironmentBgpTablesAnswerElement(true);
+  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+      NetworkSnapshot snapshot) {
+    return loadParseEnvironmentBgpTablesAnswerElement(snapshot, true);
   }
 
   private ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
-      boolean firstAttempt) {
-    Path answerPath = _testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
+      NetworkSnapshot snapshot, boolean firstAttempt) {
+    TestrigSettings tr = getTestrigSettings(snapshot);
+    Path answerPath = tr.getParseEnvironmentBgpTablesAnswerPath();
     if (!Files.exists(answerPath)) {
-      repairEnvironmentBgpTables();
+      repairEnvironmentBgpTables(snapshot);
     }
     try {
       return deserializeObject(answerPath, ParseEnvironmentBgpTablesAnswerElement.class);
@@ -1406,13 +1409,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       /* Do nothing, this is expected on serialization or other errors. */
       _logger.warn(
           "Unable to load prior parse data from "
-              + _testrigSettings.getParseEnvironmentBgpTablesAnswerPath()
+              + tr.getParseEnvironmentBgpTablesAnswerPath()
               + "\n");
     }
 
     if (firstAttempt) {
-      repairEnvironmentBgpTables();
-      return loadParseEnvironmentBgpTablesAnswerElement(false);
+      repairEnvironmentBgpTables(snapshot);
+      return loadParseEnvironmentBgpTablesAnswerElement(snapshot, false);
     } else {
       throw new BatfishException(
           "Version error repairing environment BGP tables for parse environment BGP tables "
@@ -1421,25 +1424,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
-    return loadParseVendorConfigurationAnswerElement(true);
+  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) {
+    return loadParseVendorConfigurationAnswerElement(snapshot, true);
   }
 
   private ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
-      boolean firstAttempt) {
-    if (Files.exists(_testrigSettings.getParseAnswerPath())) {
+      NetworkSnapshot snapshot, boolean firstAttempt) {
+    TestrigSettings tr = getTestrigSettings(snapshot);
+    if (Files.exists(tr.getParseAnswerPath())) {
       try {
         return deserializeObject(
-            _testrigSettings.getParseAnswerPath(), ParseVendorConfigurationAnswerElement.class);
+            tr.getParseAnswerPath(), ParseVendorConfigurationAnswerElement.class);
       } catch (Exception e) {
         /* Do nothing, this is expected on serialization or other errors. */
-        _logger.warn(
-            "Unable to load prior parse data from " + _testrigSettings.getParseAnswerPath() + "\n");
+        _logger.warn("Unable to load prior parse data from " + tr.getParseAnswerPath() + "\n");
       }
     }
     if (firstAttempt) {
-      repairVendorConfigurations();
-      return loadParseVendorConfigurationAnswerElement(false);
+      repairVendorConfigurations(snapshot);
+      return loadParseVendorConfigurationAnswerElement(snapshot, false);
     } else {
       throw new BatfishException(
           "Version error repairing vendor configurations for parse configuration answer element");
@@ -1447,9 +1451,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void mergeConvertAnswer(
-      boolean summary, boolean verboseError, InitInfoAnswerElement answerElement) {
-    ConvertConfigurationAnswerElement convertAnswer =
-        loadConvertConfigurationAnswerElementOrReparse();
+      boolean summary,
+      boolean verboseError,
+      ConvertConfigurationAnswerElement convertAnswer,
+      InitInfoAnswerElement answerElement) {
     mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
     convertAnswer.getConvertStatus().entrySet().stream()
         .filter(s -> s.getValue() == ConvertStatus.FAILED)
@@ -1594,12 +1599,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
-      SortedMap<Path, String> inputData, ParseEnvironmentBgpTablesAnswerElement answerElement) {
+      NetworkSnapshot snapshot,
+      SortedMap<Path, String> inputData,
+      ParseEnvironmentBgpTablesAnswerElement answerElement) {
     _logger.info("\n*** PARSING ENVIRONMENT BGP TABLES ***\n");
     _logger.resetTimer();
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables = new TreeMap<>();
     List<ParseEnvironmentBgpTableJob> jobs = new ArrayList<>();
-    SortedMap<String, Configuration> configurations = loadConfigurations();
+    SortedMap<String, Configuration> configurations = loadConfigurations(snapshot);
     for (Entry<Path, String> bgpFile : inputData.entrySet()) {
       Path currentFile = bgpFile.getKey();
       String fileText = bgpFile.getValue();
@@ -1615,7 +1622,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Warnings warnings = buildWarnings(_settings);
       ParseEnvironmentBgpTableJob job =
           new ParseEnvironmentBgpTableJob(
-              _settings, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
+              _settings, snapshot, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -1637,7 +1644,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
    */
   private List<ParseVendorConfigurationJob> makeParseVendorConfigurationsJobs(
-      Map<String, String> keyedFileText, ConfigurationFormat expectedFormat) {
+      NetworkSnapshot snapshot,
+      Map<String, String> keyedFileText,
+      ConfigurationFormat expectedFormat) {
     List<ParseVendorConfigurationJob> jobs = new ArrayList<>(keyedFileText.size());
     for (Entry<String, String> vendorFile : keyedFileText.entrySet()) {
       @Nullable
@@ -1649,6 +1658,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings,
+              snapshot,
               vendorFile.getValue(),
               vendorFile.getKey(),
               buildWarnings(_settings),
@@ -1668,6 +1678,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
    */
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
+      NetworkSnapshot snapshot,
       Map<String, String> keyedConfigurationText,
       ParseVendorConfigurationAnswerElement answerElement,
       ConfigurationFormat expectedFormat) {
@@ -1675,7 +1686,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     List<ParseVendorConfigurationJob> jobs =
-        makeParseVendorConfigurationsJobs(keyedConfigurationText, expectedFormat);
+        makeParseVendorConfigurationsJobs(snapshot, keyedConfigurationText, expectedFormat);
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,
@@ -1686,13 +1697,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Parse configurations");
     _logger.printElapsedTime();
     return vendorConfigurations;
-  }
-
-  @Override
-  public void popSnapshot() {
-    int lastIndex = _testrigSettingsStack.size() - 1;
-    _testrigSettings = _testrigSettingsStack.get(lastIndex);
-    _testrigSettingsStack.remove(lastIndex);
   }
 
   private void populateChannelGroupMembers(
@@ -1830,31 +1834,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
-      Map<String, Configuration> configurations) {
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
-      Set<BgpAdvertisement> currentAdvertisements = plugin.loadExternalBgpAdvertisements();
+      Set<BgpAdvertisement> currentAdvertisements = plugin.loadExternalBgpAdvertisements(snapshot);
       advertSet.addAll(currentAdvertisements);
     }
     return advertSet;
   }
 
   /**
-   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s.
    *
    * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
    * @param ignoreFilters if true, will ignore ACLs
    * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
    */
   @Override
-  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
-    return getTracerouteEngine().computeTraces(flows, ignoreFilters);
+  public SortedMap<Flow, List<Trace>> buildFlows(
+      NetworkSnapshot snapshot, Set<Flow> flows, boolean ignoreFilters) {
+    return getTracerouteEngine(snapshot).computeTraces(flows, ignoreFilters);
   }
 
   @Override
-  public TracerouteEngine getTracerouteEngine() {
+  public TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot) {
     return new TracerouteEngineImpl(
-        loadDataPlane(), _topologyProvider.getLayer3Topology(getNetworkSnapshot()));
+        loadDataPlane(snapshot), _topologyProvider.getLayer3Topology(snapshot));
   }
 
   /** Function that processes an interface blacklist across all configurations */
@@ -1897,25 +1902,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void pushBaseSnapshot() {
-    _testrigSettingsStack.add(_testrigSettings);
-    _testrigSettings = _baseTestrigSettings;
-  }
-
-  @Override
-  public void pushDeltaSnapshot() {
-    _testrigSettingsStack.add(_testrigSettings);
-    _testrigSettings = _deltaTestrigSettings;
-  }
-
   @Nullable
-  @Override
-  public String readExternalBgpAnnouncementsFile() {
-    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
+  public String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
+    Path externalBgpAnnouncementsPath =
+        getTestrigSettings(snapshot).getExternalBgpAnnouncementsPath();
     if (Files.exists(externalBgpAnnouncementsPath)) {
-      String externalBgpAnnouncementsFileContents =
-          CommonUtil.readFile(externalBgpAnnouncementsPath);
-      return externalBgpAnnouncementsFileContents;
+      return CommonUtil.readFile(externalBgpAnnouncementsPath);
     } else {
       return null;
     }
@@ -2030,11 +2022,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _externalBgpAdvertisementPlugins.add(externalBgpAdvertisementPlugin);
   }
 
-  private void repairConfigurations() {
+  private void repairConfigurations(NetworkSnapshot snapshot) {
     // Needed to ensure vendor configs are written
-    loadParseVendorConfigurationAnswerElement();
-    Path inputPath = _testrigSettings.getSerializeVendorPath();
-    serializeIndependentConfigs(inputPath);
+    loadParseVendorConfigurationAnswerElement(snapshot);
+    Path inputPath = getTestrigSettings(snapshot).getSerializeVendorPath();
+    serializeIndependentConfigs(snapshot, inputPath);
   }
 
   /**
@@ -2045,11 +2037,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *   <li>Process interface dependencies and deactivate interfaces that cannot be up
    * </ul>
    */
-  private void updateBlacklistedAndInactiveConfigs(Map<String, Configuration> configurations) {
+  private void updateBlacklistedAndInactiveConfigs(
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
-    NetworkId networkId = networkSnapshot.getNetwork();
-    SnapshotId snapshotId = networkSnapshot.getSnapshot();
+    NetworkId networkId = snapshot.getNetwork();
+    SnapshotId snapshotId = snapshot.getSnapshot();
 
     SortedSet<String> blacklistedNodes = _storage.loadNodeBlacklist(networkId, snapshotId);
     if (blacklistedNodes != null) {
@@ -2085,22 +2077,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *   <li>Ensuring that blacklists are honored.
    * </ul>
    */
-  private void postProcessSnapshot(Map<String, Configuration> configurations) {
-    updateBlacklistedAndInactiveConfigs(configurations);
+  private void postProcessSnapshot(
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
+    updateBlacklistedAndInactiveConfigs(snapshot, configurations);
     postProcessAggregatedInterfaces(configurations);
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     OspfTopologyUtils.initNeighborConfigs(nc);
     postProcessOspfCosts(configurations);
     EigrpTopologyUtils.initNeighborConfigs(nc);
-    computeAndStoreCompletionMetadata(configurations);
+    computeAndStoreCompletionMetadata(snapshot, configurations);
   }
 
-  private void computeAndStoreCompletionMetadata(Map<String, Configuration> configurations) {
+  private void computeAndStoreCompletionMetadata(
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     try {
       _storage.storeCompletionMetadata(
           computeCompletionMetadata(configurations),
           _settings.getContainer(),
-          _testrigSettings.getName());
+          snapshot.getSnapshot());
     } catch (IOException e) {
       _logger.errorf("Error storing CompletionMetadata: %s", e);
     }
@@ -2121,60 +2115,62 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
+  public String getSnapshotInputObject(NetworkSnapshot snapshot, String key)
+      throws FileNotFoundException, IOException {
     try (InputStream inputObject =
-        _storage.loadSnapshotInputObject(
-            _settings.getContainer(), _testrigSettings.getName(), key)) {
+        _storage.loadSnapshotInputObject(snapshot.getNetwork(), snapshot.getSnapshot(), key)) {
       byte[] bytes = IOUtils.toByteArray(inputObject);
       return new String(bytes, detectCharset(bytes));
     }
   }
 
-  private void repairEnvironmentBgpTables() {
-    Path answerPath = _testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
+  private void repairEnvironmentBgpTables(NetworkSnapshot snapshot) {
+    Path answerPath = getTestrigSettings(snapshot).getParseEnvironmentBgpTablesAnswerPath();
     CommonUtil.deleteIfExists(answerPath);
-    Path bgpTablesOutputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
+    Path bgpTablesOutputPath = getTestrigSettings(snapshot).getSerializeEnvironmentBgpTablesPath();
     CommonUtil.deleteDirectory(bgpTablesOutputPath);
-    computeEnvironmentBgpTables();
+    computeEnvironmentBgpTables(snapshot);
   }
 
-  private void repairVendorConfigurations() {
-    Path outputPath = _testrigSettings.getSerializeVendorPath();
+  private void repairVendorConfigurations(NetworkSnapshot snapshot) {
+    TestrigSettings tr = getTestrigSettings(snapshot);
+    Path outputPath = tr.getSerializeVendorPath();
     CommonUtil.deleteDirectory(outputPath);
-    Path testRigPath = _testrigSettings.getInputPath();
-    serializeVendorConfigs(testRigPath, outputPath);
+    Path testRigPath = tr.getInputPath();
+    serializeVendorConfigs(snapshot, testRigPath, outputPath);
   }
 
-  public Answer run() {
+  public Answer run(NetworkSnapshot snapshot) {
     newBatch("Begin job", 0);
     boolean action = false;
     Answer answer = new Answer();
+    TestrigSettings tr = getTestrigSettings(snapshot);
 
     if (_settings.getFlatten()) {
-      Path flattenSource = _testrigSettings.getInputPath();
+      Path flattenSource = tr.getInputPath();
       Path flattenDestination = _settings.getFlattenDestination();
       flatten(flattenSource, flattenDestination);
       return answer;
     }
 
     if (_settings.getSerializeVendor()) {
-      Path testRigPath = _testrigSettings.getInputPath();
-      Path outputPath = _testrigSettings.getSerializeVendorPath();
-      answer.append(serializeVendorConfigs(testRigPath, outputPath));
+      Path testRigPath = tr.getInputPath();
+      Path outputPath = tr.getSerializeVendorPath();
+      answer.append(serializeVendorConfigs(snapshot, testRigPath, outputPath));
       action = true;
     }
 
     if (_settings.getSerializeIndependent()) {
-      Path inputPath = _testrigSettings.getSerializeVendorPath();
-      answer.append(serializeIndependentConfigs(inputPath));
+      Path inputPath = tr.getSerializeVendorPath();
+      answer.append(serializeIndependentConfigs(snapshot, inputPath));
       // TODO: compute topology on initialization in cleaner way
-      initializeTopology(getNetworkSnapshot());
-      updateSnapshotNodeRoles();
+      initializeTopology(snapshot);
+      updateSnapshotNodeRoles(snapshot);
       action = true;
     }
 
     if (_settings.getInitInfo()) {
-      InitInfoAnswerElement initInfoAnswerElement = initInfo(true, false);
+      InitInfoAnswerElement initInfoAnswerElement = initInfo(snapshot, true, false);
       // In this context we can remove parse trees because they will be returned in preceding answer
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
@@ -2197,7 +2193,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getDataPlane()) {
-      answer.addAnswerElement(computeDataPlane());
+      answer.addAnswerElement(computeDataPlane(snapshot));
       action = true;
     }
 
@@ -2210,7 +2206,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /** Initialize topologies, commit {raw, raw pojo, pruned} layer-3 topologies to storage. */
   @VisibleForTesting
   void initializeTopology(NetworkSnapshot networkSnapshot) {
-    Map<String, Configuration> configurations = loadConfigurations();
+    Map<String, Configuration> configurations = loadConfigurations(networkSnapshot);
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
@@ -2222,7 +2218,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Could not serialize layer-3 POJO topology", e);
     }
-    Topology layer3Topology = _topologyProvider.getInitialLayer3Topology(getNetworkSnapshot());
+    Topology layer3Topology = _topologyProvider.getInitialLayer3Topology(networkSnapshot);
     try {
       _storage.storeInitialTopology(
           layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
@@ -2253,16 +2249,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.printElapsedTime();
   }
 
-  private Answer serializeEnvironmentBgpTables(Path inputPath, Path outputPath) {
+  private Answer serializeEnvironmentBgpTables(
+      NetworkSnapshot snapshot, Path inputPath, Path outputPath) {
     Answer answer = new Answer();
     ParseEnvironmentBgpTablesAnswerElement answerElement =
         new ParseEnvironmentBgpTablesAnswerElement();
     answerElement.setVersion(BatfishVersion.getVersionStatic());
     answer.addAnswerElement(answerElement);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
-        getEnvironmentBgpTables(inputPath, answerElement);
+        getEnvironmentBgpTables(snapshot, inputPath, answerElement);
     serializeEnvironmentBgpTables(bgpTables, outputPath);
-    serializeObject(answerElement, _testrigSettings.getParseEnvironmentBgpTablesAnswerPath());
+    serializeObject(
+        answerElement, getTestrigSettings(snapshot).getParseEnvironmentBgpTablesAnswerPath());
     return answer;
   }
 
@@ -2285,7 +2283,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
-      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
+      NetworkSnapshot snapshot,
+      Path testRigPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement) {
+    TestrigSettings tr = getTestrigSettings(snapshot);
     _logger.info("\n*** READING HOST CONFIGS ***\n");
     Map<String, String> keyedHostText =
         readAllFiles(testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR), _logger).entrySet()
@@ -2299,14 +2301,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
         GlobalTracer.get().buildSpan("Parse host configs").startActive()) {
       assert parseHostConfigsSpan != null; // avoid unused warning
       allHostConfigurations =
-          parseVendorConfigurations(keyedHostText, answerElement, ConfigurationFormat.HOST);
+          parseVendorConfigurations(
+              snapshot, keyedHostText, answerElement, ConfigurationFormat.HOST);
     }
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
     _logger.infof(
         "Testrig:%s in container:%s has total number of host configs:%d",
-        getTestrigName(), getContainerName(), allHostConfigurations.size());
+        snapshot.getSnapshot(), snapshot.getNetwork(), allHostConfigurations.size());
 
     // split into hostConfigurations and overlayConfigurations
     SortedMap<String, VendorConfiguration> overlayConfigurations =
@@ -2328,7 +2331,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     e -> testRigPath.relativize(e.getKey()).toString(), Entry::getValue));
 
     SortedMap<String, VendorConfiguration> iptablesConfigurations =
-        parseVendorConfigurations(keyedIptablesText, answerElement, ConfigurationFormat.IPTABLES);
+        parseVendorConfigurations(
+            snapshot, keyedIptablesText, answerElement, ConfigurationFormat.IPTABLES);
     for (VendorConfiguration vc : allHostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
@@ -2354,12 +2358,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
         });
     serializeObjects(output);
     // serialize warnings
-    serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
+    serializeObject(answerElement, tr.getParseAnswerPath());
     _logger.printElapsedTime();
     return overlayConfigurations;
   }
 
-  private Answer serializeIndependentConfigs(Path vendorConfigPath) {
+  private Answer serializeIndependentConfigs(NetworkSnapshot snapshot, Path vendorConfigPath) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("Serialize vendor-independent configs").startActive()) {
       assert span != null; // avoid unused warning
@@ -2370,10 +2374,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answer.addAnswerElement(answerElement);
       }
 
-      NetworkSnapshot networkSnapshot = getNetworkSnapshot();
       SnapshotRuntimeData runtimeData =
           firstNonNull(
-              _storage.loadRuntimeData(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()),
+              _storage.loadRuntimeData(snapshot.getNetwork(), snapshot.getSnapshot()),
               EMPTY_SNAPSHOT_RUNTIME_DATA);
       Map<String, VendorConfiguration> vendorConfigs;
       Map<String, Configuration> configurations;
@@ -2391,7 +2394,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .flatMap(vc -> vc.getLayer1Edges().stream())
               .collect(ImmutableSet.toImmutableSet());
 
-      addInternetAndIspNodes(configurations, vendorConfigs, answerElement.getWarnings());
+      addInternetAndIspNodes(snapshot, configurations, vendorConfigs, answerElement.getWarnings());
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
@@ -2403,8 +2406,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               // we don't write anything if no Layer1 edges were produced
               // empty topologies are currently dangerous for L1 computation
               layer1Edges.isEmpty() ? null : new Layer1Topology(layer1Edges),
-              _settings.getContainer(),
-              _testrigSettings.getName());
+              snapshot.getNetwork(),
+              snapshot.getSnapshot());
         } catch (IOException e) {
           throw new BatfishException("Could not store vendor independent configs to disk: %s", e);
         }
@@ -2413,13 +2416,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try (ActiveSpan ppSpan =
           GlobalTracer.get().buildSpan("Post-process vendor-independent configs").startActive()) {
         assert ppSpan != null; // avoid unused warning
-        postProcessSnapshot(configurations);
+        postProcessSnapshot(snapshot, configurations);
       }
       return answer;
     }
   }
 
   private void addInternetAndIspNodes(
+      NetworkSnapshot snapshot,
       Map<String, Configuration> configurations,
       Map<String, VendorConfiguration> vendorConfigs,
       SortedMap<String, Warnings> warnings) {
@@ -2433,9 +2437,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
     ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
 
-    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
     IspConfiguration ispConfiguration =
-        _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+        _storage.loadIspConfiguration(snapshot.getNetwork(), snapshot.getSnapshot());
     if (ispConfiguration != null) {
       ispConfigurations.add(ispConfiguration);
     }
@@ -2466,13 +2469,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void updateSnapshotNodeRoles() {
+  private void updateSnapshotNodeRoles(NetworkSnapshot snapshot) {
     // Compute new auto role data and updates existing auto data with it
-    NetworkId networkId = _settings.getContainer();
-    SnapshotId snapshotId = _settings.getTestrig();
-    NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
-    Set<String> nodeNames = loadConfigurations().keySet();
-    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(getNetworkSnapshot());
+    NodeRolesId snapshotNodeRolesId =
+        _idResolver.getSnapshotNodeRolesId(snapshot.getNetwork(), snapshot.getSnapshot());
+    Set<String> nodeNames = loadConfigurations(snapshot).keySet();
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(snapshot);
     Optional<RoleMapping> autoRoles = new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
@@ -2559,9 +2561,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * {@link VendorConfiguration vendor-specific configurations} serialized to the given output path.
    *
    * <p>This function should be named better, but it's called by the {@link
-   * #serializeVendorConfigs(Path, Path)}, so leaving as-is for now.
+   * #serializeVendorConfigs(NetworkSnapshot, Path, Path)}, so leaving as-is for now.
    */
   private void serializeNetworkConfigs(
+      NetworkSnapshot snapshot,
       Path userUploadPath,
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement,
@@ -2569,7 +2572,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!overlayHostConfigurations.isEmpty()) {
       // Not able to cache with overlays.
       oldSerializeNetworkConfigs(
-          userUploadPath, outputPath, answerElement, overlayHostConfigurations);
+          snapshot, userUploadPath, outputPath, answerElement, overlayHostConfigurations);
       return;
     }
 
@@ -2591,7 +2594,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .collect(
                     ImmutableMap.toImmutableMap(
                         e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
-        jobs = makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
+        jobs =
+            makeParseVendorConfigurationsJobs(
+                snapshot, keyedConfigText, ConfigurationFormat.UNKNOWN);
       }
 
       AtomicInteger batch = newBatch("Parse network configs", jobs.size());
@@ -2619,7 +2624,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
-        getTestrigName(), getContainerName(), parseResults.size());
+        snapshot.getSnapshot(), snapshot.getNetwork(), parseResults.size());
 
     /* Assemble answer. */
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
@@ -2655,6 +2660,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void oldSerializeNetworkConfigs(
+      NetworkSnapshot snapshot,
       Path userUploadPath,
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement,
@@ -2672,14 +2678,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   ImmutableMap.toImmutableMap(
                       e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
       vendorConfigurations =
-          parseVendorConfigurations(keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
-    }
-    if (vendorConfigurations == null) {
-      throw new BatfishException("Exiting due to parser errors");
+          parseVendorConfigurations(
+              snapshot, keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
     }
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
-        getTestrigName(), getContainerName(), vendorConfigurations.size());
+        snapshot.getSnapshot(), snapshot.getNetwork(), vendorConfigurations.size());
 
     try (ActiveSpan serializeNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Serialize network configs").startActive()) {
@@ -2750,9 +2754,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * <p>This function should be named better, but it's called by the {@code -sv} argument to Batfish
    * so leaving as-is for now.
    */
-  private Answer serializeVendorConfigs(Path userUploadPath, Path outputPath) {
+  private Answer serializeVendorConfigs(
+      NetworkSnapshot snapshot, Path userUploadPath, Path outputPath) {
     Answer answer = new Answer();
     boolean configsFound = false;
+    TestrigSettings tr = getTestrigSettings(snapshot);
 
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
@@ -2764,13 +2770,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // look for host configs and overlay configs in the `hosts/` subfolder.
     SortedMap<String, VendorConfiguration> overlayHostConfigurations = new TreeMap<>();
     if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR))) {
-      overlayHostConfigurations = serializeHostConfigs(userUploadPath, outputPath, answerElement);
+      overlayHostConfigurations =
+          serializeHostConfigs(snapshot, userUploadPath, outputPath, answerElement);
       configsFound = true;
     }
 
     // look for network configs in the `configs/` subfolder.
     if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR))) {
-      serializeNetworkConfigs(userUploadPath, outputPath, answerElement, overlayHostConfigurations);
+      serializeNetworkConfigs(
+          snapshot, userUploadPath, outputPath, answerElement, overlayHostConfigurations);
       configsFound = true;
     }
 
@@ -2786,7 +2794,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // serialize warnings
-    serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
+    serializeObject(answerElement, tr.getParseAnswerPath());
 
     return answer;
   }
@@ -2801,29 +2809,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, getNetworkSnapshot());
-  }
-
-  @Override
   public SpecifierContext specifierContext(NetworkSnapshot networkSnapshot) {
     return new SpecifierContextImpl(this, networkSnapshot);
   }
 
   @Override
   public BidirectionalReachabilityResult bidirectionalReachability(
-      BDDPacket bddPacket, ReachabilityParameters parameters) {
+      NetworkSnapshot snapshot, BDDPacket bddPacket, ReachabilityParameters parameters) {
     ResolvedReachabilityParameters params;
     try {
-      params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+      params = resolveReachabilityParameters(this, parameters, snapshot);
     } catch (InvalidReachabilityParametersException e) {
       throw new BatfishException("Error resolving reachability parameters", e);
     }
 
-    DataPlane dataPlane = loadDataPlane();
+    DataPlane dataPlane = loadDataPlane(snapshot);
     return new BidirectionalReachabilityAnalysis(
             bddPacket,
-            loadConfigurations(),
+            loadConfigurations(snapshot),
             dataPlane.getForwardingAnalysis(),
             new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
             params.getSourceIpAssignment(),
@@ -2836,16 +2839,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
-    return bddSingleReachability(reachabilityParameters);
+  public AnswerElement standard(
+      NetworkSnapshot snapshot, ReachabilityParameters reachabilityParameters) {
+    return bddSingleReachability(snapshot, reachabilityParameters);
   }
 
-  public AnswerElement bddSingleReachability(ReachabilityParameters parameters) {
+  public AnswerElement bddSingleReachability(
+      NetworkSnapshot snapshot, ReachabilityParameters parameters) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("bddSingleReachability").startActive()) {
       assert span != null; // avoid not used warning
       ResolvedReachabilityParameters params;
       try {
-        params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+        params = resolveReachabilityParameters(this, parameters, snapshot);
       } catch (InvalidReachabilityParametersException e) {
         return e.getInvalidParametersAnswer();
       }
@@ -2857,7 +2862,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       BDDPacket pkt = new BDDPacket();
       boolean ignoreFilters = params.getIgnoreFilters();
       BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-          getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+          getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
 
       Map<IngressLocation, BDD> reachableBDDs =
           bddReachabilityAnalysisFactory.getAllBDDs(
@@ -2868,7 +2873,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               params.getFinalNodes(),
               params.getActions());
 
-      String flowTag = getFlowTag();
+      String flowTag = getFlowTag(snapshot);
       Set<Flow> flows =
           reachableBDDs.entrySet().stream()
               .flatMap(
@@ -2897,25 +2902,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   })
               .collect(ImmutableSet.toImmutableSet());
 
-      return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
+      return new TraceWrapperAsAnswerElement(buildFlows(snapshot, flows, ignoreFilters));
     }
   }
 
   @Override
-  public Set<Flow> bddLoopDetection() {
+  public Set<Flow> bddLoopDetection(NetworkSnapshot snapshot) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("bddLoopDetection").startActive()) {
       assert span != null; // avoid unused warning
       BDDPacket pkt = new BDDPacket();
       // TODO add ignoreFilters parameter
       boolean ignoreFilters = false;
       BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-          getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+          getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
       BDDLoopDetectionAnalysis analysis =
           bddReachabilityAnalysisFactory.bddLoopDetectionAnalysis(
-              getAllSourcesInferFromLocationIpSpaceAssignment());
+              getAllSourcesInferFromLocationIpSpaceAssignment(snapshot));
       Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
-      String flowTag = getFlowTag();
+      String flowTag = getFlowTag(snapshot);
       try (ActiveSpan span1 =
           GlobalTracer.get().buildSpan("bddLoopDetection.computeResultFlows").startActive()) {
         assert span1 != null; // avoid unused warning
@@ -2948,14 +2953,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
+  public Set<Flow> bddMultipathConsistency(
+      NetworkSnapshot snapshot, MultipathConsistencyParameters parameters) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("bddMultipathConsistency").startActive()) {
       assert span != null; // avoid unused warning
       BDDPacket pkt = new BDDPacket();
       // TODO add ignoreFilters parameter
       boolean ignoreFilters = false;
       BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-          getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+          getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
       IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
       Set<String> finalNodes = parameters.getFinalNodes();
       Set<FlowDisposition> failureDispositions =
@@ -2992,13 +2998,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
               failureDispositions);
 
       return ImmutableSet.copyOf(
-          computeMultipathInconsistencies(pkt, getFlowTag(), successBdds, failureBdds));
+          computeMultipathInconsistencies(pkt, getFlowTag(snapshot), successBdds, failureBdds));
     }
   }
 
   @Nonnull
-  public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment() {
-    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, getNetworkSnapshot());
+  public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment(
+      NetworkSnapshot snapshot) {
+    SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, snapshot);
     Set<Location> locations =
         new UnionLocationSpecifier(
                 AllInterfacesLocationSpecifier.INSTANCE,
@@ -3009,14 +3016,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
-      BDDPacket pkt, boolean ignoreFilters) {
+      NetworkSnapshot snapshot, BDDPacket pkt, boolean ignoreFilters) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("getBddReachabilityAnalysisFactory").startActive()) {
       assert span != null; // avoid unused warning
-      DataPlane dataPlane = loadDataPlane();
+      DataPlane dataPlane = loadDataPlane(snapshot);
       return new BDDReachabilityAnalysisFactory(
           pkt,
-          loadConfigurations(),
+          loadConfigurations(snapshot),
           dataPlane.getForwardingAnalysis(),
           new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
           ignoreFilters,
@@ -3024,8 +3031,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  @Nonnull
   public BDDReachabilityAnalysis getBddReachabilityAnalysis(
+      NetworkSnapshot snapshot,
       BDDPacket pkt,
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr initialHeaderSpace,
@@ -3034,7 +3041,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Set<String> finalNodes,
       Set<FlowDisposition> actions,
       boolean ignoreFilters) {
-    BDDReachabilityAnalysisFactory factory = getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+    BDDReachabilityAnalysisFactory factory =
+        getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
     return factory.bddReachabilityAnalysis(
         srcIpSpaceAssignment,
         initialHeaderSpace,
@@ -3050,6 +3058,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public DifferentialReachabilityResult bddDifferentialReachability(
+      NetworkSnapshot snapshot,
+      NetworkSnapshot reference,
       DifferentialReachabilityParameters parameters) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("bddDifferentialReachability").startActive()) {
@@ -3069,9 +3079,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * differential reachability, but we currently won't find it because it won't be in the
        * IpSpaceAssignment.
        */
-      pushBaseSnapshot();
       Map<IngressLocation, BDD> baseAcceptBDDs =
-          getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
+          getBddReachabilityAnalysisFactory(snapshot, pkt, parameters.getIgnoreFilters())
               .getAllBDDs(
                   parameters.getIpSpaceAssignment(),
                   headerSpace,
@@ -3079,11 +3088,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   parameters.getRequiredTransitNodes(),
                   parameters.getFinalNodes(),
                   parameters.getFlowDispositions());
-      popSnapshot();
 
-      pushDeltaSnapshot();
       Map<IngressLocation, BDD> deltaAcceptBDDs =
-          getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
+          getBddReachabilityAnalysisFactory(reference, pkt, parameters.getIgnoreFilters())
               .getAllBDDs(
                   parameters.getIpSpaceAssignment(),
                   headerSpace,
@@ -3091,7 +3098,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   parameters.getRequiredTransitNodes(),
                   parameters.getFinalNodes(),
                   parameters.getFlowDispositions());
-      popSnapshot();
 
       Set<IngressLocation> commonSources =
           Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
@@ -3214,5 +3220,104 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
     AnswererCreator creator = _answererCreators.get(question.getName());
     return creator != null ? creator.create(question, this) : null;
+  }
+
+  @VisibleForTesting
+  static final class TestrigSettings {
+
+    private Path _basePath;
+
+    private SnapshotId _name;
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      } else if (!(obj instanceof TestrigSettings)) {
+        return false;
+      }
+      TestrigSettings other = (TestrigSettings) obj;
+      return _name.equals(other._name);
+    }
+
+    @Nonnull
+    public Path getBasePath() {
+      checkState(_basePath != null, "base path is not configured");
+      return _basePath;
+    }
+
+    @Nonnull
+    public Path getDataPlanePath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE);
+    }
+
+    public Path getDataPlaneAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH);
+    }
+
+    public Path getEnvironmentBgpTablesPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
+    }
+
+    public Path getExternalBgpAnnouncementsPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+    }
+
+    public Path getInferredNodeRolesPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH);
+    }
+
+    public Path getInputPath() {
+      return getBasePath().resolve(BfConsts.RELPATH_INPUT);
+    }
+
+    public SnapshotId getName() {
+      return _name;
+    }
+
+    public Path getNodeRolesPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    }
+
+    public Path getOutputPath() {
+      return getBasePath().resolve(BfConsts.RELPATH_OUTPUT);
+    }
+
+    public Path getParseAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH);
+    }
+
+    public Path getReferenceLibraryPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+    }
+
+    public Path getSerializeEnvironmentBgpTablesPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
+    }
+
+    public Path getSerializeVendorPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+    }
+
+    public Path getValidateSnapshotAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_VALIDATE_SNAPSHOT_ANSWER);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_name);
+    }
+
+    public void setBasePath(Path basePath) {
+      _basePath = basePath;
+    }
+
+    public void setName(SnapshotId name) {
+      _name = name;
+    }
+
+    public Path getParseEnvironmentBgpTablesAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
+    }
   }
 }

@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -22,9 +23,10 @@ public class JsonExternalBgpAdvertisementPlugin extends ExternalBgpAdvertisement
   protected void externalBgpAdvertisementPluginInitialize() {}
 
   @Override
-  public Set<BgpAdvertisement> loadExternalBgpAdvertisements() {
+  public Set<BgpAdvertisement> loadExternalBgpAdvertisements(NetworkSnapshot snapshot) {
     Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    String externalBgpAnnouncementsFileContents = _batfish.readExternalBgpAnnouncementsFile();
+    String externalBgpAnnouncementsFileContents =
+        _batfish.readExternalBgpAnnouncementsFile(snapshot);
     if (externalBgpAnnouncementsFileContents != null) {
       // Populate advertSet with BgpAdvertisements that
       // gets passed to populatePrecomputedBgpAdvertisements.

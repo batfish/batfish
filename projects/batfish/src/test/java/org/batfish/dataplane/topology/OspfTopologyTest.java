@@ -163,7 +163,7 @@ public class OspfTopologyTest {
     initNeighborConfigs(NetworkConfigurations.of(configs));
 
     OspfTopology topology =
-        batfish.getTopologyProvider().getInitialOspfTopology(batfish.getNetworkSnapshot());
+        batfish.getTopologyProvider().getInitialOspfTopology(batfish.getSnapshot());
 
     // Active neighbor relationship
     final OspfNeighborConfigId r1i13 =

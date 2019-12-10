@@ -71,7 +71,7 @@ public class AwsConfigurationPrivateSubnetTest {
                 .setConfigurationText(TESTCONFIGS_DIR, onPremRouterFile)
                 .build(),
             _folder);
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   private static void testTrace(
@@ -81,7 +81,9 @@ public class AwsConfigurationPrivateSubnetTest {
       List<String> expectedNodes) {
     Flow flow = Flow.builder().setTag("test").setIngressNode(ingressNode).setDstIp(dstIp).build();
     SortedMap<Flow, List<Trace>> traces =
-        _batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+        _batfish
+            .getTracerouteEngine(_batfish.getSnapshot())
+            .computeTraces(ImmutableSet.of(flow), false);
 
     Trace trace = getOnlyElement(traces.get(flow).iterator());
 

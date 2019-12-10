@@ -48,7 +48,7 @@ public class AaaAuthenticationLoginTest {
     AaaAuthenticationLoginQuestion question =
         new AaaAuthenticationLoginQuestion("/((ios)|(juniper)).*/");
     AaaAuthenticationLoginAnswerer answerer = new AaaAuthenticationLoginAnswerer(question, batfish);
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // answer should have exactly one row
     assertThat(answer.getRows(), hasSize(1));

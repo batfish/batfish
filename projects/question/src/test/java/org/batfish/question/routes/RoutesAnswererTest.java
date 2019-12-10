@@ -1,5 +1,6 @@
 package org.batfish.question.routes;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableSortedMap.toImmutableSortedMap;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
@@ -448,22 +450,16 @@ public class RoutesAnswererTest {
                             vrf.getName())))));
     NetworkConfigurations nc = NetworkConfigurations.of(ImmutableMap.of(c.getHostname(), c));
 
+    MockBatfish batfish = new MockBatfish(nc, MockDataPlane.builder().setRibs(ribs).build());
     AnswerElement el =
-        new RoutesAnswerer(
-                new RoutesQuestion(),
-                new MockBatfish(nc, MockDataPlane.builder().setRibs(ribs).build()))
-            .answer();
+        new RoutesAnswerer(new RoutesQuestion(), batfish).answer(batfish.getSnapshot());
 
     assert el.getSummary() != null;
     assertThat(el.getSummary().getNumResults(), equalTo(1));
 
     // no results for empty ribs
-    el =
-        new RoutesAnswerer(
-                new RoutesQuestion(),
-                new MockBatfish(
-                    nc, MockDataPlane.builder().setRibs(ImmutableSortedMap.of()).build()))
-            .answer();
+    batfish = new MockBatfish(nc, MockDataPlane.builder().setRibs(ImmutableSortedMap.of()).build());
+    el = new RoutesAnswerer(new RoutesQuestion(), batfish).answer(batfish.getSnapshot());
     assert el.getSummary() != null;
     assertThat(el.getSummary().getNumResults(), equalTo(0));
   }
@@ -487,19 +483,21 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       return _configs.getMap().entrySet().stream()
           .collect(toImmutableSortedMap(naturalOrder(), Entry::getKey, Entry::getValue));
     }
 
     @Override
-    public DataPlane loadDataPlane() {
+    public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
+      checkArgument(snapshot.equals(getSnapshot()));
       return _dp;
     }
 
     @Override
-    public SpecifierContext specifierContext() {
-      return MockSpecifierContext.builder().setConfigs(loadConfigurations()).build();
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      return MockSpecifierContext.builder().setConfigs(loadConfigurations(snapshot)).build();
     }
   }
 

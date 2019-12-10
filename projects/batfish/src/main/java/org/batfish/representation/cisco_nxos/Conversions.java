@@ -41,7 +41,6 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
@@ -68,6 +67,8 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 
 /**
@@ -435,19 +436,16 @@ final class Conversions {
     // looping over all VRFs in VI configuration so we can get all VNI settings which were valid and
     // mapped to some VRF (including the default VRF)
     for (Vrf tenantVrf : c.getVrfs().values()) {
-      for (VniSettings vniSettings : tenantVrf.getVniSettings().values()) {
-        if (!isLayer2Vni(vsConfig.getNves(), vniSettings.getVni())) {
-          continue;
-        }
+      for (Layer2Vni l2Vni : tenantVrf.getLayer2Vnis().values()) {
 
-        Integer macVrfId = getMacVrfIdForL2Vni(vsConfig, vniSettings.getVni());
+        Integer macVrfId = getMacVrfIdForL2Vni(vsConfig, l2Vni.getVni());
         if (macVrfId == null) {
           continue;
         }
 
         EvpnVni evpnVni =
             Optional.ofNullable(vsConfig.getEvpn())
-                .map(evpn -> evpn.getVni(vniSettings.getVni()))
+                .map(evpn -> evpn.getVni(l2Vni.getVni()))
                 .orElse(null);
         if (evpnVni == null) {
           continue;
@@ -463,7 +461,7 @@ final class Conversions {
           warnings.redFlag(
               String.format(
                   "No export route-target defined for L2 VNI '%s', no L2 routes will be exported",
-                  vniSettings.getVni()));
+                  l2Vni.getVni()));
           continue;
         }
         ExtendedCommunityOrAuto importRtOrAuto = evpnVni.getImportRt();
@@ -476,7 +474,7 @@ final class Conversions {
           warnings.redFlag(
               String.format(
                   "No import route-target defined for L2 VNI '%s', no L2 routes will be imported",
-                  vniSettings.getVni()));
+                  l2Vni.getVni()));
           continue;
         }
 
@@ -487,17 +485,17 @@ final class Conversions {
 
         layer2Vnis.add(
             Layer2VniConfig.builder()
-                .setVni(vniSettings.getVni())
+                .setVni(l2Vni.getVni())
                 .setVrf(tenantVrf.getName())
                 .setRouteDistinguisher(
                     firstNonNull(rd, RouteDistinguisher.from(viBgpProcess.getRouterId(), macVrfId)))
                 .setImportRouteTarget(
                     importRtOrAuto.isAuto()
-                        ? toRouteTarget(localAs, vniSettings.getVni()).matchString()
+                        ? toRouteTarget(localAs, l2Vni.getVni()).matchString()
                         : importRtOrAuto.getExtendedCommunity().matchString())
                 .setRouteTarget(
                     exportRtOrAuto.isAuto()
-                        ? toRouteTarget(localAs, vniSettings.getVni())
+                        ? toRouteTarget(localAs, l2Vni.getVni())
                         : exportRtOrAuto.getExtendedCommunity())
                 .build());
       }
@@ -521,13 +519,10 @@ final class Conversions {
     // looping over all VRFs in VI configuration so we can get all VNI settings which were valid and
     // mapped to some VRF (including the default VRF)
     for (Vrf tenantVrf : c.getVrfs().values()) {
-      for (VniSettings vniSettings : tenantVrf.getVniSettings().values()) {
-        if (!isLayer3Vni(vsConfig.getNves(), vniSettings.getVni())) {
-          continue;
-        }
+      for (Layer3Vni l3Vni : tenantVrf.getLayer3Vnis().values()) {
 
         org.batfish.representation.cisco_nxos.Vrf vsTenantVrfForL3Vni =
-            getVrfForL3Vni(vsConfig.getVrfs(), vniSettings.getVni());
+            getVrfForL3Vni(vsConfig.getVrfs(), l3Vni.getVni());
         // there should be a tenant VRF for this VNI and that VRF should have an IPv4 AF
         // (other being IPv6 which we do not support); if not true then skip this VNI
         if (vsTenantVrfForL3Vni == null
@@ -552,7 +547,7 @@ final class Conversions {
           warnings.redFlag(
               String.format(
                   "No export route-target defined for L3 VNI '%s', no L3 routes will be exported",
-                  vniSettings.getVni()));
+                  l3Vni.getVni()));
           continue;
         }
         ExtendedCommunityOrAuto importRtOrAuto =
@@ -568,16 +563,16 @@ final class Conversions {
           warnings.redFlag(
               String.format(
                   "No import route-target defined for L3 VNI '%s', no L3 routes will be imported",
-                  vniSettings.getVni()));
+                  l3Vni.getVni()));
           continue;
         }
         layer3Vnis.add(
             Layer3VniConfig.builder()
-                .setVni(vniSettings.getVni())
+                .setVni(l3Vni.getVni())
                 .setVrf(tenantVrf.getName())
                 .setImportRouteTarget(
                     importRtOrAuto.isAuto()
-                        ? toRouteTarget(localAs, vniSettings.getVni()).matchString()
+                        ? toRouteTarget(localAs, l3Vni.getVni()).matchString()
                         : importRtOrAuto.getExtendedCommunity().matchString())
                 .setRouteDistinguisher(
                     firstNonNull(
@@ -586,7 +581,7 @@ final class Conversions {
                             viBgpProcess.getRouterId(), vsTenantVrfForL3Vni.getId())))
                 .setRouteTarget(
                     exportRtOrAuto.isAuto()
-                        ? toRouteTarget(localAs, vniSettings.getVni())
+                        ? toRouteTarget(localAs, l3Vni.getVni())
                         : exportRtOrAuto.getExtendedCommunity())
                 // NXOS advertises EVPN type-5 always
                 .setAdvertiseV4Unicast(true)
@@ -614,26 +609,6 @@ final class Conversions {
     }
 
     return MAC_VRF_OFFSET + vlanNumber;
-  }
-
-  /**
-   * Returns true if the provided vni is a Layer 2 VNI. Checks by seeing if the VNI is not declared
-   * with key-word "associate-vrf" under NVE interface.
-   */
-  private static boolean isLayer2Vni(Map<Integer, Nve> nves, int vni) {
-    return nves.values().stream()
-        .anyMatch(
-            nve -> nve.getMemberVnis().get(vni) != null && !nve.getMemberVni(vni).isAssociateVrf());
-  }
-
-  /**
-   * Returns true if the provided vni is a Layer 3 VNI. Checks by seeing if the VNI is declared with
-   * key-word "associate-vrf" under NVE interface.
-   */
-  private static boolean isLayer3Vni(Map<Integer, Nve> nves, int vni) {
-    return nves.values().stream()
-        .anyMatch(
-            nve -> nve.getMemberVnis().get(vni) != null && nve.getMemberVni(vni).isAssociateVrf());
   }
 
   /** Get the tenant VRF associated with a L3 VNI */

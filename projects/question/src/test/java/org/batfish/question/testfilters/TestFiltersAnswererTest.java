@@ -1,6 +1,5 @@
 package org.batfish.question.testfilters;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
@@ -22,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.SortedMap;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -64,8 +64,8 @@ public class TestFiltersAnswererTest {
 
   private static final class MockBatfish extends IBatfishTestAdapter {
 
-    SortedMap<String, Configuration> _configurations;
-    SpecifierContext _specifierContext;
+    final SortedMap<String, Configuration> _configurations;
+    final SpecifierContext _specifierContext;
 
     public MockBatfish(SortedMap<String, Configuration> configurations) {
       this(configurations, null);
@@ -73,19 +73,23 @@ public class TestFiltersAnswererTest {
 
     public MockBatfish(SortedMap<String, Configuration> configurations, SpecifierContext ctxt) {
       _configurations = configurations;
-      _specifierContext = ctxt;
+      if (ctxt != null) {
+        _specifierContext = ctxt;
+      } else {
+        _specifierContext = MockSpecifierContext.builder().setConfigs(_configurations).build();
+      }
     }
 
     @Override
-    public SortedMap<String, Configuration> loadConfigurations() {
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
       return _configurations;
     }
 
     @Override
-    public SpecifierContext specifierContext() {
-      return firstNonNull(
-          _specifierContext,
-          MockSpecifierContext.builder().setConfigs(loadConfigurations()).build());
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      assertThat(snapshot, equalTo(getSnapshot()));
+      return _specifierContext;
     }
   }
 
@@ -132,7 +136,7 @@ public class TestFiltersAnswererTest {
         new TestFiltersQuestion(
             null, null, PacketHeaderConstraints.builder().setSrcIp("1.0.0.4").build(), null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     /*
      * Trace should be present for referencing acl with one event:
@@ -187,7 +191,7 @@ public class TestFiltersAnswererTest {
                 c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3));
     TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // There should be 6 rows
     assertThat(answer.getRows(), hasSize(6));
@@ -234,7 +238,7 @@ public class TestFiltersAnswererTest {
 
     TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // There should be 2 rows
     assertThat(answer.getRows(), hasSize(2));
@@ -257,7 +261,7 @@ public class TestFiltersAnswererTest {
     // Test that filtering by node gives only that node's ACLs
     TestFiltersQuestion question = new TestFiltersQuestion(c1.getHostname(), null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-    Rows rows = answerer.answer().getRows();
+    Rows rows = answerer.answer(batfish.getSnapshot()).getRows();
 
     assertThat(rows, hasSize(2));
     for (Row row : rows.getData()) {
@@ -267,7 +271,7 @@ public class TestFiltersAnswererTest {
     // Test that filtering by ACL name gives only matching ACLs
     question = new TestFiltersQuestion(null, "acl1", null, null);
     answerer = new TestFiltersAnswerer(question, batfish);
-    rows = answerer.answer().getRows();
+    rows = answerer.answer(batfish.getSnapshot()).getRows();
 
     assertThat(rows, hasSize(2));
     for (Row row : rows.getData()) {
@@ -277,7 +281,7 @@ public class TestFiltersAnswererTest {
     // Test that filtering by both gives only the one matching ACL
     question = new TestFiltersQuestion(c1.getHostname(), "acl1", null, null);
     answerer = new TestFiltersAnswerer(question, batfish);
-    rows = answerer.answer().getRows();
+    rows = answerer.answer(batfish.getSnapshot()).getRows();
 
     assertThat(rows, hasSize(1));
   }
@@ -295,7 +299,7 @@ public class TestFiltersAnswererTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("No matching filters");
-    answerer.answer();
+    answerer.answer(batfish.getSnapshot());
   }
 
   @Test
@@ -312,6 +316,6 @@ public class TestFiltersAnswererTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("No matching filters");
-    answerer.answer();
+    answerer.answer(batfish.getSnapshot());
   }
 }

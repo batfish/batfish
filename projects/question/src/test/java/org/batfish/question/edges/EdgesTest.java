@@ -32,12 +32,12 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.edges.EdgesQuestion.EdgeType;
@@ -101,45 +101,38 @@ public final class EdgesTest {
                 new Layer1Edge(
                     new Layer1Node(c2Name, c2i1bName), new Layer1Node(c1Name, c1i1bName))));
 
+    IBatfishTestAdapter batfish =
+        new IBatfishTestAdapter() {
+          @Override
+          public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+            return configurations;
+          }
+
+          @Override
+          public NetworkSnapshot getSnapshot() {
+            return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
+          }
+
+          @Override
+          public TopologyProvider getTopologyProvider() {
+            return new TopologyProviderTestAdapter(this) {
+              @Override
+              public Optional<Layer1Topology> getLayer1PhysicalTopology(
+                  NetworkSnapshot networkSnapshot) {
+                return Optional.of(layer1PhysicalTopology);
+              }
+
+              @Override
+              public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+                return new Topology(ImmutableSortedSet.of());
+              }
+            };
+          }
+        };
     TableAnswerElement answer =
         (TableAnswerElement)
-            new EdgesAnswerer(
-                    new EdgesQuestion(null, null, EdgeType.LAYER1, true),
-                    new IBatfishTestAdapter() {
-                      @Override
-                      public SortedMap<String, Configuration> loadConfigurations(
-                          NetworkSnapshot snapshot) {
-                        return configurations;
-                      }
-
-                      @Override
-                      public SortedMap<String, Configuration> loadConfigurations() {
-                        return configurations;
-                      }
-
-                      @Override
-                      public NetworkSnapshot getNetworkSnapshot() {
-                        return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
-                      }
-
-                      @Override
-                      public TopologyProvider getTopologyProvider() {
-                        return new TopologyProviderTestAdapter(this) {
-                          @Override
-                          public Optional<Layer1Topology> getLayer1PhysicalTopology(
-                              NetworkSnapshot networkSnapshot) {
-                            return Optional.of(layer1PhysicalTopology);
-                          }
-
-                          @Override
-                          public Topology getInitialLayer3Topology(
-                              NetworkSnapshot networkSnapshot) {
-                            return new Topology(ImmutableSortedSet.of());
-                          }
-                        };
-                      }
-                    })
-                .answer();
+            new EdgesAnswerer(new EdgesQuestion(null, null, EdgeType.LAYER1, true), batfish)
+                .answer(batfish.getSnapshot());
 
     // Each node should have an edge to the other node via the port-channel in the layer-1 logical
     // topology.
@@ -174,51 +167,42 @@ public final class EdgesTest {
     Vrf v1 = _vb.setOwner(c1).build();
     Vrf v2 = _vb.setOwner(c2).build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(node1, c1, node2, c2);
-    VniSettings.Builder vniSettingsBuilder =
-        VniSettings.builder()
+    Layer2Vni.Builder vniSettingsBuilder =
+        Layer2Vni.builder()
             .setBumTransportIps(ImmutableSortedSet.of(multicastGroup))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(udpPort)
             .setVni(vni);
-    VniSettings vniSettingsTail =
-        vniSettingsBuilder.setSourceAddress(srcIp1).setVlan(vlan1).build();
-    v1.setVniSettings(ImmutableSortedMap.of(vni, vniSettingsTail));
-    v2.setVniSettings(
-        ImmutableSortedMap.of(
-            vni, vniSettingsBuilder.setSourceAddress(srcIp2).setVlan(vlan2).build()));
+    Layer2Vni vniSettingsTail = vniSettingsBuilder.setSourceAddress(srcIp1).setVlan(vlan1).build();
+    v1.setLayer2Vnis(ImmutableSet.of(vniSettingsTail));
+    v2.setLayer2Vnis(
+        ImmutableSet.of(vniSettingsBuilder.setSourceAddress(srcIp2).setVlan(vlan2).build()));
+    IBatfishTestAdapter batfish =
+        new IBatfishTestAdapter() {
+          @Override
+          public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+            return configurations;
+          }
+
+          @Override
+          public TopologyProvider getTopologyProvider() {
+            return new TopologyProviderTestAdapter(this) {
+              @Override
+              public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+                return new Topology(ImmutableSortedSet.of());
+              }
+            };
+          }
+
+          @Override
+          public NetworkSnapshot getSnapshot() {
+            return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
+          }
+        };
     TableAnswerElement answer =
         (TableAnswerElement)
-            new EdgesAnswerer(
-                    new EdgesQuestion(null, null, EdgeType.VXLAN, true),
-                    new IBatfishTestAdapter() {
-                      @Override
-                      public SortedMap<String, Configuration> loadConfigurations(
-                          NetworkSnapshot snapshot) {
-                        return configurations;
-                      }
-
-                      @Override
-                      public SortedMap<String, Configuration> loadConfigurations() {
-                        return configurations;
-                      }
-
-                      @Override
-                      public TopologyProvider getTopologyProvider() {
-                        return new TopologyProviderTestAdapter(this) {
-                          @Override
-                          public Topology getInitialLayer3Topology(
-                              NetworkSnapshot networkSnapshot) {
-                            return new Topology(ImmutableSortedSet.of());
-                          }
-                        };
-                      }
-
-                      @Override
-                      public NetworkSnapshot getNetworkSnapshot() {
-                        return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
-                      }
-                    })
-                .answer();
+            new EdgesAnswerer(new EdgesQuestion(null, null, EdgeType.VXLAN, true), batfish)
+                .answer(batfish.getSnapshot());
 
     assertThat(
         answer.getRowsList(),

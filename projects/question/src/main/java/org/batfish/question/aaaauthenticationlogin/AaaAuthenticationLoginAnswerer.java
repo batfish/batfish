@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Line;
@@ -68,14 +69,15 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     AaaAuthenticationLoginQuestion question = (AaaAuthenticationLoginQuestion) _question;
 
     TableAnswerElement answerElement = create(question);
 
-    Set<String> specifiedNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> specifiedNodes =
+        question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
 
-    SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
+    SortedMap<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
     configs.forEach(
         (configName, config) -> {
           if (specifiedNodes.contains(configName)) {

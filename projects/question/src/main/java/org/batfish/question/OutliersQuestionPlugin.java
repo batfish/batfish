@@ -18,6 +18,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
@@ -152,19 +153,20 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public OutliersAnswerElement answer() {
+    public OutliersAnswerElement answer(NetworkSnapshot snapshot) {
 
       OutliersQuestion question = (OutliersQuestion) _question;
       _answerElement = new OutliersAnswerElement();
 
-      _configurations = _batfish.loadConfigurations();
-      _nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      _configurations = _batfish.loadConfigurations(snapshot);
+      _nodes = question.getNodeRegex().getMatchingNodes(_batfish, snapshot);
       _verbose = question.getVerbose();
 
       switch (question.getHypothesis()) {
         case SAME_DEFINITION:
         case SAME_NAME:
-          SortedSet<NamedStructureOutlierSet<?>> outliers = namedStructureOutliers(question);
+          SortedSet<NamedStructureOutlierSet<?>> outliers =
+              namedStructureOutliers(snapshot, question);
           _answerElement.setNamedStructureOutliers(outliers);
           break;
         case SAME_SERVERS:
@@ -188,7 +190,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
     private SortedSet<NamedStructureOutlierSet<?>> namedStructureOutliers(
-        OutliersQuestion question) {
+        NetworkSnapshot snapshot, OutliersQuestion question) {
 
       // first get the results of compareSameName
       CompareSameNameQuestionPlugin.CompareSameNameQuestion inner =
@@ -202,7 +204,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       CompareSameNameQuestionPlugin.CompareSameNameAnswerer innerAnswerer =
           new CompareSameNameQuestionPlugin().createAnswerer(inner, _batfish);
       CompareSameNameQuestionPlugin.CompareSameNameAnswerElement innerAnswer =
-          innerAnswerer.answer();
+          innerAnswerer.answer(snapshot);
 
       SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets =
           innerAnswer.getEquivalenceSets();

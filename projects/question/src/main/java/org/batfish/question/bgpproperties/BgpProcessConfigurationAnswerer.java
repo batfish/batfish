@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -78,7 +79,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     BgpProcessConfigurationQuestion question = (BgpProcessConfigurationQuestion) _question;
 
     TableMetadata tableMetadata = createTableMetadata(question);
@@ -87,7 +88,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
     Multiset<Row> propertyRows =
         getProperties(
             question.getPropertySpecifier(),
-            _batfish.specifierContext(),
+            _batfish.specifierContext(snapshot),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap());
 

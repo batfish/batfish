@@ -63,7 +63,7 @@ public class TracerouteAnswererHelperTest {
                 .build(),
             _folder);
 
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   @Test
@@ -72,7 +72,7 @@ public class TracerouteAnswererHelperTest {
         new TracerouteAnswererHelper(
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
             NODE1,
-            _batfish.specifierContext());
+            _batfish.specifierContext(_batfish.getSnapshot()));
     Set<Flow> flows = helper.getFlows(TAG);
 
     String ingressInterface = null;
@@ -103,7 +103,7 @@ public class TracerouteAnswererHelperTest {
         new TracerouteAnswererHelper(
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
             "enter(node1)",
-            _batfish.specifierContext());
+            _batfish.specifierContext(_batfish.getSnapshot()));
     thrown.expect(IllegalArgumentException.class);
     helper.getFlows(TAG);
   }
@@ -114,7 +114,7 @@ public class TracerouteAnswererHelperTest {
         new TracerouteAnswererHelper(
             PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build(),
             "enter(node1)",
-            _batfish.specifierContext());
+            _batfish.specifierContext(_batfish.getSnapshot()));
 
     Set<Flow> flows = helper.getFlows(TAG);
 
@@ -148,7 +148,7 @@ public class TracerouteAnswererHelperTest {
         new TracerouteAnswererHelper(
             PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build(),
             String.format("%s[%s]", NODE1, LOOPBACK),
-            _batfish.specifierContext());
+            _batfish.specifierContext(_batfish.getSnapshot()));
     Set<Flow> flows = helper.getFlows(TAG);
     assertThat(
         flows, everyItem(anyOf(hasDstIp(NODE2_FAST_ETHERNET_IP), hasDstIp(NODE2_LOOPBACK_IP))));

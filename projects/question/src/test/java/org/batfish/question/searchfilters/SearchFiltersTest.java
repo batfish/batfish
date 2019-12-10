@@ -205,7 +205,8 @@ public final class SearchFiltersTest {
             .setAction("permit")
             .build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls =
+        answerer.getQueryAcls(_batfish.getSnapshot(), question);
     assertThat(queryAcls, hasSize(1));
     String queryConfig = queryAcls.get(0).getLeft();
     String queryAclName = queryAcls.get(0).getMiddle();
@@ -220,7 +221,8 @@ public final class SearchFiltersTest {
     SearchFiltersQuestion question =
         SearchFiltersQuestion.builder().setFilterSpecifier(ACL.getName()).setAction("deny").build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls =
+        answerer.getQueryAcls(_batfish.getSnapshot(), question);
     assertThat(queryAcls, hasSize(1));
     String queryConfig = queryAcls.get(0).getLeft();
     String queryAclName = queryAcls.get(0).getMiddle();
@@ -239,7 +241,8 @@ public final class SearchFiltersTest {
             .setAction("matchLine 2")
             .build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    List<Triple<String, String, IpAccessList>> queryAcls = answerer.getQueryAcls(question);
+    List<Triple<String, String, IpAccessList>> queryAcls =
+        answerer.getQueryAcls(_batfish.getSnapshot(), question);
     assertThat(queryAcls, hasSize(1));
     String queryConfig = queryAcls.get(0).getLeft();
     String queryAclName = queryAcls.get(0).getMiddle();
@@ -253,34 +256,45 @@ public final class SearchFiltersTest {
   @Test
   public void testReachFilter_deny_ACCEPT_ALL() {
     Optional<SearchFiltersResult> result =
-        reachFilter(_batfish, _config, toDenyAcl(ACCEPT_ALL_ACL), _allLocationsParams);
+        reachFilter(
+            _batfish.getSnapshot(),
+            _batfish,
+            _config,
+            toDenyAcl(ACCEPT_ALL_ACL),
+            _allLocationsParams);
     assertTrue("Should not find permitted flow", !result.isPresent());
   }
 
   @Test
   public void testReachFilter_deny_REJECT_ALL() {
     Optional<SearchFiltersResult> result =
-        reachFilter(_batfish, _config, toDenyAcl(REJECT_ALL_ACL), _allLocationsParams);
+        reachFilter(
+            _batfish.getSnapshot(),
+            _batfish,
+            _config,
+            toDenyAcl(REJECT_ALL_ACL),
+            _allLocationsParams);
     assertTrue("Should find permitted flow", result.isPresent());
   }
 
   @Test
   public void testReachFilter_permit_ACCEPT_ALL() {
     Optional<SearchFiltersResult> result =
-        reachFilter(_batfish, _config, ACCEPT_ALL_ACL, _allLocationsParams);
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, ACCEPT_ALL_ACL, _allLocationsParams);
     assertTrue("Should find permitted flow", result.isPresent());
   }
 
   @Test
   public void testReachFilter_permit_REJECT_ALL() {
     Optional<SearchFiltersResult> result =
-        reachFilter(_batfish, _config, REJECT_ALL_ACL, _allLocationsParams);
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, REJECT_ALL_ACL, _allLocationsParams);
     assertThat(result, equalTo(Optional.empty()));
   }
 
   @Test
   public void testReachFilter_permit() {
-    Optional<SearchFiltersResult> result = reachFilter(_batfish, _config, ACL, _allLocationsParams);
+    Optional<SearchFiltersResult> result =
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, ACL, _allLocationsParams);
     assertTrue("Should find permitted flow", result.isPresent());
     assertThat(result.get().getExampleFlow(), hasDstIp(oneOf(IP0, IP3)));
   }
@@ -295,12 +309,13 @@ public final class SearchFiltersTest {
             .setHeaderSpace(HeaderSpace.builder().build());
 
     SearchFiltersParameters params = paramsBuilder.build();
-    Optional<SearchFiltersResult> result = reachFilter(_batfish, _config, ACL, params);
+    Optional<SearchFiltersResult> result =
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, ACL, params);
     assertTrue("Should find result", result.isPresent());
     assertThat(result.get().getExampleFlow(), hasDstIp(IP0));
 
     params = paramsBuilder.setHeaderSpace(HeaderSpace.builder().setNegate(true).build()).build();
-    result = reachFilter(_batfish, _config, ACL, params);
+    result = reachFilter(_batfish.getSnapshot(), _batfish, _config, ACL, params);
     assertTrue("Should find result", result.isPresent());
     assertThat(result.get().getExampleFlow(), hasDstIp(IP3));
   }
@@ -308,7 +323,7 @@ public final class SearchFiltersTest {
   @Test
   public void testReachFilter_deny() {
     Optional<SearchFiltersResult> permitResult =
-        reachFilter(_batfish, _config, toDenyAcl(ACL), _allLocationsParams);
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, toDenyAcl(ACL), _allLocationsParams);
     assertTrue("Should find permitted flow", permitResult.isPresent());
     assertThat(permitResult.get().getExampleFlow(), hasDstIp(not(oneOf(IP0, IP3))));
   }
@@ -316,19 +331,26 @@ public final class SearchFiltersTest {
   @Test
   public void testReachFilter_matchLine() {
     Optional<SearchFiltersResult> permitResult =
-        reachFilter(_batfish, _config, toMatchLineAcl(0, ACL), _allLocationsParams);
+        reachFilter(
+            _batfish.getSnapshot(), _batfish, _config, toMatchLineAcl(0, ACL), _allLocationsParams);
     assertTrue("Should find permitted flow", permitResult.isPresent());
     assertThat(permitResult.get().getExampleFlow(), hasDstIp(IP0));
 
-    permitResult = reachFilter(_batfish, _config, toMatchLineAcl(1, ACL), _allLocationsParams);
+    permitResult =
+        reachFilter(
+            _batfish.getSnapshot(), _batfish, _config, toMatchLineAcl(1, ACL), _allLocationsParams);
     assertTrue("Should find permitted flow", permitResult.isPresent());
     assertThat(permitResult.get().getExampleFlow(), hasDstIp(IP1));
 
-    permitResult = reachFilter(_batfish, _config, toMatchLineAcl(2, ACL), _allLocationsParams);
+    permitResult =
+        reachFilter(
+            _batfish.getSnapshot(), _batfish, _config, toMatchLineAcl(2, ACL), _allLocationsParams);
     assertTrue("Should find permitted flow", permitResult.isPresent());
     assertThat(permitResult.get().getExampleFlow(), hasDstIp(IP2));
 
-    permitResult = reachFilter(_batfish, _config, toMatchLineAcl(3, ACL), _allLocationsParams);
+    permitResult =
+        reachFilter(
+            _batfish.getSnapshot(), _batfish, _config, toMatchLineAcl(3, ACL), _allLocationsParams);
     assertTrue("Should find permitted flow", permitResult.isPresent());
     assertThat(permitResult.get().getExampleFlow(), hasDstIp(IP3));
   }
@@ -336,7 +358,12 @@ public final class SearchFiltersTest {
   @Test
   public void testReachFilter_matchLine_blocked() {
     Optional<SearchFiltersResult> permitResult =
-        reachFilter(_batfish, _config, toMatchLineAcl(2, BLOCKED_LINE_ACL), _allLocationsParams);
+        reachFilter(
+            _batfish.getSnapshot(),
+            _batfish,
+            _config,
+            toMatchLineAcl(2, BLOCKED_LINE_ACL),
+            _allLocationsParams);
     assertTrue("Should not find permitted flow", !permitResult.isPresent());
   }
 
@@ -355,7 +382,7 @@ public final class SearchFiltersTest {
   public void testAnswer() {
     SearchFiltersQuestion question = new SearchFiltersQuestion();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(
         ae,
         hasRows(
@@ -378,7 +405,7 @@ public final class SearchFiltersTest {
     SearchFiltersQuestion question =
         SearchFiltersQuestion.builder().setGenerateExplanations(true).setAction("deny").build();
     SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
+    TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertThat(
         ae,
         hasRows(
@@ -399,22 +426,51 @@ public final class SearchFiltersTest {
   @Test
   public void testMatchSrcInterface() {
     Optional<SearchFiltersResult> result =
-        reachFilter(_batfish, _config, toMatchLineAcl(0, SRC_ACL), _allLocationsParams);
+        reachFilter(
+            _batfish.getSnapshot(),
+            _batfish,
+            _config,
+            toMatchLineAcl(0, SRC_ACL),
+            _allLocationsParams);
     assertThat(
         result.get().getExampleFlow(), allOf(hasIngressInterface(nullValue()), hasDstIp(IP0)));
 
-    result = reachFilter(_batfish, _config, toMatchLineAcl(1, SRC_ACL), _allLocationsParams);
+    result =
+        reachFilter(
+            _batfish.getSnapshot(),
+            _batfish,
+            _config,
+            toMatchLineAcl(1, SRC_ACL),
+            _allLocationsParams);
     assertThat(result.get().getExampleFlow(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP1)));
 
-    result = reachFilter(_batfish, _config, toMatchLineAcl(2, SRC_ACL), _allLocationsParams);
+    result =
+        reachFilter(
+            _batfish.getSnapshot(),
+            _batfish,
+            _config,
+            toMatchLineAcl(2, SRC_ACL),
+            _allLocationsParams);
     assertThat(result.get().getExampleFlow(), allOf(hasIngressInterface(IFACE2), hasDstIp(IP2)));
 
     // cannot have two different source interfaces
-    result = reachFilter(_batfish, _config, toMatchLineAcl(3, SRC_ACL), _allLocationsParams);
+    result =
+        reachFilter(
+            _batfish.getSnapshot(),
+            _batfish,
+            _config,
+            toMatchLineAcl(3, SRC_ACL),
+            _allLocationsParams);
     assertThat(result, equalTo(Optional.empty()));
 
     // cannot have originate from device and have a source interface
-    result = reachFilter(_batfish, _config, toMatchLineAcl(4, SRC_ACL), _allLocationsParams);
+    result =
+        reachFilter(
+            _batfish.getSnapshot(),
+            _batfish,
+            _config,
+            toMatchLineAcl(4, SRC_ACL),
+            _allLocationsParams);
     assertThat(result, equalTo(Optional.empty()));
   }
 
@@ -432,7 +488,8 @@ public final class SearchFiltersTest {
                     ACCEPT_ALL))
             .build();
     Optional<SearchFiltersResult> flow =
-        reachFilter(_batfish, _config, denyAllSourcesAcl, _allLocationsParams);
+        reachFilter(
+            _batfish.getSnapshot(), _batfish, _config, denyAllSourcesAcl, _allLocationsParams);
     assertThat(flow, equalTo(Optional.empty()));
   }
 
@@ -449,7 +506,8 @@ public final class SearchFiltersTest {
                     ACCEPT_ALL))
             .build();
     Optional<SearchFiltersResult> flow =
-        reachFilter(_batfish, _config, denyAllSourcesAcl, _allLocationsParams);
+        reachFilter(
+            _batfish.getSnapshot(), _batfish, _config, denyAllSourcesAcl, _allLocationsParams);
     assertTrue("Should find a result", flow.isPresent());
     assertThat(flow.get().getExampleFlow(), hasIngressInterface(IFACE2));
   }
@@ -464,11 +522,12 @@ public final class SearchFiltersTest {
 
     // can match line 1 because IFACE1 is specified
     Optional<SearchFiltersResult> result =
-        reachFilter(_batfish, _config, toMatchLineAcl(1, SRC_ACL), params);
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, toMatchLineAcl(1, SRC_ACL), params);
     assertThat(result.get().getExampleFlow(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP1)));
 
     // cannot match line 2 because IFACE2 is not specified
-    result = reachFilter(_batfish, _config, toMatchLineAcl(2, SRC_ACL), params);
+    result =
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, toMatchLineAcl(2, SRC_ACL), params);
     assertTrue("Should not find a result", !result.isPresent());
   }
 
@@ -482,7 +541,8 @@ public final class SearchFiltersTest {
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpace(new HeaderSpace())
             .build();
-    Optional<SearchFiltersResult> result = reachFilter(_batfish, _config, ACCEPT_ALL_ACL, params);
+    Optional<SearchFiltersResult> result =
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, ACCEPT_ALL_ACL, params);
     assertThat(result.get().getExampleFlow(), hasDstIp(constraintIp));
   }
 
@@ -496,7 +556,8 @@ public final class SearchFiltersTest {
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setHeaderSpace(new HeaderSpace())
             .build();
-    Optional<SearchFiltersResult> result = reachFilter(_batfish, _config, ACCEPT_ALL_ACL, params);
+    Optional<SearchFiltersResult> result =
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, ACCEPT_ALL_ACL, params);
     assertThat(result.get().getExampleFlow(), hasSrcIp(constraintIp));
   }
 
@@ -513,14 +574,16 @@ public final class SearchFiltersTest {
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpace(hs)
             .build();
-    Optional<SearchFiltersResult> result = reachFilter(_batfish, _config, ACCEPT_ALL_ACL, params);
+    Optional<SearchFiltersResult> result =
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, ACCEPT_ALL_ACL, params);
     assertThat(result.get().getExampleFlow(), allOf(hasSrcPort(1111), hasDstPort(2222)));
   }
 
   @Test
   public void testReachFilterNodeSpecifierDefault() {
     SearchFiltersQuestion q = new SearchFiltersQuestion();
-    Set<String> nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext());
+    Set<String> nodes =
+        q.getNodesSpecifier().resolve(_batfish.specifierContext(_batfish.getSnapshot()));
     assertThat(nodes, contains(_config.getHostname()));
 
     q =
@@ -529,7 +592,7 @@ public final class SearchFiltersTest {
             .setAction("permit")
             .setNodeSpecifier("UNMATCHABLE")
             .build();
-    nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext());
+    nodes = q.getNodesSpecifier().resolve(_batfish.specifierContext(_batfish.getSnapshot()));
     assertThat(nodes, emptyIterable());
   }
 
@@ -537,13 +600,14 @@ public final class SearchFiltersTest {
   public void testGetExplanation() {
     SearchFiltersParameters params =
         _allLocationsParams.toBuilder().setGenerateExplanations(false).build();
-    Optional<SearchFiltersResult> result = reachFilter(_batfish, _config, ACCEPT_ALL_ACL, params);
+    Optional<SearchFiltersResult> result =
+        reachFilter(_batfish.getSnapshot(), _batfish, _config, ACCEPT_ALL_ACL, params);
     assertTrue("Should get a result", result.isPresent());
     assertTrue(
         "Should not get an explanation", !result.get().getHeaderSpaceDescription().isPresent());
 
     params = _allLocationsParams.toBuilder().setGenerateExplanations(true).build();
-    result = reachFilter(_batfish, _config, ACCEPT_ALL_ACL, params);
+    result = reachFilter(_batfish.getSnapshot(), _batfish, _config, ACCEPT_ALL_ACL, params);
     assertTrue("Should get a result", result.isPresent());
     assertTrue("Should get an explanation", result.get().getHeaderSpaceDescription().isPresent());
     assertThat(result.get().getHeaderSpaceDescription().get(), equalTo(TrueExpr.INSTANCE));

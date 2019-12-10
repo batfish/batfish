@@ -607,7 +607,7 @@ class AbstractionBuilder {
         newConfigs.put(router, abstractConf);
       }
     }
-    Graph abstractGraph = new Graph(_batfish, newConfigs);
+    Graph abstractGraph = new Graph(_batfish, _graph.getSnapshot(), newConfigs);
     AbstractionMap map = new AbstractionMap(canonicalChoices, _abstractGroups.getParitionMap());
     return new Tuple<>(abstractGraph, map);
   }

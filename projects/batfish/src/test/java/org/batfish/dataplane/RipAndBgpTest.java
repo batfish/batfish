@@ -41,8 +41,8 @@ public class RipAndBgpTest {
                 .setConfigurationText(testrigResourcePrefix, configurations)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp.getRibs();
     Set<AbstractRoute> r1Routes = ribs.get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();

@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -54,7 +55,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public PerRoleAnswerElement answer() {
+    public PerRoleAnswerElement answer(NetworkSnapshot snapshot) {
       PerRoleQuestion question = (PerRoleQuestion) _question;
       PerRoleAnswerElement answerElement = new PerRoleAnswerElement();
 
@@ -68,7 +69,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       }
 
       // collect the desired nodes in a list
-      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish, snapshot);
 
       NodeRoleDimension roleDimension =
           _batfish
@@ -92,14 +93,15 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       SortedMap<String, AnswerElement> results = new TreeMap<>();
 
       // now ask the inner question once per role
-      Set<String> innerIncludeNodes = innerNRQuestion.getNodeRegex().getMatchingNodes(_batfish);
+      Set<String> innerIncludeNodes =
+          innerNRQuestion.getNodeRegex().getMatchingNodes(_batfish, snapshot);
       for (Map.Entry<String, SortedSet<String>> entry : roleNodeMap.entrySet()) {
         String role = entry.getKey();
         Set<String> roleNodes = entry.getValue();
         String regex = namesToRegex(Sets.intersection(innerIncludeNodes, roleNodes));
         innerNRQuestion.setNodeRegex(new NodesSpecifier(regex));
         Answerer innerAnswerer = _batfish.createAnswerer(innerQuestion);
-        AnswerElement innerAnswer = innerAnswerer.answer();
+        AnswerElement innerAnswer = innerAnswerer.answer(snapshot);
         results.put(role, innerAnswer);
       }
 

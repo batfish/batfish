@@ -118,6 +118,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
+import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
@@ -184,6 +185,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
@@ -414,13 +416,14 @@ public final class FlatJuniperGrammarTest {
     ParserRuleContext tree =
         Batfish.parse(
             flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     return SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
+    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
   @Test
@@ -430,7 +433,7 @@ public final class FlatJuniperGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm application usage is tracked properly */
     assertThat(ccae, hasNumReferrers(filename, APPLICATION, "a2", 0));
@@ -447,7 +450,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     Configuration c = parseConfig(hostname);
 
     /* Check that appset2 contains definition of appset1 concatenated with definition of a3 */
@@ -603,7 +606,7 @@ public final class FlatJuniperGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm filter usage is tracked properly */
     assertThat(ccae, hasNumReferrers(filename, AUTHENTICATION_KEY_CHAIN, "KC", 1));
@@ -654,7 +657,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration c1 = configurations.get(c1Name);
     Configuration c2 = configurations.get(c2Name);
     Configuration c3 = configurations.get(c3Name);
@@ -686,8 +689,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Set<AbstractRoute> r1Routes = dp.getRibs().get(c1Name).get(DEFAULT_VRF_NAME).getRoutes();
 
     assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("10.20.20.0/24")))));
@@ -765,11 +768,11 @@ public final class FlatJuniperGrammarTest {
             _folder);
 
     Layer1Topology layer1LogicalTopology =
-        batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getNetworkSnapshot()).get();
+        batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getSnapshot()).get();
     Layer2Topology layer2Topology =
-        batfish.getTopologyProvider().getInitialLayer2Topology(batfish.getNetworkSnapshot()).get();
+        batfish.getTopologyProvider().getInitialLayer2Topology(batfish.getSnapshot()).get();
     Topology layer3Topology =
-        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getNetworkSnapshot());
+        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
 
     // check layer-1 logical adjacencies
     assertThat(
@@ -806,7 +809,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
@@ -868,7 +871,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     MultipathEquivalentAsPathMatchMode multipleAsDisabled =
         configurations
             .get("multiple_as_disabled")
@@ -1162,7 +1165,8 @@ public final class FlatJuniperGrammarTest {
   public void testBgpDisable() throws IOException {
     // Config has "set protocols bgp disable"; no VI BGP process should be created
     String hostname = "bgp_disable";
-    Configuration c = getBatfishForConfigurationNames(hostname).loadConfigurations().get(hostname);
+    IBatfish iBatfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = iBatfish.loadConfigurations(iBatfish.getSnapshot()).get(hostname);
     assertThat(c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess(), nullValue());
   }
 
@@ -1171,7 +1175,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "default-applications";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
@@ -1262,7 +1266,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* esfilter should be referred, while esfilter2 should be unreferred */
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter", 1));
@@ -1276,7 +1280,7 @@ public final class FlatJuniperGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm filter usage is tracked properly */
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "FILTER1", 3));
@@ -2255,7 +2259,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm defined structures in nested config show up with original definition line numbers */
     assertThat(
@@ -2660,7 +2664,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * We expect an undefined reference for VLAN_TEST_UNDEFINED
@@ -3092,7 +3096,8 @@ public final class FlatJuniperGrammarTest {
     String filename = "juniper-apply-groups-node";
 
     Batfish batfish = getBatfishForConfigurationNames(filename);
-    Configuration c = batfish.loadConfigurations().entrySet().iterator().next().getValue();
+    Configuration c =
+        batfish.loadConfigurations(batfish.getSnapshot()).entrySet().iterator().next().getValue();
 
     /* hostname should not be overwritten from node0 nor node1 group */
     assertThat(c, hasHostname(filename));
@@ -3112,7 +3117,8 @@ public final class FlatJuniperGrammarTest {
     String filename = "juniper-apply-groups-node-no-hostname";
 
     Batfish batfish = getBatfishForConfigurationNames(filename);
-    Configuration c = batfish.loadConfigurations().entrySet().iterator().next().getValue();
+    Configuration c =
+        batfish.loadConfigurations(batfish.getSnapshot()).entrySet().iterator().next().getValue();
 
     /* hostname should be generated, and not gotten from node0 nor node1 group */
     assertThat(c, hasHostname(not(equalTo("juniper-apply-groups-node0"))));
@@ -3209,8 +3215,8 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Set<AbstractRoute> r1Routes = dp.getRibs().get(r1).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> r2Routes = dp.getRibs().get(r2).get(DEFAULT_VRF_NAME).getRoutes();
 
@@ -3656,7 +3662,7 @@ public final class FlatJuniperGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm definitions are tracked properly for structures defined by apply-groups/apply-path
     assertThat(
@@ -3690,7 +3696,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
     // There should be 3 configs: the master, and one for each logical system
     // ls1's name should be derived from master hostname and logical-system name
@@ -3717,7 +3723,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 
@@ -3748,7 +3754,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 
@@ -3785,7 +3791,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration masterConfig = configurations.get(configName);
     Configuration lsConfig = configurations.get(lsConfigName);
 
@@ -4406,7 +4412,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testPredefinedJunosApplications() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    InitInfoAnswerElement answer = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(
         answer.toString(),
         not(Matchers.containsString("unimplemented pre-defined junos application")));
@@ -4415,7 +4421,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testPredefinedJunosApplicationSets() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    InitInfoAnswerElement answer = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(
         answer.toString(),
         not(Matchers.containsString("unimplemented pre-defined junos application-set")));
@@ -4428,7 +4434,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     Flow flowAccepted1 = createFlow("1.2.3.4", "0.0.0.0");
     Flow flowAccepted2 = createFlow("1.2.3.5", "0.0.0.0");
@@ -5064,8 +5070,8 @@ public final class FlatJuniperGrammarTest {
      - VRF3 doesn't have any routes, so should have no impact on default VRF
     */
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
             .collect(
@@ -5084,8 +5090,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
@@ -5127,8 +5133,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup-with-policy";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
@@ -5189,8 +5195,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup-with-transformation";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()

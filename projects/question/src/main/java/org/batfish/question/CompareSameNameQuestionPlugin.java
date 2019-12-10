@@ -17,6 +17,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.function.Function;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.AsPathAccessList;
@@ -110,11 +111,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public CompareSameNameAnswerElement answer() {
+    public CompareSameNameAnswerElement answer(NetworkSnapshot snapshot) {
       _assumeAllUnique = _batfish.debugFlagEnabled(DEBUG_FLAG_ASSUME_ALL_UNIQUE);
-      _configurations = _batfish.loadConfigurations();
+      _configurations = _batfish.loadConfigurations(snapshot);
       _csnQuestion = (CompareSameNameQuestion) _question;
-      _nodes = _csnQuestion.getNodeRegex().getMatchingNodes(_batfish);
+      _nodes = _csnQuestion.getNodeRegex().getMatchingNodes(_batfish, snapshot);
       _answerElement = new CompareSameNameAnswerElement(null, _nodes);
 
       add(AsPathAccessList.class, Configuration::getAsPathAccessLists);

@@ -19,6 +19,7 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -49,6 +50,7 @@ import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationVisitor;
+import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 public class TestFiltersAnswerer extends Answerer {
@@ -93,8 +95,8 @@ public class TestFiltersAnswerer extends Answerer {
   }
 
   @Override
-  public TableAnswerElement answer() {
-    Multiset<Row> rows = getRows();
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
+    Multiset<Row> rows = getRows(snapshot);
 
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     TableAnswerElement answer = create(question);
@@ -102,11 +104,12 @@ public class TestFiltersAnswerer extends Answerer {
     return answer;
   }
 
-  private SortedSet<Flow> getFlows(Configuration c, ImmutableSet.Builder<String> allProblems) {
+  private SortedSet<Flow> getFlows(
+      SpecifierContext context, Configuration c, ImmutableSet.Builder<String> allProblems) {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     String node = c.getHostname();
     Set<Location> srcLocations =
-        question.getStartLocationSpecifier().resolve(_batfish.specifierContext()).stream()
+        question.getStartLocationSpecifier().resolve(context).stream()
             .filter(LocationVisitor.onNode(node)::visit)
             .collect(Collectors.toSet());
 
@@ -122,12 +125,12 @@ public class TestFiltersAnswerer extends Answerer {
     IpSpaceAssignment srcIpAssignments =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
                 constraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
-            .resolve(srcLocations, _batfish.specifierContext());
+            .resolve(srcLocations, context);
 
     IpSpace dstIps =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
                 constraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .resolve(ImmutableSet.of(), _batfish.specifierContext()).getEntries().stream()
+            .resolve(ImmutableSet.of(), context).getEntries().stream()
             .findFirst()
             .map(Entry::getIpSpace)
             .orElse(UniverseIpSpace.INSTANCE);
@@ -230,11 +233,12 @@ public class TestFiltersAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  Multiset<Row> getRows() {
+  Multiset<Row> getRows(NetworkSnapshot snapshot) {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    SpecifierContext context = _batfish.specifierContext(snapshot);
+    Map<String, Configuration> configurations = context.getConfigs();
     SortedSet<String> includeNodes =
-        ImmutableSortedSet.copyOf(question.getNodeSpecifier().resolve(_batfish.specifierContext()));
+        ImmutableSortedSet.copyOf(question.getNodeSpecifier().resolve(context));
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
     Multiset<Row> rows = HashMultiset.create();
@@ -247,13 +251,13 @@ public class TestFiltersAnswerer extends Answerer {
 
     for (String node : includeNodes) {
       Configuration c = configurations.get(node);
-      SortedSet<Flow> flows = getFlows(c, allProblems);
+      SortedSet<Flow> flows = getFlows(context, c, allProblems);
 
       // there should be another for loop for v6 filters when we add v6 support
       SortedSet<IpAccessList> filtersByName =
           ImmutableSortedSet.copyOf(
               Comparator.comparing(IpAccessList::getName),
-              filterSpecifier.resolve(node, _batfish.specifierContext()));
+              filterSpecifier.resolve(node, _batfish.specifierContext(snapshot)));
       for (IpAccessList filter : filtersByName) {
         foundMatchingFilter = true;
         for (Flow flow : flows) {

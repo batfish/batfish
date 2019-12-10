@@ -10,7 +10,6 @@ import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -50,24 +49,6 @@ public final class FilterQuestionUtils {
     return filters.build();
   }
 
-  private static <T> T withDeltaSnapshot(IBatfish batfish, Supplier<T> supplier) {
-    batfish.pushDeltaSnapshot();
-    try {
-      return supplier.get();
-    } finally {
-      batfish.popSnapshot();
-    }
-  }
-
-  private static <T> T withBaseSnapshot(IBatfish batfish, Supplier<T> supplier) {
-    batfish.pushDeltaSnapshot();
-    try {
-      return supplier.get();
-    } finally {
-      batfish.popSnapshot();
-    }
-  }
-
   /**
    * Instantiate a {@link BDDSourceManager} that tracks sources that are active and referenced on
    * both the current and reference version of a node. Further scope references to the input ACL,
@@ -79,11 +60,9 @@ public final class FilterQuestionUtils {
       String hostname,
       String aclName,
       LocationSpecifier startLocationSpecifier) {
-    Configuration baseConfig =
-        withBaseSnapshot(batfish, () -> batfish.loadConfigurations().get(hostname));
-
+    Configuration baseConfig = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     Configuration deltaConfig =
-        withDeltaSnapshot(batfish, () -> batfish.loadConfigurations().get(hostname));
+        batfish.loadConfigurations(batfish.getReferenceSnapshot()).get(hostname);
 
     IpAccessList baseAcl = baseConfig.getIpAccessLists().get(aclName);
     IpAccessList deltaAcl = deltaConfig.getIpAccessLists().get(aclName);
@@ -110,13 +89,12 @@ public final class FilterQuestionUtils {
     // resolve specified source interfaces that exist in both configs.
     Set<String> commonSources =
         Sets.intersection(
-            withBaseSnapshot(
-                batfish,
-                () -> resolveSources(batfish.specifierContext(), startLocationSpecifier, hostname)),
-            withDeltaSnapshot(
-                batfish,
-                () ->
-                    resolveSources(batfish.specifierContext(), startLocationSpecifier, hostname)));
+            resolveSources(
+                batfish.specifierContext(batfish.getSnapshot()), startLocationSpecifier, hostname),
+            resolveSources(
+                batfish.specifierContext(batfish.getReferenceSnapshot()),
+                startLocationSpecifier,
+                hostname));
 
     Set<String> inactiveInterfaces =
         Sets.union(

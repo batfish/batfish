@@ -21,8 +21,10 @@ import java.util.SortedMap;
 import javax.annotation.Nullable;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.ErrorDetails.ParseExceptionContext;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -39,9 +41,9 @@ public class InitIssuesAnswererTest {
 
   @Test
   public void testAnswererNoIssues() {
-    InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, null));
-    TableAnswerElement answer = answerer.answer();
+    IBatfish batfish = new TestBatfishBase(null, null);
+    InitIssuesAnswerer answerer = new InitIssuesAnswerer(new InitIssuesQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // Make sure config with no warnings or errors has no rows
     assertThat(answer.getRows(), equalTo(new Rows()));
@@ -56,9 +58,10 @@ public class InitIssuesAnswererTest {
     ccae.setWarnings(ImmutableSortedMap.of(node, new Warnings()));
     ccae.getErrorDetails().putIfAbsent(node, new ErrorDetails(message));
     // Answerer using TestBatfish that should produce a single convert error
+    IBatfish batfish = new TestBatfishBase(null, ccae);
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, ccae));
-    TableAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // Make sure we see convert error row in answer
     assertThat(
@@ -94,9 +97,9 @@ public class InitIssuesAnswererTest {
     ccae.setWarnings(ImmutableSortedMap.of(node, warnings));
     // Answerer using TestBatfish that should produce two convert warnings (redflag and
     // unimplemented)
-    InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, ccae));
-    TableAnswerElement answer = answerer.answer();
+    IBatfish batfish = new TestBatfishBase(null, ccae);
+    InitIssuesAnswerer answerer = new InitIssuesAnswerer(new InitIssuesQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // Make sure we see both the unimplemented and red flag warning rows in answer
     assertThat(
@@ -148,9 +151,9 @@ public class InitIssuesAnswererTest {
         .put(file, new ErrorDetails(message, new ParseExceptionContext(content, line, context)));
     // Answerer using TestBatfish that should produce a single parse error with parse exception
     // context
-    InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
-    TableAnswerElement answer = answerer.answer();
+    TestBatfishBase batfish = new TestBatfishBase(pvcae, null);
+    InitIssuesAnswerer answerer = new InitIssuesAnswerer(new InitIssuesQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // Make sure we see parse error row with line number in answer
     assertThat(
@@ -183,9 +186,9 @@ public class InitIssuesAnswererTest {
     pvcae.getErrorDetails().put(file, new ErrorDetails(message));
     // Answerer using TestBatfish that should produce a single parse error without parse exception
     // context
-    InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
-    TableAnswerElement answer = answerer.answer();
+    TestBatfishBase batfish = new TestBatfishBase(pvcae, null);
+    InitIssuesAnswerer answerer = new InitIssuesAnswerer(new InitIssuesQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // Make sure we see parse error row (without line number) in answer
     assertThat(
@@ -216,9 +219,9 @@ public class InitIssuesAnswererTest {
     }
 
     // Answerer using TestBatfish that should produce issues for non-passed and non-failed files
-    InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
-    TableAnswerElement answer = answerer.answer();
+    TestBatfishBase batfish = new TestBatfishBase(pvcae, null);
+    InitIssuesAnswerer answerer = new InitIssuesAnswerer(new InitIssuesQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     ImmutableMultiset.Builder<Row> expectedRows = ImmutableMultiset.builder();
     for (ParseStatus status : ParseStatus.values()) {
@@ -264,9 +267,9 @@ public class InitIssuesAnswererTest {
     warnings.getParseWarnings().add(new ParseWarning(line, text, context, comment));
     pvcae.setWarnings(ImmutableSortedMap.of(node, warnings));
     // Answerer using TestBatfish that should produce a single parse warning
-    InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
-    TableAnswerElement answer = answerer.answer();
+    TestBatfishBase batfish = new TestBatfishBase(pvcae, null);
+    InitIssuesAnswerer answerer = new InitIssuesAnswerer(new InitIssuesQuestion(), batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
     // Make sure we see parse warning row in answer
     assertThat(
@@ -362,12 +365,14 @@ public class InitIssuesAnswererTest {
     }
 
     @Override
-    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+    public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+        NetworkSnapshot snapshot) {
       return _pvcae;
     }
 
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+        NetworkSnapshot snapshot) {
       return _ccae;
     }
   }

@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -117,10 +118,10 @@ public class BgpSessionStatusAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     BgpSessionStatusQuestion question = (BgpSessionStatusQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
-    answer.postProcessAnswer(question, getRows(question));
+    answer.postProcessAnswer(question, getRows(snapshot, question));
     return answer;
   }
 
@@ -128,26 +129,23 @@ public class BgpSessionStatusAnswerer extends Answerer {
    * Return the answer for {@link BgpSessionStatusQuestion} -- a set of BGP sessions and their
    * status.
    */
-  private List<Row> getRows(BgpSessionStatusQuestion question) {
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+  private List<Row> getRows(NetworkSnapshot snapshot, BgpSessionStatusQuestion question) {
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    SpecifierContext specifierContext = _batfish.specifierContext();
+    SpecifierContext specifierContext = _batfish.specifierContext(snapshot);
     Set<String> nodes = question.getNodeSpecifier().resolve(specifierContext);
     Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-        _batfish.getTopologyProvider().getIpOwners(_batfish.getNetworkSnapshot()).getIpVrfOwners();
+        _batfish.getTopologyProvider().getIpOwners(snapshot).getIpVrfOwners();
     Layer2Topology layer2Topology =
-        _batfish
-            .getTopologyProvider()
-            .getLayer2Topology(_batfish.getNetworkSnapshot())
-            .orElse(null);
+        _batfish.getTopologyProvider().getLayer2Topology(snapshot).orElse(null);
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipVrfOwners, true, layer2Topology)
             .getGraph();
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology =
-        _batfish.getTopologyProvider().getBgpTopology(_batfish.getNetworkSnapshot()).getGraph();
+        _batfish.getTopologyProvider().getBgpTopology(snapshot).getGraph();
 
     // Generate answer row for each BGP peer (or rows, for dynamic peers with multiple remotes)
     return configuredTopology.nodes().stream()

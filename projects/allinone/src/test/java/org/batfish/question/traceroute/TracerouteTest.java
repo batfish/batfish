@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -84,7 +85,7 @@ public class TracerouteTest {
                 .build(),
             _folder);
 
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   /*
@@ -122,14 +123,14 @@ public class TracerouteTest {
   public void testIgnoreFilters() throws IOException {
     SortedMap<String, Configuration> configs = aclNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
     TracerouteQuestion question = new TracerouteQuestion(ALL, header, false, DEFAULT_MAX_TRACES);
 
     // without ignoreFilters we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),
@@ -142,7 +143,7 @@ public class TracerouteTest {
     // with ignoreFilters we get DELIVERED_TO_SUBNET, since the dst ip is in the interface subnet
     question = new TracerouteQuestion(ALL, header, true, DEFAULT_MAX_TRACES);
     answerer = new TracerouteAnswerer(question, batfish);
-    answer = (TableAnswerElement) answerer.answer();
+    answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(answer.getRows().getData(), hasSize(1));
     assertThat(
         answer.getRows().getData(),
@@ -210,7 +211,7 @@ public class TracerouteTest {
         .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -220,7 +221,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     // should only have one trace
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -296,7 +297,7 @@ public class TracerouteTest {
         .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -306,7 +307,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
 
     assertThat(
         answer.getRows().getData(),
@@ -398,7 +399,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -408,7 +409,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     return answer;
   }
 
@@ -535,7 +536,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -545,7 +546,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
 
     return answer;
   }
@@ -680,7 +681,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -690,7 +691,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
 
     return answer;
   }
@@ -762,7 +763,7 @@ public class TracerouteTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(config.getHostname(), config), _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
     return batfish;
   }
 
@@ -778,7 +779,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(
         answer,
         hasRows(
@@ -799,7 +800,7 @@ public class TracerouteTest {
             1);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
     assertThat(
         answer,
         hasRows(
@@ -844,7 +845,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -854,7 +855,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
 
     // should only have one trace with disposition EXITS_NETWORK
     assertThat(
@@ -918,7 +919,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -928,7 +929,7 @@ public class TracerouteTest {
             DEFAULT_MAX_TRACES);
 
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer();
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
 
     // should only have one trace with disposition INSUFFICIENT_INFO
     assertThat(
@@ -954,7 +955,8 @@ public class TracerouteTest {
         BatfishTestUtils.getBatfishForTextConfigs(
             _folder, "org/batfish/allinone/testconfigs/" + hostname);
 
-    _batfish.computeDataPlane();
+    NetworkSnapshot snapshot = _batfish.getSnapshot();
+    _batfish.computeDataPlane(snapshot);
 
     Flow flow =
         Flow.builder()
@@ -970,7 +972,7 @@ public class TracerouteTest {
 
     List<BidirectionalTrace> traces =
         BidirectionalTracerouteAnswerer.computeBidirectionalTraces(
-            ImmutableSet.of(flow), _batfish.getTracerouteEngine(), false);
+            ImmutableSet.of(flow), _batfish.getTracerouteEngine(snapshot), false);
 
     assertThat(traces, hasSize(1));
 

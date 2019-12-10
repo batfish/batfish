@@ -79,7 +79,7 @@ public class SearchFiltersDifferentialTest {
         (TableAnswerElement)
             new SearchFiltersAnswerer(
                     SearchFiltersQuestion.builder().setStartLocation(ENTER_ALL).build(), batfish)
-                .answerDiff();
+                .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
     assertThat(
         answer,
         hasRows(
@@ -121,7 +121,7 @@ public class SearchFiltersDifferentialTest {
                         .setGenerateExplanations(true)
                         .build(),
                     batfish)
-                .answerDiff();
+                .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
     assertThat(
         answer,
         hasRows(

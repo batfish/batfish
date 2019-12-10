@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -85,9 +86,11 @@ public class SearchFiltersAnswererDifferentialTest {
                         .build()))
             .build();
     IBatfish batfish = getBatfish(baseConfig, deltaConfig);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
 
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, _params);
+        differentialReachFilter(
+            snapshot, batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, _params);
     assertTrue("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertTrue("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(
@@ -95,7 +98,9 @@ public class SearchFiltersAnswererDifferentialTest {
         allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
     // flip base and delta
-    result = differentialReachFilter(batfish, deltaConfig, deltaAcl, baseConfig, baseAcl, _params);
+    result =
+        differentialReachFilter(
+            snapshot, batfish, deltaConfig, deltaAcl, baseConfig, baseAcl, _params);
     assertTrue("Expected no increased result", !result.getIncreasedResult().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedResult().isPresent());
     assertThat(
@@ -110,9 +115,10 @@ public class SearchFiltersAnswererDifferentialTest {
     IpAccessList deltaAcl =
         _ab.setLines(ImmutableList.of(accepting().setMatchCondition(matchDst(IP)).build())).build();
     IBatfish batfish = getBatfish(config, config);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
 
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(batfish, config, baseAcl, config, deltaAcl, _params);
+        differentialReachFilter(snapshot, batfish, config, baseAcl, config, deltaAcl, _params);
     assertTrue("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertTrue("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(result.getIncreasedResult().get().getExampleFlow(), hasDstIp(IP));
@@ -123,6 +129,7 @@ public class SearchFiltersAnswererDifferentialTest {
     // flip base and delta ACL; turn on explanations
     result =
         differentialReachFilter(
+            snapshot,
             batfish,
             config,
             deltaAcl,
@@ -156,6 +163,7 @@ public class SearchFiltersAnswererDifferentialTest {
             .build();
 
     IBatfish batfish = getBatfish(baseConfig, deltaConfig);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
     SearchFiltersParameters params =
         _params
             .toBuilder()
@@ -164,7 +172,8 @@ public class SearchFiltersAnswererDifferentialTest {
 
     // can match line 1 because IFACE1 is specified
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+        differentialReachFilter(
+            snapshot, batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
     assertTrue("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertTrue("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(
@@ -178,7 +187,9 @@ public class SearchFiltersAnswererDifferentialTest {
             .build();
 
     // not can't match line 1 because IFACE2 is specified
-    result = differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+    result =
+        differentialReachFilter(
+            snapshot, batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
     assertTrue("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertTrue("Expected no increased result", !result.getIncreasedResult().isPresent());
   }

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
@@ -31,7 +30,6 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -82,7 +80,7 @@ public class IBatfishTestAdapter implements IBatfish {
           .map(
               l1PhysicalTopology ->
                   TopologyUtil.computeLayer1LogicalTopology(
-                      l1PhysicalTopology, _batfish.loadConfigurations()));
+                      l1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
     }
 
     @Override
@@ -167,22 +165,25 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public DifferentialReachabilityResult bddDifferentialReachability(
+      NetworkSnapshot snapshot,
+      NetworkSnapshot reference,
       DifferentialReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
+  public SortedMap<Flow, List<Trace>> buildFlows(
+      NetworkSnapshot snapshot, Set<Flow> flows, boolean ignoreFilters) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void checkSnapshotOutputReady() {
+  public void checkSnapshotOutputReady(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public DataPlaneAnswerElement computeDataPlane() {
+  public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -197,7 +198,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getSnapshotInputObject(String key) {
+  public String getSnapshotInputObject(NetworkSnapshot snapshot, String key) {
     throw new UnsupportedOperationException();
   }
 
@@ -222,8 +223,14 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getFlowTag() {
-    throw new UnsupportedOperationException();
+  public String getFlowTag(NetworkSnapshot snapshot) {
+    if (snapshot.equals(getSnapshot())) {
+      return Flow.BASE_FLOW_TAG;
+    }
+    if (snapshot.equals(getReferenceSnapshot())) {
+      return Flow.DELTA_FLOW_TAG;
+    }
+    throw new IllegalStateException("Snapshot " + snapshot);
   }
 
   @Override
@@ -261,11 +268,6 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public SnapshotId getTestrigName() {
-    throw new UnsupportedOperationException();
-  }
-
   @Nonnull
   @Override
   public TopologyProvider getTopologyProvider() {
@@ -273,17 +275,14 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
+  public InitInfoAnswerElement initInfo(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public SortedMap<String, Configuration> loadConfigurations() {
+  public InitInfoAnswerElement initInfoBgpAdvertisements(
+      NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
     throw new UnsupportedOperationException();
   }
 
@@ -293,33 +292,31 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
+      NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public DataPlane loadDataPlane() {
+  public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
+  public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(
+      NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
-      Map<String, Configuration> configurations) {
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -329,28 +326,13 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void popSnapshot() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public TracerouteEngine getTracerouteEngine() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void pushBaseSnapshot() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void pushDeltaSnapshot() {
+  public TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Nullable
   @Override
-  public String readExternalBgpAnnouncementsFile() {
+  public String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -379,27 +361,24 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, getNetworkSnapshot());
-  }
-
-  @Override
   public SpecifierContext specifierContext(NetworkSnapshot networkSnapshot) {
     return new SpecifierContextImpl(this, networkSnapshot);
   }
 
   @Override
-  public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
+  public AnswerElement standard(
+      NetworkSnapshot snapshot, ReachabilityParameters reachabilityParameters) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Set<Flow> bddLoopDetection() {
+  public Set<Flow> bddLoopDetection(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
+  public Set<Flow> bddMultipathConsistency(
+      NetworkSnapshot snapshot, MultipathConsistencyParameters parameters) {
     throw new UnsupportedOperationException();
   }
 
@@ -414,15 +393,27 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public NetworkSnapshot getNetworkSnapshot() {
-    return new NetworkSnapshot(
-        new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
+  public NetworkSnapshot getSnapshot() {
+    if (_snapshot == null) {
+      _snapshot = new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss"));
+    }
+    return _snapshot;
   }
 
-  @Nonnull
   @Override
-  public BidirectionalReachabilityResult bidirectionalReachability(
-      BDDPacket bddPacket, ReachabilityParameters parameters) {
+  public NetworkSnapshot getReferenceSnapshot() {
+    if (_referenceSnapshot == null) {
+      _referenceSnapshot = new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ref"));
+    }
+    return _referenceSnapshot;
+  }
+
+  @Override
+  public @Nonnull BidirectionalReachabilityResult bidirectionalReachability(
+      NetworkSnapshot snapshot, BDDPacket bddPacket, ReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
+
+  private NetworkSnapshot _snapshot;
+  private NetworkSnapshot _referenceSnapshot;
 }

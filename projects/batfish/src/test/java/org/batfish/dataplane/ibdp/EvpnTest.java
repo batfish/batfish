@@ -30,7 +30,6 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
@@ -41,6 +40,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -105,19 +105,17 @@ public class EvpnTest {
     int vni = 10001;
     Ip vniIp1 = Ip.parse("1.111.111.111");
     Ip vniIp2 = Ip.parse("2.222.222.222");
-    vrf1.setVniSettings(
-        ImmutableSortedMap.of(
-            vni,
-            VniSettings.builder()
+    vrf1.setLayer2Vnis(
+        ImmutableSet.of(
+            Layer2Vni.builder()
                 .setVni(vni)
                 .setVlan(1)
                 .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                 .setSourceAddress(vniIp1)
                 .build()));
-    vrf2.setVniSettings(
-        ImmutableSortedMap.of(
-            vni,
-            VniSettings.builder()
+    vrf2.setLayer2Vnis(
+        ImmutableSet.of(
+            Layer2Vni.builder()
                 .setVni(vni)
                 .setVlan(1)
                 .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
@@ -183,10 +181,10 @@ public class EvpnTest {
   }
 
   @Test
-  public void testEbgpL3Vni() throws IOException {
+  public void testEbgpL2Vni() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(), _folder);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp.getRibs();
@@ -199,10 +197,10 @@ public class EvpnTest {
         n2Routes, hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("1.111.111.111/32")))));
     // Ensure VNI flood lists were updated with peer's VTEP address
     assertThat(
-        dp.getVniSettings().column(DEFAULT_VRF_NAME),
+        dp.getLayer2Vnis().column(DEFAULT_VRF_NAME),
         hasEntry(equalTo("n1"), contains(hasBumTransportIps(contains(Ip.parse("2.222.222.222"))))));
     assertThat(
-        dp.getVniSettings().column(DEFAULT_VRF_NAME),
+        dp.getLayer2Vnis().column(DEFAULT_VRF_NAME),
         hasEntry(equalTo("n2"), contains(hasBumTransportIps(contains(Ip.parse("1.111.111.111"))))));
   }
 
@@ -219,8 +217,9 @@ public class EvpnTest {
                 .setConfigurationText(testRigResourcePrefix, exitGw, leaf1, spine)
                 .build(),
             _folder);
-    batfish.computeDataPlane();
-    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dataplane =
+        (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 

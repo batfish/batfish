@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -56,32 +57,28 @@ public class CompareFiltersAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     throw new BatfishException(
         String.format("%s can only be run in differential mode.", _question.getName()));
   }
 
   @Override
-  public AnswerElement answerDiff() {
-    _batfish.pushBaseSnapshot();
-    SpecifierContext currentContext = _batfish.specifierContext();
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    SpecifierContext currentContext = _batfish.specifierContext(_batfish.getSnapshot());
     Multimap<String, String> currentFilters =
         getSpecifiedFilters(
             currentContext,
             _question.getNodeSpecifier(),
             _question.getFilterSpecifier(),
             _question.getIgnoreComposites());
-    _batfish.popSnapshot();
 
-    _batfish.pushDeltaSnapshot();
-    SpecifierContext referenceContext = _batfish.specifierContext();
+    SpecifierContext referenceContext = _batfish.specifierContext(_batfish.getReferenceSnapshot());
     Multimap<String, String> referenceFilters =
         getSpecifiedFilters(
             referenceContext,
             _question.getNodeSpecifier(),
             _question.getFilterSpecifier(),
             _question.getIgnoreComposites());
-    _batfish.popSnapshot();
 
     Multimap<String, String> commonFilters =
         Multimaps.filterEntries(

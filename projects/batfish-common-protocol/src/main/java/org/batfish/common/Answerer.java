@@ -45,7 +45,7 @@ public abstract class Answerer {
     _question = question;
   }
 
-  public abstract AnswerElement answer();
+  public abstract AnswerElement answer(NetworkSnapshot snapshot);
 
   /**
    * The default implementation for generating differential answers.
@@ -55,19 +55,12 @@ public abstract class Answerer {
    *
    * <p>Answerers that want a custom differential answer, should override this function.
    */
-  public AnswerElement answerDiff() {
-    _batfish.pushBaseSnapshot();
-    _batfish.checkSnapshotOutputReady();
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
-    _batfish.checkSnapshotOutputReady();
-    _batfish.popSnapshot();
-    _batfish.pushBaseSnapshot();
-    AnswerElement baseAnswer = create(_question, _batfish).answer();
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
-    AnswerElement deltaAnswer = create(_question, _batfish).answer();
-    _batfish.popSnapshot();
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    _batfish.checkSnapshotOutputReady(snapshot);
+    _batfish.checkSnapshotOutputReady(reference);
+
+    AnswerElement baseAnswer = create(_question, _batfish).answer(snapshot);
+    AnswerElement deltaAnswer = create(_question, _batfish).answer(reference);
     if (baseAnswer instanceof TableAnswerElement) {
       TableAnswerElement rawTable =
           TableDiff.diffTables(

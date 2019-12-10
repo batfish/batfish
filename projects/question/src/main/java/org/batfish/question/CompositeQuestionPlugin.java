@@ -5,6 +5,7 @@ import com.google.auto.service.AutoService;
 import java.util.ArrayList;
 import java.util.List;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -40,12 +41,12 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public CompositeAnswerElement answer() {
+    public CompositeAnswerElement answer(NetworkSnapshot snapshot) {
       CompositeQuestion question = (CompositeQuestion) _question;
       CompositeAnswerElement answerElement = new CompositeAnswerElement();
       for (Question innerQuestion : question._questions) {
         Answerer innerAnswerer = _batfish.createAnswerer(innerQuestion);
-        AnswerElement innerAnswer = innerAnswerer.answer();
+        AnswerElement innerAnswer = innerAnswerer.answer(snapshot);
         answerElement._answers.add(innerAnswer);
       }
       return answerElement;

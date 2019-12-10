@@ -75,7 +75,7 @@ public class AwsConfigurationPublicSubnetTest {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder().setAwsText(TESTCONFIGS_DIR, fileNames).build(), _folder);
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   private static Trace getTrace(String ingressNode, Ip dstIp) {

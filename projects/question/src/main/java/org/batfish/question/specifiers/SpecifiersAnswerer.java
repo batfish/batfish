@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -37,9 +38,9 @@ public final class SpecifiersAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifiersQuestion question = (SpecifiersQuestion) _question;
-    SpecifierContext context = _batfish.specifierContext();
+    SpecifierContext context = _batfish.specifierContext(snapshot);
 
     switch (question.getQueryType()) {
       case FILTER:

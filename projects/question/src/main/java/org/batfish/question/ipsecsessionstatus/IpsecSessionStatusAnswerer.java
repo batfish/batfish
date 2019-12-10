@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.Configuration;
@@ -60,9 +61,9 @@ class IpsecSessionStatusAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public AnswerElement answer(NetworkSnapshot snapshot) {
     IpsecSessionStatusQuestion question = (IpsecSessionStatusQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
         IpsecUtil.initIpsecTopology(configurations).getGraph();
@@ -70,11 +71,11 @@ class IpsecSessionStatusAnswerer extends Answerer {
     Set<String> initiatorNodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext());
+            .resolve(_batfish.specifierContext(snapshot));
     Set<String> responderNodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getRemoteNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext());
+            .resolve(_batfish.specifierContext(snapshot));
     Set<IpsecSessionStatus> statuses =
         SpecifierFactories.getEnumSetSpecifierOrDefault(
                 question.getStatus(),

@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -76,18 +77,17 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     _policies = question.getPolicies();
   }
 
-  private SortedSet<RoutingPolicyId> resolvePolicies() {
-    SpecifierContext ctxt = _batfish.specifierContext();
+  private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {
     NodeSpecifier nodeSpec =
         SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
 
     RoutingPolicySpecifier policySpec =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(_policies, ALL_ROUTING_POLICIES);
 
-    return nodeSpec.resolve(ctxt).stream()
+    return nodeSpec.resolve(context).stream()
         .flatMap(
             node ->
-                policySpec.resolve(node, ctxt).stream()
+                policySpec.resolve(node, context).stream()
                     .map(policy -> new RoutingPolicyId(node, policy.getName())))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
@@ -109,11 +109,11 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
-
-    SortedSet<RoutingPolicyId> policies = resolvePolicies();
+  public AnswerElement answer(NetworkSnapshot snapshot) {
+    SpecifierContext context = _batfish.specifierContext(snapshot);
+    SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
     Multiset<Row> rows =
-        getResults(policies)
+        getResults(context, policies)
             .flatMap(this::testPolicy)
             .map(TestRoutePoliciesAnswerer::toRow)
             .collect(ImmutableMultiset.toImmutableMultiset());
@@ -124,8 +124,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   @Nonnull
-  private Stream<RoutingPolicy> getResults(SortedSet<RoutingPolicyId> policies) {
-    Map<String, Configuration> configs = _batfish.loadConfigurations();
+  private Stream<RoutingPolicy> getResults(
+      SpecifierContext context, SortedSet<RoutingPolicyId> policies) {
+    Map<String, Configuration> configs = context.getConfigs();
     return policies.stream()
         .map(
             policyId ->
@@ -177,31 +178,26 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answerDiff() {
-    _batfish.pushBaseSnapshot();
-    SortedSet<RoutingPolicyId> basePolicies = resolvePolicies();
-    _batfish.popSnapshot();
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    SpecifierContext context = _batfish.specifierContext(snapshot);
+    SpecifierContext referenceCtx = _batfish.specifierContext(reference);
 
-    _batfish.pushDeltaSnapshot();
-    SortedSet<RoutingPolicyId> deltaPolicies = resolvePolicies();
-    _batfish.popSnapshot();
+    SortedSet<RoutingPolicyId> basePolicies = resolvePolicies(context);
+
+    SortedSet<RoutingPolicyId> deltaPolicies = resolvePolicies(referenceCtx);
 
     SortedSet<RoutingPolicyId> policies =
         Sets.intersection(basePolicies, deltaPolicies).stream()
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
-    _batfish.pushBaseSnapshot();
     Map<Result.Key, Result> baseResults =
-        getResults(policies)
+        getResults(context, policies)
             .flatMap(this::testPolicy)
             .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
-    _batfish.popSnapshot();
-    _batfish.pushDeltaSnapshot();
     Map<Result.Key, Result> deltaResults =
-        getResults(policies)
+        getResults(referenceCtx, policies)
             .flatMap(this::testPolicy)
             .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
-    _batfish.popSnapshot();
 
     checkState(
         baseResults.keySet().equals(deltaResults.keySet()),

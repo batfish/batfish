@@ -77,7 +77,7 @@ public class AwsConfigurationTransitGatewayTest {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder().setAwsText(TESTCONFIGS_DIR, fileNames).build(), _folder);
-    _batfish.computeDataPlane();
+    _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   private static void testTrace(
@@ -98,7 +98,9 @@ public class AwsConfigurationTransitGatewayTest {
             .setIngressNode(ingressNode)
             .setDstIp(dstIp) // this public IP does not exists in the network
             .build();
-    return _batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+    return _batfish
+        .getTracerouteEngine(_batfish.getSnapshot())
+        .computeTraces(ImmutableSet.of(flow), false);
   }
 
   private static void testTrace(

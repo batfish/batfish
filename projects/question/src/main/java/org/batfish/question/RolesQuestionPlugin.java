@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -55,12 +56,12 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public RolesAnswerElement answer() {
+    public RolesAnswerElement answer(NetworkSnapshot snapshot) {
 
       RolesQuestion question = (RolesQuestion) _question;
 
       // collect relevant nodes in a list.
-      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish, snapshot);
 
       NodeRoleDimension roleDimension =
           _batfish

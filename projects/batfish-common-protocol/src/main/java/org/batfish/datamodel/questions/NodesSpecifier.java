@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.role.NodeRoleDimension;
@@ -111,19 +112,6 @@ public class NodesSpecifier {
         && Objects.equals(_regex.pattern(), rhs._regex.pattern())
         && Objects.equals(_type, rhs._type)
         && _caseSensitive == rhs._caseSensitive;
-  }
-
-  /**
-   * Prepares for calling the full auto complete function: {@link
-   * NodesSpecifier#autoComplete(String, Set, NodeRolesData)} by extracting the set of nodes and
-   * node roles from batfish pointer.
-   *
-   * @param query The query to auto complete
-   * @param batfish The pointer to batfish
-   * @return A list of {@link AutocompleteSuggestion} objects
-   */
-  public static List<AutocompleteSuggestion> autoComplete(String query, IBatfish batfish) {
-    return autoComplete(query, batfish.loadConfigurations().keySet(), batfish.getNodeRolesData());
   }
 
   /**
@@ -235,8 +223,8 @@ public class NodesSpecifier {
   }
 
   /** Return the set of nodes that match this specifier */
-  public Set<String> getMatchingNodes(IBatfish batfish) {
-    return getMatchingNodes(batfish.specifierContext());
+  public Set<String> getMatchingNodes(IBatfish batfish, NetworkSnapshot snapshot) {
+    return getMatchingNodes(batfish.specifierContext(snapshot));
   }
 
   /** Return the set of nodes that match this specifier. */

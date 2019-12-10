@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.SortedMap;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.BgpTablePlugin;
@@ -21,19 +22,16 @@ import org.batfish.main.ParserBatfishException;
 public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpTableResult> {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
-
   private Path _file;
-
   private String _fileText;
-
   private String _hostname;
-
   private ParseTreeSentences _ptSentences;
-
+  private final NetworkSnapshot _snapshot;
   private Warnings _warnings;
 
   public ParseEnvironmentBgpTableJob(
       Settings settings,
+      NetworkSnapshot snapshot,
       String fileText,
       String hostname,
       Path file,
@@ -45,6 +43,7 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
     _file = file;
     _hostname = hostname;
     _ptSentences = new ParseTreeSentences();
+    _snapshot = snapshot;
     _warnings = warnings;
   }
 
@@ -112,7 +111,7 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
                 tree, combinedParser, _settings.getPrintParseTreeLineNums());
       }
       _logger.info("\tPost-processing...");
-      extractor.processParseTree(tree);
+      extractor.processParseTree(_snapshot, tree);
       _logger.info("OK\n");
     } catch (ParserBatfishException e) {
       String error = "Error parsing configuration file: '" + currentPath + "'";
