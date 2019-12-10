@@ -35,6 +35,7 @@ import org.batfish.specifier.SpecifierFactories;
 public final class VxlanVniPropertiesAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
+  public static final String COL_VRF = "VRF";
   public static final String COL_VNI = "VNI";
 
   /**
@@ -49,6 +50,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
       VxlanVniPropertySpecifier propertySpecifier) {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_NODE, Schema.STRING, "Node", true, false))
+        .add(new ColumnMetadata(COL_VRF, Schema.STRING, "Node", true, false))
         .add(new ColumnMetadata(COL_VNI, Schema.INTEGER, "VXLAN Segment ID", true, false))
         .addAll(
             propertySpecifier.getMatchingProperties().stream()
@@ -123,10 +125,10 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
     Table<String, String, Set<Layer2Vni>> allVniSettings = dp.getLayer2Vnis();
 
     for (String nodeName : nodes) {
-      for (Set<Layer2Vni> vrfVnis : allVniSettings.row(nodeName).values()) {
-        for (Layer2Vni vniSettings : vrfVnis) {
+      for (String vrfName : allVniSettings.row(nodeName).keySet()) {
+        for (Layer2Vni vniSettings : allVniSettings.get(nodeName, vrfName)) {
           int vni = vniSettings.getVni();
-          RowBuilder row = Row.builder(columns).put(COL_NODE, nodeName).put(COL_VNI, vni);
+          RowBuilder row = Row.builder(columns).put(COL_NODE, nodeName).put(COL_VRF, vrfName).put(COL_VNI, vni);
           boolean unicast =
               vniSettings.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
           Set<Ip> bumTransportIps = vniSettings.getBumTransportIps();
