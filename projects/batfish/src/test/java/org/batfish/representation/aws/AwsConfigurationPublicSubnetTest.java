@@ -167,7 +167,9 @@ public class AwsConfigurationPublicSubnetTest {
             .setSrcIp(_privateIp)
             .build();
     SortedMap<Flow, List<Trace>> traces =
-        _batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+        _batfish
+            .getTracerouteEngine(_batfish.getSnapshot())
+            .computeTraces(ImmutableSet.of(flow), false);
     Trace trace = getOnlyElement(traces.get(flow).iterator());
 
     testTraceNodesAndDisposition(
