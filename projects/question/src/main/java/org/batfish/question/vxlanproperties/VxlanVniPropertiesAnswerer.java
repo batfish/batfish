@@ -125,48 +125,56 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
     Table<String, String, Set<Layer2Vni>> allVniSettings = dp.getLayer2Vnis();
 
     for (String nodeName : nodes) {
-      for (String vrfName : allVniSettings.row(nodeName).keySet()) {
-        for (Layer2Vni vniSettings : allVniSettings.get(nodeName, vrfName)) {
-          int vni = vniSettings.getVni();
-          RowBuilder row = Row.builder(columns).put(COL_NODE, nodeName).put(COL_VRF, vrfName).put(COL_VNI, vni);
-          boolean unicast =
-              vniSettings.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
-          Set<Ip> bumTransportIps = vniSettings.getBumTransportIps();
-          VxlanVniPropertiesRow vxlanVniProperties =
-              new VxlanVniPropertiesRow(
-                  nodeName,
-                  vni,
-                  vniSettings.getVlan(),
-                  vniSettings.getSourceAddress(),
-                  unicast
-                      ? null
-                      : bumTransportIps.isEmpty()
-                          ? null
-                          : Iterables.getOnlyElement(bumTransportIps),
-                  unicast ? bumTransportIps : null,
-                  vniSettings.getUdpPort());
+      allVniSettings
+          .row(nodeName)
+          .forEach(
+              (vrfName, vniSet) -> {
+                for (Layer2Vni l2Vni : vniSet) {
+                  int vni = l2Vni.getVni();
+                  RowBuilder row =
+                      Row.builder(columns)
+                          .put(COL_NODE, nodeName)
+                          .put(COL_VRF, vrfName)
+                          .put(COL_VNI, vni);
+                  boolean unicast =
+                      l2Vni.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
+                  Set<Ip> bumTransportIps = l2Vni.getBumTransportIps();
+                  VxlanVniPropertiesRow vxlanVniProperties =
+                      new VxlanVniPropertiesRow(
+                          nodeName,
+                          vni,
+                          l2Vni.getVlan(),
+                          l2Vni.getSourceAddress(),
+                          unicast
+                              ? null
+                              : bumTransportIps.isEmpty()
+                                  ? null
+                                  : Iterables.getOnlyElement(bumTransportIps),
+                          unicast ? bumTransportIps : null,
+                          l2Vni.getUdpPort());
 
-          for (String property : propertySpecifier.getMatchingProperties()) {
-            PropertyDescriptor<VxlanVniPropertiesRow> propertyDescriptor =
-                VxlanVniPropertySpecifier.getPropertyDescriptor(property);
-            try {
-              PropertySpecifier.fillProperty(propertyDescriptor, vxlanVniProperties, property, row);
-            } catch (ClassCastException e) {
-              throw new BatfishException(
-                  String.format(
-                      "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for VXLAN VNI settings '%s': %s",
-                      propertyDescriptor.getGetter().apply(vxlanVniProperties),
-                      propertyDescriptor.getSchema(),
-                      property,
-                      vxlanVniProperties,
-                      e.getMessage()),
-                  e);
-            }
-          }
+                  for (String property : propertySpecifier.getMatchingProperties()) {
+                    PropertyDescriptor<VxlanVniPropertiesRow> propertyDescriptor =
+                        VxlanVniPropertySpecifier.getPropertyDescriptor(property);
+                    try {
+                      PropertySpecifier.fillProperty(
+                          propertyDescriptor, vxlanVniProperties, property, row);
+                    } catch (ClassCastException e) {
+                      throw new BatfishException(
+                          String.format(
+                              "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for VXLAN VNI settings '%s': %s",
+                              propertyDescriptor.getGetter().apply(vxlanVniProperties),
+                              propertyDescriptor.getSchema(),
+                              property,
+                              vxlanVniProperties,
+                              e.getMessage()),
+                          e);
+                    }
+                  }
 
-          rows.add(row.build());
-        }
-      }
+                  rows.add(row.build());
+                }
+              });
     }
     return rows;
   }
