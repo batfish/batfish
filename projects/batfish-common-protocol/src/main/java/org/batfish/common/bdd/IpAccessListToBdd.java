@@ -169,7 +169,7 @@ public abstract class IpAccessListToBdd {
     return _bddOps.bddAclLines(lineBdds, lineActions);
   }
 
-  private LineAction flip(LineAction action) {
+  private static LineAction flip(LineAction action) {
     return action == LineAction.PERMIT ? LineAction.DENY : LineAction.PERMIT;
   }
 
