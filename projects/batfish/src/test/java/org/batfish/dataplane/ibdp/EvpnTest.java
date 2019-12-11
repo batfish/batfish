@@ -34,8 +34,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.batfish.datamodel.bgp.Layer3VniConfig;
-import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.Layer2VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -123,13 +123,13 @@ public class EvpnTest {
                 .build()));
 
     Builder vniConfigBuilder =
-        Layer3VniConfig.builder()
+        Layer2VniConfig.builder()
             .setVni(vni)
             .setVrf(DEFAULT_VRF_NAME)
             .setRouteDistinguisher(RouteDistinguisher.from(bgpProcess1.getRouterId(), 1))
             .setRouteTarget(ExtendedCommunity.target(65500, vni));
-    Layer3VniConfig vniConfig1 = vniConfigBuilder.build();
-    Layer3VniConfig vniConfig2 =
+    Layer2VniConfig vniConfig1 = vniConfigBuilder.build();
+    Layer2VniConfig vniConfig2 =
         vniConfigBuilder
             .setVni(vni)
             .setRouteDistinguisher(RouteDistinguisher.from(bgpProcess2.getRouterId(), 2))
@@ -142,8 +142,8 @@ public class EvpnTest {
         .setBgpProcess(bgpProcess1)
         .setEvpnAddressFamily(
             EvpnAddressFamily.builder()
-                .setL2Vnis(ImmutableSet.of())
-                .setL3Vnis(ImmutableSet.of(vniConfig1))
+                .setL2Vnis(ImmutableSet.of(vniConfig1))
+                .setL3Vnis(ImmutableSet.of())
                 .setPropagateUnmatched(true)
                 .setAddressFamilyCapabilities(
                     AddressFamilyCapabilities.builder()
@@ -163,8 +163,8 @@ public class EvpnTest {
         .setBgpProcess(bgpProcess2)
         .setEvpnAddressFamily(
             EvpnAddressFamily.builder()
-                .setL2Vnis(ImmutableSet.of())
-                .setL3Vnis(ImmutableSet.of(vniConfig2))
+                .setL2Vnis(ImmutableSet.of(vniConfig2))
+                .setL3Vnis(ImmutableSet.of())
                 .setPropagateUnmatched(true)
                 .setAddressFamilyCapabilities(
                     AddressFamilyCapabilities.builder()
@@ -236,14 +236,6 @@ public class EvpnTest {
                 allOf(
                     hasPrefix(leaf1VtepPrefix),
                     hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 100333))))))));
-    assertThat(
-        exitgwRoutes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(leaf1VtepPrefix),
-                    hasCommunities(
                         equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
     assertThat(
         exitgwRoutes,
@@ -256,14 +248,6 @@ public class EvpnTest {
     assertThat(exitgwRoutes, not(hasItem(isEvpnType3RouteThat(hasPrefix(exitgwVtepPrefix)))));
 
     Set<AbstractRoute> leaf1Routes = routes.get(leaf1).get(vrf1);
-    assertThat(
-        leaf1Routes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(exitgwVtepPrefix),
-                    hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 100333))))))));
     assertThat(
         leaf1Routes,
         hasItem(
