@@ -1,0 +1,31 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_send_community
+!
+router bgp 1
+  neighbor 1.1.1.1 remote-as 2
+  neighbor 1.1.1.1 send-community
+
+  neighbor 1.1.1.2 remote-as 2
+  neighbor 1.1.1.2 send-community standard
+
+  neighbor 1.1.1.3 remote-as 2
+  neighbor 1.1.1.3 send-community extended
+
+  neighbor 1.1.1.4 remote-as 2
+  neighbor 1.1.1.4 send-community standard extended
+
+  neighbor 1.1.1.5 remote-as 2
+  neighbor 1.1.1.5 send-community add standard
+
+  neighbor 1.1.1.6 remote-as 2
+  neighbor 1.1.1.6 send-community add extended
+
+  neighbor 1.1.1.7 remote-as 2
+  neighbor 1.1.1.7 send-community standard
+  neighbor 1.1.1.7 send-community add extended
+
+  neighbor PG peer-group
+  neighbor PG remote-as 2
+  neighbor PG send-community
+  neighbor 1.1.1.8 peer-group PG

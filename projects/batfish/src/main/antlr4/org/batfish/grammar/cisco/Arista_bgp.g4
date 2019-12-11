@@ -6,6 +6,18 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+eos_bgp_community
+:
+  EXTENDED
+  | STANDARD
+  //    TODO: support for link-bandwidth
+  //    | LINK_BANDWIDTH
+  //      (
+  //        AGGREGATE "0.0-4294967295.0 or nn.nn(K|M|G)  Reference link speed in bits/second"
+  //        | DIVIDE (EQUAL | RATIO)
+  //      )
+;
+
 eos_router_bgp_tail
 :
   eos_rb_address_family
@@ -589,18 +601,12 @@ eos_rbinc_route_reflector_client
 eos_rbinc_send_community
 :
   SEND_COMMUNITY
-  (ADD | REMOVE)?
   (
-    EXTENDED
-    | STANDARD
-//    TODO: support for link-bandwidth
-//    | LINK_BANDWIDTH
-//      (
-//        AGGREGATE "0.0-4294967295.0 or nn.nn(K|M|G)  Reference link speed in bits/second"
-//        | DIVIDE (EQUAL | RATIO)
-//      )
-  )*
-  NEWLINE
+    | ADD comm = eos_bgp_community NEWLINE
+    | REMOVE comm = eos_bgp_community NEWLINE
+    | (communities += eos_bgp_community+) NEWLINE
+    | NEWLINE
+  )
 ;
 
 eos_rbinc_shutdown
