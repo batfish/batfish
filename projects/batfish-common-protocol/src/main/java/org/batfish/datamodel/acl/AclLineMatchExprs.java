@@ -19,7 +19,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 
 public final class AclLineMatchExprs {
@@ -37,12 +36,11 @@ public final class AclLineMatchExprs {
 
   @VisibleForTesting
   static final AclLineMatchExpr ESTABLISHED_TCP_FLOWS =
-      and(TCP_FLOWS,
+      and(
+          TCP_FLOWS,
           matchTcpFlags(
               // ack or rst
-              TcpFlagsMatchConditions.ACK_TCP_FLAG,
-              TcpFlagsMatchConditions.RST_TCP_FLAG
-          ));
+              TcpFlagsMatchConditions.ACK_TCP_FLAG, TcpFlagsMatchConditions.RST_TCP_FLAG));
 
   @VisibleForTesting
   static final AclLineMatchExpr NEW_TCP_FLOWS = and(TCP_FLOWS, not(ESTABLISHED_TCP_FLOWS));
