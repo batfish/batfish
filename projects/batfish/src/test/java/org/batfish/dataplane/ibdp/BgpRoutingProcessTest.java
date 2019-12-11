@@ -41,6 +41,7 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -143,16 +144,15 @@ public class BgpRoutingProcessTest {
     Ip localIp = Ip.parse("2.2.2.2");
     int vni = 10001;
     int vni2 = 10002;
-    Builder vniConfigBuilder =
-        Layer3VniConfig.builder()
+    Layer2VniConfig.Builder vniConfigBuilder =
+        Layer2VniConfig.builder()
             .setVni(vni)
             .setVrf(DEFAULT_VRF_NAME)
             .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
             .setRouteTarget(ExtendedCommunity.target(65500, vni))
-            .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(vni))
-            .setAdvertiseV4Unicast(false);
-    Layer3VniConfig vniConfig1 = vniConfigBuilder.build();
-    Layer3VniConfig vniConfig2 =
+            .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(vni));
+    Layer2VniConfig vniConfig1 = vniConfigBuilder.build();
+    Layer2VniConfig vniConfig2 =
         vniConfigBuilder
             .setVni(vni2)
             .setVrf(_vrf2.getName())
@@ -166,8 +166,8 @@ public class BgpRoutingProcessTest {
             .setLocalAs(2L)
             .setEvpnAddressFamily(
                 EvpnAddressFamily.builder()
-                    .setL2Vnis(ImmutableSet.of())
-                    .setL3Vnis(ImmutableSet.of(vniConfig1, vniConfig2))
+                    .setL2Vnis(ImmutableSet.of(vniConfig1, vniConfig2))
+                    .setL3Vnis(ImmutableSet.of())
                     .setPropagateUnmatched(true)
                     .build())
             .build();
@@ -363,15 +363,14 @@ public class BgpRoutingProcessTest {
     Ip localIp = Ip.parse("2.2.2.2");
     Ip peerIp = Ip.parse("1.1.1.1");
     int vni = 10001;
-    Builder vniConfigBuilder =
-        Layer3VniConfig.builder()
+    Layer2VniConfig.Builder vniConfigBuilder =
+        Layer2VniConfig.builder()
             .setVni(vni)
             .setVrf(DEFAULT_VRF_NAME)
             .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
             .setRouteTarget(ExtendedCommunity.target(65500, vni))
-            .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(vni))
-            .setAdvertiseV4Unicast(false);
-    Layer3VniConfig vniConfig1 = vniConfigBuilder.build();
+            .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(vni));
+    Layer2VniConfig vniConfig1 = vniConfigBuilder.build();
     String policyName = "POL";
     BgpActivePeerConfig evpnPeer =
         BgpActivePeerConfig.builder()
@@ -381,8 +380,8 @@ public class BgpRoutingProcessTest {
             .setLocalAs(localAs)
             .setEvpnAddressFamily(
                 EvpnAddressFamily.builder()
-                    .setL2Vnis(ImmutableSet.of())
-                    .setL3Vnis(ImmutableSet.of(vniConfig1))
+                    .setL2Vnis(ImmutableSet.of(vniConfig1))
+                    .setL3Vnis(ImmutableSet.of())
                     .setPropagateUnmatched(true)
                     .setExportPolicy(policyName)
                     .build())
