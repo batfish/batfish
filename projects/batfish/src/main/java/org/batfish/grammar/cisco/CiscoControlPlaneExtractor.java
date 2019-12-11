@@ -1224,6 +1224,7 @@ import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.batfish.representation.cisco.asa.AsaPredefinedServiceObject;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.cisco.eos.AristaBgpDefaultOriginate;
@@ -3730,7 +3731,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgs_service_object(Ogs_service_objectContext ctx) {
-    if (ctx.name != null) {
+    if (ctx.predef != null) {
+      String name = ctx.predef.getText();
+      _currentServiceObjectGroup
+          .getLines()
+          .add(new ServiceObjectReferenceServiceObjectGroupLine(name));
+      _configuration.getServiceObjects().computeIfAbsent(name, AsaPredefinedServiceObject::forName);
+    } else if (ctx.name != null) {
       String name = ctx.name.getText();
       _currentServiceObjectGroup
           .getLines()
