@@ -1163,6 +1163,8 @@ public final class CiscoGrammarTest {
     String osIcmpAclName = computeServiceObjectAclName("OS_ICMP");
     String osTcpAclName = computeServiceObjectAclName("OS_TCPUDP");
     String ogsAclName = computeServiceObjectGroupAclName("OGS1");
+    String ogsUndefOsName = computeServiceObjectGroupAclName("OGS_UNDEF_OS");
+    String ogsUndefOgsName = computeServiceObjectGroupAclName("OGS_UNDEF_OGS");
 
     Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
     Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
@@ -1180,6 +1182,9 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "OS_ICMP", 0));
     /* Confirm undefined reference shows up as such */
     assertThat(ccae, hasUndefinedReference(filename, SERVICE_OBJECT, "OS_UNDEFINED"));
+    assertThat(ccae, hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "OGS_UNDEFINED"));
+    /* Confirm reference to builtin does not result in undefined reference. */
+    assertThat(ccae, not(hasUndefinedReference(filename, SERVICE_OBJECT, "icmp")));
 
     /* Confirm IpAcls created from service objects permit and reject the correct flows */
     assertThat(c, hasIpAccessList(osTcpAclName, accepts(flowTcpPass, null, c)));
@@ -1196,6 +1201,10 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass3, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass4, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowUdpFail, null, c))));
+
+    /* Confirm undefined references reject and do not cause crash */
+    assertThat(c, hasIpAccessList(ogsUndefOsName, not(accepts(flowUdpFail, null, c))));
+    assertThat(c, hasIpAccessList(ogsUndefOgsName, not(accepts(flowUdpFail, null, c))));
   }
 
   @Test

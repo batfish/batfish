@@ -785,12 +785,16 @@ public class CiscoConversions {
         .build();
   }
 
-  static IpAccessList toIpAccessList(ServiceObject serviceObject) {
+  static IpAccessList toIpAccessList(
+      ServiceObject serviceObject,
+      Map<String, ServiceObject> serviceObjects,
+      Map<String, ServiceObjectGroup> serviceObjectGroups) {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(
                 IpAccessListLine.accepting()
-                    .setMatchCondition(serviceObject.toAclLineMatchExpr())
+                    .setMatchCondition(
+                        serviceObject.toAclLineMatchExpr(serviceObjects, serviceObjectGroups))
                     .build()))
         .setName(computeServiceObjectAclName(serviceObject.getName()))
         .setSourceName(serviceObject.getName())
@@ -798,12 +802,16 @@ public class CiscoConversions {
         .build();
   }
 
-  static IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
+  static IpAccessList toIpAccessList(
+      ServiceObjectGroup serviceObjectGroup,
+      Map<String, ServiceObject> serviceObjects,
+      Map<String, ServiceObjectGroup> serviceObjectGroups) {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(
                 IpAccessListLine.accepting()
-                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
+                    .setMatchCondition(
+                        serviceObjectGroup.toAclLineMatchExpr(serviceObjects, serviceObjectGroups))
                     .build()))
         .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
         .setSourceName(serviceObjectGroup.getName())

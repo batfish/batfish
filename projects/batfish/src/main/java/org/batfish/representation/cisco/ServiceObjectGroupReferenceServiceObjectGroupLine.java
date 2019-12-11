@@ -2,16 +2,20 @@ package org.batfish.representation.cisco;
 
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 
+import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 
+@ParametersAreNonnullByDefault
 public final class ServiceObjectGroupReferenceServiceObjectGroupLine
     implements ServiceObjectGroupLine {
 
   private final String _name;
 
-  public ServiceObjectGroupReferenceServiceObjectGroupLine(@Nonnull String name) {
+  public ServiceObjectGroupReferenceServiceObjectGroupLine(String name) {
     _name = name;
   }
 
@@ -20,7 +24,12 @@ public final class ServiceObjectGroupReferenceServiceObjectGroupLine
   }
 
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  public @Nonnull AclLineMatchExpr toAclLineMatchExpr(
+      Map<String, ServiceObject> serviceObjects,
+      Map<String, ServiceObjectGroup> serviceObjectGroups) {
+    if (!serviceObjectGroups.containsKey(_name)) {
+      return AclLineMatchExprs.FALSE;
+    }
     return new PermittedByAcl(computeServiceObjectGroupAclName(_name));
   }
 }
