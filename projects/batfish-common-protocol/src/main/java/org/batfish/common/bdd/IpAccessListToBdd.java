@@ -71,7 +71,12 @@ public abstract class IpAccessListToBdd {
     return toBDD(pkt, acl, ImmutableMap.of(), ImmutableMap.of(), BDDSourceManager.empty(pkt));
   }
 
-  @Nonnull private final Map<String, Supplier<BDD>> _aclEnv;
+  /** Map of ACL name to BDD representing the packets explicitly permitted by that ACL */
+  @Nonnull private final Map<String, Supplier<BDD>> _permitBdds;
+
+  /** Map of ACL name to BDD representing the packets explicitly rejected by that ACL */
+  @Nonnull private final Map<String, Supplier<BDD>> _rejectBdds;
+
   @Nonnull private final BDDFactory _factory;
   @Nonnull private final BDDPacket _pkt;
   @Nonnull private final BDDOps _bddOps;
@@ -98,10 +103,14 @@ public abstract class IpAccessListToBdd {
      * cyclic reference (direct or indirect), NonRecursiveSupplier will throw an exception (to avoid
      * going into an infinite loop).
      */
-    _aclEnv = new HashMap<>();
+    _permitBdds = new HashMap<>();
+    _rejectBdds = new HashMap<>();
     aclEnv.forEach(
-        (name, acl) ->
-            _aclEnv.put(name, Suppliers.memoize(new NonRecursiveSupplier<>(() -> toBdd(acl)))));
+        (name, acl) -> {
+          _permitBdds.put(name, Suppliers.memoize(new NonRecursiveSupplier<>(() -> toBdd(acl))));
+          _rejectBdds.put(
+              name, Suppliers.memoize(new NonRecursiveSupplier<>(() -> toRejectBdd(acl))));
+        });
     _bddOps = new BDDOps(pkt.getFactory());
     _bddSrcManager = bddSrcManager;
     _factory = pkt.getFactory();
@@ -126,19 +135,42 @@ public abstract class IpAccessListToBdd {
   }
 
   /**
-   * Convert an Access Control List (ACL) to a symbolic boolean expression. The default action in an
-   * ACL is to deny all traffic.
+   * Convert an Access Control List (ACL) to a symbolic boolean expression representing the union of
+   * packets that will be permitted by the ACL. The default action in an ACL is to deny all traffic.
    */
   @Nonnull
   public final BDD toBdd(IpAccessList acl) {
+    return getAclMatchBdd(acl, true);
+  }
+
+  /**
+   * Convert an Access Control List (ACL) to a symbolic boolean expression representing the union of
+   * packets that will be *explicitly* denied by the ACL, i.e. match a line with action DENY.
+   */
+  @Nonnull
+  private BDD toRejectBdd(IpAccessList acl) {
+    return getAclMatchBdd(acl, false);
+  }
+
+  /**
+   * Returns the BDD representing the packets that the given ACL either explicitly permits (if
+   * {@code permit} is {@code true}) or explicitly rejects (if {@code permit} is {@code false}).
+   */
+  private BDD getAclMatchBdd(IpAccessList acl, boolean permit) {
     int size = acl.getLines().size();
     List<BDD> lineBdds = new ArrayList<>(size);
     List<LineAction> lineActions = new ArrayList<>(size);
     for (IpAccessListLine line : acl.getLines()) {
-      lineActions.add(line.getAction());
+      // Absurd hack for permit == false! Flip all the line actions so that bddAclLines evaluates to
+      // the BDD of packets that will be explicitly rejected by the original ACL.
+      lineActions.add(permit ? line.getAction() : flip(line.getAction()));
       lineBdds.add(toBdd(line.getMatchCondition()));
     }
     return _bddOps.bddAclLines(lineBdds, lineActions);
+  }
+
+  private LineAction flip(LineAction action) {
+    return action == LineAction.PERMIT ? LineAction.DENY : LineAction.PERMIT;
   }
 
   /**
@@ -209,9 +241,15 @@ public abstract class IpAccessListToBdd {
     @Override
     public final BDD visitPermittedByAcl(PermittedByAcl permittedByAcl) {
       String name = permittedByAcl.getAclName();
-      checkArgument(_aclEnv.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
+      // Can reasonably assume that the keys in _permitBdds are the same as the keys in _rejectBdds
+      checkArgument(_permitBdds.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
       try {
-        return _aclEnv.get(name).get();
+        if (permittedByAcl.getDefaultAccept()) {
+          // Return the BDD of packets not explicitly rejected by the referenced ACL
+          return _rejectBdds.get(name).get().not();
+        } else {
+          return _permitBdds.get(name).get();
+        }
       } catch (NonRecursiveSupplierException e) {
         throw new BatfishException("Circular PermittedByAcl reference: " + name);
       }
