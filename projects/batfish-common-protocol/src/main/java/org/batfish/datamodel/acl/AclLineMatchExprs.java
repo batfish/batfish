@@ -2,6 +2,7 @@ package org.batfish.datamodel.acl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
@@ -18,6 +19,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 
 public final class AclLineMatchExprs {
@@ -30,6 +32,23 @@ public final class AclLineMatchExprs {
       OriginatingFromDevice.INSTANCE;
 
   public static final TrueExpr TRUE = TrueExpr.INSTANCE;
+
+  static final AclLineMatchExpr TCP_FLOWS = matchIpProtocol(IpProtocol.TCP);
+
+  @VisibleForTesting
+  static final AclLineMatchExpr ESTABLISHED_TCP_FLOWS =
+      and(TCP_FLOWS,
+          matchTcpFlags(
+              // ack or rst
+              TcpFlagsMatchConditions.ACK_TCP_FLAG,
+              TcpFlagsMatchConditions.RST_TCP_FLAG
+          ));
+
+  @VisibleForTesting
+  static final AclLineMatchExpr NEW_TCP_FLOWS = and(TCP_FLOWS, not(ESTABLISHED_TCP_FLOWS));
+
+  public static final AclLineMatchExpr NEW_FLOWS =
+      implies(matchIpProtocol(IpProtocol.TCP), NEW_TCP_FLOWS);
 
   public static AclLineMatchExpr and(AclLineMatchExpr... exprs) {
     return and(
@@ -56,6 +75,13 @@ public final class AclLineMatchExprs {
     }
 
     return new AndMatchExpr(exprs);
+  }
+
+  /**
+   * Construct an {@link AclLineMatchExpr} encoding if {@code condition} then {@code consequent}.
+   */
+  public static AclLineMatchExpr implies(AclLineMatchExpr condition, AclLineMatchExpr consequent) {
+    return or(not(condition), consequent);
   }
 
   public static MatchHeaderSpace match(HeaderSpace headerSpace) {
