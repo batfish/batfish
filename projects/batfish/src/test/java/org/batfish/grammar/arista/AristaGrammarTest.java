@@ -709,6 +709,19 @@ public class AristaGrammarTest {
       assertTrue(vrf.getV4neighbors().get(ip).getSendCommunity());
       assertTrue(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
     }
+    {
+      String peerGroupName = "PG";
+      AristaBgpPeerGroupNeighbor group = config.getAristaBgp().getPeerGroup(peerGroupName);
+      assertThat(group, notNullValue());
+      assertTrue(group.getSendCommunity());
+      assertTrue(group.getSendExtendedCommunity());
+    }
+    {
+      Ip ip = Ip.parse("1.1.1.8");
+      assertThat(vrf.getV4neighbors(), hasKey(ip));
+      assertNull(vrf.getV4neighbors().get(ip).getSendCommunity());
+      assertNull(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
+    }
   }
 
   @Test
@@ -801,6 +814,21 @@ public class AristaGrammarTest {
     }
     {
       Prefix prefix = Prefix.parse("1.1.1.7/32");
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(
+                  hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
+    }
+    {
+      // honor inheritance
+      Prefix prefix = Prefix.parse("1.1.1.8/32");
       assertThat(
           proc,
           hasActiveNeighbor(

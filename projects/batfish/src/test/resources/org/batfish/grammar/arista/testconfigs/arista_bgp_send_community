@@ -24,3 +24,8 @@ router bgp 1
   neighbor 1.1.1.7 remote-as 2
   neighbor 1.1.1.7 send-community standard
   neighbor 1.1.1.7 send-community add extended
+
+  neighbor PG peer-group
+  neighbor PG remote-as 2
+  neighbor PG send-community
+  neighbor 1.1.1.8 peer-group PG

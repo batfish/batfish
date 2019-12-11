@@ -235,6 +235,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
     if (_sendCommunity == null) {
       _sendCommunity = other._sendCommunity;
     }
+    if (_sendExtendedCommunity == null) {
+      _sendExtendedCommunity = other._sendExtendedCommunity;
+    }
     if (_shutdown == null) {
       _shutdown = other._shutdown;
     }
