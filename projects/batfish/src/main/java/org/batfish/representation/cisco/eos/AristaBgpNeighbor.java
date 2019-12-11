@@ -27,6 +27,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private RemovePrivateAsMode _removePrivateAsMode;
   @Nullable private Boolean _routeReflectorClient;
   @Nullable private Boolean _sendCommunity;
+  @Nullable private Boolean _sendExtendedCommunity;
   @Nullable private Boolean _shutdown;
   @Nullable private String _updateSource;
   @Nonnull private AristaBgpNeighborAddressFamily _genericAddressFamily;
@@ -163,6 +164,15 @@ public abstract class AristaBgpNeighbor implements Serializable {
   }
 
   @Nullable
+  public Boolean getSendExtendedCommunity() {
+    return _sendExtendedCommunity;
+  }
+
+  public void setSendExtendedCommunity(@Nullable Boolean sendExtendedCommunity) {
+    _sendExtendedCommunity = sendExtendedCommunity;
+  }
+
+  @Nullable
   public Boolean getShutdown() {
     return _shutdown;
   }
@@ -224,6 +234,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
     }
     if (_sendCommunity == null) {
       _sendCommunity = other._sendCommunity;
+    }
+    if (_sendExtendedCommunity == null) {
+      _sendExtendedCommunity = other._sendExtendedCommunity;
     }
     if (_shutdown == null) {
       _shutdown = other._shutdown;
