@@ -112,6 +112,11 @@ public final class ReachabilityParameters {
       return this;
     }
 
+    public Builder setHeaderSpace(@Nonnull AclLineMatchExpr headerSpace) {
+      _headerSpace = headerSpace;
+      return this;
+    }
+
     public Builder setMaxChunkSize(int maxChunkSize) {
       _maxChunkSize = maxChunkSize;
       return this;
