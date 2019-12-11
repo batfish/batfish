@@ -370,7 +370,8 @@ final class AristaConversions {
               .setAllowLocalAsIn(firstNonNull(neighbor.getAllowAsIn(), 0) > 0)
               .setAllowRemoteAsOut(true) // this is always true on Arista
               .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
-              .setSendExtendedCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
+              .setSendExtendedCommunity(
+                  firstNonNull(neighbor.getSendExtendedCommunity(), Boolean.FALSE))
               .build());
 
       String inboundMap = naf4.getRouteMapIn();

@@ -1,5 +1,10 @@
 package org.batfish.grammar.arista;
 
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -19,6 +24,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -654,6 +660,158 @@ public class AristaGrammarTest {
                       .setImportRouteTarget(ExtendedCommunity.target(50201, 50201).matchString())
                       .setRouteTarget(ExtendedCommunity.target(50201, 50201))
                       .build())));
+    }
+  }
+
+  @Test
+  public void testBgpSendCommunityExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_send_community");
+    AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+    {
+      Ip ip = Ip.parse("1.1.1.1");
+      assertThat(vrf.getV4neighbors(), hasKey(ip));
+      assertTrue(vrf.getV4neighbors().get(ip).getSendCommunity());
+      assertTrue(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
+    }
+    {
+      Ip ip = Ip.parse("1.1.1.2");
+      assertThat(vrf.getV4neighbors(), hasKey(ip));
+      assertTrue(vrf.getV4neighbors().get(ip).getSendCommunity());
+      assertNull(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
+    }
+    {
+      Ip ip = Ip.parse("1.1.1.3");
+      assertThat(vrf.getV4neighbors(), hasKey(ip));
+      assertNull(vrf.getV4neighbors().get(ip).getSendCommunity());
+      assertTrue(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
+    }
+    {
+      Ip ip = Ip.parse("1.1.1.4");
+      assertThat(vrf.getV4neighbors(), hasKey(ip));
+      assertTrue(vrf.getV4neighbors().get(ip).getSendCommunity());
+      assertTrue(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
+    }
+    {
+      Ip ip = Ip.parse("1.1.1.5");
+      assertThat(vrf.getV4neighbors(), hasKey(ip));
+      assertTrue(vrf.getV4neighbors().get(ip).getSendCommunity());
+      assertNull(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
+    }
+    {
+      Ip ip = Ip.parse("1.1.1.6");
+      assertThat(vrf.getV4neighbors(), hasKey(ip));
+      assertNull(vrf.getV4neighbors().get(ip).getSendCommunity());
+      assertTrue(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
+    }
+    {
+      Ip ip = Ip.parse("1.1.1.7");
+      assertThat(vrf.getV4neighbors(), hasKey(ip));
+      assertTrue(vrf.getV4neighbors().get(ip).getSendCommunity());
+      assertTrue(vrf.getV4neighbors().get(ip).getSendExtendedCommunity());
+    }
+  }
+
+  @Test
+  public void testBgpSendCommunityConversion() {
+    Configuration config = parseConfig("arista_bgp_send_community");
+    BgpProcess proc = config.getDefaultVrf().getBgpProcess();
+    {
+      Prefix prefix = Prefix.parse("1.1.1.1/32");
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(
+                  hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
+    }
+    {
+      Prefix prefix = Prefix.parse("1.1.1.2/32");
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(
+                  hasAddressFamilyCapabilites(hasSendExtendedCommunity(false)))));
+    }
+    {
+      Prefix prefix = Prefix.parse("1.1.1.3/32");
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(false)))));
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(
+                  hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
+    }
+    {
+      Prefix prefix = Prefix.parse("1.1.1.4/32");
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(
+                  hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
+    }
+    {
+      Prefix prefix = Prefix.parse("1.1.1.5/32");
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(
+                  hasAddressFamilyCapabilites(hasSendExtendedCommunity(false)))));
+    }
+    {
+      Prefix prefix = Prefix.parse("1.1.1.6/32");
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(false)))));
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(
+                  hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
+    }
+    {
+      Prefix prefix = Prefix.parse("1.1.1.7/32");
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
+      assertThat(
+          proc,
+          hasActiveNeighbor(
+              prefix,
+              hasIpv4UnicastAddressFamily(
+                  hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
   }
 }
