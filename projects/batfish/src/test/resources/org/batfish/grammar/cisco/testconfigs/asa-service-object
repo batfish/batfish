@@ -16,10 +16,10 @@ object-group service OGS1
  service-object udp source eq cifs
 !
 object-group service OGS_UNDEF_OS
- group-object OGS_UNDEFINED
+ service-object object OS_UNDEFINED
 !
 object-group service OGS_UNDEF_OGS
- service-object object OS_UNDEFINED
+ group-object OGS_UNDEFINED
 !
 object-group service OGS_BUILTIN_REF
  service-object object icmp
