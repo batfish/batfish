@@ -93,6 +93,9 @@ public final class TcpFlagsMatchConditions
   /** Shorthand for match conditions for a ACK (acknowledgement) packet */
   public static final TcpFlagsMatchConditions ACK_TCP_FLAG =
       builder().setTcpFlags(TcpFlags.builder().setAck(true).build()).setUseAck(true).build();
+  /** Shorthand for match conditions for a RST (reset) packet */
+  public static final TcpFlagsMatchConditions RST_TCP_FLAG =
+      builder().setTcpFlags(TcpFlags.builder().setRst(true).build()).setUseRst(true).build();
   /** Shorthand for match conditions for a SYN-ACK packet */
   public static final TcpFlagsMatchConditions SYN_ACK_TCP_FLAG =
       builder()
