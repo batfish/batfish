@@ -3,12 +3,16 @@ package org.batfish.representation.cisco;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
+@ParametersAreNonnullByDefault
 public final class ServiceObject implements ServiceObjectGroupLine {
 
   private String _description;
@@ -75,7 +79,9 @@ public final class ServiceObject implements ServiceObjectGroupLine {
   }
 
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  public @Nonnull AclLineMatchExpr toAclLineMatchExpr(
+      Map<String, ServiceObject> serviceObjects,
+      Map<String, ServiceObjectGroup> serviceObjectGroups) {
     HeaderSpace.Builder b = HeaderSpace.builder().setIpProtocols(ImmutableList.copyOf(_protocols));
     b.setDstPorts(_dstPorts);
     b.setSrcPorts(_srcPorts);

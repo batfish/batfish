@@ -3185,11 +3185,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
             c.getIpAccessLists()
-                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
+                .put(
+                    computeServiceObjectGroupAclName(name),
+                    toIpAccessList(serviceObjectGroup, _serviceObjects, _serviceObjectGroups)));
     _serviceObjects.forEach(
         (name, serviceObject) ->
             c.getIpAccessLists()
-                .put(computeServiceObjectAclName(name), toIpAccessList(serviceObject)));
+                .put(
+                    computeServiceObjectAclName(name),
+                    toIpAccessList(serviceObject, _serviceObjects, _serviceObjectGroups)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
