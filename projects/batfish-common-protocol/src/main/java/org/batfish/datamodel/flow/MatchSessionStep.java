@@ -2,10 +2,12 @@ package org.batfish.datamodel.flow;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
@@ -21,10 +23,15 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
 
     @Nonnull private final Set<String> _incomingInterfaces;
 
+    private MatchSessionStepDetail(@Nonnull Set<String> incomingInterfaces) {
+      _incomingInterfaces = ImmutableSet.copyOf(incomingInterfaces);
+    }
+
     @JsonCreator
-    private MatchSessionStepDetail(
-        @JsonProperty(PROP_INCOMING_INTERFACES) @Nonnull Set<String> incomingInterfaces) {
-      _incomingInterfaces = incomingInterfaces;
+    private static MatchSessionStepDetail jsonCreator(
+        @JsonProperty(PROP_INCOMING_INTERFACES) Set<String> incomingInterfaces) {
+      checkArgument(incomingInterfaces != null, "Missing %s", PROP_ACTION);
+      return new MatchSessionStepDetail(incomingInterfaces);
     }
 
     @JsonProperty(PROP_INCOMING_INTERFACES)
@@ -42,7 +49,7 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
       private @Nullable Set<String> _incomingInterfaces;
 
       public MatchSessionStepDetail build() {
-        return new MatchSessionStepDetail(_incomingInterfaces);
+        return new MatchSessionStepDetail(firstNonNull(_incomingInterfaces, ImmutableSet.of()));
       }
 
       public Builder setIncomingInterfaces(Set<String> incomingInterfaces) {

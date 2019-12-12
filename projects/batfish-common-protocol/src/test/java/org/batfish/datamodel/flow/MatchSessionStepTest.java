@@ -2,6 +2,7 @@ package org.batfish.datamodel.flow;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.HashSet;
 import java.io.IOException;
@@ -13,8 +14,7 @@ import org.junit.Test;
 public final class MatchSessionStepTest {
   @Test
   public void testBuilder() {
-    Set<String> incomingInterfaces = new HashSet<String>();
-    incomingInterfaces.add("a");
+    Set<String> incomingInterfaces = ImmutableSet.of("a");
     MatchSessionStep step =
         MatchSessionStep.builder()
             .setDetail(
@@ -23,9 +23,7 @@ public final class MatchSessionStepTest {
 
     assertEquals(step.getAction(), StepAction.MATCHED_SESSION);
 
-    Set<String> testInterfaces = new HashSet<String>();
-    testInterfaces.add("a");
-    assertEquals(step.getDetail().getIncomingInterfaces(), testInterfaces);
+    assertEquals(step.getDetail().getIncomingInterfaces(), incomingInterfaces);
   }
 
   @Test
