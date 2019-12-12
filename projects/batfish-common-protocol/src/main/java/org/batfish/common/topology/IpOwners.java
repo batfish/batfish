@@ -212,7 +212,8 @@ public final class IpOwners {
    * @param excludeInactive whether to ignore inactive interfaces
    * @return A map from {@link Ip}s to hostname to set of interface names that own that IP.
    */
-  public static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
+  @VisibleForTesting
+  static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
       Map<String, Set<Interface>> allInterfaces, boolean excludeInactive) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups = HashBasedTable.create();
