@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
+  @JsonSubTypes.Type(value = DeliveredStep.class, name = "Delivered"),
   @JsonSubTypes.Type(value = EnterInputIfaceStep.class, name = "EnterInputInterface"),
   @JsonSubTypes.Type(value = ExitOutputIfaceStep.class, name = "ExitOutputInterface"),
   @JsonSubTypes.Type(value = FilterStep.class, name = "Filter"),
