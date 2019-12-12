@@ -7,12 +7,13 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.collect.ImmutableList;
-import java.util.List;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 
@@ -28,23 +29,46 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
    * to output {@link Interface}
    */
   public static final class RoutingStepDetail {
-    private static final String PROP_ROUTES = "routes";
+    private static final String PROP_MATCHED_ROUTES = "matchedRoutes";
+    private static final String PROP_FINAL_NEXT_HOP_IP = "finalNextHopIp";
+    private static final String PROP_FINAL_NEXT_HOP_INTERFACE = "finalNextHopInterface";
 
     /**
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
      */
-    @Nonnull private List<RouteInfo> _routes;
+    @Nonnull private final SortedSet<RouteInfo> _matchedRoutes;
+    /** Next hop IP which was resolved using the {@code _matchedRoutes} */
+    @Nullable private final Ip _finalNextHopIp;
+    /** Next hop interface which was resolved using the {@code _matchedRoutes} */
+    @Nullable private final String _finalNextHopInterface;
 
     @JsonCreator
-    private RoutingStepDetail(@JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes) {
-      _routes = firstNonNull(routes, ImmutableList.of());
+    private RoutingStepDetail(
+        @JsonProperty(PROP_MATCHED_ROUTES) @Nullable SortedSet<RouteInfo> matchedRoutes,
+        @JsonProperty(PROP_FINAL_NEXT_HOP_IP) @Nullable Ip finalNextHopIp,
+        @JsonProperty(PROP_FINAL_NEXT_HOP_INTERFACE) @Nullable String finalNextHopInterface) {
+      _matchedRoutes = firstNonNull(matchedRoutes, ImmutableSortedSet.of());
+      _finalNextHopIp = finalNextHopIp;
+      _finalNextHopInterface = finalNextHopInterface;
     }
 
-    @JsonProperty(PROP_ROUTES)
+    @JsonProperty(PROP_MATCHED_ROUTES)
     @Nonnull
-    public List<RouteInfo> getRoutes() {
-      return _routes;
+    public SortedSet<RouteInfo> getMatchedRoutes() {
+      return _matchedRoutes;
+    }
+
+    @JsonProperty(PROP_FINAL_NEXT_HOP_IP)
+    @Nullable
+    public Ip getFinalNextHopIp() {
+      return _finalNextHopIp;
+    }
+
+    @JsonProperty(PROP_FINAL_NEXT_HOP_INTERFACE)
+    @Nullable
+    public String getFinalNextHopInterface() {
+      return _finalNextHopInterface;
     }
 
     public static Builder builder() {
@@ -53,15 +77,25 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
 
     /** Chained builder to create a {@link RoutingStepDetail} object */
     public static class Builder {
-      private @Nullable List<RouteInfo> _routes;
+      private @Nullable SortedSet<RouteInfo> _matchedRoutes;
+      private @Nullable Ip _finalNextHopIp;
+      private @Nullable String _finalNextHopInterface;
 
       public RoutingStepDetail build() {
-        return new RoutingStepDetail(_routes);
+        return new RoutingStepDetail(_matchedRoutes, _finalNextHopIp, _finalNextHopInterface);
       }
 
-      public Builder setRoutes(List<RouteInfo> routes) {
-        _routes = routes;
+      public Builder setMatchedRoutes(SortedSet<RouteInfo> matchedRoutes) {
+        _matchedRoutes = matchedRoutes;
         return this;
+      }
+
+      public void setFinalNextHopIp(@Nullable Ip finalNextHopIp) {
+        _finalNextHopIp = finalNextHopIp;
+      }
+
+      public void setFinalNextHopInterface(@Nullable String finalNextHopInterface) {
+        _finalNextHopInterface = finalNextHopInterface;
       }
 
       /** Only for use by {@link RoutingStepDetail#builder()}. */

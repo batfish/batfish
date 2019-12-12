@@ -282,10 +282,15 @@ public final class FlowTracerTest {
             instanceOf(RoutingStep.class),
             instanceOf(ExitOutputIfaceStep.class)));
     assertThat(
-        ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
+        ((RoutingStep) steps.get(0)).getDetail().getMatchedRoutes().iterator().next().getNextVrf(),
         equalTo(nextVrfName));
     assertThat(
-        ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextHopIp(),
+        ((RoutingStep) steps.get(1))
+            .getDetail()
+            .getMatchedRoutes()
+            .iterator()
+            .next()
+            .getNextHopIp(),
         equalTo(Ip.AUTO));
     assertThat(((ExitOutputIfaceStep) steps.get(2)).getAction(), is(StepAction.NULL_ROUTED));
   }
@@ -359,10 +364,10 @@ public final class FlowTracerTest {
 
     assertThat(steps, contains(instanceOf(RoutingStep.class), instanceOf(RoutingStep.class)));
     assertThat(
-        ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
+        ((RoutingStep) steps.get(0)).getDetail().getMatchedRoutes().iterator().next().getNextVrf(),
         equalTo(vrf2Name));
     assertThat(
-        ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextVrf(),
+        ((RoutingStep) steps.get(1)).getDetail().getMatchedRoutes().iterator().next().getNextVrf(),
         equalTo(vrf1Name));
   }
 

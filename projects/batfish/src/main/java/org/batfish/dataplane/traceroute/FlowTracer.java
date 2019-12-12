@@ -5,17 +5,19 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
-import static java.util.Comparator.nullsFirst;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.FORWARDED;
+import static org.batfish.datamodel.flow.StepAction.FORWARDED_TO_NEXT_VRF;
+import static org.batfish.datamodel.flow.StepAction.NULL_ROUTED;
 import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.fibEntriesToRouteInfos;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
@@ -59,8 +61,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.Evaluator;
@@ -81,7 +81,6 @@ import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.PolicyStep;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
-import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -661,7 +660,7 @@ class FlowTracer {
         return;
       }
 
-      _steps.add(buildRoutingStep(fibEntries));
+      //      _steps.add(buildRoutingStep(fibEntries));
 
       // Group traces by action (we do not want extra branching if there is branching
       // in FIB resolution)
@@ -674,6 +673,7 @@ class FlowTracer {
 
       // For every action corresponding to ECMP LPM FibEntry
       for (FibAction action : groupedByFibAction.keySet()) {
+        _steps.add(buildRoutingStep(action, groupedByFibAction.get(action)));
         action.accept(
             new FibActionVisitor<Void>() {
               @Override
@@ -707,6 +707,8 @@ class FlowTracer {
                 return null;
               }
             });
+        // remove the routing step so that it is not duplicated in the next forked trace
+        _steps.remove(_steps.size() - 1);
       }
     } finally {
       if (intraHopBreadcrumbs.isEmpty()) {
@@ -724,29 +726,42 @@ class FlowTracer {
   }
 
   private RoutingStep buildRoutingStep(Set<FibEntry> fibEntries) {
-    List<RouteInfo> matchedRibRouteInfo =
-        fibEntries.stream()
-            .map(FibEntry::getTopLevelRoute)
-            .map(
-                route ->
-                    new RouteInfo(
-                        route.getProtocol(),
-                        route.getNetwork(),
-                        route.getNextHopIp(),
-                        route.getProtocol() == RoutingProtocol.STATIC
-                            ? ((StaticRoute) route).getNextVrf()
-                            : null))
-            .sorted(
-                comparing(RouteInfo::getNetwork)
-                    .thenComparing(RouteInfo::getNextHopIp)
-                    .thenComparing(RouteInfo::getNextVrf, nullsFirst(String::compareTo))
-                    .thenComparing(RouteInfo::getProtocol))
-            .distinct()
-            .collect(ImmutableList.toImmutableList());
     return RoutingStep.builder()
-        .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
+        .setDetail(
+            RoutingStepDetail.builder()
+                .setMatchedRoutes(fibEntriesToRouteInfos(fibEntries))
+                .build())
         .setAction(FORWARDED)
         .build();
+  }
+
+  private static RoutingStep buildRoutingStep(FibAction fibAction, Set<FibEntry> fibEntries) {
+    RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
+    RoutingStepDetail.Builder routingStepDetailBuilder =
+        RoutingStepDetail.builder().setMatchedRoutes(fibEntriesToRouteInfos(fibEntries));
+    fibAction.accept(
+        new FibActionVisitor<Void>() {
+          @Override
+          public Void visitFibForward(FibForward fibForward) {
+            routingStepDetailBuilder.setFinalNextHopIp(fibForward.getArpIp());
+            routingStepDetailBuilder.setFinalNextHopInterface(fibForward.getInterfaceName());
+            routingStepBuilder.setAction(FORWARDED);
+            return null;
+          }
+
+          @Override
+          public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
+            routingStepBuilder.setAction(FORWARDED_TO_NEXT_VRF);
+            return null;
+          }
+
+          @Override
+          public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+            routingStepBuilder.setAction(NULL_ROUTED);
+            return null;
+          }
+        });
+    return routingStepBuilder.setDetail(routingStepDetailBuilder.build()).build();
   }
 
   /**
