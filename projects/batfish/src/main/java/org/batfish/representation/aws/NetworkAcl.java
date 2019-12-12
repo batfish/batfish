@@ -120,7 +120,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
             .collect(ImmutableList.toImmutableList());
     IpAccessList list =
         IpAccessList.builder()
-            .setName(_networkAclId + (isEgress ? "_egress" : "_ingress"))
+            .setName(getAclName(_networkAclId, isEgress))
             .setLines(lines)
             .setSourceName(_networkAclId)
             .setSourceType(NetworkAcl.SOURCE_TYPE_NAME)
@@ -186,6 +186,10 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
         .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
         .setName(getAclLineName(key, protocolStr, portStr, prefix, action))
         .build();
+  }
+
+  static String getAclName(String networkAclId, boolean isEgress) {
+    return networkAclId + (isEgress ? "_egress" : "_ingress");
   }
 
   static String getAclLineName(

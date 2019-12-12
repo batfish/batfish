@@ -6,9 +6,12 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
+import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Subnet.findMyNetworkAcl;
+import static org.batfish.representation.aws.Subnet.instancesInterfaceName;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.representation.aws.Vpc.nodeName;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
@@ -712,6 +715,44 @@ public class SubnetTest {
                     Utils.interfaceNameToRemote(subnetCfg, linkId),
                     Utils.getInterfaceLinkLocalIp(
                         subnetCfg, Utils.interfaceNameToRemote(vpcCfg, linkId))))));
+  }
+
+  /** Test that network ACls are properly attached */
+  @Test
+  public void testToConfigurationNodeNetworkAcl() {
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of());
+    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+
+    Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
+    Subnet subnet = new Subnet(subnetPrefix, "subnet", vpc.getId(), "zone");
+
+    Prefix outDeniedPfx = Prefix.parse("192.168.0.0/16");
+    Prefix inDeniedPfx = Prefix.parse("192.169.0.0/16");
+
+    NetworkAcl acl =
+        new NetworkAcl(
+            "networkAcl",
+            vpc.getId(),
+            ImmutableList.of(new NetworkAclAssociation(subnet.getId())),
+            ImmutableList.of(
+                new NetworkAclEntryV4(outDeniedPfx, false, true, "-1", 100, null, null),
+                new NetworkAclEntryV4(Prefix.ZERO, true, true, "-1", 200, null, null),
+                new NetworkAclEntryV4(inDeniedPfx, false, false, "-1", 100, null, null),
+                new NetworkAclEntryV4(Prefix.ZERO, true, false, "-1", 200, null, null)),
+            true);
+
+    Region region = Region.builder("r").setNetworkAcls(ImmutableMap.of(acl.getId(), acl)).build();
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(nodeName(vpc.getId()), vpcCfg));
+
+    Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
+
+    Interface instancesInterface =
+        subnetCfg.getAllInterfaces().get(instancesInterfaceName(subnet.getId()));
+
+    assertThat(instancesInterface.getIncomingFilterName(), equalTo(getAclName(acl.getId(), true)));
+    assertThat(instancesInterface.getOutgoingFilterName(), equalTo(getAclName(acl.getId(), false)));
   }
 
   @Test
