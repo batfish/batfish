@@ -781,14 +781,11 @@ class FlowTracer {
     }
     FirewallSessionTraceInfo session = matchingSessions.get(0);
 
-    MatchSessionStep matchSessionStep =
-        MatchSessionStep.builder()
-            .setDetail(
-                MatchSessionStepDetail.builder()
-                    .setIncomingInterfaces(session.getIncomingInterfaces())
-                    .build())
-            .build();
-    _steps.add(matchSessionStep);
+    _steps.add(
+        new MatchSessionStep(
+            MatchSessionStepDetail.builder()
+                .setIncomingInterfaces(session.getIncomingInterfaces())
+                .build()));
 
     Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();

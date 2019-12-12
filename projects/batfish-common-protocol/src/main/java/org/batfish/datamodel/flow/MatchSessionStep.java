@@ -71,29 +71,7 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
     return new MatchSessionStep(detail);
   }
 
-  private MatchSessionStep(MatchSessionStepDetail detail) {
+  public MatchSessionStep(MatchSessionStepDetail detail) {
     super(detail, StepAction.MATCHED_SESSION);
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /** Chained builder to create a {@link MatchSessionStep} object */
-  public static final class Builder {
-    private @Nullable MatchSessionStepDetail _detail;
-
-    public MatchSessionStep build() {
-      checkState(_detail != null, "Must call setDetail before building");
-      return new MatchSessionStep(_detail);
-    }
-
-    public Builder setDetail(MatchSessionStepDetail detail) {
-      _detail = detail;
-      return this;
-    }
-
-    /** Only for use by {@link MatchSessionStep#builder()}. */
-    private Builder() {}
   }
 }
