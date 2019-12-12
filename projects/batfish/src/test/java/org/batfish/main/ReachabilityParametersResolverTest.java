@@ -2,23 +2,18 @@ package org.batfish.main;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
-import static org.batfish.main.ReachabilityParametersResolver.isActive;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.NetworkFactory;
@@ -31,7 +26,6 @@ import org.batfish.question.ReachabilityParameters.Builder;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
-import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,8 +40,6 @@ public class ReachabilityParametersResolverTest {
 
   private Batfish _batfish;
 
-  private Interface _activeInterface;
-  private Interface _inactiveInterface;
   private Configuration _node;
   private NetworkSnapshot _snapshot;
 
@@ -56,8 +48,7 @@ public class ReachabilityParametersResolverTest {
     NetworkFactory nf = new NetworkFactory();
     _node = nf.configurationBuilder().setConfigurationFormat(CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(_node).build();
-    _activeInterface = nf.interfaceBuilder().setOwner(_node).setVrf(vrf).build();
-    _inactiveInterface = nf.interfaceBuilder().setActive(false).setOwner(_node).setVrf(vrf).build();
+    nf.interfaceBuilder().setOwner(_node).setVrf(vrf).build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(_node.getHostname(), _node);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     _snapshot = _batfish.getSnapshot();
@@ -170,17 +161,5 @@ public class ReachabilityParametersResolverTest {
     exception.expect(InvalidReachabilityParametersException.class);
     exception.expectMessage("All required transit nodes are also forbidden");
     resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
-  }
-
-  @Test
-  public void testLocationIsActive() {
-    Map<String, Configuration> configs = _batfish.loadConfigurations(_batfish.getSnapshot());
-    String hostname = _node.getHostname();
-    assertTrue(isActive(new InterfaceLinkLocation(hostname, _activeInterface.getName()), configs));
-    assertFalse(
-        isActive(new InterfaceLinkLocation(hostname, _inactiveInterface.getName()), configs));
-    assertTrue(isActive(new InterfaceLinkLocation(hostname, _activeInterface.getName()), configs));
-    assertFalse(
-        isActive(new InterfaceLinkLocation(hostname, _inactiveInterface.getName()), configs));
   }
 }
