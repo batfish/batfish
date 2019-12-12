@@ -27,6 +27,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.role.NodeRoleDimension;
+import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
@@ -98,7 +99,9 @@ public final class DifferentialReachabilityAnswererTest {
             .flatMap(Collection::stream)
             .collect(ImmutableSet.toImmutableSet());
 
-    Set<Location> expected = ImmutableSet.of(new InterfaceLocation(hostname, i1Name));
+    Set<Location> expected =
+        ImmutableSet.of(
+            new InterfaceLocation(hostname, i1Name), new InterfaceLinkLocation(hostname, i1Name));
     assertEquals(expected, startLocations);
   }
 
