@@ -19,7 +19,7 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
   public static final class MatchSessionStepDetail {
     private static final String PROP_INCOMING_INTERFACES = "incomingInterfaces";
 
-    @Nonnull private Set<String> _incomingInterfaces;
+    @Nonnull private final Set<String> _incomingInterfaces;
 
     @JsonCreator
     private MatchSessionStepDetail(
