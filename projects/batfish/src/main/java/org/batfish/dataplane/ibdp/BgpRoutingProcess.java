@@ -64,7 +64,6 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.Bgpv4Rib;
@@ -527,24 +526,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     getAllPeerConfigs(_process)
         .map(BgpPeerConfig::getEvpnAddressFamily)
         .filter(Objects::nonNull)
-        .flatMap(af -> Stream.concat(af.getL3VNIs().stream(), af.getL2VNIs().stream()))
+        .flatMap(af -> af.getL2VNIs().stream())
         .forEach(
             vniConfig -> {
               Vrf vniVrf = _c.getVrfs().get(vniConfig.getVrf());
               assert vniVrf != null; // Invariant guaranteed by proper conversion
-              // Layer 3 VNIs take precedence on most vendors
-              Vni vniSettings = vniVrf.getLayer3Vnis().get(vniConfig.getVni());
-              if (vniSettings == null) {
-                vniSettings = vniVrf.getLayer2Vnis().get(vniConfig.getVni());
-              }
-              assert vniSettings != null; // Invariant guaranteed by proper conversion
-              if (vniSettings.getSourceAddress() == null) {
+              Layer2Vni l2Vni = vniVrf.getLayer2Vnis().get(vniConfig.getVni());
+              assert l2Vni != null; // Invariant guaranteed by proper conversion
+              if (l2Vni.getSourceAddress() == null) {
                 return;
               }
               EvpnType3Route route =
                   initEvpnType3Route(
                       ebgpAdmin,
-                      vniSettings,
+                      l2Vni,
                       vniConfig.getRouteTarget(),
                       vniConfig.getRouteDistinguisher(),
                       _process.getRouterId());
@@ -573,21 +568,21 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /**
-   * Create a new {@link EvpnType3Route} based on given {@link Layer2Vni}. Assumes Layer2Vni are
-   * valid (e.g., have properly set source address).
+   * Create a new {@link EvpnType3Route} based on given {@link Layer2Vni}. Assumes {@code vni} is
+   * valid (e.g., has properly set source address).
    */
   @Nonnull
   @VisibleForTesting
   static EvpnType3Route initEvpnType3Route(
       int ebgpAdmin,
-      Vni vniSettings,
+      Layer2Vni vni,
       ExtendedCommunity routeTarget,
       RouteDistinguisher routeDistinguisher,
       Ip routerId) {
     checkArgument(
-        vniSettings.getSourceAddress() != null,
+        vni.getSourceAddress() != null,
         "Cannot construct type 3 route for invalid VNI %s",
-        vniSettings.getVni());
+        vni.getVni());
     // Locally all routes start as eBGP routes in our own RIB
     EvpnType3Route.Builder type3RouteBuilder = EvpnType3Route.builder();
     type3RouteBuilder.setAdmin(ebgpAdmin);
@@ -599,8 +594,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     type3RouteBuilder.setOriginType(OriginType.EGP);
     type3RouteBuilder.setProtocol(RoutingProtocol.BGP);
     type3RouteBuilder.setRouteDistinguisher(routeDistinguisher);
-    assert vniSettings.getSourceAddress() != null; // Conversion invariant
-    type3RouteBuilder.setVniIp(vniSettings.getSourceAddress());
+    type3RouteBuilder.setVniIp(vni.getSourceAddress());
 
     return type3RouteBuilder.build();
   }

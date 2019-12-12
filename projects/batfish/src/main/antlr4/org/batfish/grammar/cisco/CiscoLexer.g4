@@ -5763,6 +5763,81 @@ ICMP6
    'icmp6'
 ;
 
+ICMP6_ECHO
+:
+  'icmp6-echo'
+;
+
+ICMP6_ECHO_REPLY
+:
+  'icmp6-echo-reply'
+;
+
+ICMP6_MEMBERSHIP_QUERY
+:
+  'icmp6-membership-query'
+;
+
+ICMP6_MEMBERSHIP_REDUCTION
+:
+  'icmp6-membership-reduction'
+;
+
+ICMP6_MEMBERSHIP_REPORT
+:
+  'icmp6-membership-report'
+;
+
+ICMP6_NEIGHBOR_ADVERTISEMENT
+:
+  'icmp6-neighbor-advertisement'
+;
+
+ICMP6_NEIGHBOR_REDIRECT
+:
+  'icmp6-neighbor-redirect'
+;
+
+ICMP6_NEIGHBOR_SOLICITATION
+:
+  'icmp6-neighbor-solicitation'
+;
+
+ICMP6_PACKET_TOO_BIG
+:
+  'icmp6-packet-too-big'
+;
+
+ICMP6_PARAMETER_PROBLEM
+:
+  'icmp6-parameter-problem'
+;
+
+ICMP6_ROUTER_ADVERTISEMENT
+:
+  'icmp6-router-advertisement'
+;
+
+ICMP6_ROUTER_RENUMBERING
+:
+  'icmp6-router-renumbering'
+;
+
+ICMP6_ROUTER_SOLICITATION
+:
+  'icmp6-router-solicitation'
+;
+
+ICMP6_TIME_EXCEEDED
+:
+  'icmp6-time-exceeded'
+;
+
+ICMP6_UNREACHABLE
+:
+  'icmp6-unreachable'
+;
+
 ICMPV6
 :
    'icmpv6'
@@ -12747,9 +12822,119 @@ TCP
    'tcp'
 ;
 
+TCP_AOL
+:
+  'tcp-aol'
+;
+
+TCP_BGP
+:
+  'tcp-bgp'
+;
+
+TCP_CHARGEN
+:
+  'tcp-chargen'
+;
+
+TCP_CIFS
+:
+  'tcp-cifs'
+;
+
+TCP_CITRIX_ICA
+:
+  'tcp-citrix-ica'
+;
+
+TCP_CMD
+:
+  'tcp-cmd'
+;
+
 TCP_CONNECT
 :
    'tcp-connect'
+;
+
+TCP_CTIQBE
+:
+  'tcp-ctiqbe'
+;
+
+TCP_DAYTIME
+:
+  'tcp-daytime'
+;
+
+TCP_DISCARD
+:
+  'tcp-discard'
+;
+
+TCP_DOMAIN
+:
+  'tcp-domain'
+;
+
+TCP_ECHO
+:
+  'tcp-echo'
+;
+
+TCP_EXEC
+:
+  'tcp-exec'
+;
+
+TCP_FINGER
+:
+  'tcp-finger'
+;
+
+TCP_FTP
+:
+  'tcp-ftp'
+;
+
+TCP_FTP_DATA
+:
+  'tcp-ftp-data'
+;
+
+TCP_GOPHER
+:
+  'tcp-gopher'
+;
+
+TCP_H323
+:
+  'tcp-h323'
+;
+
+TCP_HOSTNAME
+:
+  'tcp-hostname'
+;
+
+TCP_HTTP
+:
+  'tcp-http'
+;
+
+TCP_HTTPS
+:
+  'tcp-https'
+;
+
+TCP_IDENT
+:
+  'tcp-ident'
+;
+
+TCP_IMAP4
+:
+  'tcp-imap4'
 ;
 
 TCP_INSPECTION
@@ -12757,9 +12942,104 @@ TCP_INSPECTION
    'tcp-inspection'
 ;
 
+TCP_IRC
+:
+  'tcp-irc'
+;
+
+TCP_KERBEROS
+:
+  'tcp-kerberos'
+;
+
+TCP_KLOGIN
+:
+  'tcp-klogin'
+;
+
+TCP_KSHELL
+:
+  'tcp-kshell'
+;
+
+TCP_LDAP
+:
+  'tcp-ldap'
+;
+
+TCP_LDAPS
+:
+  'tcp-ldaps'
+;
+
+TCP_LOGIN
+:
+  'tcp-login'
+;
+
+TCP_LOTUSNOTES
+:
+  'tcp-lotusnotes'
+;
+
+TCP_LPD
+:
+  'tcp-lpd'
+;
+
+TCP_NETBIOS_SSN
+:
+  'tcp-netbios-ssn'
+;
+
+TCP_NFS
+:
+  'tcp-nfs'
+;
+
+TCP_NNTP
+:
+  'tcp-nntp'
+;
+
+TCP_PCANYWHERE_DATA
+:
+  'tcp-pcanywhere-data'
+;
+
+TCP_PIM_AUTO_RP
+:
+  'tcp-pim-auto-rp'
+;
+
+TCP_POP2
+:
+  'tcp-pop2'
+;
+
+TCP_POP3
+:
+  'tcp-pop3'
+;
+
+TCP_PPTP
+:
+  'tcp-pptp'
+;
+
 TCP_PROXY_REASSEMBLY
 :
    'tcp-proxy-reassembly'
+;
+
+TCP_RSH
+:
+  'tcp-rsh'
+;
+
+TCP_RTSP
+:
+  'tcp-rtsp'
 ;
 
 TCP_SESSION
@@ -12767,9 +13047,129 @@ TCP_SESSION
    'tcp-session'
 ;
 
+TCP_SIP
+:
+  'tcp-sip'
+;
+
+TCP_SMTP
+:
+  'tcp-smtp'
+;
+
+TCP_SQLNET
+:
+  'tcp-sqlnet'
+;
+
+TCP_SSH
+:
+  'tcp-ssh'
+;
+
+TCP_SUNRPC
+:
+  'tcp-sunrpc'
+;
+
+TCP_TACACS
+:
+  'tcp-tacacs'
+;
+
+TCP_TALK
+:
+  'tcp-talk'
+;
+
+TCP_TELNET
+:
+  'tcp-telnet'
+;
+
 TCP_UDP
 :
    'tcp-udp'
+;
+
+TCP_UDP_CIFS
+:
+  'tcp-udp-cifs'
+;
+
+TCP_UDP_DISCARD
+:
+  'tcp-udp-discard'
+;
+
+TCP_UDP_DOMAIN
+:
+  'tcp-udp-domain'
+;
+
+TCP_UDP_ECHO
+:
+  'tcp-udp-echo'
+;
+
+TCP_UDP_HTTP
+:
+  'tcp-udp-http'
+;
+
+TCP_UDP_KERBEROS
+:
+  'tcp-udp-kerberos'
+;
+
+TCP_UDP_NFS
+:
+  'tcp-udp-nfs'
+;
+
+TCP_UDP_PIM_AUTO_RP
+:
+  'tcp-udp-pim-auto-rp'
+;
+
+TCP_UDP_SIP
+:
+  'tcp-udp-sip'
+;
+
+TCP_UDP_SUNRPC
+:
+  'tcp-udp-sunrpc'
+;
+
+TCP_UDP_TACACS
+:
+  'tcp-udp-tacacs'
+;
+
+TCP_UDP_TALK
+:
+  'tcp-udp-talk'
+;
+
+TCP_UDP_WWW
+:
+  'tcp-udp-www'
+;
+
+TCP_UUCP
+:
+  'tcp-uucp'
+;
+
+TCP_WHOIS
+:
+  'tcp-whois'
+;
+
+TCP_WWW
+:
+  'tcp-www'
 ;
 
 TCPMUX
@@ -13332,14 +13732,189 @@ UDP
    'udp'
 ;
 
-UDP_PORT
+UDP_BIFF
 :
-   'udp-port'
+  'udp-biff'
+;
+
+UDP_BOOTPC
+:
+  'udp-bootpc'
+;
+
+UDP_BOOTPS
+:
+  'udp-bootps'
+;
+
+UDP_CIFS
+:
+  'udp-cifs'
+;
+
+UDP_DISCARD
+:
+  'udp-discard'
+;
+
+UDP_DNSIX
+:
+  'udp-dnsix'
+;
+
+UDP_DOMAIN
+:
+  'udp-domain'
+;
+
+UDP_ECHO
+:
+  'udp-echo'
+;
+
+UDP_HTTP
+:
+  'udp-http'
+;
+
+UDP_ISAKMP
+:
+  'udp-isakmp'
 ;
 
 UDP_JITTER
 :
    'udp-jitter'
+;
+
+UDP_KERBEROS
+:
+  'udp-kerberos'
+;
+
+UDP_MOBILE_IP
+:
+  'udp-mobile-ip'
+;
+
+UDP_NAMESERVER
+:
+  'udp-nameserver'
+;
+
+UDP_NETBIOS_DGM
+:
+  'udp-netbios-dgm'
+;
+
+UDP_NETBIOS_NS
+:
+  'udp-netbios-ns'
+;
+
+UDP_NFS
+:
+  'udp-nfs'
+;
+
+UDP_NTP
+:
+  'udp-ntp'
+;
+
+UDP_PCANYWHERE_STATUS
+:
+  'udp-pcanywhere-status'
+;
+
+UDP_PIM_AUTO_RP
+:
+  'udp-pim-auto-rp'
+;
+
+UDP_PORT
+:
+   'udp-port'
+;
+
+UDP_RADIUS
+:
+  'udp-radius'
+;
+
+UDP_RADIUS_ACCT
+:
+  'udp-radius-acct'
+;
+
+UDP_RIP
+:
+  'udp-rip'
+;
+
+UDP_SECUREID_UDP
+:
+  'udp-secureid-udp'
+;
+
+UDP_SIP
+:
+  'udp-sip'
+;
+
+UDP_SNMP
+:
+  'udp-snmp'
+;
+
+UDP_SNMPTRAP
+:
+  'udp-snmptrap'
+;
+
+UDP_SUNRPC
+:
+  'udp-sunrpc'
+;
+
+UDP_SYSLOG
+:
+  'udp-syslog'
+;
+
+UDP_TACACS
+:
+  'udp-tacacs'
+;
+
+UDP_TALK
+:
+  'udp-talk'
+;
+
+UDP_TFTP
+:
+  'udp-tftp'
+;
+
+UDP_TIME
+:
+  'udp-time'
+;
+
+UDP_WHO
+:
+  'udp-who'
+;
+
+UDP_WWW
+:
+  'udp-www'
+;
+
+UDP_XDMCP
+:
+  'udp-xdmcp'
 ;
 
 UID

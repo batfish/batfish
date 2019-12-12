@@ -539,6 +539,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Eigrp_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_bandwidth_specifierContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_bgp_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_domainContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_local_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_addressContext;
@@ -1224,6 +1225,7 @@ import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.batfish.representation.cisco.asa.AsaPredefinedServiceObject;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.cisco.eos.AristaBgpDefaultOriginate;
@@ -2675,10 +2677,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbinc_send_community(Eos_rbinc_send_communityContext ctx) {
-    _currentAristaBgpNeighbor.setSendCommunity(true);
-    if (ctx.ADD() != null || !ctx.EXTENDED().isEmpty() || ctx.REMOVE() != null) {
-      // TODO: figure out all the valid modifiers/combos
-      todo(ctx);
+    if (ctx.ADD() != null) {
+      if (ctx.comm.STANDARD() != null) {
+        _currentAristaBgpNeighbor.setSendCommunity(true);
+      } else if (ctx.comm.EXTENDED() != null) {
+        _currentAristaBgpNeighbor.setSendExtendedCommunity(true);
+      }
+    } else if (ctx.REMOVE() != null) {
+      if (ctx.comm.STANDARD() != null) {
+        _currentAristaBgpNeighbor.setSendCommunity(false);
+      } else if (ctx.comm.EXTENDED() != null) {
+        _currentAristaBgpNeighbor.setSendExtendedCommunity(false);
+      }
+    } else if (!ctx.communities.isEmpty()) {
+      for (Eos_bgp_communityContext community : ctx.communities) {
+        if (community.STANDARD() != null) {
+          _currentAristaBgpNeighbor.setSendCommunity(true);
+        } else if (community.EXTENDED() != null) {
+          _currentAristaBgpNeighbor.setSendExtendedCommunity(true);
+        }
+      }
+    } else {
+      _currentAristaBgpNeighbor.setSendCommunity(true);
+      _currentAristaBgpNeighbor.setSendExtendedCommunity(true);
     }
   }
 
@@ -3730,7 +3751,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgs_service_object(Ogs_service_objectContext ctx) {
-    if (ctx.name != null) {
+    if (ctx.predef != null) {
+      String name = ctx.predef.getText();
+      _currentServiceObjectGroup
+          .getLines()
+          .add(new ServiceObjectReferenceServiceObjectGroupLine(name));
+      _configuration.getServiceObjects().computeIfAbsent(name, AsaPredefinedServiceObject::forName);
+    } else if (ctx.name != null) {
       String name = ctx.name.getText();
       _currentServiceObjectGroup
           .getLines()

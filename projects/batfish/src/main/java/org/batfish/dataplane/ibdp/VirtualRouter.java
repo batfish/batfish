@@ -95,7 +95,6 @@ import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.AnnotatedRib;
@@ -2057,12 +2056,6 @@ public class VirtualRouter implements Serializable {
       _layer2Vnis =
           _layer2Vnis.stream()
               .map(vs -> updateVniFloodList(vs, route))
-              .map(Layer2Vni.class::cast)
-              .collect(ImmutableSet.toImmutableSet());
-      _layer3Vnis =
-          _layer3Vnis.stream()
-              .map(vs -> updateVniFloodList(vs, route))
-              .map(Layer3Vni.class::cast)
               .collect(ImmutableSet.toImmutableSet());
     }
   }
@@ -2073,7 +2066,7 @@ public class VirtualRouter implements Serializable {
    * and if the {@link Layer2Vni#getBumTransportMethod()} is unicast flood group (otherwise returns
    * the original {@code vs}).
    */
-  private static Vni updateVniFloodList(Vni vs, EvpnType3Route route) {
+  private static Layer2Vni updateVniFloodList(Layer2Vni vs, EvpnType3Route route) {
     if (vs.getBumTransportMethod() != BumTransportMethod.UNICAST_FLOOD_GROUP
         || route.getVniIp().equals(vs.getSourceAddress())) {
       // Only update settings if transport method is unicast.
