@@ -28,7 +28,4 @@ public interface Vni extends Serializable {
   Integer getUdpPort();
 
   int getVni();
-
-  @Nonnull
-  Vni addToFloodList(Ip ip);
 }
