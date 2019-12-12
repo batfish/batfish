@@ -74,7 +74,7 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
 
   /** Chained builder to create a {@link MatchSessionStep} object */
   public static final class Builder {
-    private @Nullable MatchSessionStepDetail  _detail;
+    private @Nullable MatchSessionStepDetail _detail;
 
     public MatchSessionStep build() {
       checkState(_detail != null, "Must call setDetail before building");

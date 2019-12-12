@@ -15,9 +15,11 @@ public final class MatchSessionStepTest {
   public void testBuilder() {
     Set<String> incomingInterfaces = new HashSet<String>();
     incomingInterfaces.add("a");
-    MatchSessionStep step = MatchSessionStep.builder().setDetail(
-        MatchSessionStepDetail.builder().setIncomingInterfaces(incomingInterfaces).build()
-    ).build();
+    MatchSessionStep step =
+        MatchSessionStep.builder()
+            .setDetail(
+                MatchSessionStepDetail.builder().setIncomingInterfaces(incomingInterfaces).build())
+            .build();
 
     assertEquals(step.getAction(), StepAction.MATCHED_SESSION);
 
@@ -30,14 +32,16 @@ public final class MatchSessionStepTest {
   public void testJsonSerialization() throws IOException {
     Set<String> incomingInterfaces = new HashSet<String>();
     incomingInterfaces.add("b");
-    MatchSessionStep step = MatchSessionStep.builder().setDetail(
-      MatchSessionStep.MatchSessionStepDetail
-          .builder().setIncomingInterfaces(incomingInterfaces).build()
-    ).build();
+    MatchSessionStep step =
+        MatchSessionStep.builder()
+            .setDetail(
+                MatchSessionStep.MatchSessionStepDetail.builder()
+                    .setIncomingInterfaces(incomingInterfaces)
+                    .build())
+            .build();
     MatchSessionStep clone = BatfishObjectMapper.clone(step, MatchSessionStep.class);
     assertEquals(step.getAction(), clone.getAction());
     assertEquals(
-        step.getDetail().getIncomingInterfaces(),
-        clone.getDetail().getIncomingInterfaces());
+        step.getDetail().getIncomingInterfaces(), clone.getDetail().getIncomingInterfaces());
   }
 }
