@@ -1,8 +1,8 @@
 package org.batfish.question.specifiers;
 
 import org.batfish.datamodel.PathConstraints;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
@@ -29,7 +29,7 @@ public final class PathConstraintsUtil {
     return PathConstraints.builder()
         .withStartLocation(
             SpecifierFactories.getLocationSpecifierOrDefault(
-                input.getStartLocation(), LocationSpecifier.ALL_LOCATIONS))
+                input.getStartLocation(), AllInterfacesLocationSpecifier.INSTANCE))
         .withEndLocation(
             SpecifierFactories.getNodeSpecifierOrDefault(
                 input.getEndLocation(), AllNodesNodeSpecifier.INSTANCE))
