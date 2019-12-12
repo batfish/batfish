@@ -22,41 +22,28 @@ public final class DeliveredStep extends Step<DeliveredStepDetail> {
   /** Details of the {@link DeliveredStep} */
   public static final class DeliveredStepDetail {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
-    private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
     private static final String PROP_RESOLVED_NEXTHOP_IP = "resolvedNexthopIp";
 
     private @Nonnull NodeInterfacePair _outputInterface;
-    private @Nullable Flow _transformedFlow;
     private @Nullable Ip _resolvedNexthopIp;
 
-    private DeliveredStepDetail(
-        NodeInterfacePair outInterface,
-        @Nullable Flow transformedFlow,
-        @Nullable Ip resolvedNexthopIp) {
+    private DeliveredStepDetail(NodeInterfacePair outInterface, @Nullable Ip resolvedNexthopIp) {
       _outputInterface = outInterface;
-      _transformedFlow = transformedFlow;
       _resolvedNexthopIp = resolvedNexthopIp;
     }
 
     @JsonCreator
     private static DeliveredStepDetail jsonCreator(
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
-        @JsonProperty(PROP_TRANSFORMED_FLOW) @Nullable() Flow transformedFlow,
         @JsonProperty(PROP_RESOLVED_NEXTHOP_IP) @Nullable() Ip resolvedNexthopIp) {
       checkArgument(outInterface != null, "Missing %s", PROP_OUTPUT_INTERFACE);
-      return new DeliveredStepDetail(outInterface, transformedFlow, resolvedNexthopIp);
+      return new DeliveredStepDetail(outInterface, resolvedNexthopIp);
     }
 
     @JsonProperty(PROP_OUTPUT_INTERFACE)
     @Nonnull
     public NodeInterfacePair getOutputInterface() {
       return _outputInterface;
-    }
-
-    @JsonProperty(PROP_TRANSFORMED_FLOW)
-    @Nullable
-    public Flow getTransformedFlow() {
-      return _transformedFlow;
     }
 
     @JsonProperty(PROP_RESOLVED_NEXTHOP_IP)
@@ -72,21 +59,15 @@ public final class DeliveredStep extends Step<DeliveredStepDetail> {
     /** Chained builder to create a {@link DeliveredStepDetail} object */
     public static final class Builder {
       private @Nullable NodeInterfacePair _outputInterface;
-      private @Nullable Flow _transformedFlow;
       private @Nullable Ip _resolvedNextHopIp;
 
       public DeliveredStepDetail build() {
         checkState(_outputInterface != null, "Must call setOutputInterface before building");
-        return new DeliveredStepDetail(_outputInterface, _transformedFlow, _resolvedNextHopIp);
+        return new DeliveredStepDetail(_outputInterface, _resolvedNextHopIp);
       }
 
       public Builder setOutputInterface(NodeInterfacePair outputIface) {
         _outputInterface = outputIface;
-        return this;
-      }
-
-      public Builder setTransformedFlow(@Nullable Flow transformedFlow) {
-        _transformedFlow = transformedFlow;
         return this;
       }
 
