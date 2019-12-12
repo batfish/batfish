@@ -1,5 +1,6 @@
 package org.batfish.question.differentialreachability;
 
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
@@ -15,8 +16,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
-import org.batfish.common.topology.IpOwners;
-import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -126,13 +125,15 @@ public final class DifferentialReachabilityAnswererTest {
 
       @Override
       public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
-        return IpOwners.computeInterfaceOwnedIpSpaces(
-            IpOwners.computeIpInterfaceOwners(
-                CollectionUtil.toImmutableMap(
-                    snapshotConfigs,
-                    Entry::getKey,
-                    entry -> ImmutableSet.copyOf(entry.getValue().getAllInterfaces().values())),
-                true));
+        // mock up a simplified version of owned IPs
+        return toImmutableMap(
+            snapshotConfigs,
+            Entry::getKey,
+            config ->
+                toImmutableMap(
+                    config.getValue().getActiveInterfaces().values(),
+                    Interface::getName,
+                    iface -> iface.getConcreteAddress().getIp().toIpSpace()));
       }
 
       @Override

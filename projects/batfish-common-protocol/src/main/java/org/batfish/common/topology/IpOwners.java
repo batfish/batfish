@@ -94,7 +94,7 @@ public final class IpOwners {
    * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
    * and convert the set of owned Ips into an IpSpace.
    */
-  public static Map<String, Map<String, IpSpace>> computeInterfaceOwnedIpSpaces(
+  private static Map<String, Map<String, IpSpace>> computeInterfaceOwnedIpSpaces(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
     return toImmutableMap(
         computeInterfaceOwnedIps(ipInterfaceOwners),
