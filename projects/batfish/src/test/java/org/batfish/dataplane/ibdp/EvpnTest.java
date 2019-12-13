@@ -107,7 +107,7 @@ public class EvpnTest {
     Ip vniIp2 = Ip.parse("2.222.222.222");
     vrf1.setLayer2Vnis(
         ImmutableSet.of(
-            Layer2Vni.builder()
+            Layer2Vni.testBuilder()
                 .setVni(vni)
                 .setVlan(1)
                 .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
@@ -115,7 +115,7 @@ public class EvpnTest {
                 .build()));
     vrf2.setLayer2Vnis(
         ImmutableSet.of(
-            Layer2Vni.builder()
+            Layer2Vni.testBuilder()
                 .setVni(vni)
                 .setVlan(1)
                 .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)

@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 
 /** Settings for a VXLAN segment identified by a L2 VNI */
@@ -26,6 +27,7 @@ public final class Layer2Vni implements Vni {
     @Nullable private Integer _udpPort;
     @Nullable private Integer _vlan;
     @Nullable private Integer _vni;
+    @Nullable private String _srcVrf;
 
     private Builder() {}
 
@@ -36,13 +38,15 @@ public final class Layer2Vni implements Vni {
       checkArgument(
           _bumTransportMethod != BumTransportMethod.MULTICAST_GROUP || _bumTransportIps.size() <= 1,
           "Cannot specify more than one multicast group.");
+      checkArgument(_srcVrf != null, "Source VRF for VNI cannot be null");
       return new Layer2Vni(
           _bumTransportIps,
           _bumTransportMethod,
           _sourceAddress,
           firstNonNull(_udpPort, DEFAULT_UDP_PORT),
           _vlan,
-          _vni);
+          _vni,
+          _srcVrf);
     }
 
     public @Nonnull Builder setBumTransportIps(Collection<Ip> bumTransportIps) {
@@ -74,6 +78,12 @@ public final class Layer2Vni implements Vni {
       _vni = vni;
       return this;
     }
+
+    @Nonnull
+    public Builder setSrcVrf(String srcVrf) {
+      _srcVrf = srcVrf;
+      return this;
+    }
   }
 
   @Nonnull private final Set<Ip> _bumTransportIps;
@@ -82,9 +92,15 @@ public final class Layer2Vni implements Vni {
   @Nonnull private final Integer _udpPort;
   private final int _vlan;
   private final int _vni;
+  @Nonnull private final String _srcVrf;
 
   public static @Nonnull Builder builder() {
     return new Builder();
+  }
+
+  @Nonnull
+  public static Builder testBuilder() {
+    return builder().setSrcVrf(Configuration.DEFAULT_VRF_NAME);
   }
 
   private Layer2Vni(
@@ -93,13 +109,15 @@ public final class Layer2Vni implements Vni {
       @Nullable Ip sourceAddress,
       Integer udpPort,
       int vlan,
-      int vni) {
+      int vni,
+      String srcVrf) {
     _bumTransportIps = bumTransportIps;
     _bumTransportMethod = bumTransportMethod;
     _sourceAddress = sourceAddress;
     _udpPort = udpPort;
     _vlan = vlan;
     _vni = vni;
+    _srcVrf = srcVrf;
   }
 
   @Override
@@ -116,13 +134,14 @@ public final class Layer2Vni implements Vni {
         && Objects.equals(_sourceAddress, rhs._sourceAddress)
         && Objects.equals(_udpPort, rhs._udpPort)
         && Objects.equals(_vlan, rhs._vlan)
-        && _vni == rhs._vni;
+        && _vni == rhs._vni
+        && _srcVrf.equals(rhs._srcVrf);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _bumTransportMethod, _bumTransportIps, _sourceAddress, _udpPort, _vlan, _vni);
+        _bumTransportMethod, _bumTransportIps, _sourceAddress, _udpPort, _vlan, _vni, _srcVrf);
   }
 
   @Override
@@ -163,6 +182,12 @@ public final class Layer2Vni implements Vni {
   }
 
   @Nonnull
+  @Override
+  public String getSrcVrf() {
+    return _srcVrf;
+  }
+
+  @Nonnull
   public Builder toBuilder() {
     return builder()
         .setBumTransportMethod(_bumTransportMethod)
@@ -170,7 +195,8 @@ public final class Layer2Vni implements Vni {
         .setVni(_vni)
         .setVlan(_vlan)
         .setUdpPort(_udpPort)
-        .setBumTransportIps(_bumTransportIps);
+        .setBumTransportIps(_bumTransportIps)
+        .setSrcVrf(_srcVrf);
   }
 
   /** Return a new {@link Layer2Vni} with a flood list that includes a given {@code ip} */

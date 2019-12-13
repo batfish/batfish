@@ -3966,6 +3966,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
         .setVlan(vlan)
         .setVni(vni)
+        .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
         .build();
   }
 
@@ -3994,6 +3995,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .setSourceAddress(sourceAddress)
         .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
         .setVni(vni)
+        .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
         .build();
   }
 

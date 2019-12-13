@@ -128,8 +128,10 @@ public final class FixedPointTopologyTest {
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     Vrf h1Vrf = vb.setOwner(_h1).build();
     Vrf h2Vrf = vb.setOwner(_h2).build();
-    Vrf s1Vrf = vb.setOwner(_s1).build();
-    Vrf s2Vrf = vb.setOwner(_s2).build();
+    Vrf s1Vrf = vb.setOwner(_s1).setName(Configuration.DEFAULT_VRF_NAME).build();
+    Vrf s1VniVrf = vb.setOwner(_s1).setName("vrf1").build();
+    Vrf s2Vrf = vb.setOwner(_s2).setName(Configuration.DEFAULT_VRF_NAME).build();
+    Vrf s2VniVrf = vb.setOwner(_s2).setName("vrf1").build();
     Interface.Builder l3Builder =
         Interface.builder().setType(InterfaceType.PHYSICAL).setActive(true);
     l3Builder.setName(E1_NAME).setAddresses(H1_ADDRESS).setOwner(_h1).setVrf(h1Vrf).build();
@@ -147,16 +149,16 @@ public final class FixedPointTopologyTest {
     l2Builder.setName(SWP2_NAME).setOwner(_s2).setVrf(s2Vrf).build();
 
     Layer2Vni.Builder vsb =
-        Layer2Vni.builder()
+        Layer2Vni.testBuilder()
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setUdpPort(UDP_PORT)
             .setVlan(VLAN)
             .setVni(VNI);
-    s1Vrf.addLayer2Vni(
+    s1VniVrf.addLayer2Vni(
         vsb.setBumTransportIps(of(S2_ADDRESS.getIp()))
             .setSourceAddress(S1_ADDRESS.getIp())
             .build());
-    s2Vrf.addLayer2Vni(
+    s2VniVrf.addLayer2Vni(
         vsb.setBumTransportIps(of(S1_ADDRESS.getIp()))
             .setSourceAddress(S2_ADDRESS.getIp())
             .build());
