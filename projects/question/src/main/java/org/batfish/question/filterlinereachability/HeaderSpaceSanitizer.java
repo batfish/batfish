@@ -42,7 +42,7 @@ public class HeaderSpaceSanitizer
   public IpAccessListLine visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
     return ipAccessListLine
         .toBuilder()
-        .setMatchCondition(ipAccessListLine.getMatchCondition())
+        .setMatchCondition(visit(ipAccessListLine.getMatchCondition()))
         .build();
   }
 
