@@ -6,6 +6,8 @@ import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +37,14 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.ArpErrorStep;
+import org.batfish.datamodel.flow.DeliveredStep;
+import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -364,5 +373,119 @@ public class TracerouteEngineTest {
         .computeTraces(
             ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
             false);
+  }
+
+  @Test
+  public void testDeliveredStep() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Interface.Builder ib = nf.interfaceBuilder();
+
+    // c1
+    Configuration c1 = cb.setHostname("c1").build();
+    Vrf v1 = vb.setOwner(c1).build();
+
+    ib.setName("i1")
+        .setOwner(c1)
+        .setVrf(v1)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .build();
+
+    SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c1.getHostname(), c1);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    Flow flow =
+        Flow.builder()
+            .setIngressNode(c1.getHostname())
+            .setTag(batfish.getFlowTag(snapshot))
+            .setDstIp(Ip.parse("1.0.0.1"))
+            .build();
+    batfish.computeDataPlane(snapshot);
+    Trace trace =
+        Iterables.getOnlyElement(
+            batfish.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
+
+    /* Flow should be delivered */
+    assertThat(trace, hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET));
+    assertThat(trace.getHops(), hasSize(1));
+    List<Step<?>> steps = trace.getHops().get(0).getSteps();
+    assertThat(steps, hasSize(3));
+    Step<?> lastStep = steps.get(2);
+    assertThat(lastStep, instanceOf(DeliveredStep.class));
+    DeliveredStep deliveredStep = (DeliveredStep) lastStep;
+    assertThat(deliveredStep.getAction(), equalTo(StepAction.DELIVERED_TO_SUBNET));
+    assertThat(deliveredStep.getDetail().getResolvedNexthopIp(), equalTo(Ip.parse("1.0.0.1")));
+    assertThat(
+        deliveredStep.getDetail().getOutputInterface(), equalTo(NodeInterfacePair.of("c1", "i1")));
+  }
+
+  @Test
+  public void testArpErrorStep() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Interface.Builder ib = nf.interfaceBuilder();
+
+    // c1
+    Configuration c1 = cb.setHostname("c1").build();
+    Vrf v1 = vb.setOwner(c1).build();
+
+    v1.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("2.0.0.0/8"))
+                .setNextHopInterface("i1")
+                .setNextHopIp(Ip.parse("3.3.3.3"))
+                .setAdministrativeCost(1)
+                .build());
+
+    ib.setName("i1")
+        .setOwner(c1)
+        .setVrf(v1)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
+        .build();
+
+    // c2
+    Configuration c2 = cb.setHostname("c2").build();
+    Vrf v2 = vb.setOwner(c2).build();
+
+    ib.setName("i2")
+        .setOwner(c2)
+        .setVrf(v2)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/31"))
+        .build();
+
+    SortedMap<String, Configuration> configurations =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    Flow flow =
+        Flow.builder()
+            .setIngressNode(c1.getHostname())
+            .setTag(batfish.getFlowTag(snapshot))
+            .setDstIp(Ip.parse("2.0.0.1"))
+            .build();
+    batfish.computeDataPlane(snapshot);
+    Trace trace =
+        Iterables.getOnlyElement(
+            batfish.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
+
+    /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
+    assertThat(trace, hasDisposition(FlowDisposition.NEIGHBOR_UNREACHABLE));
+    assertThat(trace.getHops(), hasSize(1));
+    List<Step<?>> steps = trace.getHops().get(0).getSteps();
+    assertThat(steps, hasSize(3));
+    Step<?> lastStep = steps.get(2);
+    assertThat(lastStep, instanceOf(ArpErrorStep.class));
+    ArpErrorStep arpErrorStep = (ArpErrorStep) lastStep;
+    assertThat(arpErrorStep.getAction(), equalTo(StepAction.NEIGHBOR_UNREACHABLE));
+    assertThat(arpErrorStep.getDetail().getResolvedNexthopIp(), equalTo(Ip.parse("3.3.3.3")));
+    assertThat(
+        arpErrorStep.getDetail().getOutputInterface(), equalTo(NodeInterfacePair.of("c1", "i1")));
   }
 }
