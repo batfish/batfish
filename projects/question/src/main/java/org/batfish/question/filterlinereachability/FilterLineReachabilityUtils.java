@@ -2,6 +2,7 @@ package org.batfish.question.filterlinereachability;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -25,11 +26,11 @@ public class FilterLineReachabilityUtils {
   private FilterLineReachabilityUtils() {}
 
   public static Set<String> getReferencedAcls(IpAccessListLine line) {
-    return ACLS_COLLECTOR.visit(line);
+    return ACLS_COLLECTOR.visit(line).distinct().collect(ImmutableSet.toImmutableSet());
   }
 
   public static Set<String> getReferencedInterfaces(IpAccessListLine line) {
-    return INTERFACES_COLLECTOR.visit(line);
+    return INTERFACES_COLLECTOR.visit(line).distinct().collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -37,67 +38,61 @@ public class FilterLineReachabilityUtils {
    * IpAccessListLine}. Does not recurse into referenced ACLs.
    */
   private static class ReferencedAclsCollector
-      implements GenericAclLineMatchExprVisitor<Set<String>>,
-          GenericIpAccessListLineVisitor<Set<String>> {
+      implements GenericAclLineMatchExprVisitor<Stream<String>>,
+          GenericIpAccessListLineVisitor<Stream<String>> {
 
     /* IpAccessListLine visit methods */
 
     @Override
-    public Set<String> visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
+    public Stream<String> visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
       return visit(ipAccessListLine.getMatchCondition());
     }
 
     /* AclLineMatchExpr visit methods */
 
     @Override
-    public Set<String> visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-      return andMatchExpr.getConjuncts().stream()
-          .flatMap(c -> visit(c).stream())
-          .distinct()
-          .collect(ImmutableSet.toImmutableSet());
+    public Stream<String> visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+      return andMatchExpr.getConjuncts().stream().flatMap(this::visit);
     }
 
     @Override
-    public Set<String> visitFalseExpr(FalseExpr falseExpr) {
-      return ImmutableSet.of();
+    public Stream<String> visitFalseExpr(FalseExpr falseExpr) {
+      return Stream.of();
     }
 
     @Override
-    public Set<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-      return ImmutableSet.of();
+    public Stream<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+      return Stream.of();
     }
 
     @Override
-    public Set<String> visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-      return ImmutableSet.of();
+    public Stream<String> visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+      return Stream.of();
     }
 
     @Override
-    public Set<String> visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+    public Stream<String> visitNotMatchExpr(NotMatchExpr notMatchExpr) {
       return visit(notMatchExpr.getOperand());
     }
 
     @Override
-    public Set<String> visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-      return ImmutableSet.of();
+    public Stream<String> visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+      return Stream.of();
     }
 
     @Override
-    public Set<String> visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      return orMatchExpr.getDisjuncts().stream()
-          .flatMap(c -> visit(c).stream())
-          .distinct()
-          .collect(ImmutableSet.toImmutableSet());
+    public Stream<String> visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+      return orMatchExpr.getDisjuncts().stream().flatMap(this::visit);
     }
 
     @Override
-    public Set<String> visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-      return ImmutableSet.of(permittedByAcl.getAclName());
+    public Stream<String> visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+      return Stream.of(permittedByAcl.getAclName());
     }
 
     @Override
-    public Set<String> visitTrueExpr(TrueExpr trueExpr) {
-      return ImmutableSet.of();
+    public Stream<String> visitTrueExpr(TrueExpr trueExpr) {
+      return Stream.of();
     }
   }
 
@@ -106,67 +101,61 @@ public class FilterLineReachabilityUtils {
    * IpAccessListLine}. Does not recurse into referenced ACLs.
    */
   private static class ReferencedInterfacesCollector
-      implements GenericAclLineMatchExprVisitor<Set<String>>,
-          GenericIpAccessListLineVisitor<Set<String>> {
+      implements GenericAclLineMatchExprVisitor<Stream<String>>,
+          GenericIpAccessListLineVisitor<Stream<String>> {
 
     /* IpAccessListLine visit methods */
 
     @Override
-    public Set<String> visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
+    public Stream<String> visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
       return visit(ipAccessListLine.getMatchCondition());
     }
 
     /* AclLineMatchExpr visit methods */
 
     @Override
-    public Set<String> visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-      return andMatchExpr.getConjuncts().stream()
-          .flatMap(c -> visit(c).stream())
-          .distinct()
-          .collect(ImmutableSet.toImmutableSet());
+    public Stream<String> visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+      return andMatchExpr.getConjuncts().stream().flatMap(this::visit);
     }
 
     @Override
-    public Set<String> visitFalseExpr(FalseExpr falseExpr) {
-      return ImmutableSet.of();
+    public Stream<String> visitFalseExpr(FalseExpr falseExpr) {
+      return Stream.of();
     }
 
     @Override
-    public Set<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-      return ImmutableSet.of();
+    public Stream<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+      return Stream.of();
     }
 
     @Override
-    public Set<String> visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-      return matchSrcInterface.getSrcInterfaces();
+    public Stream<String> visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+      return matchSrcInterface.getSrcInterfaces().stream();
     }
 
     @Override
-    public Set<String> visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+    public Stream<String> visitNotMatchExpr(NotMatchExpr notMatchExpr) {
       return visit(notMatchExpr.getOperand());
     }
 
     @Override
-    public Set<String> visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-      return ImmutableSet.of();
+    public Stream<String> visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+      return Stream.of();
     }
 
     @Override
-    public Set<String> visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      return orMatchExpr.getDisjuncts().stream()
-          .flatMap(c -> visit(c).stream())
-          .distinct()
-          .collect(ImmutableSet.toImmutableSet());
+    public Stream<String> visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+      return orMatchExpr.getDisjuncts().stream().flatMap(this::visit);
     }
 
     @Override
-    public Set<String> visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-      return ImmutableSet.of();
+    public Stream<String> visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+      return Stream.of();
     }
 
     @Override
-    public Set<String> visitTrueExpr(TrueExpr trueExpr) {
-      return ImmutableSet.of();
+    public Stream<String> visitTrueExpr(TrueExpr trueExpr) {
+      return Stream.of();
     }
   }
 }
