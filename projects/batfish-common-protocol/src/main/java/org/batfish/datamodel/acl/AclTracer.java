@@ -31,7 +31,7 @@ import org.batfish.datamodel.visitors.IpSpaceTracer;
  * Acts like {@link Evaluator} on {@link IpAccessList}, except that it introduces tracing when
  * encountering traceable classes.
  */
-public final class AclTracer extends Evaluator {
+public final class AclTracer extends Evaluator implements GenericIpAccessListLineVisitor<Boolean> {
 
   public static AclTrace trace(
       @Nonnull IpAccessList ipAccessList,
@@ -376,7 +376,7 @@ public final class AclTracer extends Evaluator {
     newTrace();
     for (int i = 0; i < lines.size(); i++) {
       IpAccessListLine line = lines.get(i);
-      if (line.getMatchCondition().accept(this)) {
+      if (visit(line)) {
         recordAction(ipAccessList, i, line);
         endTrace();
         return line.getAction() == LineAction.PERMIT;
@@ -399,6 +399,15 @@ public final class AclTracer extends Evaluator {
   public boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
     return ipSpace.accept(new IpSpaceTracer(this, ip, "source IP"));
   }
+
+  /* IpAccessListLine visit methods */
+
+  @Override
+  public Boolean visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
+    return visit(ipAccessListLine.getMatchCondition());
+  }
+
+  /* AclLineMatchExpr visit methods */
 
   @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {

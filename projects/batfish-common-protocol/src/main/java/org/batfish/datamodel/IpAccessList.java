@@ -13,7 +13,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
-import org.batfish.datamodel.acl.Evaluator;
+import org.batfish.datamodel.acl.IpAccessListLineEvaluator;
 
 /** An access-list used to filter IPV4 packets */
 public class IpAccessList implements Serializable {
@@ -145,11 +145,12 @@ public class IpAccessList implements Serializable {
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces,
       LineAction defaultAction) {
-    Evaluator evaluator = new Evaluator(flow, srcInterface, availableAcls, namedIpSpaces);
+    IpAccessListLineEvaluator lineEvaluator =
+        new IpAccessListLineEvaluator(flow, srcInterface, availableAcls, namedIpSpaces);
     for (int i = 0; i < _lines.size(); i++) {
-      IpAccessListLine line = _lines.get(i);
-      if (line.getMatchCondition().accept(evaluator)) {
-        return new FilterResult(i, line.getAction());
+      LineAction action = lineEvaluator.visit(_lines.get(i));
+      if (action != null) {
+        return new FilterResult(i, action);
       }
     }
     return new FilterResult(null, defaultAction);
