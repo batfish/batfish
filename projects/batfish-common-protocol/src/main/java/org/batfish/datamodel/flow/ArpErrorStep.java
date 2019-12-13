@@ -92,6 +92,9 @@ public final class ArpErrorStep extends Step<ArpErrorStepDetail> {
 
     public ArpErrorStep build() {
       checkState(_action != null, "Must call setAction before building");
+      checkState(
+          _action == StepAction.NEIGHBOR_UNREACHABLE || _action == StepAction.INSUFFICIENT_INFO,
+          "action must be NEIGHBOR_UNREACHABLE or INSUFFICIENT_INFO");
       checkState(_detail != null, "Must call setDetail before building");
       return new ArpErrorStep(_detail, _action);
     }
