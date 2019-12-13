@@ -3,8 +3,8 @@ package org.batfish.datamodel.flow;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Set;
 import java.io.IOException;
+import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.flow.MatchSessionStep.MatchSessionStepDetail;
 import org.junit.Test;
