@@ -91,6 +91,9 @@ public final class DeliveredStep extends Step<DeliveredStepDetail> {
 
     public DeliveredStep build() {
       checkState(_action != null, "Must call setAction before building");
+      checkState(
+          _action == StepAction.DELIVERED_TO_SUBNET || _action == StepAction.EXITS_NETWORK,
+          "action must DELIVERED_TO_SUBNET or EXITS_NETWORK");
       checkState(_detail != null, "Must call setDetail before building");
       return new DeliveredStep(_detail, _action);
     }
