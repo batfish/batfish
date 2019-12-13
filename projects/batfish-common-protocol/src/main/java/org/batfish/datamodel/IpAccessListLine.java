@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -179,6 +180,10 @@ public final class IpAccessListLine implements Serializable {
   @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
+  }
+
+  public <R> R accept(GenericIpAccessListLineVisitor<R> visitor) {
+    return visitor.visitIpAccessListLine(this);
   }
 
   @Override
