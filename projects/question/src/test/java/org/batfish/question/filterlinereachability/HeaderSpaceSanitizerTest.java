@@ -8,7 +8,6 @@ import java.util.Map;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
@@ -25,7 +24,7 @@ public class HeaderSpaceSanitizerTest {
 
   private static final String IP_SPACE_NAME = "ipSpace";
   private static final Ip REFERENCED_IP = Ip.parse("1.1.1.1");
-  private static final IpSpace REFERENCED_SPACE = new IpIpSpace(REFERENCED_IP);
+  private static final IpSpace REFERENCED_SPACE = REFERENCED_IP.toIpSpace();
   private static final String CIRCULAR_REF_NAME = "cycleSpace";
   private static final Map<String, IpSpace> NAMED_IP_SPACES =
       ImmutableMap.of(
