@@ -26,11 +26,11 @@ public class FilterLineReachabilityUtils {
   private FilterLineReachabilityUtils() {}
 
   public static Set<String> getReferencedAcls(IpAccessListLine line) {
-    return ACLS_COLLECTOR.visit(line).distinct().collect(ImmutableSet.toImmutableSet());
+    return ACLS_COLLECTOR.visit(line).collect(ImmutableSet.toImmutableSet());
   }
 
   public static Set<String> getReferencedInterfaces(IpAccessListLine line) {
-    return INTERFACES_COLLECTOR.visit(line).distinct().collect(ImmutableSet.toImmutableSet());
+    return INTERFACES_COLLECTOR.visit(line).collect(ImmutableSet.toImmutableSet());
   }
 
   /**
