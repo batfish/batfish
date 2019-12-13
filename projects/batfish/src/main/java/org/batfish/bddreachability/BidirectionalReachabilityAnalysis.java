@@ -217,6 +217,8 @@ public final class BidirectionalReachabilityAnalysis {
                 bdd = lastHopMgr.existsLastHop(bdd);
               }
               bdd = _bddPacket.swapSourceAndDestinationFields(bdd);
+              // erase required transit nodes constraint left over from forward pass
+              bdd = bdd.exist(_factory.getRequiredTransitNodeBDD());
               return Maps.immutableEntry(orig, bdd);
             })
         .filter(Objects::nonNull)

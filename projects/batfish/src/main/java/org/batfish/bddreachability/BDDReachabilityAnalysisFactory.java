@@ -1403,13 +1403,6 @@ public final class BDDReachabilityAnalysisFactory {
             .startActive()) {
       assert span != null; // avoid unused warning
 
-      // erase required transit nodes constraint left over from forward pass
-      returnPassOrigBdds =
-          toImmutableMap(
-              returnPassOrigBdds,
-              Entry::getKey,
-              entry -> entry.getValue().exist(_requiredTransitNodeBDD));
-
       /* We will use the return pass reachability graph a bit differently than usual: to find flows
        * that successfully return to the origination point of the forward flow, we'll look at states
        * like NodeInterfaceDeliveredToSubnet, rather than adding edges all the way to Query. Also,
