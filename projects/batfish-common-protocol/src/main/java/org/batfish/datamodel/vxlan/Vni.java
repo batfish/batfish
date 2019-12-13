@@ -21,11 +21,16 @@ public interface Vni extends Serializable {
   @Nonnull
   BumTransportMethod getBumTransportMethod();
 
+  /** IP address with which the encapsulated packets would be sourced */
   @Nullable
   Ip getSourceAddress();
 
   @Nonnull
   Integer getUdpPort();
 
+  /** VNI number */
   int getVni();
+
+  /** Name of the VRF from which the encapsulated packets would be sourced */
+  String getSrcVrf();
 }

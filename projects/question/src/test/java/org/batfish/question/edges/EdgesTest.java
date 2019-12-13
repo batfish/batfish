@@ -1,5 +1,6 @@
 package org.batfish.question.edges;
 
+import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_MULTICAST_GROUP;
 import static org.batfish.question.edges.EdgesAnswerer.COL_NODE;
@@ -168,7 +169,7 @@ public final class EdgesTest {
     Vrf v2 = _vb.setOwner(c2).build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(node1, c1, node2, c2);
     Layer2Vni.Builder vniSettingsBuilder =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(multicastGroup))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(udpPort)

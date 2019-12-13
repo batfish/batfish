@@ -1,6 +1,7 @@
 package org.batfish.datamodel.vxlan;
 
 import static com.google.common.collect.ImmutableSortedSet.of;
+import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdge;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdges;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.buildVxlanNode;
@@ -134,7 +135,7 @@ public final class VxlanTopologyUtilsTest {
     ib.setAddresses(ConcreteInterfaceAddress.create(SRC_IP1, 31)).setOwner(_c1).setVrf(_v1).build();
     ib.setAddresses(ConcreteInterfaceAddress.create(SRC_IP2, 31)).setOwner(_c2).setVrf(_v2).build();
     Layer2Vni.Builder vsb =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setUdpPort(UDP_PORT)
             .setVlan(VLAN1)
@@ -160,7 +161,7 @@ public final class VxlanTopologyUtilsTest {
   public void testAddVniEdge() {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     Layer2Vni.Builder vniSettingsBuilder =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(UDP_PORT)
@@ -192,7 +193,7 @@ public final class VxlanTopologyUtilsTest {
   public void testAddVniEdgeIncompatible() {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     Layer2Vni.Builder vniSettingsBuilder =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(UDP_PORT)
@@ -217,7 +218,7 @@ public final class VxlanTopologyUtilsTest {
     Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     Layer2Vni.Builder vniSettingsBuilder =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(UDP_PORT)
@@ -243,7 +244,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testBuildVxlanNode() {
     Layer2Vni vniSettings =
-        Layer2Vni.builder()
+        testBuilder()
             .setSourceAddress(SRC_IP1)
             .setVlan(VLAN1)
             .setVni(VNI)
@@ -257,7 +258,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchBumTransportHeadFloodGroup() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(SRC_IP2))
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -266,7 +267,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(SRC_IP2))
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -281,7 +282,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchBumTransportMethod() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -290,7 +291,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -305,7 +306,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchBumTransportMulticastGroup() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -314,7 +315,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(Ip.parse("224.0.0.5")))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -329,7 +330,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchBumTransportMulticastGroupUnicast() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(SRC_IP2))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -338,7 +339,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(SRC_IP1))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -353,7 +354,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchBumTransportTailFloodGroup() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(SRC_IP1))
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -362,7 +363,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(SRC_IP1))
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -377,7 +378,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchDifferentUdpPort() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -386,7 +387,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -401,7 +402,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchNullHeadSourceAddress() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -410,7 +411,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(null)
@@ -425,7 +426,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchNullTailSourceAddress() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(null)
@@ -434,7 +435,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -449,7 +450,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMismatchSameSourceAddress() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -458,7 +459,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -473,7 +474,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsMulticast() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -482,7 +483,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -497,7 +498,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testCompatibleVniSettingsUnicast() {
     Layer2Vni vniSettingsTail =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(SRC_IP2))
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(SRC_IP1)
@@ -506,7 +507,7 @@ public final class VxlanTopologyUtilsTest {
             .setVni(VNI)
             .build();
     Layer2Vni vniSettingsHead =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(SRC_IP1))
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSourceAddress(SRC_IP2)
@@ -522,7 +523,7 @@ public final class VxlanTopologyUtilsTest {
   public void testInitialVxlanTopology() {
     Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
     Layer2Vni.Builder vniSettingsBuilder =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(UDP_PORT)
@@ -543,7 +544,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testInitialVxlanTopologyFromTable() {
     Layer2Vni.Builder vniSettingsBuilder =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(UDP_PORT)
