@@ -1049,7 +1049,9 @@ public final class BidirectionalReachabilityAnalysisTest {
   private void assertSessionFiblookupAcceptSingleNode(
       SortedMap<String, Configuration> configurations) throws IOException {
     assertSessionFiblookupAccept(
-        configurations, SFL_DST_IP_SPACE_SINGLE_NODE, ImmutableSet.of(DELIVERED_TO_SUBNET));
+        configurations,
+        SFL_DST_IP_SPACE_SINGLE_NODE,
+        ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK));
   }
 
   private void assertSessionFiblookupAcceptDualNode(SortedMap<String, Configuration> configurations)
@@ -1060,7 +1062,9 @@ public final class BidirectionalReachabilityAnalysisTest {
   private void assertSessionFiblookupReturnNoRouteSingleNode(
       SortedMap<String, Configuration> configurations) throws IOException {
     assertSessionFiblookupReturnNoRoute(
-        configurations, SFL_DST_IP_SPACE_SINGLE_NODE, ImmutableSet.of(DELIVERED_TO_SUBNET));
+        configurations,
+        SFL_DST_IP_SPACE_SINGLE_NODE,
+        ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK));
   }
 
   private void assertSessionFiblookupReturnNoRouteDualNode(
@@ -1353,12 +1357,12 @@ public final class BidirectionalReachabilityAnalysisTest {
   public void testRequiredTransitNodes_traceroute() throws IOException {
     SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
     Batfish batfish = getBatfish(configs, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     BiConsumer<Flow, List<String>> assertTraceHops =
         (flow, expectedHops) -> {
           List<Trace> traces =
-              batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false).get(flow);
+              batfish.getTracerouteEngine(batfish.getSnapshot()).computeTraces(ImmutableSet.of(flow), false).get(flow);
 
           assertEquals(1, traces.size());
           Trace trace = traces.get(0);
@@ -1392,10 +1396,10 @@ public final class BidirectionalReachabilityAnalysisTest {
   public void testRequiredTransitNodes_noTransitNodesConstraint() throws IOException {
     SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
     Batfish batfish = getBatfish(configs, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     // Bidirectional analysis
-    DataPlane dataPlane = batfish.loadDataPlane();
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     BidirectionalReachabilityAnalysis analysis =
         new BidirectionalReachabilityAnalysis(
             PKT,
@@ -1430,10 +1434,10 @@ public final class BidirectionalReachabilityAnalysisTest {
   public void testRequiredTransitNodes_withTransitNodeConstraint() throws IOException {
     SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
     Batfish batfish = getBatfish(configs, temp);
-    batfish.computeDataPlane();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
     // Bidirectional analysis
-    DataPlane dataPlane = batfish.loadDataPlane();
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     BidirectionalReachabilityAnalysis analysis =
         new BidirectionalReachabilityAnalysis(
             PKT,
