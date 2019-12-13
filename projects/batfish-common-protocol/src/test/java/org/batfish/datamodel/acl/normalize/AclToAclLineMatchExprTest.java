@@ -12,7 +12,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
-import static org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr.aclLines;
 import static org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr.toAclLineMatchExpr;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -103,13 +102,6 @@ public class AclToAclLineMatchExprTest {
   }
 
   @Test
-  public void testSimpleLines() {
-    assertThat(
-        aclLines(aclLineMatchExprToBDD(), SIMPLE_ACL, ImmutableMap.of()),
-        equalTo(SIMPLE_ACL_LINES));
-  }
-
-  @Test
   public void testReference() {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of(ACL_REFERENT.getName(), ACL_REFERENT);
     AclLineMatchExpr expr =
@@ -124,23 +116,6 @@ public class AclToAclLineMatchExprTest {
                 and(not(EXPR_C), ACL_REFERENT_EXPR),
                 // line 4: ACCEPT_D
                 and(not(EXPR_C), EXPR_D))));
-  }
-
-  @Test
-  public void testReferenceLines() {
-    Map<String, IpAccessList> namedAcls = ImmutableMap.of(ACL_REFERENT.getName(), ACL_REFERENT);
-    List<IpAccessListLine> lines =
-        aclLines(aclLineMatchExprToBDD(namedAcls), ACL_REFERRER, namedAcls);
-    assertThat(
-        lines,
-        equalTo(
-            ImmutableList.of(
-                ACCEPT_C,
-                REJECT_C,
-                // line 3: reference to ACL_REFERENT is inlined
-                accepting(ACL_REFERENT_EXPR),
-                ACCEPT_D,
-                REJECT_E)));
   }
 
   @Test
