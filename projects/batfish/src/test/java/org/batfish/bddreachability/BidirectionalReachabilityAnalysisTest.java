@@ -1362,7 +1362,10 @@ public final class BidirectionalReachabilityAnalysisTest {
     BiConsumer<Flow, List<String>> assertTraceHops =
         (flow, expectedHops) -> {
           List<Trace> traces =
-              batfish.getTracerouteEngine(batfish.getSnapshot()).computeTraces(ImmutableSet.of(flow), false).get(flow);
+              batfish
+                  .getTracerouteEngine(batfish.getSnapshot())
+                  .computeTraces(ImmutableSet.of(flow), false)
+                  .get(flow);
 
           assertEquals(1, traces.size());
           Trace trace = traces.get(0);
