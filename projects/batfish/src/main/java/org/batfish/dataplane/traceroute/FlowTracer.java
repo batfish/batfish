@@ -77,6 +77,7 @@ import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.MatchSessionStep;
+import org.batfish.datamodel.flow.MatchSessionStep.MatchSessionStepDetail;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.PolicyStep;
@@ -780,7 +781,11 @@ class FlowTracer {
     }
     FirewallSessionTraceInfo session = matchingSessions.get(0);
 
-    _steps.add(new MatchSessionStep());
+    _steps.add(
+        new MatchSessionStep(
+            MatchSessionStepDetail.builder()
+                .setIncomingInterfaces(session.getIncomingInterfaces())
+                .build()));
 
     Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
