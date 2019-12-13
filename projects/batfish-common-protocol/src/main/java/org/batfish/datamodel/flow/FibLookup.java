@@ -1,5 +1,6 @@
 package org.batfish.datamodel.flow;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.SessionActionVisitor;
@@ -8,6 +9,7 @@ import org.batfish.datamodel.visitors.SessionActionVisitor;
  * A {@link SessionAction} whereby return traffic is forwarded according to the result of a lookup
  * on the FIB of the interface on which the return traffic is received.
  */
+@JsonTypeName("FibLookup")
 @ParametersAreNonnullByDefault
 public final class FibLookup implements SessionAction {
 

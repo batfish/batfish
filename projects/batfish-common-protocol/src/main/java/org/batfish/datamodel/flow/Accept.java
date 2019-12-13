@@ -1,5 +1,6 @@
 package org.batfish.datamodel.flow;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.SessionActionVisitor;
@@ -8,6 +9,7 @@ import org.batfish.datamodel.visitors.SessionActionVisitor;
  * A {@link SessionAction} whereby return traffic is be accepted by the node from which it
  * originated.
  */
+@JsonTypeName("Accept")
 @ParametersAreNonnullByDefault
 public final class Accept implements SessionAction {
 
