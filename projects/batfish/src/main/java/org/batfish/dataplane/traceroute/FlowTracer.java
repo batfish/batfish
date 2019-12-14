@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -611,12 +612,11 @@ class FlowTracer {
         firstNonNull(overrideNextHopIp, dstIp),
         currentNodeName,
         fib,
-        fibForward -> {
-          forkTracerSameNode()
-              .forwardOutInterface(
-                  _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
-                  fibForward.getArpIp(),
-                  overrideNextHopIp);
+        (flowTracer, fibForward) -> {
+          flowTracer.forwardOutInterface(
+              _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
+              fibForward.getArpIp(),
+              overrideNextHopIp);
         },
         new Stack<>());
   }
@@ -627,7 +627,10 @@ class FlowTracer {
    */
   @VisibleForTesting
   void fibLookup(
-      Ip dstIp, String currentNodeName, Fib fib, Consumer<FibForward> forwardOutInterfaceHandler) {
+      Ip dstIp,
+      String currentNodeName,
+      Fib fib,
+      BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler) {
     fibLookup(dstIp, currentNodeName, fib, forwardOutInterfaceHandler, new Stack<>());
   }
 
@@ -641,7 +644,7 @@ class FlowTracer {
       Ip dstIp,
       String currentNodeName,
       Fib fib,
-      Consumer<FibForward> forwardOutInterfaceHandler,
+      BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
       Stack<Breadcrumb> intraHopBreadcrumbs) {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
@@ -652,6 +655,9 @@ class FlowTracer {
     if (intraHopBreadcrumbs.isEmpty()) {
       _breadcrumbs.push(breadcrumb);
     }
+    checkState(_breadcrumbs.size() == _hops.size() + 1, "Breadcrumbs should be one more than hops");
+    int breadCrumbSize = _breadcrumbs.size();
+    int hopSize = _hops.size();
     try {
       Set<FibEntry> fibEntries = fib.get(dstIp);
 
@@ -659,8 +665,6 @@ class FlowTracer {
         buildNoRouteTrace();
         return;
       }
-
-      //      _steps.add(buildRoutingStep(fibEntries));
 
       // Group traces by action (we do not want extra branching if there is branching
       // in FIB resolution)
@@ -672,44 +676,20 @@ class FlowTracer {
               FibActionComparator.INSTANCE);
 
       // For every action corresponding to ECMP LPM FibEntry
-      for (FibAction action : groupedByFibAction.keySet()) {
-        _steps.add(buildRoutingStep(action, groupedByFibAction.get(action)));
-        action.accept(
-            new FibActionVisitor<Void>() {
-              @Override
-              public Void visitFibForward(FibForward fibForward) {
-                forwardOutInterfaceHandler.accept(fibForward);
-                return null;
-              }
-
-              @Override
-              public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
-                if (intraHopBreadcrumbs.contains(breadcrumb)) {
-                  buildLoopTrace();
-                  return null;
-                }
-                intraHopBreadcrumbs.push(breadcrumb);
-                String nextVrf = fibNextVrf.getNextVrf();
-                forkTracerSameNode(nextVrf)
-                    .fibLookup(
-                        dstIp,
-                        currentNodeName,
-                        _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
-                        forwardOutInterfaceHandler,
-                        intraHopBreadcrumbs);
-                intraHopBreadcrumbs.pop();
-                return null;
-              }
-
-              @Override
-              public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
-                forkTracerSameNode().buildNullRoutedTrace();
-                return null;
-              }
-            });
-        // remove the routing step so that it is not duplicated in the next forked trace
-        _steps.remove(_steps.size() - 1);
-      }
+      groupedByFibAction.forEach(
+          ((fibAction, fibEntriesForFibAction) -> {
+            forkTracerSameNode()
+                .forward(
+                    fibAction,
+                    fibEntriesForFibAction,
+                    dstIp,
+                    currentNodeName,
+                    forwardOutInterfaceHandler,
+                    intraHopBreadcrumbs,
+                    breadcrumb);
+            checkState(breadCrumbSize == _breadcrumbs.size(), "");
+            checkState(hopSize == _hops.size(), "");
+          }));
     } finally {
       if (intraHopBreadcrumbs.isEmpty()) {
         _breadcrumbs.pop();
@@ -723,45 +703,6 @@ class FlowTracer {
         .setDetail(OriginateStepDetail.builder().setOriginatingVrf(_vrfName).build())
         .setAction(StepAction.ORIGINATED)
         .build();
-  }
-
-  private RoutingStep buildRoutingStep(Set<FibEntry> fibEntries) {
-    return RoutingStep.builder()
-        .setDetail(
-            RoutingStepDetail.builder()
-                .setMatchedRoutes(fibEntriesToRouteInfos(fibEntries))
-                .build())
-        .setAction(FORWARDED)
-        .build();
-  }
-
-  private static RoutingStep buildRoutingStep(FibAction fibAction, Set<FibEntry> fibEntries) {
-    RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
-    RoutingStepDetail.Builder routingStepDetailBuilder =
-        RoutingStepDetail.builder().setMatchedRoutes(fibEntriesToRouteInfos(fibEntries));
-    fibAction.accept(
-        new FibActionVisitor<Void>() {
-          @Override
-          public Void visitFibForward(FibForward fibForward) {
-            routingStepDetailBuilder.setFinalNextHopIp(fibForward.getArpIp());
-            routingStepDetailBuilder.setFinalNextHopInterface(fibForward.getInterfaceName());
-            routingStepBuilder.setAction(FORWARDED);
-            return null;
-          }
-
-          @Override
-          public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
-            routingStepBuilder.setAction(FORWARDED_TO_NEXT_VRF);
-            return null;
-          }
-
-          @Override
-          public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
-            routingStepBuilder.setAction(NULL_ROUTED);
-            return null;
-          }
-        });
-    return routingStepBuilder.setDetail(routingStepDetailBuilder.build()).build();
   }
 
   /**
@@ -840,7 +781,7 @@ class FlowTracer {
                     _currentFlow.getDstIp(),
                     currentNodeName,
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
-                    fibForward -> {
+                    (flowTracer, fibForward) -> {
                       String outgoingIfaceName = fibForward.getInterfaceName();
 
                       // TODO: handle ACLs
@@ -853,9 +794,9 @@ class FlowTracer {
                             _tracerouteContext.computeDisposition(
                                 currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
 
-                        buildArpFailureTrace(outgoingIfaceName, disposition);
+                        flowTracer.buildArpFailureTrace(outgoingIfaceName, disposition);
                       } else {
-                        processOutgoingInterfaceEdges(
+                        flowTracer.processOutgoingInterfaceEdges(
                             outgoingIfaceName, fibForward.getArpIp(), neighborIfaces);
                       }
                     });
@@ -1155,5 +1096,79 @@ class FlowTracer {
 
     Trace trace = new Trace(disposition, _hops);
     _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
+  }
+
+  private static RoutingStep buildRoutingStep(FibAction fibAction, Set<FibEntry> fibEntries) {
+    RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
+    RoutingStepDetail.Builder routingStepDetailBuilder =
+        RoutingStepDetail.builder().setMatchedRoutes(fibEntriesToRouteInfos(fibEntries));
+    fibAction.accept(
+        new FibActionVisitor<Void>() {
+          @Override
+          public Void visitFibForward(FibForward fibForward) {
+            routingStepDetailBuilder.setFinalNextHopIp(fibForward.getArpIp());
+            routingStepDetailBuilder.setFinalNextHopInterface(fibForward.getInterfaceName());
+            routingStepBuilder.setAction(FORWARDED);
+            return null;
+          }
+
+          @Override
+          public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
+            routingStepBuilder.setAction(FORWARDED_TO_NEXT_VRF);
+            return null;
+          }
+
+          @Override
+          public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+            routingStepBuilder.setAction(NULL_ROUTED);
+            return null;
+          }
+        });
+    return routingStepBuilder.setDetail(routingStepDetailBuilder.build()).build();
+  }
+
+  private void forward(
+      FibAction fibAction,
+      Set<FibEntry> fibEntries,
+      Ip dstIp,
+      String currentNodeName,
+      BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
+      Stack<Breadcrumb> intraHopBreadcrumbs,
+      Breadcrumb breadcrumb) {
+    FlowTracer flowTracer = this;
+    _steps.add(buildRoutingStep(fibAction, fibEntries));
+    fibAction.accept(
+        new FibActionVisitor<Void>() {
+          @Override
+          public Void visitFibForward(FibForward fibForward) {
+            forwardOutInterfaceHandler.accept(flowTracer, fibForward);
+            return null;
+          }
+
+          @Override
+          public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
+            if (intraHopBreadcrumbs.contains(breadcrumb)) {
+              buildLoopTrace();
+              return null;
+            }
+            intraHopBreadcrumbs.push(breadcrumb);
+            String nextVrf = fibNextVrf.getNextVrf();
+            forkTracerSameNode(nextVrf)
+                .fibLookup(
+                    dstIp,
+                    currentNodeName,
+                    _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
+                    forwardOutInterfaceHandler,
+                    intraHopBreadcrumbs);
+            intraHopBreadcrumbs.pop();
+            return null;
+          }
+
+          @Override
+          public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+            forkTracerSameNode().buildNullRoutedTrace();
+            return null;
+          }
+        });
   }
 }

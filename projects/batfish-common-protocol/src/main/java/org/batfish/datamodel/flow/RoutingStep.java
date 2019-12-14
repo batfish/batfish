@@ -7,8 +7,8 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.collect.ImmutableSortedSet;
-import java.util.SortedSet;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -37,7 +37,7 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
      */
-    @Nonnull private final SortedSet<RouteInfo> _matchedRoutes;
+    @Nonnull private final List<RouteInfo> _matchedRoutes;
     /** Next hop IP which was resolved using the {@code _matchedRoutes} */
     @Nullable private final Ip _finalNextHopIp;
     /** Next hop interface which was resolved using the {@code _matchedRoutes} */
@@ -45,17 +45,17 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
 
     @JsonCreator
     private RoutingStepDetail(
-        @JsonProperty(PROP_MATCHED_ROUTES) @Nullable SortedSet<RouteInfo> matchedRoutes,
+        @JsonProperty(PROP_MATCHED_ROUTES) @Nullable List<RouteInfo> matchedRoutes,
         @JsonProperty(PROP_FINAL_NEXT_HOP_IP) @Nullable Ip finalNextHopIp,
         @JsonProperty(PROP_FINAL_NEXT_HOP_INTERFACE) @Nullable String finalNextHopInterface) {
-      _matchedRoutes = firstNonNull(matchedRoutes, ImmutableSortedSet.of());
+      _matchedRoutes = firstNonNull(matchedRoutes, ImmutableList.of());
       _finalNextHopIp = finalNextHopIp;
       _finalNextHopInterface = finalNextHopInterface;
     }
 
     @JsonProperty(PROP_MATCHED_ROUTES)
     @Nonnull
-    public SortedSet<RouteInfo> getMatchedRoutes() {
+    public List<RouteInfo> getMatchedRoutes() {
       return _matchedRoutes;
     }
 
@@ -77,7 +77,7 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
 
     /** Chained builder to create a {@link RoutingStepDetail} object */
     public static class Builder {
-      private @Nullable SortedSet<RouteInfo> _matchedRoutes;
+      private @Nullable List<RouteInfo> _matchedRoutes;
       private @Nullable Ip _finalNextHopIp;
       private @Nullable String _finalNextHopInterface;
 
@@ -85,17 +85,19 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
         return new RoutingStepDetail(_matchedRoutes, _finalNextHopIp, _finalNextHopInterface);
       }
 
-      public Builder setMatchedRoutes(SortedSet<RouteInfo> matchedRoutes) {
+      public Builder setMatchedRoutes(List<RouteInfo> matchedRoutes) {
         _matchedRoutes = matchedRoutes;
         return this;
       }
 
-      public void setFinalNextHopIp(@Nullable Ip finalNextHopIp) {
+      public Builder setFinalNextHopIp(@Nullable Ip finalNextHopIp) {
         _finalNextHopIp = finalNextHopIp;
+        return this;
       }
 
-      public void setFinalNextHopInterface(@Nullable String finalNextHopInterface) {
+      public Builder setFinalNextHopInterface(@Nullable String finalNextHopInterface) {
         _finalNextHopInterface = finalNextHopInterface;
+        return this;
       }
 
       /** Only for use by {@link RoutingStepDetail#builder()}. */

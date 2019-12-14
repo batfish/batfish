@@ -15,7 +15,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +81,7 @@ public final class TracerouteUtils {
     }
   }
 
-  static SortedSet<RouteInfo> fibEntriesToRouteInfos(Set<FibEntry> fibEntries) {
+  static List<RouteInfo> fibEntriesToRouteInfos(Set<FibEntry> fibEntries) {
     return fibEntries.stream()
         .map(FibEntry::getTopLevelRoute)
         .map(
@@ -94,12 +93,13 @@ public final class TracerouteUtils {
                     route.getProtocol() == RoutingProtocol.STATIC
                         ? ((StaticRoute) route).getNextVrf()
                         : null))
-        .collect(
-            ImmutableSortedSet.toImmutableSortedSet(
-                comparing(RouteInfo::getNetwork)
-                    .thenComparing(RouteInfo::getNextHopIp)
-                    .thenComparing(RouteInfo::getNextVrf, nullsFirst(String::compareTo))
-                    .thenComparing(RouteInfo::getProtocol)));
+        .sorted(
+            comparing(RouteInfo::getNetwork)
+                .thenComparing(RouteInfo::getNextHopIp)
+                .thenComparing(RouteInfo::getNextVrf, nullsFirst(String::compareTo))
+                .thenComparing(RouteInfo::getProtocol))
+        .distinct()
+        .collect(ImmutableList.toImmutableList());
   }
 
   /**
