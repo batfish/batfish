@@ -1098,7 +1098,8 @@ class FlowTracer {
     _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
   }
 
-  private static RoutingStep buildRoutingStep(FibAction fibAction, Set<FibEntry> fibEntries) {
+  @VisibleForTesting
+  static RoutingStep buildRoutingStep(FibAction fibAction, Set<FibEntry> fibEntries) {
     RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
     RoutingStepDetail.Builder routingStepDetailBuilder =
         RoutingStepDetail.builder().setMatchedRoutes(fibEntriesToRouteInfos(fibEntries));
