@@ -7,9 +7,15 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Test;
 
 /** Tests of {@link IpAccessListLine}. */
@@ -70,5 +76,31 @@ public class IpAccessListLineTest {
       assertThat(r3456.getAction(), equalTo(LineAction.DENY));
       assertThat(r3456.getMatchLine(), nullValue()); // signifies fell off the end
     }
+  }
+
+  @Test
+  public void testEquals() {
+    IpAccessListLine.Builder lineBuilder =
+        IpAccessListLine.builder()
+            .setAction(LineAction.PERMIT)
+            .setMatchCondition(FalseExpr.INSTANCE)
+            .setName("name");
+    new EqualsTester()
+        .addEqualityGroup(
+            lineBuilder.build(),
+            lineBuilder.build(),
+            new IpAccessListLine(LineAction.PERMIT, FalseExpr.INSTANCE, "name"))
+        .addEqualityGroup(lineBuilder.setAction(LineAction.DENY).build())
+        .addEqualityGroup(lineBuilder.setMatchCondition(TrueExpr.INSTANCE).build())
+        .addEqualityGroup(lineBuilder.setName("another name").build())
+        .addEqualityGroup(new Object())
+        .testEquals();
+  }
+
+  @Test
+  public void testJsonSerialization() throws IOException {
+    IpAccessListLine l =
+        new IpAccessListLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "name");
+    assertThat(BatfishObjectMapper.clone(l, IpAccessListLine.class), equalTo(l));
   }
 }

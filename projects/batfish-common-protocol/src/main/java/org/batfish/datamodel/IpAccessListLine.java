@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -17,7 +16,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
 /** A line in an IpAccessList */
-public final class IpAccessListLine implements Serializable {
+public final class IpAccessListLine extends AbstractAclLine {
 
   public static class Builder {
 
@@ -62,7 +61,6 @@ public final class IpAccessListLine implements Serializable {
   public static final IpAccessListLine ACCEPT_ALL = accepting("ACCEPT_ALL", TrueExpr.INSTANCE);
   private static final String PROP_ACTION = "action";
   private static final String PROP_MATCH_CONDITION = "matchCondition";
-  private static final String PROP_NAME = "name";
 
   public static final IpAccessListLine REJECT_ALL = rejecting("REJECT_ALL", TrueExpr.INSTANCE);
 
@@ -139,16 +137,14 @@ public final class IpAccessListLine implements Serializable {
 
   private final AclLineMatchExpr _matchCondition;
 
-  private final String _name;
-
   @JsonCreator
   public IpAccessListLine(
       @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
       @JsonProperty(PROP_MATCH_CONDITION) @Nonnull AclLineMatchExpr matchCondition,
       @JsonProperty(PROP_NAME) String name) {
+    super(name);
     _action = Objects.requireNonNull(action);
     _matchCondition = Objects.requireNonNull(matchCondition);
-    _name = name;
   }
 
   @Override
@@ -176,12 +172,7 @@ public final class IpAccessListLine implements Serializable {
     return _matchCondition;
   }
 
-  /** The name of this line in the list */
-  @JsonProperty(PROP_NAME)
-  public String getName() {
-    return _name;
-  }
-
+  @Override
   public <R> R accept(GenericIpAccessListLineVisitor<R> visitor) {
     return visitor.visitIpAccessListLine(this);
   }

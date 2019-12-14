@@ -2,6 +2,7 @@ package org.batfish.datamodel.acl;
 
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AbstractAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -28,7 +29,7 @@ public class IpAccessListLineEvaluator implements GenericIpAccessListLineVisitor
   // Override visit in order to explicitly mark it nullable
   @Override
   @Nullable
-  public LineAction visit(IpAccessListLine line) {
+  public LineAction visit(AbstractAclLine line) {
     return line.accept(this);
   }
 
