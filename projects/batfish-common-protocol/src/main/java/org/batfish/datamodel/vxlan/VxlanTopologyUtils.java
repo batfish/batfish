@@ -13,7 +13,6 @@ import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -102,12 +101,8 @@ public final class VxlanTopologyUtils {
   }
 
   @VisibleForTesting
-  static @Nonnull String getVniVrf(NetworkConfigurations nc, String host, Layer2Vni vniSettings) {
-    return nc.get(host).get().getVrfs().entrySet().stream()
-        .filter(vrfEntry -> vrfEntry.getValue().getLayer2Vnis().containsKey(vniSettings.getVni()))
-        .map(Entry::getKey)
-        .findAny()
-        .get();
+  static @Nonnull String getVniSrcVrf(Layer2Vni vniSettings) {
+    return vniSettings.getSrcVrf();
   }
 
   /**
@@ -210,8 +205,8 @@ public final class VxlanTopologyUtils {
       return false;
     }
     Layer2Vni vniSettingsV = nc.getVniSettings(hostV, vni).get();
-    String vrfU = getVniVrf(nc, hostU, vniSettingsU);
-    String vrfV = getVniVrf(nc, hostV, vniSettingsV);
+    String vrfU = getVniSrcVrf(vniSettingsU);
+    String vrfV = getVniSrcVrf(vniSettingsV);
     Ip srcIpU = vniSettingsU.getSourceAddress();
     Ip srcIpV = vniSettingsV.getSourceAddress();
     int udpPort = vniSettingsU.getUdpPort();

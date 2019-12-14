@@ -48,8 +48,11 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -102,6 +105,7 @@ import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
@@ -1941,6 +1945,10 @@ public class TracerouteEngineImplTest {
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(), false)
               .get(flow);
+      // MatchSessionStep is not captured in trace
+      assertThat(
+          results.get(0).getTrace().getHops().get(0).getSteps(),
+          not(hasItem(instanceOf(MatchSessionStep.class))));
       assertThat(results, contains(hasTrace(hasDisposition(NO_ROUTE))));
     }
 
@@ -1954,6 +1962,15 @@ public class TracerouteEngineImplTest {
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
               .get(flow);
+      // MatchSessionStep is captured in trace
+      assertThat(
+          results.get(0).getTrace().getHops().get(0).getSteps(),
+          hasItem(
+              allOf(
+                  instanceOf(MatchSessionStep.class),
+                  hasProperty(
+                      "detail",
+                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
       assertThat(
           results,
           contains(
@@ -1977,6 +1994,14 @@ public class TracerouteEngineImplTest {
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
               .get(flow);
+      assertThat(
+          results.get(0).getTrace().getHops().get(0).getSteps(),
+          hasItem(
+              allOf(
+                  instanceOf(MatchSessionStep.class),
+                  hasProperty(
+                      "detail",
+                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
       /* Disposition is always exits network -- see:
        * TracerouteEngineImplContext#buildSessionArpFailureTrace(String, TransmissionContext, List).
        */
@@ -2003,6 +2028,14 @@ public class TracerouteEngineImplTest {
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
               .get(flow);
+      assertThat(
+          results.get(0).getTrace().getHops().get(0).getSteps(),
+          hasItem(
+              allOf(
+                  instanceOf(MatchSessionStep.class),
+                  hasProperty(
+                      "detail",
+                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
       // flow reaches c2.
       assertThat(
           results,
@@ -2028,6 +2061,14 @@ public class TracerouteEngineImplTest {
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
               .get(flow);
+      assertThat(
+          results.get(0).getTrace().getHops().get(0).getSteps(),
+          hasItem(
+              allOf(
+                  instanceOf(MatchSessionStep.class),
+                  hasProperty(
+                      "detail",
+                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_IN))));
     }
 
@@ -2045,6 +2086,14 @@ public class TracerouteEngineImplTest {
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
               .get(flow);
+      assertThat(
+          results.get(0).getTrace().getHops().get(0).getSteps(),
+          hasItem(
+              allOf(
+                  instanceOf(MatchSessionStep.class),
+                  hasProperty(
+                      "detail",
+                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_OUT))));
     }
 

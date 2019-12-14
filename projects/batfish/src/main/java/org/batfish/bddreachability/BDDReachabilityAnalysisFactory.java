@@ -1402,6 +1402,7 @@ public final class BDDReachabilityAnalysisFactory {
             .buildSpan("BDDReachabilityAnalysisFactory.bddReachabilityAnalysis")
             .startActive()) {
       assert span != null; // avoid unused warning
+
       /* We will use the return pass reachability graph a bit differently than usual: to find flows
        * that successfully return to the origination point of the forward flow, we'll look at states
        * like NodeInterfaceDeliveredToSubnet, rather than adding edges all the way to Query. Also,

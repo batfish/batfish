@@ -1159,6 +1159,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       : null)
               .setUdpPort(Layer2Vni.DEFAULT_UDP_PORT)
               .setVni(nveVni.getVni())
+              .setSrcVrf(DEFAULT_VRF_NAME)
               .build();
       _c.getVrfs().get(vsTenantVrfForL3Vni.getName()).addLayer3Vni(vniSettings);
     } else {
@@ -1174,6 +1175,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .setUdpPort(Layer2Vni.DEFAULT_UDP_PORT)
               .setVni(nveVni.getVni())
               .setVlan(vlan)
+              .setSrcVrf(DEFAULT_VRF_NAME)
               .build();
       if (viTenantVrfForL2Vni == null) {
         return;

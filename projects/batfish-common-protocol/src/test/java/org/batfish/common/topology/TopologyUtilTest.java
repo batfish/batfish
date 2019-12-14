@@ -18,7 +18,7 @@ import static org.batfish.datamodel.matchers.EdgeMatchers.hasHead;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode1;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode2;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasTail;
-import static org.batfish.datamodel.vxlan.Layer2Vni.builder;
+import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -240,7 +240,7 @@ public final class TopologyUtilTest {
 
     // VNIs
     Layer2Vni.Builder vnb =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(Ip.FIRST_MULTICAST_IP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setVlan(vlanId)
@@ -273,7 +273,7 @@ public final class TopologyUtilTest {
     Vrf v1 = _vb.setOwner(s1).setName(vrfName).build();
     Vrf v2 = _vb.setOwner(s2).setName(vrfName).build();
     Layer2Vni.Builder vnb =
-        Layer2Vni.builder()
+        testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(Ip.FIRST_MULTICAST_IP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setVlan(vlanId)
@@ -607,7 +607,7 @@ public final class TopologyUtilTest {
 
     String vniName = TopologyUtil.computeVniName(vni);
     v1.addLayer2Vni(
-        builder()
+        testBuilder()
             .setBumTransportMethod(UNICAST_FLOOD_GROUP)
             .setBumTransportIps(of(FIRST_CLASS_B_PRIVATE_IP))
             .setVni(vni)
@@ -647,7 +647,7 @@ public final class TopologyUtilTest {
 
     String vniName = TopologyUtil.computeVniName(vni);
     v1.addLayer2Vni(
-        builder()
+        testBuilder()
             .setBumTransportMethod(UNICAST_FLOOD_GROUP)
             .setBumTransportIps(of(FIRST_CLASS_B_PRIVATE_IP))
             .setVni(vni)

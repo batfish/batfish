@@ -14,7 +14,8 @@ import org.batfish.datamodel.IpAccessListLine;
  * (though typically that term also includes the negation of atomic predicates), within a given
  * line.
  */
-public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<Void> {
+public class AclLineMatchExprLiterals
+    implements GenericAclLineMatchExprVisitor<Void>, GenericIpAccessListLineVisitor<Void> {
 
   private Set<AclLineMatchExpr> _literals;
 
@@ -38,7 +39,7 @@ public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<
           IntStream.range(0, lines.size())
               .forEach(
                   i ->
-                      AclLineMatchExprLiterals.getLiterals(lines.get(i).getMatchCondition())
+                      AclLineMatchExprLiterals.getLiterals(lines.get(i))
                           .forEach(
                               lit ->
                                   literalsToLines.put(lit, new IpAccessListLineIndex(currAcl, i))));
@@ -47,11 +48,20 @@ public class AclLineMatchExprLiterals implements GenericAclLineMatchExprVisitor<
   }
 
   /** This method is the public entry point for the visitor. */
-  public static Set<AclLineMatchExpr> getLiterals(AclLineMatchExpr expr) {
+  public static Set<AclLineMatchExpr> getLiterals(IpAccessListLine line) {
     AclLineMatchExprLiterals aclLineMatchExprLiterals = new AclLineMatchExprLiterals();
-    aclLineMatchExprLiterals.visit(expr);
+    aclLineMatchExprLiterals.visit(line);
     return aclLineMatchExprLiterals._literals;
   }
+
+  /* IpAccessListLine visit methods */
+
+  @Override
+  public Void visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
+    return visit(ipAccessListLine.getMatchCondition());
+  }
+
+  /* AclLineMatchExpr visit methods */
 
   @Override
   public Void visitAndMatchExpr(AndMatchExpr andMatchExpr) {

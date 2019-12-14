@@ -178,7 +178,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
                 return false;
               }
               // If there is any overlap between the header space BDD and this line, include it
-              BDD lineBdd = bddConverter.toBdd(line.getMatchCondition());
+              BDD lineBdd = bddConverter.toBdd(line);
               return headerSpaceBdd.andSat(lineBdd);
             });
   }

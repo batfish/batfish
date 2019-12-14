@@ -6,6 +6,7 @@ import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.MULTICAS
 import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.VLAN;
 import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.VTEP_FLOOD_LIST;
 import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.VXLAN_PORT;
+import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_NODE;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VNI;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VRF;
@@ -164,7 +165,7 @@ public final class VxlanVniPropertiesAnswererTest {
           "hostname",
           DEFAULT_VRF_NAME,
           ImmutableSet.of(
-              Layer2Vni.builder()
+              testBuilder()
                   .setVni(10001)
                   .setVlan(1)
                   .setSourceAddress(Ip.parse("1.2.3.4"))
@@ -173,7 +174,7 @@ public final class VxlanVniPropertiesAnswererTest {
                   .setBumTransportIps(
                       ImmutableSortedSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")))
                   .build(),
-              Layer2Vni.builder()
+              testBuilder()
                   .setVni(10002)
                   .setVlan(2)
                   .setSourceAddress(Ip.parse("1.2.3.4"))
@@ -185,7 +186,7 @@ public final class VxlanVniPropertiesAnswererTest {
           "minimal",
           DEFAULT_VRF_NAME,
           ImmutableSet.of(
-              Layer2Vni.builder()
+              testBuilder()
                   .setVni(10001)
                   .setVlan(1)
                   .setUdpPort(1234)

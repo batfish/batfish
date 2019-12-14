@@ -2,6 +2,8 @@ package org.batfish.question.filterlinereachability;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityRows.createMetadata;
+import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedAcls;
+import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedInterfaces;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -36,13 +38,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.CircularReferenceException;
 import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.questions.Question;
@@ -75,12 +73,6 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return answer;
   }
 
-  private static final TypeMatchExprsCollector<PermittedByAcl> permittedByAclCollector =
-      new TypeMatchExprsCollector<>(PermittedByAcl.class);
-
-  private static final TypeMatchExprsCollector<MatchSrcInterface> matchSrcInterfaceCollector =
-      new TypeMatchExprsCollector<>(MatchSrcInterface.class);
-
   private static final class AclNode {
 
     private final class Dependency {
@@ -105,16 +97,21 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       _acl = acl;
     }
 
-    public void sanitizeLine(int lineNum, AclLineMatchExpr newMatchExpr) {
+    /**
+     * Replaces match expr of the line at the given {@code lineNum} with a {@link FalseExpr}. Used
+     * to ignore lines with undefined or cyclic references.
+     */
+    public void markLineUnmatchable(int lineNum) {
       _sanitizedLines = firstNonNull(_sanitizedLines, new ArrayList<>(_acl.getLines()));
       IpAccessListLine originalLine = _sanitizedLines.remove(lineNum);
       _sanitizedLines.add(
-          lineNum,
-          IpAccessListLine.builder()
-              .setMatchCondition(newMatchExpr)
-              .setAction(originalLine.getAction())
-              .setName(originalLine.getName())
-              .build());
+          lineNum, originalLine.toBuilder().setMatchCondition(FalseExpr.INSTANCE).build());
+    }
+
+    public void sanitizeLine(int lineNum, IpAccessListLine sanitizedLine) {
+      _sanitizedLines = firstNonNull(_sanitizedLines, new ArrayList<>(_acl.getLines()));
+      _sanitizedLines.remove(lineNum);
+      _sanitizedLines.add(lineNum, sanitizedLine);
     }
 
     public void sanitizeCycle(ImmutableList<String> cycleAcls) {
@@ -131,7 +128,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
       for (int lineNum : _dependencies.remove(dependencyIndex).lineNums) {
         _linesInCycles.add(lineNum);
-        sanitizeLine(lineNum, FalseExpr.INSTANCE);
+        markLineUnmatchable(lineNum);
       }
     }
 
@@ -172,7 +169,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     public void addUndefinedRef(int lineNum) {
       _linesWithUndefinedRefs.add(lineNum);
-      sanitizeLine(lineNum, FalseExpr.INSTANCE);
+      markLineUnmatchable(lineNum);
     }
 
     public void buildSanitizedAcl() {
@@ -218,16 +215,11 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     // Go through lines and add dependencies
     int index = 0;
     for (IpAccessListLine line : acl.getLines()) {
-      AclLineMatchExpr matchExpr = line.getMatchCondition();
       boolean lineMarkedUnmatchable = false;
 
       // Find all references to other ACLs and record them
-      List<PermittedByAcl> permittedByAclExprs = matchExpr.accept(permittedByAclCollector);
-      if (!permittedByAclExprs.isEmpty()) {
-        Set<String> referencedAcls =
-            permittedByAclExprs.stream()
-                .map(PermittedByAcl::getAclName)
-                .collect(Collectors.toSet());
+      Set<String> referencedAcls = getReferencedAcls(line);
+      if (!referencedAcls.isEmpty()) {
         if (!acls.keySet().containsAll(referencedAcls)) {
           // Not all referenced ACLs exist. Mark line as unmatchable.
           node.addUndefinedRef(index);
@@ -254,8 +246,8 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       // Dereference all IpSpace references, or mark line unmatchable if it has invalid references
       if (!lineMarkedUnmatchable) {
         try {
-          AclLineMatchExpr sanitizedForIpSpaces = matchExpr.accept(headerSpaceSanitizer);
-          if (!matchExpr.equals(sanitizedForIpSpaces)) {
+          IpAccessListLine sanitizedForIpSpaces = headerSpaceSanitizer.visit(line);
+          if (!line.equals(sanitizedForIpSpaces)) {
             node.sanitizeLine(index, sanitizedForIpSpaces);
           }
         } catch (CircularReferenceException | UndefinedReferenceException e) {
@@ -267,12 +259,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
       // Find all references to interfaces and ensure they exist
       if (!lineMarkedUnmatchable) {
-        List<MatchSrcInterface> matchSrcInterfaceExprs =
-            matchExpr.accept(matchSrcInterfaceCollector);
-        Set<String> referencedInterfaces =
-            matchSrcInterfaceExprs.stream()
-                .flatMap(expr -> expr.getSrcInterfaces().stream())
-                .collect(Collectors.toSet());
+        Set<String> referencedInterfaces = getReferencedInterfaces(line);
         if (!nodeInterfaces.containsAll(referencedInterfaces)) {
           // Line references an undefined source interface. Report undefined ref.
           node.addUndefinedRef(index);
@@ -553,10 +540,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     /* Convert every line to a BDD. */
     List<BDD> ipLineToBDDMap =
-        lines.stream()
-            .map(IpAccessListLine::getMatchCondition)
-            .map(ipAccessListToBdd::toBdd)
-            .collect(Collectors.toList());
+        lines.stream().map(ipAccessListToBdd::toBdd).collect(Collectors.toList());
 
     /* Pass over BDDs to classify each as unmatchable, unreachable, or (implicitly) reachable. */
     BDD unmatchedPackets = bddFactory.one(); // The packets that are not yet matched by the ACL.

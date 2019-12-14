@@ -9,6 +9,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.visitors.IpSpaceRenamer;
 
@@ -17,12 +18,31 @@ import org.batfish.datamodel.visitors.IpSpaceRenamer;
  * IpSpaces} in an {@link org.batfish.datamodel.IpAccessList}.
  */
 public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList> {
+
+  /**
+   * Makes a copy of the given {@link IpAccessListLine} or {@link AclLineMatchExpr} with any
+   * referenced ACLs and IP spaces renamed.
+   */
   @VisibleForTesting
-  class Visitor implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
+  class Visitor
+      implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
+          GenericIpAccessListLineVisitor<IpAccessListLine> {
 
     private IpSpace rename(@Nullable IpSpace ipSpace) {
       return ipSpace == null ? null : _ipSpaceRenamer.apply(ipSpace);
     }
+
+    /* IpAccessListLine visit methods */
+
+    @Override
+    public IpAccessListLine visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
+      return ipAccessListLine
+          .toBuilder()
+          .setMatchCondition(visit(ipAccessListLine.getMatchCondition()))
+          .build();
+    }
+
+    /* AclLineMatchExpr visit methods */
 
     @Override
     public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
@@ -123,11 +143,7 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
         .setName(_aclRenamer.apply(ipAccessList.getName()))
         .setLines(
             ipAccessList.getLines().stream()
-                .map(
-                    ln ->
-                        ln.toBuilder()
-                            .setMatchCondition(_visitor.visit(ln.getMatchCondition()))
-                            .build())
+                .map(_visitor::visit)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }

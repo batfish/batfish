@@ -21,6 +21,7 @@ import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.Transformation.always;
@@ -30,6 +31,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertEquals;
@@ -48,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.BiConsumer;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Key;
@@ -61,6 +64,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.HeaderSpace;
@@ -78,6 +83,9 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ForwardOutInterface;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.main.Batfish;
 import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityResult;
 import org.batfish.specifier.InterfaceLinkLocation;
@@ -93,7 +101,6 @@ import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
-import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -671,7 +678,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             source2LocIpBdd.and(dstIpBdd),
             fwLoc,
             fwLocIpBdd.and(dstIpBdd)));
-    assertThat(result.getStartLocationReturnPassFailureBdds().entrySet(), Matchers.empty());
+    assertThat(result.getStartLocationReturnPassFailureBdds().entrySet(), empty());
   }
 
   @SuppressWarnings("unchecked")
@@ -1042,7 +1049,9 @@ public final class BidirectionalReachabilityAnalysisTest {
   private void assertSessionFiblookupAcceptSingleNode(
       SortedMap<String, Configuration> configurations) throws IOException {
     assertSessionFiblookupAccept(
-        configurations, SFL_DST_IP_SPACE_SINGLE_NODE, ImmutableSet.of(DELIVERED_TO_SUBNET));
+        configurations,
+        SFL_DST_IP_SPACE_SINGLE_NODE,
+        ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK));
   }
 
   private void assertSessionFiblookupAcceptDualNode(SortedMap<String, Configuration> configurations)
@@ -1053,7 +1062,9 @@ public final class BidirectionalReachabilityAnalysisTest {
   private void assertSessionFiblookupReturnNoRouteSingleNode(
       SortedMap<String, Configuration> configurations) throws IOException {
     assertSessionFiblookupReturnNoRoute(
-        configurations, SFL_DST_IP_SPACE_SINGLE_NODE, ImmutableSet.of(DELIVERED_TO_SUBNET));
+        configurations,
+        SFL_DST_IP_SPACE_SINGLE_NODE,
+        ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK));
   }
 
   private void assertSessionFiblookupReturnNoRouteDualNode(
@@ -1145,5 +1156,318 @@ public final class BidirectionalReachabilityAnalysisTest {
                 dstIpSpaceOfInterest
                     .accept(PKT.getDstIpSpaceToBDD())
                     .and(srcIpSpaceOfInterest.accept(PKT.getSrcIpSpaceToBDD())))));
+  }
+
+  // definitions for required transit nodes test network
+  private static final String RTN_SRC = "src";
+  private static final String RTN_DST = "dst";
+  private static final String RTN_TRANSIT = "transit";
+  private static final String RTN_OTHER = "other";
+
+  private static final InterfaceLocation RTN_START_LOC = new InterfaceLocation(RTN_SRC, "loopback");
+
+  // src IP that is routed through the transit node in the return direction
+  private static final Ip RTN_TRANSIT_SRC_IP = Ip.parse("1.0.0.1");
+  // IP that is routed back to source node through transit node, but fails with NO_ROUTE
+  private static final Ip RTN_TRANSIT_RETURN_IP = Ip.parse("1.0.0.2");
+  // src IP that is routed through the other node in the return direction
+  private static final Ip RTN_OTHER_SRC_IP = Ip.parse("1.0.0.3");
+  // IP that is routed back to source node through other node, but fails with NO_ROUTE
+  private static final Ip RTN_OTHER_RETURN_IP = Ip.parse("1.0.0.4");
+
+  private static final IpSpace RTN_START_IPS =
+      AclIpSpace.union(
+          RTN_TRANSIT_SRC_IP.toIpSpace(),
+          RTN_TRANSIT_RETURN_IP.toIpSpace(),
+          RTN_OTHER_SRC_IP.toIpSpace(),
+          RTN_OTHER_RETURN_IP.toIpSpace());
+
+  // dst IP that is routed through the transit node
+  private static final Ip RTN_OTHER_DST_IP = Ip.parse("1.0.1.1");
+  // dst IP that is routed through the other node
+  private static final Ip RTN_TRANSIT_DST_IP = Ip.parse("1.0.1.2");
+
+  private static SortedMap<String, Configuration> makeRequiredTransitNodesNetwork() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    StaticRoute.Builder rb = StaticRoute.builder().setAdministrativeCost(1);
+
+    Prefix srcTransitPrefix = Prefix.parse("2.0.0.0/31");
+    Prefix srcOtherPrefix = Prefix.parse("2.0.0.2/31");
+    Prefix dstTransitPrefix = Prefix.parse("2.0.1.0/31");
+    Prefix dstOtherPrefix = Prefix.parse("2.0.1.2/31");
+
+    Configuration srcNode = cb.setHostname(RTN_SRC).build();
+    {
+      Vrf vrf = vb.setOwner(srcNode).build();
+      ib.setOwner(srcNode).setVrf(vrf);
+
+      // loopback
+      ib.setName(RTN_START_LOC.getInterfaceName())
+          .setAddresses(
+              ConcreteInterfaceAddress.create(RTN_TRANSIT_SRC_IP, 32),
+              ConcreteInterfaceAddress.create(RTN_OTHER_SRC_IP, 32))
+          .build();
+      ib.setName(null);
+
+      // interface connected to transitNode
+      Interface transitIface =
+          ib.setAddresses(
+                  ConcreteInterfaceAddress.create(
+                      srcTransitPrefix.getStartIp(), srcTransitPrefix.getPrefixLength()))
+              .build();
+
+      // interface connected to otherNode
+      Interface otherIface =
+          ib.setAddresses(
+                  ConcreteInterfaceAddress.create(
+                      srcOtherPrefix.getStartIp(), srcOtherPrefix.getPrefixLength()))
+              .build();
+
+      vrf.setStaticRoutes(
+          ImmutableSortedSet.of(
+              rb.setNextHopInterface(transitIface.getName())
+                  .setNextHopIp(srcTransitPrefix.getEndIp())
+                  .setNetwork(RTN_TRANSIT_DST_IP.toPrefix())
+                  .build(),
+              rb.setNextHopInterface(otherIface.getName())
+                  .setNextHopIp(srcOtherPrefix.getEndIp())
+                  .setNetwork(RTN_OTHER_DST_IP.toPrefix())
+                  .build()));
+    }
+
+    Configuration transitNode = cb.setHostname(RTN_TRANSIT).build();
+    {
+      Vrf vrf = vb.setOwner(transitNode).build();
+      ib.setOwner(transitNode).setVrf(vrf);
+
+      // interface to srcNode
+      Interface srcIface =
+          ib.setAddresses(
+                  ConcreteInterfaceAddress.create(
+                      srcTransitPrefix.getEndIp(), srcTransitPrefix.getPrefixLength()))
+              .build();
+
+      // interface to dstNode
+      Interface dstIface =
+          ib.setAddresses(
+                  ConcreteInterfaceAddress.create(
+                      dstTransitPrefix.getStartIp(), dstTransitPrefix.getPrefixLength()))
+              .build();
+
+      vrf.setStaticRoutes(
+          ImmutableSortedSet.of(
+              rb.setNextHopInterface(srcIface.getName())
+                  .setNextHopIp(srcTransitPrefix.getStartIp())
+                  .setNetwork(RTN_TRANSIT_SRC_IP.toPrefix())
+                  .build(),
+              rb.setNetwork(RTN_TRANSIT_RETURN_IP.toPrefix()).build(),
+              rb.setNextHopInterface(dstIface.getName())
+                  .setNextHopIp(dstTransitPrefix.getEndIp())
+                  .setNetwork(RTN_TRANSIT_DST_IP.toPrefix())
+                  .build()));
+    }
+
+    Configuration otherNode = cb.setHostname(RTN_OTHER).build();
+    {
+      Vrf vrf = vb.setOwner(otherNode).build();
+      ib.setOwner(otherNode).setVrf(vrf);
+
+      // interface to srcNode
+      Interface srcIface =
+          ib.setAddresses(
+                  ConcreteInterfaceAddress.create(
+                      srcOtherPrefix.getEndIp(), srcOtherPrefix.getPrefixLength()))
+              .build();
+
+      // interface to dstNode
+      Interface dstIface =
+          ib.setAddresses(
+                  ConcreteInterfaceAddress.create(
+                      dstOtherPrefix.getStartIp(), dstOtherPrefix.getPrefixLength()))
+              .build();
+
+      vrf.setStaticRoutes(
+          ImmutableSortedSet.of(
+              rb.setNextHopInterface(srcIface.getName())
+                  .setNextHopIp(srcOtherPrefix.getStartIp())
+                  .setNetwork(RTN_OTHER_SRC_IP.toPrefix())
+                  .build(),
+              rb.setNetwork(RTN_OTHER_RETURN_IP.toPrefix()).build(),
+              rb.setNextHopInterface(dstIface.getName())
+                  .setNextHopIp(dstOtherPrefix.getEndIp())
+                  .setNetwork(RTN_OTHER_DST_IP.toPrefix())
+                  .build()));
+    }
+
+    Configuration dstNode = cb.setHostname(RTN_DST).build();
+    {
+      Vrf vrf = vb.setOwner(dstNode).build();
+      ib.setOwner(dstNode).setVrf(vrf);
+
+      // loopback interface owns all the dst IPs
+      ib.setAddresses(
+              ConcreteInterfaceAddress.create(RTN_OTHER_DST_IP, 32),
+              ConcreteInterfaceAddress.create(RTN_TRANSIT_DST_IP, 32))
+          .build();
+
+      // interface to transitNode
+      Interface transitIface =
+          ib.setAddresses(
+                  ConcreteInterfaceAddress.create(
+                      dstTransitPrefix.getEndIp(), dstTransitPrefix.getPrefixLength()))
+              .build();
+
+      // interface to otherNode
+      Interface otherIface =
+          ib.setAddresses(
+                  ConcreteInterfaceAddress.create(
+                      dstOtherPrefix.getEndIp(), dstOtherPrefix.getPrefixLength()))
+              .build();
+
+      vrf.setStaticRoutes(
+          ImmutableSortedSet.of(
+              rb.setNextHopInterface(transitIface.getName())
+                  .setNextHopIp(dstTransitPrefix.getStartIp())
+                  .setNetwork(RTN_TRANSIT_SRC_IP.toPrefix())
+                  .build(),
+              rb.setNetwork(RTN_TRANSIT_RETURN_IP.toPrefix()).build(),
+              rb.setNextHopInterface(otherIface.getName())
+                  .setNextHopIp(dstOtherPrefix.getStartIp())
+                  .setNetwork(RTN_OTHER_SRC_IP.toPrefix())
+                  .build(),
+              rb.setNetwork(RTN_OTHER_RETURN_IP.toPrefix()).build()));
+    }
+
+    return ImmutableSortedMap.of(
+        srcNode.getHostname(),
+        srcNode,
+        transitNode.getHostname(),
+        transitNode,
+        otherNode.getHostname(),
+        otherNode,
+        dstNode.getHostname(),
+        dstNode);
+  }
+
+  @Test
+  public void testRequiredTransitNodes_traceroute() throws IOException {
+    SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
+    Batfish batfish = getBatfish(configs, temp);
+    batfish.computeDataPlane(batfish.getSnapshot());
+
+    BiConsumer<Flow, List<String>> assertTraceHops =
+        (flow, expectedHops) -> {
+          List<Trace> traces =
+              batfish
+                  .getTracerouteEngine(batfish.getSnapshot())
+                  .computeTraces(ImmutableSet.of(flow), false)
+                  .get(flow);
+
+          assertEquals(1, traces.size());
+          Trace trace = traces.get(0);
+          assertEquals(FlowDisposition.ACCEPTED, trace.getDisposition());
+          List<String> hops =
+              trace.getHops().stream()
+                  .map(Hop::getNode)
+                  .map(Node::getName)
+                  .collect(ImmutableList.toImmutableList());
+          assertEquals(expectedHops, hops);
+        };
+
+    Builder fb = Flow.builder().setIngressVrf(Configuration.DEFAULT_VRF_NAME).setTag("");
+
+    // test forward traces
+    fb.setIngressNode(RTN_SRC).setSrcIp(RTN_TRANSIT_SRC_IP);
+    assertTraceHops.accept(
+        fb.setDstIp(RTN_TRANSIT_DST_IP).build(), ImmutableList.of(RTN_SRC, RTN_TRANSIT, RTN_DST));
+    assertTraceHops.accept(
+        fb.setDstIp(RTN_OTHER_DST_IP).build(), ImmutableList.of(RTN_SRC, RTN_OTHER, RTN_DST));
+
+    // test reverse traces
+    fb.setIngressNode(RTN_DST).setSrcIp(RTN_TRANSIT_DST_IP);
+    assertTraceHops.accept(
+        fb.setDstIp(RTN_TRANSIT_SRC_IP).build(), ImmutableList.of(RTN_DST, RTN_TRANSIT, RTN_SRC));
+    assertTraceHops.accept(
+        fb.setDstIp(RTN_OTHER_SRC_IP).build(), ImmutableList.of(RTN_DST, RTN_OTHER, RTN_SRC));
+  }
+
+  @Test
+  public void testRequiredTransitNodes_noTransitNodesConstraint() throws IOException {
+    SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
+    Batfish batfish = getBatfish(configs, temp);
+    batfish.computeDataPlane(batfish.getSnapshot());
+
+    // Bidirectional analysis
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
+    BidirectionalReachabilityAnalysis analysis =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            IpSpaceAssignment.builder().assign(RTN_START_LOC, RTN_START_IPS).build(),
+            TRUE,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(RTN_DST),
+            ImmutableSet.of(ACCEPTED));
+    BidirectionalReachabilityResult result = analysis.getResult();
+
+    IpSpaceToBDD dst = PKT.getDstIpSpaceToBDD();
+    BDD dstIps = dst.toBDD(RTN_TRANSIT_DST_IP).or(dst.toBDD(RTN_OTHER_DST_IP));
+
+    IpSpaceToBDD src = PKT.getSrcIpSpaceToBDD();
+    BDD successSrcIps = src.toBDD(RTN_TRANSIT_SRC_IP).or(src.toBDD(RTN_OTHER_SRC_IP));
+    BDD failureSrcIps = src.toBDD(RTN_TRANSIT_RETURN_IP).or(src.toBDD(RTN_OTHER_RETURN_IP));
+
+    assertThat(
+        result.getStartLocationReturnPassSuccessBdds(),
+        equalTo(ImmutableMap.of(RTN_START_LOC, successSrcIps.and(dstIps))));
+
+    assertThat(
+        result.getStartLocationReturnPassFailureBdds(),
+        equalTo(ImmutableMap.of(RTN_START_LOC, failureSrcIps.and(dstIps))));
+  }
+
+  @Test
+  public void testRequiredTransitNodes_withTransitNodeConstraint() throws IOException {
+    SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
+    Batfish batfish = getBatfish(configs, temp);
+    batfish.computeDataPlane(batfish.getSnapshot());
+
+    // Bidirectional analysis
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
+    BidirectionalReachabilityAnalysis analysis =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            IpSpaceAssignment.builder().assign(RTN_START_LOC, RTN_START_IPS).build(),
+            TRUE,
+            ImmutableSet.of(),
+            ImmutableSet.of(RTN_TRANSIT),
+            ImmutableSet.of(RTN_DST),
+            ImmutableSet.of(ACCEPTED));
+    BidirectionalReachabilityResult result = analysis.getResult();
+
+    IpSpaceToBDD dst = PKT.getDstIpSpaceToBDD();
+    BDD transitDstIpBdd = dst.toBDD(RTN_TRANSIT_DST_IP);
+
+    IpSpaceToBDD src = PKT.getSrcIpSpaceToBDD();
+    BDD transitSrcIpBdd = src.toBDD(RTN_TRANSIT_SRC_IP);
+    BDD transitReturnIpBdd = src.toBDD(RTN_TRANSIT_RETURN_IP);
+
+    assertThat(
+        result.getStartLocationReturnPassSuccessBdds(),
+        equalTo(ImmutableMap.of(RTN_START_LOC, transitSrcIpBdd.and(transitDstIpBdd))));
+
+    assertThat(
+        result.getStartLocationReturnPassFailureBdds(),
+        equalTo(ImmutableMap.of(RTN_START_LOC, transitReturnIpBdd.and(transitDstIpBdd))));
   }
 }

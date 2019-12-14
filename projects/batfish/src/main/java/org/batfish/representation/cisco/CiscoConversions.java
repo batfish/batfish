@@ -969,8 +969,7 @@ public class CiscoConversions {
     List<IpAccessListLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
     for (IpAccessListLine ipAccessListLine : ipAccessList.getLines()) {
-      HeaderSpace originalHeaderSpace =
-          HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
+      HeaderSpace originalHeaderSpace = HeaderSpaceConverter.convert(ipAccessListLine);
 
       if (!originalHeaderSpace.equals(
           HeaderSpace.builder()

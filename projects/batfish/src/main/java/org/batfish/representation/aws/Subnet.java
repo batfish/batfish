@@ -166,8 +166,32 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Ip instancesIfaceIp = computeInstancesIfaceIp();
     ConcreteInterfaceAddress instancesIfaceAddress =
         ConcreteInterfaceAddress.create(instancesIfaceIp, _cidrBlock.getPrefixLength());
-    Utils.newInterface(
-        instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
+    Interface ifaceToInstances =
+        Utils.newInterface(
+            instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
+
+    // add network acls on the interface facing the instances
+    List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
+    if (!myNetworkAcls.isEmpty()) {
+      if (myNetworkAcls.size() > 1) {
+        List<String> aclIds =
+            myNetworkAcls.stream().map(NetworkAcl::getId).collect(ImmutableList.toImmutableList());
+        warnings.redFlag(
+            String.format(
+                "Found multiple network ACLs %s for subnet %s. Using %s.",
+                aclIds, _subnetId, myNetworkAcls.get(0).getId()));
+      }
+      IpAccessList ingressAcl = myNetworkAcls.get(0).getIngressAcl();
+      IpAccessList egressAcl = myNetworkAcls.get(0).getEgressAcl();
+      cfgNode.getIpAccessLists().put(ingressAcl.getName(), ingressAcl);
+      cfgNode.getIpAccessLists().put(egressAcl.getName(), egressAcl);
+
+      // incoming filter is egress Acl. Traffic into this interface is egressing the subnet.
+      ifaceToInstances.setIncomingFilter(egressAcl);
+      ifaceToInstances.setOutgoingFilter(ingressAcl);
+    } else {
+      warnings.redFlag("Could not find a network ACL for subnet " + _subnetId);
+    }
 
     // connect to the VPC
     Configuration vpcConfigNode =
@@ -179,30 +203,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
         vpcConfigNode,
         toStaticRoute(
             _cidrBlock, interfaceNameToRemote(cfgNode), getInterfaceLinkLocalIp(cfgNode, _vpcId)));
-
-    // add network acls on the subnet node
-    List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
-    if (!myNetworkAcls.isEmpty()) {
-      if (myNetworkAcls.size() > 1) {
-        List<String> aclIds =
-            myNetworkAcls.stream().map(NetworkAcl::getId).collect(ImmutableList.toImmutableList());
-        warnings.redFlag(
-            String.format(
-                "Found multiple network ACLs %s for subnet %s. Using %s.",
-                aclIds, _subnetId, myNetworkAcls.get(0).getId()));
-      }
-      IpAccessList inAcl = myNetworkAcls.get(0).getIngressAcl();
-      IpAccessList outAcl = myNetworkAcls.get(0).getEgressAcl();
-      cfgNode.getIpAccessLists().put(inAcl.getName(), inAcl);
-      cfgNode.getIpAccessLists().put(outAcl.getName(), outAcl);
-
-      // add ACLs to interface facing the vpc
-      Interface vpcIfaceOnSubnet = cfgNode.getAllInterfaces().get(vpcConfigNode.getHostname());
-      vpcIfaceOnSubnet.setIncomingFilter(inAcl);
-      vpcIfaceOnSubnet.setOutgoingFilter(outAcl);
-    } else {
-      warnings.redFlag("Could not find a network ACL for subnet " + _subnetId);
-    }
 
     // 1. connect the vpn gateway to the subnet if one exists
     // 2. create appropriate static routes

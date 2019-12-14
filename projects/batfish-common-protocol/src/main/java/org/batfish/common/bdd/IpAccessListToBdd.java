@@ -26,6 +26,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
+import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -121,8 +122,14 @@ public abstract class IpAccessListToBdd {
 
   public abstract BDD toBdd(AclLineMatchExpr expr);
 
+  public abstract BDD toBdd(IpAccessListLine line);
+
   protected final BDD visit(AclLineMatchExpr expr) {
     return expr.accept(_visitor);
+  }
+
+  protected final BDD visit(IpAccessListLine line) {
+    return line.accept(_visitor);
   }
 
   public final BDDPacket getBDDPacket() {
@@ -164,7 +171,7 @@ public abstract class IpAccessListToBdd {
       // Absurd hack for permit == false! Flip all the line actions so that bddAclLines evaluates to
       // the BDD of packets that will be explicitly rejected by the original ACL.
       lineActions.add(permit ? line.getAction() : flip(line.getAction()));
-      lineBdds.add(toBdd(line.getMatchCondition()));
+      lineBdds.add(toBdd(line));
     }
     return _bddOps.bddAclLines(lineBdds, lineActions);
   }
@@ -181,7 +188,7 @@ public abstract class IpAccessListToBdd {
     ImmutableList.Builder<BDD> bdds = ImmutableList.builder();
     BDD reach = _pkt.getFactory().one();
     for (IpAccessListLine line : acl.getLines()) {
-      BDD match = visit(line.getMatchCondition());
+      BDD match = visit(line);
       bdds.add(reach.and(match));
       reach = reach.diff(match);
     }
@@ -191,9 +198,20 @@ public abstract class IpAccessListToBdd {
 
   /**
    * A visitor that does the actual conversion to BDD. Recursive calls go through the abstract
-   * {@link IpAccessListToBdd#toBdd(AclLineMatchExpr)} method, allowing subclasses to intercerpt.
+   * {@link IpAccessListToBdd#toBdd(AclLineMatchExpr)} method, allowing subclasses to intercept.
    */
-  private final class Visitor implements GenericAclLineMatchExprVisitor<BDD> {
+  private final class Visitor
+      implements GenericAclLineMatchExprVisitor<BDD>, GenericIpAccessListLineVisitor<BDD> {
+
+    /* IpAccessListLine visit methods */
+
+    @Override
+    public BDD visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
+      return visit(ipAccessListLine.getMatchCondition());
+    }
+
+    /* AclLineMatchExpr visit methods */
+
     @Override
     public final BDD visitAndMatchExpr(AndMatchExpr andMatchExpr) {
       return _bddOps.and(

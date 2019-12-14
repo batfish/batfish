@@ -3,29 +3,25 @@ package org.batfish.main;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.specifier.SpecifierUtils.resolveActiveLocations;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
@@ -125,34 +121,10 @@ public final class ReachabilityParametersResolver {
     return destinationIpSpace;
   }
 
-  /** Returns {@code true} iff the given {@link Location} is active (aka, interface is up). */
-  @VisibleForTesting
-  static boolean isActive(Location l, Map<String, Configuration> configs) {
-    NodeInterfacePair iface;
-    if (l instanceof InterfaceLocation) {
-      iface =
-          NodeInterfacePair.of(
-              ((InterfaceLocation) l).getNodeName(), ((InterfaceLocation) l).getInterfaceName());
-    } else {
-      assert l instanceof InterfaceLinkLocation;
-      iface =
-          NodeInterfacePair.of(
-              ((InterfaceLinkLocation) l).getNodeName(),
-              ((InterfaceLinkLocation) l).getInterfaceName());
-    }
-    return configs
-        .get(iface.getHostname())
-        .getAllInterfaces()
-        .get(iface.getInterface())
-        .getActive();
-  }
-
   @VisibleForTesting
   IpSpaceAssignment resolveSourceIpSpaceAssignment() throws InvalidReachabilityParametersException {
     Set<Location> sourceLocations =
-        _params.getSourceLocationSpecifier().resolve(_context).stream()
-            .filter(l -> isActive(l, _context.getConfigs()))
-            .collect(ImmutableSet.toImmutableSet());
+        resolveActiveLocations(_params.getSourceLocationSpecifier(), _context);
     if (sourceLocations.isEmpty()) {
       throw new InvalidReachabilityParametersException("No matching source locations");
     }
