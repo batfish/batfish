@@ -1,5 +1,6 @@
 package org.batfish.dataplane.traceroute;
 
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
@@ -40,6 +41,7 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Fib;
@@ -56,6 +58,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.MockFib;
+import org.batfish.datamodel.MockForwardingAnalysis;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -69,6 +72,7 @@ import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
+import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
@@ -378,6 +382,103 @@ public final class FlowTracerTest {
     assertThat(
         ((RoutingStep) steps.get(1)).getDetail().getMatchedRoutes().get(0).getNextVrf(),
         equalTo(vrf1Name));
+  }
+
+  @Test
+  public void testFibLookupForwarded() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    String hostname = c.getHostname();
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(c);
+    Vrf srcVrf = vb.build();
+    nf.interfaceBuilder()
+        .setName("iface1")
+        .setAddress(ConcreteInterfaceAddress.parse("123.12.1.12/24"))
+        .setVrf(srcVrf)
+        .setOwner(c)
+        .build();
+    String srcVrfName = srcVrf.getName();
+
+    Flow flow =
+        Flow.builder()
+            .setDstIp(Ip.parse("1.1.1.1"))
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(srcVrfName)
+            .setTag("tag")
+            .build();
+    Ip dstIp = flow.getDstIp();
+    ImmutableList.Builder<TraceAndReverseFlow> traces = ImmutableList.builder();
+    Ip finalNhip = Ip.parse("12.12.12.12");
+    String finalNhif = "iface1";
+
+    Fib srcFib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    dstIp,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            new FibForward(finalNhip, finalNhif),
+                            ImmutableList.of(
+                                StaticRoute.builder()
+                                    .setAdmin(1)
+                                    .setNetwork(Prefix.ZERO)
+                                    .setNextHopIp(Ip.parse("1.2.3.4"))
+                                    .build())),
+                        new FibEntry(
+                            new FibForward(finalNhip, finalNhif),
+                            ImmutableList.of(
+                                StaticRoute.builder()
+                                    .setAdmin(1)
+                                    .setNetwork(Prefix.ZERO)
+                                    .setNextHopIp(Ip.parse("2.3.4.5"))
+                                    .build())))))
+            .build();
+
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder()
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder()
+                        .setDeliveredToSubnet(
+                            ImmutableMap.of(
+                                c.getHostname(),
+                                ImmutableMap.of(
+                                    srcVrf.getName(),
+                                    ImmutableMap.of("iface1", dstIp.toIpSpace()))))
+                        .build())
+                .setConfigs(ImmutableMap.of(c.getHostname(), c))
+                .build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib)),
+            false);
+    FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
+    flowTracer.fibLookup(dstIp, hostname, srcFib);
+    List<TraceAndReverseFlow> finalTraces = traces.build();
+    assertThat(traces.build(), contains(hasTrace(hasDisposition(DELIVERED_TO_SUBNET))));
+    assertThat(finalTraces.get(0).getTrace().getHops(), hasSize(1));
+
+    Hop hop = finalTraces.get(0).getTrace().getHops().get(0);
+    assertThat(hop.getSteps().get(0), instanceOf(RoutingStep.class));
+    RoutingStep routingStep = (RoutingStep) hop.getSteps().get(0);
+    assertThat(routingStep.getAction(), equalTo(StepAction.FORWARDED));
+
+    assertThat(
+        routingStep.getDetail(),
+        equalTo(
+            RoutingStepDetail.builder()
+                .setFinalNextHopInterface(finalNhif)
+                .setFinalNextHopIp(finalNhip)
+                .setMatchedRoutes(
+                    ImmutableList.of(
+                        new RouteInfo(
+                            RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("1.2.3.4"), null),
+                        new RouteInfo(
+                            RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("2.3.4.5"), null)))
+                .build()));
   }
 
   /**

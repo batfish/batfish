@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -73,6 +74,25 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
 
     public static Builder builder() {
       return new Builder();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof RoutingStepDetail)) {
+        return false;
+      }
+      RoutingStepDetail that = (RoutingStepDetail) o;
+      return _matchedRoutes.equals(that._matchedRoutes)
+          && Objects.equals(_finalNextHopIp, that._finalNextHopIp)
+          && Objects.equals(_finalNextHopInterface, that._finalNextHopInterface);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_matchedRoutes, _finalNextHopIp, _finalNextHopInterface);
     }
 
     /** Chained builder to create a {@link RoutingStepDetail} object */
