@@ -7,6 +7,7 @@ import java.util.List;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.matchers.HopMatchersImpl.HasDeliverToInterface;
 import org.batfish.datamodel.matchers.HopMatchersImpl.HasEnterInputInterface;
 import org.batfish.datamodel.matchers.HopMatchersImpl.HasExitOutputInterface;
 import org.batfish.datamodel.matchers.HopMatchersImpl.HasNodeName;
@@ -35,6 +36,10 @@ public final class HopMatchers {
   public static HasExitOutputInterface hasOutputInterface(
       Matcher<? super NodeInterfacePair> subMatcher) {
     return new HasExitOutputInterface(subMatcher);
+  }
+
+  public static HasDeliverToInterface hasDeliverToInterface(NodeInterfacePair iface) {
+    return new HasDeliverToInterface(is(iface));
   }
 
   public static HasSteps hasSteps(Matcher<? super List<? extends Step<?>>> subMatcher) {

@@ -369,7 +369,10 @@ class FlowTracer {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
     if (interfacesThatReplyToArp.isEmpty()) {
-      buildArpFailureTrace(outgoingInterface, arpIp);
+      FlowDisposition disposition =
+          _tracerouteContext.computeDisposition(
+              _currentNode.getName(), outgoingInterface, _currentFlow.getDstIp());
+      buildArpFailureTrace(outgoingInterface, arpIp, disposition);
       return;
     }
 
@@ -871,7 +874,6 @@ class FlowTracer {
                         FlowDisposition disposition =
                             _tracerouteContext.computeDisposition(
                                 currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
-
                         buildArpFailureTrace(
                             outgoingIfaceName, _currentFlow.getDstIp(), disposition);
                       } else {
@@ -1158,16 +1160,9 @@ class FlowTracer {
    * Build ARP failure trace for the current flow, for when its forwarded out the input
    * outgoingInterface.
    */
-  private void buildArpFailureTrace(String outgoingInterfaceName, Ip resolvedNhip) {
-    String currentNodeName = _currentNode.getName();
-    FlowDisposition disposition =
-        _tracerouteContext.computeDisposition(
-            currentNodeName, outgoingInterfaceName, _currentFlow.getDstIp());
-    buildArpFailureTrace(outgoingInterfaceName, resolvedNhip, disposition);
-  }
-
   private void buildArpFailureTrace(
       String outInterface, Ip resolvedNhIp, FlowDisposition disposition) {
+    _steps.add(buildExitOutputIfaceStep(outInterface, getFinalActionForDisposition(disposition)));
     String currentNodeName = _currentNode.getName();
 
     Step<?> step;

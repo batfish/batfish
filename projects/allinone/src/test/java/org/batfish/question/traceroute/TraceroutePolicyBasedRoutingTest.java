@@ -1,6 +1,7 @@
 package org.batfish.question.traceroute;
 
 import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
+import static org.batfish.datamodel.matchers.HopMatchers.hasDeliverToInterface;
 import static org.batfish.datamodel.matchers.HopMatchers.hasOutputInterface;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasLastHop;
@@ -150,7 +151,7 @@ public class TraceroutePolicyBasedRoutingTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasLastHop(hasOutputInterface(NodeInterfacePair.of("c1", "i1")))),
+                everyItem(hasLastHop(hasDeliverToInterface(NodeInterfacePair.of("c1", "i1")))),
                 Schema.set(Schema.TRACE))));
   }
 
@@ -173,7 +174,7 @@ public class TraceroutePolicyBasedRoutingTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasLastHop(hasOutputInterface(NodeInterfacePair.of("c1", "i2")))),
+                everyItem(hasLastHop(hasDeliverToInterface(NodeInterfacePair.of("c1", "i2")))),
                 Schema.set(Schema.TRACE))));
   }
 
@@ -196,7 +197,7 @@ public class TraceroutePolicyBasedRoutingTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasLastHop(hasOutputInterface(NodeInterfacePair.of("c1", "i1")))),
+                everyItem(hasLastHop(hasDeliverToInterface(NodeInterfacePair.of("c1", "i1")))),
                 Schema.set(Schema.TRACE))));
   }
 }

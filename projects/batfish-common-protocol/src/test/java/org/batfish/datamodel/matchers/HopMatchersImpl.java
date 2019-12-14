@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.DeliveredStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Hop;
@@ -55,6 +56,21 @@ final class HopMatchersImpl {
       Step<?> lastStep = steps.get(steps.size() - 1);
       assertThat(lastStep, instanceOf(ExitOutputIfaceStep.class));
       return ((ExitOutputIfaceStep) lastStep).getDetail().getOutputInterface();
+    }
+  }
+
+  static class HasDeliverToInterface extends FeatureMatcher<Hop, NodeInterfacePair> {
+    HasDeliverToInterface(Matcher<? super NodeInterfacePair> subMatcher) {
+      super(subMatcher, "a Hop with output interface:", "output interface");
+    }
+
+    @Override
+    protected NodeInterfacePair featureValueOf(Hop hop) {
+      List<Step<?>> steps = hop.getSteps();
+      assertThat(steps, not(empty()));
+      Step<?> lastStep = steps.get(steps.size() - 1);
+      assertThat(lastStep, instanceOf(DeliveredStep.class));
+      return ((DeliveredStep) lastStep).getDetail().getOutputInterface();
     }
   }
 
