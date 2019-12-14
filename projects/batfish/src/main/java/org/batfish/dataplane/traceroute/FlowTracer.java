@@ -656,9 +656,6 @@ class FlowTracer {
     if (intraHopBreadcrumbs.isEmpty()) {
       _breadcrumbs.push(breadcrumb);
     }
-    checkState(_breadcrumbs.size() == _hops.size() + 1, "Breadcrumbs should be one more than hops");
-    int breadCrumbSize = _breadcrumbs.size();
-    int hopSize = _hops.size();
     try {
       Set<FibEntry> fibEntries = fib.get(dstIp);
 
@@ -688,8 +685,6 @@ class FlowTracer {
                     forwardOutInterfaceHandler,
                     intraHopBreadcrumbs,
                     breadcrumb);
-            checkState(breadCrumbSize == _breadcrumbs.size(), "");
-            checkState(hopSize == _hops.size(), "");
           }));
     } finally {
       if (intraHopBreadcrumbs.isEmpty()) {
