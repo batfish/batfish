@@ -551,4 +551,6 @@ public final class FlowTracerTest {
               pkt.getIpProtocol().value(flow.getIpProtocol())));
     }
   }
+
+  public void testBuildDispositionStep() {}
 }

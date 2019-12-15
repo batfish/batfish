@@ -2,7 +2,6 @@ package org.batfish.question.traceroute;
 
 import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
 import static org.batfish.datamodel.matchers.HopMatchers.hasDeliverToInterface;
-import static org.batfish.datamodel.matchers.HopMatchers.hasOutputInterface;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasLastHop;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;

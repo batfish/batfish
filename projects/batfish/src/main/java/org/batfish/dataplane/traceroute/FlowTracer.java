@@ -1027,15 +1027,10 @@ class FlowTracer {
     To simplify our life, just compute disposition for 1.1.1.1, at least that's guaranteed to give us a disposition
     */
     if (neighborIfaces.isEmpty()) {
+      Ip arpIp = firstNonNull(overridenNextHopIp, _currentFlow.getDstIp());
       FlowDisposition disposition =
-          _tracerouteContext.computeDisposition(
-              currentNodeName,
-              outgoingIfaceName,
-              firstNonNull(overridenNextHopIp, _currentFlow.getDstIp()));
-      buildArpFailureTrace(
-          outgoingIfaceName,
-          firstNonNull(overridenNextHopIp, _currentFlow.getDstIp()),
-          disposition);
+          _tracerouteContext.computeDisposition(currentNodeName, outgoingIfaceName, arpIp);
+      buildArpFailureTrace(outgoingIfaceName, arpIp, disposition);
     } else {
       processOutgoingInterfaceEdges(
           outgoingIfaceName, firstNonNull(overridenNextHopIp, nextHopIp), neighborIfaces);
@@ -1165,6 +1160,21 @@ class FlowTracer {
     _steps.add(buildExitOutputIfaceStep(outInterface, getFinalActionForDisposition(disposition)));
     String currentNodeName = _currentNode.getName();
 
+    _steps.add(buildDispositionStep(outInterface, resolvedNhIp, disposition));
+
+    _hops.add(new Hop(_currentNode, _steps));
+
+    Flow returnFlow =
+        disposition.isSuccessful()
+            ? returnFlow(_currentFlow, currentNodeName, null, outInterface)
+            : null;
+
+    Trace trace = new Trace(disposition, _hops);
+    _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
+  }
+
+  @VisibleForTesting
+  Step<?> buildDispositionStep(String outInterface, Ip resolvedNhIp, FlowDisposition disposition) {
     Step<?> step;
     switch (disposition) {
       case INSUFFICIENT_INFO:
@@ -1183,17 +1193,6 @@ class FlowTracer {
         throw new BatfishException(
             "the disposition is must be insufficient info, neighbor unreachable, delievered to subnet or exits network.");
     }
-
-    _steps.add(step);
-
-    _hops.add(new Hop(_currentNode, _steps));
-
-    Flow returnFlow =
-        disposition.isSuccessful()
-            ? returnFlow(_currentFlow, currentNodeName, null, outInterface)
-            : null;
-
-    Trace trace = new Trace(disposition, _hops);
-    _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
+    return step;
   }
 }
