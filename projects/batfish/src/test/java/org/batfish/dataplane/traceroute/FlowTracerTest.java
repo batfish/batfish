@@ -29,9 +29,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
@@ -45,6 +48,7 @@ import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -59,6 +63,10 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.ArpErrorStep;
+import org.batfish.datamodel.flow.ArpErrorStep.ArpErrorStepDetail;
+import org.batfish.datamodel.flow.DeliveredStep;
+import org.batfish.datamodel.flow.DeliveredStep.DeliveredStepDetail;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
@@ -552,5 +560,103 @@ public final class FlowTracerTest {
     }
   }
 
-  public void testBuildDispositionStep() {}
+  @Test
+  public void testBuildDispositionStep() {
+    String node = "node";
+    String iface = "iface";
+    Ip ip = Ip.parse("1.1.1.1");
+
+    Map<FlowDisposition, Step<?>> expectedMap =
+        ImmutableMap.of(
+            FlowDisposition.INSUFFICIENT_INFO,
+            ArpErrorStep.builder()
+                .setDetail(
+                    ArpErrorStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of(node, iface))
+                        .setResolvedNexthopIp(ip)
+                        .build())
+                .setAction(StepAction.INSUFFICIENT_INFO)
+                .build(),
+            FlowDisposition.NEIGHBOR_UNREACHABLE,
+            ArpErrorStep.builder()
+                .setDetail(
+                    ArpErrorStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of(node, iface))
+                        .setResolvedNexthopIp(ip)
+                        .build())
+                .setAction(StepAction.NEIGHBOR_UNREACHABLE)
+                .build(),
+            FlowDisposition.EXITS_NETWORK,
+            DeliveredStep.builder()
+                .setDetail(
+                    DeliveredStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of(node, iface))
+                        .setResolvedNexthopIp(ip)
+                        .build())
+                .setAction(StepAction.EXITS_NETWORK)
+                .build(),
+            FlowDisposition.DELIVERED_TO_SUBNET,
+            DeliveredStep.builder()
+                .setDetail(
+                    DeliveredStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of(node, iface))
+                        .setResolvedNexthopIp(ip)
+                        .build())
+                .setAction(StepAction.DELIVERED_TO_SUBNET)
+                .build());
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setHostname(node)
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    Flow flow =
+        Flow.builder()
+            .setDstIp(ip)
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(vrf.getName())
+            .setTag("tag")
+            .build();
+
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
+    FlowTracer flowTracer =
+        new FlowTracer(
+            ctxt,
+            c,
+            null,
+            new Node(c.getHostname()),
+            traces::add,
+            NodeInterfacePair.of(node, iface),
+            ImmutableSet.of(),
+            flow,
+            vrf.getName(),
+            new ArrayList<>(),
+            ImmutableList.of(),
+            new Stack<>(),
+            flow);
+
+    Stream.of(
+            FlowDisposition.INSUFFICIENT_INFO,
+            FlowDisposition.NEIGHBOR_UNREACHABLE,
+            FlowDisposition.DELIVERED_TO_SUBNET,
+            FlowDisposition.EXITS_NETWORK)
+        .forEach(
+            disposition -> {
+              Step<?> step = flowTracer.buildDispositionStep(iface, ip, disposition);
+              assertThat(step, instanceOf(expectedMap.get(disposition).getClass()));
+              assertThat(step.getAction(), equalTo(expectedMap.get(disposition).getAction()));
+            });
+  }
 }
