@@ -1167,7 +1167,7 @@ class FlowTracer {
       String outInterface, Ip resolvedNhIp, FlowDisposition disposition) {
     String currentNodeName = _currentNode.getName();
 
-    _steps.add(buildDispositionStep(outInterface, resolvedNhIp, disposition));
+    _steps.add(buildArpFailureStep(outInterface, resolvedNhIp, disposition));
 
     _hops.add(new Hop(_currentNode, _steps));
 
@@ -1181,25 +1181,19 @@ class FlowTracer {
   }
 
   @VisibleForTesting
-  Step<?> buildDispositionStep(String outInterface, Ip resolvedNhIp, FlowDisposition disposition) {
-    Step<?> step;
+  Step<?> buildArpFailureStep(String outInterface, Ip resolvedNhIp, FlowDisposition disposition) {
     switch (disposition) {
       case INSUFFICIENT_INFO:
       case NEIGHBOR_UNREACHABLE:
-        step =
-            buildArpErrorStep(
-                outInterface, resolvedNhIp, getFinalActionForDisposition(disposition));
-        break;
+        return buildArpErrorStep(
+            outInterface, resolvedNhIp, getFinalActionForDisposition(disposition));
       case DELIVERED_TO_SUBNET:
       case EXITS_NETWORK:
-        step =
-            buildDeliveredStep(
-                outInterface, resolvedNhIp, getFinalActionForDisposition(disposition));
-        break;
+        return buildDeliveredStep(
+            outInterface, resolvedNhIp, getFinalActionForDisposition(disposition));
       default:
         throw new BatfishException(
-            "the disposition is must be insufficient info, neighbor unreachable, delievered to subnet or exits network.");
+            "the disposition is must be insufficient info, neighbor unreachable, delivered to subnet or exits network.");
     }
-    return step;
   }
 }

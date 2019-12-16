@@ -653,7 +653,7 @@ public final class FlowTracerTest {
             FlowDisposition.EXITS_NETWORK)
         .forEach(
             disposition -> {
-              Step<?> step = flowTracer.buildDispositionStep(iface, ip, disposition);
+              Step<?> step = flowTracer.buildArpFailureStep(iface, ip, disposition);
               assertThat(step, instanceOf(expectedMap.get(disposition).getClass()));
               assertThat(step.getAction(), equalTo(expectedMap.get(disposition).getAction()));
             });
