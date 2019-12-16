@@ -1,7 +1,6 @@
 package org.batfish.datamodel.flow;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
