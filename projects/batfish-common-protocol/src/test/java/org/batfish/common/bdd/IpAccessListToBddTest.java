@@ -1,6 +1,6 @@
 package org.batfish.common.bdd;
 
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Map;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -40,24 +40,24 @@ public class IpAccessListToBddTest {
     _pkt = new BDDPacket();
   }
 
-  private IpAccessList aclWithLines(IpAccessListLine... lines) {
+  private IpAccessList aclWithLines(ExprAclLine... lines) {
     return _nf.aclBuilder().setLines(Arrays.asList(lines)).build();
   }
 
-  private static IpAccessListLine accepting(AclLineMatchExpr matchExpr) {
-    return IpAccessListLine.accepting().setMatchCondition(matchExpr).build();
+  private static ExprAclLine accepting(AclLineMatchExpr matchExpr) {
+    return ExprAclLine.accepting().setMatchCondition(matchExpr).build();
   }
 
-  private static IpAccessListLine accepting(HeaderSpace headerSpace) {
+  private static ExprAclLine accepting(HeaderSpace headerSpace) {
     return accepting(new MatchHeaderSpace(headerSpace));
   }
 
-  private static IpAccessListLine acceptingDst(Prefix prefix) {
+  private static ExprAclLine acceptingDst(Prefix prefix) {
     return accepting(
         new MatchHeaderSpace(HeaderSpace.builder().setDstIps(prefix.toIpSpace()).build()));
   }
 
-  private static IpAccessListLine rejectingDst(Prefix prefix) {
+  private static ExprAclLine rejectingDst(Prefix prefix) {
     return rejecting(
         new MatchHeaderSpace(HeaderSpace.builder().setDstIps(prefix.toIpSpace()).build()));
   }

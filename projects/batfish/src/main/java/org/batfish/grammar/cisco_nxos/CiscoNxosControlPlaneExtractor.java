@@ -109,6 +109,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_PREFIX_LIST;
@@ -401,6 +402,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_source_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Lv6_access_classContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Lv_access_classContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_access_list_nameContext;
@@ -2174,7 +2176,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitIpp_rp_address(Ipp_rp_addressContext ctx) {
-    if (ctx.map != null) {
+    if (ctx.pl != null) {
+      Optional<String> pl = toString(ctx, ctx.pl);
+      if (!pl.isPresent()) {
+        return;
+      }
+      _c.referenceStructure(
+          IP_PREFIX_LIST, pl.get(), IP_PIM_RP_ADDRESS_PREFIX_LIST, ctx.getStart().getLine());
+    } else if (ctx.map != null) {
       Optional<String> map = toString(ctx, ctx.map);
       if (!map.isPresent()) {
         return;
@@ -2307,6 +2316,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     CiscoNxosStructureUsage usage =
         ctx.IN() != null ? LINE_VTY_ACCESS_CLASS_IN : LINE_VTY_ACCESS_CLASS_OUT;
     _c.referenceStructure(IP_ACCESS_LIST, acl.get(), usage, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitLv6_access_class(Lv6_access_classContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.acl);
+    if (!acl.isPresent()) {
+      return;
+    }
+    CiscoNxosStructureUsage usage =
+        ctx.IN() != null ? LINE_VTY_ACCESS_CLASS_IN : LINE_VTY_ACCESS_CLASS_OUT;
+    _c.referenceStructure(IPV6_ACCESS_LIST, acl.get(), usage, ctx.getStart().getLine());
   }
 
   @Override

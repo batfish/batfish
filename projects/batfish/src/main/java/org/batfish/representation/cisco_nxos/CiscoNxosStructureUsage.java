@@ -71,6 +71,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_VRF_MEMBER("interface vrf member"),
   IP_ACCESS_LIST_DESTINATION_ADDRGROUP("ip access-list destination addrgroup"),
   IP_ACCESS_LIST_SOURCE_ADDRGROUP("ip access-list source addrgroup"),
+  IP_PIM_RP_ADDRESS_PREFIX_LIST("ip pim rp-address prefix-list"),
   IP_PIM_RP_ADDRESS_ROUTE_MAP("ip pim rp-address route-map"),
   IP_PIM_RP_CANDIDATE_INTERFACE("ip pim rp-candidate interface"),
   IP_PIM_RP_CANDIDATE_PREFIX_LIST("ip pim rp-candidate prefix-list"),

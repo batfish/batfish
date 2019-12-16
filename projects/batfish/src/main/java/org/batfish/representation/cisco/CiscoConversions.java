@@ -50,6 +50,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -63,7 +64,6 @@ import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.Ip6AccessListLine;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
@@ -742,7 +742,7 @@ public class CiscoConversions {
 
   static IpAccessList toIpAccessList(
       ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
-    List<IpAccessListLine> lines =
+    List<ExprAclLine> lines =
         eaList.getLines().stream()
             .map(l -> toIpAccessListLine(l, objectGroups))
             .collect(ImmutableList.toImmutableList());
@@ -763,7 +763,7 @@ public class CiscoConversions {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
                     .build()))
         .setName(computeIcmpObjectGroupAclName(icmpTypeObjectGroup.getName()))
@@ -776,7 +776,7 @@ public class CiscoConversions {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
                     .build()))
         .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
@@ -792,7 +792,7 @@ public class CiscoConversions {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         serviceObject.toAclLineMatchExpr(serviceObjects, serviceObjectGroups))
                     .build()))
@@ -809,7 +809,7 @@ public class CiscoConversions {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         serviceObjectGroup.toAclLineMatchExpr(serviceObjects, serviceObjectGroups))
                     .build()))
@@ -960,15 +960,15 @@ public class CiscoConversions {
   }
 
   /**
-   * Returns a new symmetrical {@link IpAccessList} by adding mirror image {@link IpAccessListLine}s
-   * to the original {@link IpAccessList} or null if the conversion is not supported
+   * Returns a new symmetrical {@link IpAccessList} by adding mirror image {@link ExprAclLine}s to
+   * the original {@link IpAccessList} or null if the conversion is not supported
    */
   @VisibleForTesting
   @Nullable
   static IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
-    List<IpAccessListLine> aclLines = new ArrayList<>(ipAccessList.getLines());
+    List<ExprAclLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
-    for (IpAccessListLine ipAccessListLine : ipAccessList.getLines()) {
+    for (ExprAclLine ipAccessListLine : ipAccessList.getLines()) {
       HeaderSpace originalHeaderSpace = HeaderSpaceConverter.convert(ipAccessListLine);
 
       if (!originalHeaderSpace.equals(
@@ -986,7 +986,7 @@ public class CiscoConversions {
       } else {
         HeaderSpace.Builder reversedHeaderSpaceBuilder = originalHeaderSpace.toBuilder();
         aclLines.add(
-            IpAccessListLine.builder()
+            ExprAclLine.builder()
                 .setMatchCondition(
                     new MatchHeaderSpace(
                         reversedHeaderSpaceBuilder
@@ -1516,7 +1516,7 @@ public class CiscoConversions {
         .build();
   }
 
-  private static IpAccessListLine toIpAccessListLine(
+  private static ExprAclLine toIpAccessListLine(
       ExtendedAccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
@@ -1540,7 +1540,7 @@ public class CiscoConversions {
                       HeaderSpace.builder().setSrcIps(srcIpSpace).setDstIps(dstIpSpace).build())));
     }
 
-    return IpAccessListLine.builder()
+    return ExprAclLine.builder()
         .setAction(line.getAction())
         .setMatchCondition(match)
         .setName(line.getName())

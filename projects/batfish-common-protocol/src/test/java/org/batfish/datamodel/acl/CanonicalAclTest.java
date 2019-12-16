@@ -1,7 +1,7 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
-import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
+import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
@@ -11,9 +11,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.junit.Before;
@@ -46,7 +46,7 @@ public class CanonicalAclTest {
             .setName("acl1")
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(new PermittedByAcl("referencedAcl"))
                         .build()))
             .build();
@@ -55,7 +55,7 @@ public class CanonicalAclTest {
             .setName("acl2")
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(new PermittedByAcl("referencedAcl"))
                         .build()))
             .build();
@@ -145,7 +145,7 @@ public class CanonicalAclTest {
             .setName("acl1")
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(new PermittedByAcl("referencedAcl"))
                         .build()))
             .build();
@@ -154,7 +154,7 @@ public class CanonicalAclTest {
             .setName("acl2")
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(new PermittedByAcl("referencedAcl"))
                         .build()))
             .build();

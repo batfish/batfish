@@ -30,8 +30,8 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -145,11 +145,11 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     return acls.stream()
         .flatMap(
             aclName -> {
-              List<IpAccessListLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
+              List<ExprAclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
               return getRowsForAcl(aclLines, headerSpaceBdd, bddConverter, action)
                   .mapToObj(
                       lineIndex -> {
-                        IpAccessListLine line = aclLines.get(lineIndex);
+                        ExprAclLine line = aclLines.get(lineIndex);
                         return rowBuilder
                             .put(COL_FILTER, aclName)
                             .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
@@ -161,19 +161,19 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
   }
 
   /**
-   * Returns the indices of the lines in the given list of {@link IpAccessListLine}s that match the
-   * given {@code headerSpaceBdd} and {@link Action}.
+   * Returns the indices of the lines in the given list of {@link ExprAclLine}s that match the given
+   * {@code headerSpaceBdd} and {@link Action}.
    */
   @VisibleForTesting
   static IntStream getRowsForAcl(
-      List<IpAccessListLine> aclLines,
+      List<ExprAclLine> aclLines,
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
       @Nullable Action action) {
     return IntStream.range(0, aclLines.size())
         .filter(
             i -> {
-              IpAccessListLine line = aclLines.get(i);
+              ExprAclLine line = aclLines.get(i);
               if (!actionMatches(action, line.getAction())) {
                 return false;
               }

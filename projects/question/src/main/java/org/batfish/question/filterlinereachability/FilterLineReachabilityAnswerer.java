@@ -33,10 +33,11 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CollectionUtil;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.CircularReferenceException;
@@ -91,7 +92,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     private final List<Dependency> _dependencies = new ArrayList<>();
     private final Set<String> _interfaces = new TreeSet<>();
     private IpAccessList _sanitizedAcl;
-    private List<IpAccessListLine> _sanitizedLines;
+    private List<ExprAclLine> _sanitizedLines;
 
     public AclNode(IpAccessList acl) {
       _acl = acl;
@@ -103,15 +104,16 @@ public class FilterLineReachabilityAnswerer extends Answerer {
      */
     public void markLineUnmatchable(int lineNum) {
       _sanitizedLines = firstNonNull(_sanitizedLines, new ArrayList<>(_acl.getLines()));
-      IpAccessListLine originalLine = _sanitizedLines.remove(lineNum);
+      ExprAclLine originalLine = _sanitizedLines.remove(lineNum);
       _sanitizedLines.add(
           lineNum, originalLine.toBuilder().setMatchCondition(FalseExpr.INSTANCE).build());
     }
 
-    public void sanitizeLine(int lineNum, IpAccessListLine sanitizedLine) {
+    public void sanitizeLine(int lineNum, AclLine sanitizedLine) {
       _sanitizedLines = firstNonNull(_sanitizedLines, new ArrayList<>(_acl.getLines()));
       _sanitizedLines.remove(lineNum);
-      _sanitizedLines.add(lineNum, sanitizedLine);
+      // TODO temp cast; remove after IpAccessList._lines is a List<AclLine>
+      _sanitizedLines.add(lineNum, (ExprAclLine) sanitizedLine);
     }
 
     public void sanitizeCycle(ImmutableList<String> cycleAcls) {
@@ -214,7 +216,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     // Go through lines and add dependencies
     int index = 0;
-    for (IpAccessListLine line : acl.getLines()) {
+    for (ExprAclLine line : acl.getLines()) {
       boolean lineMarkedUnmatchable = false;
 
       // Find all references to other ACLs and record them
@@ -246,7 +248,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       // Dereference all IpSpace references, or mark line unmatchable if it has invalid references
       if (!lineMarkedUnmatchable) {
         try {
-          IpAccessListLine sanitizedForIpSpaces = headerSpaceSanitizer.visit(line);
+          AclLine sanitizedForIpSpaces = headerSpaceSanitizer.visit(line);
           if (!line.equals(sanitizedForIpSpaces)) {
             node.sanitizeLine(index, sanitizedForIpSpaces);
           }
@@ -536,7 +538,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
             bddPacket, sourceMgr, aclSpec.acl.getDependencies(), ImmutableMap.of());
 
     IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
-    List<IpAccessListLine> lines = ipAcl.getLines();
+    List<ExprAclLine> lines = ipAcl.getLines();
 
     /* Convert every line to a BDD. */
     List<BDD> ipLineToBDDMap =
@@ -554,7 +556,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       } else if (unmatchedPackets.isZero() || !lineBDD.andSat(unmatchedPackets)) {
         // No unmatched packets in the ACL match this line, so this line is unreachable.
         List<LineAction> actions =
-            lines.stream().map(IpAccessListLine::getAction).collect(Collectors.toList());
+            lines.stream().map(ExprAclLine::getAction).collect(Collectors.toList());
         SortedSet<Integer> blockingLines =
             findBlockingLinesForLine(lineNum, actions, ipLineToBDDMap);
         answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLines);

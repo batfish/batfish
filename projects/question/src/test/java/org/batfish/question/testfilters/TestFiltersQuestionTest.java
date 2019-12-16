@@ -11,8 +11,8 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
@@ -35,13 +35,13 @@ public class TestFiltersQuestionTest {
     IpAccessList filter1 =
         IpAccessList.builder()
             .setName("filter1")
-            .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
             .build();
 
     IpAccessList filter2 =
         IpAccessList.builder()
             .setName("filter2")
-            .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+            .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
             .build();
 
     NetworkFactory nf = new NetworkFactory();
