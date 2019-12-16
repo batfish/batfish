@@ -29,10 +29,7 @@ public final class ForwardOutInterfaceTest {
   @Test
   public void testSerialization() throws IOException {
     ForwardOutInterface f = new ForwardOutInterface("a", null);
-    SessionAction castedClone = BatfishObjectMapper.clone(f, SessionAction.class);
-    assertThat(castedClone, instanceOf(ForwardOutInterface.class));
-
-    ForwardOutInterface clone = (ForwardOutInterface) castedClone;
+    SessionAction clone = BatfishObjectMapper.clone(f, SessionAction.class);
     assertThat(clone, equalTo(f));
 
     f = new ForwardOutInterface("b", NodeInterfacePair.of("a", "b"));
