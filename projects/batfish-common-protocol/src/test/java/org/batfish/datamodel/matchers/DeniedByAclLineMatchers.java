@@ -4,9 +4,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.DeniedByAclLine;
-import org.batfish.datamodel.matchers.DeniedByIpAccessListLineMatchersImpl.HasIndex;
-import org.batfish.datamodel.matchers.DeniedByIpAccessListLineMatchersImpl.HasLineDescription;
-import org.batfish.datamodel.matchers.DeniedByIpAccessListLineMatchersImpl.HasName;
+import org.batfish.datamodel.matchers.DeniedByAclLineMatchersImpl.HasIndex;
+import org.batfish.datamodel.matchers.DeniedByAclLineMatchersImpl.HasLineDescription;
+import org.batfish.datamodel.matchers.DeniedByAclLineMatchersImpl.HasName;
 import org.hamcrest.Matcher;
 
 public final class DeniedByAclLineMatchers {

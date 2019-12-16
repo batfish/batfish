@@ -5,7 +5,7 @@ import org.batfish.datamodel.acl.TraceEvent;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-final class DeniedByIpAccessListLineMatchersImpl {
+final class DeniedByAclLineMatchersImpl {
   static final class HasIndex extends FeatureMatcher<DeniedByAclLine, Integer> {
     HasIndex(Matcher<? super Integer> subMatcher) {
       super(subMatcher, "a DeniedByAclLine with index:", "index");

@@ -46,7 +46,7 @@ import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.
 import org.batfish.datamodel.matchers.DefaultDeniedByAclIpSpaceMatchers.IsDefaultDeniedByAclIpSpaceThat;
 import org.batfish.datamodel.matchers.DefaultDeniedByIpAccessListMatchers.IsDefaultDeniedByIpAccessListThat;
 import org.batfish.datamodel.matchers.DeniedByAclIpSpaceLineMatchersImpl.IsDeniedByAclIpSpaceLineThat;
-import org.batfish.datamodel.matchers.DeniedByIpAccessListLineMatchersImpl.IsDeniedByAclLineThat;
+import org.batfish.datamodel.matchers.DeniedByAclLineMatchersImpl.IsDeniedByAclLineThat;
 import org.batfish.datamodel.matchers.DeniedByNamedIpSpaceMatchers.IsDeniedByNamedIpSpaceThat;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
