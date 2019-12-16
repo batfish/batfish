@@ -33,6 +33,7 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CollectionUtil;
+import org.batfish.datamodel.AbstractAclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -108,10 +109,11 @@ public class FilterLineReachabilityAnswerer extends Answerer {
           lineNum, originalLine.toBuilder().setMatchCondition(FalseExpr.INSTANCE).build());
     }
 
-    public void sanitizeLine(int lineNum, IpAccessListLine sanitizedLine) {
+    public void sanitizeLine(int lineNum, AbstractAclLine sanitizedLine) {
       _sanitizedLines = firstNonNull(_sanitizedLines, new ArrayList<>(_acl.getLines()));
       _sanitizedLines.remove(lineNum);
-      _sanitizedLines.add(lineNum, sanitizedLine);
+      // TODO temp cast; remove after IpAccessList._lines is a List<AbstractAclLine>
+      _sanitizedLines.add(lineNum, (IpAccessListLine) sanitizedLine);
     }
 
     public void sanitizeCycle(ImmutableList<String> cycleAcls) {
@@ -246,7 +248,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       // Dereference all IpSpace references, or mark line unmatchable if it has invalid references
       if (!lineMarkedUnmatchable) {
         try {
-          IpAccessListLine sanitizedForIpSpaces = headerSpaceSanitizer.visit(line);
+          AbstractAclLine sanitizedForIpSpaces = headerSpaceSanitizer.visit(line);
           if (!line.equals(sanitizedForIpSpaces)) {
             node.sanitizeLine(index, sanitizedForIpSpaces);
           }

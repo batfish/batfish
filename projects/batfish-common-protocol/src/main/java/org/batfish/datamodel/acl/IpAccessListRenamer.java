@@ -7,6 +7,7 @@ import com.google.common.collect.Ordering;
 import java.util.IdentityHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AbstractAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -20,22 +21,22 @@ import org.batfish.datamodel.visitors.IpSpaceRenamer;
 public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList> {
 
   /**
-   * Makes a copy of the given {@link IpAccessListLine} or {@link AclLineMatchExpr} with any
+   * Makes a copy of the given {@link AbstractAclLine} or {@link AclLineMatchExpr} with any
    * referenced ACLs and IP spaces renamed.
    */
   @VisibleForTesting
   class Visitor
       implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
-          GenericIpAccessListLineVisitor<IpAccessListLine> {
+          GenericIpAccessListLineVisitor<AbstractAclLine> {
 
     private IpSpace rename(@Nullable IpSpace ipSpace) {
       return ipSpace == null ? null : _ipSpaceRenamer.apply(ipSpace);
     }
 
-    /* IpAccessListLine visit methods */
+    /* AbstractAclLine visit methods */
 
     @Override
-    public IpAccessListLine visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
+    public AbstractAclLine visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
       return ipAccessListLine
           .toBuilder()
           .setMatchCondition(visit(ipAccessListLine.getMatchCondition()))
@@ -144,6 +145,8 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
         .setLines(
             ipAccessList.getLines().stream()
                 .map(_visitor::visit)
+                // TODO temp cast; remove after IpAccessList._lines is a List<AbstractAclLine>
+                .map(IpAccessListLine.class::cast)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }

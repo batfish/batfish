@@ -400,7 +400,7 @@ public final class AclTracer extends Evaluator implements GenericIpAccessListLin
     return ipSpace.accept(new IpSpaceTracer(this, ip, "source IP"));
   }
 
-  /* IpAccessListLine visit methods */
+  /* AbstractAclLine visit methods */
 
   @Override
   public Boolean visitIpAccessListLine(IpAccessListLine ipAccessListLine) {

@@ -3,6 +3,7 @@ package org.batfish.question.filterlinereachability;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.batfish.datamodel.AbstractAclLine;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -17,7 +18,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
-/** Utils for extracting referenced ACLs and interfaces from an {@link IpAccessListLine} */
+/** Utils for extracting referenced ACLs and interfaces from an {@link AbstractAclLine} */
 public class FilterLineReachabilityUtils {
   private static final ReferencedAclsCollector ACLS_COLLECTOR = new ReferencedAclsCollector();
   private static final ReferencedInterfacesCollector INTERFACES_COLLECTOR =
@@ -25,23 +26,23 @@ public class FilterLineReachabilityUtils {
 
   private FilterLineReachabilityUtils() {}
 
-  public static Set<String> getReferencedAcls(IpAccessListLine line) {
+  public static Set<String> getReferencedAcls(AbstractAclLine line) {
     return ACLS_COLLECTOR.visit(line).collect(ImmutableSet.toImmutableSet());
   }
 
-  public static Set<String> getReferencedInterfaces(IpAccessListLine line) {
+  public static Set<String> getReferencedInterfaces(AbstractAclLine line) {
     return INTERFACES_COLLECTOR.visit(line).collect(ImmutableSet.toImmutableSet());
   }
 
   /**
    * Collects names of all ACLs directly referenced in an {@link AclLineMatchExpr} or {@link
-   * IpAccessListLine}. Does not recurse into referenced ACLs.
+   * AbstractAclLine}. Does not recurse into referenced ACLs.
    */
   private static class ReferencedAclsCollector
       implements GenericAclLineMatchExprVisitor<Stream<String>>,
           GenericIpAccessListLineVisitor<Stream<String>> {
 
-    /* IpAccessListLine visit methods */
+    /* AbstractAclLine visit methods */
 
     @Override
     public Stream<String> visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
@@ -98,13 +99,13 @@ public class FilterLineReachabilityUtils {
 
   /**
    * Collects names of all interfaces directly referenced in an {@link AclLineMatchExpr} or {@link
-   * IpAccessListLine}. Does not recurse into referenced ACLs.
+   * AbstractAclLine}. Does not recurse into referenced ACLs.
    */
   private static class ReferencedInterfacesCollector
       implements GenericAclLineMatchExprVisitor<Stream<String>>,
           GenericIpAccessListLineVisitor<Stream<String>> {
 
-    /* IpAccessListLine visit methods */
+    /* AbstractAclLine visit methods */
 
     @Override
     public Stream<String> visitIpAccessListLine(IpAccessListLine ipAccessListLine) {

@@ -2,6 +2,7 @@ package org.batfish.question.filterlinereachability;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AbstractAclLine;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -21,14 +22,14 @@ import org.batfish.datamodel.acl.UndefinedReferenceException;
 import org.batfish.datamodel.visitors.IpSpaceDereferencer;
 
 /**
- * Makes a version of the given {@link IpAccessListLine} or {@link AclLineMatchExpr} with any named
+ * Makes a version of the given {@link AbstractAclLine} or {@link AclLineMatchExpr} with any named
  * IP space references replaced with the dereferenced {@link IpSpace}. Throws {@link
  * CircularReferenceException} if any circular IP space reference is referenced, or {@link
  * UndefinedReferenceException} if any undefined IP space is referenced.
  */
 public class HeaderSpaceSanitizer
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
-        GenericIpAccessListLineVisitor<IpAccessListLine> {
+        GenericIpAccessListLineVisitor<AbstractAclLine> {
 
   private final Map<String, IpSpace> _namedIpSpaces;
 
@@ -36,10 +37,10 @@ public class HeaderSpaceSanitizer
     _namedIpSpaces = namedIpSpaces;
   }
 
-  /* IpAccessListLine visit methods */
+  /* AbstractAclLine visit methods */
 
   @Override
-  public IpAccessListLine visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
+  public AbstractAclLine visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
     return ipAccessListLine
         .toBuilder()
         .setMatchCondition(visit(ipAccessListLine.getMatchCondition()))

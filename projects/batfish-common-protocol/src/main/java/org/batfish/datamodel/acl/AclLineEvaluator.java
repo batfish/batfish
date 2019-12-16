@@ -10,15 +10,15 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 
 /**
- * Evaluates the action of an {@link IpAccessListLine} on a given {@link Flow}. Visiting a line
+ * Evaluates the action of an {@link AbstractAclLine} on a given {@link Flow}. Visiting a line
  * returns the {@link LineAction} it will take on the flow, or {@code null} if the line does not
  * match the flow.
  */
-public class IpAccessListLineEvaluator implements GenericIpAccessListLineVisitor<LineAction> {
+public class AclLineEvaluator implements GenericIpAccessListLineVisitor<LineAction> {
 
   private final Evaluator _matchExprEvaluator;
 
-  public IpAccessListLineEvaluator(
+  public AclLineEvaluator(
       Flow flow,
       String srcInterface,
       Map<String, IpAccessList> availableAcls,

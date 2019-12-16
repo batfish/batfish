@@ -121,7 +121,7 @@ public final class AclToAclLineMatchExpr
     return disjunctsBuilder.build();
   }
 
-  /* IpAccessListLine visit methods */
+  /* AbstractAclLine visit methods */
 
   @Override
   public AclLineMatchExpr visitIpAccessListLine(IpAccessListLine ipAccessListLine) {

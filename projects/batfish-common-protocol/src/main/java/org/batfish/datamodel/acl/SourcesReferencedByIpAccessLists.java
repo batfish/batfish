@@ -52,7 +52,7 @@ public final class SourcesReferencedByIpAccessLists {
       acl.getLines().forEach(this::visit);
     }
 
-    /* IpAccessListLine visit methods */
+    /* AbstractAclLine visit methods */
 
     @Override
     public Void visitIpAccessListLine(IpAccessListLine ipAccessListLine) {

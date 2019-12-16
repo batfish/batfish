@@ -6,6 +6,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
+import org.batfish.datamodel.AbstractAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 
@@ -48,13 +49,13 @@ public class AclLineMatchExprLiterals
   }
 
   /** This method is the public entry point for the visitor. */
-  public static Set<AclLineMatchExpr> getLiterals(IpAccessListLine line) {
+  public static Set<AclLineMatchExpr> getLiterals(AbstractAclLine line) {
     AclLineMatchExprLiterals aclLineMatchExprLiterals = new AclLineMatchExprLiterals();
     aclLineMatchExprLiterals.visit(line);
     return aclLineMatchExprLiterals._literals;
   }
 
-  /* IpAccessListLine visit methods */
+  /* AbstractAclLine visit methods */
 
   @Override
   public Void visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
