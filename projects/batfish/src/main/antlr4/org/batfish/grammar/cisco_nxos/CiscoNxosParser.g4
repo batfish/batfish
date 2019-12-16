@@ -206,7 +206,12 @@ ip_pim
 
 ipp_rp_address
 :
-  RP_ADDRESS ip = ip_address (ROUTE_MAP map = route_map_name)? BIDIR? OVERRIDE? NEWLINE
+  RP_ADDRESS ip = ip_address
+  (
+    GROUP_LIST ip_prefix
+    | PREFIX_LIST pl = ip_prefix_list_name
+    | ROUTE_MAP map = route_map_name
+  )? BIDIR? OVERRIDE? NEWLINE
 ;
 
 ipp_rp_candidate

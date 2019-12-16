@@ -109,6 +109,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_PREFIX_LIST;
@@ -2174,7 +2175,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitIpp_rp_address(Ipp_rp_addressContext ctx) {
-    if (ctx.map != null) {
+    if (ctx.pl != null) {
+      Optional<String> pl = toString(ctx, ctx.pl);
+      if (!pl.isPresent()) {
+        return;
+      }
+      _c.referenceStructure(
+          IP_PREFIX_LIST, pl.get(), IP_PIM_RP_ADDRESS_PREFIX_LIST, ctx.getStart().getLine());
+    } else if (ctx.map != null) {
       Optional<String> map = toString(ctx, ctx.map);
       if (!map.isPresent()) {
         return;
