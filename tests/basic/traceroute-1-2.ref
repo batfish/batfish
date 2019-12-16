@@ -77,9 +77,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "1.0.1.1",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -121,9 +121,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "10.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -173,9 +173,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "2.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -222,9 +222,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.23.11.3",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -266,9 +266,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.34.101.4",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -310,9 +310,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "AUTO/NONE(-1l)",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "AUTO/NONE(-1l)",
@@ -386,9 +386,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "1.0.1.1",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -430,9 +430,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "10.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -482,9 +482,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "2.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -531,9 +531,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet3/0",
                       "finalNextHopIp" : "2.23.12.3",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet3/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.201.4",
@@ -575,9 +575,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.34.201.4",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.201.4",
@@ -619,9 +619,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "AUTO/NONE(-1l)",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "AUTO/NONE(-1l)",
@@ -695,9 +695,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "1.0.1.1",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -739,9 +739,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "10.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -791,9 +791,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.12.12.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -840,9 +840,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.23.22.3",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.201.4",
@@ -884,9 +884,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.34.201.4",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.201.4",
@@ -928,9 +928,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "AUTO/NONE(-1l)",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "AUTO/NONE(-1l)",
@@ -1004,9 +1004,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "1.0.1.1",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -1048,9 +1048,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "10.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -1100,9 +1100,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.12.12.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -1149,9 +1149,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet3/0",
                       "finalNextHopIp" : "2.23.21.3",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet3/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -1193,9 +1193,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.34.101.4",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -1237,9 +1237,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "AUTO/NONE(-1l)",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "AUTO/NONE(-1l)",
@@ -1341,9 +1341,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "1.0.1.1",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -1385,9 +1385,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "10.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -1437,9 +1437,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "2.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -1486,9 +1486,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.23.11.3",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -1530,9 +1530,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.34.101.4",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -1574,9 +1574,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "AUTO/NONE(-1l)",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "AUTO/NONE(-1l)",
@@ -1650,9 +1650,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "1.0.1.1",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -1694,9 +1694,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "10.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -1746,9 +1746,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "2.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -1795,9 +1795,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet3/0",
                       "finalNextHopIp" : "2.23.12.3",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet3/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.201.4",
@@ -1839,9 +1839,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.34.201.4",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.201.4",
@@ -1883,9 +1883,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "AUTO/NONE(-1l)",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "AUTO/NONE(-1l)",
@@ -1959,9 +1959,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "1.0.1.1",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -2003,9 +2003,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "10.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -2055,9 +2055,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.12.12.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -2104,9 +2104,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.23.22.3",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.201.4",
@@ -2148,9 +2148,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.34.201.4",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.201.4",
@@ -2192,9 +2192,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "AUTO/NONE(-1l)",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "AUTO/NONE(-1l)",
@@ -2268,9 +2268,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "1.0.1.1",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -2312,9 +2312,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet1/0",
                       "finalNextHopIp" : "10.12.11.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet1/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/16",
                           "nextHopIp" : "10.12.11.2",
@@ -2364,9 +2364,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.12.12.2",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -2413,9 +2413,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet3/0",
                       "finalNextHopIp" : "2.23.21.3",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet3/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -2457,9 +2457,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "2.34.101.4",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "2.34.101.4",
@@ -2501,9 +2501,9 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "finalNextHopInterface" : "GigabitEthernet2/0",
                       "finalNextHopIp" : "AUTO/NONE(-1l)",
-                      "matchedRoutes" : [
+                      "finalOutputInterface" : "GigabitEthernet2/0",
+                      "routes" : [
                         {
                           "network" : "2.128.0.0/24",
                           "nextHopIp" : "AUTO/NONE(-1l)",

@@ -298,11 +298,11 @@ public final class FlowTracerTest {
             instanceOf(RoutingStep.class),
             instanceOf(ExitOutputIfaceStep.class)));
     assertThat(
-        ((RoutingStep) steps.get(0)).getDetail().getMatchedRoutes().get(0).getNextVrf(),
+        ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
         equalTo(nextVrfName));
     assertThat((steps.get(0)).getAction(), equalTo(StepAction.FORWARDED_TO_NEXT_VRF));
     assertThat(
-        ((RoutingStep) steps.get(1)).getDetail().getMatchedRoutes().get(0).getNextHopIp(),
+        ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextHopIp(),
         equalTo(Ip.AUTO));
     assertThat((steps.get(1)).getAction(), equalTo(StepAction.NULL_ROUTED));
     assertThat(((ExitOutputIfaceStep) steps.get(2)).getAction(), is(StepAction.NULL_ROUTED));
@@ -377,10 +377,10 @@ public final class FlowTracerTest {
 
     assertThat(steps, contains(instanceOf(RoutingStep.class), instanceOf(RoutingStep.class)));
     assertThat(
-        ((RoutingStep) steps.get(0)).getDetail().getMatchedRoutes().get(0).getNextVrf(),
+        ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
         equalTo(vrf2Name));
     assertThat(
-        ((RoutingStep) steps.get(1)).getDetail().getMatchedRoutes().get(0).getNextVrf(),
+        ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextVrf(),
         equalTo(vrf1Name));
   }
 
@@ -470,9 +470,9 @@ public final class FlowTracerTest {
         routingStep.getDetail(),
         equalTo(
             RoutingStepDetail.builder()
-                .setFinalNextHopInterface(finalNhif)
+                .setFinalOutputInterface(finalNhif)
                 .setFinalNextHopIp(finalNhip)
-                .setMatchedRoutes(
+                .setRoutes(
                     ImmutableList.of(
                         new RouteInfo(
                             RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("1.2.3.4"), null),
@@ -686,12 +686,12 @@ public final class FlowTracerTest {
 
     assertThat(routingStep.getAction(), equalTo(StepAction.FORWARDED));
     assertThat(
-        routingStep.getDetail().getMatchedRoutes(),
+        routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
                 new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null))));
     assertThat(routingStep.getDetail().getFinalNextHopIp(), equalTo(Ip.parse("1.1.1.1")));
-    assertThat(routingStep.getDetail().getFinalNextHopInterface(), equalTo("iface1"));
+    assertThat(routingStep.getDetail().getFinalOutputInterface(), equalTo("iface1"));
   }
 
   @Test
@@ -713,12 +713,12 @@ public final class FlowTracerTest {
 
     assertThat(routingStep.getAction(), equalTo(StepAction.FORWARDED_TO_NEXT_VRF));
     assertThat(
-        routingStep.getDetail().getMatchedRoutes(),
+        routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
                 new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null))));
     assertThat(routingStep.getDetail().getFinalNextHopIp(), nullValue());
-    assertThat(routingStep.getDetail().getFinalNextHopInterface(), nullValue());
+    assertThat(routingStep.getDetail().getFinalOutputInterface(), nullValue());
   }
 
   @Test
@@ -740,11 +740,11 @@ public final class FlowTracerTest {
 
     assertThat(routingStep.getAction(), equalTo(StepAction.NULL_ROUTED));
     assertThat(
-        routingStep.getDetail().getMatchedRoutes(),
+        routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
                 new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null))));
     assertThat(routingStep.getDetail().getFinalNextHopIp(), nullValue());
-    assertThat(routingStep.getDetail().getFinalNextHopInterface(), nullValue());
+    assertThat(routingStep.getDetail().getFinalOutputInterface(), nullValue());
   }
 }

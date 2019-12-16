@@ -1102,13 +1102,13 @@ class FlowTracer {
   static RoutingStep buildRoutingStep(FibAction fibAction, Set<FibEntry> fibEntries) {
     RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
     RoutingStepDetail.Builder routingStepDetailBuilder =
-        RoutingStepDetail.builder().setMatchedRoutes(fibEntriesToRouteInfos(fibEntries));
+        RoutingStepDetail.builder().setRoutes(fibEntriesToRouteInfos(fibEntries));
     fibAction.accept(
         new FibActionVisitor<Void>() {
           @Override
           public Void visitFibForward(FibForward fibForward) {
             routingStepDetailBuilder.setFinalNextHopIp(fibForward.getArpIp());
-            routingStepDetailBuilder.setFinalNextHopInterface(fibForward.getInterfaceName());
+            routingStepDetailBuilder.setFinalOutputInterface(fibForward.getInterfaceName());
             routingStepBuilder.setAction(FORWARDED);
             return null;
           }
@@ -1167,7 +1167,7 @@ class FlowTracer {
 
           @Override
           public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
-            forkTracerSameNode().buildNullRoutedTrace();
+            buildNullRoutedTrace();
             return null;
           }
         });

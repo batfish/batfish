@@ -30,34 +30,34 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
    * to output {@link Interface}
    */
   public static final class RoutingStepDetail {
-    private static final String PROP_MATCHED_ROUTES = "matchedRoutes";
+    private static final String PROP_ROUTES = "routes";
     private static final String PROP_FINAL_NEXT_HOP_IP = "finalNextHopIp";
-    private static final String PROP_FINAL_NEXT_HOP_INTERFACE = "finalNextHopInterface";
+    private static final String PROP_FINAL_OUTPUT_INTERFACE = "finalOutputInterface";
 
     /**
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
      */
-    @Nonnull private final List<RouteInfo> _matchedRoutes;
-    /** Next hop IP which was resolved using the {@code _matchedRoutes} */
+    @Nonnull private final List<RouteInfo> _routes;
+    /** Next hop IP which was resolved using the {@code _routes} */
     @Nullable private final Ip _finalNextHopIp;
-    /** Next hop interface which was resolved using the {@code _matchedRoutes} */
-    @Nullable private final String _finalNextHopInterface;
+    /** Output interface which was resolved using the {@code _routes} */
+    @Nullable private final String _finalOutputInterface;
 
     @JsonCreator
     private RoutingStepDetail(
-        @JsonProperty(PROP_MATCHED_ROUTES) @Nullable List<RouteInfo> matchedRoutes,
+        @JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes,
         @JsonProperty(PROP_FINAL_NEXT_HOP_IP) @Nullable Ip finalNextHopIp,
-        @JsonProperty(PROP_FINAL_NEXT_HOP_INTERFACE) @Nullable String finalNextHopInterface) {
-      _matchedRoutes = firstNonNull(matchedRoutes, ImmutableList.of());
+        @JsonProperty(PROP_FINAL_OUTPUT_INTERFACE) @Nullable String finalOutputInterface) {
+      _routes = firstNonNull(routes, ImmutableList.of());
       _finalNextHopIp = finalNextHopIp;
-      _finalNextHopInterface = finalNextHopInterface;
+      _finalOutputInterface = finalOutputInterface;
     }
 
-    @JsonProperty(PROP_MATCHED_ROUTES)
+    @JsonProperty(PROP_ROUTES)
     @Nonnull
-    public List<RouteInfo> getMatchedRoutes() {
-      return _matchedRoutes;
+    public List<RouteInfo> getRoutes() {
+      return _routes;
     }
 
     @JsonProperty(PROP_FINAL_NEXT_HOP_IP)
@@ -66,10 +66,10 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
       return _finalNextHopIp;
     }
 
-    @JsonProperty(PROP_FINAL_NEXT_HOP_INTERFACE)
+    @JsonProperty(PROP_FINAL_OUTPUT_INTERFACE)
     @Nullable
-    public String getFinalNextHopInterface() {
-      return _finalNextHopInterface;
+    public String getFinalOutputInterface() {
+      return _finalOutputInterface;
     }
 
     public static Builder builder() {
@@ -85,28 +85,28 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
         return false;
       }
       RoutingStepDetail that = (RoutingStepDetail) o;
-      return _matchedRoutes.equals(that._matchedRoutes)
+      return _routes.equals(that._routes)
           && Objects.equals(_finalNextHopIp, that._finalNextHopIp)
-          && Objects.equals(_finalNextHopInterface, that._finalNextHopInterface);
+          && Objects.equals(_finalOutputInterface, that._finalOutputInterface);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_matchedRoutes, _finalNextHopIp, _finalNextHopInterface);
+      return Objects.hash(_routes, _finalNextHopIp, _finalOutputInterface);
     }
 
     /** Chained builder to create a {@link RoutingStepDetail} object */
     public static class Builder {
-      private @Nullable List<RouteInfo> _matchedRoutes;
+      private @Nullable List<RouteInfo> _routes;
       private @Nullable Ip _finalNextHopIp;
-      private @Nullable String _finalNextHopInterface;
+      private @Nullable String _finalOutputInterface;
 
       public RoutingStepDetail build() {
-        return new RoutingStepDetail(_matchedRoutes, _finalNextHopIp, _finalNextHopInterface);
+        return new RoutingStepDetail(_routes, _finalNextHopIp, _finalOutputInterface);
       }
 
-      public Builder setMatchedRoutes(List<RouteInfo> matchedRoutes) {
-        _matchedRoutes = matchedRoutes;
+      public Builder setRoutes(List<RouteInfo> routes) {
+        _routes = routes;
         return this;
       }
 
@@ -115,8 +115,8 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
         return this;
       }
 
-      public Builder setFinalNextHopInterface(@Nullable String finalNextHopInterface) {
-        _finalNextHopInterface = finalNextHopInterface;
+      public Builder setFinalOutputInterface(@Nullable String finalOutputInterface) {
+        _finalOutputInterface = finalOutputInterface;
         return this;
       }
 
