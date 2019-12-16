@@ -31,27 +31,27 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
    */
   public static final class RoutingStepDetail {
     private static final String PROP_ROUTES = "routes";
-    private static final String PROP_FINAL_NEXT_HOP_IP = "finalNextHopIp";
-    private static final String PROP_FINAL_OUTPUT_INTERFACE = "finalOutputInterface";
+    private static final String PROP_ARP_IP = "arpIp";
+    private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
 
     /**
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
      */
     @Nonnull private final List<RouteInfo> _routes;
-    /** Next hop IP which was resolved using the {@code _routes} */
-    @Nullable private final Ip _finalNextHopIp;
+    /** ARP IP which was resolved using the {@code _routes} */
+    @Nullable private final Ip _arpIp;
     /** Output interface which was resolved using the {@code _routes} */
-    @Nullable private final String _finalOutputInterface;
+    @Nullable private final String _outputInterface;
 
     @JsonCreator
     private RoutingStepDetail(
         @JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes,
-        @JsonProperty(PROP_FINAL_NEXT_HOP_IP) @Nullable Ip finalNextHopIp,
-        @JsonProperty(PROP_FINAL_OUTPUT_INTERFACE) @Nullable String finalOutputInterface) {
+        @JsonProperty(PROP_ARP_IP) @Nullable Ip arpIp,
+        @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable String outputInterface) {
       _routes = firstNonNull(routes, ImmutableList.of());
-      _finalNextHopIp = finalNextHopIp;
-      _finalOutputInterface = finalOutputInterface;
+      _arpIp = arpIp;
+      _outputInterface = outputInterface;
     }
 
     @JsonProperty(PROP_ROUTES)
@@ -60,16 +60,16 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
       return _routes;
     }
 
-    @JsonProperty(PROP_FINAL_NEXT_HOP_IP)
+    @JsonProperty(PROP_ARP_IP)
     @Nullable
-    public Ip getFinalNextHopIp() {
-      return _finalNextHopIp;
+    public Ip getArpIp() {
+      return _arpIp;
     }
 
-    @JsonProperty(PROP_FINAL_OUTPUT_INTERFACE)
+    @JsonProperty(PROP_OUTPUT_INTERFACE)
     @Nullable
-    public String getFinalOutputInterface() {
-      return _finalOutputInterface;
+    public String getOutputInterface() {
+      return _outputInterface;
     }
 
     public static Builder builder() {
@@ -86,23 +86,23 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
       }
       RoutingStepDetail that = (RoutingStepDetail) o;
       return _routes.equals(that._routes)
-          && Objects.equals(_finalNextHopIp, that._finalNextHopIp)
-          && Objects.equals(_finalOutputInterface, that._finalOutputInterface);
+          && Objects.equals(_arpIp, that._arpIp)
+          && Objects.equals(_outputInterface, that._outputInterface);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_routes, _finalNextHopIp, _finalOutputInterface);
+      return Objects.hash(_routes, _arpIp, _outputInterface);
     }
 
     /** Chained builder to create a {@link RoutingStepDetail} object */
     public static class Builder {
       private @Nullable List<RouteInfo> _routes;
-      private @Nullable Ip _finalNextHopIp;
-      private @Nullable String _finalOutputInterface;
+      private @Nullable Ip _arpIp;
+      private @Nullable String _outputInterface;
 
       public RoutingStepDetail build() {
-        return new RoutingStepDetail(_routes, _finalNextHopIp, _finalOutputInterface);
+        return new RoutingStepDetail(_routes, _arpIp, _outputInterface);
       }
 
       public Builder setRoutes(List<RouteInfo> routes) {
@@ -110,13 +110,13 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
         return this;
       }
 
-      public Builder setFinalNextHopIp(@Nullable Ip finalNextHopIp) {
-        _finalNextHopIp = finalNextHopIp;
+      public Builder setArpIp(@Nullable Ip arpIp) {
+        _arpIp = arpIp;
         return this;
       }
 
-      public Builder setFinalOutputInterface(@Nullable String finalOutputInterface) {
-        _finalOutputInterface = finalOutputInterface;
+      public Builder setOutputInterface(@Nullable String outputInterface) {
+        _outputInterface = outputInterface;
         return this;
       }
 

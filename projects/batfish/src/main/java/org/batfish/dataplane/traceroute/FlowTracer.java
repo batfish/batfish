@@ -1107,8 +1107,8 @@ class FlowTracer {
         new FibActionVisitor<Void>() {
           @Override
           public Void visitFibForward(FibForward fibForward) {
-            routingStepDetailBuilder.setFinalNextHopIp(fibForward.getArpIp());
-            routingStepDetailBuilder.setFinalOutputInterface(fibForward.getInterfaceName());
+            routingStepDetailBuilder.setArpIp(fibForward.getArpIp());
+            routingStepDetailBuilder.setOutputInterface(fibForward.getInterfaceName());
             routingStepBuilder.setAction(FORWARDED);
             return null;
           }
