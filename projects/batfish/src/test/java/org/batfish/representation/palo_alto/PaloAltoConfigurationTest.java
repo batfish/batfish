@@ -1,6 +1,6 @@
 package org.batfish.representation.palo_alto;
 
-import static org.batfish.datamodel.IpAccessListLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;

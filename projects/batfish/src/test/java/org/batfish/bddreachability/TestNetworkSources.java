@@ -6,10 +6,10 @@ import java.util.SortedMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -63,7 +63,7 @@ public class TestNetworkSources {
     IpAccessList acl1 =
         nf.aclBuilder()
             .setOwner(config)
-            .setLines(ImmutableList.of(IpAccessListLine.accepting(OriginatingFromDevice.INSTANCE)))
+            .setLines(ImmutableList.of(ExprAclLine.accepting(OriginatingFromDevice.INSTANCE)))
             .build();
     ib.setName(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME)
         .setOutgoingFilter(acl1)
@@ -76,7 +76,7 @@ public class TestNetworkSources {
             .setOwner(config)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting(
+                    ExprAclLine.accepting(
                         AclLineMatchExprs.matchSrcInterface(inInterface.getName()))))
             .build();
     ib.setName(MATCH_SRC_INTERFACE_ACL_IFACE_NAME)

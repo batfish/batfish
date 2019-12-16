@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.hamcrest.Description;
@@ -57,14 +57,14 @@ final class IpAccessListMatchersImpl {
     }
   }
 
-  static class HasLines extends FeatureMatcher<IpAccessList, List<IpAccessListLine>> {
+  static class HasLines extends FeatureMatcher<IpAccessList, List<ExprAclLine>> {
 
-    public HasLines(@Nonnull Matcher<? super List<IpAccessListLine>> subMatcher) {
+    public HasLines(@Nonnull Matcher<? super List<ExprAclLine>> subMatcher) {
       super(subMatcher, "An IpAcessList with lines:", "lines");
     }
 
     @Override
-    protected List<IpAccessListLine> featureValueOf(IpAccessList actual) {
+    protected List<ExprAclLine> featureValueOf(IpAccessList actual) {
       return actual.getLines();
     }
   }

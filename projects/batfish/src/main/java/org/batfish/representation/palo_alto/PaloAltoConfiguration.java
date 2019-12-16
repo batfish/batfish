@@ -4,9 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.equalTo;
 import static com.google.common.base.Predicates.not;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
-import static org.batfish.datamodel.IpAccessListLine.takingExplicitActionsOf;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.takingExplicitActionsOf;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -70,6 +70,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
@@ -78,7 +79,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
@@ -583,13 +583,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       return IpAccessList.builder()
           .setName(crossZoneFilterName)
           .setLines(
-              ImmutableList.of(
-                  IpAccessListLine.rejecting("No interfaces in zone", TrueExpr.INSTANCE)))
+              ImmutableList.of(ExprAclLine.rejecting("No interfaces in zone", TrueExpr.INSTANCE)))
           .build();
     }
 
     // Build an ACL Line for each rule that is enabled and applies to this from/to zone pair.
-    List<IpAccessListLine> lines =
+    List<ExprAclLine> lines =
         rules.stream()
             .filter(
                 e -> {
@@ -610,9 +609,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Intrazone traffic is allowed by default.
     if (fromZone == toZone) {
       lines =
-          ImmutableList.<IpAccessListLine>builder()
+          ImmutableList.<ExprAclLine>builder()
               .addAll(lines)
-              .add(IpAccessListLine.accepting("Accept intrazone by default", TrueExpr.INSTANCE))
+              .add(ExprAclLine.accepting("Accept intrazone by default", TrueExpr.INSTANCE))
               .build();
     }
 
@@ -667,7 +666,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   static @Nonnull IpAccessList generateOutgoingFilter(
       Zone toZone, Collection<Vsys> sharedGateways, Collection<Vsys> virtualSystems) {
     Vsys vsys = toZone.getVsys();
-    List<IpAccessListLine> lines =
+    List<ExprAclLine> lines =
         vsys.getZones().values().stream()
             .flatMap(
                 fromZone ->
@@ -686,10 +685,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   @VisibleForTesting
   static @Nonnull IpAccessList generateSharedGatewayOutgoingFilter(
       Vsys sharedGateway, Collection<Vsys> sharedGateways, Collection<Vsys> virtualSystems) {
-    Stream<IpAccessListLine> vsysSgLines =
+    Stream<ExprAclLine> vsysSgLines =
         virtualSystems.stream()
             .flatMap(vsys -> generateVsysSharedGatewayCalls(sharedGateway, vsys));
-    Stream<IpAccessListLine> sgSgLines =
+    Stream<ExprAclLine> sgSgLines =
         Stream.concat(Stream.of(sharedGateway), sharedGateways.stream())
             .flatMap(
                 ingressSharedGateway -> generateSgSgLines(sharedGateway, ingressSharedGateway));
@@ -706,7 +705,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * {@code sharedGateway}. Such traffic is unfiltered.
    */
   @VisibleForTesting
-  static @Nonnull Stream<IpAccessListLine> generateSgSgLines(
+  static @Nonnull Stream<ExprAclLine> generateSgSgLines(
       Vsys sharedGateway, Vsys ingressSharedGateway) {
     Set<String> ingressInterfaces = ingressSharedGateway.getImportedInterfaces();
     if (ingressInterfaces.isEmpty()) {
@@ -724,7 +723,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * that see the {@code sharedGateway}.
    */
   @VisibleForTesting
-  static @Nonnull Stream<IpAccessListLine> generateVsysSharedGatewayCalls(
+  static @Nonnull Stream<ExprAclLine> generateVsysSharedGatewayCalls(
       Vsys sharedGateway, Vsys vsys) {
     String sharedGatewayName = sharedGateway.getName();
     return vsys.getZones().values().stream()
@@ -747,7 +746,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * given supplied definitions for all {@code virtualSystems}.
    */
   @VisibleForTesting
-  static @Nonnull Stream<IpAccessListLine> generateCrossZoneCalls(
+  static @Nonnull Stream<ExprAclLine> generateCrossZoneCalls(
       Zone fromZone,
       Zone toZone,
       Collection<Vsys> sharedGateways,
@@ -770,8 +769,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * appropriate cross-zone filter to traffic entering an interface of {@code fromZone}.
    */
   @VisibleForTesting
-  static @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromLayer3(
-      Zone fromZone, Zone toZone) {
+  static @Nonnull Stream<ExprAclLine> generateCrossZoneCallsFromLayer3(Zone fromZone, Zone toZone) {
     Set<String> fromZoneInterfaces = fromZone.getInterfaceNames();
     if (fromZoneInterfaces.isEmpty()) {
       return Stream.of();
@@ -807,20 +805,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * </ul>
    */
   @VisibleForTesting
-  static @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromExternal(
+  static @Nonnull Stream<ExprAclLine> generateCrossZoneCallsFromExternal(
       Zone fromZone,
       Zone toZone,
       Collection<Vsys> sharedGateways,
       Collection<Vsys> virtualSystems) {
     Vsys vsys = fromZone.getVsys();
     assert fromZone.getVsys() == toZone.getVsys(); // sanity check
-    Stream<IpAccessListLine> vsysLines =
+    Stream<ExprAclLine> vsysLines =
         virtualSystems.stream()
             .filter(not(equalTo(vsys)))
             .filter(externalVsys -> fromZone.getExternalNames().contains(externalVsys.getName()))
             .flatMap(
                 externalVsys -> generateInterVsysCrossZoneCalls(fromZone, toZone, externalVsys));
-    Stream<IpAccessListLine> sgLines =
+    Stream<ExprAclLine> sgLines =
         sharedGateways.stream()
             .filter(sharedGateway -> fromZone.getExternalNames().contains(sharedGateway.getName()))
             .flatMap(
@@ -835,7 +833,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * the latter's vsys.
    */
   @VisibleForTesting
-  static @Nonnull Stream<IpAccessListLine> generatedSharedGatewayVsysCrossZoneCalls(
+  static @Nonnull Stream<ExprAclLine> generatedSharedGatewayVsysCrossZoneCalls(
       Zone fromZone, Zone toZone, Vsys sharedGateway) {
     Vsys vsys = fromZone.getVsys();
     // sanity check
@@ -863,7 +861,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * latter's vsys.
    */
   @VisibleForTesting
-  static @Nonnull Stream<IpAccessListLine> generateInterVsysCrossZoneCalls(
+  static @Nonnull Stream<ExprAclLine> generateInterVsysCrossZoneCalls(
       Zone fromZone, Zone toZone, Vsys externalVsys) {
     Vsys vsys = fromZone.getVsys();
     assert vsys == toZone.getVsys() && vsys != externalVsys; // sanity check
@@ -891,7 +889,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * {@code fromZone} are external zones pointing at each other's vsys.
    */
   @VisibleForTesting
-  static @Nonnull Stream<IpAccessListLine> generateDoubleCrossZoneCalls(
+  static @Nonnull Stream<ExprAclLine> generateDoubleCrossZoneCalls(
       Zone fromZone, Zone toZone, Zone externalFromZone, Zone externalToZone) {
     Vsys vsys = fromZone.getVsys();
     Vsys externalVsys = externalFromZone.getVsys();
@@ -945,12 +943,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return ImmutableRangeSet.copyOf(rangeSet);
   }
 
-  /** Convert specified firewall rule into an {@link IpAccessListLine}. */
+  /** Convert specified firewall rule into an {@link ExprAclLine}. */
   // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
   // constraints, and service (aka Protocol + Ports) constraints.
   //   However, services are a bit complicated when `service application-default` is used. In that
   //   case, we extract service definitions from the application that matches.
-  private IpAccessListLine toIpAccessListLine(SecurityRule rule, Vsys vsys) {
+  private ExprAclLine toIpAccessListLine(SecurityRule rule, Vsys vsys) {
     assert !rule.getDisabled(); // handled by caller.
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -985,7 +983,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // 4. Match services.
     getServiceExpr(rule, vsys).ifPresent(conjuncts::add);
 
-    return IpAccessListLine.builder()
+    return ExprAclLine.builder()
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
@@ -1220,7 +1218,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // add outgoing filter
     IpAccessList.Builder aclBuilder =
         IpAccessList.builder().setOwner(_c).setName(computeOutgoingFilterName(iface.getName()));
-    List<IpAccessListLine> aclLines = new ArrayList<>();
+    List<ExprAclLine> aclLines = new ArrayList<>();
     Optional<Vsys> sharedGatewayOptional =
         _sharedGateways.values().stream()
             .filter(sg -> sg.getImportedInterfaces().contains(name))
@@ -1245,7 +1243,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface
-      aclLines.add(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
+      aclLines.add(ExprAclLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
     }
 
     if (!aclLines.isEmpty()) {

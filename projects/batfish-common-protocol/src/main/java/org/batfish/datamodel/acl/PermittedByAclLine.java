@@ -11,13 +11,13 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.LineAction;
 
-public final class PermittedByIpAccessListLine implements TerminalTraceEvent {
+public final class PermittedByAclLine implements TerminalTraceEvent {
   private static final String PROP_INDEX = "index";
   private static final String PROP_LINE_DESCRIPTION = "lineDescription";
   private static final String PROP_NAME = "name";
 
   @JsonCreator
-  private static PermittedByIpAccessListLine create(
+  private static PermittedByAclLine create(
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @Nullable @JsonProperty(PROP_INDEX) Integer index,
       @Nullable @JsonProperty(PROP_LINE_DESCRIPTION) String lineDescription,
@@ -26,7 +26,7 @@ public final class PermittedByIpAccessListLine implements TerminalTraceEvent {
     checkArgument(index != null, "Missing %s", PROP_INDEX);
     checkArgument(lineDescription != null, "Missing %s", PROP_LINE_DESCRIPTION);
     checkArgument(name != null, "Missing %s", PROP_NAME);
-    return new PermittedByIpAccessListLine(
+    return new PermittedByAclLine(
         requireNonNull(description), index, requireNonNull(lineDescription), requireNonNull(name));
   }
 
@@ -38,7 +38,7 @@ public final class PermittedByIpAccessListLine implements TerminalTraceEvent {
 
   private final String _name;
 
-  public PermittedByIpAccessListLine(
+  public PermittedByAclLine(
       @Nonnull String description,
       int index,
       @Nonnull String lineDescription,
@@ -54,10 +54,10 @@ public final class PermittedByIpAccessListLine implements TerminalTraceEvent {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof PermittedByIpAccessListLine)) {
+    if (!(obj instanceof PermittedByAclLine)) {
       return false;
     }
-    PermittedByIpAccessListLine rhs = (PermittedByIpAccessListLine) obj;
+    PermittedByAclLine rhs = (PermittedByAclLine) obj;
     return _description.equals(rhs._description)
         && _index == rhs._index
         && _lineDescription.equals(rhs._lineDescription)

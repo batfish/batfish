@@ -8,8 +8,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.junit.Test;
 
 /** Tests of {@link SearchFiltersAnswerer}. */
@@ -19,10 +19,10 @@ public class SearchFiltersAnswererTest {
           .setName("foo")
           .setLines(
               ImmutableList.of(
-                  IpAccessListLine.accepting().setMatchCondition(matchDstIp("1.1.1.1")).build(),
-                  IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.2")).build(),
-                  IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.3")).build(),
-                  IpAccessListLine.accepting().setMatchCondition(matchDstIp("1.1.1.4")).build()))
+                  ExprAclLine.accepting().setMatchCondition(matchDstIp("1.1.1.1")).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDstIp("1.1.1.2")).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDstIp("1.1.1.3")).build(),
+                  ExprAclLine.accepting().setMatchCondition(matchDstIp("1.1.1.4")).build()))
           .build();
 
   @Test
@@ -32,7 +32,7 @@ public class SearchFiltersAnswererTest {
             .setName(MATCH_LINE_RENAMER.apply(0, _acl.getName()))
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting().setMatchCondition(matchDstIp("1.1.1.1")).build()))
+                    ExprAclLine.accepting().setMatchCondition(matchDstIp("1.1.1.1")).build()))
             .build();
     assertThat(toMatchLineAcl(0, _acl), equalTo(matchLine0Acl));
   }
@@ -44,9 +44,9 @@ public class SearchFiltersAnswererTest {
             .setName(MATCH_LINE_RENAMER.apply(2, _acl.getName()))
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.1")).build(),
-                    IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.2")).build(),
-                    IpAccessListLine.accepting().setMatchCondition(matchDstIp("1.1.1.3")).build()))
+                    ExprAclLine.rejecting().setMatchCondition(matchDstIp("1.1.1.1")).build(),
+                    ExprAclLine.rejecting().setMatchCondition(matchDstIp("1.1.1.2")).build(),
+                    ExprAclLine.accepting().setMatchCondition(matchDstIp("1.1.1.3")).build()))
             .build();
     assertThat(toMatchLineAcl(2, _acl), equalTo(matchLine2Acl));
   }
@@ -58,11 +58,11 @@ public class SearchFiltersAnswererTest {
             .setName(NEGATED_RENAMER.apply(_acl.getName()))
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.1")).build(),
-                    IpAccessListLine.accepting().setMatchCondition(matchDstIp("1.1.1.2")).build(),
-                    IpAccessListLine.accepting().setMatchCondition(matchDstIp("1.1.1.3")).build(),
-                    IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.4")).build(),
-                    IpAccessListLine.ACCEPT_ALL))
+                    ExprAclLine.rejecting().setMatchCondition(matchDstIp("1.1.1.1")).build(),
+                    ExprAclLine.accepting().setMatchCondition(matchDstIp("1.1.1.2")).build(),
+                    ExprAclLine.accepting().setMatchCondition(matchDstIp("1.1.1.3")).build(),
+                    ExprAclLine.rejecting().setMatchCondition(matchDstIp("1.1.1.4")).build(),
+                    ExprAclLine.ACCEPT_ALL))
             .build();
     assertThat(SearchFiltersAnswerer.toDenyAcl(_acl), equalTo(denyAcl));
   }

@@ -87,6 +87,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
@@ -102,7 +103,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
@@ -208,8 +208,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
 
-  private static final IpAccessListLine ACL_LINE_EXISTING_CONNECTION =
-      new IpAccessListLine(
+  private static final ExprAclLine ACL_LINE_EXISTING_CONNECTION =
+      new ExprAclLine(
           LineAction.PERMIT,
           new MatchHeaderSpace(
               HeaderSpace.builder().setStates(ImmutableList.of(FlowState.ESTABLISHED)).build()),
@@ -2301,7 +2301,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setName(combinedOutgoingAclName)
               .setLines(
                   ImmutableList.of(
-                      IpAccessListLine.accepting()
+                      ExprAclLine.accepting()
                           .setMatchCondition(
                               new AndMatchExpr(
                                   ImmutableList.of(
@@ -2320,7 +2320,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setName(combinedOutgoingAclName)
               .setLines(
                   ImmutableList.of(
-                      IpAccessListLine.accepting()
+                      ExprAclLine.accepting()
                           .setMatchCondition(
                               new OrMatchExpr(
                                   securityFilters,
@@ -4035,7 +4035,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setName(inspectClassMapAclName)
               .setLines(
                   ImmutableList.of(
-                      IpAccessListLine.accepting().setMatchCondition(matchClassMap).build()))
+                      ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
               .setSourceName(inspectClassMapName)
               .setSourceType(CiscoStructureType.INSPECT_CLASS_MAP.getDescription())
               .build();
@@ -4046,7 +4046,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _inspectPolicyMaps.forEach(
         (inspectPolicyMapName, inspectPolicyMap) -> {
           String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<IpAccessListLine> policyMapAclLines = ImmutableList.builder();
+          ImmutableList.Builder<ExprAclLine> policyMapAclLines = ImmutableList.builder();
           inspectPolicyMap
               .getInspectClasses()
               .forEach(
@@ -4063,7 +4063,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     switch (action) {
                       case DROP:
                         policyMapAclLines.add(
-                            IpAccessListLine.rejecting()
+                            ExprAclLine.rejecting()
                                 .setMatchCondition(matchCondition)
                                 .setName(
                                     String.format(
@@ -4073,7 +4073,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
                       case INSPECT:
                         policyMapAclLines.add(
-                            IpAccessListLine.accepting()
+                            ExprAclLine.accepting()
                                 .setMatchCondition(matchCondition)
                                 .setName(
                                     String.format(
@@ -4083,7 +4083,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
                       case PASS:
                         policyMapAclLines.add(
-                            IpAccessListLine.accepting()
+                            ExprAclLine.accepting()
                                 .setMatchCondition(matchCondition)
                                 .setName(
                                     String.format(
@@ -4097,7 +4097,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     }
                   });
           policyMapAclLines.add(
-              IpAccessListLine.builder()
+              ExprAclLine.builder()
                   .setAction(inspectPolicyMap.getClassDefaultAction())
                   .setMatchCondition(TrueExpr.INSTANCE)
                   .setName(
@@ -4131,11 +4131,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 return;
               }
 
-              ImmutableList.Builder<IpAccessListLine> zonePolicies = ImmutableList.builder();
+              ImmutableList.Builder<ExprAclLine> zonePolicies = ImmutableList.builder();
 
               // Allow traffic originating from device (no source interface)
               zonePolicies.add(
-                  IpAccessListLine.accepting()
+                  ExprAclLine.accepting()
                       .setMatchCondition(OriginatingFromDevice.INSTANCE)
                       .setName("Allow traffic originating from this device")
                       .build());
@@ -4143,7 +4143,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               // Allow traffic staying within this zone (always true for IOS)
               if (allowsIntraZoneTraffic(zoneName)) {
                 zonePolicies.add(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
                         .setName(
                             String.format(
@@ -4180,7 +4180,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             });
   }
 
-  public Optional<IpAccessListLine> createZonePairAcl(
+  public Optional<ExprAclLine> createZonePairAcl(
       Configuration c,
       MatchSrcInterface matchSrcZoneInterface,
       String dstZoneName,
@@ -4204,7 +4204,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .setOwner(c)
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new AndMatchExpr(
                             ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
@@ -4217,7 +4217,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .setSourceType(CiscoStructureType.SECURITY_ZONE_PAIR.getDescription())
         .build();
     return Optional.of(
-        IpAccessListLine.accepting()
+        ExprAclLine.accepting()
             .setMatchCondition(new PermittedByAcl(zonePairAclName))
             .setName(
                 String.format(
@@ -4226,19 +4226,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .build());
   }
 
-  private List<IpAccessListLine> createSecurityLevelAcl(String zoneName) {
+  private List<ExprAclLine> createSecurityLevelAcl(String zoneName) {
     Integer level = _securityLevels.get(zoneName);
     if (level == null) {
       return ImmutableList.of();
     }
 
     // Allow outbound traffic from interfaces with higher security levels unconditionally
-    List<IpAccessListLine> lines =
+    List<ExprAclLine> lines =
         _interfacesBySecurityLevel.keySet().stream()
             .filter(l -> l > level)
             .map(
                 l ->
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setName("Traffic from security level " + l)
                         .setMatchCondition(
                             new MatchSrcInterface(
@@ -4255,7 +4255,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .filter(l -> l < level)
             .map(
                 l ->
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setName("Traffic from security level " + l + " with inbound filter")
                         .setMatchCondition(
                             new MatchSrcInterface(

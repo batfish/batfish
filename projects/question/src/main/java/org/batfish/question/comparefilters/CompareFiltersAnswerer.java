@@ -24,8 +24,8 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -121,7 +121,7 @@ public class CompareFiltersAnswerer extends Answerer {
           .put(COL_CURRENT_NAME, "");
     } else {
       int index = difference.getCurrentIndex();
-      IpAccessListLine line =
+      ExprAclLine line =
           currentContext
               .getConfigs()
               .get(hostname)
@@ -138,7 +138,7 @@ public class CompareFiltersAnswerer extends Answerer {
       ret.put(COL_REFERENCE_LINE, END_OF_ACL).put(COL_REFERENCE_NAME, "");
     } else {
       int index = difference.getReferenceIndex();
-      IpAccessListLine line =
+      ExprAclLine line =
           referenceContext
               .getConfigs()
               .get(hostname)
@@ -164,7 +164,7 @@ public class CompareFiltersAnswerer extends Answerer {
     IpAccessList currentAcl = currentAcls.get(filtername);
     List<LineAction> currentActions =
         currentAcl.getLines().stream()
-            .map(IpAccessListLine::getAction)
+            .map(ExprAclLine::getAction)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager currentSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, currentConfig, currentAcl);
@@ -178,7 +178,7 @@ public class CompareFiltersAnswerer extends Answerer {
     IpAccessList referenceAcl = referenceAcls.get(filtername);
     List<LineAction> referenceActions =
         referenceAcl.getLines().stream()
-            .map(IpAccessListLine::getAction)
+            .map(ExprAclLine::getAction)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager referenceSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, referenceConfig, referenceAcl);

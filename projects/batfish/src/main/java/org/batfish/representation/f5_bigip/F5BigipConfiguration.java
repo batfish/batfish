@@ -46,6 +46,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -57,7 +58,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
@@ -230,8 +230,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private String _hostname;
   private boolean _imish;
   private final Map<String, ImishInterface> _imishInterfaces;
-  private transient Map<String, ImmutableList.Builder<IpAccessListLine>>
-      _interfaceIncomingFilterLines;
+  private transient Map<String, ImmutableList.Builder<ExprAclLine>> _interfaceIncomingFilterLines;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Node> _nodes;
   private @Nonnull List<String> _ntpServers;
@@ -399,11 +398,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nullable IpAccessList computeInterfaceIncomingFilter(String vlanName) {
-    List<IpAccessListLine> lines =
+    List<ExprAclLine> lines =
         firstNonNull(
-                _interfaceIncomingFilterLines.get(vlanName),
-                ImmutableList.<IpAccessListLine>builder())
-            .add(IpAccessListLine.ACCEPT_ALL)
+                _interfaceIncomingFilterLines.get(vlanName), ImmutableList.<ExprAclLine>builder())
+            .add(ExprAclLine.ACCEPT_ALL)
             .build();
     return IpAccessList.builder()
         .setOwner(_c)
@@ -942,8 +940,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _interfaceIncomingFilterLines = new HashMap<>();
     _virtualAddressRejectIcmpHeaders.forEach(
         (virtualAddressName, matchedHeaders) -> {
-          IpAccessListLine line =
-              IpAccessListLine.rejecting()
+          ExprAclLine line =
+              ExprAclLine.rejecting()
                   .setMatchCondition(new MatchHeaderSpace(matchedHeaders))
                   .setName(
                       String.format(
@@ -959,8 +957,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _virtualMatchedHeaders.forEach(
         (virtualName, matchedHeaders) -> {
           Virtual virtual = _enabledVirtuals.get(virtualName);
-          IpAccessListLine line =
-              toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
+          ExprAclLine line = toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
           _vlans.keySet().stream()
               .filter(vlanName -> appliesToVlan(virtual, vlanName))
               .forEach(
@@ -1611,9 +1608,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  private @Nonnull IpAccessListLine toIpAccessListLine(
+  private @Nonnull ExprAclLine toIpAccessListLine(
       String virtualName, HeaderSpace matchedHeaders, boolean reject) {
-    return IpAccessListLine.builder()
+    return ExprAclLine.builder()
         .setMatchCondition(new MatchHeaderSpace(matchedHeaders))
         .setAction(reject ? LineAction.DENY : LineAction.PERMIT)
         .setName(virtualName)

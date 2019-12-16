@@ -8,10 +8,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
@@ -156,7 +156,7 @@ public final class Service implements ServiceGroupMember {
     return retAcl
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.builder()
+                ExprAclLine.builder()
                     .setAction(action)
                     .setMatchCondition(toMatchHeaderSpace(w))
                     .build()))

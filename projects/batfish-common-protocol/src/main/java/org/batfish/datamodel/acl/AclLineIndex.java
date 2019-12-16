@@ -6,23 +6,23 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpAccessList;
 
 /** This class identifies a particular line within an ACL by its index. */
-public class IpAccessListLineIndex implements Comparable<IpAccessListLineIndex> {
+public class AclLineIndex implements Comparable<AclLineIndex> {
 
   private @Nonnull IpAccessList _acl;
   private int _index;
 
-  public IpAccessListLineIndex(@Nonnull IpAccessList acl, int index) {
+  public AclLineIndex(@Nonnull IpAccessList acl, int index) {
     _acl = acl;
     _index = index;
   }
 
   @Override
-  public int compareTo(IpAccessListLineIndex lineIndex) {
+  public int compareTo(AclLineIndex lineIndex) {
     if (this == lineIndex) {
       return 0;
     }
-    return Comparator.comparing((IpAccessListLineIndex index) -> index.getAcl().getName())
-        .thenComparingInt(IpAccessListLineIndex::getIndex)
+    return Comparator.comparing((AclLineIndex index) -> index.getAcl().getName())
+        .thenComparingInt(AclLineIndex::getIndex)
         .compare(this, lineIndex);
   }
 
@@ -34,7 +34,7 @@ public class IpAccessListLineIndex implements Comparable<IpAccessListLineIndex> 
     if (!(getClass() == o.getClass())) {
       return false;
     }
-    IpAccessListLineIndex lineIndex = (IpAccessListLineIndex) o;
+    AclLineIndex lineIndex = (AclLineIndex) o;
     return _acl.equals(lineIndex._acl) && _index == lineIndex._index;
   }
 

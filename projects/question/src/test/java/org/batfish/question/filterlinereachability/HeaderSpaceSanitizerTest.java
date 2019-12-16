@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
@@ -39,7 +39,7 @@ public class HeaderSpaceSanitizerTest {
 
   @Test
   public void testDereferencesNamedIpSpaceInLine() {
-    IpAccessListLine.Builder lineBuilder = IpAccessListLine.builder().setAction(LineAction.PERMIT);
+    ExprAclLine.Builder lineBuilder = ExprAclLine.builder().setAction(LineAction.PERMIT);
     MatchHeaderSpace matchHeaderSpace =
         new MatchHeaderSpace(
             HeaderSpace.builder().setDstIps(new IpSpaceReference(IP_SPACE_NAME)).build());

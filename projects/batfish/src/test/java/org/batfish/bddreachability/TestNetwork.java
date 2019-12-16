@@ -12,11 +12,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -70,9 +70,9 @@ public final class TestNetwork {
             .setOwner(_dstNode)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.rejectingHeaderSpace(
+                    ExprAclLine.rejectingHeaderSpace(
                         HeaderSpace.builder().setDstIps(DST_PREFIX_2.toIpSpace()).build()),
-                    IpAccessListLine.ACCEPT_ALL))
+                    ExprAclLine.ACCEPT_ALL))
             .build();
     _link1Dst =
         ib.setAddress(
@@ -92,7 +92,7 @@ public final class TestNetwork {
             .setOwner(_srcNode)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setSrcIps(SOURCE_NAT_ACL_IP.toIpSpace()).build())))
             .build();
     IpAccessList link2PostSourceNatAcl =
@@ -100,7 +100,7 @@ public final class TestNetwork {
             .setOwner(_srcNode)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setIpProtocols(IpProtocol.TCP)
                             .setDstPorts(
