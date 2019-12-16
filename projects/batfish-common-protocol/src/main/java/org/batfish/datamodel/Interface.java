@@ -473,6 +473,9 @@ public final class Interface extends ComparableStructure<String> {
   /**
    * Represents a directional dependency between two interfaces. Owner of this object <b>depends
    * on</b> the interface name described by this object.
+   *
+   * <p>Note that it is important to record even mis-configured dependencies. Therefore callers may
+   * not assume that the interface named by {@link #getInterfaceName()} actually exists.
    */
   @ParametersAreNonnullByDefault
   public static final class Dependency implements Serializable {
@@ -484,6 +487,10 @@ public final class Interface extends ComparableStructure<String> {
       _type = type;
     }
 
+    /**
+     * Note that the named interface may not actually exist on the device, e.g., if the user
+     * configured a tunnel update-source that does not exist.
+     */
     @Nonnull
     public String getInterfaceName() {
       return _interfaceName;
