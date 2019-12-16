@@ -1,6 +1,5 @@
 package org.batfish.datamodel.flow;
 
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -27,29 +26,6 @@ public final class MatchSessionStepTest {
     assertEquals(step.getAction(), StepAction.MATCHED_SESSION);
     assertEquals(step.getDetail().getIncomingInterfaces(), incomingInterfaces);
     assertEquals(step.getDetail().getSessionAction(), Accept.INSTANCE);
-
-    incomingInterfaces = ImmutableSet.of("b");
-    step =
-        new MatchSessionStep(
-            MatchSessionStepDetail.builder()
-                .setIncomingInterfaces(incomingInterfaces)
-                .setSessionAction(FibLookup.INSTANCE)
-                .build());
-    assertEquals(step.getAction(), StepAction.MATCHED_SESSION);
-    assertEquals(step.getDetail().getIncomingInterfaces(), incomingInterfaces);
-    assertEquals(step.getDetail().getSessionAction(), FibLookup.INSTANCE);
-
-    ForwardOutInterface forwardAction =
-        new ForwardOutInterface("a", NodeInterfacePair.of("a", "b"));
-    step =
-        new MatchSessionStep(
-            MatchSessionStepDetail.builder()
-                .setIncomingInterfaces(incomingInterfaces)
-                .setSessionAction(forwardAction)
-                .build());
-    assertEquals(step.getAction(), StepAction.MATCHED_SESSION);
-    assertEquals(step.getDetail().getIncomingInterfaces(), incomingInterfaces);
-    assertEquals(step.getDetail().getSessionAction(), forwardAction);
   }
 
   @Test
@@ -67,9 +43,7 @@ public final class MatchSessionStepTest {
     assertEquals(step.getAction(), clone.getAction());
     assertThat(
         clone.getDetail().getIncomingInterfaces(),
-        allOf(equalTo(step.getDetail().getIncomingInterfaces()), equalTo(incomingInterfaces)));
-    assertThat(
-        clone.getDetail().getSessionAction(),
-        allOf(equalTo(step.getDetail().getSessionAction()), equalTo(forwardAction)));
+        equalTo(step.getDetail().getIncomingInterfaces()));
+    assertThat(clone.getDetail().getSessionAction(), equalTo(step.getDetail().getSessionAction()));
   }
 }

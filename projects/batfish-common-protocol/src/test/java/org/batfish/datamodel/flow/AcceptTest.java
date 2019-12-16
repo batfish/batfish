@@ -1,7 +1,6 @@
 package org.batfish.datamodel.flow;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
@@ -25,8 +24,6 @@ public final class AcceptTest {
   @Test
   public void testSerialization() throws IOException {
     SessionAction clone = BatfishObjectMapper.clone(Accept.INSTANCE, SessionAction.class);
-    assertThat(clone, instanceOf(SessionAction.class));
-    assertThat(clone, instanceOf(Accept.class));
     assertThat(clone, equalTo(Accept.INSTANCE));
   }
 }

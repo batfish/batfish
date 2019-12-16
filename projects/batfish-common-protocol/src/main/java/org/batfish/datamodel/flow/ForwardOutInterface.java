@@ -26,7 +26,7 @@ public final class ForwardOutInterface implements SessionAction {
   private final @Nullable NodeInterfacePair _nextHop;
   private final @Nonnull String _outgoingInterface;
 
-  public ForwardOutInterface(String outgoingInterface, NodeInterfacePair nextHop) {
+  public ForwardOutInterface(String outgoingInterface, @Nullable NodeInterfacePair nextHop) {
     _outgoingInterface = outgoingInterface;
     _nextHop = nextHop;
   }

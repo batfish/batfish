@@ -2,7 +2,6 @@ package org.batfish.datamodel.flow;
 
 import static org.batfish.datamodel.flow.FibLookup.INSTANCE;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
@@ -26,8 +25,6 @@ public final class FibLookupTest {
   @Test
   public void testSerialization() throws IOException {
     SessionAction clone = BatfishObjectMapper.clone(FibLookup.INSTANCE, SessionAction.class);
-    assertThat(clone, instanceOf(SessionAction.class));
-    assertThat(clone, instanceOf(FibLookup.class));
     assertThat(clone, equalTo(FibLookup.INSTANCE));
   }
 }
