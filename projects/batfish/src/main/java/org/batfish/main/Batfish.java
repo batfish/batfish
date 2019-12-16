@@ -1779,8 +1779,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                     // JGraphT crashes if there is an edge to an undeclared vertex.
                                     // We add every edge target as a vertex, and code later will
                                     // still disable the child.
-                                    //
                                     graph.addVertex(dependency.getInterfaceName());
+
                                     graph.addEdge(
                                         // Reverse edge direction to aid topological sort
                                         dependency.getInterfaceName(), iface.getName());
