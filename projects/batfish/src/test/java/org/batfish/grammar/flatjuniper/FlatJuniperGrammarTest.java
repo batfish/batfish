@@ -206,6 +206,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
@@ -220,7 +221,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
@@ -461,17 +461,17 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        IpAccessListLine.acceptingHeaderSpace(
+                        ExprAclLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
                                 .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
                                 .build()),
-                        IpAccessListLine.acceptingHeaderSpace(
+                        ExprAclLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
                                 .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                 .build()),
-                        IpAccessListLine.acceptingHeaderSpace(
+                        ExprAclLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
                                 .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
@@ -585,13 +585,13 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        IpAccessListLine.acceptingHeaderSpace(
+                        ExprAclLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
                                 .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
                                 .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
                                 .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
                                 .build()),
-                        IpAccessListLine.acceptingHeaderSpace(
+                        ExprAclLine.acceptingHeaderSpace(
                             HeaderSpace.builder()
                                 .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
@@ -2745,7 +2745,7 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        IpAccessListLine.builder()
+                        ExprAclLine.builder()
                             .setAction(LineAction.PERMIT)
                             .setMatchCondition(
                                 new MatchHeaderSpace(
@@ -3038,7 +3038,7 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        IpAccessListLine.builder()
+                        ExprAclLine.builder()
                             .setAction(LineAction.PERMIT)
                             .setMatchCondition(
                                 new MatchHeaderSpace(
@@ -4964,7 +4964,7 @@ public final class FlatJuniperGrammarTest {
                 .setName("FILTER1")
                 .setLines(
                     ImmutableList.of(
-                        new IpAccessListLine(
+                        new ExprAclLine(
                             LineAction.PERMIT,
                             AclLineMatchExprs.match(
                                 HeaderSpace.builder()
@@ -4980,12 +4980,12 @@ public final class FlatJuniperGrammarTest {
                 .setName("~SCREEN~IDS_OPTION_NAME")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.rejecting(
+                        ExprAclLine.rejecting(
                             new OrMatchExpr(
                                 supportedOptions.stream()
                                     .map(ScreenOption::getAclLineMatchExpr)
                                     .collect(Collectors.toList()))),
-                        IpAccessListLine.ACCEPT_ALL))
+                        ExprAclLine.ACCEPT_ALL))
                 .build()));
 
     assertThat(
@@ -4995,7 +4995,7 @@ public final class FlatJuniperGrammarTest {
                 .setName("~SCREEN_ZONE~untrust")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.accepting(
+                        ExprAclLine.accepting(
                             new AndMatchExpr(
                                 ImmutableList.of(
                                     new PermittedByAcl("~SCREEN~IDS_OPTION_NAME", false))))))
@@ -5008,8 +5008,7 @@ public final class FlatJuniperGrammarTest {
                 .setName("~SCREEN_INTERFACE~ge-0/0/0.0")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.accepting(
-                            new PermittedByAcl("~SCREEN_ZONE~untrust", false))))
+                        ExprAclLine.accepting(new PermittedByAcl("~SCREEN_ZONE~untrust", false))))
                 .build()));
 
     assertThat(
@@ -5019,7 +5018,7 @@ public final class FlatJuniperGrammarTest {
                 .setName("~COMBINED_INCOMING_FILTER~ge-0/0/0.0")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.accepting(
+                        ExprAclLine.accepting(
                             new AndMatchExpr(
                                 ImmutableList.of(
                                     new PermittedByAcl("~SCREEN_INTERFACE~ge-0/0/0.0", false),

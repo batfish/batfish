@@ -1,7 +1,7 @@
 package org.batfish.question.filterlinereachability;
 
-import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
-import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
+import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.findBlockingLinesForLine;
@@ -28,11 +28,11 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
@@ -66,8 +66,8 @@ public class FilterLineReachabilityAnswererTest {
   private IpAccessList.Builder _aclb;
   private IpAccessList.Builder _aclb2;
 
-  private static final IpAccessListLine UNMATCHABLE =
-      IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build();
+  private static final ExprAclLine UNMATCHABLE =
+      ExprAclLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build();
 
   @Before
   public void setup() {
@@ -129,7 +129,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new AndMatchExpr(ImmutableList.of(new PermittedByAcl("acl0"))))
                     .build()))
@@ -140,7 +140,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new OrMatchExpr(ImmutableList.of(new PermittedByAcl("acl0"))))
                     .build()))
@@ -151,7 +151,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(new NotMatchExpr(new PermittedByAcl("acl0")))
                     .build()))
         .setName("acl3")
@@ -179,7 +179,7 @@ public class FilterLineReachabilityAnswererTest {
         _aclb
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build()))
+                    ExprAclLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build()))
             .setName("~aclGenerated")
             .build();
 
@@ -207,7 +207,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(new AndMatchExpr(ImmutableList.of(ipSpaceReference)))
                     .build()))
         .setName("acl1")
@@ -217,7 +217,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(new OrMatchExpr(ImmutableList.of(ipSpaceReference)))
                     .build()))
         .setName("acl2")
@@ -227,7 +227,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(new NotMatchExpr(ipSpaceReference))
                     .build()))
         .setName("acl3")
@@ -268,17 +268,17 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new AndMatchExpr(
                             ImmutableList.of(new MatchSrcInterface(ImmutableList.of("iface1")))))
                     .build(),
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new OrMatchExpr(
                             ImmutableList.of(new MatchSrcInterface(ImmutableList.of("iface2")))))
                     .build(),
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new NotMatchExpr(new MatchSrcInterface(ImmutableList.of("iface3"))))
                     .build()))
@@ -300,25 +300,25 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl1")).build()))
+                ExprAclLine.accepting().setMatchCondition(new PermittedByAcl("acl1")).build()))
         .setName("acl0")
         .build();
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl2")).build()))
+                ExprAclLine.accepting().setMatchCondition(new PermittedByAcl("acl2")).build()))
         .setName("acl1")
         .build();
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl0")).build()))
+                ExprAclLine.accepting().setMatchCondition(new PermittedByAcl("acl0")).build()))
         .setName("acl2")
         .build();
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl1")).build()))
+                ExprAclLine.accepting().setMatchCondition(new PermittedByAcl("acl1")).build()))
         .setName("acl3")
         .build();
 
@@ -332,7 +332,7 @@ public class FilterLineReachabilityAnswererTest {
             spec.acl.getSanitizedAcl().getLines(),
             equalTo(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(new PermittedByAcl("acl1"))
                         .build())));
       } else {
@@ -348,7 +348,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("???")).build()))
+                ExprAclLine.accepting().setMatchCondition(new PermittedByAcl("???")).build()))
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
@@ -365,7 +365,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.rejecting()
+                ExprAclLine.rejecting()
                     .setMatchCondition(
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
@@ -402,7 +402,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.rejecting()
+                ExprAclLine.rejecting()
                     .setMatchCondition(
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
@@ -439,7 +439,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
@@ -461,7 +461,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new MatchHeaderSpace(
                             HeaderSpace.builder().setSrcIps(new IpSpaceReference("???")).build()))
@@ -489,7 +489,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
@@ -512,14 +512,14 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(new PermittedByAcl("referencedAcl"))
                     .build()))
         .build();
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(new MatchSrcInterface(ImmutableList.of("iface")))
                     .build()))
         .setName("referencedAcl")
@@ -540,7 +540,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(new MatchSrcInterface(ImmutableList.of("???")))
                     .build()))
         .build();
@@ -597,7 +597,7 @@ public class FilterLineReachabilityAnswererTest {
     _aclb
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.accepting()
+                ExprAclLine.accepting()
                     .setMatchCondition(
                         new MatchHeaderSpace(
                             HeaderSpace.builder()

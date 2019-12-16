@@ -18,9 +18,9 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
-import org.batfish.datamodel.AbstractAclLine;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -123,13 +123,13 @@ public abstract class IpAccessListToBdd {
 
   public abstract BDD toBdd(AclLineMatchExpr expr);
 
-  public abstract BDD toBdd(AbstractAclLine line);
+  public abstract BDD toBdd(AclLine line);
 
   protected final BDD visit(AclLineMatchExpr expr) {
     return expr.accept(_visitor);
   }
 
-  protected final BDD visit(AbstractAclLine line) {
+  protected final BDD visit(AclLine line) {
     return line.accept(_visitor);
   }
 
@@ -168,7 +168,7 @@ public abstract class IpAccessListToBdd {
     int size = acl.getLines().size();
     List<BDD> lineBdds = new ArrayList<>(size);
     List<LineAction> lineActions = new ArrayList<>(size);
-    for (IpAccessListLine line : acl.getLines()) {
+    for (ExprAclLine line : acl.getLines()) {
       // Absurd hack for permit == false! Flip all the line actions so that bddAclLines evaluates to
       // the BDD of packets that will be explicitly rejected by the original ACL.
       lineActions.add(permit ? line.getAction() : flip(line.getAction()));
@@ -188,7 +188,7 @@ public abstract class IpAccessListToBdd {
   public List<BDD> reachAndMatchLines(IpAccessList acl) {
     ImmutableList.Builder<BDD> bdds = ImmutableList.builder();
     BDD reach = _pkt.getFactory().one();
-    for (IpAccessListLine line : acl.getLines()) {
+    for (ExprAclLine line : acl.getLines()) {
       BDD match = visit(line);
       bdds.add(reach.and(match));
       reach = reach.diff(match);
@@ -204,11 +204,11 @@ public abstract class IpAccessListToBdd {
   private final class Visitor
       implements GenericAclLineMatchExprVisitor<BDD>, GenericAclLineVisitor<BDD> {
 
-    /* AbstractAclLine visit methods */
+    /* AclLine visit methods */
 
     @Override
-    public BDD visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
-      return visit(ipAccessListLine.getMatchCondition());
+    public BDD visitExprAclLine(ExprAclLine exprAclLine) {
+      return visit(exprAclLine.getMatchCondition());
     }
 
     /* AclLineMatchExpr visit methods */

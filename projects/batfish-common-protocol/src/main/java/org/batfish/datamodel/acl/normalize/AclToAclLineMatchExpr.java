@@ -16,8 +16,8 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -96,7 +96,7 @@ public final class AclToAclLineMatchExpr
      */
     List<AclLineMatchExpr> earlierDenyLineExprs = new ArrayList<>();
 
-    for (IpAccessListLine line : acl.getLines()) {
+    for (ExprAclLine line : acl.getLines()) {
       AclLineMatchExpr expr = visit(line);
       if (line.getAction() == LineAction.PERMIT) {
         /*
@@ -121,11 +121,11 @@ public final class AclToAclLineMatchExpr
     return disjunctsBuilder.build();
   }
 
-  /* AbstractAclLine visit methods */
+  /* AclLine visit methods */
 
   @Override
-  public AclLineMatchExpr visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
-    return visit(ipAccessListLine.getMatchCondition());
+  public AclLineMatchExpr visitExprAclLine(ExprAclLine exprAclLine) {
+    return visit(exprAclLine.getMatchCondition());
   }
 
   /* AclLineMatchExpr visit methods */

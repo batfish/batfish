@@ -16,7 +16,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
 /** A line in an IpAccessList */
-public final class IpAccessListLine extends AbstractAclLine {
+public final class ExprAclLine extends AclLine {
 
   public static class Builder {
 
@@ -33,8 +33,8 @@ public final class IpAccessListLine extends AbstractAclLine {
       return this;
     }
 
-    public IpAccessListLine build() {
-      return new IpAccessListLine(_action, _matchCondition, _name);
+    public ExprAclLine build() {
+      return new ExprAclLine(_action, _matchCondition, _name);
     }
 
     public Builder rejecting() {
@@ -58,11 +58,11 @@ public final class IpAccessListLine extends AbstractAclLine {
     }
   }
 
-  public static final IpAccessListLine ACCEPT_ALL = accepting("ACCEPT_ALL", TrueExpr.INSTANCE);
+  public static final ExprAclLine ACCEPT_ALL = accepting("ACCEPT_ALL", TrueExpr.INSTANCE);
   private static final String PROP_ACTION = "action";
   private static final String PROP_MATCH_CONDITION = "matchCondition";
 
-  public static final IpAccessListLine REJECT_ALL = rejecting("REJECT_ALL", TrueExpr.INSTANCE);
+  public static final ExprAclLine REJECT_ALL = rejecting("REJECT_ALL", TrueExpr.INSTANCE);
 
   public static Builder accepting() {
     return new Builder().setAction(LineAction.PERMIT);
@@ -70,22 +70,21 @@ public final class IpAccessListLine extends AbstractAclLine {
 
   /** Prefer {@link #accepting(String, AclLineMatchExpr)}. */
   @VisibleForTesting
-  public static IpAccessListLine accepting(AclLineMatchExpr expr) {
+  public static ExprAclLine accepting(AclLineMatchExpr expr) {
     return accepting().setMatchCondition(expr).build();
   }
 
-  public static IpAccessListLine accepting(@Nonnull String name, AclLineMatchExpr expr) {
+  public static ExprAclLine accepting(@Nonnull String name, AclLineMatchExpr expr) {
     return accepting().setMatchCondition(expr).setName(name).build();
   }
 
   /** Prefer {@link #acceptingHeaderSpace(String, HeaderSpace)}. */
   @VisibleForTesting
-  public static IpAccessListLine acceptingHeaderSpace(HeaderSpace headerSpace) {
+  public static ExprAclLine acceptingHeaderSpace(HeaderSpace headerSpace) {
     return accepting(new MatchHeaderSpace(headerSpace));
   }
 
-  public static IpAccessListLine acceptingHeaderSpace(
-      @Nonnull String name, HeaderSpace headerSpace) {
+  public static ExprAclLine acceptingHeaderSpace(@Nonnull String name, HeaderSpace headerSpace) {
     return accepting(name, new MatchHeaderSpace(headerSpace));
   }
 
@@ -99,35 +98,34 @@ public final class IpAccessListLine extends AbstractAclLine {
 
   /** Prefer {@link #rejecting(String, AclLineMatchExpr)}. */
   @VisibleForTesting
-  public static IpAccessListLine rejecting(AclLineMatchExpr expr) {
+  public static ExprAclLine rejecting(AclLineMatchExpr expr) {
     return rejecting().setMatchCondition(expr).build();
   }
 
-  public static IpAccessListLine rejecting(String name, AclLineMatchExpr expr) {
+  public static ExprAclLine rejecting(String name, AclLineMatchExpr expr) {
     return rejecting().setMatchCondition(expr).setName(name).build();
   }
 
   /** Prefer {@link #rejectingHeaderSpace(String, HeaderSpace)}. */
   @VisibleForTesting
-  public static IpAccessListLine rejectingHeaderSpace(HeaderSpace headerSpace) {
+  public static ExprAclLine rejectingHeaderSpace(HeaderSpace headerSpace) {
     return rejecting(new MatchHeaderSpace(headerSpace));
   }
 
-  public static IpAccessListLine rejectingHeaderSpace(String name, HeaderSpace headerSpace) {
+  public static ExprAclLine rejectingHeaderSpace(String name, HeaderSpace headerSpace) {
     return rejecting(name, new MatchHeaderSpace(headerSpace));
   }
 
   /**
-   * Returns the {@link IpAccessListLine lines} necessary to take the explicit actions of the named
-   * ACL.
+   * Returns the {@link ExprAclLine lines} necessary to take the explicit actions of the named ACL.
    */
-  public static Stream<IpAccessListLine> takingExplicitActionsOf(String aclName) {
+  public static Stream<ExprAclLine> takingExplicitActionsOf(String aclName) {
     return Stream.of(
-        IpAccessListLine.accepting()
+        ExprAclLine.accepting()
             .setMatchCondition(new PermittedByAcl(aclName, false))
             .setName(aclName + "-EXPLICITLY-PERMITTED")
             .build(),
-        IpAccessListLine.rejecting()
+        ExprAclLine.rejecting()
             .setMatchCondition(not(new PermittedByAcl(aclName, true)))
             .setName(aclName + "-EXPLICITLY-DENIED")
             .build());
@@ -138,7 +136,7 @@ public final class IpAccessListLine extends AbstractAclLine {
   private final AclLineMatchExpr _matchCondition;
 
   @JsonCreator
-  public IpAccessListLine(
+  public ExprAclLine(
       @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
       @JsonProperty(PROP_MATCH_CONDITION) @Nonnull AclLineMatchExpr matchCondition,
       @JsonProperty(PROP_NAME) String name) {
@@ -152,10 +150,10 @@ public final class IpAccessListLine extends AbstractAclLine {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof IpAccessListLine)) {
+    if (!(obj instanceof ExprAclLine)) {
       return false;
     }
-    IpAccessListLine other = (IpAccessListLine) obj;
+    ExprAclLine other = (ExprAclLine) obj;
     return _action == other._action
         && Objects.equals(_matchCondition, other._matchCondition)
         && Objects.equals(_name, other._name);
@@ -174,7 +172,7 @@ public final class IpAccessListLine extends AbstractAclLine {
 
   @Override
   public <R> R accept(GenericAclLineVisitor<R> visitor) {
-    return visitor.visitIpAccessListLine(this);
+    return visitor.visitExprAclLine(this);
   }
 
   @Override

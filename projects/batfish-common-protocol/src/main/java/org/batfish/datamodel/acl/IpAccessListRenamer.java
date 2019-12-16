@@ -7,10 +7,10 @@ import com.google.common.collect.Ordering;
 import java.util.IdentityHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.AbstractAclLine;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.visitors.IpSpaceRenamer;
 
@@ -21,25 +21,24 @@ import org.batfish.datamodel.visitors.IpSpaceRenamer;
 public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList> {
 
   /**
-   * Makes a copy of the given {@link AbstractAclLine} or {@link AclLineMatchExpr} with any
-   * referenced ACLs and IP spaces renamed.
+   * Makes a copy of the given {@link AclLine} or {@link AclLineMatchExpr} with any referenced ACLs
+   * and IP spaces renamed.
    */
   @VisibleForTesting
   class Visitor
-      implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
-          GenericAclLineVisitor<AbstractAclLine> {
+      implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>, GenericAclLineVisitor<AclLine> {
 
     private IpSpace rename(@Nullable IpSpace ipSpace) {
       return ipSpace == null ? null : _ipSpaceRenamer.apply(ipSpace);
     }
 
-    /* AbstractAclLine visit methods */
+    /* AclLine visit methods */
 
     @Override
-    public AbstractAclLine visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
-      return ipAccessListLine
+    public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
+      return exprAclLine
           .toBuilder()
-          .setMatchCondition(visit(ipAccessListLine.getMatchCondition()))
+          .setMatchCondition(visit(exprAclLine.getMatchCondition()))
           .build();
     }
 
@@ -145,8 +144,8 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
         .setLines(
             ipAccessList.getLines().stream()
                 .map(_visitor::visit)
-                // TODO temp cast; remove after IpAccessList._lines is a List<AbstractAclLine>
-                .map(IpAccessListLine.class::cast)
+                // TODO temp cast; remove after IpAccessList._lines is a List<AclLine>
+                .map(ExprAclLine.class::cast)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }

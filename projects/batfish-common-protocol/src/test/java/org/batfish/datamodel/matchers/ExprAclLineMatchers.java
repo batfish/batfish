@@ -3,13 +3,14 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.matchers.IpAccessListLineMatchersImpl.HasAction;
-import org.batfish.datamodel.matchers.IpAccessListLineMatchersImpl.HasMatchCondition;
+import org.batfish.datamodel.matchers.ExprAclLineMatchersImpl.HasAction;
+import org.batfish.datamodel.matchers.ExprAclLineMatchersImpl.HasMatchCondition;
 import org.hamcrest.Matcher;
 
-public class IpAccessListLineMatchers {
+public class ExprAclLineMatchers {
 
   /** Provides a matcher that matches if the provided {@code subMatcher} matches the line action. */
   public static HasAction hasAction(@Nonnull Matcher<? super LineAction> subMatcher) {
@@ -18,7 +19,7 @@ public class IpAccessListLineMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
-   * org.batfish.datamodel.IpAccessListLine}'s match condition. dstIps.
+   * ExprAclLine}'s match condition. dstIps.
    */
   public static HasMatchCondition hasMatchCondition(
       @Nonnull Matcher<? super AclLineMatchExpr> subMatcher) {
@@ -33,5 +34,5 @@ public class IpAccessListLineMatchers {
     return new HasMatchCondition(equalTo(expr));
   }
 
-  private IpAccessListLineMatchers() {}
+  private ExprAclLineMatchers() {}
 }

@@ -1,8 +1,8 @@
 package org.batfish.datamodel.acl;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -12,8 +12,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.visitors.IpSpaceRenamer;
 
@@ -40,11 +40,11 @@ public final class DifferentialIpAccessList {
 
   private final Map<String, IpSpace> _namedIpSpaces;
 
-  private final IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> _literalsToLines;
+  private final IdentityHashMap<AclLineMatchExpr, AclLineIndex> _literalsToLines;
 
   private DifferentialIpAccessList(
       IpAccessList acl,
-      IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines,
+      IdentityHashMap<AclLineMatchExpr, AclLineIndex> literalsToLines,
       Map<String, IpAccessList> namedAcls,
       Map<String, IpSpace> namedIpSpaces) {
     _acl = acl;
@@ -89,7 +89,7 @@ public final class DifferentialIpAccessList {
         IpAccessList.builder()
             .setName(DIFFERENTIAL_ACL_NAME)
             .setLines(
-                ImmutableList.<IpAccessListLine>builder()
+                ImmutableList.<ExprAclLine>builder()
                     // reject if permitted by denyAcl
                     .add(rejecting(new PermittedByAcl(RENAMER.apply(denyAcl.getName()))))
                     .add(accepting(new PermittedByAcl(permitAcl.getName())))
@@ -132,14 +132,13 @@ public final class DifferentialIpAccessList {
      * Create a map from literals to their original ACL lines.
      */
     // start with the map for the permit named ACLs and the permit ACL
-    IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
+    IdentityHashMap<AclLineMatchExpr, AclLineIndex> literalsToLines =
         AclLineMatchExprLiterals.literalsToLines(finalPermitNamedAcls.values());
     // include the map for the deny ACLs, but change the keys to use the new literals
     // from the renamed versions of the deny ACLs
-    IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> denyLiteralsToLines =
+    IdentityHashMap<AclLineMatchExpr, AclLineIndex> denyLiteralsToLines =
         AclLineMatchExprLiterals.literalsToLines(finalDenyNamedAcls.values());
-    for (Map.Entry<AclLineMatchExpr, IpAccessListLineIndex> entry :
-        denyLiteralsToLines.entrySet()) {
+    for (Map.Entry<AclLineMatchExpr, AclLineIndex> entry : denyLiteralsToLines.entrySet()) {
       AclLineMatchExpr newLit = entry.getKey();
       if (aclRenamer.getLiteralsMap().containsKey(newLit)) {
         newLit = aclRenamer.getLiteralsMap().get(newLit);
@@ -171,7 +170,7 @@ public final class DifferentialIpAccessList {
     return _acl;
   }
 
-  public IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> getLiteralsToLines() {
+  public IdentityHashMap<AclLineMatchExpr, AclLineIndex> getLiteralsToLines() {
     return _literalsToLines;
   }
 

@@ -24,11 +24,11 @@ import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -78,7 +78,7 @@ public class CiscoConversionsTest {
         _nf.aclBuilder()
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
                         .setMatchCondition(
                             new MatchHeaderSpace(

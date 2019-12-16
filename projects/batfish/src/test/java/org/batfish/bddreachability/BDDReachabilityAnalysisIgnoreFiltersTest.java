@@ -26,11 +26,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
@@ -83,7 +83,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     IpAccessList outgoingFilter =
         nf.aclBuilder()
             .setOwner(c1)
-            .setLines(ImmutableList.of(IpAccessListLine.rejecting(matchSrc(DENIED_OUT_SRC_IP))))
+            .setLines(ImmutableList.of(ExprAclLine.rejecting(matchSrc(DENIED_OUT_SRC_IP))))
             .build();
     Interface iface1 =
         nf.interfaceBuilder()
@@ -107,7 +107,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     IpAccessList incomingFilter =
         nf.aclBuilder()
             .setOwner(c2)
-            .setLines(ImmutableList.of(IpAccessListLine.rejecting(matchSrc(DENIED_IN_SRC_IP))))
+            .setLines(ImmutableList.of(ExprAclLine.rejecting(matchSrc(DENIED_IN_SRC_IP))))
             .build();
     nf.interfaceBuilder()
         .setOwner(c2)

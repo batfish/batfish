@@ -18,17 +18,17 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Test;
 
-/** Tests of {@link IpAccessListLine}. */
-public class IpAccessListLineTest {
+/** Tests of {@link ExprAclLine}. */
+public class ExprAclLineTest {
   @Test
   public void testExplicitActions() {
     Ip ip1234 = Ip.parse("1.2.3.4");
     Ip ip2345 = Ip.parse("2.3.4.5");
-    IpAccessListLine block1234 =
-        IpAccessListLine.rejectingHeaderSpace(
+    ExprAclLine block1234 =
+        ExprAclLine.rejectingHeaderSpace(
             HeaderSpace.builder().setSrcIps(ip1234.toIpSpace()).build());
-    IpAccessListLine allow2345 =
-        IpAccessListLine.acceptingHeaderSpace(
+    ExprAclLine allow2345 =
+        ExprAclLine.acceptingHeaderSpace(
             HeaderSpace.builder().setSrcIps(ip2345.toIpSpace()).build());
     IpAccessList acl =
         IpAccessList.builder()
@@ -40,8 +40,7 @@ public class IpAccessListLineTest {
         IpAccessList.builder()
             .setName("aclThenDeny")
             .setLines(
-                IpAccessListLine.takingExplicitActionsOf(acl.getName())
-                    .collect(Collectors.toList()))
+                ExprAclLine.takingExplicitActionsOf(acl.getName()).collect(Collectors.toList()))
             .build();
     Map<String, IpAccessList> acls =
         ImmutableMap.of(acl.getName(), acl, testAcl.getName(), testAcl);
@@ -80,8 +79,8 @@ public class IpAccessListLineTest {
 
   @Test
   public void testEquals() {
-    IpAccessListLine.Builder lineBuilder =
-        IpAccessListLine.builder()
+    ExprAclLine.Builder lineBuilder =
+        ExprAclLine.builder()
             .setAction(LineAction.PERMIT)
             .setMatchCondition(FalseExpr.INSTANCE)
             .setName("name");
@@ -89,7 +88,7 @@ public class IpAccessListLineTest {
         .addEqualityGroup(
             lineBuilder.build(),
             lineBuilder.build(),
-            new IpAccessListLine(LineAction.PERMIT, FalseExpr.INSTANCE, "name"))
+            new ExprAclLine(LineAction.PERMIT, FalseExpr.INSTANCE, "name"))
         .addEqualityGroup(lineBuilder.setAction(LineAction.DENY).build())
         .addEqualityGroup(lineBuilder.setMatchCondition(TrueExpr.INSTANCE).build())
         .addEqualityGroup(lineBuilder.setName("another name").build())
@@ -99,8 +98,7 @@ public class IpAccessListLineTest {
 
   @Test
   public void testJsonSerialization() throws IOException {
-    IpAccessListLine l =
-        new IpAccessListLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "name");
-    assertThat(BatfishObjectMapper.clone(l, IpAccessListLine.class), equalTo(l));
+    ExprAclLine l = new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "name");
+    assertThat(BatfishObjectMapper.clone(l, ExprAclLine.class), equalTo(l));
   }
 }

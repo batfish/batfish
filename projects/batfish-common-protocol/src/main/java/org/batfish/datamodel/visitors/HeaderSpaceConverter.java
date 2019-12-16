@@ -1,8 +1,8 @@
 package org.batfish.datamodel.visitors;
 
-import org.batfish.datamodel.AbstractAclLine;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
@@ -15,22 +15,22 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
-/** Converts an {@link AbstractAclLine} to the {@link HeaderSpace} matching that line. */
+/** Converts an {@link AclLine} to the {@link HeaderSpace} matching that line. */
 public class HeaderSpaceConverter implements GenericAclLineVisitor<HeaderSpace> {
 
   private static final HeaderSpaceConverter INSTANCE = new HeaderSpaceConverter();
   private static final AclLineMatchExprToHeaderSpaceConverter MATCH_EXPR_CONVERTER =
       new AclLineMatchExprToHeaderSpaceConverter();
 
-  public static HeaderSpace convert(AbstractAclLine line) {
+  public static HeaderSpace convert(AclLine line) {
     return line.accept(INSTANCE);
   }
 
   private HeaderSpaceConverter() {}
 
   @Override
-  public HeaderSpace visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
-    return MATCH_EXPR_CONVERTER.visit(ipAccessListLine.getMatchCondition());
+  public HeaderSpace visitExprAclLine(ExprAclLine exprAclLine) {
+    return MATCH_EXPR_CONVERTER.visit(exprAclLine.getMatchCondition());
   }
 
   private static class AclLineMatchExprToHeaderSpaceConverter

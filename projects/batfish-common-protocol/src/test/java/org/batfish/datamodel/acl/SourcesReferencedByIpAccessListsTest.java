@@ -1,7 +1,7 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
@@ -19,9 +19,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.junit.Test;
 
 public class SourcesReferencedByIpAccessListsTest {
@@ -53,7 +53,7 @@ public class SourcesReferencedByIpAccessListsTest {
   @Test
   public void testAcl() {
     IpAccessList.Builder aclBuilder = IpAccessList.builder().setName("foo");
-    IpAccessList acl = aclBuilder.setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL)).build();
+    IpAccessList acl = aclBuilder.setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL)).build();
     Map<String, IpAccessList> namedAcls = ImmutableMap.of();
     assertThat(referencedSources(namedAcls, acl), equalTo(ImmutableSet.of()));
 
@@ -75,7 +75,7 @@ public class SourcesReferencedByIpAccessListsTest {
         aclBuilder
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting().setMatchCondition(matchSrcInterface("a")).build()))
+                    ExprAclLine.accepting().setMatchCondition(matchSrcInterface("a")).build()))
             .build();
     Map<String, IpAccessList> namedAcls = ImmutableMap.of(acl.getName(), acl);
     assertThat(

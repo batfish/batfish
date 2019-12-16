@@ -6,12 +6,12 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 
 /** A line in an {@link IpAccessList} */
-public abstract class AbstractAclLine implements Serializable {
+public abstract class AclLine implements Serializable {
   protected static final String PROP_NAME = "name";
 
   @Nullable protected final String _name;
 
-  AbstractAclLine(@Nullable String name) {
+  AclLine(@Nullable String name) {
     _name = name;
   }
 

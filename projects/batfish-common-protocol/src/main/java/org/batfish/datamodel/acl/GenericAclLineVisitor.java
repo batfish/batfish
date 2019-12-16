@@ -1,14 +1,14 @@
 package org.batfish.datamodel.acl;
 
-import org.batfish.datamodel.AbstractAclLine;
-import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 
-/** Visitor for {@link IpAccessListLine} */
+/** Visitor for {@link ExprAclLine} */
 public interface GenericAclLineVisitor<R> {
 
-  default R visit(AbstractAclLine line) {
+  default R visit(AclLine line) {
     return line.accept(this);
   }
 
-  R visitIpAccessListLine(IpAccessListLine ipAccessListLine);
+  R visitExprAclLine(ExprAclLine exprAclLine);
 }

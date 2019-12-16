@@ -7,8 +7,8 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
@@ -44,9 +44,9 @@ public enum HostSystemService {
   XNM_CLEAR_TEXT,
   XNM_SSL;
 
-  private final Supplier<List<IpAccessListLine>> _lines;
+  private final Supplier<List<ExprAclLine>> _lines;
 
-  public List<IpAccessListLine> getLines() {
+  public List<ExprAclLine> getLines() {
     return _lines.get();
   }
 
@@ -54,12 +54,12 @@ public enum HostSystemService {
     _lines = Suppliers.memoize(this::init);
   }
 
-  private List<IpAccessListLine> init() {
+  private List<ExprAclLine> init() {
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     switch (this) {
       case ALL:
         {
-          ImmutableList.Builder<IpAccessListLine> lines = ImmutableList.builder();
+          ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
           for (HostSystemService other : values()) {
             if (other != ALL && other != ANY_SERVICE) {
               lines.addAll(other.getLines());
@@ -301,6 +301,6 @@ public enum HostSystemService {
               "missing definition for host-inbound-traffic system-service: \"" + name() + "\"");
         }
     }
-    return ImmutableList.of(IpAccessListLine.acceptingHeaderSpace(headerSpaceBuilder.build()));
+    return ImmutableList.of(ExprAclLine.acceptingHeaderSpace(headerSpaceBuilder.build()));
   }
 }

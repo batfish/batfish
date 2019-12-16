@@ -1,8 +1,8 @@
 package org.batfish.question.searchfilters;
 
-import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -43,12 +43,12 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -87,8 +87,8 @@ public final class SearchFiltersTest {
           .setLines(
               ImmutableList.of(
                   accepting().setMatchCondition(matchDst(IP0)).build(),
-                  IpAccessListLine.rejecting().setMatchCondition(matchDst(IP1)).build(),
-                  IpAccessListLine.rejecting().setMatchCondition(matchDst(IP2)).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDst(IP1)).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDst(IP2)).build(),
                   accepting().setMatchCondition(matchDst(IP3)).build()))
           .build();
 
@@ -101,7 +101,7 @@ public final class SearchFiltersTest {
           .setLines(
               ImmutableList.of(
                   accepting().setMatchCondition(matchDst(IP0)).build(),
-                  IpAccessListLine.rejecting().setMatchCondition(matchDst(IP1)).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDst(IP1)).build(),
                   accepting().setMatchCondition(matchDst(Prefix.parse("1.1.1.0/31"))).build()))
           .build();
 
@@ -110,10 +110,10 @@ public final class SearchFiltersTest {
           .setName("denyAcl")
           .setLines(
               ImmutableList.of(
-                  IpAccessListLine.rejecting().setMatchCondition(matchDst(IP0)).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDst(IP0)).build(),
                   accepting().setMatchCondition(matchDst(IP1)).build(),
                   accepting().setMatchCondition(matchDst(IP2)).build(),
-                  IpAccessListLine.rejecting().setMatchCondition(matchDst(IP3)).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDst(IP3)).build(),
                   ACCEPT_ALL))
           .build();
 
@@ -122,8 +122,8 @@ public final class SearchFiltersTest {
           .setName("matchLine2Acl")
           .setLines(
               ImmutableList.of(
-                  IpAccessListLine.rejecting().setMatchCondition(matchDst(IP0)).build(),
-                  IpAccessListLine.rejecting().setMatchCondition(matchDst(IP1)).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDst(IP0)).build(),
+                  ExprAclLine.rejecting().setMatchCondition(matchDst(IP1)).build(),
                   accepting().setMatchCondition(matchDst(IP2)).build()))
           .build();
 
@@ -152,7 +152,7 @@ public final class SearchFiltersTest {
   private static final IpAccessList REJECT_ALL_ACL =
       IpAccessList.builder()
           .setName("REJECT_ALL")
-          .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+          .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
           .build();
 
   @ClassRule public static TemporaryFolder _tmp = new TemporaryFolder();
