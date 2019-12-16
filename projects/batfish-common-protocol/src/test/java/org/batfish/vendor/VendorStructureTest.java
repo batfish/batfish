@@ -13,8 +13,7 @@ public final class VendorStructureTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new VendorStructure("f1", "t1", "n1"),
-            new VendorStructure("f1", "t1", "n1"))
+            new VendorStructure("f1", "t1", "n1"), new VendorStructure("f1", "t1", "n1"))
         .addEqualityGroup(new VendorStructure("f2", "t1", "n1"))
         .addEqualityGroup(new VendorStructure("f1", "t2", "n1"))
         .addEqualityGroup(new VendorStructure("f1", "t1", "n2"))
