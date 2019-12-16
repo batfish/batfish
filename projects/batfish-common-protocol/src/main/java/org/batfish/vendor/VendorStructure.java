@@ -4,13 +4,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Identifies a vendor structure in a configuration file. */
 @ParametersAreNonnullByDefault
-public final class VendorStructure {
+public final class VendorStructure implements Serializable {
   private static final String PROP_FILENAME = "filename";
   private static final String PROP_STRUCTURE_TYPE = "structureType";
   private static final String PROP_STRUCTURE_NAME = "structureName";
