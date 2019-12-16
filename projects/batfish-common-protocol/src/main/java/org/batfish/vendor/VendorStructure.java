@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -67,6 +67,6 @@ public final class VendorStructure {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_filename, _structureType, _structureName);
+    return Objects.hash(_filename, _structureType, _structureName);
   }
 }
