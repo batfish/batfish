@@ -701,6 +701,35 @@ public class BatfishTest {
   }
 
   @Test
+  public void testPostProcessInterfaceDependenciesMissing() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c1 =
+        nf.configurationBuilder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
+
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
+
+    ib.setName("eth1")
+        .setActive(true)
+        .setDependencies(ImmutableSet.of(new Dependency("eth0", DependencyType.BIND)))
+        .build();
+
+    ImmutableSet<String> activeIfaces = ImmutableSet.of();
+    ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth1");
+
+    // Test
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1));
+
+    activeIfaces.forEach(
+        name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
+    inactiveIfaces.forEach(
+        name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(false)));
+  }
+
+  @Test
   public void testPostProcessInterfaceDependenciesAggregate() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =

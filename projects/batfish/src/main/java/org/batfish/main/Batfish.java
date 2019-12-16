@@ -1775,23 +1775,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           iface
                               .getDependencies()
                               .forEach(
-                                  dependency ->
-                                      graph.addEdge(
-                                          // Reverse edge direction to aid topological sort
-                                          dependency.getInterfaceName(), iface.getName())));
+                                  dependency -> {
+                                    // JGraphT crashes if there is an edge to an undeclared vertex.
+                                    // We add every edge target as a vertex, and code later will
+                                    // still disable the child.
+                                    //
+                                    graph.addVertex(dependency.getInterfaceName());
+                                    graph.addEdge(
+                                        // Reverse edge direction to aid topological sort
+                                        dependency.getInterfaceName(), iface.getName());
+                                  }));
 
               // Traverse interfaces in topological order and deactivate if necessary
               for (TopologicalOrderIterator<String, DefaultEdge> iterator =
                       new TopologicalOrderIterator<>(graph);
                   iterator.hasNext(); ) {
                 String ifaceName = iterator.next();
-                deactivateInterfaceIfNeeded(allInterfaces.get(ifaceName));
+                @Nullable Interface iface = allInterfaces.get(ifaceName);
+                if (iface == null) {
+                  // A missing dependency.
+                  continue;
+                }
+                deactivateInterfaceIfNeeded(iface);
               }
             });
   }
 
   /** Deactivate an interface if it is blacklisted or its dependencies are not active */
-  private static void deactivateInterfaceIfNeeded(Interface iface) {
+  private static void deactivateInterfaceIfNeeded(@Nonnull Interface iface) {
     Configuration config = iface.getOwner();
     Set<Dependency> dependencies = iface.getDependencies();
     if (dependencies.stream()
@@ -1804,12 +1815,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // Look at aggregate dependencies only now
-    Set<Dependency> aggregateDependencies =
-        dependencies.stream()
-            .filter(d -> d.getType() == DependencyType.AGGREGATE)
-            .collect(ImmutableSet.toImmutableSet());
     if (iface.getInterfaceType() == InterfaceType.AGGREGATED
-        && aggregateDependencies.stream()
+        && dependencies.stream()
+            .filter(d1 -> d1.getType() == DependencyType.AGGREGATE)
             // Extract existing and active interfaces
             .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
             .filter(Objects::nonNull)
