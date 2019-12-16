@@ -17,7 +17,7 @@ public abstract class AbstractAclLine implements Serializable {
 
   /** The name of this line in the list */
   @JsonProperty(PROP_NAME)
-  public String getName() {
+  public final String getName() {
     return _name;
   }
 
