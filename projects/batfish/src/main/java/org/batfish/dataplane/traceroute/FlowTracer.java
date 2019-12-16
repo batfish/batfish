@@ -376,7 +376,6 @@ class FlowTracer {
       return;
     }
 
-    _steps.add(buildExitOutputIfaceStep(outgoingInterface, TRANSMITTED));
     Hop hop = new Hop(_currentNode, _steps);
     _hops.add(hop);
 
@@ -386,14 +385,14 @@ class FlowTracer {
   }
 
   @Nonnull
-  private ExitOutputIfaceStep buildExitOutputIfaceStep(String outputIface, StepAction action) {
+  private ExitOutputIfaceStep buildExitOutputIfaceStep(String outputIface) {
     return ExitOutputIfaceStep.builder()
         .setDetail(
             ExitOutputIfaceStepDetail.builder()
                 .setOutputInterface(NodeInterfacePair.of(_currentNode.getName(), outputIface))
                 .setTransformedFlow(TracerouteUtils.hopFlow(_originalFlow, _currentFlow))
                 .build())
-        .setAction(action)
+        .setAction(TRANSMITTED)
         .build();
   }
 
@@ -867,6 +866,9 @@ class FlowTracer {
 
                       // TODO: handle ACLs
 
+                      // add ExitOutputIfaceStep
+                      _steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
+
                       SortedSet<NodeInterfacePair> neighborIfaces =
                           _tracerouteContext.getInterfaceNeighbors(
                               currentNodeName, outgoingIfaceName);
@@ -911,6 +913,9 @@ class FlowTracer {
                     return null;
                   }
 
+                  // add ExitOutIfaceStep
+                  _steps.add(buildExitOutputIfaceStep(outgoingInterfaceName));
+
                   if (nextHop == null) {
                     /* ARP error. Currently we can't use buildArpFailureTrace for sessions, because forwarding
                      * analysis disposition maps currently include routing conditions, which do not apply to
@@ -926,8 +931,6 @@ class FlowTracer {
                         outgoingInterfaceName, flow.getDstIp(), FlowDisposition.EXITS_NETWORK);
                     return null;
                   }
-
-                  _steps.add(buildExitOutputIfaceStep(outgoingInterfaceName, TRANSMITTED));
                   _hops.add(new Hop(new Node(currentNodeName), _steps));
 
                   // Forward to neighbor.
@@ -1014,6 +1017,10 @@ class FlowTracer {
 
     String currentNodeName = _currentNode.getName();
     String outgoingIfaceName = outgoingInterface.getName();
+
+    // add ExitOutputIfaceStep
+    _steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
+
     SortedSet<NodeInterfacePair> neighborIfaces =
         _tracerouteContext.getInterfaceNeighbors(currentNodeName, outgoingIfaceName);
     /*
@@ -1153,11 +1160,11 @@ class FlowTracer {
 
   /**
    * Build ARP failure trace for the current flow, for when its forwarded out the input
-   * outgoingInterface.
+   * outgoingInterface and end up with a Exit Network, Delivered To Subnet, Insufficient Info or
+   * Neighbor Unreachable disposition.
    */
   private void buildArpFailureTrace(
       String outInterface, Ip resolvedNhIp, FlowDisposition disposition) {
-    _steps.add(buildExitOutputIfaceStep(outInterface, getFinalActionForDisposition(disposition)));
     String currentNodeName = _currentNode.getName();
 
     _steps.add(buildDispositionStep(outInterface, resolvedNhIp, disposition));

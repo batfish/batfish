@@ -646,7 +646,7 @@ public class TracerouteEngineImplTest {
     assertThat(step2.getDetail().getFilter(), equalTo(filter.getName()));
 
     ExitOutputIfaceStep step3 = (ExitOutputIfaceStep) steps.get(3);
-    assertThat(step3.getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(step3.getAction(), equalTo(StepAction.TRANSMITTED));
     assertThat(
         step3.getDetail().getOutputInterface(),
         equalTo(NodeInterfacePair.of(c1.getHostname(), i2.getName())));
@@ -762,7 +762,7 @@ public class TracerouteEngineImplTest {
     assertThat(steps.get(0).getAction(), equalTo(StepAction.ORIGINATED));
     assertThat(steps.get(1).getAction(), equalTo(StepAction.FORWARDED));
     assertThat(steps.get(2).getAction(), equalTo(StepAction.PERMITTED));
-    assertThat(steps.get(3).getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(steps.get(3).getAction(), equalTo(StepAction.TRANSMITTED));
     assertThat(steps.get(4).getAction(), equalTo(StepAction.EXITS_NETWORK));
   }
 
@@ -1031,7 +1031,7 @@ public class TracerouteEngineImplTest {
     assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
     assertThat(steps.get(1).getAction(), equalTo(StepAction.PERMITTED));
     assertThat(steps.get(2).getAction(), equalTo(StepAction.FORWARDED));
-    assertThat(steps.get(3).getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(steps.get(3).getAction(), equalTo(StepAction.TRANSMITTED));
     assertThat(steps.get(4).getAction(), equalTo(StepAction.EXITS_NETWORK));
 
     flow =

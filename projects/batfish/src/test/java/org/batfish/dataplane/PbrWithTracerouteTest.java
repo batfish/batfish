@@ -1,6 +1,6 @@
 package org.batfish.dataplane;
 
-import static org.batfish.datamodel.matchers.HopMatchers.hasDeliverToInterface;
+import static org.batfish.datamodel.matchers.HopMatchers.hasOutputInterface;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasLastHop;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
@@ -72,7 +72,7 @@ public class PbrWithTracerouteTest {
             allOf(
                 hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET),
                 hasLastHop(
-                    hasDeliverToInterface(NodeInterfacePair.of(c.getHostname(), _pbrOutIface))))));
+                    hasOutputInterface(NodeInterfacePair.of(c.getHostname(), _pbrOutIface))))));
   }
 
   @Test
