@@ -1126,6 +1126,7 @@ public class TracerouteEngineImplTest {
     assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
     assertThat(steps.get(1).getAction(), equalTo(StepAction.FORWARDED));
     assertThat(steps.get(2).getAction(), equalTo(StepAction.PERMITTED));
+    assertThat(steps.get(3).getAction(), equalTo(StepAction.TRANSMITTED));
     assertThat(steps.get(4).getAction(), equalTo(StepAction.EXITS_NETWORK));
 
     flow =
