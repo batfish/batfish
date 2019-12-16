@@ -3,7 +3,6 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.matchers.ExprAclLineMatchersImpl.HasAction;
@@ -19,7 +18,7 @@ public class ExprAclLineMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
-   * ExprAclLine}'s match condition. dstIps.
+   * org.batfish.datamodel.ExprAclLine}'s match condition. dstIps.
    */
   public static HasMatchCondition hasMatchCondition(
       @Nonnull Matcher<? super AclLineMatchExpr> subMatcher) {
