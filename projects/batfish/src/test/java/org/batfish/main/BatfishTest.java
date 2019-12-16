@@ -1,9 +1,13 @@
 package org.batfish.main;
 
 import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
 import static org.batfish.main.Batfish.readAllFiles;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -709,24 +713,15 @@ public class BatfishTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
-
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
-
     ib.setName("eth1")
         .setActive(true)
-        .setDependencies(ImmutableSet.of(new Dependency("eth0", DependencyType.BIND)))
+        .setDependencies(ImmutableSet.of(new Dependency("NON_EXISTENT", DependencyType.BIND)))
         .build();
 
-    ImmutableSet<String> activeIfaces = ImmutableSet.of();
-    ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth1");
-
-    // Test
     postProcessInterfaceDependencies(ImmutableMap.of("c1", c1));
 
-    activeIfaces.forEach(
-        name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
-    inactiveIfaces.forEach(
-        name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(false)));
+    assertThat(c1.getAllInterfaces().values(), contains(allOf(hasName("eth1"), isActive(false))));
   }
 
   @Test
