@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -173,7 +173,7 @@ public final class IpAccessListLine extends AbstractAclLine {
   }
 
   @Override
-  public <R> R accept(GenericIpAccessListLineVisitor<R> visitor) {
+  public <R> R accept(GenericAclLineVisitor<R> visitor) {
     return visitor.visitIpAccessListLine(this);
   }
 

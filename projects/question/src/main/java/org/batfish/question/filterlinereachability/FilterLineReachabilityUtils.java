@@ -9,7 +9,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
-import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -40,7 +40,7 @@ public class FilterLineReachabilityUtils {
    */
   private static class ReferencedAclsCollector
       implements GenericAclLineMatchExprVisitor<Stream<String>>,
-          GenericIpAccessListLineVisitor<Stream<String>> {
+          GenericAclLineVisitor<Stream<String>> {
 
     /* AbstractAclLine visit methods */
 
@@ -103,7 +103,7 @@ public class FilterLineReachabilityUtils {
    */
   private static class ReferencedInterfacesCollector
       implements GenericAclLineMatchExprVisitor<Stream<String>>,
-          GenericIpAccessListLineVisitor<Stream<String>> {
+          GenericAclLineVisitor<Stream<String>> {
 
     /* AbstractAclLine visit methods */
 

@@ -6,7 +6,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
-import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -16,7 +16,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
 /** Converts an {@link AbstractAclLine} to the {@link HeaderSpace} matching that line. */
-public class HeaderSpaceConverter implements GenericIpAccessListLineVisitor<HeaderSpace> {
+public class HeaderSpaceConverter implements GenericAclLineVisitor<HeaderSpace> {
 
   private static final HeaderSpaceConverter INSTANCE = new HeaderSpaceConverter();
   private static final AclLineMatchExprToHeaderSpaceConverter MATCH_EXPR_CONVERTER =

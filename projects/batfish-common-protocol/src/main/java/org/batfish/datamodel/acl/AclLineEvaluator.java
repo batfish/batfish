@@ -14,7 +14,7 @@ import org.batfish.datamodel.LineAction;
  * returns the {@link LineAction} it will take on the flow, or {@code null} if the line does not
  * match the flow.
  */
-public class AclLineEvaluator implements GenericIpAccessListLineVisitor<LineAction> {
+public class AclLineEvaluator implements GenericAclLineVisitor<LineAction> {
 
   private final Evaluator _matchExprEvaluator;
 

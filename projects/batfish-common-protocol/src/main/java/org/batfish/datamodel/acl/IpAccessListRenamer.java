@@ -27,7 +27,7 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
   @VisibleForTesting
   class Visitor
       implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
-          GenericIpAccessListLineVisitor<AbstractAclLine> {
+          GenericAclLineVisitor<AbstractAclLine> {
 
     private IpSpace rename(@Nullable IpSpace ipSpace) {
       return ipSpace == null ? null : _ipSpaceRenamer.apply(ipSpace);

@@ -20,7 +20,7 @@ public final class SourcesReferencedByIpAccessLists {
   public static final String SOURCE_ORIGINATING_FROM_DEVICE = "DEVICE IS THE SOURCE";
 
   private static final class ReferenceSourcesVisitor
-      implements GenericAclLineMatchExprVisitor<Void>, GenericIpAccessListLineVisitor<Void> {
+      implements GenericAclLineMatchExprVisitor<Void>, GenericAclLineVisitor<Void> {
     private final ImmutableSet.Builder<String> _referencedSources;
 
     private final Map<String, Supplier<Void>> _namedAclThunks;

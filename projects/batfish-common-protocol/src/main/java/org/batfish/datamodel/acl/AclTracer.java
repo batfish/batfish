@@ -31,7 +31,7 @@ import org.batfish.datamodel.visitors.IpSpaceTracer;
  * Acts like {@link Evaluator} on {@link IpAccessList}, except that it introduces tracing when
  * encountering traceable classes.
  */
-public final class AclTracer extends Evaluator implements GenericIpAccessListLineVisitor<Boolean> {
+public final class AclTracer extends Evaluator implements GenericAclLineVisitor<Boolean> {
 
   public static AclTrace trace(
       @Nonnull IpAccessList ipAccessList,

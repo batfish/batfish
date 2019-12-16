@@ -10,7 +10,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CircularReferenceException;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
-import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -29,7 +29,7 @@ import org.batfish.datamodel.visitors.IpSpaceDereferencer;
  */
 public class HeaderSpaceSanitizer
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
-        GenericIpAccessListLineVisitor<AbstractAclLine> {
+        GenericAclLineVisitor<AbstractAclLine> {
 
   private final Map<String, IpSpace> _namedIpSpaces;
 

@@ -27,7 +27,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
-import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -202,7 +202,7 @@ public abstract class IpAccessListToBdd {
    * {@link IpAccessListToBdd#toBdd(AclLineMatchExpr)} method, allowing subclasses to intercept.
    */
   private final class Visitor
-      implements GenericAclLineMatchExprVisitor<BDD>, GenericIpAccessListLineVisitor<BDD> {
+      implements GenericAclLineMatchExprVisitor<BDD>, GenericAclLineVisitor<BDD> {
 
     /* AbstractAclLine visit methods */
 

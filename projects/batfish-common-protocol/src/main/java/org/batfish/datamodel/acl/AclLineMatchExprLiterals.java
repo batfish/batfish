@@ -16,7 +16,7 @@ import org.batfish.datamodel.IpAccessListLine;
  * line.
  */
 public class AclLineMatchExprLiterals
-    implements GenericAclLineMatchExprVisitor<Void>, GenericIpAccessListLineVisitor<Void> {
+    implements GenericAclLineMatchExprVisitor<Void>, GenericAclLineVisitor<Void> {
 
   private Set<AclLineMatchExpr> _literals;
 

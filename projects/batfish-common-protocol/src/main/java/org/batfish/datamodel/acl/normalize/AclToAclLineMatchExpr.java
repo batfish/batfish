@@ -23,7 +23,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
-import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -52,7 +52,7 @@ import org.batfish.datamodel.acl.explanation.DisjunctsBuilder;
  */
 public final class AclToAclLineMatchExpr
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
-        GenericIpAccessListLineVisitor<AclLineMatchExpr> {
+        GenericAclLineVisitor<AclLineMatchExpr> {
 
   /** Reduce an entire {@link IpAccessList} to a single {@link AclLineMatchExpr}. */
   public static AclLineMatchExpr toAclLineMatchExpr(

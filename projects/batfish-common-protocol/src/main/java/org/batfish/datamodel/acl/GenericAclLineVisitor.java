@@ -4,7 +4,7 @@ import org.batfish.datamodel.AbstractAclLine;
 import org.batfish.datamodel.IpAccessListLine;
 
 /** Visitor for {@link IpAccessListLine} */
-public interface GenericIpAccessListLineVisitor<R> {
+public interface GenericAclLineVisitor<R> {
 
   default R visit(AbstractAclLine line) {
     return line.accept(this);
