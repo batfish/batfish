@@ -7,11 +7,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -47,7 +47,7 @@ public final class TestNetworkIndirection {
         .setOwner(_node)
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.acceptingHeaderSpace(
+                ExprAclLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setSrcIps(new IpSpaceReference(INDIRECT_IPSPACE_NAME))
                         .build())))
@@ -59,7 +59,7 @@ public final class TestNetworkIndirection {
             .setOwner(_node)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(new PermittedByAcl(INDIRECT_ACL_NAME))
                         .build()))
             .build();

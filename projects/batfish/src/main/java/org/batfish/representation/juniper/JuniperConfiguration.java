@@ -54,6 +54,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
@@ -66,7 +67,6 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
@@ -201,7 +201,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .setName(ACL_NAME_EXISTING_CONNECTION)
           .setLines(
               ImmutableList.of(
-                  new IpAccessListLine(
+                  new ExprAclLine(
                       LineAction.PERMIT,
                       new MatchHeaderSpace(
                           HeaderSpace.builder()
@@ -1924,7 +1924,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .setName(aclName)
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.rejecting(new OrMatchExpr(matches)), IpAccessListLine.ACCEPT_ALL))
+                ExprAclLine.rejecting(new OrMatchExpr(matches)), ExprAclLine.ACCEPT_ALL))
         .build();
   }
 
@@ -1949,7 +1949,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ? null
         : IpAccessList.builder()
             .setName(aclName)
-            .setLines(ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(matches))))
+            .setLines(ImmutableList.of(ExprAclLine.accepting(new AndMatchExpr(matches))))
             .build();
   }
 
@@ -1971,7 +1971,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ? null
         : IpAccessList.builder()
             .setName(ACL_NAME_SCREEN_INTERFACE + iface.getName())
-            .setLines(ImmutableList.of(IpAccessListLine.accepting(new PermittedByAcl(zoneAclName))))
+            .setLines(ImmutableList.of(ExprAclLine.accepting(new PermittedByAcl(zoneAclName))))
             .build();
   }
 
@@ -2000,8 +2000,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     IpAccessList combinedAcl =
         IpAccessList.builder()
             .setName(combinedAclName)
-            .setLines(
-                ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(aclConjunctList))))
+            .setLines(ImmutableList.of(ExprAclLine.accepting(new AndMatchExpr(aclConjunctList))))
             .build();
 
     _c.getIpAccessLists().put(combinedAclName, combinedAcl);
@@ -2086,35 +2085,35 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
   IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
-    List<IpAccessListLine> zoneAclLines = new LinkedList<>();
+    List<ExprAclLine> zoneAclLines = new LinkedList<>();
 
     /* Default ACL that allows existing connections should be added to all security policies */
     zoneAclLines.add(
-        new IpAccessListLine(
+        new ExprAclLine(
             LineAction.PERMIT,
             new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION, false),
             "EXISTING_CONNECTION"));
 
     /* Default policy allows traffic originating from the device to be accepted */
     zoneAclLines.add(
-        new IpAccessListLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND"));
+        new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND"));
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
-        IpAccessListLine.takingExplicitActionsOf(e.getKey()).forEach(zoneAclLines::add);
+        ExprAclLine.takingExplicitActionsOf(e.getKey()).forEach(zoneAclLines::add);
       }
     }
 
     /* Global policy if applicable */
     if (_masterLogicalSystem.getFirewallFilters().get(ACL_NAME_GLOBAL_POLICY) != null) {
       /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
-      IpAccessListLine.takingExplicitActionsOf(ACL_NAME_GLOBAL_POLICY).forEach(zoneAclLines::add);
+      ExprAclLine.takingExplicitActionsOf(ACL_NAME_GLOBAL_POLICY).forEach(zoneAclLines::add);
     }
 
     /* Add catch-all line with default action */
     zoneAclLines.add(
-        new IpAccessListLine(
+        new ExprAclLine(
             _masterLogicalSystem.getDefaultCrossZoneAction(), TrueExpr.INSTANCE, "DEFAULT_POLICY"));
 
     IpAccessList zoneAcl = IpAccessList.builder().setName(name).setLines(zoneAclLines).build();
@@ -2129,7 +2128,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private IpAccessList fwTermsToIpAccessList(
       String aclName, Collection<FwTerm> terms, @Nullable AclLineMatchExpr conjunctMatchExpr)
       throws VendorConversionException {
-    List<IpAccessListLine> lines = new ArrayList<>();
+    List<ExprAclLine> lines = new ArrayList<>();
     for (FwTerm term : terms) {
       // action
       LineAction action;
@@ -2177,8 +2176,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         continue;
       }
       if (addLine) {
-        IpAccessListLine line =
-            IpAccessListLine.builder()
+        ExprAclLine line =
+            ExprAclLine.builder()
                 .setAction(action)
                 .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
                 .setName(term.getName())
@@ -2195,15 +2194,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /** Merge the list of lines with the specified conjunct match expression. */
-  private static List<IpAccessListLine> mergeIpAccessListLines(
-      List<IpAccessListLine> lines, @Nullable AclLineMatchExpr conjunctMatchExpr) {
+  private static List<ExprAclLine> mergeIpAccessListLines(
+      List<ExprAclLine> lines, @Nullable AclLineMatchExpr conjunctMatchExpr) {
     if (conjunctMatchExpr == null) {
       return lines;
     } else {
       return lines.stream()
           .map(
               l ->
-                  new IpAccessListLine(
+                  new ExprAclLine(
                       l.getAction(),
                       new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
                       l.getName()))
@@ -2233,9 +2232,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else {
       assert f instanceof CompositeFirewallFilter;
       CompositeFirewallFilter filter = (CompositeFirewallFilter) f;
-      ImmutableList.Builder<IpAccessListLine> lines = ImmutableList.builder();
+      ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
       for (FirewallFilter inner : filter.getInner()) {
-        IpAccessListLine.takingExplicitActionsOf(inner.getName()).forEach(lines::add);
+        ExprAclLine.takingExplicitActionsOf(inner.getName()).forEach(lines::add);
       }
       return IpAccessList.builder().setName(filter.getName()).setLines(lines.build()).build();
     }

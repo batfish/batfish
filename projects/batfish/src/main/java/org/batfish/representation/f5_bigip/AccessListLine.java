@@ -3,8 +3,8 @@ package org.batfish.representation.f5_bigip;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -38,9 +38,9 @@ public class AccessListLine implements Serializable {
     return _text;
   }
 
-  /** Convert to vendor-independent {@link IpAccessListLine}. */
-  public @Nonnull IpAccessListLine toIpAccessListLine() {
-    return IpAccessListLine.builder()
+  /** Convert to vendor-independent {@link ExprAclLine}. */
+  public @Nonnull ExprAclLine toIpAccessListLine() {
+    return ExprAclLine.builder()
         .setAction(_action)
         .setMatchCondition(
             new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(_prefix.toIpSpace()).build()))

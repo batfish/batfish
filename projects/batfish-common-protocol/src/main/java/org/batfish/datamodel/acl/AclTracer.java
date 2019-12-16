@@ -13,11 +13,11 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpaceLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
@@ -31,7 +31,7 @@ import org.batfish.datamodel.visitors.IpSpaceTracer;
  * Acts like {@link Evaluator} on {@link IpAccessList}, except that it introduces tracing when
  * encountering traceable classes.
  */
-public final class AclTracer extends Evaluator implements GenericIpAccessListLineVisitor<Boolean> {
+public final class AclTracer extends Evaluator implements GenericAclLineVisitor<Boolean> {
 
   public static AclTrace trace(
       @Nonnull IpAccessList ipAccessList,
@@ -105,7 +105,7 @@ public final class AclTracer extends Evaluator implements GenericIpAccessListLin
   }
 
   public void recordAction(
-      @Nonnull IpAccessList ipAccessList, int index, @Nonnull IpAccessListLine line) {
+      @Nonnull IpAccessList ipAccessList, int index, @Nonnull ExprAclLine line) {
     String lineDescription = firstNonNull(line.getName(), line.toString());
     String type = firstNonNull(ipAccessList.getSourceType(), "filter");
     String name = firstNonNull(ipAccessList.getSourceName(), ipAccessList.getName());
@@ -115,12 +115,10 @@ public final class AclTracer extends Evaluator implements GenericIpAccessListLin
             "Flow %s by %s named %s, index %d: %s", actionStr, type, name, index, lineDescription);
     if (line.getAction() == LineAction.PERMIT) {
       _currentTreeNode.setEvent(
-          new PermittedByIpAccessListLine(
-              description, index, lineDescription, ipAccessList.getName()));
+          new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     } else {
       _currentTreeNode.setEvent(
-          new DeniedByIpAccessListLine(
-              description, index, lineDescription, ipAccessList.getName()));
+          new DeniedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     }
   }
 
@@ -372,10 +370,10 @@ public final class AclTracer extends Evaluator implements GenericIpAccessListLin
   }
 
   private boolean trace(@Nonnull IpAccessList ipAccessList) {
-    List<IpAccessListLine> lines = ipAccessList.getLines();
+    List<ExprAclLine> lines = ipAccessList.getLines();
     newTrace();
     for (int i = 0; i < lines.size(); i++) {
-      IpAccessListLine line = lines.get(i);
+      ExprAclLine line = lines.get(i);
       if (visit(line)) {
         recordAction(ipAccessList, i, line);
         endTrace();
@@ -400,11 +398,11 @@ public final class AclTracer extends Evaluator implements GenericIpAccessListLin
     return ipSpace.accept(new IpSpaceTracer(this, ip, "source IP"));
   }
 
-  /* IpAccessListLine visit methods */
+  /* AclLine visit methods */
 
   @Override
-  public Boolean visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
-    return visit(ipAccessListLine.getMatchCondition());
+  public Boolean visitExprAclLine(ExprAclLine exprAclLine) {
+    return visit(exprAclLine.getMatchCondition());
   }
 
   /* AclLineMatchExpr visit methods */

@@ -15,9 +15,9 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
@@ -112,7 +112,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
   }
 
   private IpAccessList getAcl(boolean isEgress) {
-    List<IpAccessListLine> lines =
+    List<ExprAclLine> lines =
         _entries.stream()
             .filter(e -> e instanceof NetworkAclEntryV4) // ignore v6
             .filter(e -> (isEgress && e.getIsEgress()) || (!isEgress && !e.getIsEgress()))
@@ -129,7 +129,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
   }
 
   @VisibleForTesting
-  static IpAccessListLine getAclLine(NetworkAclEntryV4 entry) {
+  static ExprAclLine getAclLine(NetworkAclEntryV4 entry) {
     int key = entry.getRuleNumber();
     LineAction action = entry.getIsAllow() ? LineAction.PERMIT : LineAction.DENY;
     Prefix prefix = entry.getCidrBlock();
@@ -181,7 +181,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
     } else {
       portStr = portRange.toString();
     }
-    return IpAccessListLine.builder()
+    return ExprAclLine.builder()
         .setAction(action)
         .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
         .setName(getAclLineName(key, protocolStr, portStr, prefix, action))

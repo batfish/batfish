@@ -8,11 +8,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
@@ -35,8 +35,8 @@ public class PermittedByAclTest {
     // Build a single entry map, mapping aclName to an ACL matching the given srcIpWildcard
 
     // Create a single ACL line matching the given srcIpWildcard
-    IpAccessListLine acll =
-        IpAccessListLine.builder()
+    ExprAclLine acll =
+        ExprAclLine.builder()
             .setMatchCondition(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()

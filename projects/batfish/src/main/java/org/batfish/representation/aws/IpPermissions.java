@@ -31,8 +31,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -238,12 +238,12 @@ final class IpPermissions implements Serializable {
   }
 
   /**
-   * Converts this {@link IpPermissions} to an {@link IpAccessListLine}.
+   * Converts this {@link IpPermissions} to an {@link ExprAclLine}.
    *
    * <p>Returns {@link Optional#empty()} if the security group cannot be processed, e.g., uses an
    * unsupported definition of the affected IP addresses.
    */
-  Optional<IpAccessListLine> toIpAccessListLine(
+  Optional<ExprAclLine> toIpAccessListLine(
       boolean ingress, Region region, String name, Warnings warnings) {
     if (_ipProtocol.equals("icmpv6")) {
       // Not valid in IPv4 packets.
@@ -305,7 +305,7 @@ final class IpPermissions implements Serializable {
     }
 
     return Optional.ofNullable(
-        IpAccessListLine.accepting()
+        ExprAclLine.accepting()
             .setMatchCondition(new MatchHeaderSpace(constraints.build()))
             .setName(name)
             .build());

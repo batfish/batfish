@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -37,7 +37,7 @@ public final class ServiceGroup implements ServiceGroupMember {
   @Override
   public IpAccessList toIpAccessList(
       LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w) {
-    List<IpAccessListLine> lines = new LinkedList<>();
+    List<ExprAclLine> lines = new LinkedList<>();
     for (ServiceOrServiceGroupReference memberReference : _references) {
       // Check for matching object before using built-ins
       String vsysName = memberReference.getVsysName(pc, vsys);
@@ -45,22 +45,22 @@ public final class ServiceGroup implements ServiceGroupMember {
 
       if (vsysName != null) {
         lines.add(
-            new IpAccessListLine(
+            new ExprAclLine(
                 action,
                 new PermittedByAcl(
                     computeServiceGroupMemberAclName(vsysName, memberReference.getName())),
                 memberReference.getName()));
       } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
         lines.clear();
-        lines.add(new IpAccessListLine(action, TrueExpr.INSTANCE, _name));
+        lines.add(new ExprAclLine(action, TrueExpr.INSTANCE, _name));
         break;
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
         lines.add(
-            new IpAccessListLine(
+            new ExprAclLine(
                 action, new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace()), _name));
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
         lines.add(
-            new IpAccessListLine(
+            new ExprAclLine(
                 action,
                 new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()),
                 _name));

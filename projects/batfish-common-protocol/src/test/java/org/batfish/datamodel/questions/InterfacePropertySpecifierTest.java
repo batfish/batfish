@@ -8,9 +8,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -64,7 +64,7 @@ public class InterfacePropertySpecifierTest {
     IpAccessList acl =
         IpAccessList.builder()
             .setName("MY_ACL")
-            .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
             .build();
     Interface i1 = Interface.builder().setName("i1").setIncomingFilter(acl).build();
     i1.setInboundFilterName(acl.getName());
