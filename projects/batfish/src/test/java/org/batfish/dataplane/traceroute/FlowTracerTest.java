@@ -51,6 +51,7 @@ import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -67,6 +68,8 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.ArpErrorStep;
+import org.batfish.datamodel.flow.DeliveredStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
@@ -746,5 +749,102 @@ public final class FlowTracerTest {
                 new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null))));
     assertThat(routingStep.getDetail().getArpIp(), nullValue());
     assertThat(routingStep.getDetail().getOutputInterface(), nullValue());
+  }
+
+  @Test
+  public void testBuildDispositionStep() {
+    String node = "node";
+    String iface = "iface";
+    Ip ip = Ip.parse("1.1.1.1");
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setHostname(node)
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    Flow flow =
+        Flow.builder()
+            .setDstIp(ip)
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(vrf.getName())
+            .setTag("tag")
+            .build();
+
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
+    FlowTracer flowTracer =
+        new FlowTracer(
+            ctxt,
+            c,
+            null,
+            new Node(c.getHostname()),
+            traces::add,
+            NodeInterfacePair.of(node, iface),
+            ImmutableSet.of(),
+            flow,
+            vrf.getName(),
+            new ArrayList<>(),
+            ImmutableList.of(),
+            new Stack<>(),
+            flow);
+
+    {
+      FlowDisposition disposition = FlowDisposition.INSUFFICIENT_INFO;
+      Step<?> step = flowTracer.buildArpFailureStep(iface, ip, disposition);
+      assertThat(step, instanceOf(ArpErrorStep.class));
+      ArpErrorStep dispositionStep = (ArpErrorStep) step;
+      assertThat(dispositionStep.getAction(), equalTo(StepAction.INSUFFICIENT_INFO));
+      assertThat(
+          dispositionStep.getDetail().getOutputInterface(),
+          equalTo(NodeInterfacePair.of(node, iface)));
+      assertThat(dispositionStep.getDetail().getResolvedNexthopIp(), equalTo(ip));
+    }
+
+    {
+      FlowDisposition disposition = FlowDisposition.NEIGHBOR_UNREACHABLE;
+      Step<?> step = flowTracer.buildArpFailureStep(iface, ip, disposition);
+      assertThat(step, instanceOf(ArpErrorStep.class));
+      ArpErrorStep dispositionStep = (ArpErrorStep) step;
+      assertThat(dispositionStep.getAction(), equalTo(StepAction.NEIGHBOR_UNREACHABLE));
+      assertThat(
+          dispositionStep.getDetail().getOutputInterface(),
+          equalTo(NodeInterfacePair.of(node, iface)));
+      assertThat(dispositionStep.getDetail().getResolvedNexthopIp(), equalTo(ip));
+    }
+
+    {
+      FlowDisposition disposition = FlowDisposition.DELIVERED_TO_SUBNET;
+      Step<?> step = flowTracer.buildArpFailureStep(iface, ip, disposition);
+      assertThat(step, instanceOf(DeliveredStep.class));
+      DeliveredStep dispositionStep = (DeliveredStep) step;
+      assertThat(dispositionStep.getAction(), equalTo(StepAction.DELIVERED_TO_SUBNET));
+      assertThat(
+          dispositionStep.getDetail().getOutputInterface(),
+          equalTo(NodeInterfacePair.of(node, iface)));
+      assertThat(dispositionStep.getDetail().getResolvedNexthopIp(), equalTo(ip));
+    }
+
+    {
+      FlowDisposition disposition = FlowDisposition.EXITS_NETWORK;
+      Step<?> step = flowTracer.buildArpFailureStep(iface, ip, disposition);
+      assertThat(step, instanceOf(DeliveredStep.class));
+      DeliveredStep dispositionStep = (DeliveredStep) step;
+      assertThat(dispositionStep.getAction(), equalTo(StepAction.EXITS_NETWORK));
+      assertThat(
+          dispositionStep.getDetail().getOutputInterface(),
+          equalTo(NodeInterfacePair.of(node, iface)));
+      assertThat(dispositionStep.getDetail().getResolvedNexthopIp(), equalTo(ip));
+    }
   }
 }
