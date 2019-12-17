@@ -51,6 +51,6 @@ public final class EvpnL3VniPropertiesQuestion extends Question {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_nodes);
+    return Objects.hashCode(_nodes);
   }
 }

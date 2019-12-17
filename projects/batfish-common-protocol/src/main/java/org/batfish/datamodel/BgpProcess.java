@@ -338,7 +338,7 @@ public class BgpProcess implements Serializable {
    * process
    */
   @JsonIgnore
-  public Stream<BgpPeerConfig> streamAllPeerConfigs() {
+  public Stream<BgpPeerConfig> allPeerConfigsStream() {
     return Streams.concat(
         _activeNeighbors.values().stream(),
         _passiveNeighbors.values().stream(),

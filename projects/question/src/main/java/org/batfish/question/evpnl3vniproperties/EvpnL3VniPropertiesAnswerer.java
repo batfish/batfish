@@ -38,28 +38,21 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
   public static final String COL_IMPORT_ROUTE_TARGET = "Import_Route_Target";
   public static final String COL_EXPORT_ROUTE_TARGET = "Export_Route_Target";
 
-  /**
-   * Creates {@link ColumnMetadata}s that the answer should have based on the {@code
-   * propertySpecifier}.
-   *
-   * @return The {@link List} of {@link ColumnMetadata}s
-   */
-  public static List<ColumnMetadata> createColumnMetadata() {
-    return ImmutableList.<ColumnMetadata>builder()
-        .add(new ColumnMetadata(COL_NODE, Schema.STRING, "Node", true, false))
-        .add(new ColumnMetadata(COL_VRF, Schema.STRING, "Node", true, false))
-        .add(new ColumnMetadata(COL_VNI, Schema.INTEGER, "VXLAN Segment ID", true, false))
-        .add(
-            new ColumnMetadata(
-                COL_ROUTE_DISTINGUISHER, Schema.STRING, "Route distinguisher", false, true))
-        .add(
-            new ColumnMetadata(
-                COL_IMPORT_ROUTE_TARGET, Schema.STRING, "Import route target", false, true))
-        .add(
-            new ColumnMetadata(
-                COL_EXPORT_ROUTE_TARGET, Schema.STRING, "Export route target", false, true))
-        .build();
-  }
+  public static final List<ColumnMetadata> COLUMN_METADATA =
+      ImmutableList.<ColumnMetadata>builder()
+          .add(new ColumnMetadata(COL_NODE, Schema.STRING, "Node", true, false))
+          .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
+          .add(new ColumnMetadata(COL_VNI, Schema.INTEGER, "VXLAN Segment ID", true, false))
+          .add(
+              new ColumnMetadata(
+                  COL_ROUTE_DISTINGUISHER, Schema.STRING, "Route distinguisher", false, true))
+          .add(
+              new ColumnMetadata(
+                  COL_IMPORT_ROUTE_TARGET, Schema.STRING, "Import route target", false, true))
+          .add(
+              new ColumnMetadata(
+                  COL_EXPORT_ROUTE_TARGET, Schema.STRING, "Export route target", false, true))
+          .build();
 
   /**
    * Creates a {@link TableMetadata} object from the question.
@@ -75,7 +68,7 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(), textDesc);
+    return new TableMetadata(COLUMN_METADATA, textDesc);
   }
 
   @Override
@@ -132,7 +125,7 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
       nc.get(nodeName).map(Configuration::getVrfs).orElse(ImmutableMap.of()).values().stream()
           .map(Vrf::getBgpProcess)
           .filter(Objects::nonNull)
-          .flatMap(BgpProcess::streamAllPeerConfigs)
+          .flatMap(BgpProcess::allPeerConfigsStream)
           .map(BgpPeerConfig::getEvpnAddressFamily)
           .filter(Objects::nonNull)
           .flatMap(af -> af.getL3VNIs().stream())
