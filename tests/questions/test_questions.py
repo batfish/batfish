@@ -18,6 +18,7 @@ VALID_TAGS = {"acl",  # acl and firewall related
               "differential",  # differential question
               "dataplane",  # need dataplane computation
               "eigrp",  # EIGRP related
+              "evpn", # EVPN related
               "hygiene",  # hygiene type check on configs
               "ipsec",  # IPSec related
               "isis",  # isis related
