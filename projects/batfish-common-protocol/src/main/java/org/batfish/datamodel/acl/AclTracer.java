@@ -13,6 +13,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpaceLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -370,11 +371,17 @@ public final class AclTracer extends Evaluator implements GenericAclLineVisitor<
   }
 
   private boolean trace(@Nonnull IpAccessList ipAccessList) {
-    List<ExprAclLine> lines = ipAccessList.getLines();
+    List<AclLine> lines = ipAccessList.getLines();
     newTrace();
     for (int i = 0; i < lines.size(); i++) {
-      ExprAclLine line = lines.get(i);
-      if (visit(line)) {
+      AclLine l = lines.get(i);
+      if (visit(l)) {
+        // TODO
+        if (!(l instanceof ExprAclLine)) {
+          throw new UnsupportedOperationException(
+              "Support not yet implemented for tracing this type of line");
+        }
+        ExprAclLine line = (ExprAclLine) l;
         recordAction(ipAccessList, i, line);
         endTrace();
         return line.getAction() == LineAction.PERMIT;

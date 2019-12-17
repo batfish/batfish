@@ -63,6 +63,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -588,7 +589,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Build an ACL Line for each rule that is enabled and applies to this from/to zone pair.
-    List<ExprAclLine> lines =
+    List<AclLine> lines =
         rules.stream()
             .filter(
                 e -> {
@@ -609,7 +610,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Intrazone traffic is allowed by default.
     if (fromZone == toZone) {
       lines =
-          ImmutableList.<ExprAclLine>builder()
+          ImmutableList.<AclLine>builder()
               .addAll(lines)
               .add(ExprAclLine.accepting("Accept intrazone by default", TrueExpr.INSTANCE))
               .build();
@@ -666,7 +667,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   static @Nonnull IpAccessList generateOutgoingFilter(
       Zone toZone, Collection<Vsys> sharedGateways, Collection<Vsys> virtualSystems) {
     Vsys vsys = toZone.getVsys();
-    List<ExprAclLine> lines =
+    List<AclLine> lines =
         vsys.getZones().values().stream()
             .flatMap(
                 fromZone ->
@@ -1218,7 +1219,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // add outgoing filter
     IpAccessList.Builder aclBuilder =
         IpAccessList.builder().setOwner(_c).setName(computeOutgoingFilterName(iface.getName()));
-    List<ExprAclLine> aclLines = new ArrayList<>();
+    List<AclLine> aclLines = new ArrayList<>();
     Optional<Vsys> sharedGatewayOptional =
         _sharedGateways.values().stream()
             .filter(sg -> sg.getImportedInterfaces().contains(name))

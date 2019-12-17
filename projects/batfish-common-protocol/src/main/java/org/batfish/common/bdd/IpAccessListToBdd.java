@@ -168,9 +168,15 @@ public abstract class IpAccessListToBdd {
     int size = acl.getLines().size();
     List<BDD> lineBdds = new ArrayList<>(size);
     List<LineAction> lineActions = new ArrayList<>(size);
-    for (ExprAclLine line : acl.getLines()) {
+    for (AclLine l : acl.getLines()) {
       // Absurd hack for permit == false! Flip all the line actions so that bddAclLines evaluates to
       // the BDD of packets that will be explicitly rejected by the original ACL.
+      // TODO
+      if (!(l instanceof ExprAclLine)) {
+        throw new UnsupportedOperationException(
+            "Support not yet implemented for getAclMatchBdd for this type of line");
+      }
+      ExprAclLine line = (ExprAclLine) l;
       lineActions.add(permit ? line.getAction() : flip(line.getAction()));
       lineBdds.add(toBdd(line));
     }
@@ -188,7 +194,7 @@ public abstract class IpAccessListToBdd {
   public List<BDD> reachAndMatchLines(IpAccessList acl) {
     ImmutableList.Builder<BDD> bdds = ImmutableList.builder();
     BDD reach = _pkt.getFactory().one();
-    for (ExprAclLine line : acl.getLines()) {
+    for (AclLine line : acl.getLines()) {
       BDD match = visit(line);
       bdds.add(reach.and(match));
       reach = reach.diff(match);

@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
@@ -96,8 +97,14 @@ public final class AclToAclLineMatchExpr
      */
     List<AclLineMatchExpr> earlierDenyLineExprs = new ArrayList<>();
 
-    for (ExprAclLine line : acl.getLines()) {
+    for (AclLine l : acl.getLines()) {
+      if (!(l instanceof ExprAclLine)) {
+        throw new UnsupportedOperationException(
+            "Support not yet implemented for converting this type of line to AclLineMatchExpr");
+      }
+      ExprAclLine line = (ExprAclLine) l;
       AclLineMatchExpr expr = visit(line);
+      // TODO. Put this logic in visitExprAclLine(), save empty stuff above as class state.
       if (line.getAction() == LineAction.PERMIT) {
         /*
          * This is a PERMIT line, so the output is going to include a disjunct for it. The disjunct

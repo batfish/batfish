@@ -20,7 +20,7 @@ public class IpAccessList implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<IpAccessList> {
 
-    private List<ExprAclLine> _lines;
+    private List<AclLine> _lines;
 
     private String _name;
 
@@ -45,7 +45,7 @@ public class IpAccessList implements Serializable {
       return ipAccessList;
     }
 
-    public Builder setLines(List<ExprAclLine> lines) {
+    public Builder setLines(List<AclLine> lines) {
       _lines = lines;
       return this;
     }
@@ -90,7 +90,7 @@ public class IpAccessList implements Serializable {
     return new Builder(null);
   }
 
-  private List<ExprAclLine> _lines;
+  private List<AclLine> _lines;
 
   @Nonnull private final String _name;
 
@@ -106,11 +106,11 @@ public class IpAccessList implements Serializable {
 
   public IpAccessList(
       @Nonnull String name,
-      List<ExprAclLine> lines,
+      List<? extends AclLine> lines,
       @Nullable String sourceName,
       @Nullable String sourceType) {
     _name = name;
-    _lines = ImmutableList.copyOf(lines);
+    _lines = ImmutableList.<AclLine>builder().addAll(lines).build();
     _sourceName = sourceName;
     _sourceType = sourceType;
   }
@@ -164,7 +164,7 @@ public class IpAccessList implements Serializable {
 
   /** The lines against which to check an IPV4 packet. */
   @JsonProperty(PROP_LINES)
-  public List<ExprAclLine> getLines() {
+  public List<AclLine> getLines() {
     return _lines;
   }
 
@@ -184,7 +184,7 @@ public class IpAccessList implements Serializable {
   }
 
   @JsonProperty(PROP_LINES)
-  public void setLines(List<ExprAclLine> lines) {
+  public void setLines(List<AclLine> lines) {
     _lines = ImmutableList.copyOf(lines);
   }
 
@@ -202,7 +202,7 @@ public class IpAccessList implements Serializable {
   public String toString() {
     StringBuilder output =
         new StringBuilder().append(getClass().getSimpleName()).append(":").append(_name);
-    for (ExprAclLine line : _lines) {
+    for (AclLine line : _lines) {
       output.append("\n");
       output.append(line);
     }

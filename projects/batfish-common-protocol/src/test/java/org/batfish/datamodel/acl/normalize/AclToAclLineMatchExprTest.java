@@ -24,6 +24,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -55,7 +56,7 @@ public class AclToAclLineMatchExprTest {
   private static final ExprAclLine ACCEPT_D = accepting(EXPR_D);
   private static final ExprAclLine REJECT_E = rejecting(EXPR_E);
 
-  private static final List<ExprAclLine> SIMPLE_ACL_LINES =
+  private static final List<AclLine> SIMPLE_ACL_LINES =
       ImmutableList.of(ACCEPT_A, REJECT_B, ACCEPT_C, REJECT_C, ACCEPT_D, REJECT_E);
 
   private static final IpAccessList SIMPLE_ACL =
@@ -63,7 +64,7 @@ public class AclToAclLineMatchExprTest {
 
   private static final AclLineMatchExpr ACL_REFERENT_EXPR = or(EXPR_A, EXPR_B);
 
-  private static final List<ExprAclLine> ACL_REFERENT_LINES = ImmutableList.of(ACCEPT_A, ACCEPT_B);
+  private static final List<AclLine> ACL_REFERENT_LINES = ImmutableList.of(ACCEPT_A, ACCEPT_B);
 
   private static final IpAccessList ACL_REFERENT =
       IpAccessList.builder().setName("referent").setLines(ACL_REFERENT_LINES).build();

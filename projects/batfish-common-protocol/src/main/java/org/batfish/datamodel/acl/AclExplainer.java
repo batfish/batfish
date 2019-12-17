@@ -17,7 +17,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
-import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr;
@@ -207,7 +207,7 @@ public final class AclExplainer {
     return IpAccessList.builder()
         .setName(INVARIANT_ACL_NAME)
         .setLines(
-            ImmutableList.<ExprAclLine>builder()
+            ImmutableList.<AclLine>builder()
                 .add(rejecting(not(invariantExpr)))
                 .add(accepting(new PermittedByAcl(acl.getName())))
                 .build())

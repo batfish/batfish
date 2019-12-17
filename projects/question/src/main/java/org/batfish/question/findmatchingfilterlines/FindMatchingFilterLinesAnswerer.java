@@ -28,6 +28,7 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
@@ -145,16 +146,21 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     return acls.stream()
         .flatMap(
             aclName -> {
-              List<ExprAclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
+              List<AclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
               return getRowsForAcl(aclLines, headerSpaceBdd, bddConverter, action)
                   .mapToObj(
                       lineIndex -> {
-                        ExprAclLine line = aclLines.get(lineIndex);
+                        AclLine line = aclLines.get(lineIndex);
                         return rowBuilder
                             .put(COL_FILTER, aclName)
                             .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
                             .put(COL_LINE_INDEX, lineIndex)
-                            .put(COL_ACTION, line.getAction())
+                            // TODO more meaningful action for lines without concrete actions
+                            .put(
+                                COL_ACTION,
+                                line instanceof ExprAclLine
+                                    ? ((ExprAclLine) line).getAction()
+                                    : null)
                             .build();
                       });
             });
@@ -166,15 +172,17 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
    */
   @VisibleForTesting
   static IntStream getRowsForAcl(
-      List<ExprAclLine> aclLines,
+      List<AclLine> aclLines,
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
       @Nullable Action action) {
     return IntStream.range(0, aclLines.size())
         .filter(
             i -> {
-              ExprAclLine line = aclLines.get(i);
-              if (!actionMatches(action, line.getAction())) {
+              AclLine line = aclLines.get(i);
+              // TODO more meaningful action-matching for lines without concrete actions.
+              // For now, always include such lines on the assumption that they could match action.
+              if (!actionMatches(action, line)) {
                 return false;
               }
               // If there is any overlap between the header space BDD and this line, include it
@@ -208,7 +216,11 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
         EmptyIpSpace.INSTANCE);
   }
 
-  private static boolean actionMatches(@Nullable Action action, LineAction lineAction) {
+  private static boolean actionMatches(@Nullable Action action, AclLine line) {
+    if (!(line instanceof ExprAclLine)) {
+      return true;
+    }
+    LineAction lineAction = ((ExprAclLine) line).getAction();
     return action == null
         || action == Action.PERMIT && lineAction == LineAction.PERMIT
         || action == Action.DENY && lineAction == LineAction.DENY;

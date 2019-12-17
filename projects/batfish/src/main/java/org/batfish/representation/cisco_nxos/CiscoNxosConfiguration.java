@@ -1890,7 +1890,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setSourceType(CiscoNxosStructureType.IP_ACCESS_LIST.getDescription())
         .setLines(
             list.getLines().values().stream()
-                .flatMap(this::toIpAccessListLine)
+                .flatMap(this::toExprAclLine)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
@@ -1899,7 +1899,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * Converts the supplied {@code line} to zero or more vendor-independent {@link ExprAclLine}s
    * depending on semantics.
    */
-  private @Nonnull Stream<ExprAclLine> toIpAccessListLine(IpAccessListLine line) {
+  private @Nonnull Stream<ExprAclLine> toExprAclLine(IpAccessListLine line) {
     return line.accept(
         new IpAccessListLineVisitor<Stream<ExprAclLine>>() {
           @Override

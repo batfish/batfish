@@ -41,6 +41,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
@@ -328,13 +329,30 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static IpAccessList toMatchLineAcl(Integer lineNumber, IpAccessList acl) {
-    List<ExprAclLine> lines =
+    List<AclLine> lines =
         Streams.concat(
                 acl.getLines().subList(0, lineNumber).stream()
+                    // TODO Add a method AclLineMatchExpr matchedSpace() in AclLine to handle this
+                    .map(
+                        l -> {
+                          if (!(l instanceof ExprAclLine)) {
+                            throw new UnsupportedOperationException(
+                                "Support not yet implemented for toMatchLineAcl for this type of line");
+                          }
+                          return (ExprAclLine) l;
+                        })
                     .map(l -> l.toBuilder().setAction(LineAction.DENY).build()),
                 Stream.of(
-                    acl.getLines()
-                        .get(lineNumber)
+                    Optional.of(acl.getLines().get(lineNumber))
+                        .map(
+                            l -> {
+                              if (!(l instanceof ExprAclLine)) {
+                                throw new UnsupportedOperationException(
+                                    "Support not yet implemented for toMatchLineAcl for this type of line");
+                              }
+                              return (ExprAclLine) l;
+                            })
+                        .get()
                         .toBuilder()
                         .setAction(LineAction.PERMIT)
                         .build()))
@@ -347,9 +365,18 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static IpAccessList toDenyAcl(IpAccessList acl) {
-    List<ExprAclLine> lines =
+    List<AclLine> lines =
         Streams.concat(
                 acl.getLines().stream()
+                    // TODO Add a method AclLineMatchExpr matchedSpace() in AclLine to handle this
+                    .map(
+                        l -> {
+                          if (!(l instanceof ExprAclLine)) {
+                            throw new UnsupportedOperationException(
+                                "Support not yet implemented for toDenyAcl for this type of line");
+                          }
+                          return (ExprAclLine) l;
+                        })
                     .map(
                         l ->
                             l.toBuilder()

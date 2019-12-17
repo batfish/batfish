@@ -43,6 +43,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1094,9 +1095,10 @@ public class CiscoXrConversions {
   }
 
   static IpAccessList toIpAccessList(Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups) {
-    List<ExprAclLine> lines =
+
+    List<AclLine> lines =
         eaList.getLines().stream()
-            .map(l -> toIpAccessListLine(l, objectGroups))
+            .map(l -> toExprAclLine(l, objectGroups))
             .collect(ImmutableList.toImmutableList());
     String name = eaList.getName();
     return IpAccessList.builder()
@@ -1306,10 +1308,15 @@ public class CiscoXrConversions {
   @VisibleForTesting
   @Nullable
   static IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
-    List<ExprAclLine> aclLines = new ArrayList<>(ipAccessList.getLines());
+    List<AclLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
-    for (ExprAclLine ipAccessListLine : ipAccessList.getLines()) {
-      HeaderSpace originalHeaderSpace = HeaderSpaceConverter.convert(ipAccessListLine);
+    for (AclLine line : ipAccessList.getLines()) {
+      // Does not support types of ACL line other than IpAccessListLine
+      if (!(line instanceof ExprAclLine)) {
+        return null;
+      }
+      ExprAclLine exprAclLine = (ExprAclLine) line;
+      HeaderSpace originalHeaderSpace = HeaderSpaceConverter.convert(exprAclLine);
 
       if (!originalHeaderSpace.equals(
           HeaderSpace.builder()
@@ -1335,7 +1342,7 @@ public class CiscoXrConversions {
                             .setDstIps(originalHeaderSpace.getSrcIps())
                             .setDstPorts(originalHeaderSpace.getSrcPorts())
                             .build()))
-                .setAction(ipAccessListLine.getAction())
+                .setAction(exprAclLine.getAction())
                 .build());
       }
     }
@@ -1826,7 +1833,7 @@ public class CiscoXrConversions {
         .build();
   }
 
-  private static ExprAclLine toIpAccessListLine(
+  private static ExprAclLine toExprAclLine(
       Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();

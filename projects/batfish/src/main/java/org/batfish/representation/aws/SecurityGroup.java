@@ -16,9 +16,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpWildcard;
 
 /** Represents an AWS security group */
@@ -65,10 +65,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   /** Adds any access lines for this security group to the inbound and outbound rules. */
   void addInOutAccessLines(
-      List<ExprAclLine> inboundRules,
-      List<ExprAclLine> outboundRules,
-      Region region,
-      Warnings warnings) {
+      List<AclLine> inboundRules, List<AclLine> outboundRules, Region region, Warnings warnings) {
     for (ListIterator<IpPermissions> it = _ipPermsIngress.listIterator(); it.hasNext(); ) {
       int seq = it.nextIndex();
       IpPermissions p = it.next();

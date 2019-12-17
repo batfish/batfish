@@ -12,8 +12,10 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.Schema;
@@ -102,10 +104,27 @@ public class FilterLineReachabilityRows {
     }
 
     IpAccessList acl = aclSpecs.acl.getOriginalAcl();
-    ExprAclLine blockedLine = acl.getLines().get(lineNumber);
-    boolean diffAction =
-        blockingLines.stream()
-            .anyMatch(i -> !acl.getLines().get(i).getAction().equals(blockedLine.getAction()));
+    AclLine blockedLine = acl.getLines().get(lineNumber);
+    boolean diffAction;
+    LineAction blockedLineAction;
+    if (blockedLine instanceof ExprAclLine) {
+      // The blocked line always takes the same action. Mark diffAction true if any blocking line
+      // takes the opposite action or has no concrete action.
+      blockedLineAction = ((ExprAclLine) blockedLine).getAction();
+      diffAction =
+          blockingLines.stream()
+              .map(
+                  i -> {
+                    AclLine l = acl.getLines().get(i);
+                    return l instanceof ExprAclLine ? (ExprAclLine) l : null;
+                  })
+              .anyMatch(l -> l == null || blockedLineAction != l.getAction());
+    } else {
+      // TODO make these values more meaningful for non-ExprAclLine lines
+      // If the blocked line has no concrete action, always consider diffAction true
+      diffAction = true;
+      blockedLineAction = null;
+    }
 
     // All the host-acl pairs that contain this canonical acl
     List<String> flatSources =
@@ -121,14 +140,14 @@ public class FilterLineReachabilityRows {
     _rows.add(
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
-            .put(COL_UNREACHABLE_LINE_ACTION, blockedLine.getAction())
+            .put(COL_UNREACHABLE_LINE_ACTION, blockedLineAction)
             .put(COL_UNREACHABLE_LINE, firstNonNull(blockedLine.getName(), blockedLine.toString()))
             .put(
                 COL_BLOCKING_LINES,
                 blockingLines.stream()
                     .map(
                         i -> {
-                          ExprAclLine l = acl.getLines().get(i);
+                          AclLine l = acl.getLines().get(i);
                           return firstNonNull(l.getName(), l.toString());
                         })
                     .collect(ImmutableList.toImmutableList()))

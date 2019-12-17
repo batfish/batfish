@@ -15,6 +15,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -112,7 +113,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
   }
 
   private IpAccessList getAcl(boolean isEgress) {
-    List<ExprAclLine> lines =
+    List<AclLine> lines =
         _entries.stream()
             .filter(e -> e instanceof NetworkAclEntryV4) // ignore v6
             .filter(e -> (isEgress && e.getIsEgress()) || (!isEgress && !e.getIsEgress()))

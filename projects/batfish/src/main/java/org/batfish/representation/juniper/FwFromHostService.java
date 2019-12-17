@@ -13,7 +13,7 @@ public class FwFromHostService implements Serializable {
     _service = service;
   }
 
-  public void applyTo(List<ExprAclLine> lines, Warnings w) {
+  public void applyTo(List<? super ExprAclLine> lines, Warnings w) {
     lines.addAll(_service.getLines());
   }
 }

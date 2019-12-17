@@ -12,7 +12,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.visitors.IpSpaceRenamer;
@@ -89,7 +89,7 @@ public final class DifferentialIpAccessList {
         IpAccessList.builder()
             .setName(DIFFERENTIAL_ACL_NAME)
             .setLines(
-                ImmutableList.<ExprAclLine>builder()
+                ImmutableList.<AclLine>builder()
                     // reject if permitted by denyAcl
                     .add(rejecting(new PermittedByAcl(RENAMER.apply(denyAcl.getName()))))
                     .add(accepting(new PermittedByAcl(permitAcl.getName())))
