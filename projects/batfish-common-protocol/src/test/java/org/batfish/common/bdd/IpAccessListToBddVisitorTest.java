@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -58,7 +58,7 @@ public class IpAccessListToBddVisitorTest {
             IpAccessList.builder()
                 .setName("foo")
                 .setLines(
-                    ImmutableList.of(IpAccessListLine.accepting(AclLineMatchExprs.matchDst(fooIp))))
+                    ImmutableList.of(ExprAclLine.accepting(AclLineMatchExprs.matchDst(fooIp))))
                 .build());
     IpAccessListToBdd toBDD =
         new IpAccessListToBddImpl(_pkt, _sourceMgr, namedAclBDDs, ImmutableMap.of());
@@ -83,7 +83,7 @@ public class IpAccessListToBddVisitorTest {
             "foo",
             IpAccessList.builder()
                 .setName("foo")
-                .setLines(ImmutableList.of(IpAccessListLine.accepting(permittedByAcl)))
+                .setLines(ImmutableList.of(ExprAclLine.accepting(permittedByAcl)))
                 .build());
     IpAccessListToBdd toBDD =
         new IpAccessListToBddImpl(

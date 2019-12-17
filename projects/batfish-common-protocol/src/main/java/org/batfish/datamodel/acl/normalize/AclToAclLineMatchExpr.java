@@ -5,7 +5,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -17,13 +16,14 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -51,7 +51,8 @@ import org.batfish.datamodel.acl.explanation.DisjunctsBuilder;
  * LineAction#DENY} line".
  */
 public final class AclToAclLineMatchExpr
-    implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
+    implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
+        GenericAclLineVisitor<AclLineMatchExpr> {
 
   /** Reduce an entire {@link IpAccessList} to a single {@link AclLineMatchExpr}. */
   public static AclLineMatchExpr toAclLineMatchExpr(
@@ -59,24 +60,6 @@ public final class AclToAclLineMatchExpr
       IpAccessList acl,
       Map<String, IpAccessList> namedAcls) {
     return new AclToAclLineMatchExpr(ipAccessListToBdd, namedAcls).toAclLineMatchExpr(acl);
-  }
-
-  /**
-   * Inline all {@link PermittedByAcl} expressions in each line of the input {@link IpAccessList},
-   * returning a list of self-contained {@link IpAccessListLine IpAccessListLines} that is
-   * equivalent to the input ACL.
-   */
-  public static List<IpAccessListLine> aclLines(
-      IpAccessListToBdd ipAccessListToBdd, IpAccessList acl, Map<String, IpAccessList> namedAcls) {
-    AclToAclLineMatchExpr toMatchExpr = new AclToAclLineMatchExpr(ipAccessListToBdd, namedAcls);
-    return acl.getLines().stream()
-        .map(
-            ln ->
-                IpAccessListLine.builder()
-                    .setAction(ln.getAction())
-                    .setMatchCondition(ln.getMatchCondition().accept(toMatchExpr))
-                    .build())
-        .collect(ImmutableList.toImmutableList());
   }
 
   private final Map<String, Supplier<AclLineMatchExpr>> _namedAclThunks;
@@ -113,8 +96,8 @@ public final class AclToAclLineMatchExpr
      */
     List<AclLineMatchExpr> earlierDenyLineExprs = new ArrayList<>();
 
-    for (IpAccessListLine line : acl.getLines()) {
-      AclLineMatchExpr expr = line.getMatchCondition().accept(this);
+    for (ExprAclLine line : acl.getLines()) {
+      AclLineMatchExpr expr = visit(line);
       if (line.getAction() == LineAction.PERMIT) {
         /*
          * This is a PERMIT line, so the output is going to include a disjunct for it. The disjunct
@@ -137,6 +120,15 @@ public final class AclToAclLineMatchExpr
     }
     return disjunctsBuilder.build();
   }
+
+  /* AclLine visit methods */
+
+  @Override
+  public AclLineMatchExpr visitExprAclLine(ExprAclLine exprAclLine) {
+    return visit(exprAclLine.getMatchCondition());
+  }
+
+  /* AclLineMatchExpr visit methods */
 
   @Override
   public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {

@@ -12,8 +12,8 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.Schema;
@@ -102,7 +102,7 @@ public class FilterLineReachabilityRows {
     }
 
     IpAccessList acl = aclSpecs.acl.getOriginalAcl();
-    IpAccessListLine blockedLine = acl.getLines().get(lineNumber);
+    ExprAclLine blockedLine = acl.getLines().get(lineNumber);
     boolean diffAction =
         blockingLines.stream()
             .anyMatch(i -> !acl.getLines().get(i).getAction().equals(blockedLine.getAction()));
@@ -128,7 +128,7 @@ public class FilterLineReachabilityRows {
                 blockingLines.stream()
                     .map(
                         i -> {
-                          IpAccessListLine l = acl.getLines().get(i);
+                          ExprAclLine l = acl.getLines().get(i);
                           return firstNonNull(l.getName(), l.toString());
                         })
                     .collect(ImmutableList.toImmutableList()))

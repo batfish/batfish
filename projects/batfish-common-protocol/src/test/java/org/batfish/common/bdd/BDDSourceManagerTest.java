@@ -1,9 +1,9 @@
 package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDOps.orNull;
-import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.hamcrest.Matchers.allOf;

@@ -1,6 +1,6 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
+import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
 import static org.hamcrest.Matchers.containsInAnyOrder;

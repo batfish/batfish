@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
@@ -208,7 +208,7 @@ public enum JunosApplication implements Application {
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<IpAccessListLine> lines,
+      List<ExprAclLine> lines,
       Warnings w) {
     _baseApplication.get().applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
   }

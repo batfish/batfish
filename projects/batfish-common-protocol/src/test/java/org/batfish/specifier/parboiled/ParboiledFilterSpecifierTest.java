@@ -8,8 +8,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.MockSpecifierContext;
 import org.junit.Rule;
@@ -27,17 +27,17 @@ public class ParboiledFilterSpecifierTest {
   private static final IpAccessList _filter0_1 =
       IpAccessList.builder()
           .setName("filter1")
-          .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+          .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
           .build();
   private static final IpAccessList _filter0_2 =
       IpAccessList.builder()
           .setName("filter2")
-          .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+          .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
           .build();
   private static final IpAccessList _filter1_1 =
       IpAccessList.builder()
           .setName("filter1")
-          .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+          .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
           .build();
 
   static {

@@ -7,6 +7,8 @@ import com.google.common.collect.Ordering;
 import java.util.IdentityHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -17,12 +19,30 @@ import org.batfish.datamodel.visitors.IpSpaceRenamer;
  * IpSpaces} in an {@link org.batfish.datamodel.IpAccessList}.
  */
 public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList> {
+
+  /**
+   * Makes a copy of the given {@link AclLine} or {@link AclLineMatchExpr} with any referenced ACLs
+   * and IP spaces renamed.
+   */
   @VisibleForTesting
-  class Visitor implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
+  class Visitor
+      implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>, GenericAclLineVisitor<AclLine> {
 
     private IpSpace rename(@Nullable IpSpace ipSpace) {
       return ipSpace == null ? null : _ipSpaceRenamer.apply(ipSpace);
     }
+
+    /* AclLine visit methods */
+
+    @Override
+    public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
+      return exprAclLine
+          .toBuilder()
+          .setMatchCondition(visit(exprAclLine.getMatchCondition()))
+          .build();
+    }
+
+    /* AclLineMatchExpr visit methods */
 
     @Override
     public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
@@ -123,11 +143,9 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
         .setName(_aclRenamer.apply(ipAccessList.getName()))
         .setLines(
             ipAccessList.getLines().stream()
-                .map(
-                    ln ->
-                        ln.toBuilder()
-                            .setMatchCondition(_visitor.visit(ln.getMatchCondition()))
-                            .build())
+                .map(_visitor::visit)
+                // TODO temp cast; remove after IpAccessList._lines is a List<AclLine>
+                .map(ExprAclLine.class::cast)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }

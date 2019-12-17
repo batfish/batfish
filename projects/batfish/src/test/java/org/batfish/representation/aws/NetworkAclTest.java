@@ -15,8 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
@@ -140,7 +140,7 @@ public class NetworkAclTest {
     assertThat(
         getAclLine(entry),
         equalTo(
-            IpAccessListLine.builder()
+            ExprAclLine.builder()
                 .setAction(LineAction.PERMIT)
                 .setMatchCondition(
                     new MatchHeaderSpace(
@@ -155,7 +155,7 @@ public class NetworkAclTest {
     assertThat(
         getAclLine(entry2),
         equalTo(
-            IpAccessListLine.builder()
+            ExprAclLine.builder()
                 .setAction(LineAction.DENY)
                 .setMatchCondition(
                     new MatchHeaderSpace(
@@ -173,7 +173,7 @@ public class NetworkAclTest {
     assertThat(
         getAclLine(entry),
         equalTo(
-            IpAccessListLine.builder()
+            ExprAclLine.builder()
                 .setAction(LineAction.PERMIT)
                 .setMatchCondition(
                     new MatchHeaderSpace(
@@ -193,7 +193,7 @@ public class NetworkAclTest {
     assertThat(
         getAclLine(entry),
         equalTo(
-            IpAccessListLine.builder()
+            ExprAclLine.builder()
                 .setAction(LineAction.PERMIT)
                 .setMatchCondition(
                     new MatchHeaderSpace(
@@ -216,7 +216,7 @@ public class NetworkAclTest {
     assertThat(
         getAclLine(entry),
         equalTo(
-            IpAccessListLine.builder()
+            ExprAclLine.builder()
                 .setAction(LineAction.PERMIT)
                 .setMatchCondition(
                     new MatchHeaderSpace(
@@ -236,7 +236,7 @@ public class NetworkAclTest {
     assertThat(
         getAclLine(entry),
         equalTo(
-            IpAccessListLine.builder()
+            ExprAclLine.builder()
                 .setAction(LineAction.PERMIT)
                 .setMatchCondition(
                     new MatchHeaderSpace(

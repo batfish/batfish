@@ -1,5 +1,9 @@
 package org.batfish.dataplane.traceroute;
 
+import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
+import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
@@ -11,10 +15,6 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
-import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
-import static org.batfish.datamodel.IpAccessListLine.REJECT_ALL;
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -74,6 +74,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -81,7 +82,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
@@ -723,7 +723,7 @@ public class TracerouteEngineImplTest {
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(i1.getName())),
                             matchSrc(Prefix.parse("10.0.0.1/32")))),
-                    new IpAccessListLine(
+                    new ExprAclLine(
                         LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND")))
             .build();
 
@@ -1494,7 +1494,7 @@ public class TracerouteEngineImplTest {
             .setOwner(c1)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
                             .setDstIps(Ip.parse("1.0.1.2").toIpSpace())
@@ -2215,7 +2215,7 @@ public class TracerouteEngineImplTest {
             .setOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
-                    .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+                    .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
                     .build());
 
     Interface i1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();

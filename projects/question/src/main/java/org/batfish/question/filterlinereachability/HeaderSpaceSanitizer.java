@@ -2,12 +2,15 @@ package org.batfish.question.filterlinereachability;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CircularReferenceException;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -19,20 +22,31 @@ import org.batfish.datamodel.acl.UndefinedReferenceException;
 import org.batfish.datamodel.visitors.IpSpaceDereferencer;
 
 /**
- * Visits an {@link AclLineMatchExpr} and replaces any named IP space references with the
- * dereferenced {@link IpSpace}. An {@link AclLineMatchExpr} may contain multiple IP space
- * references if it is of type {@link AndMatchExpr}, {@link OrMatchExpr}, or {@link NotMatchExpr}.
- * Returns a version of the original {@link AclLineMatchExpr} with all IP spaces dereferenced.
- * Throws {@link CircularReferenceException} if any circular IP space reference is referenced, or
- * {@link UndefinedReferenceException} if any undefined IP space is referenced.
+ * Makes a version of the given {@link AclLine} or {@link AclLineMatchExpr} with any named IP space
+ * references replaced with the dereferenced {@link IpSpace}. Throws {@link
+ * CircularReferenceException} if any circular IP space reference is referenced, or {@link
+ * UndefinedReferenceException} if any undefined IP space is referenced.
  */
-public class HeaderSpaceSanitizer implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
+public class HeaderSpaceSanitizer
+    implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>, GenericAclLineVisitor<AclLine> {
 
   private final Map<String, IpSpace> _namedIpSpaces;
 
   public HeaderSpaceSanitizer(Map<String, IpSpace> namedIpSpaces) {
     _namedIpSpaces = namedIpSpaces;
   }
+
+  /* AclLine visit methods */
+
+  @Override
+  public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
+    return exprAclLine
+        .toBuilder()
+        .setMatchCondition(visit(exprAclLine.getMatchCondition()))
+        .build();
+  }
+
+  /* AclLineMatchExpr visit methods */
 
   @Override
   public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr)

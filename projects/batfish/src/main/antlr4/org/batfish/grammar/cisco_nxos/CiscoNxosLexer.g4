@@ -34,6 +34,11 @@ AAA
   'aaa'
 ;
 
+ABSOLUTE_TIMEOUT
+:
+  'absolute-timeout'
+;
+
 ACCESS
 :
   'access'
@@ -1029,6 +1034,11 @@ DIR
 DIRECT
 :
   'direct'
+;
+
+DIRECTED_BROADCAST
+:
+  'directed-broadcast'
 ;
 
 DIRECTED_REQUEST
@@ -2284,6 +2294,11 @@ LOGIN
 LOGIN_ATTEMPTS
 :
   'login-attempts'
+;
+
+LOGOUT_WARNING
+:
+  'logout-warning'
 ;
 
 LONG
@@ -3863,6 +3878,11 @@ SESSION
   'session'
 ;
 
+SESSION_LIMIT
+:
+  'session-limit'
+;
+
 SET
 :
   'set'
@@ -4197,6 +4217,11 @@ SUPPRESS_INACTIVE
 SUPPRESS_MAP
 :
   'suppress-map'
+;
+
+SUPPRESS_RA
+:
+  'suppress-ra'
 ;
 
 // sic

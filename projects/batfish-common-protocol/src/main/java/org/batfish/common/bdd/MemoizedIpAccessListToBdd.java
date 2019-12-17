@@ -5,6 +5,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -14,7 +15,8 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
  * {@link IdentityHashMap}.
  */
 public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
-  private Map<AclLineMatchExpr, BDD> _cache = new IdentityHashMap<>();
+  private Map<AclLine, BDD> _lineCache = new IdentityHashMap<>();
+  private Map<AclLineMatchExpr, BDD> _exprCache = new IdentityHashMap<>();
 
   public MemoizedIpAccessListToBdd(
       BDDPacket packet,
@@ -25,12 +27,17 @@ public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
   }
 
   @Override
+  public BDD toBdd(AclLine line) {
+    return _lineCache.computeIfAbsent(line, this::visit);
+  }
+
+  @Override
   public BDD toBdd(AclLineMatchExpr expr) {
-    return _cache.computeIfAbsent(expr, this::visit);
+    return _exprCache.computeIfAbsent(expr, this::visit);
   }
 
   @VisibleForTesting
   Optional<BDD> getMemoizedBdd(AclLineMatchExpr expr) {
-    return Optional.ofNullable(_cache.get(expr));
+    return Optional.ofNullable(_exprCache.get(expr));
   }
 }

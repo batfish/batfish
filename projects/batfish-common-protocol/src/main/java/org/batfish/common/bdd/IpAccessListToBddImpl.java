@@ -3,6 +3,7 @@ package org.batfish.common.bdd;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -23,6 +24,11 @@ public final class IpAccessListToBddImpl extends IpAccessListToBdd {
       @Nonnull HeaderSpaceToBDD headerSpaceToBDD,
       @Nonnull Map<String, IpAccessList> aclEnv) {
     super(pkt, bddSrcManager, headerSpaceToBDD, aclEnv);
+  }
+
+  @Override
+  public BDD toBdd(AclLine line) {
+    return visit(line);
   }
 
   @Override

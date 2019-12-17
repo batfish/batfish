@@ -32,10 +32,10 @@ import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
@@ -90,10 +90,10 @@ public class FindMatchingFilterLinesAnswererTest {
     HeaderSpace headerSpace2 =
         HeaderSpace.builder().setDstIps(prefix2.toIpSpace()).setIpProtocols(protocols2).build();
 
-    List<IpAccessListLine> aclLines =
+    List<ExprAclLine> aclLines =
         ImmutableList.of(
-            IpAccessListLine.acceptingHeaderSpace(headerSpace1),
-            IpAccessListLine.rejectingHeaderSpace(headerSpace2));
+            ExprAclLine.acceptingHeaderSpace(headerSpace1),
+            ExprAclLine.rejectingHeaderSpace(headerSpace2));
 
     BDDPacket pkt = new BDDPacket();
     IpAccessListToBdd bddConverter =
@@ -164,21 +164,21 @@ public class FindMatchingFilterLinesAnswererTest {
         allOf(
             hasColumn(COL_NODE, "c1", Schema.STRING),
             hasColumn(COL_FILTER, "acl1", Schema.STRING),
-            hasColumn(COL_LINE, IpAccessListLine.ACCEPT_ALL.getName(), Schema.STRING),
+            hasColumn(COL_LINE, ExprAclLine.ACCEPT_ALL.getName(), Schema.STRING),
             hasColumn(COL_LINE_INDEX, 0, Schema.INTEGER),
             hasColumn(COL_ACTION, LineAction.PERMIT.toString(), Schema.STRING));
     Matcher<Row> c1Acl2Matcher =
         allOf(
             hasColumn(COL_NODE, "c1", Schema.STRING),
             hasColumn(COL_FILTER, "acl2", Schema.STRING),
-            hasColumn(COL_LINE, IpAccessListLine.REJECT_ALL.getName(), Schema.STRING),
+            hasColumn(COL_LINE, ExprAclLine.REJECT_ALL.getName(), Schema.STRING),
             hasColumn(COL_LINE_INDEX, 0, Schema.INTEGER),
             hasColumn(COL_ACTION, LineAction.DENY.toString(), Schema.STRING));
     Matcher<Row> c2Acl1Matcher =
         allOf(
             hasColumn(COL_NODE, "c2", Schema.STRING),
             hasColumn(COL_FILTER, "acl1", Schema.STRING),
-            hasColumn(COL_LINE, IpAccessListLine.ACCEPT_ALL.getName(), Schema.STRING),
+            hasColumn(COL_LINE, ExprAclLine.ACCEPT_ALL.getName(), Schema.STRING),
             hasColumn(COL_LINE_INDEX, 0, Schema.INTEGER),
             hasColumn(COL_ACTION, LineAction.PERMIT.toString(), Schema.STRING));
 
@@ -191,12 +191,12 @@ public class FindMatchingFilterLinesAnswererTest {
     Configuration c2 = cb.setHostname("c2").build();
 
     // Add acl1 in both configs
-    aclBuilder.setName("acl1").setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL));
+    aclBuilder.setName("acl1").setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL));
     aclBuilder.setOwner(c1).build();
     aclBuilder.setOwner(c2).build();
 
     // Add acl2 in c1
-    aclBuilder.setName("acl2").setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL));
+    aclBuilder.setName("acl2").setLines(ImmutableList.of(ExprAclLine.REJECT_ALL));
     aclBuilder.setOwner(c1).build();
 
     // Create batfish with configs

@@ -2,8 +2,8 @@ package org.batfish.representation.juniper;
 
 import java.util.List;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 
 public final class FwFromJunosApplication extends FwFromApplicationSetMember {
@@ -19,7 +19,7 @@ public final class FwFromJunosApplication extends FwFromApplicationSetMember {
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<IpAccessListLine> lines,
+      List<ExprAclLine> lines,
       Warnings w) {
     if (!_junosApplication.hasDefinition()) {
       w.redFlag("Reference to undefined application: \"" + _junosApplication.name() + "\"");

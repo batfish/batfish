@@ -32,11 +32,11 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -109,10 +109,7 @@ public class TracerouteTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31"))
         .setOwner(c1)
         .setOutgoingFilter(
-            nf.aclBuilder()
-                .setOwner(c1)
-                .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
-                .build())
+            nf.aclBuilder().setOwner(c1).setLines(ImmutableList.of(ExprAclLine.REJECT_ALL)).build())
         .setVrf(v1)
         .build();
 

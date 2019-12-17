@@ -2,9 +2,9 @@ package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDefaultDeniedByIpAccessListNamed;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isDeniedByIpAccessListLineThat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.isDeniedByAclLineThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclIpSpaceLineThat;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByIpAccessListLineThat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclLineThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByNamedIpSpace;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -16,19 +16,19 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.matchers.DeniedByIpAccessListLineMatchers;
+import org.batfish.datamodel.matchers.DeniedByAclLineMatchers;
 import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchers;
-import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
+import org.batfish.datamodel.matchers.PermittedByAclLineMatchers;
 import org.junit.Test;
 
 public class AclTracerTest {
@@ -70,7 +70,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setDstIps(new IpSpaceReference(ACL_IP_SPACE_NAME))
                             .build())))
@@ -95,14 +95,14 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.rejecting()
+                    ExprAclLine.rejecting()
                         .setMatchCondition(new PermittedByAcl(aclIndirectName))
                         .build()))
             .build();
     IpAccessList aclIndirect =
         IpAccessList.builder()
             .setName(aclIndirectName)
-            .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
             .build();
     Map<String, IpAccessList> availableAcls =
         ImmutableMap.of(ACL_NAME, acl, aclIndirectName, aclIndirect);
@@ -117,22 +117,22 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isDeniedByIpAccessListLineThat(
+                    isDeniedByAclLineThat(
                         allOf(
-                            DeniedByIpAccessListLineMatchers.hasName(ACL_NAME),
-                            DeniedByIpAccessListLineMatchers.hasIndex(0))),
-                    isPermittedByIpAccessListLineThat(
+                            DeniedByAclLineMatchers.hasName(ACL_NAME),
+                            DeniedByAclLineMatchers.hasIndex(0))),
+                    isPermittedByAclLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(aclIndirectName),
-                            PermittedByIpAccessListLineMatchers.hasIndex(0)))))));
+                            PermittedByAclLineMatchers.hasName(aclIndirectName),
+                            PermittedByAclLineMatchers.hasIndex(0)))))));
   }
 
   @Test
-  public void testDeniedByIpAccessListLine() {
+  public void testDeniedByAclLine() {
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
-            .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+            .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
@@ -145,10 +145,10 @@ public class AclTracerTest {
         trace,
         hasEvents(
             contains(
-                isDeniedByIpAccessListLineThat(
+                isDeniedByAclLineThat(
                     allOf(
-                        DeniedByIpAccessListLineMatchers.hasName(ACL_NAME),
-                        DeniedByIpAccessListLineMatchers.hasIndex(0))))));
+                        DeniedByAclLineMatchers.hasName(ACL_NAME),
+                        DeniedByAclLineMatchers.hasIndex(0))))));
   }
 
   @Test
@@ -164,7 +164,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setDstIps(new IpSpaceReference(ACL_IP_SPACE_NAME))
                             .build())))
@@ -190,7 +190,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setDstIps(new IpSpaceReference(ipSpaceName))
                             .build())))
@@ -221,7 +221,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(aclIpSpace).build())))
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
@@ -242,7 +242,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(ipSpace).build())))
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
@@ -256,11 +256,11 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testPermittedByIpAccessListLine() {
+  public void testPermittedByAclLine() {
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
-            .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
@@ -273,10 +273,10 @@ public class AclTracerTest {
         trace,
         hasEvents(
             contains(
-                isPermittedByIpAccessListLineThat(
+                isPermittedByAclLineThat(
                     allOf(
-                        PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
-                        PermittedByIpAccessListLineMatchers.hasIndex(0))))));
+                        PermittedByAclLineMatchers.hasName(ACL_NAME),
+                        PermittedByAclLineMatchers.hasIndex(0))))));
   }
 
   @Test
@@ -292,7 +292,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setDstIps(new IpSpaceReference(ACL_IP_SPACE_NAME))
                             .build())))
@@ -310,10 +310,10 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isPermittedByIpAccessListLineThat(
+                    isPermittedByAclLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
-                            PermittedByIpAccessListLineMatchers.hasIndex(0))),
+                            PermittedByAclLineMatchers.hasName(ACL_NAME),
+                            PermittedByAclLineMatchers.hasIndex(0))),
                     isPermittedByAclIpSpaceLineThat(
                         allOf(
                             PermittedByAclIpSpaceLineMatchers.hasName(ACL_IP_SPACE_NAME),
@@ -328,7 +328,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setDstIps(new IpSpaceReference(ipSpaceName))
                             .build())))
@@ -346,10 +346,10 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isPermittedByIpAccessListLineThat(
+                    isPermittedByAclLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
-                            PermittedByIpAccessListLineMatchers.hasIndex(0))),
+                            PermittedByAclLineMatchers.hasName(ACL_NAME),
+                            PermittedByAclLineMatchers.hasIndex(0))),
                     isPermittedByNamedIpSpace(ipSpaceName)))));
   }
 
@@ -366,7 +366,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(aclIpSpace).build())))
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
@@ -381,10 +381,10 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isPermittedByIpAccessListLineThat(
+                    isPermittedByAclLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
-                            PermittedByIpAccessListLineMatchers.hasIndex(0)))))));
+                            PermittedByAclLineMatchers.hasName(ACL_NAME),
+                            PermittedByAclLineMatchers.hasIndex(0)))))));
   }
 
   @Test
@@ -395,7 +395,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(ipSpace).build())))
             .build();
 
@@ -411,10 +411,10 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isPermittedByIpAccessListLineThat(
+                    isPermittedByAclLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
-                            PermittedByIpAccessListLineMatchers.hasIndex(0)))))));
+                            PermittedByAclLineMatchers.hasName(ACL_NAME),
+                            PermittedByAclLineMatchers.hasIndex(0)))))));
   }
 
   @Test
@@ -426,7 +426,7 @@ public class AclTracerTest {
             .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(
                             new AndMatchExpr(
                                 ImmutableList.of(
@@ -437,14 +437,14 @@ public class AclTracerTest {
     IpAccessList aclIndirect1 =
         IpAccessList.builder()
             .setName(aclIndirectName1)
-            .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
             .build();
     IpAccessList aclIndirect2 =
         IpAccessList.builder()
             .setName(aclIndirectName2)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setSrcIps(Ip.ZERO.toIpSpace()).build())))
             .build();
     Map<String, IpAccessList> availableAcls =
@@ -461,17 +461,17 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isPermittedByIpAccessListLineThat(
+                    isPermittedByAclLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
-                            PermittedByIpAccessListLineMatchers.hasIndex(0))),
-                    isPermittedByIpAccessListLineThat(
+                            PermittedByAclLineMatchers.hasName(ACL_NAME),
+                            PermittedByAclLineMatchers.hasIndex(0))),
+                    isPermittedByAclLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(aclIndirectName2),
-                            PermittedByIpAccessListLineMatchers.hasIndex(0))),
-                    isPermittedByIpAccessListLineThat(
+                            PermittedByAclLineMatchers.hasName(aclIndirectName2),
+                            PermittedByAclLineMatchers.hasIndex(0))),
+                    isPermittedByAclLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(aclIndirectName1),
-                            PermittedByIpAccessListLineMatchers.hasIndex(0)))))));
+                            PermittedByAclLineMatchers.hasName(aclIndirectName1),
+                            PermittedByAclLineMatchers.hasIndex(0)))))));
   }
 }

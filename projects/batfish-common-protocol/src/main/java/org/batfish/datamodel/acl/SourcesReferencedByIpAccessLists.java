@@ -9,15 +9,18 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 
-/** Find all the ACLs referenced by an IpAccessList or a collection of IpAccessLists. */
+/**
+ * Find all the sources referenced by an IpAccessList or a collection of IpAccessLists, including
+ * source interfaces and {@link SourcesReferencedByIpAccessLists#SOURCE_ORIGINATING_FROM_DEVICE}.
+ */
 public final class SourcesReferencedByIpAccessLists {
   public static final String SOURCE_ORIGINATING_FROM_DEVICE = "DEVICE IS THE SOURCE";
 
   private static final class ReferenceSourcesVisitor
-      implements GenericAclLineMatchExprVisitor<Void> {
+      implements GenericAclLineMatchExprVisitor<Void>, GenericAclLineVisitor<Void> {
     private final ImmutableSet.Builder<String> _referencedSources;
 
     private final Map<String, Supplier<Void>> _namedAclThunks;
@@ -49,9 +52,15 @@ public final class SourcesReferencedByIpAccessLists {
       acl.getLines().forEach(this::visit);
     }
 
-    void visit(IpAccessListLine line) {
-      visit(line.getMatchCondition());
+    /* AclLine visit methods */
+
+    @Override
+    public Void visitExprAclLine(ExprAclLine exprAclLine) {
+      visit(exprAclLine.getMatchCondition());
+      return null;
     }
+
+    /* AclLineMatchExpr visit methods */
 
     @Override
     public Void visitAndMatchExpr(AndMatchExpr andMatchExpr) {

@@ -75,6 +75,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
+import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstPorts;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
@@ -109,7 +110,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
-import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
@@ -292,6 +292,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
@@ -308,7 +309,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
@@ -3866,9 +3866,9 @@ public final class CiscoGrammarTest {
   public void testCryptoMapsAndTunnelsToIpsecPeerConfigs() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
-    List<IpAccessListLine> expectedAclLines =
+    List<ExprAclLine> expectedAclLines =
         ImmutableList.of(
-            IpAccessListLine.accepting()
+            ExprAclLine.accepting()
                 .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
                 .setMatchCondition(
                     new MatchHeaderSpace(
@@ -3877,7 +3877,7 @@ public final class CiscoGrammarTest {
                             .setDstIps(IpWildcard.parse("2.2.2.2").toIpSpace())
                             .build()))
                 .build(),
-            IpAccessListLine.accepting()
+            ExprAclLine.accepting()
                 .setMatchCondition(
                     new MatchHeaderSpace(
                         HeaderSpace.builder()

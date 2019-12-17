@@ -1,11 +1,11 @@
 package org.batfish.question.testfilters;
 
-import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDefaultDeniedByIpAccessListNamed;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByIpAccessListLineThat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclLineThat;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
@@ -27,17 +27,17 @@ import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
+import org.batfish.datamodel.matchers.PermittedByAclLineMatchers;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
@@ -117,7 +117,7 @@ public class TestFiltersAnswererTest {
     IpAccessList acl =
         aclb.setLines(
                 ImmutableList.of(
-                    IpAccessListLine.accepting()
+                    ExprAclLine.accepting()
                         .setMatchCondition(new PermittedByAcl(referencedAcl.getName()))
                         .build(),
                     acceptingHeaderSpace(
@@ -154,8 +154,8 @@ public class TestFiltersAnswererTest {
                     hasEvents(
                         contains(
                             ImmutableList.of(
-                                isPermittedByIpAccessListLineThat(
-                                    PermittedByIpAccessListLineMatchers.hasName(acl.getName()))))),
+                                isPermittedByAclLineThat(
+                                    PermittedByAclLineMatchers.hasName(acl.getName()))))),
                     Schema.ACL_TRACE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(

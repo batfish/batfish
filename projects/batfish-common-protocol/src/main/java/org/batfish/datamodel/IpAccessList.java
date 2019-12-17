@@ -13,14 +13,14 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
-import org.batfish.datamodel.acl.Evaluator;
+import org.batfish.datamodel.acl.AclLineEvaluator;
 
 /** An access-list used to filter IPV4 packets */
 public class IpAccessList implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<IpAccessList> {
 
-    private List<IpAccessListLine> _lines;
+    private List<ExprAclLine> _lines;
 
     private String _name;
 
@@ -45,7 +45,7 @@ public class IpAccessList implements Serializable {
       return ipAccessList;
     }
 
-    public Builder setLines(List<IpAccessListLine> lines) {
+    public Builder setLines(List<ExprAclLine> lines) {
       _lines = lines;
       return this;
     }
@@ -90,7 +90,7 @@ public class IpAccessList implements Serializable {
     return new Builder(null);
   }
 
-  private List<IpAccessListLine> _lines;
+  private List<ExprAclLine> _lines;
 
   @Nonnull private final String _name;
 
@@ -106,7 +106,7 @@ public class IpAccessList implements Serializable {
 
   public IpAccessList(
       @Nonnull String name,
-      List<IpAccessListLine> lines,
+      List<ExprAclLine> lines,
       @Nullable String sourceName,
       @Nullable String sourceType) {
     _name = name;
@@ -145,11 +145,12 @@ public class IpAccessList implements Serializable {
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces,
       LineAction defaultAction) {
-    Evaluator evaluator = new Evaluator(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclLineEvaluator lineEvaluator =
+        new AclLineEvaluator(flow, srcInterface, availableAcls, namedIpSpaces);
     for (int i = 0; i < _lines.size(); i++) {
-      IpAccessListLine line = _lines.get(i);
-      if (line.getMatchCondition().accept(evaluator)) {
-        return new FilterResult(i, line.getAction());
+      LineAction action = lineEvaluator.visit(_lines.get(i));
+      if (action != null) {
+        return new FilterResult(i, action);
       }
     }
     return new FilterResult(null, defaultAction);
@@ -163,7 +164,7 @@ public class IpAccessList implements Serializable {
 
   /** The lines against which to check an IPV4 packet. */
   @JsonProperty(PROP_LINES)
-  public List<IpAccessListLine> getLines() {
+  public List<ExprAclLine> getLines() {
     return _lines;
   }
 
@@ -183,7 +184,7 @@ public class IpAccessList implements Serializable {
   }
 
   @JsonProperty(PROP_LINES)
-  public void setLines(List<IpAccessListLine> lines) {
+  public void setLines(List<ExprAclLine> lines) {
     _lines = ImmutableList.copyOf(lines);
   }
 
@@ -201,7 +202,7 @@ public class IpAccessList implements Serializable {
   public String toString() {
     StringBuilder output =
         new StringBuilder().append(getClass().getSimpleName()).append(":").append(_name);
-    for (IpAccessListLine line : _lines) {
+    for (ExprAclLine line : _lines) {
       output.append("\n");
       output.append(line);
     }

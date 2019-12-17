@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isEvpnType3RouteThat;
@@ -15,6 +16,7 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Table;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -26,10 +28,12 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
@@ -186,10 +190,9 @@ public class EvpnTest {
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp.getRibs();
-    Set<AbstractRoute> n1Routes = ribs.get("n1").get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> n2Routes = ribs.get("n2").get(DEFAULT_VRF_NAME).getRoutes();
+    Table<String, String, Set<EvpnRoute<?, ?>>> ribs = dp.getEvpnRoutes();
+    Set<EvpnRoute<?, ?>> n1Routes = ribs.get("n1", DEFAULT_VRF_NAME);
+    Set<EvpnRoute<?, ?>> n2Routes = ribs.get("n2", DEFAULT_VRF_NAME);
     // Ensure routes are present in the main RIB
     assertThat(
         n1Routes, hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("2.222.222.222/32")))));
@@ -220,50 +223,98 @@ public class EvpnTest {
     batfish.computeDataPlane(batfish.getSnapshot());
     IncrementalDataPlane dataplane =
         (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
-    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
-        IncrementalBdpEngine.getRoutes(dataplane);
+    Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes = dataplane.getEvpnRoutes();
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> mainRibRoutes =
+        dataplane.getRibs();
 
     String vrf1 = "vrf1";
 
     Prefix leaf1VtepPrefix = Prefix.parse("1.1.1.3/32");
     Prefix exitgwVtepPrefix = Prefix.parse("2.2.2.2/32");
+    {
+      Set<EvpnRoute<?, ?>> exitgwRoutes = evpnRoutes.get(exitGw, vrf1);
+      assertThat(
+          exitgwRoutes,
+          hasItem(
+              isEvpnType3RouteThat(
+                  allOf(
+                      hasPrefix(leaf1VtepPrefix),
+                      hasCommunities(
+                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+      assertThat(
+          exitgwRoutes,
+          hasItem(
+              isEvpnType3RouteThat(
+                  allOf(
+                      hasPrefix(leaf1VtepPrefix),
+                      hasCommunities(
+                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+      // Ensure not in main RIB
+      assertThat(
+          mainRibRoutes.get(exitGw).get(vrf1).getRoutes(),
+          not(hasItem(hasPrefix(leaf1VtepPrefix))));
+      // Locally-generated routes will have no next hop ip in the EVPN rib
+      assertThat(
+          exitgwRoutes,
+          hasItem(
+              isEvpnType3RouteThat(
+                  allOf(
+                      hasPrefix(exitgwVtepPrefix),
+                      hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
+                      hasCommunities(
+                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+      assertThat(
+          exitgwRoutes,
+          hasItem(
+              isEvpnType3RouteThat(
+                  allOf(
+                      hasPrefix(exitgwVtepPrefix),
+                      hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
+                      hasCommunities(
+                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+    }
 
-    Set<AbstractRoute> exitgwRoutes = routes.get(exitGw).get(vrf1);
-    assertThat(
-        exitgwRoutes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(leaf1VtepPrefix),
-                    hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
-    assertThat(
-        exitgwRoutes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(leaf1VtepPrefix),
-                    hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
-    assertThat(exitgwRoutes, not(hasItem(isEvpnType3RouteThat(hasPrefix(exitgwVtepPrefix)))));
-
-    Set<AbstractRoute> leaf1Routes = routes.get(leaf1).get(vrf1);
-    assertThat(
-        leaf1Routes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(exitgwVtepPrefix),
-                    hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
-    assertThat(
-        leaf1Routes,
-        hasItem(
-            isEvpnType3RouteThat(
-                allOf(
-                    hasPrefix(exitgwVtepPrefix),
-                    hasCommunities(
-                        equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
-    assertThat(leaf1Routes, not(hasItem(isEvpnType3RouteThat(hasPrefix(leaf1VtepPrefix)))));
+    {
+      Set<EvpnRoute<?, ?>> leaf1Routes = evpnRoutes.get(leaf1, vrf1);
+      assertThat(
+          leaf1Routes,
+          hasItem(
+              isEvpnType3RouteThat(
+                  allOf(
+                      hasPrefix(exitgwVtepPrefix),
+                      hasCommunities(
+                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+      assertThat(
+          leaf1Routes,
+          hasItem(
+              isEvpnType3RouteThat(
+                  allOf(
+                      hasPrefix(exitgwVtepPrefix),
+                      hasCommunities(
+                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+      // Ensure not in main RIB
+      assertThat(
+          mainRibRoutes.get(leaf1).get(vrf1).getRoutes(),
+          not(hasItem(hasPrefix(exitgwVtepPrefix))));
+      // Locally-generated routes will have no next hop ip in the EVPN rib
+      assertThat(
+          leaf1Routes,
+          hasItem(
+              isEvpnType3RouteThat(
+                  allOf(
+                      hasPrefix(leaf1VtepPrefix),
+                      hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
+                      hasCommunities(
+                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+      assertThat(
+          leaf1Routes,
+          hasItem(
+              isEvpnType3RouteThat(
+                  allOf(
+                      hasPrefix(leaf1VtepPrefix),
+                      hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
+                      hasCommunities(
+                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+    }
   }
 }

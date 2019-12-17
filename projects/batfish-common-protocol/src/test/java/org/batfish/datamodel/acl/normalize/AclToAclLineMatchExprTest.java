@@ -1,7 +1,7 @@
 package org.batfish.datamodel.acl.normalize;
 
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
@@ -12,7 +12,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcIp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
-import static org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr.aclLines;
 import static org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr.toAclLineMatchExpr;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -25,9 +24,9 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -48,15 +47,15 @@ public class AclToAclLineMatchExprTest {
       AclLineMatchExprs.match(
           HeaderSpace.builder().setIpProtocols(ImmutableList.of(IpProtocol.TCP)).build());
 
-  private static final IpAccessListLine ACCEPT_A = accepting(EXPR_A);
-  private static final IpAccessListLine ACCEPT_B = accepting(EXPR_B);
-  private static final IpAccessListLine REJECT_B = rejecting(EXPR_B);
-  private static final IpAccessListLine ACCEPT_C = accepting(EXPR_C);
-  private static final IpAccessListLine REJECT_C = rejecting(EXPR_C);
-  private static final IpAccessListLine ACCEPT_D = accepting(EXPR_D);
-  private static final IpAccessListLine REJECT_E = rejecting(EXPR_E);
+  private static final ExprAclLine ACCEPT_A = accepting(EXPR_A);
+  private static final ExprAclLine ACCEPT_B = accepting(EXPR_B);
+  private static final ExprAclLine REJECT_B = rejecting(EXPR_B);
+  private static final ExprAclLine ACCEPT_C = accepting(EXPR_C);
+  private static final ExprAclLine REJECT_C = rejecting(EXPR_C);
+  private static final ExprAclLine ACCEPT_D = accepting(EXPR_D);
+  private static final ExprAclLine REJECT_E = rejecting(EXPR_E);
 
-  private static final List<IpAccessListLine> SIMPLE_ACL_LINES =
+  private static final List<ExprAclLine> SIMPLE_ACL_LINES =
       ImmutableList.of(ACCEPT_A, REJECT_B, ACCEPT_C, REJECT_C, ACCEPT_D, REJECT_E);
 
   private static final IpAccessList SIMPLE_ACL =
@@ -64,8 +63,7 @@ public class AclToAclLineMatchExprTest {
 
   private static final AclLineMatchExpr ACL_REFERENT_EXPR = or(EXPR_A, EXPR_B);
 
-  private static final List<IpAccessListLine> ACL_REFERENT_LINES =
-      ImmutableList.of(ACCEPT_A, ACCEPT_B);
+  private static final List<ExprAclLine> ACL_REFERENT_LINES = ImmutableList.of(ACCEPT_A, ACCEPT_B);
 
   private static final IpAccessList ACL_REFERENT =
       IpAccessList.builder().setName("referent").setLines(ACL_REFERENT_LINES).build();
@@ -103,13 +101,6 @@ public class AclToAclLineMatchExprTest {
   }
 
   @Test
-  public void testSimpleLines() {
-    assertThat(
-        aclLines(aclLineMatchExprToBDD(), SIMPLE_ACL, ImmutableMap.of()),
-        equalTo(SIMPLE_ACL_LINES));
-  }
-
-  @Test
   public void testReference() {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of(ACL_REFERENT.getName(), ACL_REFERENT);
     AclLineMatchExpr expr =
@@ -124,23 +115,6 @@ public class AclToAclLineMatchExprTest {
                 and(not(EXPR_C), ACL_REFERENT_EXPR),
                 // line 4: ACCEPT_D
                 and(not(EXPR_C), EXPR_D))));
-  }
-
-  @Test
-  public void testReferenceLines() {
-    Map<String, IpAccessList> namedAcls = ImmutableMap.of(ACL_REFERENT.getName(), ACL_REFERENT);
-    List<IpAccessListLine> lines =
-        aclLines(aclLineMatchExprToBDD(namedAcls), ACL_REFERRER, namedAcls);
-    assertThat(
-        lines,
-        equalTo(
-            ImmutableList.of(
-                ACCEPT_C,
-                REJECT_C,
-                // line 3: reference to ACL_REFERENT is inlined
-                accepting(ACL_REFERENT_EXPR),
-                ACCEPT_D,
-                REJECT_E)));
   }
 
   @Test

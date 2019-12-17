@@ -8,8 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
@@ -57,7 +57,7 @@ public final class BaseApplication implements Application, Serializable {
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<IpAccessListLine> lines,
+      List<ExprAclLine> lines,
       Warnings w) {
     Collection<Term> terms;
     if (_terms.isEmpty()) {
@@ -72,8 +72,8 @@ public final class BaseApplication implements Application, Serializable {
               .setDstIps(oldHeaderSpace.getDstIps())
               .setSrcIps(oldHeaderSpace.getSrcIps());
       term.applyTo(newHeaderSpaceBuilder);
-      IpAccessListLine newLine =
-          IpAccessListLine.builder()
+      ExprAclLine newLine =
+          ExprAclLine.builder()
               .setAction(action)
               .setMatchCondition(new MatchHeaderSpace(newHeaderSpaceBuilder.build()))
               .build();

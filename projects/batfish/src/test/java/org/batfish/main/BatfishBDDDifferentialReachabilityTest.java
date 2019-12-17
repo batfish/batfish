@@ -42,12 +42,12 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
@@ -330,9 +330,9 @@ public class BatfishBDDDifferentialReachabilityTest {
                 .setOwner(node2)
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.rejectingHeaderSpace(
+                        ExprAclLine.rejectingHeaderSpace(
                             HeaderSpace.builder().setDstIps(DST_IP.toIpSpace()).build()),
-                        IpAccessListLine.ACCEPT_ALL))
+                        ExprAclLine.ACCEPT_ALL))
                 .build();
         _ib.setIncomingFilter(acl);
       }
@@ -391,9 +391,9 @@ public class BatfishBDDDifferentialReachabilityTest {
                 .setOwner(node1)
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.rejectingHeaderSpace(
+                        ExprAclLine.rejectingHeaderSpace(
                             HeaderSpace.builder().setDstIps(DST_IP.toIpSpace()).build()),
-                        IpAccessListLine.ACCEPT_ALL))
+                        ExprAclLine.ACCEPT_ALL))
                 .build();
         _ib.setOutgoingFilter(acl);
       }
@@ -452,9 +452,9 @@ public class BatfishBDDDifferentialReachabilityTest {
                 .setOwner(node1)
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.rejectingHeaderSpace(
+                        ExprAclLine.rejectingHeaderSpace(
                             HeaderSpace.builder().setDstIps(DST_IP.toIpSpace()).build()),
-                        IpAccessListLine.ACCEPT_ALL))
+                        ExprAclLine.ACCEPT_ALL))
                 .build();
         _ib.setOutgoingFilter(acl);
       }
@@ -626,7 +626,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         _ib.setOutgoingFilter(
             _nf.aclBuilder()
                 .setOwner(node1)
-                .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+                .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
                 .build());
       }
       _ib.setName(PHYSICAL).setAddresses(NODE1_PHYSICAL_NETWORK).build();
