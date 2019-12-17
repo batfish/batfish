@@ -158,8 +158,8 @@
       },
       {
         "Node" : {
-          "id" : "node-as1core1",
-          "name" : "as1core1"
+          "id" : "node-as1border1",
+          "name" : "as1border1"
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
@@ -181,8 +181,8 @@
       },
       {
         "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
+          "id" : "node-as1core1",
+          "name" : "as1core1"
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
