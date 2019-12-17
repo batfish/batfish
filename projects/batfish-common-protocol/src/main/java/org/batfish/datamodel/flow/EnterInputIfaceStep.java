@@ -12,6 +12,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
+import org.batfish.vendor.VendorStructureId;
 
 /** {@link Step} to represent the entering of a {@link Flow} on an {@link Interface} in a node */
 @JsonTypeName("EnterInputInterface")
@@ -23,28 +24,42 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
    */
   public static final class EnterInputIfaceStepDetail {
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
+    private static final String PROP_INPUT_INTERFACE_STRUCTURE_ID = "inputInterfaceStructureId";
     private static final String PROP_INPUT_VRF = "inputVrf";
 
     private @Nonnull NodeInterfacePair _inputInterface;
+    private @Nullable VendorStructureId _inputInterfaceStructureId;
     private @Nullable String _inputVrf;
 
-    private EnterInputIfaceStepDetail(NodeInterfacePair inputInterface, @Nullable String inputVrf) {
+    private EnterInputIfaceStepDetail(
+        NodeInterfacePair inputInterface,
+        @Nullable VendorStructureId inputInterfaceStructureId,
+        @Nullable String inputVrf) {
       _inputInterface = inputInterface;
+      _inputInterfaceStructureId = inputInterfaceStructureId;
       _inputVrf = inputVrf;
     }
 
     @JsonCreator
     private static EnterInputIfaceStepDetail jsonCreator(
         @JsonProperty(PROP_INPUT_INTERFACE) @Nullable NodeInterfacePair inputInterface,
+        @JsonProperty(PROP_INPUT_INTERFACE_STRUCTURE_ID) @Nullable
+            VendorStructureId inputInterfaceStructureId,
         @JsonProperty(PROP_INPUT_VRF) @Nullable String inputVrf) {
       checkArgument(inputInterface != null, "Input interface should be set");
-      return new EnterInputIfaceStepDetail(inputInterface, inputVrf);
+      return new EnterInputIfaceStepDetail(inputInterface, inputInterfaceStructureId, inputVrf);
     }
 
     @JsonProperty(PROP_INPUT_INTERFACE)
     @Nonnull
     public NodeInterfacePair getInputInterface() {
       return _inputInterface;
+    }
+
+    @JsonProperty(PROP_INPUT_INTERFACE_STRUCTURE_ID)
+    @Nullable
+    public VendorStructureId getInputInterfaceStructureId() {
+      return _inputInterfaceStructureId;
     }
 
     @JsonProperty(PROP_INPUT_VRF)
@@ -60,15 +75,23 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     /** Chained builder to create a {@link EnterInputIfaceStepDetail} object */
     public static final class Builder {
       private NodeInterfacePair _inputInterface;
+      private @Nullable VendorStructureId _inputInterfaceStructureId;
       private String _inputVrf;
 
       public EnterInputIfaceStepDetail build() {
         checkState(_inputInterface != null, "Must call setInputInterface before building");
-        return new EnterInputIfaceStepDetail(_inputInterface, _inputVrf);
+        return new EnterInputIfaceStepDetail(
+            _inputInterface, _inputInterfaceStructureId, _inputVrf);
       }
 
       public Builder setInputInterface(NodeInterfacePair inputInterface) {
         _inputInterface = inputInterface;
+        return this;
+      }
+
+      public Builder setInputInterfaceStructureId(
+          @Nullable VendorStructureId inputInterfaceStructureId) {
+        _inputInterfaceStructureId = inputInterfaceStructureId;
         return this;
       }
 

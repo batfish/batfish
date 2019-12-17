@@ -122,6 +122,7 @@ public final class TracerouteUtils {
         EnterInputIfaceStepDetail.builder();
     enterSrcStepDetailBuilder
         .setInputInterface(NodeInterfacePair.of(node.getHostname(), inputIfaceName))
+        .setInputInterfaceStructureId(inputInterface.getVendorStructureId())
         .setInputVrf(inputInterface.getVrfName());
 
     // Send in the flow to the next steps

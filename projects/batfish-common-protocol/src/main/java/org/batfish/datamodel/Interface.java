@@ -34,6 +34,7 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.vendor.VendorStructureId;
 
 public final class Interface extends ComparableStructure<String> {
 
@@ -85,6 +86,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nonnull IpSpace _additionalArpIps;
     @Nullable private TunnelConfiguration _tunnelConfig;
     private InterfaceType _type;
+    private @Nullable VendorStructureId _vendorStructureId;
     private @Nullable Integer _vlan;
     private Vrf _vrf;
     private SortedMap<Integer, VrrpGroup> _vrrpGroups;
@@ -171,8 +173,8 @@ public final class Interface extends ComparableStructure<String> {
       if (_type != null) {
         iface.setInterfaceType(_type);
       }
+      iface.setVendorStructureId(_vendorStructureId);
       iface.setVlan(_vlan);
-
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
@@ -446,6 +448,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setVendorStructureId(VendorStructureId vendorStructureId) {
+      _vendorStructureId = vendorStructureId;
+      return this;
+    }
+
     public @Nonnull Builder setVlan(@Nullable Integer vlan) {
       _vlan = vlan;
       return this;
@@ -579,6 +586,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
   private static final String PROP_SWITCHPORT_TRUNK_ENCAPSULATION = "switchportTrunkEncapsulation";
   private static final String PROP_TUNNEL_CONFIG = "tunnelConfig";
+  private static final String PROP_VENDOR_STRUCTURE_ID = "vendorStructureId";
   private static final String PROP_VLAN = "vlan";
   private static final String PROP_VRF = "vrf";
   private static final String PROP_VRRP_GROUPS = "vrrpGroups";
@@ -832,6 +840,7 @@ public final class Interface extends ComparableStructure<String> {
   private SwitchportMode _switchportMode;
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
   @Nullable private TunnelConfiguration _tunnelConfig;
+  private @Nullable VendorStructureId _vendorStructureId;
   private Integer _vlan;
   private Vrf _vrf;
   private transient String _vrfName;
@@ -1396,6 +1405,11 @@ public final class Interface extends ComparableStructure<String> {
     return _tunnelConfig;
   }
 
+  @JsonProperty(PROP_VENDOR_STRUCTURE_ID)
+  public @Nullable VendorStructureId getVendorStructureId() {
+    return _vendorStructureId;
+  }
+
   /** VLAN for an IRB interface. */
   @JsonProperty(PROP_VLAN)
   public @Nullable Integer getVlan() {
@@ -1707,6 +1721,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_TUNNEL_CONFIG)
   public void setTunnelConfig(@Nullable TunnelConfiguration tunnelConfig) {
     _tunnelConfig = tunnelConfig;
+  }
+
+  @JsonProperty(PROP_VENDOR_STRUCTURE_ID)
+  public void setVendorStructureId(VendorStructureId vendorStructureId) {
+    _vendorStructureId = vendorStructureId;
   }
 
   @JsonProperty(PROP_VLAN)
