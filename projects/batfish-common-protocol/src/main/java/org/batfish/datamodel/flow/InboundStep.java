@@ -61,21 +61,14 @@ public final class InboundStep extends Step<InboundStepDetail> {
   /** Chained builder to create a {@link InboundStep} object */
   public static final class Builder {
     private @Nullable InboundStepDetail _detail;
-    private @Nullable StepAction _action;
 
     public InboundStep build() {
       checkState(_detail != null, "must call setDetail before building");
-      checkState(_action != null, "must call setAction before building");
-      return new InboundStep(_detail, _action);
+      return new InboundStep(_detail, StepAction.ACCEPTED);
     }
 
     public Builder setDetail(InboundStepDetail detail) {
       _detail = detail;
-      return this;
-    }
-
-    public Builder setAction(StepAction action) {
-      _action = action;
       return this;
     }
 
