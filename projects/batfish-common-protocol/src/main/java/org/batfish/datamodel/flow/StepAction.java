@@ -12,6 +12,8 @@ public enum StepAction {
   EXITS_NETWORK,
   /** Action if flow gets forwarded from I/P to O/P interface */
   FORWARDED,
+  /** Action if the flow gets forwarded to a next VRF */
+  FORWARDED_TO_NEXT_VRF,
   /** Action if information is insufficient to tell the final fate of the flow */
   INSUFFICIENT_INFO,
   /** Action if flow matches a session. */
