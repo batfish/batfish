@@ -5,5 +5,6 @@ hostname nxos_logging
 
 logging server 192.0.2.1 5 use-vrf default facility kern
 logging server 192.0.2.2 5 port 2025 use-vrf management facility kern
+logging server 192.0.2.3
 
 logging source-interface loopback 0
