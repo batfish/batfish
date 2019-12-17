@@ -171,8 +171,7 @@ public final class BatfishLogger {
     _ps = stream;
   }
 
-  public BatfishLogger(
-      String logLevel, boolean timestamp, @Nullable String logFile, boolean logTee) {
+  public BatfishLogger(String logLevel, boolean timestamp, @Nullable String logFile) {
     _history = null;
     _timestamp = timestamp;
     String levelStr = logLevel;
@@ -196,11 +195,7 @@ public final class BatfishLogger {
       } catch (FileNotFoundException | UnsupportedEncodingException e) {
         throw new BatfishException("Could not create logfile", e);
       }
-      if (logTee) {
-        _ps = new CompositePrintStream(System.out, filePrintStream);
-      } else {
-        _ps = filePrintStream;
-      }
+      _ps = filePrintStream;
 
     } else {
       _ps = System.out;

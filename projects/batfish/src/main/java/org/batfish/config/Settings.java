@@ -58,8 +58,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_JOBS = "jobs";
 
-  private static final String ARG_LOG_TEE = "logtee";
-
   private static final String ARG_MAX_PARSER_CONTEXT_LINES = "maxparsercontextlines";
 
   private static final String ARG_MAX_PARSER_CONTEXT_TOKENS = "maxparsercontexttokens";
@@ -289,10 +287,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public String getLogLevel() {
     return _config.getString(BfConsts.ARG_LOG_LEVEL);
-  }
-
-  public boolean getLogTee() {
-    return _config.getBoolean(ARG_LOG_TEE);
   }
 
   public int getParentPid() {
@@ -531,7 +525,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
     setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
     setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
-    setDefaultProperty(ARG_LOG_TEE, false);
     setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, 10);
@@ -691,8 +684,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(ARG_HISTOGRAM, "build histogram of unimplemented features");
 
-    addBooleanOption(ARG_LOG_TEE, "print output to both logfile and standard out");
-
     addOption(
         ARG_MAX_PARSER_CONTEXT_LINES,
         "max number of surrounding lines to print on parser error",
@@ -816,6 +807,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "gsidregex",
           "gsinputrole",
           "gsremoteas",
+          "logtee",
           "outputenv",
           "ppa",
           "stext",
@@ -879,7 +871,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
     getBooleanOptionValue(BfConsts.COMMAND_INIT_INFO);
     getIntOptionValue(ARG_JOBS);
-    getBooleanOptionValue(ARG_LOG_TEE);
     getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
     getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
     getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
