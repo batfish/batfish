@@ -10,11 +10,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -329,6 +331,18 @@ public class BgpProcess implements Serializable {
   public Iterable<BgpPeerConfig> getAllPeerConfigs() {
     return Iterables.concat(
         _activeNeighbors.values(), _passiveNeighbors.values(), _interfaceNeighbors.values());
+  }
+
+  /**
+   * Return a stream over all types of {@link BgpPeerConfig peer configurations} defined for this
+   * process
+   */
+  @JsonIgnore
+  public Stream<BgpPeerConfig> streamAllPeerConfigs() {
+    return Streams.concat(
+        _activeNeighbors.values().stream(),
+        _passiveNeighbors.values().stream(),
+        _interfaceNeighbors.values().stream());
   }
 
   @JsonProperty(PROP_INTERFACE_NEIGHBORS)
