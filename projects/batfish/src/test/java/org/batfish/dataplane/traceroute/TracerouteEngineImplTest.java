@@ -227,11 +227,10 @@ public class TracerouteEngineImplTest {
     assertThat(hops, hasSize(1));
 
     List<Step<?>> steps = hops.get(0).getSteps();
-    assertThat(steps, hasSize(3));
+    assertThat(steps, hasSize(2));
 
     assertTrue(OriginateStep.class.isInstance(steps.get(0)));
     assertTrue(RoutingStep.class.isInstance(steps.get(1)));
-    assertTrue(ExitOutputIfaceStep.class.isInstance(steps.get(2)));
   }
 
   @Test
