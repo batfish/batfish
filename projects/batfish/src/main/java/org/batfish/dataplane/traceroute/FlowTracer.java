@@ -357,6 +357,9 @@ class FlowTracer {
   private void processOutgoingInterfaceEdges(
       String outgoingInterface, Ip nextHopIp, SortedSet<NodeInterfacePair> neighborIfaces) {
     checkArgument(!neighborIfaces.isEmpty(), "No neighbor interfaces.");
+    checkState(
+        _steps.get(_steps.size() - 1) instanceof ExitOutputIfaceStep,
+        "ExitOutputIfaceStep needs to be added before calling this function");
     Ip arpIp =
         Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp) ? _currentFlow.getDstIp() : nextHopIp;
 
