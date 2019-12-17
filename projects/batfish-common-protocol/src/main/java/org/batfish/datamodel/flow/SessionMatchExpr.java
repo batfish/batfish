@@ -3,11 +3,16 @@ package org.batfish.datamodel.flow;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.collect.ImmutableList;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 @JsonTypeName("SessionMatchExpr")
 @ParametersAreNonnullByDefault
@@ -63,6 +68,21 @@ public class SessionMatchExpr {
   @Nullable
   public Integer getDstPort() {
     return _dstPort;
+  }
+
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    HeaderSpace.Builder hb =
+        HeaderSpace.builder()
+            .setSrcIps(_srcIp.toIpSpace())
+            .setDstIps(_dstIp.toIpSpace())
+            .setIpProtocols(ImmutableList.of(_ipProtocol));
+
+    if (_srcPort != null) {
+      hb.setSrcPorts(ImmutableList.of(SubRange.singleton(_srcPort)))
+          .setDstPorts(ImmutableList.of(SubRange.singleton(_dstPort)));
+    }
+
+    return new MatchHeaderSpace(hb.build());
   }
 
   public boolean equals(@Nullable Object o) {
