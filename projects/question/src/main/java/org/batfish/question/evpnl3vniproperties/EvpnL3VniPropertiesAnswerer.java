@@ -129,8 +129,8 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
           .map(BgpPeerConfig::getEvpnAddressFamily)
           .filter(Objects::nonNull)
           .flatMap(af -> af.getL3VNIs().stream())
-          .map(c -> generateRow(c, nodeName, columns))
           .distinct() // Get rid of duplication across BGP peers (due to the VI model hierarchy)
+          .map(c -> generateRow(c, nodeName, columns))
           .forEach(rows::add);
     }
     return rows.build();
