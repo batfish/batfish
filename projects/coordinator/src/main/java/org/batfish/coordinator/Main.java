@@ -356,8 +356,7 @@ public class Main {
 
   public static void main(String[] args) {
     mainInit(args);
-    _logger =
-        new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, true);
+    _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false);
     mainRun(new BindPortFutures());
   }
 

@@ -88,8 +88,6 @@ public final class BatfishLogger {
 
   private static final Map<Integer, String> LOG_LEVELSTRS = initializeLogLevelStrs();
 
-  private static final int LOG_ROTATION_THRESHOLD = 10000;
-
   public static int getLogLevel(String levelStr) {
     String canonicalLevelStr = levelStr.toLowerCase();
     return LOG_LEVELS.get(canonicalLevelStr);
@@ -153,11 +151,7 @@ public final class BatfishLogger {
 
   private String _logFile;
 
-  private int _numLinesSinceRotation = 0;
-
   private PrintStream _ps;
-
-  private boolean _rotateLog = false;
 
   private long _timerCount;
 
@@ -178,11 +172,7 @@ public final class BatfishLogger {
   }
 
   public BatfishLogger(
-      String logLevel,
-      boolean timestamp,
-      @Nullable String logFile,
-      boolean logTee,
-      boolean rotateLog) {
+      String logLevel, boolean timestamp, @Nullable String logFile, boolean logTee) {
     _history = null;
     _timestamp = timestamp;
     String levelStr = logLevel;
@@ -203,7 +193,6 @@ public final class BatfishLogger {
       PrintStream filePrintStream = null;
       try {
         filePrintStream = new PrintStream(_logFile, "UTF-8");
-        _rotateLog = rotateLog;
       } catch (FileNotFoundException | UnsupportedEncodingException e) {
         throw new BatfishException("Could not create logfile", e);
       }
@@ -315,37 +304,6 @@ public final class BatfishLogger {
     _timerCount = System.currentTimeMillis();
   }
 
-  private synchronized void rotateLog() {
-    if (_logFile != null && _ps != null) {
-
-      _ps.close();
-
-      String rotatedLog = getRotatedLogFilename(_logFile);
-
-      File logFile = new File(_logFile);
-      if (!logFile.renameTo(new File(rotatedLog))) {
-        throw new BatfishException(
-            String.format("Failed to rename %s to %s", _logFile, rotatedLog));
-      }
-
-      try {
-        PrintStream filePrintStream = new PrintStream(_logFile, "UTF-8");
-
-        if (_ps instanceof CompositePrintStream) {
-          _ps = new CompositePrintStream(System.out, filePrintStream);
-        } else {
-          _ps = filePrintStream;
-        }
-      } catch (Exception e) {
-        // we have this try catch because new PrintStream throws
-        // FileNotFoundException
-        // this should not happen since we know that logFile can be created
-        // in case it does happen, we cannot log this error to the log :)
-        System.err.println("Could not rotate log" + e.getMessage());
-      }
-    }
-  }
-
   public void setLogLevel(String levelStr) {
     _level = getLogLevel(levelStr);
   }
@@ -374,16 +332,6 @@ public final class BatfishLogger {
       }
       if (_ps != null) {
         _ps.print(outputMsg);
-
-        // logic for rotating log
-        if (_rotateLog) {
-          _numLinesSinceRotation++;
-
-          if (_numLinesSinceRotation > LOG_ROTATION_THRESHOLD) {
-            rotateLog();
-            _numLinesSinceRotation = 0;
-          }
-        }
       } else {
         _history.add(new HistoryItem(level, msg));
       }

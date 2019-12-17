@@ -771,8 +771,7 @@ public class Client extends AbstractClient implements IClient {
               Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
           System.exit(1);
         }
-        _logger =
-            new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, false);
+        _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false);
         break;
       case genquestions:
         if (_settings.getQuestionsDir() == null) {
@@ -781,8 +780,7 @@ public class Client extends AbstractClient implements IClient {
           System.err.printf("Use '-%s <cmdfile>'\n", Settings.ARG_QUESTIONS_DIR);
           System.exit(1);
         }
-        _logger =
-            new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, false);
+        _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false);
         break;
       case interactive:
         System.err.println(

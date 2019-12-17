@@ -273,8 +273,7 @@ public class Driver {
             _mainSettings.getLogLevel(),
             _mainSettings.getTimestamp(),
             _mainSettings.getLogFile(),
-            _mainSettings.getLogTee(),
-            true);
+            _mainSettings.getLogTee());
     mainRun();
   }
 
@@ -657,8 +656,7 @@ public class Driver {
               settings.getLogLevel(),
               settings.getTimestamp(),
               settings.getLogFile(),
-              settings.getLogTee(),
-              false);
+              settings.getLogTee());
       settings.setLogger(jobLogger);
 
       final Task task = new Task(args);
