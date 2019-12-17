@@ -15,7 +15,7 @@ import org.batfish.datamodel.flow.DeliveredStep.DeliveredStepDetail;
 /**
  * {@link Step} to represent that the packet is delivered to a subnet or exits the current network
  */
-@JsonTypeName("DeliveredStep")
+@JsonTypeName("Delivered")
 public final class DeliveredStep extends Step<DeliveredStepDetail> {
 
   /** Details of the {@link DeliveredStep} */
