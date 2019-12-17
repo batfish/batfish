@@ -1980,6 +1980,19 @@ public final class CiscoGrammarTest {
   public void testIosInterfaceSpeed() throws IOException {
     Configuration c = parseConfig("ios-interface-speed");
 
+    assertThat(
+        c,
+        hasInterfaces(
+            hasKeys(
+                "GigabitEthernet0/0",
+                "GigabitEthernet0/1",
+                "GigabitEthernet0/2",
+                "Loopback0",
+                "Tunnel0",
+                "TwoGigabitEthernet1",
+                "TwoGigabitEthernet2",
+                "TwentyFiveGigE3",
+                "TwentyFiveGigE4")));
     assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/0", hasSpeed(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/1", hasBandwidth(1E9D)));
@@ -1988,6 +2001,10 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface("GigabitEthernet0/2", hasSpeed(100E6D)));
     assertThat(c, hasInterface("Loopback0", hasBandwidth(8E9D)));
     assertThat(c, hasInterface("Tunnel0", hasBandwidth(1E5D)));
+    assertThat(c, hasInterface("TwoGigabitEthernet1", hasSpeed(2.5e9D)));
+    assertThat(c, hasInterface("TwoGigabitEthernet2", hasSpeed(2.5e9D)));
+    assertThat(c, hasInterface("TwentyFiveGigE3", hasSpeed(25e9D)));
+    assertThat(c, hasInterface("TwentyFiveGigE4", hasSpeed(25e9D)));
   }
 
   @Test
