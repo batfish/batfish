@@ -15,7 +15,6 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
@@ -109,6 +108,7 @@ import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
+import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -1955,9 +1955,11 @@ public class TracerouteEngineImplTest {
     // Session exists with no outgoingInterface. Accepted at that node.
     {
       Flow flow = protoFlow;
+      SessionMatchExpr matchCriteria =
+          new SessionMatchExpr(IpProtocol.HOPOPT, ip11, ip10, null, null);
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
-              c1.getHostname(), Accept.INSTANCE, ImmutableSet.of(c1i1Name), TRUE, null);
+              c1.getHostname(), Accept.INSTANCE, ImmutableSet.of(c1i1Name), matchCriteria, null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
@@ -1990,7 +1992,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, null),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              new SessionMatchExpr(IpProtocol.HOPOPT, ip11, ip10, null, null),
               null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2026,7 +2028,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              new SessionMatchExpr(IpProtocol.HOPOPT, ip11, ip10, null, null),
               null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2061,7 +2063,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              new SessionMatchExpr(IpProtocol.HOPOPT, ingressDenySrcIp, ip10, null, null),
               null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2088,7 +2090,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              new SessionMatchExpr(IpProtocol.HOPOPT, egressDenySrcIp, ip10, null, null),
               null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2117,7 +2119,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              new SessionMatchExpr(IpProtocol.HOPOPT, egressDenySrcIp, ip10, null, null),
               always().apply(assignSourceIp(ip11, ip11)).build());
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2144,7 +2146,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              new SessionMatchExpr(IpProtocol.HOPOPT, ingressDenySrcIp, ip10, null, null),
               always().apply(assignSourceIp(ip11, ip11)).build());
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2160,7 +2162,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              new SessionMatchExpr(IpProtocol.HOPOPT, ingressDenySrcIp, ip10, null, null),
               always().apply(assignSourceIp(ip11, ip11)).build());
       Flow flow = protoFlow.toBuilder().setSrcIp(ingressDenySrcIp).build();
       List<TraceAndReverseFlow> results =
@@ -2178,6 +2180,13 @@ public class TracerouteEngineImplTest {
                               hasNodeName(c1.getHostname()), hasNodeName(c2.getHostname())))))));
 
       flow = protoFlow.toBuilder().setSrcIp(egressDenySrcIp).build();
+      session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(),
+              new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
+              ImmutableSet.of(c1i1Name),
+              new SessionMatchExpr(IpProtocol.HOPOPT, egressDenySrcIp, ip10, null, null),
+              always().apply(assignSourceIp(ip11, ip11)).build());
       results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), true)
