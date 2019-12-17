@@ -902,15 +902,6 @@ class FlowTracer {
   }
 
   private void buildNullRoutedTrace() {
-    _steps.add(
-        ExitOutputIfaceStep.builder()
-            .setDetail(
-                ExitOutputIfaceStepDetail.builder()
-                    .setOutputInterface(
-                        NodeInterfacePair.of(_currentNode.getName(), Interface.NULL_INTERFACE_NAME))
-                    .build())
-            .setAction(StepAction.NULL_ROUTED)
-            .build());
     _hops.add(new Hop(_currentNode, _steps));
     Trace trace = new Trace(FlowDisposition.NULL_ROUTED, _hops);
     _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
