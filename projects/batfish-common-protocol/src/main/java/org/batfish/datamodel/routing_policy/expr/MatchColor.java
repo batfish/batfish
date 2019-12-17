@@ -51,6 +51,6 @@ public final class MatchColor extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_color);
+    return Objects.hashCode(_color);
   }
 }

@@ -86,7 +86,7 @@ public final class BDDAcl {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_bdd);
+    return Objects.hashCode(_bdd);
   }
 
   @Override

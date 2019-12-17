@@ -324,7 +324,7 @@ public final class RibDelta<R> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_actions);
+    return Objects.hashCode(_actions);
   }
 
   @Override

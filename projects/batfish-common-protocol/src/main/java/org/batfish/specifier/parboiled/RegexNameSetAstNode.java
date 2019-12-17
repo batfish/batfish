@@ -51,7 +51,7 @@ final class RegexNameSetAstNode implements NameSetAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_regex);
+    return Objects.hashCode(_regex);
   }
 
   @Override

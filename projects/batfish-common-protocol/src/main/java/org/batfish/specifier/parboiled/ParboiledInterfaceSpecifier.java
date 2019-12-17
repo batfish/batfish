@@ -202,7 +202,7 @@ public final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ast);
+    return Objects.hashCode(_ast);
   }
 
   @Override

@@ -70,6 +70,6 @@ public final class MatchEntireCommunitySet extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_expr);
+    return Objects.hashCode(_expr);
   }
 }

@@ -36,7 +36,7 @@ public final class NameRegexRoutingPolicySpecifier implements RoutingPolicySpeci
 
   @Override
   public int hashCode() {
-    return Objects.hash(_pattern.pattern());
+    return Objects.hashCode(_pattern.pattern());
   }
 
   @Override

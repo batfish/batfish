@@ -375,7 +375,7 @@ public class Row implements Comparable<Row>, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_data);
+    return Objects.hashCode(_data);
   }
 
   /**

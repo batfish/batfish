@@ -113,7 +113,7 @@ public final class DispositionSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_dispositions);
+    return Objects.hashCode(_dispositions);
   }
 
   @Override

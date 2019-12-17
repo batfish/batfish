@@ -43,7 +43,7 @@ final class PrefixAstNode implements IpSpaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_prefix);
+    return Objects.hashCode(_prefix);
   }
 
   @Override

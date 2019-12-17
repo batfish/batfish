@@ -33,6 +33,6 @@ public class ReferenceLibraryBean {
 
   @Override
   public int hashCode() {
-    return Objects.hash(books);
+    return Objects.hashCode(books);
   }
 }

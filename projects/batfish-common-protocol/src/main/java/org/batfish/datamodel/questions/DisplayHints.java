@@ -182,7 +182,7 @@ public class DisplayHints {
   @Override
   public int hashCode() {
     // ignore extactions and compositions -- we will remove those soon from this class
-    return Objects.hash(_textDesc);
+    return Objects.hashCode(_textDesc);
   }
 
   @JsonProperty(PROP_COMPOSITIONS)

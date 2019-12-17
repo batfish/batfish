@@ -321,7 +321,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_root);
+    return Objects.hashCode(_root);
   }
 
   private @Nullable Node<T> longestMatchNode(Prefix p) {

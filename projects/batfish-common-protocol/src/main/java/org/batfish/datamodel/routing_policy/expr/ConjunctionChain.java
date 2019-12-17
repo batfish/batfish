@@ -112,7 +112,7 @@ public final class ConjunctionChain extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_subroutines);
+    return Objects.hashCode(_subroutines);
   }
 
   @Override

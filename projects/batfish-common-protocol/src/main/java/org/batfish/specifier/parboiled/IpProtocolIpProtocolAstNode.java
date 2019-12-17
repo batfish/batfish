@@ -48,7 +48,7 @@ final class IpProtocolIpProtocolAstNode implements IpProtocolAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipProtocol.ordinal());
+    return Objects.hashCode(_ipProtocol.ordinal());
   }
 
   @Override

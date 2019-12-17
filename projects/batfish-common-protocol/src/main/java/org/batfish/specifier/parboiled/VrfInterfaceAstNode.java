@@ -42,7 +42,7 @@ final class VrfInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_vrfName);
+    return Objects.hashCode(_vrfName);
   }
 
   @Override

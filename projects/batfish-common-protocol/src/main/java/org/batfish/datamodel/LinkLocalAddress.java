@@ -56,7 +56,7 @@ public final class LinkLocalAddress extends InterfaceAddress {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ip);
+    return Objects.hashCode(_ip);
   }
 
   @Override

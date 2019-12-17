@@ -34,7 +34,7 @@ final class OperatorAstNode implements AstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_operator);
+    return Objects.hashCode(_operator);
   }
 
   @Override

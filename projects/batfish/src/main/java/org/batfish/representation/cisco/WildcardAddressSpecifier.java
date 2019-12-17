@@ -31,7 +31,7 @@ public class WildcardAddressSpecifier implements AccessListAddressSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipWildcard);
+    return Objects.hashCode(_ipWildcard);
   }
 
   @Override

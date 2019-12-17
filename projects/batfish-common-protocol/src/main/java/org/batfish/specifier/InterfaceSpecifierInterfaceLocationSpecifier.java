@@ -30,7 +30,7 @@ public class InterfaceSpecifierInterfaceLocationSpecifier implements LocationSpe
 
   @Override
   public int hashCode() {
-    return Objects.hash(_interfaceSpecifier);
+    return Objects.hashCode(_interfaceSpecifier);
   }
 
   @Override

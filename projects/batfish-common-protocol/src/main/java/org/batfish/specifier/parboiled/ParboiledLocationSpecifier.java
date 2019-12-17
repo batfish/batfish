@@ -136,7 +136,7 @@ public final class ParboiledLocationSpecifier implements LocationSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ast);
+    return Objects.hashCode(_ast);
   }
 
   @Override

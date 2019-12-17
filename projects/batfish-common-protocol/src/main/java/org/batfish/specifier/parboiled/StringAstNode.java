@@ -33,7 +33,7 @@ final class StringAstNode implements AstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_str);
+    return Objects.hashCode(_str);
   }
 
   @Override

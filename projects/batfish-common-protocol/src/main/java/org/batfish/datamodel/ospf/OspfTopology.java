@@ -147,7 +147,7 @@ public final class OspfTopology {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_graph);
+    return Objects.hashCode(_graph);
   }
 
   /** Directed OSPF edge representing a link between two {@link OspfNeighborConfigId} */

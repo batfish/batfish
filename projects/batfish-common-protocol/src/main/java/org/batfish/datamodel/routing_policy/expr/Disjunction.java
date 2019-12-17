@@ -120,7 +120,7 @@ public final class Disjunction extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_disjuncts);
+    return Objects.hashCode(_disjuncts);
   }
 
   @Override
