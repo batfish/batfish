@@ -11,7 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Identifies a vendor structure in a configuration file. */
 @ParametersAreNonnullByDefault
-public final class VendorStructure implements Serializable {
+public final class VendorStructureId implements Serializable {
   private static final String PROP_FILENAME = "filename";
   private static final String PROP_STRUCTURE_TYPE = "structureType";
   private static final String PROP_STRUCTURE_NAME = "structureName";
@@ -20,21 +20,21 @@ public final class VendorStructure implements Serializable {
   private final String _structureType;
   private final String _structureName;
 
-  public VendorStructure(String filename, String structureType, String structureName) {
+  public VendorStructureId(String filename, String structureType, String structureName) {
     _filename = filename;
     _structureType = structureType;
     _structureName = structureName;
   }
 
   @JsonCreator
-  private static VendorStructure jsonCreator(
+  private static VendorStructureId jsonCreator(
       @Nullable @JsonProperty(PROP_FILENAME) String filename,
       @Nullable @JsonProperty(PROP_STRUCTURE_TYPE) String structureType,
       @Nullable @JsonProperty(PROP_STRUCTURE_NAME) String structureName) {
     checkNotNull(filename, "%s cannot be null", PROP_FILENAME);
     checkNotNull(structureType, "%s cannot be null", PROP_STRUCTURE_TYPE);
     checkNotNull(structureName, "%s cannot be null", PROP_STRUCTURE_NAME);
-    return new VendorStructure(filename, structureType, structureName);
+    return new VendorStructureId(filename, structureType, structureName);
   }
 
   @JsonProperty(PROP_FILENAME)
@@ -57,10 +57,10 @@ public final class VendorStructure implements Serializable {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof VendorStructure)) {
+    if (!(obj instanceof VendorStructureId)) {
       return false;
     }
-    VendorStructure other = (VendorStructure) obj;
+    VendorStructureId other = (VendorStructureId) obj;
     return _filename.equals(other._filename)
         && _structureType.equals(other._structureType)
         && _structureName.equals(other._structureName);
