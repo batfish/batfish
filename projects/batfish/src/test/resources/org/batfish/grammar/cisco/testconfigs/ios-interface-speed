@@ -13,3 +13,12 @@ interface Loopback0
 !
 interface Tunnel0
 !
+interface TwoGigabitEthernet1
+!
+interface tw2
+!
+! Numbered 3 and 4 to enforce disambiguation from TwoGigabitEthernet variants above
+interface TwentyFiveGigE3
+!
+interface twe4
+!

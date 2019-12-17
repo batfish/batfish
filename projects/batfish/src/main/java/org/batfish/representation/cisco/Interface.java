@@ -28,8 +28,6 @@ public class Interface implements Serializable {
 
   private static final double DEFAULT_FAST_ETHERNET_SPEED = 100E6D;
 
-  private static final double DEFAULT_GIGABIT_ETHERNET_SPEED = 1E9D;
-
   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12D;
 
   private static final double DEFAULT_VLAN_BANDWIDTH = 1E9D;
@@ -42,8 +40,6 @@ public class Interface implements Serializable {
 
   /** Loopback bandwidth */
   private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
-
-  private static final double DEFAULT_TEN_GIGABIT_ETHERNET_SPEED = 10E9D;
 
   /** Loopback delay in picoseconds for IOS */
   private static final long LOOPBACK_IOS_DELAY = (long) 5e9;
@@ -125,13 +121,18 @@ public class Interface implements Serializable {
     } else if (name.startsWith("FastEthernet")) {
       return DEFAULT_FAST_ETHERNET_SPEED;
     } else if (name.startsWith("GigabitEthernet")) {
-      return DEFAULT_GIGABIT_ETHERNET_SPEED;
+      return 1E9D;
     } else if (name.startsWith("LongReachEthernet")) {
       return DEFAULT_LONG_REACH_ETHERNET_SPEED;
     } else if (name.startsWith("TenGigabitEthernet")) {
-      return DEFAULT_TEN_GIGABIT_ETHERNET_SPEED;
+      return 10E9D;
+    } else if (name.startsWith("TwentyFiveGigE")) {
+      return 25E9D;
+    } else if (name.startsWith("TwoGigabitEthernet")) {
+      // 2.5 Gbps
+      return 2.5E9D;
     } else if (name.startsWith("Wlan-GigabitEthernet")) {
-      return DEFAULT_GIGABIT_ETHERNET_SPEED;
+      return 1E9D;
     } else {
       // Bundle-Ethernet
       // Loopback
