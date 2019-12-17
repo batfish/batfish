@@ -14,6 +14,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
+/** Represents a match criteria for a {@link FirewallSessionTraceInfo} */
 @JsonTypeName("SessionMatchExpr")
 @ParametersAreNonnullByDefault
 public class SessionMatchExpr {
@@ -70,6 +71,7 @@ public class SessionMatchExpr {
     return _dstPort;
   }
 
+  /** Transforms into generic {@link AclLineMatchExpr} which allows usage with visitors */
   public AclLineMatchExpr toAclLineMatchExpr() {
     HeaderSpace.Builder hb =
         HeaderSpace.builder()
