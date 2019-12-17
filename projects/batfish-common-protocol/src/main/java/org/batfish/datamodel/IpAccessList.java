@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -102,8 +103,7 @@ public class IpAccessList implements Serializable {
       @Nullable @JsonProperty(PROP_SOURCE_NAME) String sourceName,
       @Nullable @JsonProperty(PROP_SOURCE_TYPE) String sourceType) {
     checkArgument(name != null, "IpAccessList missing %s", PROP_NAME);
-    checkArgument(lines != null, "IpAccessList missing %s", PROP_LINES);
-    return new IpAccessList(name, lines, sourceName, sourceType);
+    return new IpAccessList(name, firstNonNull(lines, ImmutableList.of()), sourceName, sourceType);
   }
 
   private IpAccessList(

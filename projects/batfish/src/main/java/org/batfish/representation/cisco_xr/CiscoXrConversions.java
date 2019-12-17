@@ -1095,7 +1095,6 @@ public class CiscoXrConversions {
   }
 
   static IpAccessList toIpAccessList(Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups) {
-
     List<AclLine> lines =
         eaList.getLines().stream()
             .map(l -> toExprAclLine(l, objectGroups))
