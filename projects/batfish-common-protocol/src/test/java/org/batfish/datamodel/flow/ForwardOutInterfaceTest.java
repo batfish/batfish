@@ -1,7 +1,12 @@
 package org.batfish.datamodel.flow;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
@@ -18,5 +23,16 @@ public final class ForwardOutInterfaceTest {
         .addEqualityGroup(new ForwardOutInterface("b", null))
         .addEqualityGroup(new ForwardOutInterface("a", NodeInterfacePair.of("a", "a")))
         .testEquals();
+  }
+
+  @Test
+  public void testSerialization() throws IOException {
+    ForwardOutInterface f = new ForwardOutInterface("a", null);
+    SessionAction clone = BatfishObjectMapper.clone(f, SessionAction.class);
+    assertThat(clone, equalTo(f));
+
+    f = new ForwardOutInterface("b", NodeInterfacePair.of("a", "b"));
+    clone = BatfishObjectMapper.clone(f, ForwardOutInterface.class);
+    assertThat(clone, equalTo(f));
   }
 }
