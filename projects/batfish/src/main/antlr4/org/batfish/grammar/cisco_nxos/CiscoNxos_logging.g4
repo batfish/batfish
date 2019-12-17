@@ -21,7 +21,8 @@ logging_server
   (
     ls_facility ls_use_vrf?
     | ls_use_vrf ls_facility?
-  ) NEWLINE
+  )?
+  NEWLINE
 ;
 
 logging_host
