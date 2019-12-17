@@ -79,7 +79,7 @@ public class RouteFilterList implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_lines);
+    return Objects.hashCode(_lines);
   }
 
   @Nullable

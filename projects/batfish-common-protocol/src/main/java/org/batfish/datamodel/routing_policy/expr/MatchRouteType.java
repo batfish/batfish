@@ -58,6 +58,6 @@ public final class MatchRouteType extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type);
+    return Objects.hashCode(_type);
   }
 }

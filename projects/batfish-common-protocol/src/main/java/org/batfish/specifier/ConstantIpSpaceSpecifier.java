@@ -30,7 +30,7 @@ public final class ConstantIpSpaceSpecifier implements IpSpaceSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipSpace);
+    return Objects.hashCode(_ipSpace);
   }
 
   @Override

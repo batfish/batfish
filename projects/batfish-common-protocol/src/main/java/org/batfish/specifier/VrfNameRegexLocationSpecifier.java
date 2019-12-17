@@ -32,7 +32,7 @@ public abstract class VrfNameRegexLocationSpecifier implements LocationSpecifier
 
   @Override
   public int hashCode() {
-    return Objects.hash(_pattern);
+    return Objects.hashCode(_pattern);
   }
 
   protected abstract Stream<Location> getVrfLocations(Vrf vrf);

@@ -61,7 +61,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_block);
+      return Objects.hashCode(_block);
     }
   }
 

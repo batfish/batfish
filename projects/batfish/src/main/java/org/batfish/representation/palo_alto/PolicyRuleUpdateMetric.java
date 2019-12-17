@@ -34,6 +34,6 @@ public final class PolicyRuleUpdateMetric implements PolicyRuleUpdate {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_metric);
+    return Objects.hashCode(_metric);
   }
 }

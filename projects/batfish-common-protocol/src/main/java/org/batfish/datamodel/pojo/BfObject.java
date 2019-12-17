@@ -36,7 +36,7 @@ public abstract class BfObject {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_id);
+    return Objects.hashCode(_id);
   }
 
   public void setProperties(Map<String, String> properties) {

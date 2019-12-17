@@ -33,7 +33,7 @@ public abstract class Id {
 
   @Override
   public final int hashCode() {
-    return Objects.hash(_id);
+    return Objects.hashCode(_id);
   }
 
   @JsonValue

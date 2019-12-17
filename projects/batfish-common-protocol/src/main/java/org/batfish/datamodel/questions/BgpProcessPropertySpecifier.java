@@ -182,6 +182,6 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_properties);
+    return Objects.hashCode(_properties);
   }
 }

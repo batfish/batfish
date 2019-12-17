@@ -30,7 +30,7 @@ public abstract class InterfaceNameRegexLocationSpecifier implements LocationSpe
 
   @Override
   public int hashCode() {
-    return Objects.hash(_pattern);
+    return Objects.hashCode(_pattern);
   }
 
   protected abstract Location getLocation(Interface iface);

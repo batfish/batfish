@@ -124,7 +124,7 @@ public final class ParboiledRoutingPolicySpecifier implements RoutingPolicySpeci
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ast);
+    return Objects.hashCode(_ast);
   }
 
   @Override

@@ -61,6 +61,6 @@ public final class MatchIp6AccessList extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_list);
+    return Objects.hashCode(_list);
   }
 }

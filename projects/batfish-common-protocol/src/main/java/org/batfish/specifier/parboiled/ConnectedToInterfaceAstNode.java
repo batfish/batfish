@@ -37,6 +37,6 @@ final class ConnectedToInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipSpaceAstNode);
+    return Objects.hashCode(_ipSpaceAstNode);
   }
 }

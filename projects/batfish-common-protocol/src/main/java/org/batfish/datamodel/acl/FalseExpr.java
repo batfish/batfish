@@ -18,7 +18,7 @@ public class FalseExpr extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(((Boolean) false));
+    return Objects.hashCode(((Boolean) false));
   }
 
   @Override

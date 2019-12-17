@@ -107,7 +107,7 @@ public final class FirstMatchChain extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_subroutines);
+    return Objects.hashCode(_subroutines);
   }
 
   @Override

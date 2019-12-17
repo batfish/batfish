@@ -43,7 +43,7 @@ final class IpAstNode implements IpSpaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ip);
+    return Objects.hashCode(_ip);
   }
 
   @Override

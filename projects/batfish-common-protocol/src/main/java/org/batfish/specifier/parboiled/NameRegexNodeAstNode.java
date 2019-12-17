@@ -50,7 +50,7 @@ final class NameRegexNodeAstNode implements NodeAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_regex);
+    return Objects.hashCode(_regex);
   }
 
   @Override

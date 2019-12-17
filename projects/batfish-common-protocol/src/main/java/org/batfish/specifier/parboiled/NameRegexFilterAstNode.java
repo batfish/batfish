@@ -50,7 +50,7 @@ final class NameRegexFilterAstNode implements FilterAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_regex);
+    return Objects.hashCode(_regex);
   }
 
   @Override

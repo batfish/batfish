@@ -33,7 +33,7 @@ public final class TypesNodeSpecifier implements NodeSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_types);
+    return Objects.hashCode(_types);
   }
 
   @Override

@@ -32,7 +32,7 @@ public final class NameRoutingPolicySpecifier implements RoutingPolicySpecifier 
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name);
+    return Objects.hashCode(_name);
   }
 
   @Override

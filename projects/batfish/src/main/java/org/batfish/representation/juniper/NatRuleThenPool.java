@@ -53,7 +53,7 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_poolName);
+    return Objects.hashCode(_poolName);
   }
 
   @Override

@@ -31,7 +31,7 @@ public class NodeSpecifierInterfaceSpecifier implements InterfaceSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_nodeSpecifier);
+    return Objects.hashCode(_nodeSpecifier);
   }
 
   @Override

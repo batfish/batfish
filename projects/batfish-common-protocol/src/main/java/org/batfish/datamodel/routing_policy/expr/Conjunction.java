@@ -126,7 +126,7 @@ public final class Conjunction extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_conjuncts);
+    return Objects.hashCode(_conjuncts);
   }
 
   @Override

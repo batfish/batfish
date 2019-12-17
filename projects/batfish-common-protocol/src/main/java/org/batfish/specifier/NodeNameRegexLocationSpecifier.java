@@ -31,7 +31,7 @@ public abstract class NodeNameRegexLocationSpecifier implements LocationSpecifie
 
   @Override
   public int hashCode() {
-    return Objects.hash(_pattern);
+    return Objects.hashCode(_pattern);
   }
 
   @Override

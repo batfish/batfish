@@ -121,7 +121,7 @@ public final class IpSpaceAssignment {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_entries);
+    return Objects.hashCode(_entries);
   }
 
   @Override

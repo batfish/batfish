@@ -264,6 +264,6 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
 
   @Override
   public int hashCode() {
-    return Objects.hash(_tree);
+    return Objects.hashCode(_tree);
   }
 }
