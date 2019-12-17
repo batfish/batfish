@@ -1073,7 +1073,7 @@ class FlowTracer {
     InboundStep inboundStep =
         InboundStep.builder()
             .setAction(StepAction.ACCEPTED)
-            .setDetail(new InboundStepDetail())
+            .setDetail(new InboundStepDetail(_ingressInterface))
             .build();
     _steps.add(inboundStep);
     _hops.add(new Hop(_currentNode, _steps));

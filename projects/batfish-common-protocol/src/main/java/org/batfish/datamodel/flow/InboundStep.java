@@ -1,12 +1,12 @@
 package org.batfish.datamodel.flow;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 
@@ -14,21 +14,42 @@ import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 @JsonTypeName("Inbound")
 public final class InboundStep extends Step<InboundStepDetail> {
 
-  /* Currently empty, what goes here? Inbound filter? */
   /** Detail about {@link InboundStep}. */
-  public static class InboundStepDetail {}
+  public static class InboundStepDetail {
+    private static final String PROP_INTERFACE = "interface";
+
+    public @Nonnull String _interface;
+
+    public InboundStepDetail(@Nonnull String iface) {
+      _interface = iface;
+    }
+
+    @JsonCreator
+    private static InboundStepDetail jsonCreator(
+        @JsonProperty(PROP_INTERFACE) @Nullable String iface) {
+      checkArgument(iface != null, "Missing %s", PROP_INTERFACE);
+      return new InboundStepDetail(iface);
+    }
+
+    @JsonProperty
+    @Nonnull
+    public String getInterface() {
+      return _interface;
+    }
+  }
 
   private static final String PROP_DETAIL = "detail";
   private static final String PROP_ACTION = "action";
 
-  private InboundStep(@Nullable InboundStepDetail detail, StepAction action) {
-    super(firstNonNull(detail, new InboundStepDetail()), action);
+  private InboundStep(InboundStepDetail detail, StepAction action) {
+    super(detail, action);
   }
 
   @JsonCreator
   private static InboundStep jsonCreator(
       @Nullable @JsonProperty(PROP_DETAIL) InboundStepDetail detail,
       @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+    checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     return new InboundStep(detail, action);
   }
@@ -43,6 +64,7 @@ public final class InboundStep extends Step<InboundStepDetail> {
     private @Nullable StepAction _action;
 
     public InboundStep build() {
+      checkState(_detail != null, "must call setDetail before building");
       checkState(_action != null, "must call setAction before building");
       return new InboundStep(_detail, _action);
     }
