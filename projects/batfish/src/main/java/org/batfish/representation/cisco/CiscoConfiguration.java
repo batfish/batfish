@@ -283,6 +283,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("Tunnel", "Tunnel")
           .put("tunnel-ip", "tunnel-ip")
           .put("tunnel-te", "tunnel-te")
+          .put("tw", "TwoGigabitEthernet")
+          .put("twe", "TwentyFiveGigE")
+          .put("TwentyFiveGigE", "TwentyFiveGigE")
+          .put("TwoGigabitEthernet", "TwoGigabitEthernet")
           .put("ve", "VirtualEthernet")
           .put("Virtual-Template", "Virtual-Template")
           .put("Vlan", "Vlan")
@@ -301,8 +305,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   static final int MAX_ADMINISTRATIVE_COST = 32767;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
-
-  public static final String VENDOR_NAME = "cisco";
 
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
