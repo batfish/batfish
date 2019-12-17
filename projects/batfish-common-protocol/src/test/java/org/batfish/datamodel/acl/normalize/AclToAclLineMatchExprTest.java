@@ -32,8 +32,10 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr.AclToExprConverter;
 import org.junit.Test;
 
+/** Tests of {@link AclToAclLineMatchExpr} */
 public class AclToAclLineMatchExprTest {
   // 5 orthogonal match expressions
   private static final AclLineMatchExpr EXPR_A = matchDstIp("1.1.1.1");
@@ -120,28 +122,28 @@ public class AclToAclLineMatchExprTest {
 
   @Test
   public void testAnd() {
-    AclToAclLineMatchExpr toAclLineMatchExpr = aclToAclLineMatchExpr();
+    AclToExprConverter toAclLineMatchExpr = aclToAclLineMatchExpr().getConverterInstance();
     AclLineMatchExpr and = and(EXPR_REFERENCE, EXPR_C);
     assertThat(toAclLineMatchExpr.visit(and), equalTo(and(ACL_REFERENT_EXPR, EXPR_C)));
   }
 
   @Test
   public void testOr() {
-    AclToAclLineMatchExpr toAclLineMatchExpr = aclToAclLineMatchExpr();
+    AclToExprConverter toAclLineMatchExpr = aclToAclLineMatchExpr().getConverterInstance();
     AclLineMatchExpr or = or(EXPR_REFERENCE, EXPR_C);
     assertThat(toAclLineMatchExpr.visit(or), equalTo(or(ACL_REFERENT_EXPR, EXPR_C)));
   }
 
   @Test
   public void testNot() {
-    AclToAclLineMatchExpr toAclLineMatchExpr = aclToAclLineMatchExpr();
+    AclToExprConverter toAclLineMatchExpr = aclToAclLineMatchExpr().getConverterInstance();
     AclLineMatchExpr not = not(EXPR_REFERENCE);
     assertThat(toAclLineMatchExpr.visit(not), equalTo(not(ACL_REFERENT_EXPR)));
   }
 
   @Test
   public void testIdentities() {
-    AclToAclLineMatchExpr toAclLineMatchExpr = aclToAclLineMatchExpr();
+    AclToExprConverter toAclLineMatchExpr = aclToAclLineMatchExpr().getConverterInstance();
     assertThat(toAclLineMatchExpr.visit(EXPR_A), equalTo(EXPR_A));
     assertThat(toAclLineMatchExpr.visit(FALSE), equalTo(FALSE));
     assertThat(
