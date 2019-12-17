@@ -18,7 +18,7 @@ public final class InboundStep extends Step<InboundStepDetail> {
   public static class InboundStepDetail {
     private static final String PROP_INTERFACE = "interface";
 
-    public @Nonnull String _interface;
+    @Nonnull private final String _interface;
 
     public InboundStepDetail(@Nonnull String iface) {
       _interface = iface;
