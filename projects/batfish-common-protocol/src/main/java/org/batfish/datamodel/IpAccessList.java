@@ -90,27 +90,29 @@ public class IpAccessList implements Serializable {
     return new Builder(null);
   }
 
-  private List<AclLine> _lines;
-
+  @Nonnull private final List<AclLine> _lines;
   @Nonnull private final String _name;
-
-  private String _sourceName;
-
-  private String _sourceType;
+  private final String _sourceName;
+  private final String _sourceType;
 
   @JsonCreator
-  private IpAccessList(@Nullable @JsonProperty(PROP_NAME) String name) {
+  private static IpAccessList jsonCreator(
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_LINES) List<AclLine> lines,
+      @Nullable @JsonProperty(PROP_SOURCE_NAME) String sourceName,
+      @Nullable @JsonProperty(PROP_SOURCE_TYPE) String sourceType) {
     checkArgument(name != null, "IpAccessList missing %s", PROP_NAME);
-    _name = name;
+    checkArgument(lines != null, "IpAccessList missing %s", PROP_LINES);
+    return new IpAccessList(name, lines, sourceName, sourceType);
   }
 
-  public IpAccessList(
+  private IpAccessList(
       @Nonnull String name,
-      List<? extends AclLine> lines,
+      @Nonnull List<AclLine> lines,
       @Nullable String sourceName,
       @Nullable String sourceType) {
     _name = name;
-    _lines = ImmutableList.<AclLine>builder().addAll(lines).build();
+    _lines = ImmutableList.copyOf(lines);
     _sourceName = sourceName;
     _sourceType = sourceType;
   }
@@ -164,6 +166,7 @@ public class IpAccessList implements Serializable {
 
   /** The lines against which to check an IPV4 packet. */
   @JsonProperty(PROP_LINES)
+  @Nonnull
   public List<AclLine> getLines() {
     return _lines;
   }
@@ -181,21 +184,6 @@ public class IpAccessList implements Serializable {
   @JsonIgnore
   public boolean isComposite() {
     return getName().startsWith("~");
-  }
-
-  @JsonProperty(PROP_LINES)
-  public void setLines(List<AclLine> lines) {
-    _lines = ImmutableList.copyOf(lines);
-  }
-
-  @JsonProperty(PROP_SOURCE_NAME)
-  private void setSourceName(String sourceName) {
-    _sourceName = sourceName;
-  }
-
-  @JsonProperty(PROP_SOURCE_TYPE)
-  private void setSourceType(String sourceType) {
-    _sourceType = sourceType;
   }
 
   @Override
