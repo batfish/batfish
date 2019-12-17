@@ -66,6 +66,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ConfigurationFormat.METAMAKO,
           ConfigurationFormat.MRV_COMMANDS,
           ConfigurationFormat.MSS,
+          ConfigurationFormat.RUCKUS_ICX,
           ConfigurationFormat.VXWORKS);
 
   /** Information about duplicate hostnames is collected here */

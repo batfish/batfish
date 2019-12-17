@@ -12,6 +12,7 @@ import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER_SWITCH;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
+import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
 import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
 import static org.hamcrest.Matchers.equalTo;
@@ -154,6 +155,14 @@ public class VendorConfigurationFormatDetectorTest {
         ImmutableList.of(
             flatRancid, flatRancid2, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(PALO_ALTO));
+    }
+  }
+
+  @Test
+  public void testRuckusIcx() {
+    String basic = "stack unit 2\n" + "  module 1 icx7450-48p-poe-management-module\n";
+    for (String fileText : ImmutableList.of(basic)) {
+      assertThat(identifyConfigurationFormat(fileText), equalTo(RUCKUS_ICX));
     }
   }
 

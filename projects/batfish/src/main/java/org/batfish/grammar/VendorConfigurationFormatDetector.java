@@ -327,6 +327,17 @@ public final class VendorConfigurationFormatDetector {
     }
   }
 
+  private static final Pattern RUCKUS_ICX_MODULE_PATTERN =
+      Pattern.compile("module \\d+ icx", Pattern.MULTILINE);
+
+  @Nullable
+  private ConfigurationFormat checkRuckusIcx() {
+    if (RUCKUS_ICX_MODULE_PATTERN.matcher(_fileText).find()) {
+      return ConfigurationFormat.RUCKUS_ICX;
+    }
+    return null;
+  }
+
   @Nullable
   private ConfigurationFormat checkVxWorks() {
     if (_firstChar == '!' && _fileText.contains("set prompt")) {
@@ -362,6 +373,10 @@ public final class VendorConfigurationFormatDetector {
     // formats we know this file does not match.
     configureHeuristicBlacklist();
 
+    format = checkRuckusIcx();
+    if (format != null) {
+      return format;
+    }
     format = checkCadant();
     if (format != null) {
       return format;
