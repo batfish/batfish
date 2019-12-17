@@ -175,7 +175,7 @@ public final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ast);
+    return Objects.hashCode(_ast);
   }
 
   @Override

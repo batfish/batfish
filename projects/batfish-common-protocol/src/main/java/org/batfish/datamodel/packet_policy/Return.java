@@ -48,7 +48,7 @@ public final class Return implements Statement {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getAction());
+    return Objects.hashCode(getAction());
   }
 
   @Override

@@ -37,6 +37,6 @@ final class EnterLocationAstNode implements LocationAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_interfaceLocationAst);
+    return Objects.hashCode(_interfaceLocationAst);
   }
 }

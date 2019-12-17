@@ -62,7 +62,7 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_attachmentId);
+      return Objects.hashCode(_attachmentId);
     }
   }
 

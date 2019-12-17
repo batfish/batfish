@@ -48,7 +48,7 @@ final class ValueEnumSetAstNode<T> implements EnumSetAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_value);
+    return Objects.hashCode(_value);
   }
 
   @Override

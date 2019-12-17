@@ -88,7 +88,7 @@ public final class CallExpr extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_calledPolicyName);
+    return Objects.hashCode(_calledPolicyName);
   }
 
   @Override

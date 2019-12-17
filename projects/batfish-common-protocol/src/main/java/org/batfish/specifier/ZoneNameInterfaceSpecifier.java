@@ -33,7 +33,7 @@ public final class ZoneNameInterfaceSpecifier implements InterfaceSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name);
+    return Objects.hashCode(_name);
   }
 
   @Override

@@ -30,7 +30,7 @@ public class NodeSpecifierInterfaceLocationSpecifier implements LocationSpecifie
 
   @Override
   public int hashCode() {
-    return Objects.hash(_nodeSpecifier);
+    return Objects.hashCode(_nodeSpecifier);
   }
 
   @Override

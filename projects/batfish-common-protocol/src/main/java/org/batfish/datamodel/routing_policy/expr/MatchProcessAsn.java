@@ -49,7 +49,7 @@ public final class MatchProcessAsn extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn);
+    return Objects.hashCode(_asn);
   }
 
   @Override

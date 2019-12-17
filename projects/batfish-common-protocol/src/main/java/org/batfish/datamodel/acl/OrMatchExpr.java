@@ -50,7 +50,7 @@ public class OrMatchExpr extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_disjuncts);
+    return Objects.hashCode(_disjuncts);
   }
 
   @Override

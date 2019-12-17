@@ -3313,7 +3313,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_name);
+      return Objects.hashCode(_name);
     }
 
     public void setBasePath(Path basePath) {

@@ -47,6 +47,6 @@ public final class BgpRouteDiffs {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_diffs);
+    return Objects.hashCode(_diffs);
   }
 }

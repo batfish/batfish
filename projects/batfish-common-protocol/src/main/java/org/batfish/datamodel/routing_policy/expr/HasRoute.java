@@ -57,6 +57,6 @@ public final class HasRoute extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_expr);
+    return Objects.hashCode(_expr);
   }
 }

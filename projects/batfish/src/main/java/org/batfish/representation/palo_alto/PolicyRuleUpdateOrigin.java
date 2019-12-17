@@ -36,6 +36,6 @@ public final class PolicyRuleUpdateOrigin implements PolicyRuleUpdate {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_origin);
+    return Objects.hashCode(_origin);
   }
 }

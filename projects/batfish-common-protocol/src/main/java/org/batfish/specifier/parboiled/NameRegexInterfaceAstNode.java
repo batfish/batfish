@@ -50,7 +50,7 @@ final class NameRegexInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_regex);
+    return Objects.hashCode(_regex);
   }
 
   @Override

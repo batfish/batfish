@@ -44,7 +44,7 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_locationSpecifier);
+    return Objects.hashCode(_locationSpecifier);
   }
 
   @Override

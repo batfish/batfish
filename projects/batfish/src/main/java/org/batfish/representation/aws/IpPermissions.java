@@ -79,7 +79,7 @@ final class IpPermissions implements Serializable {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_prefix);
+      return Objects.hashCode(_prefix);
     }
   }
 
@@ -158,7 +158,7 @@ final class IpPermissions implements Serializable {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_groupId);
+      return Objects.hashCode(_groupId);
     }
   }
 

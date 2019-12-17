@@ -32,7 +32,7 @@ public final class PolicyRuleMatchFromPeerSet implements PolicyRuleMatch {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_fromPeers);
+    return Objects.hashCode(_fromPeers);
   }
 
   public @Nonnull Set<String> getFromPeers() {

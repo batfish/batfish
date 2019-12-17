@@ -54,6 +54,6 @@ public final class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_matchLength);
+    return Objects.hashCode(_matchLength);
   }
 }

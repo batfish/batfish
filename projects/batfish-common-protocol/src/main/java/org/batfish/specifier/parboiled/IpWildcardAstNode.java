@@ -50,6 +50,6 @@ final class IpWildcardAstNode implements IpSpaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipWildcard);
+    return Objects.hashCode(_ipWildcard);
   }
 }

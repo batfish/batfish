@@ -504,7 +504,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_id);
+      return Objects.hashCode(_id);
     }
 
     @Override

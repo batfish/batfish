@@ -1615,7 +1615,7 @@ public class ForwardingAnalysisImplTest {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_num);
+      return Objects.hashCode(_num);
     }
 
     @Override

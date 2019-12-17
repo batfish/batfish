@@ -33,7 +33,7 @@ public final class NameRegexFilterSpecifier implements FilterSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_pattern.pattern());
+    return Objects.hashCode(_pattern.pattern());
   }
 
   @Override

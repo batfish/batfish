@@ -52,7 +52,7 @@ public class MatchSrcInterface extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_srcInterfaces);
+    return Objects.hashCode(_srcInterfaces);
   }
 
   @Override

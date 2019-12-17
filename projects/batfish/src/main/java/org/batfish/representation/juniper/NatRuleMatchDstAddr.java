@@ -39,6 +39,6 @@ public final class NatRuleMatchDstAddr implements NatRuleMatch {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_prefix);
+    return Objects.hashCode(_prefix);
   }
 }

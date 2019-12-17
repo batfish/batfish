@@ -214,7 +214,7 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ast);
+    return Objects.hashCode(_ast);
   }
 
   @Override
