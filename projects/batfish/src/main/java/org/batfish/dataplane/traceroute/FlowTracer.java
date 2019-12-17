@@ -15,7 +15,7 @@ import static org.batfish.datamodel.flow.StepAction.FORWARDED_TO_NEXT_VRF;
 import static org.batfish.datamodel.flow.StepAction.NULL_ROUTED;
 import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
-import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterInputIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.fibEntriesToRouteInfos;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
@@ -398,7 +398,7 @@ class FlowTracer {
 
     // Trace was received on a source interface of this hop - this should always be first.
     if (_ingressInterface != null) {
-      _steps.add(buildEnterSrcIfaceStep(_currentConfig, _ingressInterface));
+      _steps.add(buildEnterInputIfaceStep(_currentConfig, _ingressInterface));
     }
 
     if (processSessions()) {

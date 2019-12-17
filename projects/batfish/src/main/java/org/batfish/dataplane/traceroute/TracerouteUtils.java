@@ -112,7 +112,7 @@ public final class TracerouteUtils {
    *     the step; null if {@link EnterInputIfaceStep} can't be created
    */
   @Nonnull
-  static EnterInputIfaceStep buildEnterSrcIfaceStep(Configuration node, String inputIfaceName) {
+  static EnterInputIfaceStep buildEnterInputIfaceStep(Configuration node, String inputIfaceName) {
     Interface inputInterface = node.getAllInterfaces().get(inputIfaceName);
     checkArgument(
         inputInterface != null, "Node %s has no interface %s", node.getHostname(), inputIfaceName);
