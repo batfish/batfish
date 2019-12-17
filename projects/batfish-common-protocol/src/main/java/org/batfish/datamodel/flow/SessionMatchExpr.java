@@ -44,28 +44,28 @@ public class SessionMatchExpr {
     _dstPort = dstPort;
   }
 
-  @JsonProperty
+  @JsonProperty(PROP_IP_PROTOCOL)
   public IpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
-  @JsonProperty
+  @JsonProperty(PROP_SRC_IP)
   public Ip getSrcIp() {
     return _srcIp;
   }
 
-  @JsonProperty
+  @JsonProperty(PROP_DST_IP)
   public Ip getDstIp() {
     return _dstIp;
   }
 
-  @JsonProperty
+  @JsonProperty(PROP_SRC_PORT)
   @Nullable
   public Integer getSrcPort() {
     return _srcPort;
   }
 
-  @JsonProperty
+  @JsonProperty(PROP_DST_PORT)
   @Nullable
   public Integer getDstPort() {
     return _dstPort;
@@ -87,6 +87,7 @@ public class SessionMatchExpr {
     return new MatchHeaderSpace(hb.build());
   }
 
+  @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
@@ -102,6 +103,7 @@ public class SessionMatchExpr {
         && Objects.equals(_dstPort, rhs._dstPort);
   }
 
+  @Override
   public int hashCode() {
     return Objects.hash(_ipProtocol, _srcIp, _dstIp, _srcPort, _dstPort);
   }
