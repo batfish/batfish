@@ -1,22 +1,34 @@
 package org.batfish.dataplane.traceroute;
 
+import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterInputIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getTcpFlagsForReverse;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.EnterInputIfaceStep;
+import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 /** Tests for {@link TracerouteUtils}. */
@@ -185,5 +197,29 @@ public final class TracerouteUtilsTest {
                     assignDestinationPort(srcPort1, srcPort1)),
                 null,
                 null)));
+  }
+
+  @Test
+  public void testBuildEnterInputIfaceStep() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    VendorStructureId vendorStructureId = new VendorStructureId("f", "t", "n");
+    Interface i =
+        nf.interfaceBuilder()
+            .setOwner(c)
+            .setVrf(vrf)
+            .setActive(true)
+            .setVendorStructureId(vendorStructureId)
+            .build();
+
+    EnterInputIfaceStep step = buildEnterInputIfaceStep(c, i.getName());
+    assertEquals(RECEIVED, step.getAction());
+
+    EnterInputIfaceStepDetail detail = step.getDetail();
+    assertEquals(NodeInterfacePair.of(c.getHostname(), i.getName()), detail.getInputInterface());
+    assertEquals(vrf.getName(), detail.getInputVrf());
+    assertEquals(vendorStructureId, detail.getInputInterfaceStructureId());
   }
 }
