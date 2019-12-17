@@ -74,6 +74,10 @@ public final class FirewallSessionTraceInfo {
     return _sessionFlows.toAclLineMatchExpr();
   }
 
+  public @Nonnull SessionMatchExpr getMatchCriteria() {
+    return _sessionFlows;
+  }
+
   /** The (optional) transformation for session traffic. */
   @Nullable
   public Transformation getTransformation() {
