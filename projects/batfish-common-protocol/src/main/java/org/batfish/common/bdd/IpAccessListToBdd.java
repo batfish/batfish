@@ -24,6 +24,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
@@ -192,27 +193,6 @@ public abstract class IpAccessListToBdd {
     }
     bdds.add(reach);
     return bdds.build();
-  }
-
-  /**
-   * {@link AclLine} visitor that returns the action that the line will take, or the opposite action
-   * if {@code flip} is true
-   */
-  private static final class ActionGetter implements GenericAclLineVisitor<LineAction> {
-    private final boolean _flip;
-
-    ActionGetter(boolean flip) {
-      _flip = flip;
-    }
-
-    private static LineAction flip(LineAction action) {
-      return action == LineAction.PERMIT ? LineAction.DENY : LineAction.PERMIT;
-    }
-
-    @Override
-    public LineAction visitExprAclLine(ExprAclLine exprAclLine) {
-      return _flip ? flip(exprAclLine.getAction()) : exprAclLine.getAction();
-    }
   }
 
   /**
