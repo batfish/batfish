@@ -145,16 +145,11 @@ public final class BatfishLogger {
     return LOG_LEVELS.containsKey(levelStr);
   }
 
-  private final BatfishLoggerHistory _history;
-
+  @Nullable private final BatfishLoggerHistory _history;
   private int _level;
-
-  private String _logFile;
-
-  private PrintStream _ps;
-
+  @Nullable private String _logFile;
+  @Nullable private PrintStream _ps;
   private long _timerCount;
-
   private boolean _timestamp;
 
   public BatfishLogger(String logLevel, boolean timestamp) {
