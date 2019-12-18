@@ -323,7 +323,10 @@
                   },
                   {
                     "type" : "Inbound",
-                    "action" : "ACCEPTED"
+                    "action" : "ACCEPTED",
+                    "detail" : {
+                      "interface" : "GigabitEthernet1/0"
+                    }
                   }
                 ]
               }
@@ -591,7 +594,10 @@
                   },
                   {
                     "type" : "Inbound",
-                    "action" : "ACCEPTED"
+                    "action" : "ACCEPTED",
+                    "detail" : {
+                      "interface" : "GigabitEthernet1/0"
+                    }
                   }
                 ]
               }
@@ -859,7 +865,10 @@
                   },
                   {
                     "type" : "Inbound",
-                    "action" : "ACCEPTED"
+                    "action" : "ACCEPTED",
+                    "detail" : {
+                      "interface" : "GigabitEthernet1/0"
+                    }
                   }
                 ]
               }
@@ -1135,7 +1144,10 @@
                   },
                   {
                     "type" : "Inbound",
-                    "action" : "ACCEPTED"
+                    "action" : "ACCEPTED",
+                    "detail" : {
+                      "interface" : "GigabitEthernet1/0"
+                    }
                   }
                 ]
               }
