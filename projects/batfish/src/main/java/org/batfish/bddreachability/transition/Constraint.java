@@ -34,7 +34,7 @@ public final class Constraint implements Transition {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_constraint);
+    return Objects.hashCode(_constraint);
   }
 
   @Override

@@ -5,8 +5,8 @@ import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
+import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
-import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
@@ -45,11 +45,11 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -97,7 +97,7 @@ public class JuniperConfigurationTest {
     assertThat(emptyAcl.getLines(), iterableWithSize(0));
 
     // ACL from headerSpace filter should have one line
-    IpAccessListLine headerSpaceAclLine = Iterables.getOnlyElement(headerSpaceAcl.getLines());
+    ExprAclLine headerSpaceAclLine = Iterables.getOnlyElement(headerSpaceAcl.getLines());
     // It should have a MatchHeaderSpace match condition, matching the ipAddrPrefix from above
     ImmutableList.of("1.2.3.0", "1.2.3.255").stream()
         .map(Ip::parse)
@@ -109,8 +109,7 @@ public class JuniperConfigurationTest {
                         isMatchHeaderSpaceThat(hasHeaderSpace(hasSrcIps(containsIp(ip)))))));
 
     // ACL from headerSpace and zone filter should have one line
-    IpAccessListLine comboAclLine =
-        Iterables.getOnlyElement(headerSpaceAndSrcInterfaceAcl.getLines());
+    ExprAclLine comboAclLine = Iterables.getOnlyElement(headerSpaceAndSrcInterfaceAcl.getLines());
     // It should have an AndMatchExpr match condition, containing both a MatchSrcInterface
     // condition and a MatchHeaderSpace condition
     assertThat(
@@ -410,12 +409,12 @@ public class JuniperConfigurationTest {
                 .setName("~SCREEN~screen")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.rejecting(
+                        ExprAclLine.rejecting(
                             new OrMatchExpr(
                                 screenOptionList.stream()
                                     .map(ScreenOption::getAclLineMatchExpr)
                                     .collect(Collectors.toList()))),
-                        IpAccessListLine.ACCEPT_ALL))
+                        ExprAclLine.ACCEPT_ALL))
                 .build()));
 
     Screen screen2 = new Screen("screen2");
@@ -465,7 +464,7 @@ public class JuniperConfigurationTest {
                 .setName("~SCREEN_ZONE~zone")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.accepting(
+                        ExprAclLine.accepting(
                             new AndMatchExpr(
                                 ImmutableList.of(new PermittedByAcl("~SCREEN~screen1", false))))))
                 .build()));
@@ -479,12 +478,12 @@ public class JuniperConfigurationTest {
                 .setName("~SCREEN~screen1")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.rejecting(
+                        ExprAclLine.rejecting(
                             new OrMatchExpr(
                                 screenOptionList1.stream()
                                     .map(ScreenOption::getAclLineMatchExpr)
                                     .collect(Collectors.toList()))),
-                        IpAccessListLine.ACCEPT_ALL))
+                        ExprAclLine.ACCEPT_ALL))
                 .build()));
   }
 
@@ -519,7 +518,7 @@ public class JuniperConfigurationTest {
                 .setName("~SCREEN_INTERFACE~iface")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.accepting(new PermittedByAcl("~SCREEN_ZONE~zone"))))
+                        ExprAclLine.accepting(new PermittedByAcl("~SCREEN_ZONE~zone"))))
                 .build()));
     assertThat(config._c.getIpAccessLists().get("~SCREEN_ZONE~zone"), notNullValue());
   }

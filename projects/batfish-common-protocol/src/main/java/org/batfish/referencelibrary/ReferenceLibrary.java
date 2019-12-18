@@ -101,7 +101,7 @@ public class ReferenceLibrary {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_books);
+    return Objects.hashCode(_books);
   }
 
   /**

@@ -53,7 +53,7 @@ public final class Noop implements TransformationStep, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type);
+    return Objects.hashCode(_type);
   }
 
   @JsonProperty(PROP_TRANSFORMATION_TYPE)

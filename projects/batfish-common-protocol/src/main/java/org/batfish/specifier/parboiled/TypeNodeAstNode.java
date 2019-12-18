@@ -42,6 +42,6 @@ final class TypeNodeAstNode implements NodeAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_deviceType);
+    return Objects.hashCode(_deviceType);
   }
 }

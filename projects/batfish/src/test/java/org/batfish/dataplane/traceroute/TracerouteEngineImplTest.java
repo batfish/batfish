@@ -1,5 +1,9 @@
 package org.batfish.dataplane.traceroute;
 
+import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
+import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
@@ -11,10 +15,6 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
-import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
-import static org.batfish.datamodel.IpAccessListLine.REJECT_ALL;
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -74,6 +74,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -81,7 +82,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
@@ -97,6 +97,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.DeliveredStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FilterStep;
@@ -618,12 +619,13 @@ public class TracerouteEngineImplTest {
     assertThat(hops, hasSize(1));
     List<Step<?>> steps = hops.get(0).getSteps();
     // should have ingress acl -> routing -> presourcenat acl -> egress acl
-    assertThat(steps, hasSize(4));
+    assertThat(steps, hasSize(5));
 
     assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
     assertThat(steps.get(1), instanceOf(RoutingStep.class));
     assertThat(steps.get(2), instanceOf(FilterStep.class));
     assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
+    assertThat(steps.get(4), instanceOf(DeliveredStep.class));
 
     EnterInputIfaceStep step0 = (EnterInputIfaceStep) steps.get(0);
     assertThat(step0.getAction(), equalTo(StepAction.RECEIVED));
@@ -644,11 +646,18 @@ public class TracerouteEngineImplTest {
     assertThat(step2.getDetail().getFilter(), equalTo(filter.getName()));
 
     ExitOutputIfaceStep step3 = (ExitOutputIfaceStep) steps.get(3);
-    assertThat(step3.getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(step3.getAction(), equalTo(StepAction.TRANSMITTED));
     assertThat(
         step3.getDetail().getOutputInterface(),
         equalTo(NodeInterfacePair.of(c1.getHostname(), i2.getName())));
     assertThat(step3.getDetail().getTransformedFlow(), nullValue());
+
+    DeliveredStep step4 = (DeliveredStep) steps.get(4);
+    assertThat(step4.getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(
+        step4.getDetail().getOutputInterface(),
+        equalTo(NodeInterfacePair.of(c1.getHostname(), i2.getName())));
+    assertThat(step4.getDetail().getResolvedNexthopIp(), equalTo(Ip.parse("20.6.6.6")));
 
     Flow flow2 =
         Flow.builder()
@@ -714,7 +723,7 @@ public class TracerouteEngineImplTest {
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(i1.getName())),
                             matchSrc(Prefix.parse("10.0.0.1/32")))),
-                    new IpAccessListLine(
+                    new ExprAclLine(
                         LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND")))
             .build();
 
@@ -742,17 +751,19 @@ public class TracerouteEngineImplTest {
     assertThat(hops, hasSize(1));
     List<Step<?>> steps = hops.get(0).getSteps();
     // should have originated -> routing -> presourcenat acl -> egress acl
-    assertThat(steps, hasSize(4));
+    assertThat(steps, hasSize(5));
 
     assertThat(steps.get(0), instanceOf(OriginateStep.class));
     assertThat(steps.get(1), instanceOf(RoutingStep.class));
     assertThat(steps.get(2), instanceOf(FilterStep.class));
     assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
+    assertThat(steps.get(4), instanceOf(DeliveredStep.class));
 
     assertThat(steps.get(0).getAction(), equalTo(StepAction.ORIGINATED));
     assertThat(steps.get(1).getAction(), equalTo(StepAction.FORWARDED));
     assertThat(steps.get(2).getAction(), equalTo(StepAction.PERMITTED));
-    assertThat(steps.get(3).getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(steps.get(3).getAction(), equalTo(StepAction.TRANSMITTED));
+    assertThat(steps.get(4).getAction(), equalTo(StepAction.EXITS_NETWORK));
   }
 
   @Test
@@ -890,7 +901,7 @@ public class TracerouteEngineImplTest {
     assertThat(trace.getHops(), hasSize(1));
     hop = trace.getHops().get(0);
 
-    assertThat(hop.getSteps(), hasSize(4));
+    assertThat(hop.getSteps(), hasSize(5));
     steps = hop.getSteps();
 
     // source nat step
@@ -920,7 +931,7 @@ public class TracerouteEngineImplTest {
     assertThat(trace.getHops(), hasSize(1));
     hop = trace.getHops().get(0);
 
-    assertThat(hop.getSteps(), hasSize(4));
+    assertThat(hop.getSteps(), hasSize(5));
     steps = hop.getSteps();
 
     // source nat step
@@ -951,7 +962,7 @@ public class TracerouteEngineImplTest {
     assertThat(trace.getHops(), hasSize(1));
     hop = trace.getHops().get(0);
 
-    assertThat(hop.getSteps(), hasSize(3));
+    assertThat(hop.getSteps(), hasSize(4));
   }
 
   @Test
@@ -1008,18 +1019,20 @@ public class TracerouteEngineImplTest {
     List<Hop> hops = traceList.get(0).getHops();
     assertThat(hops, hasSize(1));
     List<Step<?>> steps = hops.get(0).getSteps();
-    // should have enter interface -> filter -> routing -> exit
-    assertThat(steps, hasSize(4));
+    // should have enter interface -> filter -> routing -> exit interface -> exit network
+    assertThat(steps, hasSize(5));
 
     assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
     assertThat(steps.get(1), instanceOf(FilterStep.class));
     assertThat(steps.get(2), instanceOf(RoutingStep.class));
     assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
+    assertThat(steps.get(4), instanceOf(DeliveredStep.class));
 
     assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
     assertThat(steps.get(1).getAction(), equalTo(StepAction.PERMITTED));
     assertThat(steps.get(2).getAction(), equalTo(StepAction.FORWARDED));
-    assertThat(steps.get(3).getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(steps.get(3).getAction(), equalTo(StepAction.TRANSMITTED));
+    assertThat(steps.get(4).getAction(), equalTo(StepAction.EXITS_NETWORK));
 
     flow =
         Flow.builder()
@@ -1101,18 +1114,20 @@ public class TracerouteEngineImplTest {
     List<Hop> hops = traceList.get(0).getHops();
     assertThat(hops, hasSize(1));
     List<Step<?>> steps = hops.get(0).getSteps();
-    // should have enter interface -> routing -> filter -> exit
-    assertThat(steps, hasSize(4));
+    // should have enter interface -> routing -> filter -> exit interface -> exit network
+    assertThat(steps, hasSize(5));
 
     assertThat(steps.get(0), instanceOf(EnterInputIfaceStep.class));
     assertThat(steps.get(1), instanceOf(RoutingStep.class));
     assertThat(steps.get(2), instanceOf(FilterStep.class));
     assertThat(steps.get(3), instanceOf(ExitOutputIfaceStep.class));
+    assertThat(steps.get(4), instanceOf(DeliveredStep.class));
 
     assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
     assertThat(steps.get(1).getAction(), equalTo(StepAction.FORWARDED));
     assertThat(steps.get(2).getAction(), equalTo(StepAction.PERMITTED));
-    assertThat(steps.get(3).getAction(), equalTo(StepAction.EXITS_NETWORK));
+    assertThat(steps.get(3).getAction(), equalTo(StepAction.TRANSMITTED));
+    assertThat(steps.get(4).getAction(), equalTo(StepAction.EXITS_NETWORK));
 
     flow =
         Flow.builder()
@@ -1479,7 +1494,7 @@ public class TracerouteEngineImplTest {
             .setOwner(c1)
             .setLines(
                 ImmutableList.of(
-                    IpAccessListLine.acceptingHeaderSpace(
+                    ExprAclLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
                             .setDstIps(Ip.parse("1.0.1.2").toIpSpace())
@@ -1970,7 +1985,9 @@ public class TracerouteEngineImplTest {
                   instanceOf(MatchSessionStep.class),
                   hasProperty(
                       "detail",
-                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
+                      allOf(
+                          hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
+                          hasProperty("sessionAction", equalTo(Accept.INSTANCE)))))));
       assertThat(
           results,
           contains(
@@ -2001,7 +2018,9 @@ public class TracerouteEngineImplTest {
                   instanceOf(MatchSessionStep.class),
                   hasProperty(
                       "detail",
-                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
+                      allOf(
+                          hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
+                          hasProperty("sessionAction", equalTo(session.getAction())))))));
       /* Disposition is always exits network -- see:
        * TracerouteEngineImplContext#buildSessionArpFailureTrace(String, TransmissionContext, List).
        */
@@ -2035,7 +2054,9 @@ public class TracerouteEngineImplTest {
                   instanceOf(MatchSessionStep.class),
                   hasProperty(
                       "detail",
-                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
+                      allOf(
+                          hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
+                          hasProperty("sessionAction", equalTo(session.getAction())))))));
       // flow reaches c2.
       assertThat(
           results,
@@ -2068,7 +2089,9 @@ public class TracerouteEngineImplTest {
                   instanceOf(MatchSessionStep.class),
                   hasProperty(
                       "detail",
-                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
+                      allOf(
+                          hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
+                          hasProperty("sessionAction", equalTo(session.getAction())))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_IN))));
     }
 
@@ -2093,7 +2116,9 @@ public class TracerouteEngineImplTest {
                   instanceOf(MatchSessionStep.class),
                   hasProperty(
                       "detail",
-                      hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name)))))));
+                      allOf(
+                          hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
+                          hasProperty("sessionAction", equalTo(session.getAction())))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_OUT))));
     }
 
@@ -2200,7 +2225,7 @@ public class TracerouteEngineImplTest {
             .setOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
-                    .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+                    .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
                     .build());
 
     Interface i1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
@@ -2295,7 +2320,7 @@ public class TracerouteEngineImplTest {
 
     assertThat(traces, hasSize(1));
     assertThat(traces.get(0).getHops(), hasSize(1));
-    assertThat(traces.get(0).getHops().get(0).getSteps(), hasSize(4));
+    assertThat(traces.get(0).getHops().get(0).getSteps(), hasSize(5));
     assertThat(
         traces.get(0).getHops().get(0).getSteps().get(2),
         equalTo(

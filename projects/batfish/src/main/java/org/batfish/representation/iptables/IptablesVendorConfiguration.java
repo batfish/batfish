@@ -17,10 +17,10 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -30,9 +30,9 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
   private String _hostname;
 
-  private transient Map<IpAccessListLine, String> _lineInInterfaces;
+  private transient Map<ExprAclLine, String> _lineInInterfaces;
 
-  private transient Map<IpAccessListLine, String> _lineOutInterfaces;
+  private transient Map<ExprAclLine, String> _lineOutInterfaces;
 
   private ConfigurationFormat _vendor;
 
@@ -71,7 +71,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
-        List<IpAccessListLine> newRules =
+        List<ExprAclLine> newRules =
             prerouting.getLines().stream()
                 .filter(
                     l -> {
@@ -102,7 +102,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
-        List<IpAccessListLine> newRules =
+        List<ExprAclLine> newRules =
             postrouting.getLines().stream()
                 .filter(
                     l -> {
@@ -150,7 +150,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   }
 
   private IpAccessList toIpAccessList(String aclName, IptablesChain chain, VendorConfiguration vc) {
-    ImmutableList.Builder<IpAccessListLine> lines = ImmutableList.builder();
+    ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
 
     for (IptablesRule rule : chain.getRules()) {
       HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
@@ -193,8 +193,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
       }
-      IpAccessListLine aclLine =
-          IpAccessListLine.builder()
+      ExprAclLine aclLine =
+          ExprAclLine.builder()
               .setAction(rule.getIpAccessListLineAction())
               .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
               .setName(rule.getName())
@@ -219,8 +219,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
     // add a final line corresponding to default chain policy
     LineAction chainAction = chain.getIpAccessListLineAction();
-    IpAccessListLine defaultLine =
-        IpAccessListLine.builder()
+    ExprAclLine defaultLine =
+        ExprAclLine.builder()
             .setAction(chainAction)
             .setMatchCondition(TrueExpr.INSTANCE)
             .setName("default")

@@ -63,6 +63,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
@@ -72,7 +73,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
@@ -504,7 +504,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_id);
+      return Objects.hashCode(_id);
     }
 
     @Override
@@ -562,10 +562,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     fwI2.setOutgoingTransformation(always().apply(assignSourceIp(poolIp, poolIp)).build());
     // drop all non-session flows entering fwI2
     fwI2.setIncomingFilter(
-        nf.aclBuilder()
-            .setOwner(fw)
-            .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
-            .build());
+        nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(ExprAclLine.REJECT_ALL)).build());
 
     fwI2.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(fwI2.getName()), null, null));
@@ -691,13 +688,13 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     HeaderSpace tcpHeaderSpace =
         HeaderSpace.builder().setIpProtocols(ImmutableList.of(IpProtocol.TCP)).build();
-    IpAccessListLine permitTcpLine =
-        IpAccessListLine.accepting().setMatchCondition(match(tcpHeaderSpace)).build();
+    ExprAclLine permitTcpLine =
+        ExprAclLine.accepting().setMatchCondition(match(tcpHeaderSpace)).build();
 
     HeaderSpace udpHeaderSpace =
         HeaderSpace.builder().setIpProtocols(ImmutableList.of(IpProtocol.UDP)).build();
-    IpAccessListLine permitUdpLine =
-        IpAccessListLine.accepting().setMatchCondition(match(udpHeaderSpace)).build();
+    ExprAclLine permitUdpLine =
+        ExprAclLine.accepting().setMatchCondition(match(udpHeaderSpace)).build();
 
     Configuration source1 = cb.build();
     Vrf vrf = nf.vrfBuilder().setOwner(source1).build();
@@ -750,10 +747,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     fwI3.setOutgoingTransformation(always().apply(assignSourceIp(poolIp, poolIp)).build());
     // drop all non-session flows entering fwI3
     fwI3.setIncomingFilter(
-        nf.aclBuilder()
-            .setOwner(fw)
-            .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
-            .build());
+        nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(ExprAclLine.REJECT_ALL)).build());
 
     fwI3.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(fwI3.getName()), null, null));

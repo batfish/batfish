@@ -1,0 +1,28 @@
+{
+  "class" : "org.batfish.question.evpnl3vniproperties.EvpnL3VniPropertiesQuestion",
+  "nodes" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns configuration settings of VXLANs.",
+    "instanceName" : "qname",
+    "longDescription" : "Lists VNI-level network segment settings configured for VXLANs.",
+    "orderedVariableNames" : [
+      "nodes"
+    ],
+    "tags" : [
+      "configuration",
+      "evpn",
+      "vxlan"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      }
+    }
+  }
+}

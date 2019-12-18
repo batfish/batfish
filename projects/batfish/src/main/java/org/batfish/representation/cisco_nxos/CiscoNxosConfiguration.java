@@ -79,6 +79,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
@@ -1895,19 +1896,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Converts the supplied {@code line} to zero or more vendor-independent {@link
-   * org.batfish.datamodel.IpAccessListLine}s depending on semantics.
+   * Converts the supplied {@code line} to zero or more vendor-independent {@link ExprAclLine}s
+   * depending on semantics.
    */
-  private @Nonnull Stream<org.batfish.datamodel.IpAccessListLine> toIpAccessListLine(
-      IpAccessListLine line) {
+  private @Nonnull Stream<ExprAclLine> toIpAccessListLine(IpAccessListLine line) {
     return line.accept(
-        new IpAccessListLineVisitor<Stream<org.batfish.datamodel.IpAccessListLine>>() {
+        new IpAccessListLineVisitor<Stream<ExprAclLine>>() {
           @Override
-          public Stream<org.batfish.datamodel.IpAccessListLine> visitActionIpAccessListLine(
+          public Stream<ExprAclLine> visitActionIpAccessListLine(
               ActionIpAccessListLine actionIpAccessListLine) {
             LineAction action = actionIpAccessListLine.getAction();
             return Stream.of(
-                org.batfish.datamodel.IpAccessListLine.builder()
+                ExprAclLine.builder()
                     .setAction(action)
                     .setMatchCondition(toAclLineMatchExpr(actionIpAccessListLine, action))
                     .setName(actionIpAccessListLine.getText())
@@ -1915,7 +1915,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
-          public Stream<org.batfish.datamodel.IpAccessListLine> visitRemarkIpAccessListLine(
+          public Stream<ExprAclLine> visitRemarkIpAccessListLine(
               RemarkIpAccessListLine remarkIpAccessListLine) {
             return Stream.empty();
           }

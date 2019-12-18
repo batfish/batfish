@@ -42,10 +42,10 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -328,7 +328,7 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static IpAccessList toMatchLineAcl(Integer lineNumber, IpAccessList acl) {
-    List<IpAccessListLine> lines =
+    List<ExprAclLine> lines =
         Streams.concat(
                 acl.getLines().subList(0, lineNumber).stream()
                     .map(l -> l.toBuilder().setAction(LineAction.DENY).build()),
@@ -347,7 +347,7 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static IpAccessList toDenyAcl(IpAccessList acl) {
-    List<IpAccessListLine> lines =
+    List<ExprAclLine> lines =
         Streams.concat(
                 acl.getLines().stream()
                     .map(
@@ -360,7 +360,7 @@ public final class SearchFiltersAnswerer extends Answerer {
                                         : LineAction.PERMIT)
                                 .build()),
                 // accept if we reach the end of the ACL
-                Stream.of(IpAccessListLine.ACCEPT_ALL))
+                Stream.of(ExprAclLine.ACCEPT_ALL))
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
         .setName(NEGATED_RENAMER.apply(acl.getName()))

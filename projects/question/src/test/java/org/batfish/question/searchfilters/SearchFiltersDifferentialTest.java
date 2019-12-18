@@ -1,6 +1,6 @@
 package org.batfish.question.searchfilters;
 
-import static org.batfish.datamodel.IpAccessListLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;

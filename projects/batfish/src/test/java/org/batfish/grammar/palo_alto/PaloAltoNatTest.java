@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +26,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
+import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -174,12 +174,16 @@ public class PaloAltoNatTest {
     Ip panPreNewAddr = Ip.parse("1.1.1.99");
     Ip vsysNatNewAddr = Ip.parse("1.1.1.100");
     Ip panPostNewAddr = Ip.parse("1.1.1.101");
-    ExitOutputIfaceStep hitPreRuleLastStep =
-        (ExitOutputIfaceStep) Iterables.getLast(hitPreRulebaseRule.getHops().get(0).getSteps());
-    ExitOutputIfaceStep hitVsysRuleLastStep =
-        (ExitOutputIfaceStep) Iterables.getLast(hitVsysRule.getHops().get(0).getSteps());
-    ExitOutputIfaceStep hitPostRuleLastStep =
-        (ExitOutputIfaceStep) Iterables.getLast(hitPostRulebaseRule.getHops().get(0).getSteps());
+
+    List<Step<?>> steps = hitPreRulebaseRule.getHops().get(0).getSteps();
+    ExitOutputIfaceStep hitPreRuleLastStep = (ExitOutputIfaceStep) steps.get(steps.size() - 2);
+
+    steps = hitVsysRule.getHops().get(0).getSteps();
+    ExitOutputIfaceStep hitVsysRuleLastStep = (ExitOutputIfaceStep) steps.get(steps.size() - 2);
+
+    steps = hitPostRulebaseRule.getHops().get(0).getSteps();
+    ExitOutputIfaceStep hitPostRuleLastStep = (ExitOutputIfaceStep) steps.get(steps.size() - 2);
+
     assertThat(
         hitPreRuleLastStep.getDetail().getTransformedFlow().getSrcIp(), equalTo(panPreNewAddr));
     assertThat(
@@ -292,27 +296,34 @@ public class PaloAltoNatTest {
     // First flow should be NAT'd by pre-rulebase (not rulebase) rule and be successful
     Trace preRulebase = traces.get(outsideToInsideNatPreRulebase).get(0);
     assertTrue(preRulebase.getDisposition().isSuccessful());
+
+    List<Step<?>> steps = preRulebase.getHops().get(0).getSteps();
+
     ExitOutputIfaceStepDetail preRulebaseDetail =
-        (ExitOutputIfaceStepDetail)
-            Iterables.getLast(preRulebase.getHops().get(0).getSteps()).getDetail();
+        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
+
     // Confirm the dst IP was rewritten by the pre-rulebase rule
     assertThat(preRulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.99")));
 
     // Second flow should be NAT'd by rulebase (not post-rulebase) rule and be successful
     Trace rulebase = traces.get(outsideToInsideNatRulebase).get(0);
     assertTrue(rulebase.getDisposition().isSuccessful());
+
+    steps = rulebase.getHops().get(0).getSteps();
     ExitOutputIfaceStepDetail rulebaseDetail =
-        (ExitOutputIfaceStepDetail)
-            Iterables.getLast(rulebase.getHops().get(0).getSteps()).getDetail();
+        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
+
     // Confirm the dst IP was rewritten by the rulebase rule
     assertThat(rulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.100")));
 
     // Third flow should be NAT'd by rulebase (not post-rulebase) rule and be successful
     Trace postRulebase = traces.get(outsideToInsideNatPostRulebase).get(0);
     assertTrue(postRulebase.getDisposition().isSuccessful());
+
+    steps = postRulebase.getHops().get(0).getSteps();
     ExitOutputIfaceStepDetail postRulebaseDetail =
-        (ExitOutputIfaceStepDetail)
-            Iterables.getLast(postRulebase.getHops().get(0).getSteps()).getDetail();
+        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
+
     // Confirm the dst IP was rewritten by the post-rulebase rule
     assertThat(postRulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.101")));
   }
@@ -372,26 +383,34 @@ public class PaloAltoNatTest {
 
     // Second flow should have only its source IP translated
     Trace matchSrcTranslation = traces.get(matchesSrcTranslationRule).get(0);
+
+    List<Step<?>> steps = matchSrcTranslation.getHops().get(0).getSteps();
+
     ExitOutputIfaceStepDetail matchSrcTranslationDetail =
-        (ExitOutputIfaceStepDetail)
-            Iterables.getLast(matchSrcTranslation.getHops().get(0).getSteps()).getDetail();
+        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
+
     assertThat(matchSrcTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(newSrcIp));
     assertThat(matchSrcTranslationDetail.getTransformedFlow().getDstIp(), equalTo(dstIp));
 
     // Third flow should have only its dest IP translated
     Trace matchDstTranslation = traces.get(matchesDstTranslationRule).get(0);
+
+    steps = matchDstTranslation.getHops().get(0).getSteps();
+
     ExitOutputIfaceStepDetail matchDstTranslationDetail =
-        (ExitOutputIfaceStepDetail)
-            Iterables.getLast(matchDstTranslation.getHops().get(0).getSteps()).getDetail();
+        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
+
     assertThat(
         matchDstTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(matchDstTransRuleIp));
     assertThat(matchDstTranslationDetail.getTransformedFlow().getDstIp(), equalTo(newDstIp));
 
     // Fourth flow should have both IPs translated
     Trace matchSrcAndDstTranslation = traces.get(matchesSrcAndDstTranslationRule).get(0);
+    steps = matchSrcAndDstTranslation.getHops().get(0).getSteps();
+
     ExitOutputIfaceStepDetail matchSrcAndDstTranslationDetail =
-        (ExitOutputIfaceStepDetail)
-            Iterables.getLast(matchSrcAndDstTranslation.getHops().get(0).getSteps()).getDetail();
+        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
+
     assertThat(matchSrcAndDstTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(newSrcIp));
     assertThat(matchSrcAndDstTranslationDetail.getTransformedFlow().getDstIp(), equalTo(newDstIp));
   }

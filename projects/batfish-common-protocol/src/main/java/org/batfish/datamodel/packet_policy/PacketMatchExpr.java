@@ -53,7 +53,7 @@ public final class PacketMatchExpr implements BoolExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getExpr());
+    return Objects.hashCode(getExpr());
   }
 
   @Override

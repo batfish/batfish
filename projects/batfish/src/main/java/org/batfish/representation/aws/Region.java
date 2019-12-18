@@ -30,11 +30,11 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.representation.aws.Instance.Status;
@@ -646,8 +646,8 @@ final class Region implements Serializable {
   private void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
     for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
       Configuration cfgNode = cfgNodes.get(entry.getKey());
-      List<IpAccessListLine> inboundRules = new LinkedList<>();
-      List<IpAccessListLine> outboundRules = new LinkedList<>();
+      List<ExprAclLine> inboundRules = new LinkedList<>();
+      List<ExprAclLine> outboundRules = new LinkedList<>();
       entry
           .getValue()
           .forEach(

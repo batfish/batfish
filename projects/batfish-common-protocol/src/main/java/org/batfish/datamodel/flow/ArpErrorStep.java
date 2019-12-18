@@ -16,7 +16,7 @@ import org.batfish.datamodel.flow.ArpErrorStep.ArpErrorStepDetail;
  * {@link Step} to represent that the packet is ended with Neighbor Unreachable or Insufficient Info
  * disposition
  */
-@JsonTypeName("ArpErrorStep")
+@JsonTypeName("ArpError")
 public final class ArpErrorStep extends Step<ArpErrorStepDetail> {
 
   /** Details of the {@link ArpErrorStep} */

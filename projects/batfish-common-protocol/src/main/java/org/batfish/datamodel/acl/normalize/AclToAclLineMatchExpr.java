@@ -16,14 +16,14 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
-import org.batfish.datamodel.acl.GenericIpAccessListLineVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -52,7 +52,7 @@ import org.batfish.datamodel.acl.explanation.DisjunctsBuilder;
  */
 public final class AclToAclLineMatchExpr
     implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
-        GenericIpAccessListLineVisitor<AclLineMatchExpr> {
+        GenericAclLineVisitor<AclLineMatchExpr> {
 
   /** Reduce an entire {@link IpAccessList} to a single {@link AclLineMatchExpr}. */
   public static AclLineMatchExpr toAclLineMatchExpr(
@@ -96,7 +96,7 @@ public final class AclToAclLineMatchExpr
      */
     List<AclLineMatchExpr> earlierDenyLineExprs = new ArrayList<>();
 
-    for (IpAccessListLine line : acl.getLines()) {
+    for (ExprAclLine line : acl.getLines()) {
       AclLineMatchExpr expr = visit(line);
       if (line.getAction() == LineAction.PERMIT) {
         /*
@@ -121,11 +121,11 @@ public final class AclToAclLineMatchExpr
     return disjunctsBuilder.build();
   }
 
-  /* IpAccessListLine visit methods */
+  /* AclLine visit methods */
 
   @Override
-  public AclLineMatchExpr visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
-    return visit(ipAccessListLine.getMatchCondition());
+  public AclLineMatchExpr visitExprAclLine(ExprAclLine exprAclLine) {
+    return visit(exprAclLine.getMatchCondition());
   }
 
   /* AclLineMatchExpr visit methods */

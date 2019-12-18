@@ -677,6 +677,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       if (!acceptIncoming) {
         continue;
       }
+      if (clazz.equals(EvpnType3Route.class)) {
+        // Type 3 routes are special: they don't go into main RIB, they only update L2 VNI's flood
+        // list
+        transformedBuilder.setNonRouting(true);
+      }
       R transformedRoute = transformedBuilder.build();
       Set<ExtendedCommunity> routeTargets = transformedRoute.getRouteTargets();
       if (routeTargets.isEmpty()) {

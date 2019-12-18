@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.IpAccessListLine.REJECT_ALL;
+import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -46,6 +46,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.GenericRib;
@@ -53,7 +54,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.NetworkFactory;
@@ -720,22 +720,18 @@ public class IncrementalDataPlanePluginTest {
               .setOwner(c3)
               .setLines(
                   ImmutableList.of(
-                      IpAccessListLine.rejecting(
-                          AclLineMatchExprs.matchSrc(UniverseIpSpace.INSTANCE))))
+                      ExprAclLine.rejecting(AclLineMatchExprs.matchSrc(UniverseIpSpace.INSTANCE))))
               .build());
     }
     if (allowOnlyEstablishedIntoHop1) {
       i11.setOutgoingFilter(
-          nf.aclBuilder()
-              .setOwner(c1)
-              .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
-              .build());
+          nf.aclBuilder().setOwner(c1).setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL)).build());
       i11.setIncomingFilter(
           nf.aclBuilder()
               .setOwner(c1)
               .setLines(
                   ImmutableList.of(
-                      IpAccessListLine.acceptingHeaderSpace(
+                      ExprAclLine.acceptingHeaderSpace(
                           HeaderSpace.builder()
                               .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
                               .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))

@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.List;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.ExprAclLine;
 
 public class FwFromHostProtocol implements Serializable {
 
@@ -13,7 +13,7 @@ public class FwFromHostProtocol implements Serializable {
     _protocol = protocol;
   }
 
-  public void applyTo(List<IpAccessListLine> lines, Warnings w) {
+  public void applyTo(List<ExprAclLine> lines, Warnings w) {
     lines.addAll(_protocol.getLines());
   }
 }

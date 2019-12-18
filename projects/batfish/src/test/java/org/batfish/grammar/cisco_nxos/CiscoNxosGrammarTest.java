@@ -4279,7 +4279,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_logging";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getLoggingServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getLoggingServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3"));
     assertThat(c.getLoggingSourceInterface(), equalTo("loopback0"));
   }
 
@@ -4288,7 +4288,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_logging";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3"));
     assertThat(vc.getLoggingSourceInterface(), equalTo("loopback0"));
   }
 
@@ -4668,6 +4668,7 @@ public final class CiscoNxosGrammarTest {
             "mm_summary_lsa",
             "mm_summary_lsa_m",
             "network",
+            "parse_only",
             "pi_d",
             "r_direct",
             "r_mp",
@@ -4996,6 +4997,7 @@ public final class CiscoNxosGrammarTest {
             "mm_summary_lsa",
             "mm_summary_lsa_m",
             "network",
+            "parse_only",
             "pi_d",
             "r_direct",
             "r_mp",

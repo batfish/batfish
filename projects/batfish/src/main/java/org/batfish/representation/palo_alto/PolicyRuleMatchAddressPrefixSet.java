@@ -33,7 +33,7 @@ public final class PolicyRuleMatchAddressPrefixSet implements PolicyRuleMatch {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_addressPrefixes);
+    return Objects.hashCode(_addressPrefixes);
   }
 
   public @Nonnull Set<AddressPrefix> getAddressPrefixes() {

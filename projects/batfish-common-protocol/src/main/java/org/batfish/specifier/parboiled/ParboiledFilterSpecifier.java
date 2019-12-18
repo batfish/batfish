@@ -159,7 +159,7 @@ public final class ParboiledFilterSpecifier implements FilterSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ast);
+    return Objects.hashCode(_ast);
   }
 
   @Override

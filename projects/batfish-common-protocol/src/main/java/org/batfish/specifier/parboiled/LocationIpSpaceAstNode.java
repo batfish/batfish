@@ -37,6 +37,6 @@ final class LocationIpSpaceAstNode implements IpSpaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_locationAst);
+    return Objects.hashCode(_locationAst);
   }
 }

@@ -48,7 +48,7 @@ public final class SetDefaultPolicy extends Statement {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_defaultPolicy);
+    return Objects.hashCode(_defaultPolicy);
   }
 
   @Override

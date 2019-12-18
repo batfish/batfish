@@ -41,6 +41,6 @@ final class ZoneInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_zoneName);
+    return Objects.hashCode(_zoneName);
   }
 }

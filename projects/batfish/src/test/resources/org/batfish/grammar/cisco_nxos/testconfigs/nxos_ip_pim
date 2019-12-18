@@ -4,6 +4,8 @@ hostname nxos_ip_pim
 !
 feature pim
 !
+ip pim rp-address 1.2.3.4 group-list 225.0.0.0/8
+ip pim rp-address 1.2.3.4 prefix-list foo bidir override
 ip pim rp-address 1.2.3.4 route-map foo bidir override
 ip pim rp-address 1.2.3.4 bidir override
 ip pim rp-address 1.2.3.4 bidir

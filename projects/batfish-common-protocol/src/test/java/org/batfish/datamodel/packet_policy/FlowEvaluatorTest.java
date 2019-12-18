@@ -10,6 +10,7 @@ import com.google.common.testing.EqualsTester;
 import java.util.Collections;
 import java.util.Map;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
@@ -18,7 +19,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.Prefix;
@@ -194,7 +194,7 @@ public final class FlowEvaluatorTest {
                     .setName(aclName)
                     .setLines(
                         ImmutableList.of(
-                            IpAccessListLine.acceptingHeaderSpace(
+                            ExprAclLine.acceptingHeaderSpace(
                                 HeaderSpace.builder()
                                     .setDstIps(new IpSpaceReference(ipSpaceName))
                                     .build())))

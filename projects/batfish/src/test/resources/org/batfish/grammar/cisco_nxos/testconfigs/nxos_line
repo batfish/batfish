@@ -8,8 +8,14 @@ ip access-list VTY_ACL
 line console
   exec-timeout 15
 line vty
+  session-limit 10
   exec-timeout 15
+  absolute-timeout 20
+  logout-warning 3
   access-class VTY_ACL in
+  access-class VTY_ACL out
+  ipv6 access-class VTY_ACL6 in
+  ipv6 access-class VTY_ACL6 out
 !
 line console
 line vty

@@ -42,7 +42,7 @@ final class SingletonNameSetAstNode implements NameSetAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name);
+    return Objects.hashCode(_name);
   }
 
   @Override

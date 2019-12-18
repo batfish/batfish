@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -22,10 +22,10 @@ public class FilterLineReachabilityUtilsTest {
   public void testReferencedAcls() {
     String aclName = "acl";
     PermittedByAcl permittedByAcl = new PermittedByAcl(aclName);
-    IpAccessListLine.Builder lineBuilder = IpAccessListLine.builder().setAction(LineAction.PERMIT);
+    ExprAclLine.Builder lineBuilder = ExprAclLine.builder().setAction(LineAction.PERMIT);
 
     // PermittedByAcl
-    IpAccessListLine line = lineBuilder.setMatchCondition(permittedByAcl).build();
+    ExprAclLine line = lineBuilder.setMatchCondition(permittedByAcl).build();
     assertThat(FilterLineReachabilityUtils.getReferencedAcls(line), contains(aclName));
 
     // And
@@ -46,10 +46,10 @@ public class FilterLineReachabilityUtilsTest {
   public void testReferencedInterfaces() {
     Set<String> interfaces = ImmutableSet.of("iface1", "iface2");
     MatchSrcInterface matchSrcInterface = new MatchSrcInterface(interfaces);
-    IpAccessListLine.Builder lineBuilder = IpAccessListLine.builder().setAction(LineAction.PERMIT);
+    ExprAclLine.Builder lineBuilder = ExprAclLine.builder().setAction(LineAction.PERMIT);
 
     // PermittedByAcl
-    IpAccessListLine line = lineBuilder.setMatchCondition(matchSrcInterface).build();
+    ExprAclLine line = lineBuilder.setMatchCondition(matchSrcInterface).build();
     assertThat(FilterLineReachabilityUtils.getReferencedInterfaces(line), equalTo(interfaces));
 
     // And

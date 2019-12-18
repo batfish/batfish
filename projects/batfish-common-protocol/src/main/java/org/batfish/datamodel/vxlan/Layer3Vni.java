@@ -3,6 +3,7 @@ package org.batfish.datamodel.vxlan;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.Objects;
@@ -93,12 +94,26 @@ public final class Layer3Vni implements Vni {
         && _bumTransportIps.equals(layer3Vni._bumTransportIps)
         && _bumTransportMethod == layer3Vni._bumTransportMethod
         && Objects.equals(_sourceAddress, layer3Vni._sourceAddress)
-        && _udpPort.equals(layer3Vni._udpPort);
+        && _udpPort.equals(layer3Vni._udpPort)
+        && _srcVrf.equals(layer3Vni._srcVrf);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_bumTransportIps, _bumTransportMethod, _sourceAddress, _udpPort, _vni);
+    return Objects.hash(
+        _bumTransportIps, _bumTransportMethod, _sourceAddress, _udpPort, _vni, _srcVrf);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("bumTransportIps", _bumTransportIps)
+        .add("bumTransportMethod", _bumTransportMethod)
+        .add("sourceAddress", _sourceAddress)
+        .add("udpPort", _udpPort)
+        .add("vni", _vni)
+        .add("srcVrf", _srcVrf)
+        .toString();
   }
 
   public static Builder builder() {

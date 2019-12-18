@@ -5,17 +5,19 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
-import static java.util.Comparator.nullsFirst;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.FORWARDED;
+import static org.batfish.datamodel.flow.StepAction.FORWARDED_TO_NEXT_VRF;
+import static org.batfish.datamodel.flow.StepAction.NULL_ROUTED;
 import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.fibEntriesToRouteInfos;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
@@ -37,10 +39,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Fib;
@@ -59,14 +63,16 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.ArpErrorStep;
+import org.batfish.datamodel.flow.ArpErrorStep.ArpErrorStepDetail;
+import org.batfish.datamodel.flow.DeliveredStep;
+import org.batfish.datamodel.flow.DeliveredStep.DeliveredStepDetail;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
@@ -82,7 +88,6 @@ import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.PolicyStep;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
-import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -352,6 +357,9 @@ class FlowTracer {
   private void processOutgoingInterfaceEdges(
       String outgoingInterface, Ip nextHopIp, SortedSet<NodeInterfacePair> neighborIfaces) {
     checkArgument(!neighborIfaces.isEmpty(), "No neighbor interfaces.");
+    checkState(
+        _steps.get(_steps.size() - 1) instanceof ExitOutputIfaceStep,
+        "ExitOutputIfaceStep needs to be added before calling this function");
     Ip arpIp =
         Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp) ? _currentFlow.getDstIp() : nextHopIp;
 
@@ -364,11 +372,13 @@ class FlowTracer {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
     if (interfacesThatReplyToArp.isEmpty()) {
-      buildArpFailureTrace(outgoingInterface);
+      FlowDisposition disposition =
+          _tracerouteContext.computeDisposition(
+              _currentNode.getName(), outgoingInterface, _currentFlow.getDstIp());
+      buildArpFailureTrace(outgoingInterface, arpIp, disposition);
       return;
     }
 
-    _steps.add(buildExitOutputIfaceStep(outgoingInterface, TRANSMITTED));
     Hop hop = new Hop(_currentNode, _steps);
     _hops.add(hop);
 
@@ -378,12 +388,36 @@ class FlowTracer {
   }
 
   @Nonnull
-  private ExitOutputIfaceStep buildExitOutputIfaceStep(String outputIface, StepAction action) {
+  private ExitOutputIfaceStep buildExitOutputIfaceStep(String outputIface) {
     return ExitOutputIfaceStep.builder()
         .setDetail(
             ExitOutputIfaceStepDetail.builder()
                 .setOutputInterface(NodeInterfacePair.of(_currentNode.getName(), outputIface))
                 .setTransformedFlow(TracerouteUtils.hopFlow(_originalFlow, _currentFlow))
+                .build())
+        .setAction(TRANSMITTED)
+        .build();
+  }
+
+  @Nonnull
+  private ArpErrorStep buildArpErrorStep(String outputIface, Ip nhIp, StepAction action) {
+    return ArpErrorStep.builder()
+        .setDetail(
+            ArpErrorStepDetail.builder()
+                .setOutputInterface(NodeInterfacePair.of(_currentNode.getName(), outputIface))
+                .setResolvedNexthopIp(nhIp)
+                .build())
+        .setAction(action)
+        .build();
+  }
+
+  @Nonnull
+  private DeliveredStep buildDeliveredStep(String outputIface, Ip nhIp, StepAction action) {
+    return DeliveredStep.builder()
+        .setDetail(
+            DeliveredStepDetail.builder()
+                .setOutputInterface(NodeInterfacePair.of(_currentNode.getName(), outputIface))
+                .setResolvedNexthopIp(nhIp)
                 .build())
         .setAction(action)
         .build();
@@ -613,12 +647,11 @@ class FlowTracer {
         firstNonNull(overrideNextHopIp, dstIp),
         currentNodeName,
         fib,
-        fibForward -> {
-          forkTracerSameNode()
-              .forwardOutInterface(
-                  _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
-                  fibForward.getArpIp(),
-                  overrideNextHopIp);
+        (flowTracer, fibForward) -> {
+          flowTracer.forwardOutInterface(
+              _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
+              fibForward.getArpIp(),
+              overrideNextHopIp);
         },
         new Stack<>());
   }
@@ -629,7 +662,10 @@ class FlowTracer {
    */
   @VisibleForTesting
   void fibLookup(
-      Ip dstIp, String currentNodeName, Fib fib, Consumer<FibForward> forwardOutInterfaceHandler) {
+      Ip dstIp,
+      String currentNodeName,
+      Fib fib,
+      BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler) {
     fibLookup(dstIp, currentNodeName, fib, forwardOutInterfaceHandler, new Stack<>());
   }
 
@@ -643,7 +679,7 @@ class FlowTracer {
       Ip dstIp,
       String currentNodeName,
       Fib fib,
-      Consumer<FibForward> forwardOutInterfaceHandler,
+      BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
       Stack<Breadcrumb> intraHopBreadcrumbs) {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
@@ -662,8 +698,6 @@ class FlowTracer {
         return;
       }
 
-      _steps.add(buildRoutingStep(fibEntries));
-
       // Group traces by action (we do not want extra branching if there is branching
       // in FIB resolution)
       SortedMap<FibAction, Set<FibEntry>> groupedByFibAction =
@@ -674,41 +708,18 @@ class FlowTracer {
               FibActionComparator.INSTANCE);
 
       // For every action corresponding to ECMP LPM FibEntry
-      for (FibAction action : groupedByFibAction.keySet()) {
-        action.accept(
-            new FibActionVisitor<Void>() {
-              @Override
-              public Void visitFibForward(FibForward fibForward) {
-                forwardOutInterfaceHandler.accept(fibForward);
-                return null;
-              }
-
-              @Override
-              public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
-                if (intraHopBreadcrumbs.contains(breadcrumb)) {
-                  buildLoopTrace();
-                  return null;
-                }
-                intraHopBreadcrumbs.push(breadcrumb);
-                String nextVrf = fibNextVrf.getNextVrf();
-                forkTracerSameNode(nextVrf)
-                    .fibLookup(
-                        dstIp,
-                        currentNodeName,
-                        _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
-                        forwardOutInterfaceHandler,
-                        intraHopBreadcrumbs);
-                intraHopBreadcrumbs.pop();
-                return null;
-              }
-
-              @Override
-              public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
-                forkTracerSameNode().buildNullRoutedTrace();
-                return null;
-              }
-            });
-      }
+      groupedByFibAction.forEach(
+          ((fibAction, fibEntriesForFibAction) -> {
+            forkTracerSameNode()
+                .forward(
+                    fibAction,
+                    fibEntriesForFibAction,
+                    dstIp,
+                    currentNodeName,
+                    forwardOutInterfaceHandler,
+                    intraHopBreadcrumbs,
+                    breadcrumb);
+          }));
     } finally {
       if (intraHopBreadcrumbs.isEmpty()) {
         _breadcrumbs.pop();
@@ -721,32 +732,6 @@ class FlowTracer {
     return OriginateStep.builder()
         .setDetail(OriginateStepDetail.builder().setOriginatingVrf(_vrfName).build())
         .setAction(StepAction.ORIGINATED)
-        .build();
-  }
-
-  private RoutingStep buildRoutingStep(Set<FibEntry> fibEntries) {
-    List<RouteInfo> matchedRibRouteInfo =
-        fibEntries.stream()
-            .map(FibEntry::getTopLevelRoute)
-            .map(
-                route ->
-                    new RouteInfo(
-                        route.getProtocol(),
-                        route.getNetwork(),
-                        route.getNextHopIp(),
-                        route.getProtocol() == RoutingProtocol.STATIC
-                            ? ((StaticRoute) route).getNextVrf()
-                            : null))
-            .sorted(
-                comparing(RouteInfo::getNetwork)
-                    .thenComparing(RouteInfo::getNextHopIp)
-                    .thenComparing(RouteInfo::getNextVrf, nullsFirst(String::compareTo))
-                    .thenComparing(RouteInfo::getProtocol))
-            .distinct()
-            .collect(ImmutableList.toImmutableList());
-    return RoutingStep.builder()
-        .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
-        .setAction(FORWARDED)
         .build();
   }
 
@@ -785,6 +770,7 @@ class FlowTracer {
         new MatchSessionStep(
             MatchSessionStepDetail.builder()
                 .setIncomingInterfaces(session.getIncomingInterfaces())
+                .setSessionAction(session.getAction())
                 .build()));
 
     Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
@@ -830,10 +816,13 @@ class FlowTracer {
                     _currentFlow.getDstIp(),
                     currentNodeName,
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
-                    fibForward -> {
+                    (flowTracer, fibForward) -> {
                       String outgoingIfaceName = fibForward.getInterfaceName();
 
                       // TODO: handle ACLs
+
+                      // add ExitOutputIfaceStep
+                      _steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
 
                       SortedSet<NodeInterfacePair> neighborIfaces =
                           _tracerouteContext.getInterfaceNeighbors(
@@ -842,10 +831,10 @@ class FlowTracer {
                         FlowDisposition disposition =
                             _tracerouteContext.computeDisposition(
                                 currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
-
-                        buildArpFailureTrace(outgoingIfaceName, disposition);
+                        buildArpFailureTrace(
+                            outgoingIfaceName, _currentFlow.getDstIp(), disposition);
                       } else {
-                        processOutgoingInterfaceEdges(
+                        flowTracer.processOutgoingInterfaceEdges(
                             outgoingIfaceName, fibForward.getArpIp(), neighborIfaces);
                       }
                     });
@@ -879,6 +868,9 @@ class FlowTracer {
                     return null;
                   }
 
+                  // add ExitOutIfaceStep
+                  _steps.add(buildExitOutputIfaceStep(outgoingInterfaceName));
+
                   if (nextHop == null) {
                     /* ARP error. Currently we can't use buildArpFailureTrace for sessions, because forwarding
                      * analysis disposition maps currently include routing conditions, which do not apply to
@@ -890,11 +882,10 @@ class FlowTracer {
                      * normal ARP error disposition logic, which would require factoring out routing-independent
                      * disposition maps in forwarding analysis.
                      */
-                    buildArpFailureTrace(outgoingInterfaceName, FlowDisposition.EXITS_NETWORK);
+                    buildArpFailureTrace(
+                        outgoingInterfaceName, flow.getDstIp(), FlowDisposition.EXITS_NETWORK);
                     return null;
                   }
-
-                  _steps.add(buildExitOutputIfaceStep(outgoingInterfaceName, TRANSMITTED));
                   _hops.add(new Hop(new Node(currentNodeName), _steps));
 
                   // Forward to neighbor.
@@ -981,6 +972,10 @@ class FlowTracer {
 
     String currentNodeName = _currentNode.getName();
     String outgoingIfaceName = outgoingInterface.getName();
+
+    // add ExitOutputIfaceStep
+    _steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
+
     SortedSet<NodeInterfacePair> neighborIfaces =
         _tracerouteContext.getInterfaceNeighbors(currentNodeName, outgoingIfaceName);
     /*
@@ -994,12 +989,10 @@ class FlowTracer {
     To simplify our life, just compute disposition for 1.1.1.1, at least that's guaranteed to give us a disposition
     */
     if (neighborIfaces.isEmpty()) {
+      Ip arpIp = firstNonNull(overridenNextHopIp, _currentFlow.getDstIp());
       FlowDisposition disposition =
-          _tracerouteContext.computeDisposition(
-              currentNodeName,
-              outgoingIfaceName,
-              firstNonNull(overridenNextHopIp, _currentFlow.getDstIp()));
-      buildArpFailureTrace(outgoingIfaceName, disposition);
+          _tracerouteContext.computeDisposition(currentNodeName, outgoingIfaceName, arpIp);
+      buildArpFailureTrace(outgoingIfaceName, arpIp, disposition);
     } else {
       processOutgoingInterfaceEdges(
           outgoingIfaceName, firstNonNull(overridenNextHopIp, nextHopIp), neighborIfaces);
@@ -1122,19 +1115,14 @@ class FlowTracer {
 
   /**
    * Build ARP failure trace for the current flow, for when its forwarded out the input
-   * outgoingInterface.
+   * outgoingInterface and end up with a Exit Network, Delivered To Subnet, Insufficient Info or
+   * Neighbor Unreachable disposition.
    */
-  private void buildArpFailureTrace(String outgoingInterfaceName) {
+  private void buildArpFailureTrace(
+      String outInterface, Ip resolvedNhIp, FlowDisposition disposition) {
     String currentNodeName = _currentNode.getName();
-    FlowDisposition disposition =
-        _tracerouteContext.computeDisposition(
-            currentNodeName, outgoingInterfaceName, _currentFlow.getDstIp());
-    buildArpFailureTrace(outgoingInterfaceName, disposition);
-  }
 
-  private void buildArpFailureTrace(String outInterface, FlowDisposition disposition) {
-    String currentNodeName = _currentNode.getName();
-    _steps.add(buildExitOutputIfaceStep(outInterface, getFinalActionForDisposition(disposition)));
+    _steps.add(buildArpFailureStep(outInterface, resolvedNhIp, disposition));
 
     _hops.add(new Hop(_currentNode, _steps));
 
@@ -1145,5 +1133,97 @@ class FlowTracer {
 
     Trace trace = new Trace(disposition, _hops);
     _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
+  }
+
+  @VisibleForTesting
+  static RoutingStep buildRoutingStep(FibAction fibAction, Set<FibEntry> fibEntries) {
+    RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
+    RoutingStepDetail.Builder routingStepDetailBuilder =
+        RoutingStepDetail.builder().setRoutes(fibEntriesToRouteInfos(fibEntries));
+    fibAction.accept(
+        new FibActionVisitor<Void>() {
+          @Override
+          public Void visitFibForward(FibForward fibForward) {
+            routingStepDetailBuilder.setArpIp(fibForward.getArpIp());
+            routingStepDetailBuilder.setOutputInterface(fibForward.getInterfaceName());
+            routingStepBuilder.setAction(FORWARDED);
+            return null;
+          }
+
+          @Override
+          public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
+            routingStepBuilder.setAction(FORWARDED_TO_NEXT_VRF);
+            return null;
+          }
+
+          @Override
+          public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+            routingStepBuilder.setAction(NULL_ROUTED);
+            return null;
+          }
+        });
+    return routingStepBuilder.setDetail(routingStepDetailBuilder.build()).build();
+  }
+
+  private void forward(
+      FibAction fibAction,
+      Set<FibEntry> fibEntries,
+      Ip dstIp,
+      String currentNodeName,
+      BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
+      Stack<Breadcrumb> intraHopBreadcrumbs,
+      Breadcrumb breadcrumb) {
+    FlowTracer flowTracer = this;
+    _steps.add(buildRoutingStep(fibAction, fibEntries));
+    fibAction.accept(
+        new FibActionVisitor<Void>() {
+          @Override
+          public Void visitFibForward(FibForward fibForward) {
+            forwardOutInterfaceHandler.accept(flowTracer, fibForward);
+            return null;
+          }
+
+          @Override
+          public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
+            if (intraHopBreadcrumbs.contains(breadcrumb)) {
+              buildLoopTrace();
+              return null;
+            }
+            intraHopBreadcrumbs.push(breadcrumb);
+            String nextVrf = fibNextVrf.getNextVrf();
+            forkTracerSameNode(nextVrf)
+                .fibLookup(
+                    dstIp,
+                    currentNodeName,
+                    _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
+                    forwardOutInterfaceHandler,
+                    intraHopBreadcrumbs);
+            intraHopBreadcrumbs.pop();
+            return null;
+          }
+
+          @Override
+          public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+            buildNullRoutedTrace();
+            return null;
+          }
+        });
+  }
+
+  @VisibleForTesting
+  Step<?> buildArpFailureStep(String outInterface, Ip resolvedNhIp, FlowDisposition disposition) {
+    switch (disposition) {
+      case INSUFFICIENT_INFO:
+      case NEIGHBOR_UNREACHABLE:
+        return buildArpErrorStep(
+            outInterface, resolvedNhIp, getFinalActionForDisposition(disposition));
+      case DELIVERED_TO_SUBNET:
+      case EXITS_NETWORK:
+        return buildDeliveredStep(
+            outInterface, resolvedNhIp, getFinalActionForDisposition(disposition));
+      default:
+        throw new BatfishException(
+            "the disposition is must be insufficient info, neighbor unreachable, delivered to subnet or exits network.");
+    }
   }
 }

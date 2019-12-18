@@ -18,10 +18,10 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
@@ -168,7 +168,7 @@ public class HostConfiguration extends VendorConfiguration {
     for (String aclName : aclsToCheck) {
       IpAccessList acl = _c.getIpAccessLists().get(aclName);
       if (acl != null) {
-        for (IpAccessListLine line : acl.getLines()) {
+        for (ExprAclLine line : acl.getLines()) {
           if (line.getAction() == LineAction.DENY) {
             return false;
           }

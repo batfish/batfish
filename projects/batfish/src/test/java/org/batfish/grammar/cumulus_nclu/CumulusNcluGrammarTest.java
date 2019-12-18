@@ -125,6 +125,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1557,15 +1558,17 @@ public final class CumulusNcluGrammarTest {
                 hasUdpPort(equalTo(NamedPort.VXLAN.number())))));
 
     assertThat(
-        c.getVrfs().get("VRF1").getLayer2Vnis(),
+        c.getVrfs().get("VRF1").getLayer3Vnis(),
         hasEntry(
             equalTo(101000),
-            allOf(
-                hasVni(101000),
-                hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
-                VniSettingsMatchers.hasVlan(equalTo(1000)),
-                hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
-                hasUdpPort(equalTo(NamedPort.VXLAN.number())))));
+            equalTo(
+                Layer3Vni.builder()
+                    .setVni(101000)
+                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                    .setSourceAddress(Ip.parse("1.1.1.1"))
+                    .setUdpPort(NamedPort.VXLAN.number())
+                    .setSrcVrf(DEFAULT_VRF_NAME)
+                    .build())));
   }
 
   @Test

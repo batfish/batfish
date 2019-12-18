@@ -56,7 +56,7 @@ public class IsisLevelSettings implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_wideMetricsOnly);
+    return Objects.hashCode(_wideMetricsOnly);
   }
 
   @JsonProperty(PROP_WIDE_METRICS_ONLY)

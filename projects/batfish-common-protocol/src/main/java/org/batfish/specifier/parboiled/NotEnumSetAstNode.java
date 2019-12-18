@@ -38,7 +38,7 @@ final class NotEnumSetAstNode implements EnumSetAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_astNode);
+    return Objects.hashCode(_astNode);
   }
 
   @Override

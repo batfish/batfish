@@ -8,9 +8,9 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.Accepts;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.HasLines;
@@ -47,7 +47,7 @@ public final class IpAccessListMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the IpAccessList's
    * lines.
    */
-  public static HasLines hasLines(@Nonnull Matcher<? super List<IpAccessListLine>> subMatcher) {
+  public static HasLines hasLines(@Nonnull Matcher<? super List<ExprAclLine>> subMatcher) {
     return new HasLines(subMatcher);
   }
 
@@ -57,7 +57,7 @@ public final class IpAccessListMatchers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public static HasLines hasLines(@Nonnull Matcher<? super IpAccessListLine>... subMatchers) {
+  public static HasLines hasLines(@Nonnull Matcher<? super ExprAclLine>... subMatchers) {
     return new HasLines(contains(subMatchers));
   }
 

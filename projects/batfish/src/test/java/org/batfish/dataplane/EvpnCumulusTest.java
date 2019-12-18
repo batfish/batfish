@@ -7,12 +7,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Table;
 import java.io.IOException;
-import java.util.SortedMap;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
+import java.util.Set;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -21,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** End-to-end-ish test of EVPN Type 3 routes on cumulus devices */
 public class EvpnCumulusTest {
   private static final String SNAPSHOT_FOLDER = "org/batfish/dataplane/testrigs/evpn-l2-vnis";
 
@@ -41,14 +41,13 @@ public class EvpnCumulusTest {
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp.getRibs();
+    Table<String, String, Set<EvpnRoute<?, ?>>> ribs = dp.getEvpnRoutes();
 
     assertThat(
-        ribs.get(leaf1).get(DEFAULT_VRF_NAME).getRoutes(),
+        ribs.get(leaf1, DEFAULT_VRF_NAME),
         hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("3.3.3.3/32")))));
     assertThat(
-        ribs.get(leaf2).get(DEFAULT_VRF_NAME).getRoutes(),
+        ribs.get(leaf2, DEFAULT_VRF_NAME),
         hasItem(isEvpnType3RouteThat(hasPrefix(Prefix.parse("1.1.1.1/32")))));
   }
 }

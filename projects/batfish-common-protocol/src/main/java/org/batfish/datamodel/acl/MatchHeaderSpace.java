@@ -46,7 +46,7 @@ public class MatchHeaderSpace extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_headerSpace);
+    return Objects.hashCode(_headerSpace);
   }
 
   @Override

@@ -116,6 +116,6 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_properties);
+    return Objects.hashCode(_properties);
   }
 }

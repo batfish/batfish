@@ -39,7 +39,7 @@ public class NetworkObjectGroupAddressSpecifier implements AccessListAddressSpec
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name);
+    return Objects.hashCode(_name);
   }
 
   @Override

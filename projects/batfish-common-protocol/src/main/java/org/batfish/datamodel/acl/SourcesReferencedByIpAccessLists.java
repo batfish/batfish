@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 
 /**
  * Find all the sources referenced by an IpAccessList or a collection of IpAccessLists, including
@@ -20,7 +20,7 @@ public final class SourcesReferencedByIpAccessLists {
   public static final String SOURCE_ORIGINATING_FROM_DEVICE = "DEVICE IS THE SOURCE";
 
   private static final class ReferenceSourcesVisitor
-      implements GenericAclLineMatchExprVisitor<Void>, GenericIpAccessListLineVisitor<Void> {
+      implements GenericAclLineMatchExprVisitor<Void>, GenericAclLineVisitor<Void> {
     private final ImmutableSet.Builder<String> _referencedSources;
 
     private final Map<String, Supplier<Void>> _namedAclThunks;
@@ -52,11 +52,11 @@ public final class SourcesReferencedByIpAccessLists {
       acl.getLines().forEach(this::visit);
     }
 
-    /* IpAccessListLine visit methods */
+    /* AclLine visit methods */
 
     @Override
-    public Void visitIpAccessListLine(IpAccessListLine ipAccessListLine) {
-      visit(ipAccessListLine.getMatchCondition());
+    public Void visitExprAclLine(ExprAclLine exprAclLine) {
+      visit(exprAclLine.getMatchCondition());
       return null;
     }
 

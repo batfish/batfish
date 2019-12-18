@@ -2,6 +2,7 @@ package org.batfish.datamodel.flow;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,24 +20,36 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
 
   public static final class MatchSessionStepDetail {
     private static final String PROP_INCOMING_INTERFACES = "incomingInterfaces";
+    private static final String PROP_SESSION_ACTION = "sessionAction";
 
     @Nonnull private final Set<String> _incomingInterfaces;
+    @Nonnull private final SessionAction _sessionAction;
 
-    private MatchSessionStepDetail(@Nonnull Set<String> incomingInterfaces) {
+    private MatchSessionStepDetail(
+        @Nonnull Set<String> incomingInterfaces, @Nonnull SessionAction sessionAction) {
       _incomingInterfaces = ImmutableSet.copyOf(incomingInterfaces);
+      _sessionAction = sessionAction;
     }
 
     @JsonCreator
     private static MatchSessionStepDetail jsonCreator(
-        @JsonProperty(PROP_INCOMING_INTERFACES) Set<String> incomingInterfaces) {
-      checkArgument(incomingInterfaces != null, "Missing %s", PROP_ACTION);
-      return new MatchSessionStepDetail(incomingInterfaces);
+        @JsonProperty(PROP_INCOMING_INTERFACES) Set<String> incomingInterfaces,
+        @JsonProperty(PROP_SESSION_ACTION) SessionAction sessionAction) {
+      checkArgument(incomingInterfaces != null, "Missing %s", PROP_INCOMING_INTERFACES);
+      checkArgument(sessionAction != null, "Missing %s", PROP_SESSION_ACTION);
+      return new MatchSessionStepDetail(incomingInterfaces, sessionAction);
     }
 
     @JsonProperty(PROP_INCOMING_INTERFACES)
     @Nonnull
     public Set<String> getIncomingInterfaces() {
       return _incomingInterfaces;
+    }
+
+    @JsonProperty(PROP_SESSION_ACTION)
+    @Nonnull
+    public SessionAction getSessionAction() {
+      return _sessionAction;
     }
 
     public static Builder builder() {
@@ -46,13 +59,23 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
     /** Chained builder to create a {@link MatchSessionStepDetail} object */
     public static class Builder {
       private @Nullable Set<String> _incomingInterfaces;
+      private @Nullable SessionAction _sessionAction;
 
       public MatchSessionStepDetail build() {
-        return new MatchSessionStepDetail(firstNonNull(_incomingInterfaces, ImmutableSet.of()));
+        checkNotNull(
+            _sessionAction,
+            "Cannot build MatchSessionStepDetail without specifying session action");
+        return new MatchSessionStepDetail(
+            firstNonNull(_incomingInterfaces, ImmutableSet.of()), _sessionAction);
       }
 
       public Builder setIncomingInterfaces(Set<String> incomingInterfaces) {
         _incomingInterfaces = incomingInterfaces;
+        return this;
+      }
+
+      public Builder setSessionAction(SessionAction sessionAction) {
+        _sessionAction = sessionAction;
         return this;
       }
 

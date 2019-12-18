@@ -94,7 +94,7 @@ public final class RuntimeData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_interfaces);
+    return Objects.hashCode(_interfaces);
   }
 
   @Override

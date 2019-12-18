@@ -11,8 +11,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -54,8 +54,7 @@ public class LoopNetwork {
           nf.aclBuilder()
               .setOwner(c2)
               .setLines(
-                  ImmutableList.of(
-                      IpAccessListLine.rejecting(AclLineMatchExprs.matchSrc(natPoolIp))))
+                  ImmutableList.of(ExprAclLine.rejecting(AclLineMatchExprs.matchSrc(natPoolIp))))
               .build());
     }
 

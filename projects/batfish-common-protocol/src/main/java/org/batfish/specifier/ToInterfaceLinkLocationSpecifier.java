@@ -31,7 +31,7 @@ public class ToInterfaceLinkLocationSpecifier implements LocationSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_inner);
+    return Objects.hashCode(_inner);
   }
 
   @Override

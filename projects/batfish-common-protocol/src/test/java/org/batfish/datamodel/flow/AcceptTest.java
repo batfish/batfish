@@ -1,7 +1,12 @@
 package org.batfish.datamodel.flow;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Test of {@link Accept}. */
@@ -14,5 +19,11 @@ public final class AcceptTest {
         .addEqualityGroup(new Object())
         .addEqualityGroup(Accept.INSTANCE, Accept.INSTANCE)
         .testEquals();
+  }
+
+  @Test
+  public void testSerialization() throws IOException {
+    SessionAction clone = BatfishObjectMapper.clone(Accept.INSTANCE, SessionAction.class);
+    assertThat(clone, equalTo(Accept.INSTANCE));
   }
 }

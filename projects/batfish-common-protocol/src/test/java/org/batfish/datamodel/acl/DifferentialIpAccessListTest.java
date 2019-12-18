@@ -1,7 +1,7 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.IpAccessListLine.accepting;
-import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.accepting;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.acl.DifferentialIpAccessList.DIFFERENTIAL_ACL_NAME;
 import static org.batfish.datamodel.acl.DifferentialIpAccessList.RENAMER;
@@ -14,9 +14,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
@@ -62,7 +62,7 @@ public class DifferentialIpAccessListTest {
     String permitAclName = "permit acl";
     String permitAclReferenceName = "permit named acl";
     String permitNamedIpSpace = "permit named ip space";
-    List<IpAccessListLine> permitAclLines =
+    List<ExprAclLine> permitAclLines =
         ImmutableList.of(accepting(AclLineMatchExprs.matchDst(Prefix.parse("1.1.1.0/24"))));
     IpAccessList permitAcl =
         IpAccessList.builder().setName(permitAclName).setLines(permitAclLines).build();
@@ -86,7 +86,7 @@ public class DifferentialIpAccessListTest {
         IpAccessList.builder()
             .setName(DIFFERENTIAL_ACL_NAME)
             .setLines(
-                ImmutableList.<IpAccessListLine>builder()
+                ImmutableList.<ExprAclLine>builder()
                     .add(rejecting(permittedByAcl(renamedDenyAclName)))
                     .add(accepting(permittedByAcl(permitAcl.getName())))
                     .build())
@@ -144,7 +144,7 @@ public class DifferentialIpAccessListTest {
                 .getLines()
                 .get(1)
                 .getMatchCondition(),
-            new IpAccessListLineIndex(denyAcl, 1)));
+            new AclLineIndex(denyAcl, 1)));
     assertThat(
         differential.getLiteralsToLines(),
         hasEntry(
@@ -154,16 +154,15 @@ public class DifferentialIpAccessListTest {
                 .getLines()
                 .get(1)
                 .getMatchCondition(),
-            new IpAccessListLineIndex(denyNamedAcls.get(denyAclReferenceName), 1)));
+            new AclLineIndex(denyNamedAcls.get(denyAclReferenceName), 1)));
     // literals from permit Acls are present and not renamed
     assertThat(
         differential.getLiteralsToLines(),
-        hasEntry(
-            permitAclLines.get(0).getMatchCondition(), new IpAccessListLineIndex(permitAcl, 0)));
+        hasEntry(permitAclLines.get(0).getMatchCondition(), new AclLineIndex(permitAcl, 0)));
     assertThat(
         differential.getLiteralsToLines(),
         hasEntry(
             permitAclReferenceAcl.getLines().get(1).getMatchCondition(),
-            new IpAccessListLineIndex(permitAclReferenceAcl, 1)));
+            new AclLineIndex(permitAclReferenceAcl, 1)));
   }
 }

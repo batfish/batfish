@@ -79,6 +79,7 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
@@ -92,7 +93,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
@@ -2622,7 +2622,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               .setName(inspectClassMapAclName)
               .setLines(
                   ImmutableList.of(
-                      IpAccessListLine.accepting().setMatchCondition(matchClassMap).build()))
+                      ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
               .setSourceName(inspectClassMapName)
               .setSourceType(CiscoXrStructureType.INSPECT_CLASS_MAP.getDescription())
               .build();
@@ -2633,7 +2633,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _inspectPolicyMaps.forEach(
         (inspectPolicyMapName, inspectPolicyMap) -> {
           String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<IpAccessListLine> policyMapAclLines = ImmutableList.builder();
+          ImmutableList.Builder<ExprAclLine> policyMapAclLines = ImmutableList.builder();
           inspectPolicyMap
               .getInspectClasses()
               .forEach(
@@ -2650,7 +2650,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                     switch (action) {
                       case DROP:
                         policyMapAclLines.add(
-                            IpAccessListLine.rejecting()
+                            ExprAclLine.rejecting()
                                 .setMatchCondition(matchCondition)
                                 .setName(
                                     String.format(
@@ -2660,7 +2660,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
                       case INSPECT:
                         policyMapAclLines.add(
-                            IpAccessListLine.accepting()
+                            ExprAclLine.accepting()
                                 .setMatchCondition(matchCondition)
                                 .setName(
                                     String.format(
@@ -2670,7 +2670,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
                       case PASS:
                         policyMapAclLines.add(
-                            IpAccessListLine.accepting()
+                            ExprAclLine.accepting()
                                 .setMatchCondition(matchCondition)
                                 .setName(
                                     String.format(
@@ -2684,7 +2684,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                     }
                   });
           policyMapAclLines.add(
-              IpAccessListLine.builder()
+              ExprAclLine.builder()
                   .setAction(inspectPolicyMap.getClassDefaultAction())
                   .setMatchCondition(TrueExpr.INSTANCE)
                   .setName(

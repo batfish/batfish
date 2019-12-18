@@ -271,7 +271,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_id);
+      return Objects.hashCode(_id);
     }
   }
 

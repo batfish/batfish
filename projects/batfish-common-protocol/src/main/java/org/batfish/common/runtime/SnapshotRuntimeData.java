@@ -177,7 +177,7 @@ public final class SnapshotRuntimeData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_runtimeData);
+    return Objects.hashCode(_runtimeData);
   }
 
   @Override
