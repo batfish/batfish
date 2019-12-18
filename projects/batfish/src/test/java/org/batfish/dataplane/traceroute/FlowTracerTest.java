@@ -22,7 +22,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,7 +69,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ArpErrorStep;
 import org.batfish.datamodel.flow.DeliveredStep;
-import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.RouteInfo;
@@ -294,12 +292,7 @@ public final class FlowTracerTest {
     // - null-route should occur in the second step
     // - third step should have null-route action
 
-    assertThat(
-        steps,
-        contains(
-            instanceOf(RoutingStep.class),
-            instanceOf(RoutingStep.class),
-            instanceOf(ExitOutputIfaceStep.class)));
+    assertThat(steps, contains(instanceOf(RoutingStep.class), instanceOf(RoutingStep.class)));
     assertThat(
         ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
         equalTo(nextVrfName));
@@ -308,7 +301,6 @@ public final class FlowTracerTest {
         ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextHopIp(),
         equalTo(Ip.AUTO));
     assertThat((steps.get(1)).getAction(), equalTo(StepAction.NULL_ROUTED));
-    assertThat(((ExitOutputIfaceStep) steps.get(2)).getAction(), is(StepAction.NULL_ROUTED));
   }
 
   @Test
