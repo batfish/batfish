@@ -380,7 +380,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   private static @Nonnull BDD toBDD(AclLine aclLine) {
-    return ACL_TO_BDD.toBdd(aclLine);
+    return ACL_TO_BDD.toPermitAndDenyBdds(aclLine).getMatchBdd();
   }
 
   private static @Nonnull BDD toIcmpIfBDD(AclLineMatchExpr aclLineMatchExpr) {

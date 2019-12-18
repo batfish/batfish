@@ -15,7 +15,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
  * {@link IdentityHashMap}.
  */
 public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
-  private Map<AclLine, BDD> _lineCache = new IdentityHashMap<>();
+  private Map<AclLine, PermitAndDenyBdds> _lineCache = new IdentityHashMap<>();
   private Map<AclLineMatchExpr, BDD> _exprCache = new IdentityHashMap<>();
 
   public MemoizedIpAccessListToBdd(
@@ -27,7 +27,7 @@ public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
   }
 
   @Override
-  public BDD toBdd(AclLine line) {
+  public PermitAndDenyBdds toPermitAndDenyBdds(AclLine line) {
     return _lineCache.computeIfAbsent(line, this::convert);
   }
 
