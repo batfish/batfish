@@ -269,7 +269,7 @@ eos_rbi_bgp
 //    | eos_rbib_control_plane_filter
 //    | eos_rbib_convergence
 //    | eos_rbib_default
-//    | eos_rbib_enforce_first_as
+    | eos_rbib_enforce_first_as
 //    | eos_rbib_host_routes
 //    | eos_rbib_labeled_unicast
     | eos_rbib_listen
@@ -308,6 +308,11 @@ eos_rbib_allowas_in
 eos_rbib_always_compare_med
 :
   ALWAYS_COMPARE_MED NEWLINE
+;
+
+eos_rbib_enforce_first_as
+:
+  ENFORCE_FIRST_AS NEWLINE
 ;
 
 eos_rbib_bestpath

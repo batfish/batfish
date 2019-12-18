@@ -875,4 +875,18 @@ public class AristaGrammarTest {
             .getAddressFamilyCapabilities()
             .getAllowLocalAsIn());
   }
+
+  @Test
+  public void testEnforceFirstAsExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
+    assertThat(config.getAristaBgp().getDefaultVrf().getEnforceFirstAs(), equalTo(Boolean.TRUE));
+  }
+
+  @Test
+  public void testEnforceFirstAsConversion() {
+    Configuration c = parseConfig("arista_bgp_enforce_first_as");
+    BgpActivePeerConfig peerConfig =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+    assertTrue(peerConfig.getEnforceFirstAs());
+  }
 }

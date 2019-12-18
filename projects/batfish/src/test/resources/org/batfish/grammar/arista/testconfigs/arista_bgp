@@ -8,6 +8,7 @@ router bgp 1
   bgp additional-paths receive
   bgp advertise-inactive
   bgp always-compare-med
+  bgp enforce-first-as
   bgp listen limit 10
   bgp listen range 1.1.1.0/24 peer-group DYNAMIC remote-as 4000
   bgp listen range 1.1.1.0/24 peer-group DYNAMIC peer-filter PF
