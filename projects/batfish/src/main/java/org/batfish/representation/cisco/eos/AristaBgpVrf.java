@@ -17,6 +17,7 @@ public final class AristaBgpVrf implements Serializable {
   private boolean _defaultIpv4Unicast;
   @Nullable private Boolean _advertiseInactive;
   @Nullable private Integer _allowAsIn;
+  @Nullable private Boolean _alwaysCompareMed;
   @Nullable private Boolean _bestpathAsPathMultipathRelax;
   @Nullable private AristaBgpBestpathTieBreaker _bestpathTieBreaker;
   @Nullable private Ip _clusterId;
@@ -82,6 +83,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setAllowAsIn(@Nullable Integer allowAsIn) {
     _allowAsIn = allowAsIn;
+  }
+
+  @Nullable
+  public Boolean getAlwaysCompareMed() {
+    return _alwaysCompareMed;
+  }
+
+  public void setAlwaysCompareMed(@Nullable Boolean alwaysCompareMed) {
+    _alwaysCompareMed = alwaysCompareMed;
   }
 
   @Nullable

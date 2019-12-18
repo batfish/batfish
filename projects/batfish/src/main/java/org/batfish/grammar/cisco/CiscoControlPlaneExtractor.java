@@ -581,6 +581,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_timersContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_additional_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_advertise_inactiveContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_allowas_inContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_always_compare_medContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_cluster_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
@@ -2468,6 +2469,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterEos_rbib_allowas_in(Eos_rbib_allowas_inContext ctx) {
     _currentAristaBgpVrf.setAllowAsIn(ctx.num == null ? Integer.MAX_VALUE : toInteger(ctx.num));
+  }
+
+  @Override
+  public void exitEos_rbib_always_compare_med(Eos_rbib_always_compare_medContext ctx) {
+    todo(ctx); // No support for this in VI.
+    _currentAristaBgpVrf.setAlwaysCompareMed(true);
   }
 
   @Override
