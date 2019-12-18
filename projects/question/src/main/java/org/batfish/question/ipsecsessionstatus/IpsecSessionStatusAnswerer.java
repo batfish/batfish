@@ -227,16 +227,23 @@ class IpsecSessionStatusAnswerer extends Answerer {
   }
 
   /** Create column metadata. */
-  private static List<ColumnMetadata> getColumnMetadata() {
+  @VisibleForTesting
+  static List<ColumnMetadata> getColumnMetadata() {
     return ImmutableList.of(
-        new ColumnMetadata(COL_INITIATOR, Schema.NODE, "IPSec initiator"),
-        new ColumnMetadata(COL_INIT_INTERFACE, Schema.INTERFACE, "Initiator Interface"),
-        new ColumnMetadata(COL_INIT_IP, Schema.IP, "Initiator IP"),
-        new ColumnMetadata(COL_RESPONDER, Schema.NODE, "IPSec responder"),
-        new ColumnMetadata(COL_RESPONDER_INTERFACE, Schema.INTERFACE, "Responder Interface"),
-        new ColumnMetadata(COL_RESPONDER_IP, Schema.IP, "Responder IP"),
+        new ColumnMetadata(COL_INITIATOR, Schema.NODE, "IPSec initiator", true, false),
         new ColumnMetadata(
-            COL_TUNNEL_INTERFACES, Schema.STRING, "Tunnel interfaces pair used in peering session"),
-        new ColumnMetadata(COL_STATUS, Schema.STRING, "IPSec session status"));
+            COL_INIT_INTERFACE, Schema.INTERFACE, "Initiator Interface", true, false),
+        new ColumnMetadata(COL_INIT_IP, Schema.IP, "Initiator IP", true, false),
+        new ColumnMetadata(COL_RESPONDER, Schema.NODE, "IPSec responder", true, false),
+        new ColumnMetadata(
+            COL_RESPONDER_INTERFACE, Schema.INTERFACE, "Responder Interface", true, false),
+        new ColumnMetadata(COL_RESPONDER_IP, Schema.IP, "Responder IP", true, false),
+        new ColumnMetadata(
+            COL_TUNNEL_INTERFACES,
+            Schema.STRING,
+            "Tunnel interfaces pair used in peering session",
+            true,
+            false),
+        new ColumnMetadata(COL_STATUS, Schema.STRING, "IPSec session status", false, true));
   }
 }
