@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbo
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
@@ -61,6 +62,7 @@ import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
@@ -663,6 +665,17 @@ public class AristaGrammarTest {
                       .setAdvertiseV4Unicast(true)
                       .build())));
     }
+  }
+
+  /**
+   * Ensure that when L2 VNIs are present and no bgp VRFs are defined, we still make Bgp procesess
+   * for non-default VRF to prevent crashing the dataplane computation.
+   */
+  @Test
+  public void testEvpnConversionL2VnisOnly() {
+    Configuration c = parseConfig("arista_evpn_l2_vni_only");
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf1", hasBgpProcess(notNullValue())));
+    assertThat(c.getDefaultVrf().getLayer2Vnis(), hasKey(10030));
   }
 
   @Test
