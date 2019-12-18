@@ -857,4 +857,22 @@ public class AristaGrammarTest {
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
   }
+
+  @Test
+  public void testAllowasInExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_allowas_in");
+    assertThat(config.getAristaBgp().getDefaultVrf().getAllowAsIn(), equalTo(2));
+  }
+
+  @Test
+  public void testAllowasInConversion() {
+    Configuration c = parseConfig("arista_bgp_allowas_in");
+    BgpActivePeerConfig peerConfig =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+    assertTrue(
+        peerConfig
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAllowLocalAsIn());
+  }
 }
