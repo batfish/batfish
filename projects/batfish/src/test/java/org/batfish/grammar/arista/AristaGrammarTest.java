@@ -652,6 +652,7 @@ public class AristaGrammarTest {
                       .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:50101"))
                       .setImportRouteTarget(ExtendedCommunity.target(50101, 50101).matchString())
                       .setRouteTarget(ExtendedCommunity.target(50101, 50101))
+                      .setAdvertiseV4Unicast(true)
                       .build(),
                   Layer3VniConfig.builder()
                       .setVrf("Tenant_B_OPZone")
@@ -659,6 +660,7 @@ public class AristaGrammarTest {
                       .setRouteDistinguisher(RouteDistinguisher.parse("192.168.255.3:50201"))
                       .setImportRouteTarget(ExtendedCommunity.target(50201, 50201).matchString())
                       .setRouteTarget(ExtendedCommunity.target(50201, 50201))
+                      .setAdvertiseV4Unicast(true)
                       .build())));
     }
   }
