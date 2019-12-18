@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -902,15 +903,12 @@ class FlowTracer {
   }
 
   private void buildNullRoutedTrace() {
-    _steps.add(
-        ExitOutputIfaceStep.builder()
-            .setDetail(
-                ExitOutputIfaceStepDetail.builder()
-                    .setOutputInterface(
-                        NodeInterfacePair.of(_currentNode.getName(), Interface.NULL_INTERFACE_NAME))
-                    .build())
-            .setAction(StepAction.NULL_ROUTED)
-            .build());
+    checkState(
+        Iterables.getLast(_steps) instanceof RoutingStep,
+        "RoutingStep should be the last step while creating a null routed trace");
+    checkState(
+        Iterables.getLast(_steps).getAction() == NULL_ROUTED,
+        "The last routing step should should have the action as NULL_ROUTED");
     _hops.add(new Hop(_currentNode, _steps));
     Trace trace = new Trace(FlowDisposition.NULL_ROUTED, _hops);
     _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
