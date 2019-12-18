@@ -125,11 +125,11 @@ public abstract class IpAccessListToBdd {
 
   public abstract BDD toBdd(AclLine line);
 
-  protected final BDD visit(AclLineMatchExpr expr) {
+  protected final BDD convert(AclLineMatchExpr expr) {
     return expr.accept(_toBddConverter);
   }
 
-  protected final BDD visit(AclLine line) {
+  protected final BDD convert(AclLine line) {
     return line.accept(_toBddConverter);
   }
 
@@ -186,7 +186,7 @@ public abstract class IpAccessListToBdd {
     ImmutableList.Builder<BDD> bdds = ImmutableList.builder();
     BDD reach = _pkt.getFactory().one();
     for (AclLine line : acl.getLines()) {
-      BDD match = visit(line);
+      BDD match = convert(line);
       bdds.add(reach.and(match));
       reach = reach.diff(match);
     }
