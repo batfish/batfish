@@ -538,7 +538,7 @@ final class AristaConversions {
         }
         l3vnis.add(
             Layer3VniConfig.builder()
-                .setAdvertiseV4Unicast(true) // todo
+                .setAdvertiseV4Unicast(true)
                 .setVni(entry.getValue())
                 .setImportRouteTarget(bgpVrf.getImportRouteTarget().matchString())
                 .setRouteTarget(bgpVrf.getExportRouteTarget())
