@@ -16,6 +16,7 @@ public final class AristaBgpVrf implements Serializable {
 
   private boolean _defaultIpv4Unicast;
   @Nullable private Boolean _advertiseInactive;
+  @Nullable private Integer _allowAsIn;
   @Nullable private Boolean _bestpathAsPathMultipathRelax;
   @Nullable private AristaBgpBestpathTieBreaker _bestpathTieBreaker;
   @Nullable private Ip _clusterId;
@@ -72,6 +73,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setAdvertiseInactive(@Nullable Boolean advertiseInactive) {
     _advertiseInactive = advertiseInactive;
+  }
+
+  @Nullable
+  public Integer getAllowAsIn() {
+    return _allowAsIn;
+  }
+
+  public void setAllowAsIn(@Nullable Integer allowAsIn) {
+    _allowAsIn = allowAsIn;
   }
 
   @Nullable

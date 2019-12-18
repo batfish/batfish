@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_allowas_in
+!
+router bgp 1
+  router-id 1.2.3.4
+  bgp allowas-in 2
+  neighbor 1.1.1.1 remote-as 2
