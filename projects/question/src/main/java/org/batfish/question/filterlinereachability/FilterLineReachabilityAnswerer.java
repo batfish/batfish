@@ -1,6 +1,6 @@
 package org.batfish.question.filterlinereachability;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityRows.createMetadata;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedAcls;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedInterfaces;
@@ -109,10 +109,9 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       AclLine originalLine = _sanitizedLines.remove(lineNum);
 
       // If the original line has a concrete action, preserve it; otherwise default to DENY
-      LineAction unmatchableLineAction = LineAction.DENY;
-      if (originalLine instanceof ExprAclLine) {
-        unmatchableLineAction = ((ExprAclLine) originalLine).getAction();
-      }
+      ActionGetter actionGetter = new ActionGetter(false);
+      LineAction unmatchableLineAction =
+          firstNonNull(actionGetter.visit(originalLine), LineAction.DENY);
       _sanitizedLines.add(
           lineNum,
           ExprAclLine.builder()
