@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.Schema;
@@ -105,26 +105,16 @@ public class FilterLineReachabilityRows {
 
     IpAccessList acl = aclSpecs.acl.getOriginalAcl();
     AclLine blockedLine = acl.getLines().get(lineNumber);
-    boolean diffAction;
-    LineAction blockedLineAction;
-    if (blockedLine instanceof ExprAclLine) {
-      // The blocked line always takes the same action. Mark diffAction true if any blocking line
-      // takes the opposite action or has no concrete action.
-      blockedLineAction = ((ExprAclLine) blockedLine).getAction();
-      diffAction =
-          blockingLines.stream()
-              .map(
-                  i -> {
-                    AclLine l = acl.getLines().get(i);
-                    return l instanceof ExprAclLine ? (ExprAclLine) l : null;
-                  })
-              .anyMatch(l -> l == null || blockedLineAction != l.getAction());
-    } else {
-      // TODO make these values more meaningful for non-ExprAclLine lines
-      // If the blocked line has no concrete action, always consider diffAction true
-      diffAction = true;
-      blockedLineAction = null;
-    }
+
+    // Mark diffAction true if any blocking line takes an action different from blocked line, or if
+    // blocked line or any blocking line has no concrete action (actionGetter.visit() returns null).
+    ActionGetter actionGetter = new ActionGetter(false);
+    LineAction blockedLineAction = actionGetter.visit(blockedLine);
+    boolean diffAction =
+        blockedLineAction == null
+            || blockingLines.stream()
+                .map(i -> actionGetter.visit(acl.getLines().get(i)))
+                .anyMatch(action -> action == null || blockedLineAction != action);
 
     // All the host-acl pairs that contain this canonical acl
     List<String> flatSources =

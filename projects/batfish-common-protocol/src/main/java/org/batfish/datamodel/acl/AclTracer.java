@@ -106,15 +106,15 @@ public final class AclTracer extends Evaluator implements GenericAclLineVisitor<
   }
 
   public void recordAction(
-      @Nonnull IpAccessList ipAccessList, int index, @Nonnull ExprAclLine line) {
+      @Nonnull IpAccessList ipAccessList, int index, @Nonnull AclLine line, LineAction action) {
     String lineDescription = firstNonNull(line.getName(), line.toString());
     String type = firstNonNull(ipAccessList.getSourceType(), "filter");
     String name = firstNonNull(ipAccessList.getSourceName(), ipAccessList.getName());
-    String actionStr = line.getAction() == LineAction.PERMIT ? "permitted" : "denied";
+    String actionStr = action == LineAction.PERMIT ? "permitted" : "denied";
     String description =
         String.format(
             "Flow %s by %s named %s, index %d: %s", actionStr, type, name, index, lineDescription);
-    if (line.getAction() == LineAction.PERMIT) {
+    if (action == LineAction.PERMIT) {
       _currentTreeNode.setEvent(
           new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     } else {
@@ -373,18 +373,14 @@ public final class AclTracer extends Evaluator implements GenericAclLineVisitor<
   private boolean trace(@Nonnull IpAccessList ipAccessList) {
     List<AclLine> lines = ipAccessList.getLines();
     newTrace();
+    ActionGetter actionGetter = new ActionGetter(false);
     for (int i = 0; i < lines.size(); i++) {
-      AclLine l = lines.get(i);
-      if (visit(l)) {
-        // TODO
-        if (!(l instanceof ExprAclLine)) {
-          throw new UnsupportedOperationException(
-              "Support not yet implemented for tracing this type of line");
-        }
-        ExprAclLine line = (ExprAclLine) l;
-        recordAction(ipAccessList, i, line);
+      AclLine line = lines.get(i);
+      if (visit(line)) {
+        LineAction action = actionGetter.visit(line);
+        recordAction(ipAccessList, i, line, action);
         endTrace();
-        return line.getAction() == LineAction.PERMIT;
+        return action == LineAction.PERMIT;
       }
       nextLine();
     }

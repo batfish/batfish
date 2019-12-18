@@ -37,6 +37,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -143,6 +144,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     MemoizedIpAccessListToBdd bddConverter =
         new MemoizedIpAccessListToBdd(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
     Row.TypedRowBuilder rowBuilder = Row.builder(METADATA_MAP).put(COL_NODE, node.getHostname());
+    ActionGetter actionGetter = new ActionGetter(false);
     return acls.stream()
         .flatMap(
             aclName -> {
@@ -155,12 +157,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
                             .put(COL_FILTER, aclName)
                             .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
                             .put(COL_LINE_INDEX, lineIndex)
-                            // TODO more meaningful action for lines without concrete actions
-                            .put(
-                                COL_ACTION,
-                                line instanceof ExprAclLine
-                                    ? ((ExprAclLine) line).getAction()
-                                    : null)
+                            .put(COL_ACTION, actionGetter.visit(line))
                             .build();
                       });
             });
