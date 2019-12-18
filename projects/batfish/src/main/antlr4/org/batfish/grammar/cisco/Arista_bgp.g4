@@ -259,7 +259,7 @@ eos_rbi_bgp
     eos_rbib_additional_paths
     | eos_rbib_advertise_inactive
     | eos_rbib_allowas_in
-//    | eos_rbib_always_compare_med
+    | eos_rbib_always_compare_med
 //    | eos_rbib_asn
 //    | eos_rbib_auto_local_addr
     | eos_rbib_bestpath
@@ -303,6 +303,11 @@ eos_rbib_advertise_inactive
 eos_rbib_allowas_in
 :
   ALLOWAS_IN (num = DEC)? NEWLINE // num = 1..10
+;
+
+eos_rbib_always_compare_med
+:
+  ALWAYS_COMPARE_MED NEWLINE
 ;
 
 eos_rbib_bestpath
