@@ -363,7 +363,9 @@ final class AristaConversions {
       ipv4FamilyBuilder.setAddressFamilyCapabilities(
           AddressFamilyCapabilities.builder()
               .setAdvertiseInactive(firstNonNull(vrfConfig.getAdvertiseInactive(), Boolean.FALSE))
-              .setAllowLocalAsIn(firstNonNull(neighbor.getAllowAsIn(), 0) > 0)
+              .setAllowLocalAsIn(
+                  firstNonNull(neighbor.getAllowAsIn(), firstNonNull(vrfConfig.getAllowAsIn(), 0))
+                      > 0)
               .setAllowRemoteAsOut(true) // this is always true on Arista
               .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
               .setSendExtendedCommunity(
