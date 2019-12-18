@@ -2,7 +2,6 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
-import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
@@ -36,7 +35,6 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
@@ -50,12 +48,10 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
-import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.cisco.eos.AristaBgpHasPeerGroup;
@@ -576,30 +572,6 @@ final class AristaConversions {
     }
 
     return newNeighborBuilder.build();
-  }
-
-  /**
-   * Initializes export policy for default routes if it doesn't already exist. This policy is the
-   * same across BGP processes, so only one is created for each configuration.
-   */
-  private static void initBgpDefaultRouteExportPolicy(Configuration c) {
-    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName(true);
-    if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
-      RoutingPolicy.builder()
-          .setOwner(c)
-          .setName(defaultRouteExportPolicyName)
-          .addStatement(
-              new If(
-                  new Conjunction(
-                      ImmutableList.of(
-                          Common.matchDefaultRoute(),
-                          new MatchProtocol(RoutingProtocol.AGGREGATE))),
-                  ImmutableList.of(
-                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                      Statements.ReturnTrue.toStaticStatement())))
-          .addStatement(Statements.ReturnFalse.toStaticStatement())
-          .build();
-    }
   }
 
   @Nonnull
