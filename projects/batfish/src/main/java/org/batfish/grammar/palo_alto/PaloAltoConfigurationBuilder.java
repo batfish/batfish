@@ -701,7 +701,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitPraau_med(Praau_medContext ctx) {
-    _currentPolicyRule.setUpdateMetric(new PolicyRuleUpdateMetric(toLong(ctx.value.uint32())));
+    _currentPolicyRule.setUpdateMetric(new PolicyRuleUpdateMetric(toLong(ctx.val.uint32())));
   }
 
   @Override

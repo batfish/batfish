@@ -2317,4 +2317,28 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface("ethernet1/2", hasZoneName(equalTo("zone 1"))));
     assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
   }
+
+  @Test
+  public void testQuotedValues() throws IOException {
+    String hostname = "quoted-values";
+
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    SortedMap<String, AddressObject> addrs = c.getVirtualSystems().get("vsys1").getAddressObjects();
+    assertThat(addrs, allOf(hasKey("addr0"), hasKey("addr1"), hasKey("addr2"), hasKey("addr3")));
+
+    String descr0 = addrs.get("addr0").getDescription();
+    String descr1 = addrs.get("addr1").getDescription();
+    String descr2 = addrs.get("addr2").getDescription();
+    String descr3 = addrs.get("addr3").getDescription();
+    String descr4 = addrs.get("addr4").getDescription();
+
+    // Quoted values containing quotes should be extracted
+    assertThat(descr0, equalTo("quoted description with a '"));
+    assertThat(descr1, equalTo("quoted description with a \""));
+    assertThat(descr2, equalTo("quoted description with a \" and '"));
+
+    // Quoted and non-quoted values should be extracted correctly
+    assertThat(descr3, equalTo("shortdescription"));
+    assertThat(descr4, equalTo("quoted description"));
+  }
 }

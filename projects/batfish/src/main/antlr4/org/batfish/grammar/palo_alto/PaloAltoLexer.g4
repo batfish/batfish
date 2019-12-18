@@ -5,11 +5,18 @@ options {
 }
 
 tokens {
+  BODY,
+  DOUBLE_QUOTE,
+  SINGLE_QUOTE,
   WORD
 }
 
 @members {
 // Java code to end up in PaloAltoLexer.java goes here
+  public boolean followedByNewline() {
+    String followedBy = lookAheadString(1);
+    return followedBy.equals("\n") || followedBy.equals("\r");
+  }
 }
 
 // Keywords
@@ -316,7 +323,7 @@ DES
 
 DESCRIPTION
 :
-    'description'
+    'description' -> pushMode(M_Value)
 ;
 
 DESTINATION
@@ -1693,7 +1700,61 @@ F_Variable_VarChar
     ~[ \t\n\r;,{}[\]&|()"']
 ;
 
+fragment
+F_NotWhitespaceNewlineOrQuote
+:
+    ~["' \r\n\t\u000C] // quote, space, newline, tab, or unicode 0x000C
+;
+
 // Modes
+
+// PaloAlto devices can produce output where quotes enclose unescaped quotes.
+// Terminate quoted values when encountering the expected closing quote followed by a newline
+// to avoid accidentally consuming following lines.
+mode M_Value;
+M_Value_WS
+:
+  F_Whitespace+ -> skip
+;
+
+M_Value_BODY
+:
+  F_NotWhitespaceNewlineOrQuote+ -> type(BODY), popMode
+;
+
+M_Value_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), mode(M_ValueDoubleQuoted)
+;
+
+M_Value_SINGLE_QUOTE
+:
+  '\'' -> type(SINGLE_QUOTE), mode(M_ValueSingleQuoted)
+;
+
+mode M_ValueDoubleQuoted;
+
+M_ValueDoubleQuoted_DOUBLE_QUOTE
+:
+  '"' {followedByNewline()}? -> type(DOUBLE_QUOTE), popMode
+;
+
+M_ValueDoubleQuoted_BODY
+:
+  (~'"' | ('"' {!followedByNewline()}?))+ -> type(BODY)
+;
+
+mode M_ValueSingleQuoted;
+
+M_ValueSingleQuoted_SINGLE_QUOTE
+:
+  '\'' {followedByNewline()}? -> type(SINGLE_QUOTE), popMode
+;
+
+M_ValueSingleQuoted_BODY
+:
+  (~'\'' | ('\'' {!followedByNewline()}?))+ -> type(BODY)
+;
 
 mode M_Url;
 
