@@ -1708,7 +1708,8 @@ F_NotWhitespaceNewlineOrQuote
 
 // Modes
 
-// PaloAlto devices can produce output where quotes enclose unescaped quotes.
+// PaloAlto devices can produce set-line output where quotes enclose unescaped quotes.
+//
 // Terminate quoted values when encountering the expected closing quote followed by a newline
 // to avoid accidentally consuming following lines.
 mode M_Value;

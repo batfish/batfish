@@ -2319,7 +2319,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testQuotedValues() throws IOException {
+  public void testQuotedValues() {
     String hostname = "quoted-values";
 
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
@@ -2331,14 +2331,16 @@ public final class PaloAltoGrammarTest {
     String descr2 = addrs.get("addr2").getDescription();
     String descr3 = addrs.get("addr3").getDescription();
     String descr4 = addrs.get("addr4").getDescription();
+    String descr5 = addrs.get("addr5").getDescription();
 
     // Quoted values containing quotes should be extracted
     assertThat(descr0, equalTo("quoted description with a '"));
     assertThat(descr1, equalTo("quoted description with a \""));
     assertThat(descr2, equalTo("quoted description with a \" and '"));
+    assertThat(descr3, equalTo("multiline description with \" inside'\nand other stuff"));
 
     // Quoted and non-quoted values should be extracted correctly
-    assertThat(descr3, equalTo("shortdescription"));
-    assertThat(descr4, equalTo("quoted description"));
+    assertThat(descr4, equalTo("shortdescription"));
+    assertThat(descr5, equalTo("quoted description"));
   }
 }
