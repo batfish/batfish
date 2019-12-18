@@ -23,6 +23,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Ip _clusterId;
   @Nullable private Long _defaultMetric;
   @Nullable private Integer _ebgpAdminDistance;
+  @Nullable private Boolean _enforceFirstAs;
   @Nullable private ExtendedCommunity _exportRouteTarget;
   @Nullable private Integer _ibgpAdminDistance;
   @Nullable private ExtendedCommunity _importRouteTarget;
@@ -137,6 +138,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setEbgpAdminDistance(@Nullable Integer ebgpAdminDistance) {
     _ebgpAdminDistance = ebgpAdminDistance;
+  }
+
+  @Nullable
+  public Boolean getEnforceFirstAs() {
+    return _enforceFirstAs;
+  }
+
+  public void setEnforceFirstAs(@Nullable Boolean enforceFirstAs) {
+    _enforceFirstAs = enforceFirstAs;
   }
 
   @Nullable

@@ -583,6 +583,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_advertise_inactiveContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_allowas_inContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_always_compare_medContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_cluster_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibl_limitContext;
@@ -2486,6 +2487,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _currentAristaBgpVrf.setClusterId(clusterId);
     }
+  }
+
+  @Override
+  public void exitEos_rbib_enforce_first_as(Eos_rbib_enforce_first_asContext ctx) {
+    _currentAristaBgpVrf.setEnforceFirstAs(true);
   }
 
   @Override
