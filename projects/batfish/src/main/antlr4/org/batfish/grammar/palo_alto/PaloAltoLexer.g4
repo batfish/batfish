@@ -1,7 +1,7 @@
 lexer grammar PaloAltoLexer;
 
 options {
-  superClass = 'org.batfish.grammar.BatfishLexer';
+  superClass = 'org.batfish.grammar.palo_alto.parsing.PaloAltoBaseLexer';
 }
 
 tokens {
@@ -13,10 +13,6 @@ tokens {
 
 @members {
 // Java code to end up in PaloAltoLexer.java goes here
-  public boolean followedByNewline() {
-    char followedBy = (char) _input.LA(1);
-    return followedBy == '\n' || followedBy == '\r';
-  }
 }
 
 // Keywords
