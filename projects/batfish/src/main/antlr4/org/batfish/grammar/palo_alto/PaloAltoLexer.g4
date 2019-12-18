@@ -14,8 +14,8 @@ tokens {
 @members {
 // Java code to end up in PaloAltoLexer.java goes here
   public boolean followedByNewline() {
-    String followedBy = lookAheadString(1);
-    return followedBy.equals("\n") || followedBy.equals("\r");
+    char followedBy = (char) _input.LA(1);
+    return followedBy == '\n' || followedBy == '\r';
   }
 }
 
@@ -1726,6 +1726,11 @@ M_Value_BODY
 M_Value_DOUBLE_QUOTE
 :
   '"' -> type(DOUBLE_QUOTE), mode(M_ValueDoubleQuoted)
+;
+
+M_Value_NEWLINE
+:
+  F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_Value_SINGLE_QUOTE
