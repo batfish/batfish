@@ -2324,7 +2324,15 @@ public final class PaloAltoGrammarTest {
 
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
     SortedMap<String, AddressObject> addrs = c.getVirtualSystems().get("vsys1").getAddressObjects();
-    assertThat(addrs, allOf(hasKey("addr0"), hasKey("addr1"), hasKey("addr2"), hasKey("addr3")));
+    assertThat(
+        addrs,
+        allOf(
+            hasKey("addr0"),
+            hasKey("addr1"),
+            hasKey("addr2"),
+            hasKey("addr3"),
+            hasKey("addr4"),
+            hasKey("addr5")));
 
     String descr0 = addrs.get("addr0").getDescription();
     String descr1 = addrs.get("addr1").getDescription();
