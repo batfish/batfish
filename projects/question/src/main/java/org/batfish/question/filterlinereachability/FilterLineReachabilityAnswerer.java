@@ -40,6 +40,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.CircularReferenceException;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -558,6 +559,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     /* Pass over BDDs to classify each as unmatchable, unreachable, or (implicitly) reachable. */
     BDD unmatchedPackets = bddFactory.one(); // The packets that are not yet matched by the ACL.
     ListIterator<BDD> lineIt = ipLineToBDDMap.listIterator();
+    ActionGetter actionGetter = new ActionGetter(false);
     while (lineIt.hasNext()) {
       int lineNum = lineIt.nextIndex();
       BDD lineBDD = lineIt.next();
@@ -567,10 +569,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       } else if (unmatchedPackets.isZero() || !lineBDD.andSat(unmatchedPackets)) {
         // No unmatched packets in the ACL match this line, so this line is unreachable.
         List<LineAction> actions =
-            lines.stream()
-                // TODO Better handling of lines with no concrete action
-                .map(l -> l instanceof ExprAclLine ? ((ExprAclLine) l).getAction() : null)
-                .collect(Collectors.toList());
+            lines.stream().map(actionGetter::visit).collect(Collectors.toList());
         SortedSet<Integer> blockingLines =
             findBlockingLinesForLine(lineNum, actions, ipLineToBDDMap);
         answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLines);
