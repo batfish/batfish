@@ -27,7 +27,7 @@ public final class IpAccessListToBddImpl extends IpAccessListToBdd {
   }
 
   @Override
-  public BDD toBdd(AclLine line) {
+  public PermitAndDenyBdds toPermitAndDenyBdds(AclLine line) {
     return convert(line);
   }
 

@@ -205,7 +205,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
         return false;
       }
       // If there is any overlap between the header space BDD and this line, include it
-      BDD lineBdd = _ipAccessListToBdd.toBdd(exprAclLine);
+      BDD lineBdd = _ipAccessListToBdd.toBdd(exprAclLine.getMatchCondition());
       return _headerSpaceBdd.andSat(lineBdd);
     }
   }

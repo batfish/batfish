@@ -32,6 +32,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
+import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclLine;
@@ -553,7 +554,10 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     /* Convert every line to a BDD. */
     List<BDD> ipLineToBDDMap =
-        lines.stream().map(ipAccessListToBdd::toBdd).collect(Collectors.toList());
+        lines.stream()
+            .map(ipAccessListToBdd::toPermitAndDenyBdds)
+            .map(PermitAndDenyBdds::getMatchBdd)
+            .collect(Collectors.toList());
 
     /* Pass over BDDs to classify each as unmatchable, unreachable, or (implicitly) reachable. */
     BDD unmatchedPackets = bddFactory.one(); // The packets that are not yet matched by the ACL.

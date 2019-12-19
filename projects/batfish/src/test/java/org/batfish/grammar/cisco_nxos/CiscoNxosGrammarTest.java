@@ -379,8 +379,8 @@ public final class CiscoNxosGrammarTest {
     return ACL_TO_BDD.toBdd(aclLineMatchExpr);
   }
 
-  private static @Nonnull BDD toBDD(AclLine aclLine) {
-    return ACL_TO_BDD.toBdd(aclLine);
+  private static @Nonnull BDD toMatchBDD(AclLine aclLine) {
+    return ACL_TO_BDD.toPermitAndDenyBdds(aclLine).getMatchBdd();
   }
 
   private static @Nonnull BDD toIcmpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
@@ -394,7 +394,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   private static @Nonnull BDD toIfBDD(AclLine aclLine) {
-    return toBDD(aclLine).and(toBDD(matchFragmentOffset(0)));
+    return toMatchBDD(aclLine).and(toBDD(matchFragmentOffset(0)));
   }
 
   private static @Nonnull BDD toNonIfBDD(AclLineMatchExpr aclLineMatchExpr) {
@@ -404,7 +404,8 @@ public final class CiscoNxosGrammarTest {
   }
 
   private static @Nonnull BDD toNonIfBDD(AclLine aclLine) {
-    return toBDD(aclLine).and(toBDD(matchFragmentOffset(IntegerSpace.of(Range.closed(1, 8191)))));
+    return toMatchBDD(aclLine)
+        .and(toBDD(matchFragmentOffset(IntegerSpace.of(Range.closed(1, 8191)))));
   }
 
   private static @Nonnull BDD toTcpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
@@ -2477,7 +2478,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_indices");
       assertThat(
           acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toBDD)
+              .map(CiscoNxosGrammarTest::toMatchBDD)
               .collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchIpProtocol(1)),
@@ -2489,7 +2490,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_simple_protocols");
       assertThat(
           acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toBDD)
+              .map(CiscoNxosGrammarTest::toMatchBDD)
               .collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchIpProtocol(IpProtocol.AHP)),
@@ -2534,7 +2535,7 @@ public final class CiscoNxosGrammarTest {
           c.getIpAccessLists().get("acl_common_ip_options_dscp");
       assertThat(
           acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toBDD)
+              .map(CiscoNxosGrammarTest::toMatchBDD)
               .collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchDscp(1)),
@@ -2566,7 +2567,7 @@ public final class CiscoNxosGrammarTest {
           c.getIpAccessLists().get("acl_common_ip_options_packet_length");
       assertThat(
           acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toBDD)
+              .map(CiscoNxosGrammarTest::toMatchBDD)
               .collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchPacketLength(100)),
