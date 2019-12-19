@@ -13,6 +13,7 @@ import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.dataplane.traceroute.FlowTracer.buildFirewallSessionTraceInfo;
 import static org.batfish.dataplane.traceroute.FlowTracer.buildRoutingStep;
+import static org.batfish.dataplane.traceroute.FlowTracer.getInterfaceContainingAddress;
 import static org.batfish.dataplane.traceroute.FlowTracer.initialFlowTracer;
 import static org.batfish.dataplane.traceroute.FlowTracer.matchSessionReturnFlow;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -838,5 +839,26 @@ public final class FlowTracerTest {
           equalTo(NodeInterfacePair.of(node, iface)));
       assertThat(dispositionStep.getDetail().getResolvedNexthopIp(), equalTo(ip));
     }
+  }
+
+  @Test
+  public void testGetInterfaceContainingAddress() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration configuration =
+        nf.configurationBuilder()
+            .setHostname("node1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setName("vrf1").setOwner(configuration).build();
+
+    nf.interfaceBuilder()
+        .setName("iface1")
+        .setOwner(configuration)
+        .setVrf(vrf)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .build();
+
+    assertThat(getInterfaceContainingAddress(Ip.parse("1.1.1.1"), vrf), equalTo("iface1"));
+    assertThat(getInterfaceContainingAddress(Ip.parse("1.1.1.2"), vrf), nullValue());
   }
 }

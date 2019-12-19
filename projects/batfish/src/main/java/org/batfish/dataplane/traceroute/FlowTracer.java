@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Fib;
@@ -65,6 +66,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -731,9 +733,34 @@ class FlowTracer {
   @Nonnull
   private OriginateStep buildOriginateStep() {
     return OriginateStep.builder()
-        .setDetail(OriginateStepDetail.builder().setOriginatingVrf(_vrfName).build())
+        .setDetail(
+            OriginateStepDetail.builder()
+                .setOriginatingVrf(_vrfName)
+                .setOriginatingInterface(
+                    getInterfaceContainingAddress(
+                        _currentFlow.getSrcIp(), _currentConfig.getVrfs().get(_vrfName)))
+                .build())
         .setAction(StepAction.ORIGINATED)
         .build();
+  }
+
+  /** Returns the name of the interface in the given VRF that owns the supplied IP */
+  @VisibleForTesting
+  @Nullable
+  static String getInterfaceContainingAddress(Ip ip, @Nullable Vrf vrf) {
+    if (ip == null || vrf == null) {
+      return null;
+    }
+    return vrf.getActiveInterfaces()
+        .filter(
+            iface ->
+                iface.getAllConcreteAddresses().stream()
+                    .map(ConcreteInterfaceAddress::getIp)
+                    .collect(ImmutableSet.toImmutableSet())
+                    .contains(ip))
+        .findFirst()
+        .map(Interface::getName)
+        .orElse(null);
   }
 
   /**
