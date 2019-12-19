@@ -91,7 +91,7 @@ praau_extended_community
 
 praau_med
 :
-    MED value = bgp_med
+    MED val = bgp_med
 ;
 
 praau_origin

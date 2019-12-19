@@ -1,0 +1,12 @@
+set deviceconfig system hostname quoted-values
+set address "addr0" description "quoted description with a '"
+# Wrapping " with " is syntactically ambiguous, but can exist in device's show output
+set address "addr1" description "quoted description with a ""
+set address "addr2" description "quoted description with a " and '"
+set address "addr3" description "multiline description with " inside'
+and other stuff"
+set address "addr4" description shortdescription
+set address addr5 description "quoted description"
+# Show output after entering `set address addr6 description ""`:
+set address addr6 description
+set address addr7 description ""

@@ -106,6 +106,13 @@ uint32
     | UINT32
 ;
 
+value
+:
+    DOUBLE_QUOTE body = BODY? DOUBLE_QUOTE
+    | SINGLE_QUOTE body = BODY? SINGLE_QUOTE
+    | body = BODY?
+;
+
 variable_port_list
 :
     port_or_range

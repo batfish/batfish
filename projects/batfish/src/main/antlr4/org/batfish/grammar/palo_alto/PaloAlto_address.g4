@@ -25,7 +25,7 @@ s_address_definition
 
 sa_description
 :
-    DESCRIPTION description = variable
+    DESCRIPTION description = value
 ;
 
 sa_fqdn

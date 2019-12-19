@@ -24,7 +24,7 @@ s_address_group_definition
 
 sag_description
 :
-    DESCRIPTION description = variable
+    DESCRIPTION description = value
 ;
 
 sag_dynamic

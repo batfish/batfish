@@ -9,6 +9,7 @@ java_library(
         ":PaloAltoParserListener.java",
     ],
     deps = [
+        "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto/parsing:palo_alto_base",
         "//projects/batfish-common-protocol:parser_common",
         "@maven//:org_antlr_antlr4_runtime",
     ],

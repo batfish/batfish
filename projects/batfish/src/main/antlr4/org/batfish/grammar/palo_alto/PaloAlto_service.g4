@@ -24,7 +24,7 @@ s_service_definition
 
 sserv_description
 :
-    DESCRIPTION description = variable
+    DESCRIPTION description = value
 ;
 
 sserv_port
