@@ -33,7 +33,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.grammar.BatfishCombinedParser;
 
 public abstract class VendorConfiguration implements Serializable {
@@ -292,14 +292,14 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   /**
-   * Returns the list of border interfaces for this config object. A return value of null implies
-   * that the subclass does not provide meaningful information.
+   * Returns the ISP configuration for this config object. A return value of null implies that the
+   * subclass does not provide meaningful information.
    *
    * <p>Subclasses whose border interfaces are not expected to be covered by the user-supplied ISP
    * config file (e.g., AWS) should override this method.
    */
   @Nullable
-  public List<BorderInterfaceInfo> getBorderInterfaces() {
+  public IspConfiguration getIspConfiguration() {
     return null;
   }
 

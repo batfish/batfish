@@ -2,8 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
-import static org.batfish.common.util.IspModelingUtils.getIspNodeName;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_AS;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -152,7 +151,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         FlowDisposition.DENIED_IN, // be the default security setting
         ImmutableList.of(
             IspModelingUtils.INTERNET_HOST_NAME,
-            getIspNodeName(AWS_BACKBONE_AS),
+            AWS_BACKBONE_NODE_NAME,
             _igw,
             _publicSubnet,
             _publicInstance));
@@ -174,7 +173,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
             _publicInstance,
             _publicSubnet,
             _igw,
-            getIspNodeName(AWS_BACKBONE_AS),
+            AWS_BACKBONE_NODE_NAME,
             IspModelingUtils.INTERNET_HOST_NAME));
 
     testTrace(
@@ -192,11 +191,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         _sitePrefix.getStartIp(),
         FlowDisposition.EXITS_NETWORK,
         ImmutableList.of(
-            _publicInstance,
-            _publicSubnet,
-            _igw,
-            getIspNodeName(AWS_BACKBONE_AS),
-            INTERNET_HOST_NAME));
+            _publicInstance, _publicSubnet, _igw, AWS_BACKBONE_NODE_NAME, INTERNET_HOST_NAME));
 
     // private instance should send site traffic to VGW
     SortedMap<Flow, List<Trace>> traces = getTraces(_privateInstance, _sitePrefix.getStartIp());

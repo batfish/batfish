@@ -161,7 +161,6 @@ import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
-import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -2452,14 +2451,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     vendorConfigs.values().stream()
-        .map(VendorConfiguration::getBorderInterfaces)
+        .map(VendorConfiguration::getIspConfiguration)
         .filter(Objects::nonNull)
-        .filter(l -> !l.isEmpty())
-        .forEach(
-            ifaces ->
-                ispConfigurations.add(
-                    new IspConfiguration(
-                        ifaces, new IspFilter(ImmutableList.of(), ImmutableList.of()))));
+        .forEach(ispConfigurations::add);
 
     Map<String, Configuration> additionalConfigs =
         getInternetAndIspNodes(
