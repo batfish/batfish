@@ -7,3 +7,5 @@ set address "addr3" description "multiline description with " inside'
 and other stuff"
 set address "addr4" description shortdescription
 set address addr5 description "quoted description"
+# Show output after entering `set address addr6 description ""`:
+set address addr6 description

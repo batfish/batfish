@@ -110,7 +110,7 @@ value
 :
     DOUBLE_QUOTE body = BODY DOUBLE_QUOTE
     | SINGLE_QUOTE body = BODY SINGLE_QUOTE
-    | body = BODY
+    | body = BODY?
 ;
 
 variable_port_list
