@@ -30,6 +30,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfishTestAdapter;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -90,7 +91,7 @@ public class FindMatchingFilterLinesAnswererTest {
     HeaderSpace headerSpace2 =
         HeaderSpace.builder().setDstIps(prefix2.toIpSpace()).setIpProtocols(protocols2).build();
 
-    List<ExprAclLine> aclLines =
+    List<AclLine> aclLines =
         ImmutableList.of(
             ExprAclLine.acceptingHeaderSpace(headerSpace1),
             ExprAclLine.rejectingHeaderSpace(headerSpace2));

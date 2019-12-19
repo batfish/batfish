@@ -144,7 +144,7 @@ public final class TracerouteAnswererHelper {
 
   /** Generate a set of flows to do traceroute */
   @VisibleForTesting
-  Set<Flow> getFlows(String tag) {
+  Set<Flow> getFlows() {
     Set<Location> srcLocations =
         SpecifierFactories.getLocationSpecifierOrDefault(
                 _sourceLocationStr, AllInterfacesLocationSpecifier.INSTANCE)
@@ -163,7 +163,6 @@ public final class TracerouteAnswererHelper {
       try {
         Flow.Builder flowBuilder = headerConstraintsToFlow(_packetHeaderConstraints, srcLocation);
         setStartLocation(_specifierContext.getConfigs(), flowBuilder, srcLocation);
-        flowBuilder.setTag(tag);
         setBuilder.add(flowBuilder.build());
       } catch (IllegalArgumentException e) {
         // Try to ignore silently if possible

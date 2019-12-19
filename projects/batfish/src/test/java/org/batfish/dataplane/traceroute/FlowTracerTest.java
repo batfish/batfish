@@ -95,7 +95,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("tag")
             .build();
 
     List<TraceAndReverseFlow> traces = new ArrayList<>();
@@ -127,7 +126,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("tag")
             .build();
     List<TraceAndReverseFlow> traces = new ArrayList<>();
 
@@ -181,7 +179,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(srcVrfName)
-            .setTag("tag")
             .build();
     Ip dstIp = flow.getDstIp();
     ImmutableList.Builder<TraceAndReverseFlow> traces = ImmutableList.builder();
@@ -238,7 +235,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(srcVrfName)
-            .setTag("tag")
             .build();
     Ip dstIp = flow.getDstIp();
     StaticRoute nextVrfRoute =
@@ -319,7 +315,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(vrf1Name)
-            .setTag("tag")
             .build();
     Ip dstIp = flow.getDstIp();
     StaticRoute vrf1NextVrfRoute =
@@ -400,7 +395,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(srcVrfName)
-            .setTag("tag")
             .build();
     Ip dstIp = flow.getDstIp();
     ImmutableList.Builder<TraceAndReverseFlow> traces = ImmutableList.builder();
@@ -512,8 +506,7 @@ public final class FlowTracerTest {
     Flow.Builder fb =
         Flow.builder()
             .setIngressNode(c1.getHostname())
-            .setIngressVrf(Configuration.DEFAULT_VRF_NAME)
-            .setTag("tag");
+            .setIngressVrf(Configuration.DEFAULT_VRF_NAME);
 
     // 1. evaluate dstIp=ip1 on c1. Should be transformed to ip3
     {
@@ -555,7 +548,6 @@ public final class FlowTracerTest {
             .setIngressNode("node")
             .setIngressVrf("vrf")
             .setIpProtocol(IpProtocol.HOPOPT)
-            .setTag("")
             .build();
 
     NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
@@ -573,7 +565,6 @@ public final class FlowTracerTest {
             .setIpProtocol(IpProtocol.ICMP)
             .setIcmpCode(0)
             .setIcmpType(0)
-            .setTag("")
             .build();
 
     NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
@@ -591,7 +582,6 @@ public final class FlowTracerTest {
             .setIpProtocol(IpProtocol.TCP)
             .setDstPort(100)
             .setSrcPort(20)
-            .setTag("")
             .build();
 
     NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
@@ -611,12 +601,7 @@ public final class FlowTracerTest {
     Ip srcIp = Ip.parse("2.2.2.2");
 
     Flow.Builder fb =
-        Flow.builder()
-            .setIngressNode("node")
-            .setIngressVrf("vrf")
-            .setDstIp(dstIp)
-            .setSrcIp(srcIp)
-            .setTag("");
+        Flow.builder().setIngressNode("node").setIngressVrf("vrf").setDstIp(dstIp).setSrcIp(srcIp);
 
     BDD returnFlowDstIpBdd = pkt.getDstIp().value(srcIp.asLong());
     BDD returnFlowSrcIpBdd = pkt.getSrcIp().value(dstIp.asLong());
@@ -762,7 +747,6 @@ public final class FlowTracerTest {
             .setDstIp(ip)
             .setIngressNode(c.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("tag")
             .build();
 
     TracerouteEngineImplContext ctxt =

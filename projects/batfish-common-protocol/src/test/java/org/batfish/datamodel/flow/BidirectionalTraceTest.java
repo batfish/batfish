@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.BidirectionalTrace.Key;
 import org.junit.Test;
 
@@ -17,8 +18,8 @@ import org.junit.Test;
 public final class BidirectionalTraceTest {
   @Test
   public void testKeyEquals() {
-    Flow flow1 = Flow.builder().setIngressNode("ingressNode").setTag("tag1").build();
-    Flow flow2 = Flow.builder().setIngressNode("ingressNode").setTag("tag2").build();
+    Flow flow1 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.ZERO).build();
+    Flow flow2 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.MAX).build();
     FirewallSessionTraceInfo session =
         new FirewallSessionTraceInfo("hostname", Accept.INSTANCE, ImmutableSet.of(), TRUE, null);
     new EqualsTester()
@@ -32,8 +33,8 @@ public final class BidirectionalTraceTest {
 
   @Test
   public void testKey() {
-    Flow flow1 = Flow.builder().setIngressNode("ingressNode").setTag("tag1").build();
-    Flow flow2 = Flow.builder().setIngressNode("ingressNode").setTag("tag2").build();
+    Flow flow1 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.ZERO).build();
+    Flow flow2 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.MAX).build();
     Trace successTrace = new Trace(ACCEPTED, ImmutableList.of());
     assertThat(
         new BidirectionalTrace(flow1, successTrace, ImmutableSet.of(), flow2, successTrace)

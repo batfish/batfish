@@ -6,7 +6,6 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
@@ -71,8 +70,7 @@ public class MultipathConsistencyTest {
                     hasIngressNode("~configuration_0~"),
                     hasIngressVrf("default"),
                     hasIpProtocol(IpProtocol.TCP),
-                    hasSrcIp(oneOf(Ip.parse("2.0.0.0"), Ip.parse("1.0.0.0"))),
-                    hasTag("BASE"))),
+                    hasSrcIp(oneOf(Ip.parse("2.0.0.0"), Ip.parse("1.0.0.0"))))),
             Schema.FLOW));
 
     assertThat(

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
@@ -57,14 +57,14 @@ final class IpAccessListMatchersImpl {
     }
   }
 
-  static class HasLines extends FeatureMatcher<IpAccessList, List<ExprAclLine>> {
+  static class HasLines extends FeatureMatcher<IpAccessList, List<AclLine>> {
 
-    public HasLines(@Nonnull Matcher<? super List<ExprAclLine>> subMatcher) {
-      super(subMatcher, "An IpAcessList with lines:", "lines");
+    public HasLines(@Nonnull Matcher<? super List<AclLine>> subMatcher) {
+      super(subMatcher, "An IpAccessList with lines:", "lines");
     }
 
     @Override
-    protected List<ExprAclLine> featureValueOf(IpAccessList actual) {
+    protected List<AclLine> featureValueOf(IpAccessList actual) {
       return actual.getLines();
     }
   }

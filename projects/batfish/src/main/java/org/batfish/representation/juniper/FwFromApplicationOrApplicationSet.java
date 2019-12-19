@@ -19,7 +19,7 @@ public final class FwFromApplicationOrApplicationSet extends FwFromApplicationSe
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<ExprAclLine> lines,
+      List<? super ExprAclLine> lines,
       Warnings w) {
     ApplicationSetMember application =
         jc.getMasterLogicalSystem().getApplications().get(_applicationOrApplicationSetName);

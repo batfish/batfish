@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -62,7 +63,7 @@ public class DifferentialIpAccessListTest {
     String permitAclName = "permit acl";
     String permitAclReferenceName = "permit named acl";
     String permitNamedIpSpace = "permit named ip space";
-    List<ExprAclLine> permitAclLines =
+    List<AclLine> permitAclLines =
         ImmutableList.of(accepting(AclLineMatchExprs.matchDst(Prefix.parse("1.1.1.0/24"))));
     IpAccessList permitAcl =
         IpAccessList.builder().setName(permitAclName).setLines(permitAclLines).build();
@@ -86,7 +87,7 @@ public class DifferentialIpAccessListTest {
         IpAccessList.builder()
             .setName(DIFFERENTIAL_ACL_NAME)
             .setLines(
-                ImmutableList.<ExprAclLine>builder()
+                ImmutableList.<AclLine>builder()
                     .add(rejecting(permittedByAcl(renamedDenyAclName)))
                     .add(accepting(permittedByAcl(permitAcl.getName())))
                     .build())
@@ -138,31 +139,26 @@ public class DifferentialIpAccessListTest {
     assertThat(
         differential.getLiteralsToLines(),
         hasEntry(
-            differential
-                .getNamedAcls()
-                .get(renamedDenyAclName)
-                .getLines()
-                .get(1)
+            ((ExprAclLine) differential.getNamedAcls().get(renamedDenyAclName).getLines().get(1))
                 .getMatchCondition(),
             new AclLineIndex(denyAcl, 1)));
     assertThat(
         differential.getLiteralsToLines(),
         hasEntry(
-            differential
-                .getNamedAcls()
-                .get(renamedDenyAclReferenceName)
-                .getLines()
-                .get(1)
+            ((ExprAclLine)
+                    differential.getNamedAcls().get(renamedDenyAclReferenceName).getLines().get(1))
                 .getMatchCondition(),
             new AclLineIndex(denyNamedAcls.get(denyAclReferenceName), 1)));
     // literals from permit Acls are present and not renamed
     assertThat(
         differential.getLiteralsToLines(),
-        hasEntry(permitAclLines.get(0).getMatchCondition(), new AclLineIndex(permitAcl, 0)));
+        hasEntry(
+            ((ExprAclLine) permitAclLines.get(0)).getMatchCondition(),
+            new AclLineIndex(permitAcl, 0)));
     assertThat(
         differential.getLiteralsToLines(),
         hasEntry(
-            permitAclReferenceAcl.getLines().get(1).getMatchCondition(),
+            ((ExprAclLine) permitAclReferenceAcl.getLines().get(1)).getMatchCondition(),
             new AclLineIndex(permitAclReferenceAcl, 1)));
   }
 }

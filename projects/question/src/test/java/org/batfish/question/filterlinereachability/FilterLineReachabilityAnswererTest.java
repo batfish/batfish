@@ -241,7 +241,10 @@ public class FilterLineReachabilityAnswererTest {
 
     Set<AclLineMatchExpr> matchExprs =
         aclSpecs.stream()
-            .map(spec -> spec.acl.getSanitizedAcl().getLines().get(0).getMatchCondition())
+            .map(
+                spec ->
+                    ((ExprAclLine) spec.acl.getSanitizedAcl().getLines().get(0))
+                        .getMatchCondition())
             .collect(Collectors.toSet());
     assertThat(
         matchExprs,

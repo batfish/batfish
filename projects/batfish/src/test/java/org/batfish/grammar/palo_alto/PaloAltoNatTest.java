@@ -77,7 +77,6 @@ public class PaloAltoNatTest {
     // This flow is NAT'd and should pass through the firewall
     Flow insideToOutside =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(inside1Name)
             .setSrcIp(Ip.parse("1.1.1.2"))
@@ -135,7 +134,6 @@ public class PaloAltoNatTest {
 
     Flow.Builder flowBuilder =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(inside1Name)
             .setDstIp(Ip.parse("1.2.1.2"))
@@ -214,7 +212,6 @@ public class PaloAltoNatTest {
     // This flow is NAT'd and should pass through the firewall
     Flow outsideToInsideNat =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(outside1Name)
             .setSrcIp(Ip.parse("1.2.1.2"))
@@ -269,7 +266,6 @@ public class PaloAltoNatTest {
 
     Flow.Builder flowBuilder =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(outside1Name)
             .setDstIp(Ip.parse("1.1.1.2"))
@@ -351,7 +347,6 @@ public class PaloAltoNatTest {
     Ip matchSrcAndDstTransRuleIp = Ip.parse("1.1.1.30");
     Flow.Builder flowBuilder =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(ingressIfaceName)
             .setDstIp(dstIp)
@@ -435,7 +430,6 @@ public class PaloAltoNatTest {
     Ip matchSrcAndDstTransRuleIp = Ip.parse("1.1.1.3");
     Flow.Builder flowBuilder =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(ingressIfaceName)
             .setDstIp(dstIp)

@@ -39,21 +39,20 @@ public final class TracerouteAnswerer extends Answerer {
     super(question, batfish);
   }
 
-  private SortedMap<Flow, List<Trace>> getTraces(
-      NetworkSnapshot snapshot, String tag, TracerouteQuestion q) {
+  private SortedMap<Flow, List<Trace>> getTraces(NetworkSnapshot snapshot, TracerouteQuestion q) {
     TracerouteAnswererHelper helper =
         new TracerouteAnswererHelper(
             q.getHeaderConstraints(),
             q.getSourceLocationStr(),
             _batfish.specifierContext(snapshot));
-    Set<Flow> flows = helper.getFlows(tag);
+    Set<Flow> flows = helper.getFlows();
     return _batfish.getTracerouteEngine(snapshot).computeTraces(flows, q.getIgnoreFilters());
   }
 
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     TracerouteQuestion q = (TracerouteQuestion) _question;
-    SortedMap<Flow, List<Trace>> flowTraces = getTraces(snapshot, _batfish.getFlowTag(snapshot), q);
+    SortedMap<Flow, List<Trace>> flowTraces = getTraces(snapshot, q);
     Multiset<Row> rows = flowTracesToRows(flowTraces, q.getMaxTraces());
 
     TableAnswerElement table = new TableAnswerElement(metadata(false));
@@ -64,10 +63,9 @@ public final class TracerouteAnswerer extends Answerer {
   @Override
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
     TracerouteQuestion q = ((TracerouteQuestion) _question);
-    Map<Flow, List<Trace>> baseFlowTraces = getTraces(snapshot, _batfish.getFlowTag(snapshot), q);
+    Map<Flow, List<Trace>> baseFlowTraces = getTraces(snapshot, q);
 
-    Map<Flow, List<Trace>> deltaFlowTraces =
-        getTraces(reference, _batfish.getFlowTag(reference), q);
+    Map<Flow, List<Trace>> deltaFlowTraces = getTraces(reference, q);
 
     Multiset<Row> rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, q.getMaxTraces());
     TableAnswerElement table = new TableAnswerElement(metadata(true));

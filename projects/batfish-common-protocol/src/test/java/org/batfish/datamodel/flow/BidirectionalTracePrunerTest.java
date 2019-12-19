@@ -23,7 +23,7 @@ public class BidirectionalTracePrunerTest {
   private static final Flow FLOW3;
 
   static {
-    Flow.Builder fb = Flow.builder().setTag("tag");
+    Flow.Builder fb = Flow.builder();
     FLOW1 = fb.setIngressNode("flow1").build();
     FLOW2 = fb.setIngressNode("flow2").build();
     FLOW3 = fb.setIngressNode("flow3").build();

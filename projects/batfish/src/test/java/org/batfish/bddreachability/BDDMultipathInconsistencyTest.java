@@ -52,7 +52,6 @@ public class BDDMultipathInconsistencyTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
   private static final BDDPacket PKT = new BDDPacket();
-  private static final String FLOW_TAG = "flow tag";
 
   private BDDReachabilityAnalysisFactory _graphFactory;
   private TestNetwork _net;
@@ -138,7 +137,7 @@ public class BDDMultipathInconsistencyTest {
     BDD expected = tcpBdd.and(dstIpBDD).and(srcIpBDD).and(postNatAclBDD);
     assertEquals(expected, inconsistency.getBDD());
 
-    Flow flow = multipathInconsistencyToFlow(PKT, inconsistency, FLOW_TAG);
+    Flow flow = multipathInconsistencyToFlow(PKT, inconsistency);
     assertThat(flow, hasDstIp(_dstIface2Ip));
   }
 
@@ -248,16 +247,12 @@ public class BDDMultipathInconsistencyTest {
                 ImmutableSet.of(NEIGHBOR_UNREACHABLE))
             .getIngressLocationReachableBDDs();
 
+    assertThat(computeMultipathInconsistencies(PKT, acceptedBDDs, dropExceptDeniedInBDDs), empty());
     assertThat(
-        computeMultipathInconsistencies(PKT, FLOW_TAG, acceptedBDDs, dropExceptDeniedInBDDs),
-        empty());
+        computeMultipathInconsistencies(PKT, acceptedBDDs, dropBDDs),
+        equalTo(computeMultipathInconsistencies(PKT, acceptedBDDs, deniedInBDDs)));
+    assertThat(computeMultipathInconsistencies(PKT, neighborUnreachableBDDs, dropBDDs), empty());
     assertThat(
-        computeMultipathInconsistencies(PKT, FLOW_TAG, acceptedBDDs, dropBDDs),
-        equalTo(computeMultipathInconsistencies(PKT, FLOW_TAG, acceptedBDDs, deniedInBDDs)));
-    assertThat(
-        computeMultipathInconsistencies(PKT, FLOW_TAG, neighborUnreachableBDDs, dropBDDs), empty());
-    assertThat(
-        computeMultipathInconsistencies(PKT, FLOW_TAG, acceptedBDDs, neighborUnreachableBDDs),
-        empty());
+        computeMultipathInconsistencies(PKT, acceptedBDDs, neighborUnreachableBDDs), empty());
   }
 }

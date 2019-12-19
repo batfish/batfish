@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -53,7 +54,11 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
 
   public BoolExpr toBoolExpr(IpAccessList ipAccessList) {
     BoolExpr expr = _context.mkFalse();
-    for (ExprAclLine line : Lists.reverse(ipAccessList.getLines())) {
+    for (AclLine l : Lists.reverse(ipAccessList.getLines())) {
+      if (!(l instanceof ExprAclLine)) {
+        throw new UnsupportedOperationException();
+      }
+      ExprAclLine line = (ExprAclLine) l;
       BoolExpr matchExpr = line.getMatchCondition().accept(this);
       BoolExpr actionExpr =
           line.getAction() == LineAction.PERMIT ? _context.mkTrue() : _context.mkFalse();

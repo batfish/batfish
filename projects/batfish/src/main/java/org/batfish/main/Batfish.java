@@ -236,8 +236,6 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
 
-  public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
-
   private static final Pattern MANAGEMENT_INTERFACES =
       Pattern.compile(
           "(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)|(\\Avme)|(\\Awlan-ap)",
@@ -1062,11 +1060,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getDifferentialFlowTag() {
-    return DIFFERENTIAL_FLOW_TAG;
-  }
-
-  @Override
   public Environment getEnvironment() {
     // TODO: delete entirely
     return new Environment(
@@ -1091,17 +1084,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         parseEnvironmentBgpTables(snapshot, inputData, answerElement);
     return bgpTables;
-  }
-
-  @Override
-  public String getFlowTag(NetworkSnapshot snapshot) {
-    if (snapshot.equals(getSnapshot())) {
-      return Flow.BASE_FLOW_TAG;
-    } else if (snapshot.equals(getReferenceSnapshot())) {
-      return Flow.DELTA_FLOW_TAG;
-    } else {
-      throw new BatfishException("Could not determine flow tag");
-    }
   }
 
   @Override
@@ -2875,7 +2857,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               params.getFinalNodes(),
               params.getActions());
 
-      String flowTag = getFlowTag(snapshot);
       Set<Flow> flows =
           reachableBDDs.entrySet().stream()
               .flatMap(
@@ -2888,7 +2869,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     }
                     Flow.Builder flow = optionalFlow.get();
                     flow.setIngressNode(loc.getNode());
-                    flow.setTag(flowTag);
                     switch (loc.getType()) {
                       case INTERFACE_LINK:
                         flow.setIngressInterface(loc.getInterface());
@@ -2922,7 +2902,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               getAllSourcesInferFromLocationIpSpaceAssignment(snapshot));
       Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
-      String flowTag = getFlowTag(snapshot);
       try (ActiveSpan span1 =
           GlobalTracer.get().buildSpan("bddLoopDetection.computeResultFlows").startActive()) {
         assert span1 != null; // avoid unused warning
@@ -2933,7 +2912,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         .map(
                             fb -> {
                               IngressLocation loc = entry.getKey();
-                              fb.setTag(flowTag);
                               fb.setIngressNode(loc.getNode());
                               switch (loc.getType()) {
                                 case INTERFACE_LINK:
@@ -2999,8 +2977,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               finalNodes,
               failureDispositions);
 
-      return ImmutableSet.copyOf(
-          computeMultipathInconsistencies(pkt, getFlowTag(snapshot), successBdds, failureBdds));
+      return ImmutableSet.copyOf(computeMultipathInconsistencies(pkt, successBdds, failureBdds));
     }
   }
 
@@ -3103,12 +3080,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       Set<IngressLocation> commonSources =
           Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
-      String flowTag = getDifferentialFlowTag();
 
       Set<Flow> decreasedFlows =
-          getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs, flowTag);
+          getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs);
       Set<Flow> increasedFlows =
-          getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs, flowTag);
+          getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs);
       return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
     }
   }
@@ -3117,8 +3093,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       BDDPacket pkt,
       Set<IngressLocation> commonSources,
       Map<IngressLocation, BDD> includeBDDs,
-      Map<IngressLocation, BDD> excludeBDDs,
-      String flowTag) {
+      Map<IngressLocation, BDD> excludeBDDs) {
     return commonSources.stream()
         .flatMap(
             source -> {
@@ -3133,7 +3108,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
 
               // set flow parameters
-              flow.setTag(flowTag);
               flow.setIngressNode(source.getNode());
               switch (source.getType()) {
                 case VRF:

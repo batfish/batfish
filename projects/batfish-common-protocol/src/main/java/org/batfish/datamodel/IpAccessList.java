@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -20,7 +21,7 @@ public class IpAccessList implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<IpAccessList> {
 
-    private List<ExprAclLine> _lines;
+    private List<AclLine> _lines;
 
     private String _name;
 
@@ -45,7 +46,7 @@ public class IpAccessList implements Serializable {
       return ipAccessList;
     }
 
-    public Builder setLines(List<ExprAclLine> lines) {
+    public Builder setLines(List<AclLine> lines) {
       _lines = lines;
       return this;
     }
@@ -90,23 +91,24 @@ public class IpAccessList implements Serializable {
     return new Builder(null);
   }
 
-  private List<ExprAclLine> _lines;
-
+  @Nonnull private final List<AclLine> _lines;
   @Nonnull private final String _name;
-
-  private String _sourceName;
-
-  private String _sourceType;
+  private final String _sourceName;
+  private final String _sourceType;
 
   @JsonCreator
-  private IpAccessList(@Nullable @JsonProperty(PROP_NAME) String name) {
+  private static IpAccessList jsonCreator(
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_LINES) List<AclLine> lines,
+      @Nullable @JsonProperty(PROP_SOURCE_NAME) String sourceName,
+      @Nullable @JsonProperty(PROP_SOURCE_TYPE) String sourceType) {
     checkArgument(name != null, "IpAccessList missing %s", PROP_NAME);
-    _name = name;
+    return new IpAccessList(name, firstNonNull(lines, ImmutableList.of()), sourceName, sourceType);
   }
 
-  public IpAccessList(
+  private IpAccessList(
       @Nonnull String name,
-      List<ExprAclLine> lines,
+      @Nonnull List<AclLine> lines,
       @Nullable String sourceName,
       @Nullable String sourceType) {
     _name = name;
@@ -164,7 +166,8 @@ public class IpAccessList implements Serializable {
 
   /** The lines against which to check an IPV4 packet. */
   @JsonProperty(PROP_LINES)
-  public List<ExprAclLine> getLines() {
+  @Nonnull
+  public List<AclLine> getLines() {
     return _lines;
   }
 
@@ -183,26 +186,11 @@ public class IpAccessList implements Serializable {
     return getName().startsWith("~");
   }
 
-  @JsonProperty(PROP_LINES)
-  public void setLines(List<ExprAclLine> lines) {
-    _lines = ImmutableList.copyOf(lines);
-  }
-
-  @JsonProperty(PROP_SOURCE_NAME)
-  private void setSourceName(String sourceName) {
-    _sourceName = sourceName;
-  }
-
-  @JsonProperty(PROP_SOURCE_TYPE)
-  private void setSourceType(String sourceType) {
-    _sourceType = sourceType;
-  }
-
   @Override
   public String toString() {
     StringBuilder output =
         new StringBuilder().append(getClass().getSimpleName()).append(":").append(_name);
-    for (ExprAclLine line : _lines) {
+    for (AclLine line : _lines) {
       output.append("\n");
       output.append(line);
     }

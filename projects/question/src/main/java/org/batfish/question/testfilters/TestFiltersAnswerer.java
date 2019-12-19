@@ -160,7 +160,6 @@ public class TestFiltersAnswerer extends Answerer {
         flowBuilder.setIngressInterface(null);
         flowBuilder.setIngressVrf(
             Configuration.DEFAULT_VRF_NAME); // dummy because Flow needs non-null interface or vrf
-        flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
         setBuilder.add(flowBuilder.build());
       } catch (NoSuchElementException e) {
         allProblems.add("cannot get a flow from the specifier");
@@ -176,10 +175,7 @@ public class TestFiltersAnswerer extends Answerer {
       Flow.Builder flowBuilder;
       try {
         flowBuilder =
-            headerSpaceToFlow
-                .getRepresentativeFlow(hsBuilder.setSrcIps(srcIps).build())
-                .get()
-                .setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
+            headerSpaceToFlow.getRepresentativeFlow(hsBuilder.setSrcIps(srcIps).build()).get();
       } catch (NoSuchElementException e) {
         allProblems.add("cannot get a flow from the specifier");
         continue;

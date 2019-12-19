@@ -26,7 +26,6 @@ public class PermittedByAclTest {
     Flow.Builder b = Flow.builder();
     b.setIngressNode("ingressNode");
     b.setSrcIp(Ip.parse(ipAddrStr));
-    b.setTag("test");
     return b.build();
   }
 

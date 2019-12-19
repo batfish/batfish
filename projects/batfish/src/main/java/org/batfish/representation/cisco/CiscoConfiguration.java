@@ -77,6 +77,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -4070,7 +4071,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _inspectPolicyMaps.forEach(
         (inspectPolicyMapName, inspectPolicyMap) -> {
           String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<ExprAclLine> policyMapAclLines = ImmutableList.builder();
+          ImmutableList.Builder<AclLine> policyMapAclLines = ImmutableList.builder();
           inspectPolicyMap
               .getInspectClasses()
               .forEach(
@@ -4155,7 +4156,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 return;
               }
 
-              ImmutableList.Builder<ExprAclLine> zonePolicies = ImmutableList.builder();
+              ImmutableList.Builder<AclLine> zonePolicies = ImmutableList.builder();
 
               // Allow traffic originating from device (no source interface)
               zonePolicies.add(

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
@@ -37,7 +38,7 @@ public final class ServiceGroup implements ServiceGroupMember {
   @Override
   public IpAccessList toIpAccessList(
       LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w) {
-    List<ExprAclLine> lines = new LinkedList<>();
+    List<AclLine> lines = new LinkedList<>();
     for (ServiceOrServiceGroupReference memberReference : _references) {
       // Check for matching object before using built-ins
       String vsysName = memberReference.getVsysName(pc, vsys);

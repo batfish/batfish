@@ -57,7 +57,7 @@ public final class BaseApplication implements Application, Serializable {
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<ExprAclLine> lines,
+      List<? super ExprAclLine> lines,
       Warnings w) {
     Collection<Term> terms;
     if (_terms.isEmpty()) {

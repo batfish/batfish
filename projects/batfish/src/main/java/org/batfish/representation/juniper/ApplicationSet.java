@@ -22,7 +22,7 @@ public class ApplicationSet implements ApplicationSetMember, Serializable {
       JuniperConfiguration jc,
       Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<ExprAclLine> lines,
+      List<? super ExprAclLine> lines,
       Warnings w) {
     _members.stream()
         .map(ref -> ref.resolve(jc))

@@ -13,7 +13,6 @@ public class MatchSrcInterfaceTest {
   private static Flow createFlow() {
     Flow.Builder b = Flow.builder();
     b.setIngressNode("ingressNode");
-    b.setTag("empty");
     return b.build();
   }
 

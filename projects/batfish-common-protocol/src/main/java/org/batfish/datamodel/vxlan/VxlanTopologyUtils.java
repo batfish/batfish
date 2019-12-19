@@ -226,7 +226,6 @@ public final class VxlanTopologyUtils {
     Flow flow =
         Flow.builder()
             .setIpProtocol(IpProtocol.UDP)
-            .setTag("neighbor-resolution")
             .setIngressNode(sender)
             .setIngressVrf(senderVrf)
             .setSrcIp(srcIp)

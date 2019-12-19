@@ -79,9 +79,9 @@
         },
         "ipAccessLists" : {
           "~SECURITY_GROUP_EGRESS_ACL~" : {
-            "name" : "~SECURITY_GROUP_EGRESS_ACL~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -97,12 +97,13 @@
                 },
                 "name" : "sg-3dfb3140 - default [egress] 0"
               }
-            ]
+            ],
+            "name" : "~SECURITY_GROUP_EGRESS_ACL~"
           },
           "~SECURITY_GROUP_INGRESS_ACL~" : {
-            "name" : "~SECURITY_GROUP_INGRESS_ACL~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -118,7 +119,8 @@
                 },
                 "name" : "sg-3dfb3140 - default [ingress] 0"
               }
-            ]
+            ],
+            "name" : "~SECURITY_GROUP_INGRESS_ACL~"
           }
         },
         "vendorFamily" : {
@@ -1768,9 +1770,9 @@
         },
         "ipAccessLists" : {
           "2001" : {
-            "name" : "2001",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1792,6 +1794,7 @@
                 "name" : "permit icmp 10.100.0.0 0.0.255.255 any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1813,13 +1816,14 @@
                 "name" : "permit icmp any 10.100.0.0 0.0.255.255"
               }
             ],
+            "name" : "2001",
             "sourceName" : "2001",
             "sourceType" : "extended ipv4 access-list"
           },
           "LIMIT_PEER" : {
-            "name" : "LIMIT_PEER",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1838,6 +1842,7 @@
                 "name" : "permit ip 10.1.30.0 0.0.0.255 any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1856,13 +1861,14 @@
                 "name" : "permit ip host 10.10.30.2 host 10.10.30.1"
               }
             ],
+            "name" : "LIMIT_PEER",
             "sourceName" : "LIMIT_PEER",
             "sourceType" : "extended ipv4 access-list"
           },
           "MATCH_ALL_BGP" : {
-            "name" : "MATCH_ALL_BGP",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1881,6 +1887,7 @@
                 "name" : "permit ip any any"
               }
             ],
+            "name" : "MATCH_ALL_BGP",
             "sourceName" : "MATCH_ALL_BGP",
             "sourceType" : "extended ipv4 access-list"
           }
@@ -2914,9 +2921,9 @@
         },
         "ipAccessLists" : {
           "acl-7b78771d_egress" : {
-            "name" : "acl-7b78771d_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2927,6 +2934,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2937,13 +2945,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_egress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
-            "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2954,6 +2963,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2964,6 +2974,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_ingress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           }
@@ -3088,9 +3099,9 @@
         },
         "ipAccessLists" : {
           "acl-7b78771d_egress" : {
-            "name" : "acl-7b78771d_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3101,6 +3112,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3111,13 +3123,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_egress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
-            "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3128,6 +3141,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3138,6 +3152,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_ingress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           }
@@ -3262,9 +3277,9 @@
         },
         "ipAccessLists" : {
           "acl-4db39c28_egress" : {
-            "name" : "acl-4db39c28_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3275,6 +3290,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3285,13 +3301,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-4db39c28_egress",
             "sourceName" : "acl-4db39c28",
             "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
-            "name" : "acl-4db39c28_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3314,6 +3331,7 @@
                 "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3324,6 +3342,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-4db39c28_ingress",
             "sourceName" : "acl-4db39c28",
             "sourceType" : "Network ACL"
           }
@@ -3448,9 +3467,9 @@
         },
         "ipAccessLists" : {
           "acl-7b78771d_egress" : {
-            "name" : "acl-7b78771d_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3461,6 +3480,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3471,13 +3491,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_egress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
-            "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3488,6 +3509,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3498,6 +3520,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_ingress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           }
@@ -3622,9 +3645,9 @@
         },
         "ipAccessLists" : {
           "acl-3d4f745b_egress" : {
-            "name" : "acl-3d4f745b_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3635,6 +3658,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3645,13 +3669,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-3d4f745b_egress",
             "sourceName" : "acl-3d4f745b",
             "sourceType" : "Network ACL"
           },
           "acl-3d4f745b_ingress" : {
-            "name" : "acl-3d4f745b_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3662,6 +3687,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3672,6 +3698,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-3d4f745b_ingress",
             "sourceName" : "acl-3d4f745b",
             "sourceType" : "Network ACL"
           }
@@ -3796,9 +3823,9 @@
         },
         "ipAccessLists" : {
           "acl-7b78771d_egress" : {
-            "name" : "acl-7b78771d_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3809,6 +3836,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3819,13 +3847,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_egress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
-            "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3836,6 +3865,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3846,6 +3876,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_ingress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           }
@@ -3970,9 +4001,9 @@
         },
         "ipAccessLists" : {
           "acl-3d4f745b_egress" : {
-            "name" : "acl-3d4f745b_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3983,6 +4014,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -3993,13 +4025,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-3d4f745b_egress",
             "sourceName" : "acl-3d4f745b",
             "sourceType" : "Network ACL"
           },
           "acl-3d4f745b_ingress" : {
-            "name" : "acl-3d4f745b_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4010,6 +4043,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4020,6 +4054,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-3d4f745b_ingress",
             "sourceName" : "acl-3d4f745b",
             "sourceType" : "Network ACL"
           }
@@ -4144,9 +4179,9 @@
         },
         "ipAccessLists" : {
           "acl-4db39c28_egress" : {
-            "name" : "acl-4db39c28_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4157,6 +4192,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4167,13 +4203,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-4db39c28_egress",
             "sourceName" : "acl-4db39c28",
             "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
-            "name" : "acl-4db39c28_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4196,6 +4233,7 @@
                 "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4206,6 +4244,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-4db39c28_ingress",
             "sourceName" : "acl-4db39c28",
             "sourceType" : "Network ACL"
           }
@@ -4330,9 +4369,9 @@
         },
         "ipAccessLists" : {
           "acl-4db39c28_egress" : {
-            "name" : "acl-4db39c28_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4343,6 +4382,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4353,13 +4393,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-4db39c28_egress",
             "sourceName" : "acl-4db39c28",
             "sourceType" : "Network ACL"
           },
           "acl-4db39c28_ingress" : {
-            "name" : "acl-4db39c28_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4382,6 +4423,7 @@
                 "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4392,6 +4434,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-4db39c28_ingress",
             "sourceName" : "acl-4db39c28",
             "sourceType" : "Network ACL"
           }
@@ -4516,9 +4559,9 @@
         },
         "ipAccessLists" : {
           "acl-7b78771d_egress" : {
-            "name" : "acl-7b78771d_egress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4529,6 +4572,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4539,13 +4583,14 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_egress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           },
           "acl-7b78771d_ingress" : {
-            "name" : "acl-7b78771d_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4556,6 +4601,7 @@
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4566,6 +4612,7 @@
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
+            "name" : "acl-7b78771d_ingress",
             "sourceName" : "acl-7b78771d",
             "sourceType" : "Network ACL"
           }
@@ -4652,9 +4699,9 @@
         },
         "ipAccessLists" : {
           "~SECURITY_GROUP_EGRESS_ACL~" : {
-            "name" : "~SECURITY_GROUP_EGRESS_ACL~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4670,12 +4717,13 @@
                 },
                 "name" : "sg-55510831 - default [egress] 0"
               }
-            ]
+            ],
+            "name" : "~SECURITY_GROUP_EGRESS_ACL~"
           },
           "~SECURITY_GROUP_INGRESS_ACL~" : {
-            "name" : "~SECURITY_GROUP_INGRESS_ACL~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4701,7 +4749,8 @@
                 },
                 "name" : "sg-55510831 - default [ingress] 0"
               }
-            ]
+            ],
+            "name" : "~SECURITY_GROUP_INGRESS_ACL~"
           }
         },
         "vendorFamily" : {

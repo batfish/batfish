@@ -15,6 +15,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -30,9 +31,9 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
   private String _hostname;
 
-  private transient Map<ExprAclLine, String> _lineInInterfaces;
+  private transient Map<AclLine, String> _lineInInterfaces;
 
-  private transient Map<ExprAclLine, String> _lineOutInterfaces;
+  private transient Map<AclLine, String> _lineOutInterfaces;
 
   private ConfigurationFormat _vendor;
 
@@ -71,7 +72,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
-        List<ExprAclLine> newRules =
+        List<AclLine> newRules =
             prerouting.getLines().stream()
                 .filter(
                     l -> {
@@ -102,7 +103,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
-        List<ExprAclLine> newRules =
+        List<AclLine> newRules =
             postrouting.getLines().stream()
                 .filter(
                     l -> {
@@ -150,7 +151,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   }
 
   private IpAccessList toIpAccessList(String aclName, IptablesChain chain, VendorConfiguration vc) {
-    ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
+    ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
 
     for (IptablesRule rule : chain.getRules()) {
       HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
