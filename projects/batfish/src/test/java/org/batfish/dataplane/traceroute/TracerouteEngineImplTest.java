@@ -1937,7 +1937,11 @@ public class TracerouteEngineImplTest {
       Flow flow = protoFlow;
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
-              c1.getHostname(), Accept.INSTANCE, ImmutableSet.of(c1i1Name), makeMatchCriteria(flow), null);
+              c1.getHostname(),
+              Accept.INSTANCE,
+              ImmutableSet.of(c1i1Name),
+              makeMatchCriteria(flow),
+              null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
