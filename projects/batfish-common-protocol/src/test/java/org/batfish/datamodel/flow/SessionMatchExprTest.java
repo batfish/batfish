@@ -36,15 +36,15 @@ public class SessionMatchExprTest {
                 IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("1.1.2.2"), null, null))
         .addEqualityGroup(
             new SessionMatchExpr(
-                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4000, 5000),
+                IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), 4000, 5000),
             new SessionMatchExpr(
-                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4000, 5000))
+                IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), 4000, 5000))
         .addEqualityGroup(
             new SessionMatchExpr(
-                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4040, 5000))
+                IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), 4040, 5000))
         .addEqualityGroup(
             new SessionMatchExpr(
-                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4000, 5050))
+                IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), 4000, 5050))
         .testEquals();
   }
 

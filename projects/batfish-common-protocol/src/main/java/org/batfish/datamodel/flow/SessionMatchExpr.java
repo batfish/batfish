@@ -58,11 +58,6 @@ public class SessionMatchExpr {
     checkArgument(ipProtocol != null, "Missing %s", PROP_IP_PROTOCOL);
     checkArgument(srcIp != null, "Missing %s", PROP_SRC_IP);
     checkArgument(dstIp != null, "Missing %s", PROP_DST_IP);
-    checkArgument(
-        (srcPort == null && dstPort == null) || (srcPort != null && dstPort != null),
-        "%s and %s should be both null or both non-null",
-        PROP_SRC_PORT,
-        PROP_DST_PORT);
     return new SessionMatchExpr(ipProtocol, srcIp, dstIp, srcPort, dstPort);
   }
 
