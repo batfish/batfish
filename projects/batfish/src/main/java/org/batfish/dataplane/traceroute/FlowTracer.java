@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
+import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
@@ -764,13 +765,11 @@ class FlowTracer {
     }
     FirewallSessionTraceInfo session = matchingSessions.get(0);
 
-    _steps.add(
-        new MatchSessionStep(
-            MatchSessionStepDetail.builder()
-                .setIncomingInterfaces(session.getIncomingInterfaces())
-                .setSessionAction(session.getAction())
-                .setMatchCriteria(session.getMatchCriteria())
-                .build()));
+    MatchSessionStepDetail.Builder matchDetail =
+        MatchSessionStepDetail.builder()
+            .setIncomingInterfaces(session.getIncomingInterfaces())
+            .setSessionAction(session.getAction())
+            .setMatchCriteria(session.getMatchCriteria());
 
     Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
@@ -779,6 +778,18 @@ class FlowTracer {
     checkState(
         incomingInterface.getFirewallSessionInterfaceInfo() != null,
         "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
+
+    // compute transformation. it will be applied after applying incoming ACL
+    Transformation transformation = session.getTransformation();
+    TransformationResult transformationResult = null;
+    if (transformation != null) {
+      transformationResult =
+          TransformationEvaluator.eval(
+              transformation, flow, inputIfaceName, ipAccessLists, ipSpaces);
+      matchDetail.setTransformation(flowDiffs(_currentFlow, transformationResult.getOutputFlow()));
+    }
+
+    _steps.add(new MatchSessionStep(matchDetail.build()));
 
     // apply incoming ACL
     String incomingAclName =
@@ -789,13 +800,9 @@ class FlowTracer {
     }
 
     // apply transformation
-    Transformation transformation = session.getTransformation();
-    if (transformation != null) {
-      TransformationResult result =
-          TransformationEvaluator.eval(
-              transformation, flow, inputIfaceName, ipAccessLists, ipSpaces);
-      _steps.addAll(result.getTraceSteps());
-      _currentFlow = result.getOutputFlow();
+    if (transformationResult != null) {
+      _steps.addAll(transformationResult.getTraceSteps());
+      _currentFlow = transformationResult.getOutputFlow();
     }
 
     session

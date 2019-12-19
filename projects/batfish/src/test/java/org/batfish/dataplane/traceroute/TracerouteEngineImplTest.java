@@ -120,6 +120,7 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.dataplane.TracerouteEngineImpl;
@@ -1957,7 +1958,8 @@ public class TracerouteEngineImplTest {
                       allOf(
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(Accept.INSTANCE)),
-                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())))))));
+                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
+                          hasProperty("transformation", equalTo(null)))))));
       assertThat(
           results,
           contains(
@@ -1991,7 +1993,8 @@ public class TracerouteEngineImplTest {
                       allOf(
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(session.getAction())),
-                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())))))));
+                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
+                          hasProperty("transformation", equalTo(null)))))));
       /* Disposition is always exits network -- see:
        * TracerouteEngineImplContext#buildSessionArpFailureTrace(String, TransmissionContext, List).
        */
@@ -2028,7 +2031,8 @@ public class TracerouteEngineImplTest {
                       allOf(
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(session.getAction())),
-                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())))))));
+                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
+                          hasProperty("transformation", equalTo(null)))))));
       // flow reaches c2.
       assertThat(
           results,
@@ -2064,7 +2068,8 @@ public class TracerouteEngineImplTest {
                       allOf(
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(session.getAction())),
-                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())))))));
+                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
+                          hasProperty("transformation", equalTo(null)))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_IN))));
     }
 
@@ -2092,7 +2097,8 @@ public class TracerouteEngineImplTest {
                       allOf(
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(session.getAction())),
-                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())))))));
+                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
+                          hasProperty("transformation", equalTo(null)))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_OUT))));
     }
 
@@ -2112,6 +2118,16 @@ public class TracerouteEngineImplTest {
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
               .get(flow);
+      assertThat(
+          results.get(0).getTrace().getHops().get(0).getSteps(),
+          hasItem(
+              allOf(
+                  instanceOf(MatchSessionStep.class),
+                  hasProperty(
+                      "detail",
+                      hasProperty(
+                          "transformation",
+                          contains(flowDiff(IpField.SOURCE, egressDenySrcIp, ip11)))))));
       // flow reaches c2.
       assertThat(
           results,
@@ -2139,6 +2155,16 @@ public class TracerouteEngineImplTest {
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
               .get(flow);
+      assertThat(
+          results.get(0).getTrace().getHops().get(0).getSteps(),
+          hasItem(
+              allOf(
+                  instanceOf(MatchSessionStep.class),
+                  hasProperty(
+                      "detail",
+                      hasProperty(
+                          "transformation",
+                          contains(flowDiff(IpField.SOURCE, ingressDenySrcIp, ip11)))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_IN))));
     }
 
