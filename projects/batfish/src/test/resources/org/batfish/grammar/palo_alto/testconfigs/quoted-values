@@ -9,3 +9,4 @@ set address "addr4" description shortdescription
 set address addr5 description "quoted description"
 # Show output after entering `set address addr6 description ""`:
 set address addr6 description
+set address addr7 description ""

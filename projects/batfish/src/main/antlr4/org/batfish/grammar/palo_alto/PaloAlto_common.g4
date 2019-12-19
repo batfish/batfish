@@ -108,8 +108,8 @@ uint32
 
 value
 :
-    DOUBLE_QUOTE body = BODY DOUBLE_QUOTE
-    | SINGLE_QUOTE body = BODY SINGLE_QUOTE
+    DOUBLE_QUOTE body = BODY? DOUBLE_QUOTE
+    | SINGLE_QUOTE body = BODY? SINGLE_QUOTE
     | body = BODY?
 ;
 

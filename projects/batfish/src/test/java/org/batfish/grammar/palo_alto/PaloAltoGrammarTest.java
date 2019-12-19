@@ -2333,7 +2333,8 @@ public final class PaloAltoGrammarTest {
             hasKey("addr3"),
             hasKey("addr4"),
             hasKey("addr5"),
-            hasKey("addr6")));
+            hasKey("addr6"),
+            hasKey("addr7")));
 
     String descr0 = addrs.get("addr0").getDescription();
     String descr1 = addrs.get("addr1").getDescription();
@@ -2342,6 +2343,7 @@ public final class PaloAltoGrammarTest {
     String descr4 = addrs.get("addr4").getDescription();
     String descr5 = addrs.get("addr5").getDescription();
     String descr6 = addrs.get("addr6").getDescription();
+    String descr7 = addrs.get("addr7").getDescription();
 
     // Quoted values containing quotes should be extracted
     assertThat(descr0, equalTo("quoted description with a '"));
@@ -2352,7 +2354,8 @@ public final class PaloAltoGrammarTest {
     // Quoted and non-quoted values should be extracted correctly
     assertThat(descr4, equalTo("shortdescription"));
     assertThat(descr5, equalTo("quoted description"));
-    // Missing value should be interpreted as empty string
+    // Missing value and empty quotes should be interpreted as empty string
     assertThat(descr6, equalTo(""));
+    assertThat(descr7, equalTo(""));
   }
 }
