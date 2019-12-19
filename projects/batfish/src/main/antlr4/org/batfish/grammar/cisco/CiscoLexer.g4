@@ -954,6 +954,11 @@ ASDM_BUFFER_SIZE
    'asdm-buffer-size'
 ;
 
+ASDOT
+:
+   'asdot'
+;
+
 ASF_RMCP
 :
    'asf-rmcp'
@@ -967,6 +972,11 @@ ASIP_WEBADMIN
 ASN
 :
    'asn'
+;
+
+ASPLAIN
+:
+   'asplain'
 ;
 
 ASSEMBLER
@@ -2498,6 +2508,11 @@ CONTROL_WORD
 CONTROLLER
 :
    'controller' -> pushMode ( M_Interface )
+;
+
+CONVERGENCE
+:
+   'convergence'
 ;
 
 CONVERSION_ERROR
@@ -8783,6 +8798,11 @@ NOT
    'not'
 ;
 
+NOTATION
+:
+   'notation'
+;
+
 NOT_ADVERTISE
 :
    'not-advertise'
@@ -11898,6 +11918,11 @@ SLOT
 SLOT_TABLE_COS
 :
    'slot-table-cos'
+;
+
+SLOW_PEER
+:
+   'slow-peer'
 ;
 
 SMALL
