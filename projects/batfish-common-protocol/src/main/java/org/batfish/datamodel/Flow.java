@@ -667,6 +667,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _state;
   }
 
+  /** Jackson use only. */
+  @JsonProperty(PROP_TAG)
+  @Nonnull
+  @Deprecated
+  private String getTag() {
+    return "tag"; // For backwards compatibility. Older clients expect a tag
+  }
+
   // Again, backwards-compatibility tcp-flag ugliness below
 
   @JsonProperty(PROP_TCP_FLAGS_ACK)
