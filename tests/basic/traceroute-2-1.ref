@@ -66,6 +66,7 @@
                     "type" : "Originate",
                     "action" : "ORIGINATED",
                     "detail" : {
+                      "originatingInterface" : "eth0",
                       "originatingVrf" : "default"
                     }
                   },
@@ -345,6 +346,7 @@
                     "type" : "Originate",
                     "action" : "ORIGINATED",
                     "detail" : {
+                      "originatingInterface" : "eth0",
                       "originatingVrf" : "default"
                     }
                   },
@@ -616,6 +618,7 @@
                     "type" : "Originate",
                     "action" : "ORIGINATED",
                     "detail" : {
+                      "originatingInterface" : "eth0",
                       "originatingVrf" : "default"
                     }
                   },
@@ -887,6 +890,7 @@
                     "type" : "Originate",
                     "action" : "ORIGINATED",
                     "detail" : {
+                      "originatingInterface" : "eth0",
                       "originatingVrf" : "default"
                     }
                   },
